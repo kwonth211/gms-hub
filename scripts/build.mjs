@@ -13,6 +13,7 @@ const sites = readJson('data/sites.json');
 const training = readJson('data/training.json');
 const scrolls = readJson('data/scrolls.json');
 const drops = readJson('data/drops.json');
+const boxes = readJson('data/boxes.json');
 
 const LANGS = ['ko', 'en'];
 const BUILD_DATE = new Date().toISOString().slice(0, 10);
@@ -20,19 +21,19 @@ const SITE_COUNT = sites.categories.reduce((n, c) => n + c.sites.length, 0);
 
 const T = {
   ko: {
-    gameName: '메이플스토리 클래식 월드',
-    gameBadge: '메이플스토리 클래식 월드 전용',
+    gameName: '글로벌 메이플스토리 클래식 월드',
+    gameBadge: '글로벌 메이플스토리 클래식 월드 전용',
     notice: `수록된 사이트 ${SITE_COUNT}곳 모두 ${sites.checked}에 접속을 확인했어요 · 출처가 확인된 정보만 싣습니다`,
     navLinks: '사이트 모음',
     navTraining: '사냥터 찾기',
     navScroll: '주문서 계산기',
-    navDrop: '드롭 확률',
+    navDrop: '확률 계산기',
     navAbout: '소개',
     switchLang: 'English',
-    homeTitle: '메이플 클래식 월드 사이트 모음 · 시세 · 공략 · 계산기 | GMS Hub',
-    homeDesc: `메이플스토리 클래식 월드(글클메) 공식 채널, 디스코드·레딧·디시 커뮤니티, DB·위키, 자유시장 시세, 보스 타이머, 빌드 플래너 ${SITE_COUNT}곳을 접속 확인 후 정리했어요. 레벨별 사냥터 찾기와 주문서 계산기도 있어요.`,
+    homeTitle: '글로벌 메이플스토리 클래식 월드(글클메) 사이트 모음 · 시세 · 공략 · 계산기 | GMS Hub',
+    homeDesc: `글로벌 메이플스토리 클래식 월드(글클메) 공식 채널, 디스코드·레딧·디시 커뮤니티, DB·위키, 자유시장 시세, 보스 타이머, 빌드 플래너 ${SITE_COUNT}곳을 접속 확인 후 정리했어요. 레벨별 사냥터 찾기와 주문서 계산기도 있어요.`,
     heroKicker: '글클메 유저를 위한 길잡이',
-    heroTitle: '클래식 월드 사이트,<br>여기서 다 찾으세요',
+    heroTitle: '글로벌 클래식 메이플 사이트,<br>여기서 다 찾으세요',
     heroSub: '공식 공지부터 시세, 보스 타이머, 빌드 플래너까지. 흩어진 사이트를 용도별로 모았어요.',
     searchPlaceholder: '사이트 검색 (예: 시세, 디스코드, 보스, 빌드)',
     statSites: '수록 사이트',
@@ -68,8 +69,8 @@ const T = {
     faqHeading: '자주 묻는 질문',
     sourcesLabel: '출처',
 
-    trTitle: '메이플 클래식 월드 레벨별 사냥터 추천 (3개 사이트 비교) | GMS Hub',
-    trDesc: '메이플스토리 클래식 월드 1~80레벨 사냥터를 NiaMeowDB, MS-Classic, Henesys.GG 추천과 비교해요. 맵별 몬스터 레벨, 추천 레벨 구간, 시간당 경험치를 한눈에.',
+    trTitle: '글클메 레벨별 사냥터 추천 (3개 사이트 비교) · 글로벌 메이플스토리 클래식 월드 | GMS Hub',
+    trDesc: '글로벌 메이플스토리 클래식 월드 1~80레벨 사냥터를 NiaMeowDB, MS-Classic, Henesys.GG 추천과 비교해요. 맵별 몬스터 레벨, 추천 레벨 구간, 시간당 경험치를 한눈에.',
     trH1: '레벨별 사냥터 찾기',
     trLead: '세 사이트의 추천을 맵마다 모았어요. 여러 곳이 같이 추천한 맵이 위에 나와요.',
     level: '내 레벨',
@@ -88,8 +89,8 @@ const T = {
     trSourcesHeading: '출처',
     noDate: '날짜 표기 없음',
 
-    scTitle: '메이플 클래식 월드 주문서 계산기 · 확률 (Lesser·Intermediate·Greater·Chaos) | GMS Hub',
-    scDesc: '메이플스토리 클래식 월드 주문서 성공률(Lesser 100%, Intermediate 60%, Greater 10%, Chaos 10%)로 성공 횟수 분포, 파괴 확률, 평균 상승치를 계산해요.',
+    scTitle: '글클메 주문서 계산기 · 확률 (Lesser·Intermediate·Greater·Chaos) | GMS Hub',
+    scDesc: '글로벌 메이플스토리 클래식 월드 주문서 성공률(Lesser 100%, Intermediate 60%, Greater 10%, Chaos 10%)로 성공 횟수 분포, 파괴 확률, 평균 상승치를 계산해요.',
     scH1: '주문서 계산기',
     scLead: '클래식 월드 주문서 등급별 성공률로 결과를 확률로 보여줘요.',
     scTier: '주문서 등급',
@@ -116,21 +117,29 @@ const T = {
     colLadder: '종류',
     colExpected: '1장당 기대 상승치',
 
-    dropTitle: '메이플 클래식 월드 드롭 확률 계산기 | GMS Hub',
-    dropDesc: '드롭률(%)과 사냥 횟수로 아이템을 한 번 이상 얻을 확률, 50%·90%·99% 확률로 얻기 위해 필요한 사냥 횟수를 계산해요.',
-    dropH1: '드롭 확률 계산기',
-    dropLead: '"1% 템, 100마리 잡으면 나오나?" 바로 계산해 드려요.',
+    dropTitle: '글클메 확률 계산기 · 넥슨 공식 상자 확률 | GMS Hub',
+    dropDesc: '글로벌 메이플스토리 클래식 월드 확률 계산기. 넥슨 공식 랜덤박스(미스터리 패션 크레이트 등) 확률표와 함께 몇 번 열거나 잡아야 얻는지 계산해요.',
+    dropH1: '확률 계산기',
+    dropLead: '"1% 템, 100번이면 나오나?" 상자 열기와 몬스터 사냥 모두 계산할 수 있어요.',
     rateInput: '드롭률 (%)',
     rateHint: '예: 1/500이면 0.2',
-    killsInput: '사냥(시도) 횟수',
+    killsInput: '시도 횟수 (상자 개수 · 사냥 수)',
     resAtLeastOne: '한 번 이상 얻을 확률',
     resExpected: '기대 획득 개수',
     resNeed50: '50% 확률로 얻으려면',
     resNeed90: '90% 확률로 얻으려면',
     resNeed99: '99% 확률로 얻으려면',
     times: '회',
-    dbHeading: '드롭 확률 데이터',
-    dbLead: '출처가 확인된 드롭률만 올려요. 행을 누르면 계산기에 바로 들어가요.',
+    boxHeading: '넥슨 공식 상자 확률',
+    boxLead: '넥슨이 공지한 글로벌 메이플스토리 클래식 월드 랜덤박스 확률이에요. 아이템을 누르면 계산기에 확률이 들어가요.',
+    boxPost: '넥슨 공지 원문',
+    colChance: '확률',
+    boxUpcoming: '예정 확률',
+    boxSearch: '아이템 이름 검색',
+    monsterHeading: '몬스터 드롭률',
+    monsterNote: '넥슨 공식 확률 페이지에는 랜덤박스 확률만 있고 몬스터 드롭률은 없어요. 그래서 여기에는 출처가 확인된 드롭률만 올려요.',
+    dbHeading: '몬스터 드롭률 데이터',
+    dbLead: '행을 누르면 계산기에 바로 들어가요.',
     dbSearch: '몬스터나 아이템 이름 검색',
     dbEmpty: '아직 출처가 확인된 드롭률이 없어요. 몬스터별 드롭 목록은 사이트 모음의 DB 사이트에서 볼 수 있어요.',
     colMob: '몬스터',
@@ -147,9 +156,9 @@ const T = {
 
     dataUpdated: '데이터 갱신',
     aboutTitle: 'GMS Hub 소개',
-    aboutDesc: 'GMS Hub는 메이플스토리 클래식 월드 유저를 위한 비공식 팬 사이트예요.',
+    aboutDesc: 'GMS Hub는 글로벌 메이플스토리 클래식 월드 유저를 위한 비공식 팬 사이트예요.',
     aboutH1: 'GMS Hub 소개',
-    aboutBody: `<p>GMS Hub는 <strong>메이플스토리 클래식 월드</strong>를 하는 한국어·영어 유저가 필요한 사이트를 빨리 찾을 수 있게 만든 <strong>비공식 팬 사이트</strong>예요.</p>
+    aboutBody: `<p>GMS Hub는 <strong>글로벌 메이플스토리 클래식 월드</strong>를 하는 한국어·영어 유저가 필요한 사이트를 빨리 찾을 수 있게 만든 <strong>비공식 팬 사이트</strong>예요.</p>
 <h2>원칙</h2>
 <ul><li><strong>출처가 확인된 정보만 실어요.</strong> 사이트 설명은 각 사이트가 공개한 소개문과 메뉴에 있는 기능만 옮기고, 숫자에는 출처와 확인 날짜를 붙여요.</li><li>출처끼리 내용이 다르면 둘 다 보여주고, 확인되지 않은 내용은 확인되지 않았다고 적어요.</li><li>수록한 링크는 모두 접속을 확인했어요. 접속이 안 되는 사이트와 현금 거래 사이트는 올리지 않아요.</li></ul>
 <h2>다루는 게임</h2>
@@ -178,19 +187,19 @@ const T = {
     backHome: '홈으로'
   },
   en: {
-    gameName: 'MapleStory Classic World',
-    gameBadge: 'MapleStory Classic World only',
+    gameName: 'Global MapleStory Classic World',
+    gameBadge: 'Global MapleStory Classic World only',
     notice: `All ${SITE_COUNT} listed sites were checked live on ${sites.checked} · Only sourced information`,
     navLinks: 'Site Directory',
     navTraining: 'Training Spots',
     navScroll: 'Scroll Calculator',
-    navDrop: 'Drop Rate',
+    navDrop: 'Odds Calculator',
     navAbout: 'About',
     switchLang: '한국어',
-    homeTitle: 'MapleStory Classic World Sites: Prices, Guides, Boss Timers & Tools | GMS Hub',
-    homeDesc: `Every MapleStory Classic World site in one place: official channels, Discord, Reddit and Korean communities, databases and wikis, Free Market price trackers, boss timers and build planners. ${SITE_COUNT} sites, all checked live.`,
+    homeTitle: 'Global MapleStory Classic World Sites: Prices, Guides, Boss Timers & Tools | GMS Hub',
+    homeDesc: `Every Global MapleStory Classic World site in one place: official channels, Discord, Reddit and Korean communities, databases and wikis, Free Market price trackers, boss timers and build planners. ${SITE_COUNT} sites, all checked live.`,
     heroKicker: 'Your guide to Classic World on the web',
-    heroTitle: 'Every Classic World site,<br>in one place',
+    heroTitle: 'Every Global Classic World site,<br>in one place',
     heroSub: 'From official notices to price trackers, boss timers and build planners, sorted by what you need.',
     searchPlaceholder: 'Search sites (e.g. prices, discord, boss, build)',
     statSites: 'Sites',
@@ -226,8 +235,8 @@ const T = {
     faqHeading: 'FAQ',
     sourcesLabel: 'Sources',
 
-    trTitle: 'MapleStory Classic World Training Spots by Level (3 Sites Compared) | GMS Hub',
-    trDesc: 'Where to train in MapleStory Classic World from level 1 to 80, comparing picks from NiaMeowDB, MS-Classic and Henesys.GG: monster levels, recommended level ranges and EXP per hour.',
+    trTitle: 'Global MapleStory Classic World Training Spots by Level (3 Sites Compared) | GMS Hub',
+    trDesc: 'Where to train in Global MapleStory Classic World from level 1 to 80, comparing picks from NiaMeowDB, MS-Classic and Henesys.GG: monster levels, recommended level ranges and EXP per hour.',
     trH1: 'Training Spot Finder',
     trLead: 'Picks from three sites, merged per map. Maps more sources agree on come first.',
     level: 'My level',
@@ -246,7 +255,7 @@ const T = {
     trSourcesHeading: 'Sources',
     noDate: 'undated',
 
-    scTitle: 'MapleStory Classic World Scroll Calculator: Lesser, Intermediate, Greater & Chaos Odds | GMS Hub',
+    scTitle: 'Global MapleStory Classic World Scroll Calculator: Lesser, Intermediate, Greater & Chaos Odds | GMS Hub',
     scDesc: 'Classic World scroll odds (Lesser 100%, Intermediate 60%, Greater 10%, Chaos 10%): pass distribution, boom chance and expected stat gain.',
     scH1: 'Scroll Calculator',
     scLead: 'Outcome odds using Classic World scroll tiers.',
@@ -274,21 +283,29 @@ const T = {
     colLadder: 'Type',
     colExpected: 'Expected gain per scroll',
 
-    dropTitle: 'MapleStory Classic World Drop Rate Calculator | GMS Hub',
-    dropDesc: 'Find the chance to get an item at least once from a drop rate and number of kills, and how many kills you need for 50%, 90% and 99% odds.',
-    dropH1: 'Drop Rate Calculator',
-    dropLead: '"It\'s a 1% drop — will 100 kills do it?" Find out instantly.',
+    dropTitle: 'Global MapleStory Classic World Drop Rate Calculator & Official Box Rates | GMS Hub',
+    dropDesc: 'Global MapleStory Classic World probability calculator with Nexon\'s official random box rates (Mystery Fashion Crates and more): see how many opens or kills you need.',
+    dropH1: 'Odds Calculator',
+    dropLead: '"It\'s 1% — will 100 tries do it?" Works for box opens and monster kills alike.',
     rateInput: 'Drop rate (%)',
     rateHint: 'e.g. 1 in 500 is 0.2',
-    killsInput: 'Kills (attempts)',
+    killsInput: 'Attempts (boxes opened or kills)',
     resAtLeastOne: 'Chance of at least one',
     resExpected: 'Expected drops',
     resNeed50: 'Kills for 50% odds',
     resNeed90: 'Kills for 90% odds',
     resNeed99: 'Kills for 99% odds',
     times: '',
-    dbHeading: 'Drop Rate Data',
-    dbLead: 'Only drop rates with a confirmed source. Click a row to load it into the calculator.',
+    boxHeading: 'Official Nexon Box Rates',
+    boxLead: 'Random box rates Nexon has published for Global MapleStory Classic World. Click an item to load its rate into the calculator.',
+    boxPost: 'Nexon notice',
+    colChance: 'Rate',
+    boxUpcoming: 'Upcoming rates',
+    boxSearch: 'Search items',
+    monsterHeading: 'Monster Drop Rates',
+    monsterNote: 'Nexon\'s official rates page lists random box rates only, with no monster drop rates, so we only add drop rates with a confirmed source.',
+    dbHeading: 'Monster Drop Rate Data',
+    dbLead: 'Click a row to load it into the calculator.',
     dbSearch: 'Search monster or item',
     dbEmpty: 'No sourced drop rates yet. Monster drop lists are on the database sites in the directory.',
     colMob: 'Monster',
@@ -305,9 +322,9 @@ const T = {
 
     dataUpdated: 'Data updated',
     aboutTitle: 'About GMS Hub',
-    aboutDesc: 'GMS Hub is an unofficial fan site for MapleStory Classic World players.',
+    aboutDesc: 'GMS Hub is an unofficial fan site for Global MapleStory Classic World players.',
     aboutH1: 'About GMS Hub',
-    aboutBody: `<p>GMS Hub is an <strong>unofficial fan site</strong> that helps English- and Korean-speaking <strong>MapleStory Classic World</strong> players find the right site fast.</p>
+    aboutBody: `<p>GMS Hub is an <strong>unofficial fan site</strong> that helps English- and Korean-speaking <strong>Global MapleStory Classic World</strong> players find the right site fast.</p>
 <h2>Principles</h2>
 <ul><li><strong>Only sourced information.</strong> Site descriptions come from each site's own blurb and menus, and every number carries its source and check date.</li><li>When sources disagree we show both, and anything unconfirmed is labeled as such.</li><li>Every listed link was checked live. We never list dead or real-money trading sites.</li></ul>
 <h2>Which game</h2>
@@ -685,8 +702,33 @@ function dropBody(lang) {
 </div>
 </div>
 </div>
+<section id="boxes">
+<h2>${t.boxHeading}</h2>
+<p class="muted">${esc(t.boxLead)}</p>
+<nav class="chips box-tabs" role="tablist">${boxes.boxes
+    .map((bx, i) => `<button type="button" class="chip" role="tab" data-box="${bx.id}" aria-selected="${i === 0}">${esc(bx.name)}</button>`)
+    .join('')}</nav>
+${boxes.boxes
+  .map(
+    (bx, i) => `<div class="box-panel" data-box-panel="${bx.id}"${i === 0 ? '' : ' hidden'}>
+${bx.tables
+  .map(
+    (tb) => `<h3>${esc(tb.title)}${tb.phase === 'upcoming' ? ` <span class="badge-game">${t.boxUpcoming}</span>` : ''}</h3>
+${tb.phase === 'upcoming' && bx.effective ? `<p class="muted small">${esc(bx.effective)}</p>` : ''}
+<div class="table-wrap"><table class="data clickable box-table"><thead><tr><th>${t.colItem}</th><th>${t.colChance}</th></tr></thead><tbody>${tb.items
+      .map((it) => `<tr data-rate="${it.rate}" data-search="${esc(it.name.toLowerCase())}" tabindex="0"><td>${esc(it.name)}</td><td>${it.rate}%</td></tr>`)
+      .join('')}</tbody></table></div>`
+  )
+  .join('')}
+<p class="src">${t.sourcesLabel}: ${srcLink(bx.url, `${t.boxPost} (${bx.name})`)}</p>
+</div>`
+  )
+  .join('')}
+<p class="muted small">${esc(boxes.note[lang])} · ${srcLink(boxes.source, 'nexon.com')} · ${t.dataUpdated}: ${esc(boxes.updated)}</p>
+</section>
 <section>
-<h2>${t.dbHeading}</h2>
+<h2>${t.monsterHeading}</h2>
+<p class="muted">${esc(t.monsterNote)}</p>
 <p class="muted">${esc(t.dbLead)}</p>
 <input id="db-search" class="search-small" type="search" placeholder="${esc(t.dbSearch)}" aria-label="${esc(t.dbSearch)}">
 <div class="table-wrap"><table class="data clickable" id="drop-db"><thead><tr><th>${t.colMob}</th><th>${t.colItem}</th><th>${t.colRate}</th><th>${t.colSource}</th><th>${t.colNote}</th></tr></thead><tbody>${rows}</tbody></table></div>
@@ -794,7 +836,7 @@ write(
 <main class="wrap center">
 ${spriteSvg('mushroom', 64)}
 <h1>GMS Hub</h1>
-<p class="muted">MapleStory Classic World · 메이플스토리 클래식 월드</p>
+<p class="muted">Global MapleStory Classic World · 글로벌 메이플스토리 클래식 월드</p>
 <p class="choice"><a class="btn" href="${href('/ko/')}" data-lang="ko">한국어</a> <a class="btn ghost" href="${href('/en/')}" data-lang="en">English</a></p>
 </main>
 <script>

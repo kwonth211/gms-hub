@@ -10,8 +10,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const sites = JSON.parse(fs.readFileSync(path.join(root, 'data/sites.json'), 'utf8'));
 const count = sites.categories.reduce((n, c) => n + c.sites.length, 0);
 const copy = {
-  ko: { title: '클래식 월드 사이트,<br>여기서 다 찾으세요', sub: `시세 · 보스 타이머 · 빌드 플래너 · 커뮤니티 ${count}곳`, badge: '메이플스토리 클래식 월드' },
-  en: { title: 'Every Classic World site,<br>in one place', sub: `Prices · Boss timers · Build planners · ${count} sites`, badge: 'MapleStory Classic World' }
+  ko: { title: '글로벌 클래식 메이플 사이트,<br>여기서 다 찾으세요', sub: `시세 · 보스 타이머 · 빌드 플래너 · 커뮤니티 ${count}곳`, badge: '글로벌 메이플스토리 클래식 월드' },
+  en: { title: 'Every Global Classic World site,<br>in one place', sub: `Prices · Boss timers · Build planners · ${count} sites`, badge: 'Global MapleStory Classic World' }
 };
 const css = fs.readFileSync(path.join(root, 'assets/style.css'), 'utf8');
 

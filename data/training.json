@@ -168,18 +168,6 @@
    "meowdbExpHr": null
   },
   {
-   "map": "Henesys Hunting Grounds",
-   "monsters": [],
-   "recs": [
-    {
-     "source": "msclassic",
-     "min": 10,
-     "max": 14
-    }
-   ],
-   "meowdbExpHr": null
-  },
-  {
    "map": "The Rain-Forest East of Henesys",
    "monsters": [
     {

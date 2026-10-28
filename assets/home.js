@@ -83,7 +83,6 @@ function setCategory(id) {
     document.getElementById('filter-label').textContent = main.dataset.filtering.replace('{name}', name);
   }
   filter();
-  if (activeCat) document.querySelector('.directory').scrollIntoView({ behavior: 'smooth' });
 }
 
 document.querySelectorAll('.purpose').forEach((b) => b.addEventListener('click', () => setCategory(b.dataset.filter)));

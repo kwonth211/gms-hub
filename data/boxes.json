@@ -1,0 +1,1085 @@
+{
+ "updated": "2026-10-28",
+ "source": "https://www.nexon.com/maplestory/game/random-box-rates#classicWorld",
+ "note": {
+  "ko": "넥슨 공식 확률 공지를 그대로 옮겼어요. 넥슨 안내에 따르면 표시된 확률은 반올림되어 합계가 정확히 100%가 아닐 수 있어요.",
+  "en": "Copied from Nexon's official rate notices. Per Nexon, displayed percentages are rounded and may not sum to exactly 100%."
+ },
+ "boxes": [
+  {
+   "id": 46331,
+   "name": "Mystery Fashion Crate",
+   "url": "https://www.nexon.com/maplestory/general-post/46331",
+   "effective": null,
+   "tables": [
+    {
+     "title": "Mystery Fashion Crate",
+     "phase": "current",
+     "items": [
+      {
+       "name": "Starred Hunting Hat",
+       "rate": 2.0
+      },
+      {
+       "name": "Black Blazer",
+       "rate": 1.0
+      },
+      {
+       "name": "Blue Frill Blouse",
+       "rate": 2.0
+      },
+      {
+       "name": "Blue Bell Dress",
+       "rate": 2.0
+      },
+      {
+       "name": "Black Suit Pants",
+       "rate": 1.0
+      },
+      {
+       "name": "Frameless Glasses",
+       "rate": 1.0
+      },
+      {
+       "name": "Gentleman's Mustache",
+       "rate": 1.0
+      },
+      {
+       "name": "Black Dress Shoes",
+       "rate": 2.5
+      },
+      {
+       "name": "Cute Mouse Ears",
+       "rate": 1.0
+      },
+      {
+       "name": "Superstar Hoodie",
+       "rate": 1.0
+      },
+      {
+       "name": "Black \"Hit Me\" Shirt",
+       "rate": 1.5
+      },
+      {
+       "name": "Black Classic Sneakers",
+       "rate": 2.5
+      },
+      {
+       "name": "Green Camping Hat",
+       "rate": 3.0
+      },
+      {
+       "name": "Green Camping Shirt",
+       "rate": 3.0
+      },
+      {
+       "name": "Green Camping Shorts",
+       "rate": 3.0
+      },
+      {
+       "name": "Camping Boots",
+       "rate": 3.0
+      },
+      {
+       "name": "Ragged Top",
+       "rate": 1.0
+      },
+      {
+       "name": "Torn-up Jeans",
+       "rate": 1.0
+      },
+      {
+       "name": "Crusader T-Shirt",
+       "rate": 2.5
+      },
+      {
+       "name": "Black Cardigan Set",
+       "rate": 2.5
+      },
+      {
+       "name": "Heart Balloon",
+       "rate": 1.0
+      },
+      {
+       "name": "Puffy Brown Hat",
+       "rate": 2.5
+      },
+      {
+       "name": "Orange Hooded Vest",
+       "rate": 2.5
+      },
+      {
+       "name": "Plastic Slingshot",
+       "rate": 2.0
+      },
+      {
+       "name": "White Beanie",
+       "rate": 2.5
+      },
+      {
+       "name": "White Casual Suit",
+       "rate": 2.5
+      },
+      {
+       "name": "Faded Bell-Bottom Jeans",
+       "rate": 2.5
+      },
+      {
+       "name": "Washed Jeans",
+       "rate": 2.5
+      },
+      {
+       "name": "Race Ace Cap",
+       "rate": 1.0
+      },
+      {
+       "name": "Race Ace Suit",
+       "rate": 2.5
+      },
+      {
+       "name": "Race Queen Uniform",
+       "rate": 2.5
+      },
+      {
+       "name": "Race Queen Boots",
+       "rate": 2.5
+      },
+      {
+       "name": "Detective Hat",
+       "rate": 2.5
+      },
+      {
+       "name": "Premium Trenchcoat",
+       "rate": 2.5
+      },
+      {
+       "name": "Wild Pants",
+       "rate": 2.5
+      },
+      {
+       "name": "Brown Dress Shoes",
+       "rate": 2.5
+      },
+      {
+       "name": "Beige Checkered Hat",
+       "rate": 2.5
+      },
+      {
+       "name": "Kitty Camping Hat",
+       "rate": 2.5
+      },
+      {
+       "name": "Brown Casual Look",
+       "rate": 2.5
+      },
+      {
+       "name": "Orange Hard-Rimmed Glasses",
+       "rate": 1.0
+      },
+      {
+       "name": "Michael Wings",
+       "rate": 1.0
+      },
+      {
+       "name": "Silver Earrings",
+       "rate": 1.0
+      },
+      {
+       "name": "Stylish Pink Cotton Cap",
+       "rate": 1.0
+      },
+      {
+       "name": "Cherry Layered T",
+       "rate": 2.5
+      },
+      {
+       "name": "Buddy Overall Jeans (Blue)",
+       "rate": 2.0
+      },
+      {
+       "name": "Buddy Overall Jeans (Red)",
+       "rate": 2.0
+      },
+      {
+       "name": "Denim Wrinkled Skirt",
+       "rate": 2.5
+      },
+      {
+       "name": "Green Overall",
+       "rate": 2.0
+      },
+      {
+       "name": "Velcro High Tops",
+       "rate": 2.5
+      },
+      {
+       "name": "Toy Rifle",
+       "rate": 1.0
+      }
+     ],
+     "sum": 100.0
+    }
+   ]
+  },
+  {
+   "id": 46524,
+   "name": "Halloween Mystery Fashion Crate",
+   "url": "https://www.nexon.com/maplestory/general-post/46524",
+   "effective": null,
+   "tables": [
+    {
+     "title": "Halloween Mystery Fashion Crate",
+     "phase": "current",
+     "items": [
+      {
+       "name": "Tiger Mask",
+       "rate": 2.0
+      },
+      {
+       "name": "Prisoner Top",
+       "rate": 2.0
+      },
+      {
+       "name": "Prisoner Pants",
+       "rate": 2.0
+      },
+      {
+       "name": "Brown Bandage",
+       "rate": 2.0
+      },
+      {
+       "name": "Scream Mask",
+       "rate": 3.0
+      },
+      {
+       "name": "Skull T-Shirt",
+       "rate": 2.0
+      },
+      {
+       "name": "Bone Buckled Slacks",
+       "rate": 3.0
+      },
+      {
+       "name": "Skull Beanie",
+       "rate": 3.0
+      },
+      {
+       "name": "Dark Suit",
+       "rate": 3.0
+      },
+      {
+       "name": "Dark Enamel Suit",
+       "rate": 3.0
+      },
+      {
+       "name": "Black Leather Boots",
+       "rate": 3.0
+      },
+      {
+       "name": "Black Bandage",
+       "rate": 2.0
+      },
+      {
+       "name": "Skull Patch",
+       "rate": 1.0
+      },
+      {
+       "name": "Grey Skull Overall",
+       "rate": 2.5
+      },
+      {
+       "name": "Red Skull Overall",
+       "rate": 2.5
+      },
+      {
+       "name": "Skull Gloves",
+       "rate": 2.0
+      },
+      {
+       "name": "Black Coat of Death",
+       "rate": 2.0
+      },
+      {
+       "name": "Ghost Suit",
+       "rate": 2.0
+      },
+      {
+       "name": "Black Shoes of Death",
+       "rate": 3.0
+      },
+      {
+       "name": "Hat of Death",
+       "rate": 2.0
+      },
+      {
+       "name": "Ragged Gomushin",
+       "rate": 2.0
+      },
+      {
+       "name": "Witch Hat",
+       "rate": 2.0
+      },
+      {
+       "name": "Ghost Costume",
+       "rate": 3.0
+      },
+      {
+       "name": "Witch Clothes",
+       "rate": 2.0
+      },
+      {
+       "name": "Witch's Broomstick",
+       "rate": 1.0
+      },
+      {
+       "name": "Gargoyle Wings",
+       "rate": 1.0
+      },
+      {
+       "name": "Battle Scar",
+       "rate": 1.0
+      },
+      {
+       "name": "Mummy Hat",
+       "rate": 2.0
+      },
+      {
+       "name": "Mummy Suit",
+       "rate": 2.0
+      },
+      {
+       "name": "Mummy Mask",
+       "rate": 2.0
+      },
+      {
+       "name": "White Bandage",
+       "rate": 2.0
+      },
+      {
+       "name": "Devil Wings",
+       "rate": 1.0
+      },
+      {
+       "name": "Blue Chinese Undead Hat",
+       "rate": 2.0
+      },
+      {
+       "name": "Blue Chinese Undead Costume",
+       "rate": 2.0
+      },
+      {
+       "name": "Maple-Stein Head",
+       "rate": 2.0
+      },
+      {
+       "name": "Maple-Stein Face",
+       "rate": 2.0
+      },
+      {
+       "name": "Demon Goblin",
+       "rate": 1.0
+      },
+      {
+       "name": "Pumpkin Hat",
+       "rate": 2.0
+      },
+      {
+       "name": "Pumpkin Headgear",
+       "rate": 2.0
+      },
+      {
+       "name": "Pumpkin Suit",
+       "rate": 2.0
+      },
+      {
+       "name": "Glowing Pumpkin Basket",
+       "rate": 2.0
+      },
+      {
+       "name": "Evil Skull",
+       "rate": 1.0
+      },
+      {
+       "name": "Cat Soul",
+       "rate": 1.0
+      },
+      {
+       "name": "Devilish Horns",
+       "rate": 2.0
+      },
+      {
+       "name": "Devil Horns",
+       "rate": 2.0
+      },
+      {
+       "name": "Dark Devil Hat",
+       "rate": 2.0
+      },
+      {
+       "name": "Coffin of Gloom",
+       "rate": 2.0
+      },
+      {
+       "name": "Count Dracula Cape",
+       "rate": 1.0
+      },
+      {
+       "name": "Iljimae Mask",
+       "rate": 2.0
+      },
+      {
+       "name": "Stealth Suit",
+       "rate": 2.0
+      }
+     ],
+     "sum": 100.0
+    }
+   ]
+  },
+  {
+   "id": 45538,
+   "name": "Founder's Mystery Fashion Crate",
+   "url": "https://www.nexon.com/maplestory/general-post/45538",
+   "effective": null,
+   "tables": [
+    {
+     "title": "Founder's Mystery Fashion Crate",
+     "phase": "current",
+     "items": [
+      {
+       "name": "Angel Halo",
+       "rate": 1.0
+      },
+      {
+       "name": "Toga",
+       "rate": 1.0
+      },
+      {
+       "name": "Baby Angel Wings",
+       "rate": 1.0
+      },
+      {
+       "name": "Angel Wand",
+       "rate": 1.0
+      },
+      {
+       "name": "Cherub's Bow",
+       "rate": 1.0
+      },
+      {
+       "name": "Blue Cap",
+       "rate": 2.0
+      },
+      {
+       "name": "Orange Baseball Jacket",
+       "rate": 2.5
+      },
+      {
+       "name": "Rainbow Knit",
+       "rate": 2.5
+      },
+      {
+       "name": "Ripped Jeans",
+       "rate": 2.5
+      },
+      {
+       "name": "Orange Toy Hammer",
+       "rate": 1.0
+      },
+      {
+       "name": "Blue Bucket Hat",
+       "rate": 2.5
+      },
+      {
+       "name": "Tourist T",
+       "rate": 2.5
+      },
+      {
+       "name": "White Jeans",
+       "rate": 2.5
+      },
+      {
+       "name": "Black Sunglasses",
+       "rate": 1.0
+      },
+      {
+       "name": "Cat Hat",
+       "rate": 2.5
+      },
+      {
+       "name": "Cat Suit",
+       "rate": 2.5
+      },
+      {
+       "name": "Gold Kitty Slippers",
+       "rate": 2.5
+      },
+      {
+       "name": "Kitty Chat Ring",
+       "rate": 2.5
+      },
+      {
+       "name": "Meshcap",
+       "rate": 2.5
+      },
+      {
+       "name": "Pink Allstar",
+       "rate": 2.5
+      },
+      {
+       "name": "Jean Shorts",
+       "rate": 2.5
+      },
+      {
+       "name": "Beret",
+       "rate": 2.5
+      },
+      {
+       "name": "Red Sailor Shirt",
+       "rate": 2.5
+      },
+      {
+       "name": "Red Sailor Skirt",
+       "rate": 2.5
+      },
+      {
+       "name": "Black Enamel Shoes",
+       "rate": 2.5
+      },
+      {
+       "name": "Patissier Hat",
+       "rate": 3.0
+      },
+      {
+       "name": "Patissier Uniform",
+       "rate": 3.0
+      },
+      {
+       "name": "Yellow Spatula",
+       "rate": 1.0
+      },
+      {
+       "name": "Bunny Ears",
+       "rate": 1.0
+      },
+      {
+       "name": "Bunny Earmuffs",
+       "rate": 1.0
+      },
+      {
+       "name": "Orange Mushroom Balloon",
+       "rate": 1.0
+      },
+      {
+       "name": "Blue Watch",
+       "rate": 2.5
+      },
+      {
+       "name": "Red Trainer Jacket",
+       "rate": 2.5
+      },
+      {
+       "name": "Red Trainer Pants",
+       "rate": 2.5
+      },
+      {
+       "name": "Yellow Rainbow Sneaks",
+       "rate": 2.5
+      },
+      {
+       "name": "Dollish Pink",
+       "rate": 1.0
+      },
+      {
+       "name": "Purple Dorothy Dress",
+       "rate": 2.5
+      },
+      {
+       "name": "Sailor Hat",
+       "rate": 2.0
+      },
+      {
+       "name": "Sailor Outfit",
+       "rate": 2.0
+      },
+      {
+       "name": "White Ribboned Sailor Dress",
+       "rate": 2.0
+      },
+      {
+       "name": "Slime T-Shirt",
+       "rate": 1.0
+      },
+      {
+       "name": "Slime Slippers",
+       "rate": 1.0
+      },
+      {
+       "name": "Slime Earrings",
+       "rate": 1.0
+      },
+      {
+       "name": "Reggae Hat",
+       "rate": 2.5
+      },
+      {
+       "name": "Orange Hooded Shirt",
+       "rate": 2.5
+      },
+      {
+       "name": "White Hooded Vest",
+       "rate": 2.5
+      },
+      {
+       "name": "Butterfly Skirt",
+       "rate": 2.5
+      },
+      {
+       "name": "Beetle Long Sleeve",
+       "rate": 2.5
+      },
+      {
+       "name": "Lined Hip-Hop Pants",
+       "rate": 2.5
+      },
+      {
+       "name": "White Label Ring",
+       "rate": 1.0
+      }
+     ],
+     "sum": 100.0
+    }
+   ]
+  },
+  {
+   "id": 45659,
+   "name": "Aurora Mystery Fashion Crate",
+   "url": "https://www.nexon.com/maplestory/general-post/45659",
+   "effective": null,
+   "tables": [
+    {
+     "title": "Aurora Mystery Fashion Crate",
+     "phase": "current",
+     "items": [
+      {
+       "name": "White Choco Bunny",
+       "rate": 1.5
+      },
+      {
+       "name": "Splash Choco Boy",
+       "rate": 2.5
+      },
+      {
+       "name": "Splash Choco Girl",
+       "rate": 2.5
+      },
+      {
+       "name": "Cacao Bear Shoes",
+       "rate": 2.5
+      },
+      {
+       "name": "Chocolate Ribbon",
+       "rate": 2.5
+      },
+      {
+       "name": "Soft Chocolate Fondue Scepter",
+       "rate": 1.5
+      },
+      {
+       "name": "Choco Candy Cookie",
+       "rate": 2.0
+      },
+      {
+       "name": "Black Cat Beanie",
+       "rate": 5.0
+      },
+      {
+       "name": "Sky Blue Cat Beanie",
+       "rate": 5.0
+      },
+      {
+       "name": "Orange Cat Beanie",
+       "rate": 5.0
+      },
+      {
+       "name": "Heart Sunglasses",
+       "rate": 5.0
+      },
+      {
+       "name": "Red Check Rider",
+       "rate": 5.0
+      },
+      {
+       "name": "Violet Dot Jeans",
+       "rate": 5.0
+      },
+      {
+       "name": "Pink Bunny Sweater",
+       "rate": 5.0
+      },
+      {
+       "name": "Hearts Tights",
+       "rate": 5.0
+      },
+      {
+       "name": "Pink Elephant Slippers",
+       "rate": 5.0
+      },
+      {
+       "name": "Loose Fit Sweater",
+       "rate": 4.5
+      },
+      {
+       "name": "Stocking Shorts",
+       "rate": 4.5
+      },
+      {
+       "name": "Detective Glass",
+       "rate": 2.0
+      },
+      {
+       "name": "Blank Eye Patch",
+       "rate": 2.0
+      },
+      {
+       "name": "Heartbreaker Lips",
+       "rate": 2.0
+      },
+      {
+       "name": "Starlight Heart Scepter",
+       "rate": 2.0
+      },
+      {
+       "name": "Ink-and-Wash Thought Bubble Ring",
+       "rate": 5.75
+      },
+      {
+       "name": "Ink-and-Wash Painting Name Tag Ring",
+       "rate": 5.75
+      },
+      {
+       "name": "Chocolate Label Ring",
+       "rate": 5.75
+      },
+      {
+       "name": "Chocolate Chat Ring",
+       "rate": 5.75
+      }
+     ],
+     "sum": 100.0
+    }
+   ]
+  },
+  {
+   "id": 44219,
+   "name": "Signature Style Collection",
+   "url": "https://www.nexon.com/maplestory/general-post/44219",
+   "effective": null,
+   "tables": [
+    {
+     "title": "Signature Style Collection",
+     "phase": "current",
+     "items": [
+      {
+       "name": "Frieren Outfit Set Coupon",
+       "rate": 1.5
+      },
+      {
+       "name": "Frieren Outfit Set (Ringlets) Coupon",
+       "rate": 1.5
+      },
+      {
+       "name": "Frieren Outfit Set (Sleep) Coupon",
+       "rate": 1.5
+      },
+      {
+       "name": "Himmel Outfit Set Coupon",
+       "rate": 2.5
+      },
+      {
+       "name": "Fern Outfit Set Coupon",
+       "rate": 7.0
+      },
+      {
+       "name": "Übel Outfit Set Coupon",
+       "rate": 8.0
+      },
+      {
+       "name": "Stark Outfit Set Coupon",
+       "rate": 8.0
+      },
+      {
+       "name": "Aura Outfit Set Coupon",
+       "rate": 20.0
+      },
+      {
+       "name": "Linie Outfit Set Coupon",
+       "rate": 20.0
+      },
+      {
+       "name": "Lügner Outfit Set Coupon",
+       "rate": 30.0
+      }
+     ],
+     "sum": 100.0
+    }
+   ]
+  },
+  {
+   "id": 45537,
+   "name": "Mystery Hair & Face Coupons",
+   "url": "https://www.nexon.com/maplestory/general-post/45537",
+   "effective": "The below rates and rewards will take effect on Wednesday, October 28 at 8:00 AM UTC. Please note that the displayed percentages are rounded, and the total sum of all rates may not add up to exactly 100%.",
+   "tables": [
+    {
+     "title": "Male Hair Styles",
+     "phase": "current",
+     "items": [
+      {
+       "name": "Bed Head Hair",
+       "rate": 16.67
+      },
+      {
+       "name": "Prince Cut Hair",
+       "rate": 16.67
+      },
+      {
+       "name": "Short Regent Cut",
+       "rate": 16.67
+      },
+      {
+       "name": "Dreamcatcher",
+       "rate": 16.67
+      },
+      {
+       "name": "Metrosexual Hair",
+       "rate": 16.67
+      },
+      {
+       "name": "Antagonist",
+       "rate": 16.67
+      }
+     ],
+     "sum": 100.02
+    },
+    {
+     "title": "Female Hair Styles",
+     "phase": "current",
+     "items": [
+      {
+       "name": "Lovely Ladyhawk",
+       "rate": 16.67
+      },
+      {
+       "name": "Ponytail-to-the-Side",
+       "rate": 16.67
+      },
+      {
+       "name": "Vivacious Wavy Hair",
+       "rate": 16.67
+      },
+      {
+       "name": "Angelica Hair",
+       "rate": 16.67
+      },
+      {
+       "name": "Caspia Hair",
+       "rate": 16.67
+      },
+      {
+       "name": "Rose",
+       "rate": 16.67
+      }
+     ],
+     "sum": 100.02
+    },
+    {
+     "title": "Male Face Styles",
+     "phase": "current",
+     "items": [
+      {
+       "name": "Innocent Gaze",
+       "rate": 16.67
+      },
+      {
+       "name": "Distant Gaze",
+       "rate": 16.67
+      },
+      {
+       "name": "Rebel's Fire",
+       "rate": 16.67
+      },
+      {
+       "name": "Worrisome Glare",
+       "rate": 16.67
+      },
+      {
+       "name": "Alert Face",
+       "rate": 16.67
+      },
+      {
+       "name": "Overjoyed Smile",
+       "rate": 16.67
+      }
+     ],
+     "sum": 100.02
+    },
+    {
+     "title": "Female Face Styles",
+     "phase": "current",
+     "items": [
+      {
+       "name": "Prim Face",
+       "rate": 16.67
+      },
+      {
+       "name": "Posh Look",
+       "rate": 16.67
+      },
+      {
+       "name": "Bulbous-Eyed Face",
+       "rate": 16.67
+      },
+      {
+       "name": "Round Eyed Face",
+       "rate": 16.67
+      },
+      {
+       "name": "Beauty Stare",
+       "rate": 16.67
+      },
+      {
+       "name": "Strong Stare",
+       "rate": 16.67
+      }
+     ],
+     "sum": 100.02
+    },
+    {
+     "title": "Male Hair Styles",
+     "phase": "upcoming",
+     "items": [
+      {
+       "name": "Angelcakes Hair",
+       "rate": 16.67
+      },
+      {
+       "name": "Super Tuft Hair",
+       "rate": 16.67
+      },
+      {
+       "name": "Wild Tangles Hair",
+       "rate": 16.67
+      },
+      {
+       "name": "Natural",
+       "rate": 16.67
+      },
+      {
+       "name": "Casanova",
+       "rate": 16.67
+      },
+      {
+       "name": "Roving Rockstar",
+       "rate": 16.67
+      }
+     ],
+     "sum": 100.02
+    },
+    {
+     "title": "Female Hair Styles",
+     "phase": "upcoming",
+     "items": [
+      {
+       "name": "Fluffy Pigtails",
+       "rate": 16.67
+      },
+      {
+       "name": "Romantic Braid Hair",
+       "rate": 16.67
+      },
+      {
+       "name": "Grace Hair",
+       "rate": 16.67
+      },
+      {
+       "name": "Onna's Honor",
+       "rate": 16.67
+      },
+      {
+       "name": "Francesca",
+       "rate": 16.67
+      },
+      {
+       "name": "Cecelia Twist",
+       "rate": 16.67
+      }
+     ],
+     "sum": 100.02
+    },
+    {
+     "title": "Male Face Styles",
+     "phase": "upcoming",
+     "items": [
+      {
+       "name": "Crystal Face",
+       "rate": 16.67
+      },
+      {
+       "name": "Puppy Eyes Face",
+       "rate": 16.67
+      },
+      {
+       "name": "Curious Dog",
+       "rate": 16.67
+      },
+      {
+       "name": "Dramatic Face",
+       "rate": 16.67
+      },
+      {
+       "name": "Ghostface Stare",
+       "rate": 16.67
+      },
+      {
+       "name": "Sad Innocence",
+       "rate": 16.67
+      }
+     ],
+     "sum": 100.02
+    },
+    {
+     "title": "Female Face Styles",
+     "phase": "upcoming",
+     "items": [
+      {
+       "name": "Tender Love",
+       "rate": 16.67
+      },
+      {
+       "name": "Pure Gaze",
+       "rate": 16.67
+      },
+      {
+       "name": "Bright Eyes",
+       "rate": 16.67
+      },
+      {
+       "name": "Existentially Tired Face",
+       "rate": 16.67
+      },
+      {
+       "name": "Lazy Look",
+       "rate": 16.67
+      },
+      {
+       "name": "Innocent Look",
+       "rate": 16.67
+      }
+     ],
+     "sum": 100.02
+    }
+   ]
+  }
+ ]
+}

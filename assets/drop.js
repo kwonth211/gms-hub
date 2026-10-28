@@ -26,16 +26,24 @@ form.addEventListener('input', render);
 render();
 
 const table = document.getElementById('drop-db');
-table.addEventListener('click', (e) => {
+// Any rate row (monster drops or official box rates) loads into the calculator.
+document.addEventListener('click', (e) => {
   const row = e.target.closest('tr[data-rate]');
   if (!row || e.target.closest('a')) return;
   form.rate.value = row.dataset.rate;
   render();
   form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
-table.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') e.target.closest('tr[data-rate]')?.click();
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') e.target.closest?.('tr[data-rate]')?.click();
 });
+
+document.querySelectorAll('[data-box]').forEach((tab) =>
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('[data-box]').forEach((t) => t.setAttribute('aria-selected', String(t === tab)));
+    document.querySelectorAll('[data-box-panel]').forEach((p) => (p.hidden = p.dataset.boxPanel !== tab.dataset.box));
+  })
+);
 
 const search = document.getElementById('db-search');
 search.addEventListener('input', () => {
