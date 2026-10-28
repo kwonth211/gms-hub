@@ -51,6 +51,8 @@ const T = {
     toc: '카테고리',
     sitesUnit: '곳',
     visit: '바로가기',
+    showAll: '전체 보기',
+    filtering: '{name}만 보는 중',
     favHeading: '즐겨찾기',
     favDesc: '별(☆)을 누른 사이트가 여기 모여요. 이 브라우저에만 저장돼요.',
     favAdd: '즐겨찾기에 추가',
@@ -207,6 +209,8 @@ const T = {
     toc: 'Categories',
     sitesUnit: '',
     visit: 'Visit',
+    showAll: 'Show all',
+    filtering: 'Showing {name} only',
     favHeading: 'Favorites',
     favDesc: 'Sites you star (☆) gather here. Saved in this browser only.',
     favAdd: 'Add to favorites',
@@ -492,7 +496,7 @@ function homeBody(lang) {
   const purposes = cats
     .map(
       (c) =>
-        `<a class="purpose" href="#${c.id}">${spriteSvg(c.icon, 36)}<span>${esc(t.purposes[c.id])}</span><small>${esc(c.name[lang])} · ${c.sites.length}${t.sitesUnit}</small></a>`
+        `<button class="purpose" type="button" data-filter="${c.id}" aria-pressed="false">${spriteSvg(c.icon, 36)}<span>${esc(t.purposes[c.id])}</span><small>${esc(c.name[lang])} · ${c.sites.length}${t.sitesUnit}</small></button>`
     )
     .join('');
   const toc = cats
@@ -500,7 +504,7 @@ function homeBody(lang) {
     .join('');
   const sections = cats
     .map(
-      (c) => `<section class="cat" id="${c.id}" data-cat>
+      (c) => `<section class="cat" id="${c.id}" data-cat data-name="${esc(c.name[lang])}">
 <header class="cat-head">${spriteSvg(c.icon, 40)}<div><h3>${esc(c.name[lang])} <span>${c.sites.length}</span></h3><p>${esc(c.desc[lang])}</p></div></header>
 <div class="cards">${c.sites.map((s) => siteCard(lang, s)).join('')}</div>
 </section>`
@@ -534,7 +538,8 @@ ${heroScene()}
 </section>
 <div class="wrap directory">
 <aside class="toc"><nav><h2>${t.toc}</h2><a href="#favorites" id="fav-toc" hidden>${spriteSvg('star', 20)}<span>${t.favHeading}</span><b id="fav-count">0</b></a>${toc}</nav></aside>
-<div class="dir-main" data-fav-add="${esc(t.favAdd)}" data-fav-remove="${esc(t.favRemove)}">
+<div class="dir-main" data-fav-add="${esc(t.favAdd)}" data-fav-remove="${esc(t.favRemove)}" data-filtering="${esc(t.filtering)}">
+<p class="filter-bar" id="filter-bar" hidden><span id="filter-label"></span> <button type="button" class="btn ghost small-btn" id="filter-clear">${t.showAll}</button></p>
 <section class="cat favorites" id="favorites" hidden>
 <header class="cat-head">${spriteSvg('star', 40)}<div><h3>${t.favHeading} <span id="fav-count-2">0</span></h3><p>${esc(t.favDesc)}</p></div></header>
 <div class="cards" id="fav-cards"></div>

@@ -6,6 +6,8 @@ const favToc = document.getElementById('fav-toc');
 const empty = document.getElementById('no-results');
 const originals = [...document.querySelectorAll('[data-cat] .site-card')];
 const FAV_KEY = 'gmshub_favs';
+const filterBar = document.getElementById('filter-bar');
+let activeCat = null;
 
 // Favorites live only in this browser; storage can be unavailable (private mode), so fail soft.
 function loadFavs() {
@@ -62,13 +64,30 @@ function filter() {
   document.querySelectorAll('.site-card').forEach((c) => (c.hidden = q !== '' && !c.dataset.search.includes(q)));
   let any = false;
   document.querySelectorAll('[data-cat]').forEach((cat) => {
-    const visible = [...cat.querySelectorAll('.site-card')].some((c) => !c.hidden);
+    const visible = (!activeCat || cat.id === activeCat) && [...cat.querySelectorAll('.site-card')].some((c) => !c.hidden);
     cat.hidden = !visible;
     any ||= visible;
   });
-  if (favCards.children.length) favSection.hidden = ![...favCards.children].some((c) => !c.hidden);
+  // Favorites stay out of the way while a single category is selected.
+  if (favCards.children.length) favSection.hidden = !!activeCat || ![...favCards.children].some((c) => !c.hidden);
   empty.hidden = any;
 }
+
+function setCategory(id) {
+  activeCat = activeCat === id ? null : id;
+  document.querySelectorAll('.purpose').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === activeCat)));
+  document.querySelectorAll('.toc a[href^="#"]').forEach((a) => a.classList.toggle('active', a.getAttribute('href') === `#${activeCat}`));
+  filterBar.hidden = !activeCat;
+  if (activeCat) {
+    const name = document.getElementById(activeCat).dataset.name;
+    document.getElementById('filter-label').textContent = main.dataset.filtering.replace('{name}', name);
+  }
+  filter();
+  if (activeCat) document.querySelector('.directory').scrollIntoView({ behavior: 'smooth' });
+}
+
+document.querySelectorAll('.purpose').forEach((b) => b.addEventListener('click', () => setCategory(b.dataset.filter)));
+document.getElementById('filter-clear').addEventListener('click', () => setCategory(activeCat));
 
 input.addEventListener('input', filter);
 const q = new URLSearchParams(location.search).get('q');
