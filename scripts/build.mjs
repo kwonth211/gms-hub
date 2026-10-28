@@ -51,6 +51,10 @@ const T = {
     toc: '카테고리',
     sitesUnit: '곳',
     visit: '바로가기',
+    favHeading: '즐겨찾기',
+    favDesc: '별(☆)을 누른 사이트가 여기 모여요. 이 브라우저에만 저장돼요.',
+    favAdd: '즐겨찾기에 추가',
+    favRemove: '즐겨찾기에서 빼기',
     noResults: '검색 결과가 없어요.',
     statSource: '출처',
     langNames: { ko: '한국어', en: 'EN', zh: '中文', ja: '日本語', es: 'ES', pt: 'PT' },
@@ -203,6 +207,10 @@ const T = {
     toc: 'Categories',
     sitesUnit: '',
     visit: 'Visit',
+    favHeading: 'Favorites',
+    favDesc: 'Sites you star (☆) gather here. Saved in this browser only.',
+    favAdd: 'Add to favorites',
+    favRemove: 'Remove from favorites',
     noResults: 'No matching sites.',
     statSource: 'Source',
     langNames: { ko: 'Korean', en: 'EN', zh: '中文', ja: '日本語', es: 'ES', pt: 'PT' },
@@ -464,8 +472,9 @@ function siteCard(lang, s) {
     ? `<p class="stat-line"><strong>${esc(s.stat[lang])}</strong> <span>${t.statSource}: ${esc(s.stat.source)} · ${esc(s.stat.date)}</span></p>`
     : '';
   const search = `${s.name} ${host(s.url)} ${s.desc.ko} ${s.desc.en} ${s.features.ko.join(' ')} ${s.features.en.join(' ')}`.toLowerCase();
-  return `<article class="site-card" data-search="${esc(search)}">
+  return `<article class="site-card" data-url="${esc(s.url)}" data-search="${esc(search)}">
 <a class="media" href="${esc(s.url)}" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">${media}<span class="langs">${langs}</span></a>
+<button class="fav" type="button" data-url="${esc(s.url)}" aria-pressed="false" aria-label="${esc(t.favAdd)}: ${esc(s.name)}" title="${esc(t.favAdd)}">☆</button>
 <div class="body">
 <h4><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a></h4>
 <span class="host">${esc(host(s.url))}</span>
@@ -524,8 +533,12 @@ ${heroScene()}
 <div class="purposes">${purposes}</div>
 </section>
 <div class="wrap directory">
-<aside class="toc"><nav><h2>${t.toc}</h2>${toc}</nav></aside>
-<div class="dir-main">
+<aside class="toc"><nav><h2>${t.toc}</h2><a href="#favorites" id="fav-toc" hidden>${spriteSvg('star', 20)}<span>${t.favHeading}</span><b id="fav-count">0</b></a>${toc}</nav></aside>
+<div class="dir-main" data-fav-add="${esc(t.favAdd)}" data-fav-remove="${esc(t.favRemove)}">
+<section class="cat favorites" id="favorites" hidden>
+<header class="cat-head">${spriteSvg('star', 40)}<div><h3>${t.favHeading} <span id="fav-count-2">0</span></h3><p>${esc(t.favDesc)}</p></div></header>
+<div class="cards" id="fav-cards"></div>
+</section>
 ${sections}
 <p id="no-results" class="empty" hidden>${t.noResults}</p>
 </div>

@@ -12,6 +12,7 @@ const PALETTES = {
   megaphone: { k: '#2a2f3a', R: '#ff6b4a', Y: '#ffe08a' },
   sword: { k: '#22303b', w: '#dfe9f1', Y: '#ffcf3f', b: '#8d6040' },
   bag: { k: '#3b2a1f', b: '#b0805a', Y: '#ffcf3f' },
+  star: { k: '#7a4a00', Y: '#ffcf3f', h: '#fff1b3' },
   tree: { k: '#123d22', G: '#2f9e4f', g: '#5cc46a', b: '#6d4c2f' }
 };
 
@@ -185,6 +186,22 @@ const GRIDS = {
     '.kbbYYYbbbbbk.',
     '..kbbbbbbbbk..',
     '...kkkkkkkk...'
+  ],
+  star: [
+    '.......k.......',
+    '......kYk......',
+    '......khk......',
+    '.....kYhYk.....',
+    'kkkkkkYYYkkkkkk',
+    'kYYhYYYYYYYYYYk',
+    '.kYYYYYYYYYYYk.',
+    '..kYYYYYYYYYk..',
+    '...kYYYYYYYk...',
+    '...kYYYYYYYk...',
+    '..kYYYYkYYYYk..',
+    '..kYYYk.kYYYk..',
+    '.kYYk.....kYYk.',
+    '.kkk.......kkk.'
   ],
   tree: [
     '......kkkk......',
