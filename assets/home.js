@@ -93,3 +93,52 @@ const q = new URLSearchParams(location.search).get('q');
 if (q) input.value = q;
 renderFavs();
 if (q) document.querySelector('.directory').scrollIntoView();
+
+// Shared upvotes (Cloudflare Worker + D1). Hidden unless the build configured an API.
+const voteApi = main.dataset.voteApi;
+const VOTED_KEY = 'gmshub_voted';
+function loadVoted() {
+  try {
+    return JSON.parse(localStorage.getItem(VOTED_KEY) || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+let voted = loadVoted();
+let counts = {};
+
+function paintVotes() {
+  document.querySelectorAll('.vote').forEach((btn) => {
+    const id = btn.dataset.site;
+    btn.hidden = false;
+    btn.querySelector('b').textContent = counts[id] || 0;
+    btn.setAttribute('aria-pressed', String(voted.includes(id)));
+  });
+}
+
+if (voteApi) {
+  fetch(`${voteApi}/votes`)
+    .then((r) => (r.ok ? r.json() : {}))
+    .then((data) => {
+      counts = data;
+      paintVotes();
+    })
+    .catch(() => {});
+
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.vote');
+    if (!btn || voted.includes(btn.dataset.site)) return;
+    const id = btn.dataset.site;
+    voted = [...voted, id];
+    try {
+      localStorage.setItem(VOTED_KEY, JSON.stringify(voted));
+    } catch (err) {}
+    counts[id] = (counts[id] || 0) + 1;
+    paintVotes();
+    try {
+      const r = await fetch(`${voteApi}/vote`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ site: id }) });
+      if (r.ok) counts[id] = (await r.json()).count;
+    } catch (err) {}
+    paintVotes();
+  });
+}

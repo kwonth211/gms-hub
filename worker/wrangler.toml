@@ -1,0 +1,8 @@
+name = "gms-hub-votes"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "gms-hub-votes"
+database_id = "REPLACE_AFTER_CREATE"

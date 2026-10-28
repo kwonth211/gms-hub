@@ -52,6 +52,9 @@ const T = {
     toc: '카테고리',
     sitesUnit: '곳',
     visit: '바로가기',
+    recommend: '추천',
+    sortPopular: '추천순',
+    sortDefault: '기본순',
     showAll: '전체 보기',
     filtering: '{name}만 보는 중',
     favHeading: '즐겨찾기',
@@ -218,6 +221,9 @@ const T = {
     toc: 'Categories',
     sitesUnit: '',
     visit: 'Visit',
+    recommend: 'Upvote',
+    sortPopular: 'Most upvoted',
+    sortDefault: 'Default order',
     showAll: 'Show all',
     filtering: 'Showing {name} only',
     favHeading: 'Favorites',
@@ -373,6 +379,10 @@ const fill = (s, vars) => s.replace(/\{(\w+)\}/g, (_, k) => vars[k]);
 const jsonScript = (id, data) =>
   `<script id="${id}" type="application/json">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`;
 const ldScript = (data) => `<script type="application/ld+json">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`;
+const siteId = (u) => {
+  const x = new URL(u);
+  return `${x.hostname.replace(/^www\./, '')}${x.pathname}${x.search}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80);
+};
 const srcLink = (url, label) => `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(label || host(url))}</a>`;
 
 function head({ lang, title, desc, pagePath, noindex, ld = [] }) {
@@ -388,6 +398,9 @@ function head({ lang, title, desc, pagePath, noindex, ld = [] }) {
   const ga = config.gaMeasurementId
     ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${esc(config.gaMeasurementId)}"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${esc(config.gaMeasurementId)}');</script>`
+    : '';
+  const cfBeacon = config.cfAnalyticsToken
+    ? `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "${esc(config.cfAnalyticsToken)}"}'></script>`
     : '';
   const verify = config.googleSiteVerification
     ? `<meta name="google-site-verification" content="${esc(config.googleSiteVerification)}">`
@@ -421,6 +434,7 @@ ${verify}
 <link rel="stylesheet" href="${href('/assets/style.css')}">
 ${adsense}
 ${ga}
+${cfBeacon}
 ${ld.map(ldScript).join('\n')}
 </head>`;
 }
@@ -493,7 +507,7 @@ function siteCard(lang, s) {
     ? `<p class="stat-line"><strong>${esc(s.stat[lang])}</strong> <span>${t.statSource}: ${esc(s.stat.source)} · ${esc(s.stat.date)}</span></p>`
     : '';
   const search = `${s.name} ${host(s.url)} ${s.desc.ko} ${s.desc.en} ${s.features.ko.join(' ')} ${s.features.en.join(' ')}`.toLowerCase();
-  return `<article class="site-card" data-url="${esc(s.url)}" data-search="${esc(search)}">
+  return `<article class="site-card" data-url="${esc(s.url)}" data-id="${siteId(s.url)}" data-search="${esc(search)}">
 <a class="media" href="${esc(s.url)}" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">${media}<span class="langs">${langs}</span></a>
 <button class="fav" type="button" data-url="${esc(s.url)}" aria-pressed="false" aria-label="${esc(t.favAdd)}: ${esc(s.name)}" title="${esc(t.favAdd)}">☆</button>
 <div class="body">
@@ -502,7 +516,7 @@ function siteCard(lang, s) {
 <p>${esc(s.desc[lang])}</p>
 <ul class="feats">${feats}</ul>
 ${stat}
-<a class="visit" href="${esc(s.url)}" target="_blank" rel="noopener">${t.visit} ↗</a>
+<div class="card-foot"><a class="visit" href="${esc(s.url)}" target="_blank" rel="noopener">${t.visit} ↗</a><button class="vote" type="button" data-site="${siteId(s.url)}" aria-pressed="false" hidden>👍 <span>${t.recommend}</span> <b>0</b></button></div>
 </div>
 </article>`;
 }
@@ -555,7 +569,7 @@ ${heroScene()}
 </section>
 <div class="wrap directory">
 <aside class="toc"><nav><h2>${t.toc}</h2><a href="#favorites" id="fav-toc" hidden>${spriteSvg('star', 20)}<span>${t.favHeading}</span><b id="fav-count">0</b></a>${toc}</nav></aside>
-<div class="dir-main" data-fav-add="${esc(t.favAdd)}" data-fav-remove="${esc(t.favRemove)}" data-filtering="${esc(t.filtering)}">
+<div class="dir-main" data-vote-api="${esc(config.voteApi)}" data-fav-add="${esc(t.favAdd)}" data-fav-remove="${esc(t.favRemove)}" data-filtering="${esc(t.filtering)}">
 <p class="filter-bar" id="filter-bar" hidden><span id="filter-label"></span> <button type="button" class="btn ghost small-btn" id="filter-clear">${t.showAll}</button></p>
 <section class="cat favorites" id="favorites" hidden>
 <header class="cat-head">${spriteSvg('star', 40)}<div><h3>${t.favHeading} <span id="fav-count-2">0</span></h3><p>${esc(t.favDesc)}</p></div></header>
@@ -888,6 +902,13 @@ if (config.adsenseClient) {
   write('ads.txt', `google.com, ${config.adsenseClient.replace(/^ca-/, '')}, DIRECT, f08c47fec0942fa0\n`);
 }
 write('.nojekyll', '');
+
+// Every directory site gets a zero-count row; the worker only accepts votes for seeded ids.
+const seed = sites.categories
+  .flatMap((c) => c.sites)
+  .map((s) => `INSERT OR IGNORE INTO votes (site, count) VALUES ('${siteId(s.url)}', 0);`)
+  .join('\n');
+fs.writeFileSync(path.join(root, 'worker', 'seed.sql'), `${seed}\n`);
 
 fs.cpSync(path.join(root, 'assets'), path.join(out, 'assets'), { recursive: true });
 
