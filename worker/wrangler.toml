@@ -5,4 +5,4 @@ compatibility_date = "2026-10-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "gms-hub-votes"
-database_id = "REPLACE_AFTER_CREATE"
+database_id = "5e551116-5641-480e-99f3-70fd856cc675"

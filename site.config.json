@@ -11,6 +11,6 @@
     "repo": "gms-hub",
     "branch": "main"
   },
-  "voteApi": "",
+  "voteApi": "https://gms-hub-votes.kwonth211.workers.dev",
   "cfAnalyticsToken": ""
 }

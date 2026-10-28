@@ -38,3 +38,13 @@ node scripts/build.mjs   # dist/ 생성 (의존성 없음)
 
 1. Google Search Console에 사이트 추가 → HTML 태그 값을 `googleSiteVerification`에 입력 → 푸시
 2. Search Console에서 `sitemap.xml` 제출
+
+## 추천 기능 (Cloudflare Worker + D1)
+
+`worker/` 폴더. 방문자(솔트 IP 해시)당 사이트별 1회 추천.
+
+```bash
+cd worker
+npx wrangler@3.114.0 deploy                                   # 코드 배포
+npx wrangler@3.114.0 d1 execute gms-hub-votes --remote --file=seed.sql   # 사이트 추가 후 새 ID 등록
+```
