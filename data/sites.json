@@ -1,170 +1,489 @@
 {
-  "updated": "2026-10-28",
+  "checked": "2026-10-28",
   "categories": [
     {
       "id": "official",
+      "icon": "crown",
       "name": { "ko": "공식", "en": "Official" },
       "desc": {
-        "ko": "넥슨이 운영하는 공식 채널이에요. 클래식 월드 공지는 메이플스토리 공식 사이트와 디스코드에 함께 올라와요.",
-        "en": "Channels run by Nexon. Classic World notices share the main MapleStory site and Discord."
+        "ko": "넥슨이 직접 운영하는 채널이에요. 점검, 패치, 이벤트 공지는 여기가 원본이에요.",
+        "en": "Channels run by Nexon. Maintenance, patch and event notices start here."
       },
       "sites": [
         {
           "name": "Classic World FAQ",
           "url": "https://www.nexon.com/maplestory/news/general/45385/global-maple-story-classic-world-faq",
-          "lang": "en",
-          "desc": {
-            "ko": "넥슨 공식 FAQ. 출시 일정, 설치 방법, 지원 언어 안내.",
-            "en": "Nexon's official FAQ: launch schedule, installation and languages."
-          }
+          "shot": "nexon-faq",
+          "langs": ["en"],
+          "desc": { "ko": "넥슨 공식 클래식 월드 FAQ 공지.", "en": "Nexon's official Classic World FAQ notice." },
+          "features": { "ko": ["공식 FAQ"], "en": ["Official FAQ"] }
         },
         {
           "name": "Grand Launch Release Notes",
           "url": "https://www.nexon.com/maplestory/news/general/46506/grand-launch-release-notes",
-          "lang": "en",
-          "desc": {
-            "ko": "정식 출시 패치 노트. 출시 시점 콘텐츠와 변경 사항.",
-            "en": "Grand launch patch notes: launch content and changes."
-          }
+          "shot": "nexon-release",
+          "langs": ["en"],
+          "desc": { "ko": "넥슨 공식 정식 출시 릴리스 노트.", "en": "Nexon's official Grand Launch release notes." },
+          "features": { "ko": ["패치 노트"], "en": ["Patch notes"] }
         },
         {
-          "name": "Official MapleStory Discord",
+          "name": "MapleStory Official Discord",
           "url": "https://discord.gg/maplestory",
-          "lang": "en",
+          "icon": "chat",
+          "tint": "#5865f2",
+          "langs": ["en"],
           "desc": {
-            "ko": "공식 디스코드. #classic-world-announcements 채널에서 클래식 공지를 확인하세요.",
-            "en": "Official Discord. Classic news lives in #classic-world-announcements."
-          }
+            "ko": "메이플스토리 공식 디스코드 서버. 넥슨 공식 X 계정이 클래식 월드 소식과 커뮤니티 뉴스를 받으려면 들어오라고 안내한 서버예요.",
+            "en": "The official MapleStory Discord. Nexon's official X account points players here for Classic World updates and community news."
+          },
+          "features": { "ko": ["공식 공지", "메이플스토리 전체 서버"], "en": ["Official notices", "All of MapleStory"] },
+          "stat": { "ko": "멤버 145,546명", "en": "145,546 members", "source": "Discord invite API", "date": "2026-10-28" },
+          "ref": "https://x.com/MapleStory/status/2112710926449189202"
         },
         {
           "name": "MapleStory on X",
           "url": "https://x.com/MapleStory",
-          "lang": "en",
-          "desc": {
-            "ko": "공식 X(트위터). 점검 연장 같은 실시간 공지가 가장 빨라요.",
-            "en": "Official X account, fastest for live notices like extended maintenance."
-          }
+          "icon": "megaphone",
+          "tint": "#1d9bf0",
+          "langs": ["en"],
+          "desc": { "ko": "메이플스토리 공식 X(트위터) 계정. 클래식 월드 출시 소식도 여기에 올라왔어요.", "en": "MapleStory's official X account, which also posts Classic World launch news." },
+          "features": { "ko": ["공식 소식"], "en": ["Official news"] }
         }
       ]
     },
     {
-      "id": "community-ko",
-      "name": { "ko": "한국어 커뮤니티", "en": "Korean Communities" },
+      "id": "community",
+      "icon": "chat",
+      "name": { "ko": "커뮤니티", "en": "Communities" },
       "desc": {
-        "ko": "한국어로 클래식 월드 이야기를 나누는 곳이에요.",
-        "en": "Talk about Classic World in Korean."
+        "ko": "질문하고, 파티 구하고, 소식 나누는 곳이에요.",
+        "en": "Ask questions, find parties and share news."
       },
       "sites": [
         {
-          "name": "글로벌 메이플스토리 클래식월드 마이너 갤러리",
-          "url": "https://gall.dcinside.com/mgallery/board/lists/?id=maplestoryclassworld",
-          "lang": "ko",
+          "name": "Maplestory Classic World (Unofficial Discord)",
+          "url": "https://discord.gg/cEUPrKBvzq",
+          "icon": "chat",
+          "tint": "#5865f2",
+          "langs": ["en"],
           "desc": {
-            "ko": "디시인사이드 클래식 월드 전용 갤러리. 공지 번역과 질문 글이 활발해요.",
-            "en": "DCInside gallery dedicated to Classic World, with translated notices and Q&A."
-          }
+            "ko": "클래식 월드 비공식 디스코드 서버. 서버 소개: \"Maplestory Classic World 비공식 디스코드 서버예요!\"",
+            "en": "The unofficial Discord for Classic World. In its own words: \"The Unofficial Discord server for Maplestory Classic World!\""
+          },
+          "features": { "ko": ["비공식", "영어"], "en": ["Unofficial", "English"] },
+          "stat": { "ko": "멤버 30,606명 · 접속 10,366명", "en": "30,606 members · 10,366 online", "source": "Discord invite API", "date": "2026-10-28" }
         },
-        {
-          "name": "NiaMeowDB (한국어)",
-          "url": "https://meowdb.com/msclassic/ko",
-          "lang": "ko",
-          "desc": {
-            "ko": "클래식 월드 데이터베이스의 한국어판. 몬스터, 아이템, 공략.",
-            "en": "Korean edition of the Classic World database: monsters, items, guides."
-          }
-        }
-      ]
-    },
-    {
-      "id": "community-en",
-      "name": { "ko": "영어권 커뮤니티", "en": "English Communities" },
-      "desc": {
-        "ko": "클래식 월드 유저가 가장 많이 모이는 영어권 커뮤니티예요.",
-        "en": "Where most Classic World players gather."
-      },
-      "sites": [
         {
           "name": "r/MSClassicWorld",
           "url": "https://www.reddit.com/r/MSClassicWorld/",
-          "lang": "en",
+          "icon": "chat",
+          "tint": "#ff4500",
+          "langs": ["en"],
           "desc": {
-            "ko": "레딧 클래식 월드 팬 커뮤니티(비공식). 후기, 질문, 공략 글.",
-            "en": "Fan-run Classic World subreddit: impressions, questions and guides."
-          }
+            "ko": "클래식 월드 레딧 커뮤니티. 디시 글클메 갤러리의 커뮤니티 모음 글에도 \"글클메 레딧\"으로 소개돼 있어요.",
+            "en": "The Classic World subreddit, also listed as the community subreddit in the DCInside gallery's community roundup."
+          },
+          "features": { "ko": ["레딧", "영어"], "en": ["Reddit", "English"] },
+          "ref": "https://gall.dcinside.com/mgallery/board/view/?id=maplestoryclassworld&no=60"
+        },
+        {
+          "name": "글로벌 메이플스토리 클래식월드 마이너 갤러리",
+          "url": "https://gall.dcinside.com/mgallery/board/lists/?id=maplestoryclassworld",
+          "shot": "dc-global",
+          "langs": ["ko"],
+          "desc": {
+            "ko": "디시인사이드 글클메 갤러리. 회원가입 방법, 커뮤니티 모음 같은 정리 글이 올라와 있어요.",
+            "en": "DCInside gallery for Classic World, with how-to posts such as account signup and a community link roundup."
+          },
+          "features": { "ko": ["한국어", "디시인사이드"], "en": ["Korean", "DCInside"] }
+        },
+        {
+          "name": "메이플스토리 클래식 월드 마이너 갤러리",
+          "url": "https://gall.dcinside.com/mgallery/board/lists/?id=classicworld",
+          "shot": "dc-classic",
+          "langs": ["ko"],
+          "desc": {
+            "ko": "디시인사이드의 또 다른 클래식 월드 갤러리. 갤러리 소개: \"NEXON MapleStory ClassicWorld의 소통 갤러리\"",
+            "en": "A second DCInside Classic World gallery. Its own blurb: \"a gallery for talking about NEXON MapleStory ClassicWorld.\""
+          },
+          "features": { "ko": ["한국어", "디시인사이드"], "en": ["Korean", "DCInside"] }
+        },
+        {
+          "name": "NiaMeowDB Discord",
+          "url": "https://discord.gg/E7kUtCMpxW",
+          "icon": "chat",
+          "tint": "#5865f2",
+          "langs": ["en"],
+          "desc": {
+            "ko": "NiaMeowDB 팬 사이트의 디스코드 서버. 사이트 추가 제안도 여기서 받아요.",
+            "en": "The NiaMeowDB fan site's Discord server, where site suggestions are also submitted."
+          },
+          "features": { "ko": ["팬 사이트 서버"], "en": ["Fan site server"] },
+          "stat": { "ko": "멤버 1,018명", "en": "1,018 members", "source": "Discord invite API", "date": "2026-10-28" }
         }
       ]
     },
     {
       "id": "database",
-      "name": { "ko": "데이터베이스 · 위키", "en": "Databases & Wikis" },
+      "icon": "book",
+      "name": { "ko": "종합 DB · 위키", "en": "Databases & Wikis" },
       "desc": {
-        "ko": "몬스터 레벨, 드랍 아이템, 맵 정보를 찾을 때 봐요. GMS 본섭 위키와 섞어 보지 마세요.",
-        "en": "Monster levels, drops and maps. Don't mix them up with mainline GMS wikis."
+        "ko": "아이템, 몬스터, 맵, 퀘스트 정보를 찾는 곳이에요. 대부분 계산기와 공략도 함께 있어요.",
+        "en": "Look up items, monsters, maps and quests. Most also bundle calculators and guides."
       },
       "sites": [
         {
           "name": "NiaMeowDB",
-          "url": "https://meowdb.com/msclassic",
-          "lang": "en",
+          "url": "https://meowdb.com/msclassic/ko",
+          "shot": "meowdb",
+          "langs": ["ko", "en"],
           "desc": {
-            "ko": "클래식 월드 위키·DB. 레벨별 사냥터 표와 직업 공략이 잘 정리돼 있어요.",
-            "en": "Classic World wiki and database with level-by-level training tables and class guides."
-          }
+            "ko": "클래식 월드 위키·데이터베이스·툴킷. 한국어 페이지를 지원해요.",
+            "en": "Classic World wiki, database and toolkit, with a Korean edition."
+          },
+          "features": {
+            "ko": ["아이템·몬스터·맵 DB", "보스 타이머", "자유시장 시세", "캐릭터 빌더", "주문서 시뮬", "포럼"],
+            "en": ["Item, monster & map DB", "Boss timers", "Free Market prices", "Character builder", "Scroll sim", "Forum"]
+          },
+          "stat": { "ko": "시세 380,000건+ 기록", "en": "380,000+ prices recorded", "source": "site banner", "date": "2026-10-28" }
         },
         {
           "name": "Henesys.GG",
           "url": "https://henesys.gg/",
-          "lang": "en",
+          "shot": "henesys",
+          "langs": ["en"],
           "desc": {
-            "ko": "몬스터·아이템·맵 DB와 레벨·명중률·데미지 계산기, 주문서 시뮬레이터.",
-            "en": "Monster, item and map database plus level, accuracy and damage calculators and a scroll sim."
+            "ko": "출시 클라이언트 기반 클래식 월드 공략·DB·툴. 직업 빌드, 퀘스트, 맵, 몬스터, 아이템과 데미지·명중률·경험치 계산기, 주문서 시뮬레이터.",
+            "en": "Classic World guides, database and tools built from the launch client: builds, quests, maps, monsters and items, plus damage, accuracy and EXP calculators and a scroll simulator."
+          },
+          "features": {
+            "ko": ["훈련 가이드", "퀘스트 최적화", "명중률 계산기", "데미지 계산기", "주문서 시뮬", "마켓"],
+            "en": ["Training guide", "Quest optimizer", "Accuracy calculator", "Damage calculator", "Scroll sim", "Market"]
+          }
+        },
+        {
+          "name": "MapleStory Quest",
+          "url": "https://maplestory.quest/",
+          "shot": "msquest",
+          "langs": ["en"],
+          "desc": {
+            "ko": "그랜드 런칭 클라이언트의 모든 아이템·몬스터·맵·퀘스트를 담은 클래식 월드 위키·DB. 공략과 빌드 플래너 포함.",
+            "en": "Classic World wiki and database covering every item, monster, map and quest in the Grand Launch client, with guides and a build planner."
+          },
+          "features": {
+            "ko": ["빌드 플래너", "퀘스트 트래커", "퀘스트 루트", "그라인드 트래커", "길드", "원본 데이터"],
+            "en": ["Build planner", "Quest tracker", "Quest route", "Grind tracker", "Guilds", "Raw data"]
+          }
+        },
+        {
+          "name": "MSCW Guidebook",
+          "url": "https://mscw-guidebook.com/en",
+          "shot": "mscw",
+          "langs": ["en", "zh"],
+          "desc": {
+            "ko": "몬스터 드랍, 아이템, 퀘스트, 직업 공략을 담은 클래식 월드 DB. 빌드·데미지·사냥터 도구 제공.",
+            "en": "Classic World database with monster drops, items, quests and class guides, plus build, damage and training tools."
+          },
+          "features": {
+            "ko": ["캐릭터 빌더", "데미지 시뮬", "사냥터 찾기", "경매장", "파티 찾기", "중국어 DB"],
+            "en": ["Character builder", "Damage sim", "Where to train", "Auction house", "Group finder", "Chinese DB"]
+          }
+        },
+        {
+          "name": "GMS 클래식 허브",
+          "url": "https://planet-helper.com/gmsclassic/",
+          "shot": "planet",
+          "langs": ["ko"],
+          "desc": {
+            "ko": "한국어 클래식 월드 사이트. 아이템 1,902개·몬스터 181종 드롭표, 직업별 1~70 사냥 동선, 직업 티어표, 몇 방 컷 계산기.",
+            "en": "Korean-language Classic World site: drop tables for 1,902 items and 181 monsters, 1–70 leveling routes by class, a class tier list and a hits-to-kill calculator."
+          },
+          "features": {
+            "ko": ["드롭표", "거래소", "명중률 계산기", "N방컷 계산기", "사냥터 추천", "주문서 시뮬"],
+            "en": ["Drop tables", "Marketplace", "Accuracy calc", "Hits-to-kill", "Training finder", "Scroll sim"]
           }
         },
         {
           "name": "MapleClassic Wiki",
           "url": "https://classic.maplestorywiki.net/",
-          "lang": "en",
+          "shot": "classicwiki",
+          "langs": ["en"],
           "desc": {
-            "ko": "커뮤니티가 만드는 클래식 월드 위키.",
-            "en": "The community-written Classic World wiki."
+            "ko": "클래식 월드 커뮤니티 가이드 위키. 누구나 편집할 수 있어요.",
+            "en": "The community guide to MapleStory Classic World, open to edits."
+          },
+          "features": {
+            "ko": ["직업·장비·스킬", "퀘스트·몬스터·맵", "보스", "루트 플래너", "데미지 계산기"],
+            "en": ["Jobs, gear & skills", "Quests, monsters & maps", "Bosses", "Route planner", "Damage calculator"]
           }
+        },
+        {
+          "name": "MapleStory Classic",
+          "url": "https://maplestory-classic.com/",
+          "shot": "msc",
+          "langs": ["en"],
+          "desc": {
+            "ko": "클래식 월드 공략·뉴스·DB. 다운로드 방법, 직업 추천, 보스, 맵, 퀘스트, 자유시장 시세.",
+            "en": "Guides, news and database for Classic World: how to download, best class, bosses, maps, quests and Free Market prices."
+          },
+          "features": {
+            "ko": ["사냥터", "보스 타이머", "경험치 계산기", "메소 계산기", "주문서 계산기", "서버 상태"],
+            "en": ["Training spots", "Boss timer", "EXP calculator", "Meso calculator", "Scroll calculator", "Server status"]
+          }
+        },
+        {
+          "name": "OSMS Data Explorer",
+          "url": "https://ohmi69.github.io/osms_datamine_dashboard/#overview",
+          "shot": "osms",
+          "langs": ["en"],
+          "desc": {
+            "ko": "클래식 월드 몬스터, 제작, 스킬, 퀘스트, 공식, 맵 데이터를 탐색하는 데이터마이닝 대시보드.",
+            "en": "Browse monsters, crafting, skills, quests, formulas and maps for Classic World."
+          },
+          "features": { "ko": ["데이터마이닝", "공식(Formulas)"], "en": ["Datamine", "Formulas"] }
         }
       ]
     },
     {
       "id": "guides",
-      "name": { "ko": "공략 · 툴", "en": "Guides & Tools" },
+      "icon": "scroll",
+      "name": { "ko": "공략 가이드", "en": "Guides" },
       "desc": {
-        "ko": "직업 빌드, 퀘스트, 파티퀘스트 공략과 계산기예요.",
-        "en": "Class builds, quests, party quests and calculators."
+        "ko": "직업, 사냥, 보스, 메소벌이 공략을 읽는 곳이에요.",
+        "en": "Read up on jobs, leveling, bosses and making mesos."
       },
       "sites": [
         {
           "name": "MS-Classic",
           "url": "https://ms-classic.com/",
-          "lang": "en",
+          "shot": "msclassic",
+          "langs": ["en"],
           "desc": {
-            "ko": "유저가 쓰는 클래식 월드 공략 모음.",
-            "en": "Player-written Classic World guides."
+            "ko": "윈디아 유저들이 쓰는 클래식 월드 공략. 직업, 보스, 사냥, 거래, 뉴스를 다루고 모든 사실에 출처를 달아요.",
+            "en": "Classic World guides by players on Windia: jobs, bosses, training, trading and news, with every fact sourced."
+          },
+          "features": {
+            "ko": ["레벨별 사냥터", "보스 공략", "메소벌이", "보스 타이머", "스킬 플래너", "주문서 시뮬"],
+            "en": ["Training by level", "Boss guides", "Making mesos", "Boss timer", "Skill planner", "Scroll sim"]
           }
         },
         {
-          "name": "GMS Classic Hub",
-          "url": "https://planet-helper.com/gmsclassic/",
-          "lang": "en",
+          "name": "MetaRoad",
+          "url": "https://metaroad.gg/maplestory-classic",
+          "shot": "metaroad",
+          "langs": ["en", "ko"],
           "desc": {
-            "ko": "클래식 월드 DB와 몇 방에 잡히는지 계산기, 경험치 계산기.",
-            "en": "Classic World database with hits-to-kill and EXP calculators."
+            "ko": "클래식 월드 빌드, 스킬 플래너, 직업 공략, 보스 전략, 주문서·명중률 시뮬레이터.",
+            "en": "Classic World builds, skill planner, class guides, boss strategies and the scroll and accuracy simulators."
+          },
+          "features": {
+            "ko": ["빌드 가이드", "커뮤니티 빌드", "그라인드 트래커", "캐릭터 랭킹", "주문서 가이드"],
+            "en": ["Build guides", "Community builds", "Grind tracker", "Character ranking", "Scrolling guide"]
           }
+        }
+      ]
+    },
+    {
+      "id": "market",
+      "icon": "coin",
+      "name": { "ko": "시세 · 거래", "en": "Prices & Trading" },
+      "desc": {
+        "ko": "자유시장 시세를 확인하고 사고팔 곳을 찾는 사이트예요. 사이트마다 시세 수집 방식이 달라서 값이 조금씩 달라요.",
+        "en": "Check Free Market prices and find sellers. Each site collects prices differently, so numbers vary."
+      },
+      "sites": [
+        {
+          "name": "MesoWatch",
+          "url": "https://meso.watch/",
+          "shot": "mesowatch",
+          "langs": ["en"],
+          "desc": {
+            "ko": "개인상점에서 실제로 팔린 가격, 시세 기록, 상점 위치를 보여주는 시세 추적기. 무료, 로그인 없음.",
+            "en": "What items really sell for in player shops: typical sale prices, price history and where shops were seen. Free, no login."
+          },
+          "features": { "ko": ["실거래가", "시세 기록", "상점 위치"], "en": ["Real sales", "Price history", "Shop locations"] }
         },
         {
-          "name": "MapleStory Classic (fan site)",
-          "url": "https://maplestory-classic.com/",
-          "lang": "en",
+          "name": "MapleMarket",
+          "url": "https://maplemarket.fyi/",
+          "shot": "maplemarket",
+          "langs": ["en"],
           "desc": {
-            "ko": "출시 소식, 직업 소개, 데이터베이스를 모은 팬 사이트.",
-            "en": "Fan site with launch news, class overviews and a database."
-          }
+            "ko": "아이템별 최저가 판매자, 채널과 방 번호, 실제 판매가를 보여줘요.",
+            "en": "The cheapest seller of any item, which channel and room they're in, and what it really sold for."
+          },
+          "features": { "ko": ["최저가 판매자", "채널·방 위치", "인기 아이템"], "en": ["Cheapest seller", "Channel & room", "Most popular"] }
+        },
+        {
+          "name": "MapleStory Classic Market",
+          "url": "https://maplestory-classic.com/market",
+          "shot": "msc-market",
+          "langs": ["en"],
+          "desc": {
+            "ko": "1,296개 아이템의 판매 중앙값, 가격 범위, 일별 시세, 현재 판매자 수, 급등락 아이템.",
+            "en": "Live prices for 1,296 items: median sale, typical range, daily price history, players selling now and the biggest movers."
+          },
+          "features": { "ko": ["중앙값", "일별 시세", "일일 리포트"], "en": ["Median price", "Daily history", "Daily report"] }
+        },
+        {
+          "name": "Free Market Classic",
+          "url": "https://freemarketclassic.com/?hl=en",
+          "shot": "fmclassic",
+          "langs": ["en", "es", "pt"],
+          "desc": {
+            "ko": "아이템별 판매자, 가격, 채널과 방, 지금 올라오는 확성기. 시세 알림, 경험치 측정기, 스킬, 드랍 정보.",
+            "en": "Who sells each item, for how much, in which channel and room, plus live smegas. Price alerts, EXP meter, skills and drops."
+          },
+          "features": { "ko": ["실시간 상점", "확성기", "시세 알림", "드랍"], "en": ["Live shops", "Smegas", "Price alerts", "Drops"] },
+          "stat": { "ko": "시세 115,604건 기록", "en": "115,604 prices recorded", "source": "site homepage", "date": "2026-10-28" }
+        },
+        {
+          "name": "HubCW",
+          "url": "https://hubcw.com/",
+          "shot": "hubcw",
+          "langs": ["en", "ko", "zh", "ja"],
+          "desc": {
+            "ko": "클래식 월드 커뮤니티 마켓, 시세 확인, 게임 DB. 한국어를 지원해요.",
+            "en": "Community marketplace, price check and game database for Classic World, with Korean support."
+          },
+          "features": { "ko": ["거래 게시판", "시세 확인", "게임 DB", "봇 제공"], "en": ["Marketplace", "Price check", "Game DB", "Bot"] },
+          "stat": { "ko": "거래 30,756건 기록", "en": "30,756 recorded sales", "source": "site homepage", "date": "2026-10-28" }
+        },
+        {
+          "name": "NiaMeowDB Free Market",
+          "url": "https://meowdb.com/msclassic/free-market",
+          "shot": "meowdb-fm",
+          "langs": ["ko", "en"],
+          "desc": {
+            "ko": "유저 제보 자유시장 시세. 잘 팔리는 아이템, 구하기 힘든 아이템, 아이템별 평소 가격.",
+            "en": "Player-reported Free Market prices: what is selling, what is hard to find, and the usual price of every item."
+          },
+          "features": { "ko": ["유저 제보 시세", "딜 찾기", "시세 알림"], "en": ["Player-reported", "Deals", "Price alerts"] }
+        },
+        {
+          "name": "mfm-tracker",
+          "url": "https://github.com/jayee88/mfm-tracker",
+          "shot": "mfm-tracker",
+          "langs": ["en"],
+          "desc": {
+            "ko": "클래식 월드 자유시장 추적 도구. GitHub에 소스가 공개돼 있어요.",
+            "en": "Free Market tracking tool for Classic World, with its source on GitHub."
+          },
+          "features": { "ko": ["오픈소스"], "en": ["Open source"] }
+        }
+      ]
+    },
+    {
+      "id": "timers",
+      "icon": "clock",
+      "name": { "ko": "보스 타이머", "en": "Boss Timers" },
+      "desc": {
+        "ko": "필드 보스 리젠 시간을 채널별로 기록하는 도구예요.",
+        "en": "Track field boss respawns per channel."
+      },
+      "sites": [
+        {
+          "name": "MapleWatch",
+          "url": "https://maplewatch.app/",
+          "shot": "maplewatch",
+          "langs": ["en"],
+          "desc": {
+            "ko": "길드용 보스 타이머, 레이드, 아이템 시세. 클래식 월드용 무료 경험치 트래커 오버레이(Windows) 제공.",
+            "en": "Boss timers, raids and item prices for guilds, plus a free EXP tracker overlay for Classic World."
+          },
+          "features": { "ko": ["보스 타이머", "경험치 오버레이"], "en": ["Boss timers", "EXP overlay"] }
+        },
+        {
+          "name": "MS-Classic Boss Timer",
+          "url": "https://ms-classic.com/tools/boss-timer",
+          "shot": "msclassic-boss",
+          "langs": ["en"],
+          "desc": {
+            "ko": "머쉬맘, 스텀피, 마노 등 필드 보스를 윈디아 40채널에 걸쳐 추적하고 리젠 전에 알림.",
+            "en": "Track Mano, Stumpy, Mushmom, Shade, Zombie Mushmom and Jr. Balrog across Windia's 40 channels, with alerts before each boss is due."
+          },
+          "features": { "ko": ["40채널", "알림"], "en": ["40 channels", "Alerts"] }
+        },
+        {
+          "name": "MapleStory Classic Boss Timer",
+          "url": "https://maplestory-classic.com/tools/boss-timer",
+          "shot": "msc-boss",
+          "langs": ["en"],
+          "desc": {
+            "ko": "클래식 월드 출시 보스 전체의 리젠 타이머와 플래너.",
+            "en": "Respawn timers and a planner for every Classic World launch boss."
+          },
+          "features": { "ko": ["리젠 타이머", "플래너"], "en": ["Respawn timers", "Planner"] }
+        },
+        {
+          "name": "NiaMeowDB Boss Timers",
+          "url": "https://meowdb.com/msclassic/boss-timers",
+          "shot": "meowdb-boss",
+          "langs": ["ko", "en"],
+          "desc": { "ko": "NiaMeowDB의 보스 타이머.", "en": "NiaMeowDB's boss timers." },
+          "features": { "ko": ["보스 타이머"], "en": ["Boss timers"] }
+        },
+        {
+          "name": "MetaRoad Boss Timer",
+          "url": "https://metaroad.gg/maplestory-classic/boss-timer",
+          "shot": "metaroad-boss",
+          "langs": ["en", "ko"],
+          "desc": { "ko": "MetaRoad의 클래식 월드 보스 타이머.", "en": "MetaRoad's Classic World boss timer." },
+          "features": { "ko": ["보스 타이머"], "en": ["Boss timer"] }
+        },
+        {
+          "name": "MSCW World Boss Timer",
+          "url": "https://mscw-guidebook.com/en/tools/world-boss",
+          "shot": "mscw-boss",
+          "langs": ["en"],
+          "desc": { "ko": "MSCW Guidebook의 월드 보스 리젠 타이머.", "en": "MSCW Guidebook's world boss respawn timer." },
+          "features": { "ko": ["월드 보스"], "en": ["World bosses"] }
+        }
+      ]
+    },
+    {
+      "id": "planners",
+      "icon": "hammer",
+      "name": { "ko": "빌드 플래너", "en": "Build Planners" },
+      "desc": {
+        "ko": "AP·SP 분배와 장비를 미리 짜보는 도구예요.",
+        "en": "Plan AP, SP and gear before you commit."
+      },
+      "sites": [
+        {
+          "name": "NiaMeowDB Character Builder",
+          "url": "https://meowdb.com/msclassic/character-builder",
+          "shot": "meowdb-builder",
+          "langs": ["ko", "en"],
+          "desc": {
+            "ko": "직업, 레벨, AP 분배, 장비, 스킬, 데미지 미리보기. 빌드 저장·공유.",
+            "en": "Plan class, level, AP allocation, equipment and skills with a live damage preview. Save and share builds."
+          },
+          "features": { "ko": ["AP 분배", "데미지 미리보기", "빌드 공유"], "en": ["AP allocation", "Damage preview", "Share builds"] }
+        },
+        {
+          "name": "MapleStory Quest Planner",
+          "url": "https://maplestory.quest/planner",
+          "shot": "msquest-planner",
+          "langs": ["en"],
+          "desc": { "ko": "클래식 월드 스킬·빌드 플래너.", "en": "Classic World skill and build planner." },
+          "features": { "ko": ["스킬 플래너", "빌드 플래너"], "en": ["Skill planner", "Build planner"] }
+        },
+        {
+          "name": "MetaRoad Build Planner",
+          "url": "https://metaroad.gg/maplestory-classic/planner",
+          "shot": "metaroad-planner",
+          "langs": ["en", "ko"],
+          "desc": { "ko": "캐릭터 빌더와 스킬 계산기.", "en": "Character builder and skill calculator." },
+          "features": { "ko": ["캐릭터 빌더", "스킬 계산기"], "en": ["Character builder", "Skill calculator"] }
+        },
+        {
+          "name": "MSCW Character Builder",
+          "url": "https://mscw-guidebook.com/en/tools/build",
+          "shot": "mscw-builder",
+          "langs": ["en"],
+          "desc": { "ko": "AP·SP 플래너.", "en": "AP and SP planner." },
+          "features": { "ko": ["AP·SP 플래너"], "en": ["AP & SP planner"] }
         }
       ]
     }
@@ -173,37 +492,42 @@
     {
       "q": { "ko": "메이플스토리 클래식 월드가 뭔가요?", "en": "What is MapleStory Classic World?" },
       "a": {
-        "ko": "넥슨이 글로벌 지역에 서비스하는 옛날식 메이플스토리예요. 2026년 10월 6일 파운더스 액세스를 거쳐 10월 21일(한국 시간 22일 새벽)에 정식 출시됐고, Nexon 런처와 Steam에서 무료로 할 수 있어요. 만렙은 100이에요.",
-        "en": "A legacy-style MapleStory that Nexon runs for global players. After Founder's Access on October 6, 2026, it fully launched on October 21 on the Nexon Launcher and Steam. It is free to play with a level cap of 100."
-      }
-    },
-    {
-      "q": { "ko": "메이플스토리 본섭(KMS), 메이플랜드, GMS 본섭과 뭐가 달라요?", "en": "How is it different from KMS, MapleLand and mainline GMS?" },
-      "a": {
-        "ko": "모두 다른 게임이에요. 한국 메이플스토리(KMS)와 GMS 본섭은 스타포스·6차 전직이 있는 현재 메이플이고, 메이플랜드는 한국 메이플스토리 월드의 별도 클래식 게임이에요. 클래식 월드는 맵·몬스터 레벨·드랍이 이들과 달라서, 다른 게임 공략을 보면 레벨이 안 맞을 수 있어요. 이 사이트는 클래식 월드만 다뤄요.",
-        "en": "They are all separate games. KMS and mainline GMS are modern MapleStory with Star Force and 6th job, and MapleLand is a separate classic game on Korean MapleStory Worlds. Classic World has its own maps, monster levels and drops, so guides for the others can mislead you. This site covers Classic World only."
-      }
-    },
-    {
-      "q": { "ko": "스타포스나 큐브가 있나요?", "en": "Does it have Star Force or cubes?" },
-      "a": {
-        "ko": "아니요. 클래식 월드는 옛날 방식대로 업그레이드 가능 횟수만큼 주문서를 발라서 강화해요. 주문서 시뮬레이터로 결과를 미리 계산해 볼 수 있어요.",
-        "en": "No. Gear is upgraded the old way, with scrolls applied to each upgrade slot. Try the Scroll Simulator to preview outcomes."
-      }
+        "ko": "넥슨의 무료 레거시 서버예요. 10월 6일 파운더스 액세스를 거쳐 2026년 10월 21일에 전 세계 정식 출시됐고, Nexon 런처와 Steam으로 Windows·macOS에서 할 수 있어요. 만렙은 100, 1차 전직은 10레벨, 2차 전직은 30레벨이에요. Forgotten Hollow는 출시 시점에 열리지 않았어요.",
+        "en": "A free-to-play legacy server from Nexon. It went live worldwide on October 21, 2026, after Founder's Access opened on October 6, and runs on Windows and macOS through the Nexon Launcher and Steam. The level cap is 100, 1st job is at level 10 and 2nd job at level 30. Forgotten Hollow was not available at launch."
+      },
+      "sources": ["https://mmohuts.com/news/maplestory-classic-world-is-now-live-globally-as-a-free-to-play-legacy-server"]
     },
     {
       "q": { "ko": "한국어로 할 수 있나요?", "en": "Is Korean supported?" },
       "a": {
-        "ko": "글로벌 서비스에 한국어가 베타로 추가됐어요. 한국 지역 정식 서비스는 아니라서 게임 안 이름은 영어인 경우가 많아요. 이 사이트도 맵·몬스터 이름은 게임 표기(영어) 그대로 적었어요.",
-        "en": "Korean was added to the global service as a beta language. It is not a Korean regional launch, so many in-game names stay in English, and this site keeps map and monster names as they appear in game."
-      }
+        "ko": "10월 15일부터 한국어가 베타로 지원돼요. 글로벌 서비스에 언어 옵션이 추가된 것이고 한국 지역 정식 서비스는 아니에요. UI, 직업 이름, 캐시 아이템, 펫은 당분간 영어로 나와요.",
+        "en": "Korean has been in beta since October 15. It is a language option on the global service, not a Korean regional launch. The UI, class names, cash items and pets remain in English for now."
+      },
+      "sources": ["https://www.gameple.co.kr/news/articleView.html?idxno=216676", "https://mmohuts.com/news/maplestory-classic-world-is-now-live-globally-as-a-free-to-play-legacy-server"]
     },
     {
-      "q": { "ko": "사이트 추가나 데이터 오류는 어디에 알려요?", "en": "Where do I suggest a site or report wrong data?" },
+      "q": { "ko": "옛날 메이플이나 다른 메이플 공략을 그대로 봐도 되나요?", "en": "Can I use guides for old GMS or other MapleStory versions?" },
       "a": {
-        "ko": "소개 페이지의 GitHub 이슈 링크로 알려주세요. 클래식 월드 기준인지 확인한 뒤 반영해요.",
-        "en": "Use the GitHub issue link on the About page. We check that it applies to Classic World before updating."
-      }
+        "ko": "조심해야 해요. MS-Classic은 \"클래식 월드는 옛 GMS의 1:1 복사본이 아니라서 돌아다니는 '클래식' 정보의 절반은 클래식 월드에 맞지 않는다\"고 적고 있어요. 예를 들어 Henesys.GG 기준으로 클래식 월드의 Golem's Temple III에는 56레벨 스톤골렘이 나와요.",
+        "en": "Be careful. MS-Classic writes that \"Classic World isn't a 1:1 copy of old GMS, so half the 'classic' info floating around is wrong for it.\" For example, Henesys.GG lists Lv. 56 Stone Golems in Classic World's Golem's Temple III."
+      },
+      "sources": ["https://ms-classic.com/", "https://henesys.gg/guides/training"]
+    },
+    {
+      "q": { "ko": "주문서는 어떻게 되나요?", "en": "How do scrolls work?" },
+      "a": {
+        "ko": "Lesser 100%, Intermediate 60%, Greater 10%, Chaos 10% 네 등급이에요. Chaos만 실패 시 50% 확률로 아이템이 파괴돼요. 실패한 주문서가 업그레이드 횟수를 차감하는지는 클라이언트 데이터에 기록이 없어 확인되지 않았어요.",
+        "en": "Four tiers: Lesser 100%, Intermediate 60%, Greater 10% and Chaos 10%. Only Chaos can destroy the item, with a 50% chance on failure. Whether a failed scroll uses an upgrade slot is not recorded in the client data."
+      },
+      "sources": ["https://ms-classic.com/guides/scroll-tiers-lesser-intermediate-greater-explained", "https://mapleclassic.wiki/wiki/Scrolling"]
+    },
+    {
+      "q": { "ko": "사이트 추가나 정보 오류는 어디에 알려요?", "en": "Where do I suggest a site or report an error?" },
+      "a": {
+        "ko": "소개 페이지의 GitHub 이슈로 알려주세요. 접속과 내용을 확인한 뒤 반영해요.",
+        "en": "Open a GitHub issue from the About page. We check the site and its content before adding it."
+      },
+      "sources": []
     }
   ]
 }

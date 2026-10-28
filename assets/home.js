@@ -3,7 +3,7 @@ const cards = [...document.querySelectorAll('.site-card')];
 const cats = [...document.querySelectorAll('[data-cat]')];
 const empty = document.getElementById('no-results');
 
-input?.addEventListener('input', () => {
+function filter() {
   const q = input.value.trim().toLowerCase();
   cards.forEach((c) => (c.hidden = q !== '' && !c.dataset.search.includes(q)));
   let any = false;
@@ -13,4 +13,12 @@ input?.addEventListener('input', () => {
     any ||= visible;
   });
   empty.hidden = any;
-});
+}
+
+input.addEventListener('input', filter);
+const q = new URLSearchParams(location.search).get('q');
+if (q) {
+  input.value = q;
+  filter();
+  document.querySelector('.directory').scrollIntoView();
+}

@@ -1,10 +1,14 @@
 # GMS Hub
 
-메이플스토리 클래식 월드(글로벌) 전용 링크 허브 + 툴 사이트. 한국어/영어 지원.
+메이플스토리 클래식 월드 전용 링크 허브 + 툴 사이트. 한국어/영어 지원.
+
+**원칙:** 출처가 확인된 정보만 싣는다. 사이트 설명은 각 사이트의 소개문·메뉴에서만 가져오고, 숫자에는 출처와 확인 날짜를 붙인다.
 
 - 사이트 모음: `data/sites.json`
-- 레벨별 사냥터: `data/training.json`
-- 주문서 확률: `data/scrolls.json`
+- 레벨별 사냥터 (NiaMeowDB·MS-Classic·Henesys.GG 교차): `data/training.json`
+- 주문서 등급 확률: `data/scrolls.json`
+- 사이트 썸네일: `assets/shots/*.jpg`, 픽셀아트: `scripts/sprites.mjs`
+- 링크 미리보기 이미지: `node scripts/og.mjs` (Chrome + playwright-core 필요)
 - 드롭 확률: `data/drops.json`
 
 ## 빌드

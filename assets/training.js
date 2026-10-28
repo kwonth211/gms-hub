@@ -1,27 +1,42 @@
+const data = JSON.parse(document.getElementById('training-data').textContent);
 const i18n = JSON.parse(document.getElementById('i18n').textContent);
 const form = document.getElementById('tr-form');
 const result = document.getElementById('tr-result');
-const brackets = [...document.querySelectorAll('.bracket')];
-const fill = (s, vars) => s.replace(/\{(\w+)\}/g, (_, k) => vars[k]);
+const nf = new Intl.NumberFormat(i18n.lang);
+const fill = (s, v) => s.replace(/\{(\w+)\}/g, (_, k) => v[k]);
+const tooHigh = (spot, lv) => spot.monsters.filter((m) => m.level - lv >= 5).length;
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-function show(level) {
-  result.innerHTML = '';
-  const idx = brackets.findIndex((b) => level >= +b.dataset.min && level <= +b.dataset.max);
-  if (idx === -1) {
-    result.innerHTML = `<p class="warn">${i18n.trNone}</p>`;
+function show(lv) {
+  const matches = data.spots
+    .map((s) => ({ s, recs: s.recs.filter((r) => lv >= r.min && lv <= r.max) }))
+    .filter((m) => m.recs.length)
+    // Maps more sources agree on first, then maps with fewer monsters far above the player.
+    .sort((a, b) => b.recs.length - a.recs.length || tooHigh(a.s, lv) - tooHigh(b.s, lv) || (b.s.meowdbExpHr || 0) - (a.s.meowdbExpHr || 0));
+
+  if (!matches.length) {
+    result.innerHTML = `<p class="empty">${i18n.trNone}</p>`;
     return;
   }
-  const add = (b, title) => {
-    const box = document.createElement('div');
-    box.className = 'highlight';
-    box.innerHTML = `<h3>${title}</h3>`;
-    box.appendChild(b.querySelector('.table-wrap').cloneNode(true));
-    result.appendChild(box);
-  };
-  const cur = brackets[idx];
-  add(cur, fill(i18n.trBracket, { min: cur.dataset.min, max: cur.dataset.max }));
-  const next = brackets[idx + 1];
-  if (next) add(next, fill(i18n.trNext, { min: next.dataset.min, max: next.dataset.max }));
+  const top = matches[0].recs.length;
+  result.innerHTML = `<h2>${fill(i18n.trResultTitle, { lv })}</h2><div class="spot-list">${matches
+    .map(({ s, recs }) => {
+      const caution = data.cautions.find((c) => c.map === s.map);
+      const mobs = s.monsters
+        .map((m) => {
+          const d = m.level - lv;
+          return `<span class="mob${d >= 5 ? ' hi' : ''}">${esc(m.name)} Lv.${m.level}${d >= 5 ? `<em>${fill(i18n.higher, { d })}</em>` : ''}</span>`;
+        })
+        .join('');
+      return `<article class="spot${recs.length === top && top > 1 ? ' top' : ''}">
+<div class="spot-head"><strong>${esc(s.map)}</strong><span class="agree">${fill(i18n.agree, { n: recs.length })}</span></div>
+<div class="mobs">${mobs}</div>
+<div class="recs">${s.recs.map((r) => `<span class="rec ${r.source}${recs.includes(r) ? '' : ' off'}">${esc(data.sources[r.source].name)} ${r.min}–${r.max}</span>`).join('')}</div>
+${s.meowdbExpHr ? `<span class="exp">${i18n.expHr} (NiaMeowDB): ${nf.format(s.meowdbExpHr)}</span>` : ''}
+${caution ? `<div class="caution">⚠ ${i18n.caution}: ${esc(caution.text[i18n.lang])}</div>` : ''}
+</article>`;
+    })
+    .join('')}</div>`;
 }
 
 form.addEventListener('submit', (e) => {

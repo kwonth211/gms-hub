@@ -1,517 +1,1523 @@
 {
-  "updated": "2026-10-23",
-  "source": "https://meowdb.com/msclassic/guides/best-grind-maps-every-level",
-  "note": {
-    "ko": "시간당 경험치는 몬스터가 나오자마자 잡는다고 가정한 솔로 이론 최대치라 실제로는 더 낮아요.",
-    "en": "EXP/hr is a solo theoretical max assuming every monster dies as it spawns; real rates are lower."
+ "updated": "2026-10-28",
+ "sources": {
+  "meowdb": {
+   "name": "NiaMeowDB",
+   "url": "https://meowdb.com/msclassic/guides/best-grind-maps-every-level",
+   "date": "2026-10-23"
   },
-  "brackets": [
+  "msclassic": {
+   "name": "MS-Classic",
+   "url": "https://ms-classic.com/guides/where-to-train-level-10-30",
+   "urls": [
+    "https://ms-classic.com/guides/where-to-train-level-10-30",
+    "https://ms-classic.com/guides/where-to-train-level-30-50",
+    "https://ms-classic.com/guides/where-to-train-level-50-70"
+   ],
+   "date": "2026-10-22"
+  },
+  "henesys": {
+   "name": "Henesys.GG",
+   "url": "https://henesys.gg/guides/training",
+   "date": null
+  }
+ },
+ "spots": [
+  {
+   "map": "Snail Hunting Ground II",
+   "monsters": [
     {
-      "min": 1,
-      "max": 10,
-      "spots": [
-        {
-          "map": "L Forest I",
-          "region": "Victoria Road",
-          "monster": "Ribbon Pig",
-          "monsterLevel": 10,
-          "expHr": 333525,
-          "note": {
-            "ko": "달팽이부터 리본돼지까지 섞여 나와요",
-            "en": "Mix from Snails up to Ribbon Pigs"
-          }
-        },
-        {
-          "map": "The Tree That Grew II",
-          "region": "Victoria Road",
-          "monster": "Slime",
-          "monsterLevel": 6,
-          "expHr": 318571,
-          "note": {
-            "ko": "슬라임·스텀프 위주, 다크 스텀프 약간",
-            "en": "Slimes and Stumps, a few Dark Stumps"
-          }
-        },
-        {
-          "map": "Construction Site North of Kerning City",
-          "region": "Victoria Road",
-          "monster": "Dark Stump",
-          "monsterLevel": 11,
-          "expHr": 297499,
-          "note": {
-            "ko": "초반엔 빨간달팽이, 후반엔 다크 스텀프",
-            "en": "Red Snails early, Dark Stumps later"
-          }
-        }
-      ]
+     "name": "Snail",
+     "level": 1
     },
     {
-      "min": 11,
-      "max": 15,
-      "spots": [
-        {
-          "map": "Line 1 <Area 1>",
-          "region": "Kerning City Subway",
-          "monster": "Bubbling",
-          "monsterLevel": 15,
-          "expHr": 640000,
-          "note": {
-            "ko": "버블링만 나오는 맵",
-            "en": "Single-mob map"
-          }
-        },
-        {
-          "map": "West Rocky Mountain III",
-          "region": "Victoria Road",
-          "monster": "Green Mushroom",
-          "monsterLevel": 14,
-          "expHr": 572857,
-          "note": {
-            "ko": "도끼 스텀프·다크 도끼 스텀프도 나와요",
-            "en": "Also Axe Stumps and Dark Axe Stumps"
-          }
-        },
-        {
-          "map": "Tree Dungeon, Forest Up North IV",
-          "region": "Victoria Road",
-          "monster": "Green Mushroom",
-          "monsterLevel": 14,
-          "expHr": 343571,
-          "note": {
-            "ko": "저레벨 슬라임 약간",
-            "en": "A few low-level Slimes"
-          }
-        }
-      ]
-    },
-    {
-      "min": 16,
-      "max": 20,
-      "spots": [
-        {
-          "map": "Dangerous Steam",
-          "region": "Dungeon",
-          "monster": "Stirge",
-          "monsterLevel": 20,
-          "expHr": 671786,
-          "note": {
-            "ko": "스터지·뿔버섯·좀비버섯",
-            "en": "Stirge, Horny Mushroom, Zombie Mushroom"
-          }
-        },
-        {
-          "map": "Transfer Area",
-          "region": "Kerning City Subway",
-          "monster": "Stirge",
-          "monsterLevel": 20,
-          "expHr": 502143,
-          "note": {
-            "ko": "한 종류만 나오고 좁아요. 마법사·궁수에게 편해요",
-            "en": "Single-mob, tight layout; easy for mages and bowmen"
-          }
-        },
-        {
-          "map": "Tree Dungeon, Forest Up North III",
-          "region": "Victoria Road",
-          "monster": "Horny Mushroom",
-          "monsterLevel": 22,
-          "expHr": 434286,
-          "note": {
-            "ko": "커닝 맵이 붐빌 때 대안",
-            "en": "Alternate when Kerning maps are crowded"
-          }
-        }
-      ]
-    },
-    {
-      "min": 21,
-      "max": 25,
-      "spots": [
-        {
-          "map": "Ant Tunnel III",
-          "region": "Dungeon",
-          "monster": "Zombie Mushroom",
-          "monsterLevel": 24,
-          "expHr": 1536786,
-          "note": {
-            "ko": "뿔버섯·좀비버섯만 나와요",
-            "en": "Horny and Zombie Mushroom only"
-          }
-        },
-        {
-          "map": "Deep Ant Tunnel I",
-          "region": "Dungeon",
-          "monster": "Zombie Mushroom",
-          "monsterLevel": 24,
-          "expHr": 1078060,
-          "note": {
-            "ko": "몬스터 구성이 넓고 쥬니어 부기까지 나와요",
-            "en": "Broader spread, up to Jr. Boogie"
-          }
-        },
-        {
-          "map": "Ant Tunnel Park",
-          "region": "Dungeon",
-          "monster": "Evil Eye",
-          "monsterLevel": 27,
-          "expHr": 981785,
-          "note": {
-            "ko": "개미굴 몬스터에 이블아이 추가",
-            "en": "Evil Eye added to the Ant Tunnel mix"
-          }
-        }
-      ]
-    },
-    {
-      "min": 26,
-      "max": 30,
-      "spots": [
-        {
-          "map": "Deep Ant Tunnel I",
-          "region": "Dungeon",
-          "monster": "Zombie Mushroom",
-          "monsterLevel": 24,
-          "expHr": 1078060,
-          "note": {
-            "ko": "30렙까지 머물기 좋아요",
-            "en": "Best for staying through 30"
-          }
-        },
-        {
-          "map": "Ant Tunnel Park",
-          "region": "Dungeon",
-          "monster": "Evil Eye",
-          "monsterLevel": 27,
-          "expHr": 981785,
-          "note": {
-            "ko": "이블아이 위주",
-            "en": "Evil Eye dominant"
-          }
-        },
-        {
-          "map": "The Cave of Evil Eye III",
-          "region": "Dungeon",
-          "monster": "Evil Eye",
-          "monsterLevel": 27,
-          "expHr": 680206,
-          "note": {
-            "ko": "거의 이블아이만, 가끔 쥬니어 부기",
-            "en": "Near single-mob, rare Jr. Boogie"
-          }
-        }
-      ]
-    },
-    {
-      "min": 31,
-      "max": 35,
-      "spots": [
-        {
-          "map": "Line 2 <Area 1>",
-          "region": "Kerning City Subway",
-          "monster": "Jr. Wraith",
-          "monsterLevel": 34,
-          "expHr": 2151429,
-          "note": {
-            "ko": "지하철 특유의 높은 밀도",
-            "en": "Subway density"
-          }
-        },
-        {
-          "map": "Line 1 <Area 2>",
-          "region": "Kerning City Subway",
-          "monster": "Jr. Wraith",
-          "monsterLevel": 34,
-          "expHr": 1903929,
-          "note": {
-            "ko": "덜 알려져서 한산할 수 있어요",
-            "en": "Less popular, may be quieter"
-          }
-        },
-        {
-          "map": "The Burnt Land V",
-          "region": "Warning Street",
-          "monster": "Fire Boar",
-          "monsterLevel": 32,
-          "expHr": 1032143,
-          "note": {
-            "ko": "지하철 외 최고 선택지",
-            "en": "Best non-subway option"
-          }
-        }
-      ]
-    },
-    {
-      "min": 36,
-      "max": 40,
-      "spots": [
-        {
-          "map": "A Look-Out Shed Around the Beach",
-          "region": "Florina Road",
-          "monster": "Lorang",
-          "monsterLevel": 38,
-          "expHr": 1162261,
-          "note": {
-            "ko": "루팡도 함께 나와요",
-            "en": "Lupin support"
-          }
-        },
-        {
-          "map": "Lorang Lorang",
-          "region": "Florina Road",
-          "monster": "Lorang",
-          "monsterLevel": 38,
-          "expHr": 1108929,
-          "note": {
-            "ko": "조금 작은 대안 맵",
-            "en": "Slightly smaller alternate"
-          }
-        },
-        {
-          "map": "Monkey Forest II",
-          "region": "Victoria Road",
-          "monster": "Zombie Lupin",
-          "monsterLevel": 41,
-          "expHr": 1062500,
-          "note": {
-            "ko": "40렙 이후까지 이어 쓸 수 있어요",
-            "en": "Extends into 40+"
-          }
-        }
-      ]
-    },
-    {
-      "min": 41,
-      "max": 45,
-      "spots": [
-        {
-          "map": "Monkey Swamp III",
-          "region": "Hidden Street",
-          "monster": "Zombie Lupin",
-          "monsterLevel": 41,
-          "expHr": 1138571,
-          "note": {
-            "ko": "좀비 루팡 밀도가 높아요",
-            "en": "Zombie Lupin density"
-          }
-        },
-        {
-          "map": "Dangerous Valley",
-          "region": "Hidden Street",
-          "monster": "Copper Drake",
-          "monsterLevel": 45,
-          "expHr": 946786,
-          "note": {
-            "ko": "썬콜 40렙 초반 추천 맵",
-            "en": "Strong I/L Wizard map in the early 40s"
-          }
-        },
-        {
-          "map": "Tree Dungeon, Monkey Forest II",
-          "region": "Hidden Street",
-          "monster": "Zombie Lupin",
-          "monsterLevel": 41,
-          "expHr": 916429,
-          "note": {
-            "ko": "덜 알려진 대안",
-            "en": "Less well-known alternative"
-          }
-        }
-      ]
-    },
-    {
-      "min": 46,
-      "max": 50,
-      "spots": [
-        {
-          "map": "Line 2 <Area 2>",
-          "region": "Kerning City Subway",
-          "monster": "Wraith",
-          "monsterLevel": 48,
-          "expHr": 3488571,
-          "note": {
-            "ko": "쥬니어 레이스·레이스 혼합",
-            "en": "Mixed Jr. Wraith and Wraith"
-          }
-        },
-        {
-          "map": "Line 2 <Area 3>",
-          "region": "Kerning City Subway",
-          "monster": "Wraith",
-          "monsterLevel": 48,
-          "expHr": 2962857,
-          "note": {
-            "ko": "레이스만 나와요. 썬콜에게 좋아요",
-            "en": "Pure Wraith; suits lightning mages"
-          }
-        },
-        {
-          "map": "Line 1 <Area 4>",
-          "region": "Kerning City Subway",
-          "monster": "Wraith",
-          "monsterLevel": 48,
-          "expHr": 2570714,
-          "note": {
-            "ko": "레이스만, 조금 작은 맵",
-            "en": "Pure Wraith, smaller map"
-          }
-        }
-      ]
-    },
-    {
-      "min": 51,
-      "max": 55,
-      "spots": [
-        {
-          "map": "Lorang and Clang",
-          "region": "Florina Road",
-          "monster": "Clang",
-          "monsterLevel": 49,
-          "expHr": 1816786,
-          "note": {
-            "ko": "경험치 70%가 클랑. 썬콜 속성 이점",
-            "en": "Clangs give ~70% of EXP; lightning bonus"
-          }
-        },
-        {
-          "map": "Dangerous Croko II",
-          "region": "Warning Street",
-          "monster": "Croco",
-          "monsterLevel": 52,
-          "expHr": 1582500,
-          "note": {
-            "ko": "경험치 80%가 크로코",
-            "en": "Crocos give ~80% of EXP"
-          }
-        }
-      ]
-    },
-    {
-      "min": 56,
-      "max": 60,
-      "spots": [
-        {
-          "map": "Sleepy Dungeon V",
-          "region": "Dungeon",
-          "monster": "Dark Stone Golem",
-          "monsterLevel": 58,
-          "expHr": 2585073,
-          "note": {
-            "ko": "스폰 지점 88개",
-            "en": "88 spawn points"
-          }
-        },
-        {
-          "map": "Sleepy Dungeon III",
-          "region": "Dungeon",
-          "monster": "Dark Stone Golem",
-          "monsterLevel": 58,
-          "expHr": 1421809,
-          "note": {
-            "ko": "V가 붐빌 때 절반 크기 대안",
-            "en": "Half the size, for when V is crowded"
-          }
-        }
-      ]
-    },
-    {
-      "min": 61,
-      "max": 70,
-      "spots": [
-        {
-          "map": "Dangerous Valley II",
-          "region": "Hidden Street",
-          "monster": "Red Drake",
-          "monsterLevel": 60,
-          "expHr": 677269,
-          "note": {
-            "ko": "빅토리아 섬에서 60렙 몬스터 중심인 유일한 맵",
-            "en": "Only Victoria Island map built around a lv 60 mob"
-          }
-        }
-      ]
+     "name": "Blue Snail",
+     "level": 2
     }
+   ],
+   "recs": [
+    {
+     "source": "henesys",
+     "min": 1,
+     "max": 7
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "Mushroom Garden",
+   "monsters": [
+    {
+     "name": "Shroom",
+     "level": 3
+    },
+    {
+     "name": "Snail",
+     "level": 1
+    },
+    {
+     "name": "Orange Mushroom",
+     "level": 8
+    }
+   ],
+   "recs": [
+    {
+     "source": "henesys",
+     "min": 5,
+     "max": 10
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "The Tree That Grew II",
+   "monsters": [
+    {
+     "name": "Slime",
+     "level": 6
+    },
+    {
+     "name": "Stump",
+     "level": 5
+    },
+    {
+     "name": "Dark Stump",
+     "level": 11
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 1,
+     "max": 10
+    },
+    {
+     "source": "henesys",
+     "min": 8,
+     "max": 15
+    }
+   ],
+   "meowdbExpHr": 318571
+  },
+  {
+   "map": "L Forest I",
+   "monsters": [
+    {
+     "name": "Ribbon Pig",
+     "level": 10
+    },
+    {
+     "name": "Pig",
+     "level": 7
+    },
+    {
+     "name": "Shroom",
+     "level": 3
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 1,
+     "max": 10
+    },
+    {
+     "source": "henesys",
+     "min": 10,
+     "max": 16
+    }
+   ],
+   "meowdbExpHr": 333525
+  },
+  {
+   "map": "Construction Site North of Kerning City",
+   "monsters": [
+    {
+     "name": "Dark Stump",
+     "level": 11
+    },
+    {
+     "name": "Red Snail",
+     "level": 4
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 1,
+     "max": 10
+    }
+   ],
+   "meowdbExpHr": 297499
+  },
+  {
+   "map": "Kerning City Construction Site",
+   "monsters": [
+    {
+     "name": "Octopus",
+     "level": 12
+    }
+   ],
+   "recs": [
+    {
+     "source": "msclassic",
+     "min": 10,
+     "max": 14
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "Henesys Hunting Grounds",
+   "monsters": [],
+   "recs": [
+    {
+     "source": "msclassic",
+     "min": 10,
+     "max": 14
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "The Rain-Forest East of Henesys",
+   "monsters": [
+    {
+     "name": "Ribbon Pig",
+     "level": 10
+    },
+    {
+     "name": "Pig",
+     "level": 7
+    }
+   ],
+   "recs": [
+    {
+     "source": "msclassic",
+     "min": 10,
+     "max": 14
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "Henesys Hunting Ground III",
+   "monsters": [
+    {
+     "name": "Green Mushroom",
+     "level": 14
+    },
+    {
+     "name": "Orange Mushroom",
+     "level": 8
+    },
+    {
+     "name": "Slime",
+     "level": 6
+    }
+   ],
+   "recs": [
+    {
+     "source": "msclassic",
+     "min": 10,
+     "max": 14
+    },
+    {
+     "source": "henesys",
+     "min": 13,
+     "max": 20
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "West Rocky Mountain III",
+   "monsters": [
+    {
+     "name": "Green Mushroom",
+     "level": 14
+    },
+    {
+     "name": "Stump",
+     "level": 5
+    },
+    {
+     "name": "Red Snail",
+     "level": 4
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 11,
+     "max": 15
+    },
+    {
+     "source": "henesys",
+     "min": 13,
+     "max": 20
+    }
+   ],
+   "meowdbExpHr": 572857
+  },
+  {
+   "map": "Tree Dungeon, Forest Up North IV",
+   "monsters": [
+    {
+     "name": "Green Mushroom",
+     "level": 14
+    },
+    {
+     "name": "Slime",
+     "level": 6
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 11,
+     "max": 15
+    },
+    {
+     "source": "msclassic",
+     "min": 15,
+     "max": 19
+    }
+   ],
+   "meowdbExpHr": 343571
+  },
+  {
+   "map": "Line 1 <Area 1>",
+   "monsters": [
+    {
+     "name": "Bubbling",
+     "level": 15
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 11,
+     "max": 15
+    },
+    {
+     "source": "msclassic",
+     "min": 15,
+     "max": 19
+    },
+    {
+     "source": "henesys",
+     "min": 15,
+     "max": 21
+    }
+   ],
+   "meowdbExpHr": 640000
+  },
+  {
+   "map": "Dungeon, Southern Forest III",
+   "monsters": [
+    {
+     "name": "Green Mushroom",
+     "level": 14
+    },
+    {
+     "name": "Slime",
+     "level": 6
+    }
+   ],
+   "recs": [
+    {
+     "source": "msclassic",
+     "min": 15,
+     "max": 19
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "Dangerous Steam",
+   "monsters": [
+    {
+     "name": "Stirge",
+     "level": 20
+    },
+    {
+     "name": "Horny Mushroom",
+     "level": 22
+    },
+    {
+     "name": "Zombie Mushroom",
+     "level": 24
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 16,
+     "max": 20
+    },
+    {
+     "source": "msclassic",
+     "min": 20,
+     "max": 24
+    }
+   ],
+   "meowdbExpHr": 671786
+  },
+  {
+   "map": "Transfer Area",
+   "monsters": [
+    {
+     "name": "Stirge",
+     "level": 20
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 16,
+     "max": 20
+    },
+    {
+     "source": "msclassic",
+     "min": 20,
+     "max": 24
+    }
+   ],
+   "meowdbExpHr": 502143
+  },
+  {
+   "map": "Tree Dungeon, Forest Up North III",
+   "monsters": [
+    {
+     "name": "Horny Mushroom",
+     "level": 22
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 16,
+     "max": 20
+    }
+   ],
+   "meowdbExpHr": 434286
+  },
+  {
+   "map": "Dark Cave",
+   "monsters": [
+    {
+     "name": "Stirge",
+     "level": 20
+    },
+    {
+     "name": "Horny Mushroom",
+     "level": 22
+    },
+    {
+     "name": "Zombie Mushroom",
+     "level": 24
+    }
+   ],
+   "recs": [
+    {
+     "source": "msclassic",
+     "min": 20,
+     "max": 24
+    },
+    {
+     "source": "henesys",
+     "min": 18,
+     "max": 23
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "Damp Forest",
+   "monsters": [
+    {
+     "name": "Jr. Necki",
+     "level": 21
+    },
+    {
+     "name": "Octopus",
+     "level": 12
+    },
+    {
+     "name": "Slime",
+     "level": 6
+    }
+   ],
+   "recs": [
+    {
+     "source": "msclassic",
+     "min": 20,
+     "max": 24
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "Ant Tunnel III",
+   "monsters": [
+    {
+     "name": "Zombie Mushroom",
+     "level": 24
+    },
+    {
+     "name": "Horny Mushroom",
+     "level": 22
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 21,
+     "max": 25
+    },
+    {
+     "source": "msclassic",
+     "min": 22,
+     "max": 30
+    },
+    {
+     "source": "henesys",
+     "min": 22,
+     "max": 27
+    }
+   ],
+   "meowdbExpHr": 1536786
+  },
+  {
+   "map": "Deep Ant Tunnel I",
+   "monsters": [
+    {
+     "name": "Zombie Mushroom",
+     "level": 24
+    },
+    {
+     "name": "Horny Mushroom",
+     "level": 22
+    },
+    {
+     "name": "Evil Eye",
+     "level": 27
+    },
+    {
+     "name": "Jr. Boogie",
+     "level": 35
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 21,
+     "max": 30
+    },
+    {
+     "source": "msclassic",
+     "min": 22,
+     "max": 30
+    }
+   ],
+   "meowdbExpHr": 1078060
+  },
+  {
+   "map": "Ant Tunnel Park",
+   "monsters": [
+    {
+     "name": "Evil Eye",
+     "level": 27
+    },
+    {
+     "name": "Zombie Mushroom",
+     "level": 24
+    },
+    {
+     "name": "Horny Mushroom",
+     "level": 22
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 21,
+     "max": 30
+    },
+    {
+     "source": "msclassic",
+     "min": 22,
+     "max": 30
+    },
+    {
+     "source": "henesys",
+     "min": 24,
+     "max": 30
+    }
+   ],
+   "meowdbExpHr": 981785
+  },
+  {
+   "map": "1st Accompaniment <Last Stage>",
+   "monsters": [
+    {
+     "name": "King Slime",
+     "level": 32
+    },
+    {
+     "name": "Curse Eye",
+     "level": 29
+    },
+    {
+     "name": "Jr. Necki",
+     "level": 25
+    }
+   ],
+   "recs": [
+    {
+     "source": "henesys",
+     "min": 21,
+     "max": 30
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "The Land of Wild Boar II",
+   "monsters": [
+    {
+     "name": "Wild Boar",
+     "level": 25
+    },
+    {
+     "name": "Axe Stump",
+     "level": 17
+    },
+    {
+     "name": "Dark Stump",
+     "level": 11
+    }
+   ],
+   "recs": [
+    {
+     "source": "henesys",
+     "min": 23,
+     "max": 30
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "The Cave of Evil Eye III",
+   "monsters": [
+    {
+     "name": "Evil Eye",
+     "level": 27
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 26,
+     "max": 30
+    }
+   ],
+   "meowdbExpHr": 680206
+  },
+  {
+   "map": "Line 2 <Area 1>",
+   "monsters": [
+    {
+     "name": "Jr. Wraith",
+     "level": 34
+    },
+    {
+     "name": "Jr. Necki",
+     "level": 21
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 31,
+     "max": 35
+    },
+    {
+     "source": "msclassic",
+     "min": 30,
+     "max": 40
+    },
+    {
+     "source": "henesys",
+     "min": 32,
+     "max": 40
+    }
+   ],
+   "meowdbExpHr": 2151429
+  },
+  {
+   "map": "Line 1 <Area 2>",
+   "monsters": [
+    {
+     "name": "Jr. Wraith",
+     "level": 34
+    },
+    {
+     "name": "Stirge",
+     "level": 20
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 31,
+     "max": 35
+    },
+    {
+     "source": "msclassic",
+     "min": 30,
+     "max": 40
+    }
+   ],
+   "meowdbExpHr": 1903929
+  },
+  {
+   "map": "The Burnt Land V",
+   "monsters": [
+    {
+     "name": "Fire Boar",
+     "level": 32
+    },
+    {
+     "name": "Lupin",
+     "level": 37
+    },
+    {
+     "name": "Dark Axe Stump",
+     "level": 23
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 31,
+     "max": 35
+    },
+    {
+     "source": "msclassic",
+     "min": 30,
+     "max": 35
+    }
+   ],
+   "meowdbExpHr": 1032143
+  },
+  {
+   "map": "Tree Dungeon, Forest Up North IX",
+   "monsters": [
+    {
+     "name": "Curse Eye",
+     "level": 33
+    }
+   ],
+   "recs": [
+    {
+     "source": "msclassic",
+     "min": 30,
+     "max": 35
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "The Swamp of Despair II",
+   "monsters": [
+    {
+     "name": "Ligator",
+     "level": 31
+    },
+    {
+     "name": "Horny Mushroom",
+     "level": 22
+    },
+    {
+     "name": "Jr. Necki",
+     "level": 21
+    }
+   ],
+   "recs": [
+    {
+     "source": "henesys",
+     "min": 30,
+     "max": 36
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "A Look-Out Shed Around the Beach",
+   "monsters": [
+    {
+     "name": "Lorang",
+     "level": 38
+    },
+    {
+     "name": "Lupin",
+     "level": 37
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 36,
+     "max": 40
+    },
+    {
+     "source": "msclassic",
+     "min": 36,
+     "max": 40
+    },
+    {
+     "source": "henesys",
+     "min": 36,
+     "max": 42
+    }
+   ],
+   "meowdbExpHr": 1162261
+  },
+  {
+   "map": "Lorang Lorang",
+   "monsters": [
+    {
+     "name": "Lorang",
+     "level": 38
+    },
+    {
+     "name": "Lupin",
+     "level": 37
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 36,
+     "max": 40
+    },
+    {
+     "source": "msclassic",
+     "min": 36,
+     "max": 40
+    }
+   ],
+   "meowdbExpHr": 1108929
+  },
+  {
+   "map": "Monkey Forest II",
+   "monsters": [
+    {
+     "name": "Zombie Lupin",
+     "level": 41
+    },
+    {
+     "name": "Lupin",
+     "level": 37
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 36,
+     "max": 40
+    },
+    {
+     "source": "msclassic",
+     "min": 36,
+     "max": 40
+    }
+   ],
+   "meowdbExpHr": 1062500
+  },
+  {
+   "map": "Monkey Swamp III",
+   "monsters": [
+    {
+     "name": "Zombie Lupin",
+     "level": 41
+    },
+    {
+     "name": "Jr. Necki",
+     "level": 21
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 41,
+     "max": 45
+    },
+    {
+     "source": "msclassic",
+     "min": 41,
+     "max": 45
+    },
+    {
+     "source": "henesys",
+     "min": 38,
+     "max": 44
+    }
+   ],
+   "meowdbExpHr": 1138571
+  },
+  {
+   "map": "Tree Dungeon, Monkey Forest II",
+   "monsters": [
+    {
+     "name": "Zombie Lupin",
+     "level": 41
+    },
+    {
+     "name": "Curse Eye",
+     "level": 33
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 41,
+     "max": 45
+    },
+    {
+     "source": "msclassic",
+     "min": 41,
+     "max": 45
+    }
+   ],
+   "meowdbExpHr": 916429
+  },
+  {
+   "map": "Tree Dungeon, Monkey Forest I",
+   "monsters": [
+    {
+     "name": "Zombie Lupin",
+     "level": 41
+    },
+    {
+     "name": "Curse Eye",
+     "level": 33
+    }
+   ],
+   "recs": [
+    {
+     "source": "msclassic",
+     "min": 41,
+     "max": 45
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "Dangerous Valley",
+   "monsters": [
+    {
+     "name": "Copper Drake",
+     "level": 45
+    },
+    {
+     "name": "Fire Boar",
+     "level": 32
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 41,
+     "max": 45
+    },
+    {
+     "source": "msclassic",
+     "min": 41,
+     "max": 45
+    }
+   ],
+   "meowdbExpHr": 946786
+  },
+  {
+   "map": "The Tunnel That Lost Light I",
+   "monsters": [
+    {
+     "name": "Drake",
+     "level": 50
+    },
+    {
+     "name": "Cold Eye",
+     "level": 40
+    }
+   ],
+   "recs": [
+    {
+     "source": "henesys",
+     "min": 40,
+     "max": 46
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "Line 2 <Area 2>",
+   "monsters": [
+    {
+     "name": "Wraith",
+     "level": 48
+    },
+    {
+     "name": "Jr. Wraith",
+     "level": 34
+    },
+    {
+     "name": "Jr. Necki",
+     "level": 21
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 46,
+     "max": 50
+    },
+    {
+     "source": "msclassic",
+     "min": 46,
+     "max": 55
+    },
+    {
+     "source": "henesys",
+     "min": 44,
+     "max": 55
+    }
+   ],
+   "meowdbExpHr": 3488571
+  },
+  {
+   "map": "Line 2 <Area 3>",
+   "monsters": [
+    {
+     "name": "Wraith",
+     "level": 48
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 46,
+     "max": 50
+    },
+    {
+     "source": "msclassic",
+     "min": 46,
+     "max": 55
+    }
+   ],
+   "meowdbExpHr": 2962857
+  },
+  {
+   "map": "Line 1 <Area 4>",
+   "monsters": [
+    {
+     "name": "Wraith",
+     "level": 48
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 46,
+     "max": 50
+    },
+    {
+     "source": "msclassic",
+     "min": 46,
+     "max": 55
+    }
+   ],
+   "meowdbExpHr": 2570714
+  },
+  {
+   "map": "Hot Sand",
+   "monsters": [
+    {
+     "name": "Clang",
+     "level": 49
+    },
+    {
+     "name": "Tortie",
+     "level": 46
+    }
+   ],
+   "recs": [
+    {
+     "source": "msclassic",
+     "min": 46,
+     "max": 50
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "Lorang and Clang",
+   "monsters": [
+    {
+     "name": "Clang",
+     "level": 49
+    },
+    {
+     "name": "Lorang",
+     "level": 38
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 51,
+     "max": 55
+    },
+    {
+     "source": "msclassic",
+     "min": 50,
+     "max": 55
+    },
+    {
+     "source": "henesys",
+     "min": 47,
+     "max": 55
+    }
+   ],
+   "meowdbExpHr": 1816786
+  },
+  {
+   "map": "Dangerous Croko II",
+   "monsters": [
+    {
+     "name": "Croco",
+     "level": 52
+    },
+    {
+     "name": "Jr. Necki",
+     "level": 21
+    },
+    {
+     "name": "Slime",
+     "level": 6
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 51,
+     "max": 55
+    },
+    {
+     "source": "msclassic",
+     "min": 50,
+     "max": 55
+    },
+    {
+     "source": "henesys",
+     "min": 52,
+     "max": 58
+    }
+   ],
+   "meowdbExpHr": 1582500
+  },
+  {
+   "map": "Clang and Lorang",
+   "monsters": [
+    {
+     "name": "Clang",
+     "level": 49
+    },
+    {
+     "name": "Tortie",
+     "level": 46
+    },
+    {
+     "name": "Lorang",
+     "level": 38
+    }
+   ],
+   "recs": [
+    {
+     "source": "msclassic",
+     "min": 50,
+     "max": 55
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "The Forest of Evil II",
+   "monsters": [
+    {
+     "name": "Malady",
+     "level": 55
+    },
+    {
+     "name": "Zombie Lupin",
+     "level": 41
+    }
+   ],
+   "recs": [
+    {
+     "source": "msclassic",
+     "min": 50,
+     "max": 55
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "Camp 1",
+   "monsters": [
+    {
+     "name": "Officer Skeleton",
+     "level": 63
+    },
+    {
+     "name": "Skeleton Soldier",
+     "level": 57
+    }
+   ],
+   "recs": [
+    {
+     "source": "msclassic",
+     "min": 55,
+     "max": 62
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "Camp 2",
+   "monsters": [
+    {
+     "name": "Officer Skeleton",
+     "level": 63
+    },
+    {
+     "name": "Skeleton Soldier",
+     "level": 57
+    }
+   ],
+   "recs": [
+    {
+     "source": "msclassic",
+     "min": 55,
+     "max": 62
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "Sleepy Dungeon V",
+   "monsters": [
+    {
+     "name": "Dark Stone Golem",
+     "level": 58
+    },
+    {
+     "name": "Lupin",
+     "level": 37
+    },
+    {
+     "name": "Jr. Boogie",
+     "level": 35
+    },
+    {
+     "name": "Curse Eye",
+     "level": 33
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 56,
+     "max": 60
+    },
+    {
+     "source": "msclassic",
+     "min": 55,
+     "max": 62
+    },
+    {
+     "source": "henesys",
+     "min": 55,
+     "max": 70
+    }
+   ],
+   "meowdbExpHr": 2585073
+  },
+  {
+   "map": "Sleepy Dungeon III",
+   "monsters": [
+    {
+     "name": "Dark Stone Golem",
+     "level": 58
+    },
+    {
+     "name": "Lupin",
+     "level": 37
+    },
+    {
+     "name": "Curse Eye",
+     "level": 33
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 56,
+     "max": 60
+    },
+    {
+     "source": "msclassic",
+     "min": 55,
+     "max": 62
+    }
+   ],
+   "meowdbExpHr": 1421809
+  },
+  {
+   "map": "Golem's Temple III",
+   "monsters": [
+    {
+     "name": "Stone Golem",
+     "level": 56
+    },
+    {
+     "name": "Lupin",
+     "level": 37
+    },
+    {
+     "name": "Blue Mushroom",
+     "level": 19
+    }
+   ],
+   "recs": [
+    {
+     "source": "henesys",
+     "min": 55,
+     "max": 62
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "Camp 3",
+   "monsters": [
+    {
+     "name": "Officer Skeleton",
+     "level": 63
+    },
+    {
+     "name": "Skeleton Soldier",
+     "level": 57
+    }
+   ],
+   "recs": [
+    {
+     "source": "msclassic",
+     "min": 60,
+     "max": 70
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "Dangerous Valley II",
+   "monsters": [
+    {
+     "name": "Red Drake",
+     "level": 60
+    },
+    {
+     "name": "Copper Drake",
+     "level": 45
+    },
+    {
+     "name": "Fire Boar",
+     "level": 32
+    }
+   ],
+   "recs": [
+    {
+     "source": "meowdb",
+     "min": 61,
+     "max": 70
+    },
+    {
+     "source": "msclassic",
+     "min": 60,
+     "max": 70
+    },
+    {
+     "source": "henesys",
+     "min": 60,
+     "max": 68
+    }
+   ],
+   "meowdbExpHr": 677269
+  },
+  {
+   "map": "Remains <Cliff>",
+   "monsters": [
+    {
+     "name": "Commander Skeleton",
+     "level": 73
+    },
+    {
+     "name": "Officer Skeleton",
+     "level": 63
+    }
+   ],
+   "recs": [
+    {
+     "source": "msclassic",
+     "min": 60,
+     "max": 70
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "Wild Kargo's Area",
+   "monsters": [
+    {
+     "name": "Wild Kargo",
+     "level": 62
+    },
+    {
+     "name": "Cold Eye",
+     "level": 40
+    }
+   ],
+   "recs": [
+    {
+     "source": "msclassic",
+     "min": 60,
+     "max": 70
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "Drake's Meal Table",
+   "monsters": [
+    {
+     "name": "Wild Kargo",
+     "level": 62
+    },
+    {
+     "name": "Drake",
+     "level": 50
+    },
+    {
+     "name": "Cold Eye",
+     "level": 40
+    }
+   ],
+   "recs": [
+    {
+     "source": "msclassic",
+     "min": 60,
+     "max": 70
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "Sanctuary Entrance I",
+   "monsters": [
+    {
+     "name": "Tauromacis",
+     "level": 70
+    },
+    {
+     "name": "Cold Eye",
+     "level": 40
+    }
+   ],
+   "recs": [
+    {
+     "source": "msclassic",
+     "min": 60,
+     "max": 70
+    },
+    {
+     "source": "henesys",
+     "min": 65,
+     "max": 75
+    }
+   ],
+   "meowdbExpHr": null
+  },
+  {
+   "map": "Sanctuary Entrance IV",
+   "monsters": [
+    {
+     "name": "Taurospear",
+     "level": 75
+    },
+    {
+     "name": "Tauromacis",
+     "level": 70
+    },
+    {
+     "name": "Cold Eye",
+     "level": 40
+    }
+   ],
+   "recs": [
+    {
+     "source": "msclassic",
+     "min": 60,
+     "max": 70
+    },
+    {
+     "source": "henesys",
+     "min": 72,
+     "max": 80
+    }
+   ],
+   "meowdbExpHr": null
+  }
+ ],
+ "cautions": [
+  {
+   "map": "The Tunnel That Lost Light I",
+   "source": "msclassic",
+   "text": {
+    "ko": "MS-Classic은 이 맵을 더 높은 레벨 몬스터가 함께 나와 위험하다며 훈련용으로 추천하지 않아요.",
+    "en": "MS-Classic flags this map as risky because higher-level monsters share it, and does not recommend it."
+   }
+  },
+  {
+   "map": "Sleepy Dungeon V",
+   "source": "msclassic",
+   "text": {
+    "ko": "MS-Classic은 30~50레벨 구간에서는 이 맵을 위험하다고 표시해요.",
+    "en": "MS-Classic flags this map as risky for levels 30–50."
+   }
+  }
+ ],
+ "notes": {
+  "ko": [
+   "몬스터 레벨은 각 출처에 적힌 값이에요.",
+   "NiaMeowDB의 시간당 경험치는 몬스터가 나오자마자 잡는다고 가정한 솔로 이론 최대치예요.",
+   "Henesys.GG의 1st Accompaniment는 커닝시티 파티퀘스트 맵이에요."
   ],
-  "loot": [
-    {
-      "map": "Henesys Hunting Ground I",
-      "levels": "2-14",
-      "expHr": 153216,
-      "note": {
-        "ko": "몬스터 7종, 파티 사냥용",
-        "en": "Seven mob types, party-friendly"
-      }
-    },
-    {
-      "map": "Dungeon, Southern Forest I",
-      "levels": "6",
-      "expHr": 90000,
-      "note": {
-        "ko": "슬라임만, 슬라임 방울 드랍",
-        "en": "Slimes only, Slime Bubbles"
-      }
-    },
-    {
-      "map": "The Pig Beach",
-      "levels": "2-28",
-      "expHr": 105767,
-      "note": {
-        "ko": "돼지 드랍, 아이언 호그 1시간마다 리젠",
-        "en": "Pig drops; Iron Hog respawns hourly"
-      }
-    },
-    {
-      "map": "Damp Forest",
-      "levels": "6-21",
-      "expHr": 284999,
-      "note": {
-        "ko": "쥬니어 네키 가죽",
-        "en": "Jr. Necki Skins"
-      }
-    },
-    {
-      "map": "Land of Wild Boar",
-      "levels": "23-35",
-      "expHr": 472616,
-      "note": {
-        "ko": "가죽, 동물 털 뭉치, 나무 팽이",
-        "en": "Leather, Animal Fur Bundles, Wooden Tops"
-      }
-    },
-    {
-      "map": "The Burnt Land II",
-      "levels": "23-32",
-      "expHr": 591429,
-      "note": {
-        "ko": "아르웬의 유리구두, 다이아몬드 원석, 월비 표창",
-        "en": "Arwen's Glass Shoe, Diamond Ore, Wolbi Throwing Stars"
-      }
-    },
-    {
-      "map": "Drake Hunting Ground",
-      "levels": "22-50",
-      "expHr": 885921,
-      "note": {
-        "ko": "드래곤 가죽, 드레이크의 피",
-        "en": "Dragon Skin, Drake's Blood"
-      }
-    },
-    {
-      "map": "Line 2 <Area 3>",
-      "levels": "48",
-      "expHr": 2962857,
-      "note": {
-        "ko": "레이스가 붉은 채찍 드랍",
-        "en": "Wraiths drop the Red Whip"
-      }
-    },
-    {
-      "map": "The Entrance of Golem's Temple",
-      "levels": "19-56",
-      "expHr": 714723,
-      "note": {
-        "ko": "스톤골렘이 토비 표창 드랍. 몬스터 레벨 폭이 넓으니 주의",
-        "en": "Stone Golems drop Tobi Throwing Stars; wide level range"
-      }
-    }
+  "en": [
+   "Monster levels are as listed by each source.",
+   "NiaMeowDB EXP/hr is a solo theoretical max assuming every monster dies as it spawns.",
+   "Henesys.GG's 1st Accompaniment is a Kerning City Party Quest map."
   ]
+ }
 }

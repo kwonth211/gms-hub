@@ -1,54 +1,90 @@
 {
-  "updated": "2026-10-28",
-  "note": {
-    "ko": "주문서는 성공·실패와 관계없이 업그레이드 가능 횟수를 1 소모해요. 다크 주문서(30%·70%)는 실패하면 50% 확률로 아이템이 파괴돼요.",
-    "en": "A scroll uses one upgrade slot whether it passes or fails. Dark scrolls (30%, 70%) destroy the item 50% of the time when they fail."
+ "updated": "2026-10-28",
+ "sources": [
+  {
+   "name": "MS-Classic",
+   "url": "https://ms-classic.com/guides/scroll-tiers-lesser-intermediate-greater-explained",
+   "date": "2026-10-22"
   },
-  "scrolls": [
-    {
-      "id": "s10",
-      "name": {
-        "ko": "10% 주문서",
-        "en": "10% scroll"
-      },
-      "success": 10,
-      "destroyOnFail": 0
-    },
-    {
-      "id": "s30",
-      "name": {
-        "ko": "30% 다크 주문서",
-        "en": "30% dark scroll"
-      },
-      "success": 30,
-      "destroyOnFail": 50
-    },
-    {
-      "id": "s60",
-      "name": {
-        "ko": "60% 주문서",
-        "en": "60% scroll"
-      },
-      "success": 60,
-      "destroyOnFail": 0
-    },
-    {
-      "id": "s70",
-      "name": {
-        "ko": "70% 다크 주문서",
-        "en": "70% dark scroll"
-      },
-      "success": 70,
-      "destroyOnFail": 50
-    },
-    {
-      "id": "s100",
-      "name": {
-        "ko": "100% 주문서",
-        "en": "100% scroll"
-      },
-      "success": 100,
-      "destroyOnFail": 0
-    }
-  ]
+  {
+   "name": "MapleClassic Wiki",
+   "url": "https://mapleclassic.wiki/wiki/Scrolling",
+   "date": null
+  }
+ ],
+ "tiers": [
+  {
+   "id": "lesser",
+   "name": "Lesser",
+   "success": 100,
+   "destroyOnFail": 0
+  },
+  {
+   "id": "intermediate",
+   "name": "Intermediate",
+   "success": 60,
+   "destroyOnFail": 0
+  },
+  {
+   "id": "greater",
+   "name": "Greater",
+   "success": 10,
+   "destroyOnFail": 0
+  },
+  {
+   "id": "chaos",
+   "name": "Chaos",
+   "success": 10,
+   "destroyOnFail": 50
+  }
+ ],
+ "ladders": [
+  {
+   "id": "standard",
+   "name": {
+    "ko": "기본 (장갑 공격력, STR·DEX·INT·LUK, 명중, 이속, 점프, 회피, 크리티컬)",
+    "en": "Standard (Gloves ATT, STR/DEX/INT/LUK, ACC, Speed, Jump, Avoid, Crit)"
+   },
+   "gains": {
+    "lesser": 1,
+    "intermediate": 2,
+    "greater": 3,
+    "chaos": 4
+   }
+  },
+  {
+   "id": "defense",
+   "name": {
+    "ko": "방어력 · 장갑 마력 · 망토 마법방어",
+    "en": "Defense, Gloves Magic ATT, Cape Magic DEF"
+   },
+   "gains": {
+    "lesser": 2,
+    "intermediate": 4,
+    "greater": 6,
+    "chaos": 8
+   }
+  },
+  {
+   "id": "hpmp",
+   "name": {
+    "ko": "HP · MP (모자·상의·하의)",
+    "en": "HP & MP (hat, top, bottom)"
+   },
+   "gains": {
+    "lesser": 10,
+    "intermediate": 15,
+    "greater": 20,
+    "chaos": 25
+   }
+  }
+ ],
+ "disputed": {
+  "ko": "무기 공격력과 완드·스태프 마력 상승치는 출처마다 달라요. MS-Classic은 무기 +1/+2/+4/+5, 완드·스태프 +2/+4/+8/+10, MapleClassic Wiki는 무기 +1/+2/+3/+4, 완드·스태프 +2/+4/+6/+8로 적고 있어요. 이 경우엔 '직접 입력'을 쓰세요.",
+  "en": "Weapon ATT and wand/staff Magic ATT gains differ by source: MS-Classic lists weapons +1/+2/+4/+5 and wands/staves +2/+4/+8/+10, while MapleClassic Wiki lists weapons +1/+2/+3/+4 and wands/staves +2/+4/+6/+8. Use custom gains for these."
+ },
+ "unknown": {
+  "ko": "실패한 주문서가 업그레이드 가능 횟수를 차감하는지는 클라이언트 데이터에 기록이 없어 확인되지 않았어요. 그래서 이 계산기는 '바를 주문서 개수' 기준으로 계산해요.",
+  "en": "Whether a failed scroll uses an upgrade slot is not recorded in the client data, so this calculator works from the number of scrolls you apply."
+ }
 }

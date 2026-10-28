@@ -7,7 +7,7 @@ const TOKEN_KEY = 'cb_admin_token';
 
 const FILES = [
   { path: 'data/drops.json', label: '드롭 확률', editor: 'drops' },
-  { path: 'data/scrolls.json', label: '주문서 확률', editor: 'scrolls' },
+  { path: 'data/scrolls.json', label: '주문서 등급 확률', editor: 'scrolls' },
   { path: 'data/training.json', label: '사냥터', editor: 'json' },
   { path: 'data/sites.json', label: '사이트 링크', editor: 'json' }
 ];
@@ -118,8 +118,7 @@ const DROP_COLS = [
 ];
 const SCROLL_COLS = [
   ['id', 'ID'],
-  ['name.ko', '이름(한국어)'],
-  ['name.en', '이름(영어)'],
+  ['name', '등급 이름'],
   ['success', '성공(%)'],
   ['destroyOnFail', '실패 시 파괴(%)']
 ];
@@ -166,12 +165,7 @@ function renderEditor() {
   if (file.editor === 'drops') {
     tableEditor(data.entries, DROP_COLS, ['rate'], () => ({ monster: '', item: '', rate: '', source: '', note: '' }));
   } else if (file.editor === 'scrolls') {
-    tableEditor(data.scrolls, SCROLL_COLS, ['success', 'destroyOnFail'], () => ({
-      id: '',
-      name: { ko: '', en: '' },
-      success: 0,
-      destroyOnFail: 0
-    }));
+    tableEditor(data.tiers, SCROLL_COLS, ['success', 'destroyOnFail'], () => ({ id: '', name: '', success: 0, destroyOnFail: 0 }));
   } else {
     document.getElementById('editor').innerHTML = `<p class="muted small">구조가 복잡한 데이터라 JSON을 직접 편집해요. 저장 전에 형식을 검사해요.</p>
 <textarea id="json" class="admin-json" spellcheck="false">${esc(JSON.stringify(data, null, 2))}</textarea>`;
@@ -187,8 +181,8 @@ function validate(file, data) {
     }
   }
   if (file.editor === 'scrolls') {
-    for (const [i, s] of data.scrolls.entries()) {
-      if (!s.id || !s.name?.ko || !s.name?.en) return `${i + 1}행: ID와 이름을 입력하세요.`;
+    for (const [i, s] of data.tiers.entries()) {
+      if (!s.id || !s.name) return `${i + 1}행: ID와 이름을 입력하세요.`;
       if (!(s.success >= 0 && s.success <= 100) || !(s.destroyOnFail >= 0 && s.destroyOnFail <= 100))
         return `${i + 1}행: 확률은 0~100 사이여야 해요.`;
     }
