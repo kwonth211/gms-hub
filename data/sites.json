@@ -1,0 +1,209 @@
+{
+  "updated": "2026-10-28",
+  "categories": [
+    {
+      "id": "official",
+      "name": { "ko": "공식", "en": "Official" },
+      "desc": {
+        "ko": "넥슨이 운영하는 공식 채널이에요. 클래식 월드 공지는 메이플스토리 공식 사이트와 디스코드에 함께 올라와요.",
+        "en": "Channels run by Nexon. Classic World notices share the main MapleStory site and Discord."
+      },
+      "sites": [
+        {
+          "name": "Classic World FAQ",
+          "url": "https://www.nexon.com/maplestory/news/general/45385/global-maple-story-classic-world-faq",
+          "lang": "en",
+          "desc": {
+            "ko": "넥슨 공식 FAQ. 출시 일정, 설치 방법, 지원 언어 안내.",
+            "en": "Nexon's official FAQ: launch schedule, installation and languages."
+          }
+        },
+        {
+          "name": "Grand Launch Release Notes",
+          "url": "https://www.nexon.com/maplestory/news/general/46506/grand-launch-release-notes",
+          "lang": "en",
+          "desc": {
+            "ko": "정식 출시 패치 노트. 출시 시점 콘텐츠와 변경 사항.",
+            "en": "Grand launch patch notes: launch content and changes."
+          }
+        },
+        {
+          "name": "Official MapleStory Discord",
+          "url": "https://discord.gg/maplestory",
+          "lang": "en",
+          "desc": {
+            "ko": "공식 디스코드. #classic-world-announcements 채널에서 클래식 공지를 확인하세요.",
+            "en": "Official Discord. Classic news lives in #classic-world-announcements."
+          }
+        },
+        {
+          "name": "MapleStory on X",
+          "url": "https://x.com/MapleStory",
+          "lang": "en",
+          "desc": {
+            "ko": "공식 X(트위터). 점검 연장 같은 실시간 공지가 가장 빨라요.",
+            "en": "Official X account, fastest for live notices like extended maintenance."
+          }
+        }
+      ]
+    },
+    {
+      "id": "community-ko",
+      "name": { "ko": "한국어 커뮤니티", "en": "Korean Communities" },
+      "desc": {
+        "ko": "한국어로 클래식 월드 이야기를 나누는 곳이에요.",
+        "en": "Talk about Classic World in Korean."
+      },
+      "sites": [
+        {
+          "name": "글로벌 메이플스토리 클래식월드 마이너 갤러리",
+          "url": "https://gall.dcinside.com/mgallery/board/lists/?id=maplestoryclassworld",
+          "lang": "ko",
+          "desc": {
+            "ko": "디시인사이드 클래식 월드 전용 갤러리. 공지 번역과 질문 글이 활발해요.",
+            "en": "DCInside gallery dedicated to Classic World, with translated notices and Q&A."
+          }
+        },
+        {
+          "name": "NiaMeowDB (한국어)",
+          "url": "https://meowdb.com/msclassic/ko",
+          "lang": "ko",
+          "desc": {
+            "ko": "클래식 월드 데이터베이스의 한국어판. 몬스터, 아이템, 공략.",
+            "en": "Korean edition of the Classic World database: monsters, items, guides."
+          }
+        }
+      ]
+    },
+    {
+      "id": "community-en",
+      "name": { "ko": "영어권 커뮤니티", "en": "English Communities" },
+      "desc": {
+        "ko": "클래식 월드 유저가 가장 많이 모이는 영어권 커뮤니티예요.",
+        "en": "Where most Classic World players gather."
+      },
+      "sites": [
+        {
+          "name": "r/MSClassicWorld",
+          "url": "https://www.reddit.com/r/MSClassicWorld/",
+          "lang": "en",
+          "desc": {
+            "ko": "레딧 클래식 월드 팬 커뮤니티(비공식). 후기, 질문, 공략 글.",
+            "en": "Fan-run Classic World subreddit: impressions, questions and guides."
+          }
+        }
+      ]
+    },
+    {
+      "id": "database",
+      "name": { "ko": "데이터베이스 · 위키", "en": "Databases & Wikis" },
+      "desc": {
+        "ko": "몬스터 레벨, 드랍 아이템, 맵 정보를 찾을 때 봐요. GMS 본섭 위키와 섞어 보지 마세요.",
+        "en": "Monster levels, drops and maps. Don't mix them up with mainline GMS wikis."
+      },
+      "sites": [
+        {
+          "name": "NiaMeowDB",
+          "url": "https://meowdb.com/msclassic",
+          "lang": "en",
+          "desc": {
+            "ko": "클래식 월드 위키·DB. 레벨별 사냥터 표와 직업 공략이 잘 정리돼 있어요.",
+            "en": "Classic World wiki and database with level-by-level training tables and class guides."
+          }
+        },
+        {
+          "name": "Henesys.GG",
+          "url": "https://henesys.gg/",
+          "lang": "en",
+          "desc": {
+            "ko": "몬스터·아이템·맵 DB와 레벨·명중률·데미지 계산기, 주문서 시뮬레이터.",
+            "en": "Monster, item and map database plus level, accuracy and damage calculators and a scroll sim."
+          }
+        },
+        {
+          "name": "MapleClassic Wiki",
+          "url": "https://classic.maplestorywiki.net/",
+          "lang": "en",
+          "desc": {
+            "ko": "커뮤니티가 만드는 클래식 월드 위키.",
+            "en": "The community-written Classic World wiki."
+          }
+        }
+      ]
+    },
+    {
+      "id": "guides",
+      "name": { "ko": "공략 · 툴", "en": "Guides & Tools" },
+      "desc": {
+        "ko": "직업 빌드, 퀘스트, 파티퀘스트 공략과 계산기예요.",
+        "en": "Class builds, quests, party quests and calculators."
+      },
+      "sites": [
+        {
+          "name": "MS-Classic",
+          "url": "https://ms-classic.com/",
+          "lang": "en",
+          "desc": {
+            "ko": "유저가 쓰는 클래식 월드 공략 모음.",
+            "en": "Player-written Classic World guides."
+          }
+        },
+        {
+          "name": "GMS Classic Hub",
+          "url": "https://planet-helper.com/gmsclassic/",
+          "lang": "en",
+          "desc": {
+            "ko": "클래식 월드 DB와 몇 방에 잡히는지 계산기, 경험치 계산기.",
+            "en": "Classic World database with hits-to-kill and EXP calculators."
+          }
+        },
+        {
+          "name": "MapleStory Classic (fan site)",
+          "url": "https://maplestory-classic.com/",
+          "lang": "en",
+          "desc": {
+            "ko": "출시 소식, 직업 소개, 데이터베이스를 모은 팬 사이트.",
+            "en": "Fan site with launch news, class overviews and a database."
+          }
+        }
+      ]
+    }
+  ],
+  "faq": [
+    {
+      "q": { "ko": "메이플스토리 클래식 월드가 뭔가요?", "en": "What is MapleStory Classic World?" },
+      "a": {
+        "ko": "넥슨이 글로벌 지역에 서비스하는 옛날식 메이플스토리예요. 2026년 10월 6일 파운더스 액세스를 거쳐 10월 21일(한국 시간 22일 새벽)에 정식 출시됐고, Nexon 런처와 Steam에서 무료로 할 수 있어요. 만렙은 100이에요.",
+        "en": "A legacy-style MapleStory that Nexon runs for global players. After Founder's Access on October 6, 2026, it fully launched on October 21 on the Nexon Launcher and Steam. It is free to play with a level cap of 100."
+      }
+    },
+    {
+      "q": { "ko": "메이플스토리 본섭(KMS), 메이플랜드, GMS 본섭과 뭐가 달라요?", "en": "How is it different from KMS, MapleLand and mainline GMS?" },
+      "a": {
+        "ko": "모두 다른 게임이에요. 한국 메이플스토리(KMS)와 GMS 본섭은 스타포스·6차 전직이 있는 현재 메이플이고, 메이플랜드는 한국 메이플스토리 월드의 별도 클래식 게임이에요. 클래식 월드는 맵·몬스터 레벨·드랍이 이들과 달라서, 다른 게임 공략을 보면 레벨이 안 맞을 수 있어요. 이 사이트는 클래식 월드만 다뤄요.",
+        "en": "They are all separate games. KMS and mainline GMS are modern MapleStory with Star Force and 6th job, and MapleLand is a separate classic game on Korean MapleStory Worlds. Classic World has its own maps, monster levels and drops, so guides for the others can mislead you. This site covers Classic World only."
+      }
+    },
+    {
+      "q": { "ko": "스타포스나 큐브가 있나요?", "en": "Does it have Star Force or cubes?" },
+      "a": {
+        "ko": "아니요. 클래식 월드는 옛날 방식대로 업그레이드 가능 횟수만큼 주문서를 발라서 강화해요. 주문서 시뮬레이터로 결과를 미리 계산해 볼 수 있어요.",
+        "en": "No. Gear is upgraded the old way, with scrolls applied to each upgrade slot. Try the Scroll Simulator to preview outcomes."
+      }
+    },
+    {
+      "q": { "ko": "한국어로 할 수 있나요?", "en": "Is Korean supported?" },
+      "a": {
+        "ko": "글로벌 서비스에 한국어가 베타로 추가됐어요. 한국 지역 정식 서비스는 아니라서 게임 안 이름은 영어인 경우가 많아요. 이 사이트도 맵·몬스터 이름은 게임 표기(영어) 그대로 적었어요.",
+        "en": "Korean was added to the global service as a beta language. It is not a Korean regional launch, so many in-game names stay in English, and this site keeps map and monster names as they appear in game."
+      }
+    },
+    {
+      "q": { "ko": "사이트 추가나 데이터 오류는 어디에 알려요?", "en": "Where do I suggest a site or report wrong data?" },
+      "a": {
+        "ko": "소개 페이지의 GitHub 이슈 링크로 알려주세요. 클래식 월드 기준인지 확인한 뒤 반영해요.",
+        "en": "Use the GitHub issue link on the About page. We check that it applies to Classic World before updating."
+      }
+    }
+  ]
+}

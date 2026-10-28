@@ -1,0 +1,54 @@
+{
+  "updated": "2026-10-28",
+  "note": {
+    "ko": "주문서는 성공·실패와 관계없이 업그레이드 가능 횟수를 1 소모해요. 다크 주문서(30%·70%)는 실패하면 50% 확률로 아이템이 파괴돼요.",
+    "en": "A scroll uses one upgrade slot whether it passes or fails. Dark scrolls (30%, 70%) destroy the item 50% of the time when they fail."
+  },
+  "scrolls": [
+    {
+      "id": "s10",
+      "name": {
+        "ko": "10% 주문서",
+        "en": "10% scroll"
+      },
+      "success": 10,
+      "destroyOnFail": 0
+    },
+    {
+      "id": "s30",
+      "name": {
+        "ko": "30% 다크 주문서",
+        "en": "30% dark scroll"
+      },
+      "success": 30,
+      "destroyOnFail": 50
+    },
+    {
+      "id": "s60",
+      "name": {
+        "ko": "60% 주문서",
+        "en": "60% scroll"
+      },
+      "success": 60,
+      "destroyOnFail": 0
+    },
+    {
+      "id": "s70",
+      "name": {
+        "ko": "70% 다크 주문서",
+        "en": "70% dark scroll"
+      },
+      "success": 70,
+      "destroyOnFail": 50
+    },
+    {
+      "id": "s100",
+      "name": {
+        "ko": "100% 주문서",
+        "en": "100% scroll"
+      },
+      "success": 100,
+      "destroyOnFail": 0
+    }
+  ]
+}

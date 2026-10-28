@@ -1,0 +1,14 @@
+{
+  "siteName": "GMS Hub",
+  "baseUrl": "https://kwonth211.github.io",
+  "basePath": "/gms-hub",
+  "defaultLang": "en",
+  "adsenseClient": "",
+  "googleSiteVerification": "",
+  "gaMeasurementId": "",
+  "github": {
+    "owner": "kwonth211",
+    "repo": "gms-hub",
+    "branch": "main"
+  }
+}
