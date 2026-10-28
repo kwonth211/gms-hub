@@ -17,7 +17,7 @@
 node scripts/build.mjs   # dist/ 생성 (의존성 없음)
 ```
 
-`main`에 푸시하면 GitHub Actions가 빌드해서 GitHub Pages에 배포해요.
+`main`에 푸시하면 GitHub Actions가 빌드해서 GitHub Pages(https://gms-hub.com)에 배포해요. DNS는 Cloudflare(프록시 끔)에서 GitHub Pages IP를 가리켜요.
 
 ## 데이터 관리 (관리자 페이지)
 
