@@ -393,7 +393,8 @@ function head({ lang, title, desc, pagePath, noindex, ld = [] }) {
   const canonical = pagePath ? absUrl(langPath(lang, pagePath)) : absUrl('/');
   const ogImage = absUrl(`/assets/og-${lang}.png`);
   const adsense = config.adsenseClient
-    ? `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${esc(config.adsenseClient)}" crossorigin="anonymous"></script>`
+    ? `<meta name="google-adsense-account" content="${esc(config.adsenseClient)}">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${esc(config.adsenseClient)}" crossorigin="anonymous"></script>`
     : '';
   const ga = config.gaMeasurementId
     ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${esc(config.gaMeasurementId)}"></script>
