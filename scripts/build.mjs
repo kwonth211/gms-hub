@@ -401,7 +401,7 @@ function head({ lang, title, desc, pagePath, noindex, ld = [] }) {
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${esc(config.gaMeasurementId)}');</script>`
     : '';
   const cfBeacon = config.cfAnalyticsToken
-    ? `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "${esc(config.cfAnalyticsToken)}"}'></script>`
+    ? `<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "${esc(config.cfAnalyticsToken)}"}'></script>`
     : '';
   const verify = config.googleSiteVerification
     ? `<meta name="google-site-verification" content="${esc(config.googleSiteVerification)}">`
