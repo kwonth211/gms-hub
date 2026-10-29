@@ -107,6 +107,18 @@ function loadVoted() {
 let voted = loadVoted();
 let counts = {};
 
+// Most-recommended first within each category; ties keep the curated order.
+// Runs once on load only, so cards don't jump under the cursor right after a click.
+function sortByVotes() {
+  document.querySelectorAll('[data-cat] .cards').forEach((list) => {
+    const cards = [...list.children];
+    cards
+      .map((c, i) => ({ c, i, n: counts[c.dataset.id] || 0 }))
+      .sort((a, b) => b.n - a.n || a.i - b.i)
+      .forEach(({ c }) => list.appendChild(c));
+  });
+}
+
 function paintVotes() {
   document.querySelectorAll('.vote').forEach((btn) => {
     const id = btn.dataset.site;
@@ -121,6 +133,7 @@ if (voteApi) {
     .then((r) => (r.ok ? r.json() : {}))
     .then((data) => {
       counts = data;
+      sortByVotes();
       paintVotes();
     })
     .catch(() => {});
