@@ -12,5 +12,6 @@
     "branch": "main"
   },
   "voteApi": "https://gms-hub-votes.kwonth211.workers.dev",
-  "cfAnalyticsToken": "edefd73385c94d19a19ac46907023b00"
+  "cfAnalyticsToken": "edefd73385c94d19a19ac46907023b00",
+  "clarityProjectId": ""
 }

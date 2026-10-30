@@ -63,4 +63,10 @@ form.addEventListener('submit', (e) => {
   render();
 });
 form.addEventListener('input', render);
+// One event per settled calculation rather than per keystroke.
+let calcTimer;
+form.addEventListener('input', () => {
+  clearTimeout(calcTimer);
+  calcTimer = setTimeout(() => track('scroll_calc', Object.fromEntries(new FormData(form))), 1500);
+});
 render();

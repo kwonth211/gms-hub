@@ -54,7 +54,9 @@ document.addEventListener('click', (e) => {
   const btn = e.target.closest('.fav');
   if (!btn) return;
   const url = btn.dataset.url;
-  favs = favs.includes(url) ? favs.filter((u) => u !== url) : [...favs, url];
+  const adding = !favs.includes(url);
+  favs = adding ? [...favs, url] : favs.filter((u) => u !== url);
+  track(adding ? 'favorite_add' : 'favorite_remove', { site_id: btn.closest('.site-card')?.dataset.id });
   saveFavs(favs);
   renderFavs();
 });
@@ -75,6 +77,7 @@ function filter() {
 
 function setCategory(id) {
   activeCat = activeCat === id ? null : id;
+  if (activeCat) track('filter_category', { category: activeCat });
   document.querySelectorAll('.purpose').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === activeCat)));
   document.querySelectorAll('.toc a[href^="#"]').forEach((a) => a.classList.toggle('active', a.getAttribute('href') === `#${activeCat}`));
   filterBar.hidden = !activeCat;
@@ -89,6 +92,15 @@ document.querySelectorAll('.purpose').forEach((b) => b.addEventListener('click',
 document.getElementById('filter-clear').addEventListener('click', () => setCategory(activeCat));
 
 input.addEventListener('input', filter);
+// Log the settled query, not every keystroke.
+let searchTimer;
+input.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    const term = input.value.trim();
+    if (term) track('search', { search_term: term, results: document.querySelectorAll('[data-cat] .site-card:not([hidden])').length });
+  }, 1200);
+});
 const q = new URLSearchParams(location.search).get('q');
 if (q) input.value = q;
 renderFavs();
@@ -143,6 +155,7 @@ if (voteApi) {
     if (!btn || voted.includes(btn.dataset.site)) return;
     const id = btn.dataset.site;
     voted = [...voted, id];
+    track('recommend', { site_id: id });
     try {
       localStorage.setItem(VOTED_KEY, JSON.stringify(voted));
     } catch (err) {}

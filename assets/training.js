@@ -44,6 +44,7 @@ form.addEventListener('submit', (e) => {
   const lv = Math.max(1, Math.min(100, parseInt(form.lv.value, 10) || 1));
   history.replaceState(null, '', `?lv=${lv}`);
   show(lv);
+  track('training_search', { level: lv });
 });
 
 const fromUrl = parseInt(new URLSearchParams(location.search).get('lv'), 10);

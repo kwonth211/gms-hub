@@ -178,7 +178,7 @@ const T = {
 <p>이 사이트는 Google AdSense 광고를 게재할 수 있어요. Google을 비롯한 제3자 광고 업체는 쿠키를 사용해 사용자가 이 사이트나 다른 사이트를 방문한 기록을 바탕으로 광고를 보여줘요. Google은 광고 쿠키로 사용자에게 맞춤 광고를 제공해요.</p>
 <p>맞춤 광고는 <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google 광고 설정</a>에서 끌 수 있어요. 자세한 내용은 <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">Google 광고 정책</a>을 참고하세요.</p>
 <h2>방문 통계</h2>
-<p>사이트 개선을 위해 Google Analytics로 익명 방문 통계를 수집할 수 있어요.</p>
+<p>사이트 개선을 위해 Cloudflare Web Analytics, Google Analytics, Microsoft Clarity로 방문 통계를 수집해요. 방문한 페이지, 체류 시간, 클릭한 버튼과 링크, 스크롤 같은 사용 기록이 익명으로 집계되며, Clarity는 개선을 위해 화면 이용 과정을 기록할 수 있어요. 검색창 등 입력값은 기록에서 가려져요. 자세한 내용은 <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google 개인정보처리방침</a>과 <a href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener">Microsoft 개인정보처리방침</a>을 참고하세요.</p>
 <h2>브라우저 저장소</h2>
 <p>언어 선택 같은 설정은 사용자의 브라우저에만 저장되고 서버로 전송되지 않아요.</p>
 <h2>문의</h2>
@@ -347,7 +347,7 @@ const T = {
 <p>This site may show Google AdSense ads. Third-party vendors, including Google, use cookies to serve ads based on your prior visits to this and other websites. Google's use of advertising cookies enables it and its partners to serve ads based on those visits.</p>
 <p>You can opt out of personalized advertising in <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google Ads Settings</a>. See <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">how Google uses cookies in advertising</a>.</p>
 <h2>Analytics</h2>
-<p>We may use Google Analytics to collect anonymous visit statistics to improve the site.</p>
+<p>To improve the site we use Cloudflare Web Analytics, Google Analytics and Microsoft Clarity. They record usage such as pages visited, time on page, buttons and links clicked, and scrolling, without identifying you; Clarity may record how the page is used for replay. Text typed into fields such as search is masked. See the <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a> and the <a href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener">Microsoft Privacy Statement</a>.</p>
 <h2>Browser storage</h2>
 <p>Preferences such as language are stored only in your browser and never sent to a server.</p>
 <h2>Contact</h2>
@@ -400,6 +400,9 @@ function head({ lang, title, desc, pagePath, noindex, ld = [] }) {
     ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${esc(config.gaMeasurementId)}"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${esc(config.gaMeasurementId)}');</script>`
     : '';
+  const clarity = config.clarityProjectId
+    ? `<script>(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","${esc(config.clarityProjectId)}");</script>`
+    : '';
   const cfBeacon = config.cfAnalyticsToken
     ? `<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "${esc(config.cfAnalyticsToken)}"}'></script>`
     : '';
@@ -435,6 +438,7 @@ ${verify}
 <link rel="stylesheet" href="${href('/assets/style.css')}">
 ${adsense}
 ${ga}
+${clarity}
 ${cfBeacon}
 ${ld.map(ldScript).join('\n')}
 </head>`;
@@ -517,7 +521,7 @@ function siteCard(lang, s) {
 <p>${esc(s.desc[lang])}</p>
 <ul class="feats">${feats}</ul>
 ${stat}
-<div class="card-foot"><a class="visit" href="${esc(s.url)}" target="_blank" rel="noopener">${t.visit} ↗</a><button class="vote" type="button" data-site="${siteId(s.url)}" aria-pressed="false" hidden>👍 <span>${t.recommend}</span> <b>0</b></button></div>
+<div class="card-foot"><a class="visit" data-track-site="${siteId(s.url)}" href="${esc(s.url)}" target="_blank" rel="noopener">${t.visit} ↗</a><button class="vote" type="button" data-site="${siteId(s.url)}" aria-pressed="false" hidden>👍 <span>${t.recommend}</span> <b>0</b></button></div>
 </div>
 </article>`;
 }

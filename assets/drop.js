@@ -23,6 +23,11 @@ form.addEventListener('submit', (e) => {
   render();
 });
 form.addEventListener('input', render);
+let calcTimer;
+form.addEventListener('input', () => {
+  clearTimeout(calcTimer);
+  calcTimer = setTimeout(() => track('drop_calc', { rate: form.rate.value }), 1500);
+});
 render();
 
 const table = document.getElementById('drop-db');
@@ -31,6 +36,7 @@ document.addEventListener('click', (e) => {
   const row = e.target.closest('tr[data-rate]');
   if (!row || e.target.closest('a')) return;
   form.rate.value = row.dataset.rate;
+  track('rate_pick', { rate: row.dataset.rate, box: row.closest('[data-box-panel]')?.dataset.boxPanel || 'monster' });
   render();
   form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
@@ -41,6 +47,7 @@ document.addEventListener('keydown', (e) => {
 document.querySelectorAll('[data-box]').forEach((tab) =>
   tab.addEventListener('click', () => {
     document.querySelectorAll('[data-box]').forEach((t) => t.setAttribute('aria-selected', String(t === tab)));
+    track('box_tab', { box: tab.dataset.box });
     document.querySelectorAll('[data-box-panel]').forEach((p) => (p.hidden = p.dataset.boxPanel !== tab.dataset.box));
   })
 );
