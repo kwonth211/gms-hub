@@ -172,23 +172,54 @@ const T = {
 <ul><li><strong>출처가 확인된 정보만 실어요.</strong> 사이트 설명은 각 사이트가 공개한 소개문과 메뉴에 있는 기능만 옮기고, 숫자에는 출처와 확인 날짜를 붙여요.</li><li>출처끼리 내용이 다르면 둘 다 보여주고, 확인되지 않은 내용은 확인되지 않았다고 적어요.</li><li>수록한 링크는 모두 접속을 확인했어요. 접속이 안 되는 사이트와 현금 거래 사이트는 올리지 않아요.</li></ul>
 <h2>다루는 게임</h2>
 <p>클래식 월드 하나만 다뤄요. 다른 메이플스토리 버전과는 맵, 몬스터, 강화 시스템이 달라서 섞지 않아요.</p>
-<h2>사이트 추가·오류 제보</h2>
-<p><a href="{issues}" target="_blank" rel="noopener">GitHub 이슈</a>로 알려주세요.</p>
+<h2>사이트 추가·오류 제보·문의</h2>
+<p>이메일 <a href="mailto:kwonth211@gmail.com">kwonth211@gmail.com</a> 또는 <a href="{issues}" target="_blank" rel="noopener">GitHub 이슈</a>로 알려주세요. 사이트 운영자가 설명 수정이나 삭제를 원할 때도 같은 곳으로 연락하면 돼요.</p>
 <h2>면책</h2>
 <p>GMS Hub는 넥슨(NEXON)과 관련이 없어요. MapleStory는 NEXON Korea Corporation의 상표예요. 사이트 썸네일은 각 사이트 화면을 축소한 미리보기이며, 사이트 내용은 각 운영자에게 책임이 있어요. 아이콘과 배너 그림은 GMS Hub가 직접 그린 것이에요.</p>`,
     privacyTitle: '개인정보처리방침 | GMS Hub',
     privacyDesc: 'GMS Hub의 개인정보처리방침과 쿠키 사용 안내.',
     privacyH1: '개인정보처리방침',
-    privacyBody: `<p>GMS Hub는 회원가입이 없고, 이름이나 이메일 같은 개인정보를 직접 수집하지 않아요.</p>
+    privacyBody: `<p>GMS Hub는 회원가입이 없고, 이름이나 이메일 같은 개인정보를 직접 수집하지 않아요. 아래는 사이트를 이용할 때 처리되는 정보와 그 목적이에요.</p>
 <h2>쿠키와 광고</h2>
 <p>이 사이트는 Google AdSense 광고를 게재할 수 있어요. Google을 비롯한 제3자 광고 업체는 쿠키를 사용해 사용자가 이 사이트나 다른 사이트를 방문한 기록을 바탕으로 광고를 보여줘요. Google은 광고 쿠키로 사용자에게 맞춤 광고를 제공해요.</p>
-<p>맞춤 광고는 <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google 광고 설정</a>에서 끌 수 있어요. 자세한 내용은 <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">Google 광고 정책</a>을 참고하세요.</p>
+<p>맞춤 광고는 <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google 광고 설정</a>에서 끌 수 있고, 다른 광고 업체의 맞춤 광고는 <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener">aboutads.info</a>에서 끌 수 있어요. 맞춤 광고를 꺼도 일반 광고는 보일 수 있어요. 자세한 내용은 <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">Google이 파트너 사이트의 정보를 사용하는 방식</a>을 참고하세요.</p>
+<p>유럽경제지역(EEA), 영국, 스위스에서 접속하면 Google 인증 동의 관리 도구로 광고 쿠키 사용에 대한 동의를 먼저 받아요.</p>
 <h2>방문 통계</h2>
 <p>사이트 개선을 위해 Cloudflare Web Analytics, Google Analytics, Microsoft Clarity로 방문 통계를 수집해요. 방문한 페이지, 체류 시간, 클릭한 버튼과 링크, 스크롤 같은 사용 기록이 익명으로 집계되며, Clarity는 개선을 위해 화면 이용 과정을 기록할 수 있어요. 검색창 등 입력값은 기록에서 가려져요. 자세한 내용은 <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google 개인정보처리방침</a>과 <a href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener">Microsoft 개인정보처리방침</a>을 참고하세요.</p>
+<h2>추천 기능</h2>
+<p>사이트 카드의 👍 추천을 누르면 같은 사람이 한 사이트를 여러 번 추천하지 못하게, 접속 IP 주소를 비밀 값과 섞어 되돌릴 수 없는 해시로 바꾼 뒤 추천한 사이트·시각과 함께 Cloudflare에 저장해요. IP 주소 원문은 저장하지 않아요. 추천 수를 보여주는 것 말고는 쓰지 않으며, 삭제를 원하면 아래 연락처로 알려주세요.</p>
 <h2>브라우저 저장소</h2>
-<p>언어 선택 같은 설정은 사용자의 브라우저에만 저장되고 서버로 전송되지 않아요.</p>
+<p>언어 선택, 즐겨찾기, 추천한 사이트 목록은 사용자의 브라우저(localStorage)에만 저장되고 서버로 전송되지 않아요. 브라우저의 사이트 데이터를 지우면 함께 지워져요.</p>
+<h2>어린이</h2>
+<p>GMS Hub는 만 14세 미만 어린이의 개인정보를 의도적으로 수집하지 않아요.</p>
+<h2>변경</h2>
+<p>이 방침이 바뀌면 이 페이지에 바로 반영하고 시행일을 고쳐 적어요.</p>
 <h2>문의</h2>
-<p><a href="{issues}" target="_blank" rel="noopener">GitHub 이슈</a>로 연락해 주세요.</p>`,
+<p>이메일 <a href="mailto:kwonth211@gmail.com">kwonth211@gmail.com</a> 또는 <a href="{issues}" target="_blank" rel="noopener">GitHub 이슈</a>로 연락해 주세요.</p>
+<p class="muted">시행일: 2026-10-30</p>`,
+    termsTitle: '이용약관 | GMS Hub',
+    termsDesc: 'GMS Hub 이용약관: 서비스 성격, 외부 링크, 정보의 정확성, 권리와 책임.',
+    termsH1: '이용약관',
+    termsBody: `<p>GMS Hub(gms-hub.com, 이하 "사이트")를 이용하면 아래 약관에 동의한 것으로 봐요.</p>
+<h2>1. 서비스 성격</h2>
+<p>사이트는 글로벌 메이플스토리 클래식 월드 관련 외부 사이트 링크와 계산 도구를 무료로 제공하는 <strong>비공식 팬 사이트</strong>예요. 넥슨(NEXON)이 운영하거나 보증하는 서비스가 아니에요.</p>
+<h2>2. 정보의 정확성</h2>
+<p>사이트의 설명과 숫자는 표시된 출처와 확인 날짜를 기준으로 해요. 게임 업데이트나 출처 변경으로 실제와 달라질 수 있고, 계산기 결과는 입력값과 공개된 확률에 따른 이론값이에요. 사이트 정보를 근거로 한 거래나 게임 내 결정의 결과에 대해 책임지지 않아요.</p>
+<h2>3. 외부 링크</h2>
+<p>수록한 외부 사이트는 각 운영자가 관리해요. 링크를 수록한 것은 해당 사이트의 내용, 안전성, 개인정보 처리를 보증한다는 뜻이 아니에요. 현금 거래 사이트는 수록하지 않아요.</p>
+<h2>4. 추천 기능</h2>
+<p>사이트당 한 사람이 한 번 추천할 수 있어요. 자동화 도구로 추천 수를 조작하거나 서버에 과도한 요청을 보내면 안 되며, 이런 시도는 차단하고 추천을 무효로 할 수 있어요.</p>
+<h2>5. 권리</h2>
+<p>MapleStory와 관련 이름은 NEXON Korea Corporation의 상표예요. 사이트 썸네일은 각 사이트 화면을 축소한 미리보기이며, 해당 사이트 운영자가 요청하면 바로 내려요. 아이콘, 배너 그림, 계산 도구와 글은 GMS Hub가 직접 만들었어요.</p>
+<h2>6. 광고</h2>
+<p>사이트는 운영비를 위해 Google AdSense 광고를 게재할 수 있어요. 광고 내용은 광고주가 책임지며, 광고 쿠키 처리는 <a href="/ko/privacy/">개인정보처리방침</a>을 참고하세요.</p>
+<h2>7. 약관 변경</h2>
+<p>약관이 바뀌면 이 페이지에 반영하고 시행일을 고쳐 적어요.</p>
+<h2>8. 문의</h2>
+<p>이메일 <a href="mailto:kwonth211@gmail.com">kwonth211@gmail.com</a> 또는 <a href="{issues}" target="_blank" rel="noopener">GitHub 이슈</a></p>
+<p class="muted">시행일: 2026-10-30</p>`,
+    terms: '이용약관',
+    contact: '문의',
     footerDisclaimer: 'GMS Hub는 비공식 팬 사이트이며 넥슨과 관련이 없습니다. MapleStory는 NEXON Korea Corporation의 상표입니다.',
     privacy: '개인정보처리방침',
     home: '홈',
@@ -347,23 +378,54 @@ const T = {
 <ul><li><strong>Only sourced information.</strong> Site descriptions come from each site's own blurb and menus, and every number carries its source and check date.</li><li>When sources disagree we show both, and anything unconfirmed is labeled as such.</li><li>Every listed link was checked live. We never list dead or real-money trading sites.</li></ul>
 <h2>Which game</h2>
 <p>Classic World only. Other MapleStory versions have different maps, monsters and upgrade systems, so we keep them out.</p>
-<h2>Suggest a site or report an error</h2>
-<p>Open a <a href="{issues}" target="_blank" rel="noopener">GitHub issue</a>.</p>
+<h2>Suggest a site, report an error or contact us</h2>
+<p>Email <a href="mailto:kwonth211@gmail.com">kwonth211@gmail.com</a> or open a <a href="{issues}" target="_blank" rel="noopener">GitHub issue</a>. Site operators who want their listing changed or removed can use the same channels.</p>
 <h2>Disclaimer</h2>
 <p>GMS Hub is not affiliated with NEXON. MapleStory is a trademark of NEXON Korea Corporation. Site thumbnails are scaled-down previews of each site, whose content is the responsibility of its operators. Icons and banner art are drawn by GMS Hub.</p>`,
     privacyTitle: 'Privacy Policy | GMS Hub',
     privacyDesc: 'Privacy policy and cookie notice for GMS Hub.',
     privacyH1: 'Privacy Policy',
-    privacyBody: `<p>GMS Hub has no accounts and does not directly collect personal information such as names or email addresses.</p>
+    privacyBody: `<p>GMS Hub has no accounts and does not directly collect personal information such as names or email addresses. Below is what is processed when you use the site, and why.</p>
 <h2>Cookies and advertising</h2>
 <p>This site may show Google AdSense ads. Third-party vendors, including Google, use cookies to serve ads based on your prior visits to this and other websites. Google's use of advertising cookies enables it and its partners to serve ads based on those visits.</p>
-<p>You can opt out of personalized advertising in <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google Ads Settings</a>. See <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">how Google uses cookies in advertising</a>.</p>
+<p>You can opt out of personalized advertising in <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google Ads Settings</a>, and out of other vendors' personalized ads at <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener">aboutads.info</a>. You may still see non-personalized ads. See <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">how Google uses information from sites that use its services</a>.</p>
+<p>Visitors from the EEA, the UK and Switzerland are asked for consent to advertising cookies through a Google-certified consent management platform first.</p>
 <h2>Analytics</h2>
 <p>To improve the site we use Cloudflare Web Analytics, Google Analytics and Microsoft Clarity. They record usage such as pages visited, time on page, buttons and links clicked, and scrolling, without identifying you; Clarity may record how the page is used for replay. Text typed into fields such as search is masked. See the <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a> and the <a href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener">Microsoft Privacy Statement</a>.</p>
+<h2>Recommendations</h2>
+<p>When you press 👍 on a site card, we turn your IP address into a salted, irreversible hash so one person can't recommend the same site twice, and store that hash with the site and time on Cloudflare. The raw IP address is never stored. It is used only to show recommendation counts; email us below to have it removed.</p>
 <h2>Browser storage</h2>
-<p>Preferences such as language are stored only in your browser and never sent to a server.</p>
+<p>Your language choice, favorites and the list of sites you recommended are stored only in your browser (localStorage) and never sent to a server. Clearing site data in your browser removes them.</p>
+<h2>Children</h2>
+<p>GMS Hub does not knowingly collect personal information from children under 13.</p>
+<h2>Changes</h2>
+<p>If this policy changes, we update this page and the effective date below.</p>
 <h2>Contact</h2>
-<p>Open a <a href="{issues}" target="_blank" rel="noopener">GitHub issue</a>.</p>`,
+<p>Email <a href="mailto:kwonth211@gmail.com">kwonth211@gmail.com</a> or open a <a href="{issues}" target="_blank" rel="noopener">GitHub issue</a>.</p>
+<p class="muted">Effective: 2026-10-30</p>`,
+    termsTitle: 'Terms of Use | GMS Hub',
+    termsDesc: 'GMS Hub terms of use: what the site is, external links, accuracy, rights and responsibilities.',
+    termsH1: 'Terms of Use',
+    termsBody: `<p>By using GMS Hub (gms-hub.com, "the site") you agree to these terms.</p>
+<h2>1. What the site is</h2>
+<p>The site is a free, <strong>unofficial fan site</strong> offering links to Global MapleStory Classic World resources and calculators. It is not operated or endorsed by NEXON.</p>
+<h2>2. Accuracy</h2>
+<p>Descriptions and numbers are based on the sources and check dates shown. They may change with game updates or source revisions, and calculator results are theoretical values from your inputs and published rates. We are not responsible for trades or in-game decisions made on the basis of this information.</p>
+<h2>3. External links</h2>
+<p>Listed sites are run by their own operators. Listing a link does not vouch for its content, safety or privacy practices. We do not list real-money trading sites.</p>
+<h2>4. Recommendations</h2>
+<p>Each person can recommend a site once. Do not use automated tools to inflate counts or flood the server; such attempts may be blocked and their votes voided.</p>
+<h2>5. Rights</h2>
+<p>MapleStory and related names are trademarks of NEXON Korea Corporation. Site thumbnails are scaled-down previews and are taken down at the operator's request. Icons, banner art, calculators and text are made by GMS Hub.</p>
+<h2>6. Advertising</h2>
+<p>The site may show Google AdSense ads to cover running costs. Advertisers are responsible for ad content; see the <a href="/en/privacy/">Privacy Policy</a> for how ad cookies are handled.</p>
+<h2>7. Changes</h2>
+<p>If these terms change, we update this page and the effective date below.</p>
+<h2>8. Contact</h2>
+<p>Email <a href="mailto:kwonth211@gmail.com">kwonth211@gmail.com</a> or open a <a href="{issues}" target="_blank" rel="noopener">GitHub issue</a></p>
+<p class="muted">Effective: 2026-10-30</p>`,
+    terms: 'Terms',
+    contact: 'Contact',
     footerDisclaimer: 'GMS Hub is an unofficial fan site and is not affiliated with NEXON. MapleStory is a trademark of NEXON Korea Corporation.',
     privacy: 'Privacy',
     home: 'Home',
@@ -378,7 +440,8 @@ const PAGES = [
   { key: 'scroll', path: '/tools/scroll/' },
   { key: 'drop', path: '/tools/drop-rate/' },
   { key: 'about', path: '/about/' },
-  { key: 'privacy', path: '/privacy/' }
+  { key: 'privacy', path: '/privacy/' },
+  { key: 'terms', path: '/terms/' }
 ];
 
 // One page per 10-level band, so "level 30 training" searches land on a focused list.
@@ -386,9 +449,13 @@ const TR_MAX = Math.max(...training.spots.flatMap((s) => s.recs.map((r) => r.max
 const TR_BANDS = Array.from({ length: Math.ceil(TR_MAX / 10) }, (_, i) => [i * 10 + 1, i * 10 + 10]);
 const bandPath = ([a, b]) => `/tools/training/level-${a}-${b}/`;
 const inBand = (s, [a, b]) => s.recs.filter((r) => r.min <= b && r.max >= a);
+// A top band with only a couple of maps is too thin to stand alone; fold it into the band below.
+const countIn = (band) => training.spots.filter((s) => inBand(s, band).length).length;
+if (TR_BANDS.length > 1 && countIn(TR_BANDS.at(-1)) < 5) TR_BANDS.splice(-2, 2, [TR_BANDS.at(-2)[0], TR_BANDS.at(-1)[1]]);
 PAGES.push(...TR_BANDS.map((band) => ({ key: 'trBand', path: bandPath(band), band })));
 
 const issuesUrl = `https://github.com/${config.github.owner}/${config.github.repo}/issues`;
+const CONTACT_EMAIL = 'kwonth211@gmail.com';
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const href = (p) => `${config.basePath}${p}`;
 const absUrl = (p) => `${config.baseUrl}${config.basePath}${p}`;
@@ -494,7 +561,7 @@ function footer(lang) {
   return `<footer class="site-footer"><div class="wrap">
 <div class="footer-brand">${spriteSvg('mushroom', 24)}<strong>GMS Hub</strong></div>
 <p>${esc(t.footerDisclaimer)}</p>
-<p><a href="${href(langPath(lang, '/about/'))}">${t.navAbout}</a> · <a href="${href(langPath(lang, '/privacy/'))}">${t.privacy}</a> · <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub</a></p>
+<p><a href="${href(langPath(lang, '/about/'))}">${t.navAbout}</a> · <a href="${href(langPath(lang, '/privacy/'))}">${t.privacy}</a> · <a href="${href(langPath(lang, '/terms/'))}">${t.terms}</a> · <a href="mailto:${CONTACT_EMAIL}">${t.contact}</a> · <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub</a></p>
 </div></footer>`;
 }
 
@@ -756,6 +823,7 @@ function scrollBody(lang) {
 <ul class="notes"><li>${esc(scrolls.disputed[lang])}</li><li>${esc(scrolls.unknown[lang])}</li></ul>
 <p class="src">${t.sourcesLabel}: ${scrolls.sources.map((s) => `${srcLink(s.url, s.name)}${s.date ? ` (${s.date})` : ''}`).join(' · ')}</p>
 </section>
+${scrollGuide(lang)}
 </div>
 ${jsonScript('scroll-data', scrolls)}
 ${jsonScript('i18n', { lang, distSucc: t.distSucc, distBoom: t.distBoom })}`;
@@ -827,8 +895,111 @@ ${tb.phase === 'upcoming' && bx.effective ? `<p class="muted small">${esc(bx.eff
 <h2>${t.formulaHeading}</h2>
 <ul class="notes">${t.formula.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>
 </section>
+${dropGuide(lang)}
 </div>
 ${jsonScript('i18n', { lang, times: t.times })}`;
+}
+
+// ---------- tool guides ----------
+// Worked examples are computed from the data files, so the prose stays in step with the tables.
+
+const pct = (x, lang, digits = 1) => `${new Intl.NumberFormat(lang, { maximumFractionDigits: digits }).format(x * 100)}%`;
+const choose = (n, k) => {
+  let r = 1;
+  for (let i = 1; i <= k; i++) r = (r * (n - k + i)) / i;
+  return r;
+};
+const atLeast = (n, p, k) => {
+  let sum = 0;
+  for (let i = k; i <= n; i++) sum += choose(n, i) * p ** i * (1 - p) ** (n - i);
+  return sum;
+};
+const triesFor = (p, c) => Math.ceil(Math.log(1 - c) / Math.log(1 - p));
+
+function dropGuide(lang) {
+  const p = 0.01;
+  const v = {
+    p100: pct(1 - (1 - p) ** 100, lang),
+    p200: pct(1 - (1 - p) ** 200, lang),
+    t50: triesFor(p, 0.5),
+    t90: triesFor(p, 0.9),
+    t99: triesFor(p, 0.99)
+  };
+  return lang === 'ko'
+    ? `<section class="prose guide">
+<h2>드롭률 계산, 이렇게 읽어요</h2>
+<h3>"1%면 100번에 하나"가 아닌 이유</h3>
+<p>1% 아이템을 100번 시도하면 기대 획득 개수는 1개지만, <strong>한 번이라도 얻을 확률은 ${v.p100}</strong>예요. 매 시도가 서로 독립이라서 운이 나쁘면 100번 모두 실패할 수 있기 때문이에요. 200번 시도해도 확률은 ${v.p200}로, 100%에 가까워질 뿐 도달하지는 않아요.</p>
+<h3>몇 번 해야 할까?</h3>
+<p>1% 아이템을 기준으로 하면 50% 확률로 얻으려면 <strong>${v.t50}번</strong>, 90%는 <strong>${v.t90}번</strong>, 99%는 <strong>${v.t99}번</strong>이 필요해요. 위 계산기에 드롭률만 넣으면 같은 방식으로 원하는 아이템의 횟수를 볼 수 있어요.</p>
+<h3>"이번엔 나오겠지"는 착각이에요</h3>
+<p>공식적으로 보정(천장) 시스템이 안내되지 않은 경우, 앞에서 몇 번 실패했든 다음 시도의 확률은 그대로예요. 이미 200번 실패했어도 다음 한 번의 확률은 여전히 1%예요. 그래서 계산기는 "지금부터 몇 번 더"를 기준으로 보면 돼요.</p>
+<h3>기대값과 확률을 구분하세요</h3>
+<p>기대 획득 개수(n × p)는 같은 시도를 아주 많이 반복했을 때의 평균이에요. 한 사람의 결과는 이보다 훨씬 많거나 적을 수 있으니, 메소나 시간을 쓸지 정할 때는 "원하는 확률로 얻는 데 필요한 횟수"를 함께 보세요.</p>
+</section>`
+    : `<section class="prose guide">
+<h2>How to read drop odds</h2>
+<h3>Why 1% is not "one in 100"</h3>
+<p>With a 1% item, 100 tries give an expected 1 drop, but the <strong>chance of getting at least one is only ${v.p100}</strong>. Each try is independent, so an unlucky run can miss all 100. Even 200 tries give ${v.p200}: the odds approach 100% but never reach it.</p>
+<h3>How many tries?</h3>
+<p>For a 1% item you need <strong>${v.t50} tries</strong> for a 50% chance, <strong>${v.t90}</strong> for 90% and <strong>${v.t99}</strong> for 99%. Enter any drop rate in the calculator above to get the same numbers for your item.</p>
+<h3>"It's due" is a fallacy</h3>
+<p>Unless an official pity system is announced, past failures don't change the next try. After 200 misses the next try is still 1%, so read the calculator as "how many more from now".</p>
+<h3>Expected value is not a promise</h3>
+<p>Expected drops (n × p) is the long-run average over many players. Any one player can land far above or below it, so when deciding how many mesos or hours to spend, look at the tries needed for the chance you're comfortable with.</p>
+</section>`;
+}
+
+function scrollGuide(lang) {
+  const tier = (id) => scrolls.tiers.find((x) => x.id === id);
+  const mid = tier('intermediate');
+  const great = tier('greater');
+  const chaos = tier('chaos');
+  const std = scrolls.ladders.find((l) => l.id === 'standard');
+  const n = 7;
+  const pm = mid.success / 100;
+  const pg = great.success / 100;
+  const boom = (1 - chaos.success / 100) * (chaos.destroyOnFail / 100);
+  const nf = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 });
+  const v = {
+    n,
+    mid: mid.name,
+    midRate: mid.success,
+    gain: std.gains.intermediate,
+    expPass: nf.format(n * pm),
+    expGain: nf.format(n * pm * std.gains.intermediate),
+    all: pct(pm ** n, lang),
+    five: pct(atLeast(n, pm, 5), lang),
+    great: great.name,
+    greatRate: great.success,
+    greatOne: pct(1 - (1 - pg) ** n, lang),
+    chaos: chaos.name,
+    boom: pct(boom, lang),
+    survive3: pct((1 - boom) ** 3, lang)
+  };
+  return lang === 'ko'
+    ? `<section class="prose guide">
+<h2>주문서 확률, 이렇게 계산해요</h2>
+<h3>성공 횟수는 이항분포를 따라요</h3>
+<p>주문서 한 장 한 장은 서로 독립이에요. 그래서 성공률 p인 주문서를 n장 바를 때 정확히 k번 성공할 확률은 C(n, k) × pᵏ × (1 − p)ⁿ⁻ᵏ예요. 위 계산기의 분포 그래프가 이 값을 그린 거예요.</p>
+<h3>예시: ${v.mid} ${v.midRate}% 주문서 ${v.n}장</h3>
+<p>기본 상승치(+${v.gain})짜리 ${v.mid} 주문서 ${v.n}장을 바르면 평균 성공 횟수는 <strong>${v.expPass}번</strong>, 평균 상승치는 <strong>+${v.expGain}</strong>이에요. 하지만 ${v.n}장이 모두 붙을 확률은 <strong>${v.all}</strong>뿐이고, 5장 이상 붙을 확률은 ${v.five}예요. "평균"과 "내가 원하는 결과가 나올 확률"은 꽤 다르다는 걸 알 수 있어요.</p>
+<h3>${v.great} ${v.greatRate}%는 몇 장이면 붙을까?</h3>
+<p>${v.great} 주문서 ${v.n}장을 바르면 한 번이라도 붙을 확률은 ${v.greatOne}예요. 성공률이 낮은 주문서는 평균보다 "0번 성공"이 나올 확률을 먼저 확인하세요.</p>
+<h3>${v.chaos} 주문서와 파괴 확률</h3>
+<p>표에 따르면 ${v.chaos} 주문서는 실패하면 50% 확률로 아이템이 파괴돼요. 그래서 한 장을 바를 때 파괴될 확률은 (1 − 성공률) × 50% = <strong>${v.boom}</strong>이고, 3장을 연달아 발라도 아이템이 살아남을 확률은 ${v.survive3}예요. 소중한 아이템이라면 계산기의 파괴 확률을 꼭 확인하세요.</p>
+</section>`
+    : `<section class="prose guide">
+<h2>How scroll odds are calculated</h2>
+<h3>Passes follow a binomial distribution</h3>
+<p>Every scroll is an independent roll. For n scrolls with success rate p, the chance of exactly k passes is C(n, k) × pᵏ × (1 − p)ⁿ⁻ᵏ. The distribution chart in the calculator above plots exactly this.</p>
+<h3>Example: ${v.n} ${v.mid} ${v.midRate}% scrolls</h3>
+<p>Applying ${v.n} standard (+${v.gain}) ${v.mid} scrolls averages <strong>${v.expPass} passes</strong> and <strong>+${v.expGain}</strong>. Yet the chance all ${v.n} pass is only <strong>${v.all}</strong>, and 5 or more pass ${v.five} of the time. The average and the odds of the result you want are very different things.</p>
+<h3>How many ${v.great} ${v.greatRate}% scrolls until one passes?</h3>
+<p>With ${v.n} ${v.great} scrolls, the chance of at least one pass is ${v.greatOne}. For low-rate scrolls, check the odds of zero passes before the average.</p>
+<h3>${v.chaos} scrolls and boom risk</h3>
+<p>Per the table, a failed ${v.chaos} scroll destroys the item 50% of the time. So each scroll booms with probability (1 − success) × 50% = <strong>${v.boom}</strong>, and an item survives three in a row only ${v.survive3} of the time. Check the boom chance in the calculator before scrolling anything you care about.</p>
+</section>`;
 }
 
 const prose = (h1, body) => `<article class="wrap prose"><h1>${h1}</h1>${body.replaceAll('{issues}', issuesUrl)}</article>`;
@@ -909,7 +1080,8 @@ for (const lang of LANGS) {
       ld: [appLd(t.dropH1, t.dropDesc, '/tools/drop-rate/'), breadcrumbLd(lang, t.dropH1, '/tools/drop-rate/')]
     },
     about: { title: t.aboutTitle, desc: t.aboutDesc, body: prose(t.aboutH1, t.aboutBody), ld: [breadcrumbLd(lang, t.aboutH1, '/about/')] },
-    privacy: { title: t.privacyTitle, desc: t.privacyDesc, body: prose(t.privacyH1, t.privacyBody) }
+    privacy: { title: t.privacyTitle, desc: t.privacyDesc, body: prose(t.privacyH1, t.privacyBody) },
+    terms: { title: t.termsTitle, desc: t.termsDesc, body: prose(t.termsH1, t.termsBody) }
   };
 
   const bandDef = (band) => {
