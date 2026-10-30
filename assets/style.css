@@ -136,6 +136,9 @@ h2 { font-size: 1.35rem; margin: 48px 0 16px; }
 .body h4 { margin: 0; font-size: 1.05rem; }
 .body h4 a { color: var(--text); text-decoration: none; }
 .body h4 a:hover { color: var(--accent-2); }
+/* The title link covers the whole card, so clicks on the description or tags open the site too. */
+.body h4 a::after { content: ''; position: absolute; inset: 0; z-index: 1; }
+.site-card .media, .site-card .card-foot a, .site-card .card-foot button { position: relative; z-index: 2; }
 .host { font-size: 0.78rem; color: var(--muted); margin-top: -4px; }
 .body p { margin: 0; color: #c9d2e3; font-size: 0.9rem; }
 .feats { list-style: none; padding: 0; margin: 4px 0 0; display: flex; flex-wrap: wrap; gap: 6px; }
@@ -265,3 +268,10 @@ table.data { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 .status.ok { color: var(--ok); }
 .status.err { color: var(--danger); }
 .icon-btn { font: inherit; background: none; border: 0; color: var(--danger); cursor: pointer; font-size: 1.1rem; }
+
+.band-nav { margin: 28px 0 8px; }
+.band-nav h2 { font-size: 1.05rem; margin: 0 0 10px; }
+.band-nav div { display: flex; flex-wrap: wrap; gap: 8px; }
+.band-link { font-size: 0.85rem; font-weight: 700; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--text); text-decoration: none; }
+a.band-link:hover { border-color: var(--accent); }
+.band-link.current { border-color: var(--accent); color: var(--accent); }

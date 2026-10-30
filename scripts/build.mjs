@@ -90,6 +90,12 @@ const T = {
     colExp: '경험치/시간 (NiaMeowDB)',
     caution: '주의',
     trSourcesHeading: '출처',
+    trBandNav: '레벨 구간별 사냥터',
+    trBandTitle: '글클메 {a}~{b}레벨 사냥터 추천 ({n}곳 비교) · 글로벌 메이플스토리 클래식 월드 | GMS Hub',
+    trBandDesc: '글로벌 메이플스토리 클래식 월드 {a}~{b}레벨 사냥터 {n}곳을 NiaMeowDB, MS-Classic, Henesys.GG 추천과 비교했어요. {maps} 등 맵별 몬스터 레벨과 시간당 경험치.',
+    trBandH1: '{a}~{b}레벨 사냥터',
+    trBandLead: '{a}~{b}레벨을 추천 구간에 넣은 맵 {n}곳이에요. 여러 출처가 함께 추천한 맵이 위에 나와요.',
+    trBandFinder: '내 레벨로 바로 찾기 →',
     noDate: '날짜 표기 없음',
 
     scTitle: '글클메 주문서 계산기 · 확률 (Lesser·Intermediate·Greater·Chaos) | GMS Hub',
@@ -259,6 +265,12 @@ const T = {
     colExp: 'EXP/hr (NiaMeowDB)',
     caution: 'Caution',
     trSourcesHeading: 'Sources',
+    trBandNav: 'Training spots by level range',
+    trBandTitle: 'Level {a}-{b} Training Spots in Global MapleStory Classic World ({n} Maps Compared) | GMS Hub',
+    trBandDesc: 'Where to train at level {a}-{b} in Global MapleStory Classic World: {n} maps compared across NiaMeowDB, MS-Classic and Henesys.GG, including {maps}. Monster levels and EXP per hour.',
+    trBandH1: 'Level {a}-{b} Training Spots',
+    trBandLead: '{n} maps that at least one source recommends for level {a}-{b}. Maps more sources agree on come first.',
+    trBandFinder: 'Find spots for my exact level →',
     noDate: 'undated',
 
     scTitle: 'Global MapleStory Classic World Scroll Calculator: Lesser, Intermediate, Greater & Chaos Odds | GMS Hub',
@@ -368,6 +380,13 @@ const PAGES = [
   { key: 'about', path: '/about/' },
   { key: 'privacy', path: '/privacy/' }
 ];
+
+// One page per 10-level band, so "level 30 training" searches land on a focused list.
+const TR_MAX = Math.max(...training.spots.flatMap((s) => s.recs.map((r) => r.max)));
+const TR_BANDS = Array.from({ length: Math.ceil(TR_MAX / 10) }, (_, i) => [i * 10 + 1, i * 10 + 10]);
+const bandPath = ([a, b]) => `/tools/training/level-${a}-${b}/`;
+const inBand = (s, [a, b]) => s.recs.filter((r) => r.min <= b && r.max >= a);
+PAGES.push(...TR_BANDS.map((band) => ({ key: 'trBand', path: bandPath(band), band })));
 
 const issuesUrl = `https://github.com/${config.github.owner}/${config.github.repo}/issues`;
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -600,13 +619,12 @@ ${faq}
 
 // ---------- training ----------
 
-function trainingBody(lang) {
-  const t = T[lang];
+const minRec = (s) => Math.min(...s.recs.map((r) => r.min));
+
+function trainingRows(lang, spots) {
   const nf = new Intl.NumberFormat(lang);
   const src = training.sources;
-  const minRec = (s) => Math.min(...s.recs.map((r) => r.min));
-  const sorted = [...training.spots].sort((a, b) => minRec(a) - minRec(b) || a.map.localeCompare(b.map));
-  const rows = sorted
+  return spots
     .map((s) => {
       const caution = training.cautions.find((c) => c.map === s.map);
       return `<tr><td><strong>${esc(s.map)}</strong>${caution ? `<div class="caution">⚠ ${esc(caution.text[lang])}</div>` : ''}</td><td>${
@@ -616,9 +634,37 @@ function trainingBody(lang) {
       }</td></tr>`;
     })
     .join('');
-  const sourceList = Object.entries(src)
+}
+
+function trainingSources(lang) {
+  const t = T[lang];
+  const sourceList = Object.entries(training.sources)
     .map(([, s]) => `<li>${srcLink(s.url, s.name)}${s.urls ? ` (${s.urls.map((u, i) => srcLink(u, `${i + 1}`)).join(', ')})` : ''} · ${s.date || t.noDate}</li>`)
     .join('');
+  return `<ul class="notes">${training.notes[lang].map((n) => `<li>${esc(n)}</li>`).join('')}</ul>
+<h3>${t.trSourcesHeading}</h3>
+<ul class="notes">${sourceList}</ul>`;
+}
+
+const trainingTable = (lang, rows) => {
+  const t = T[lang];
+  return `<div class="table-wrap"><table class="data"><thead><tr><th>${t.colMap}</th><th>${t.colMonsters}</th><th>${t.colRecs}</th><th>${t.colExp}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+};
+
+function bandNav(lang, current) {
+  const t = T[lang];
+  const links = TR_BANDS.map((band) => {
+    const label = lang === 'ko' ? `${band[0]}~${band[1]}레벨` : `Lv ${band[0]}-${band[1]}`;
+    return current && band[0] === current[0]
+      ? `<strong class="band-link current" aria-current="page">${label}</strong>`
+      : `<a class="band-link" href="${href(langPath(lang, bandPath(band)))}">${label}</a>`;
+  }).join('');
+  return `<nav class="band-nav" aria-label="${esc(t.trBandNav)}"><h2>${t.trBandNav}</h2><div>${links}</div></nav>`;
+}
+
+function trainingBody(lang) {
+  const t = T[lang];
+  const sorted = [...training.spots].sort((a, b) => minRec(a) - minRec(b) || a.map.localeCompare(b.map));
   return `${pageHead(lang, 'sword', t.trH1, t.trLead)}
 <div class="wrap">
 <form id="tr-form" class="panel inline-form">
@@ -626,16 +672,36 @@ function trainingBody(lang) {
 <button class="btn" type="submit">${t.showSpots}</button>
 </form>
 <section id="tr-result" aria-live="polite"></section>
+${bandNav(lang)}
 <section>
 <h2>${t.trAll}</h2>
-<div class="table-wrap"><table class="data"><thead><tr><th>${t.colMap}</th><th>${t.colMonsters}</th><th>${t.colRecs}</th><th>${t.colExp}</th></tr></thead><tbody>${rows}</tbody></table></div>
-<ul class="notes">${training.notes[lang].map((n) => `<li>${esc(n)}</li>`).join('')}</ul>
-<h3>${t.trSourcesHeading}</h3>
-<ul class="notes">${sourceList}</ul>
+${trainingTable(lang, trainingRows(lang, sorted))}
+${trainingSources(lang)}
 </section>
 </div>
 ${jsonScript('training-data', training)}
 ${jsonScript('i18n', { lang, trResultTitle: t.trResultTitle, trNone: t.trNone, agree: t.agree, higher: t.higher, expHr: t.expHr, caution: t.caution })}`;
+}
+
+// Spots any source recommends inside the band; more agreeing sources first.
+const bandSpots = (band) =>
+  training.spots
+    .filter((s) => inBand(s, band).length)
+    .sort((x, y) => inBand(y, band).length - inBand(x, band).length || minRec(x) - minRec(y) || x.map.localeCompare(y.map));
+
+function trainingBandBody(lang, band) {
+  const t = T[lang];
+  const spots = bandSpots(band);
+  const vars = { a: band[0], b: band[1], n: spots.length };
+  return `${pageHead(lang, 'sword', fill(t.trBandH1, vars), fill(t.trBandLead, vars))}
+<div class="wrap">
+${bandNav(lang, band)}
+<section>
+${trainingTable(lang, trainingRows(lang, spots))}
+<p><a class="btn" href="${href(langPath(lang, '/tools/training/'))}">${t.trBandFinder}</a></p>
+${trainingSources(lang)}
+</section>
+</div>`;
 }
 
 // ---------- scrolls ----------
@@ -842,8 +908,21 @@ for (const lang of LANGS) {
     privacy: { title: t.privacyTitle, desc: t.privacyDesc, body: prose(t.privacyH1, t.privacyBody) }
   };
 
+  const bandDef = (band) => {
+    const spots = bandSpots(band);
+    const vars = { a: band[0], b: band[1], n: spots.length, maps: spots.slice(0, 3).map((s) => s.map).join(', ') };
+    const h1 = fill(t.trBandH1, vars);
+    return {
+      title: fill(t.trBandTitle, vars),
+      desc: fill(t.trBandDesc, vars),
+      body: trainingBandBody(lang, band),
+      ld: [breadcrumbLd(lang, h1, bandPath(band))]
+    };
+  };
+
   for (const p of PAGES) {
-    write(path.join(lang, p.path, 'index.html'), page({ lang, pageKey: p.key, pagePath: p.path, ...defs[p.key] }));
+    const def = p.band ? bandDef(p.band) : defs[p.key];
+    write(path.join(lang, p.path, 'index.html'), page({ lang, pageKey: p.key, pagePath: p.path, ...def }));
   }
 }
 
@@ -907,6 +986,8 @@ if (config.adsenseClient) {
   write('ads.txt', `google.com, ${config.adsenseClient.replace(/^ca-/, '')}, DIRECT, f08c47fec0942fa0\n`);
 }
 write('.nojekyll', '');
+// IndexNow key file: proves ownership when scripts/indexnow.mjs pings Bing, Naver and Yandex.
+if (config.indexNowKey) write(`${config.indexNowKey}.txt`, config.indexNowKey);
 
 // Every directory site gets a zero-count row; the worker only accepts votes for seeded ids.
 const seed = sites.categories

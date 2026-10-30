@@ -33,11 +33,13 @@ node scripts/build.mjs   # dist/ 생성 (의존성 없음)
 | `googleSiteVerification` | Search Console HTML 태그 인증 값 |
 | `adsenseClient` | `ca-pub-...` 넣으면 AdSense 스크립트와 `ads.txt` 생성 |
 | `gaMeasurementId` | `G-...` Google Analytics |
+| `indexNowKey` | IndexNow 키. 빌드 시 `/<키>.txt`를 만들어요 |
 
 ## 검색엔진 등록
 
 1. Google Search Console에 사이트 추가 → HTML 태그 값을 `googleSiteVerification`에 입력 → 푸시
 2. Search Console에서 `sitemap.xml` 제출
+3. 배포가 끝나면 `node scripts/indexnow.mjs` → Bing·네이버·Yandex에 sitemap URL 전체를 바로 알려요
 
 ## 추천 기능 (Cloudflare Worker + D1)
 
