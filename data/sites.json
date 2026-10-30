@@ -492,6 +492,35 @@
               "Formulas"
             ]
           }
+        },
+        {
+          "name": "글클메 디비 (MSCW DB)",
+          "url": "https://mscwdb.com/",
+          "icon": "book",
+          "tint": "#3f7fff",
+          "langs": [
+            "ko"
+          ],
+          "desc": {
+            "ko": "글로벌클래식메이플 자유시장 실시간 시세, 아이템·몬스터·맵·NPC DB, 경험치 트래커.",
+            "en": "Korean Classic World site with live Free Market prices, an item, monster, map and NPC database, and an EXP tracker."
+          },
+          "features": {
+            "ko": [
+              "자유시장 시세",
+              "판매 기록",
+              "아이템·몬스터 DB",
+              "맵·NPC DB",
+              "경험치 트래커"
+            ],
+            "en": [
+              "Free Market prices",
+              "Sales history",
+              "Item & monster DB",
+              "Map & NPC DB",
+              "EXP tracker"
+            ]
+          }
         }
       ]
     },

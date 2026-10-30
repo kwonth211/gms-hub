@@ -15,6 +15,7 @@ INSERT OR IGNORE INTO votes (site, count) VALUES ('planet-helper-com-gmsclassic'
 INSERT OR IGNORE INTO votes (site, count) VALUES ('classic-maplestorywiki-net', 0);
 INSERT OR IGNORE INTO votes (site, count) VALUES ('maplestory-classic-com', 0);
 INSERT OR IGNORE INTO votes (site, count) VALUES ('ohmi69-github-io-osms-datamine-dashboard', 0);
+INSERT OR IGNORE INTO votes (site, count) VALUES ('mscwdb-com', 0);
 INSERT OR IGNORE INTO votes (site, count) VALUES ('ms-classic-com', 0);
 INSERT OR IGNORE INTO votes (site, count) VALUES ('metaroad-gg-maplestory-classic', 0);
 INSERT OR IGNORE INTO votes (site, count) VALUES ('meso-watch', 0);
