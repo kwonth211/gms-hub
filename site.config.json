@@ -14,5 +14,6 @@
   "voteApi": "https://gms-hub-votes.kwonth211.workers.dev",
   "cfAnalyticsToken": "edefd73385c94d19a19ac46907023b00",
   "clarityProjectId": "z5n4jnqxel",
-  "indexNowKey": "d443124f9d781763f2c8c23f1c5d5403"
+  "indexNowKey": "d443124f9d781763f2c8c23f1c5d5403",
+  "naverSiteVerification": "38a6869159810f78a0d03859bb699ebafca6f996"
 }

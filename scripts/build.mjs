@@ -428,6 +428,9 @@ function head({ lang, title, desc, pagePath, noindex, ld = [] }) {
   const verify = config.googleSiteVerification
     ? `<meta name="google-site-verification" content="${esc(config.googleSiteVerification)}">`
     : '';
+  const naverVerify = config.naverSiteVerification
+    ? `<meta name="naver-site-verification" content="${esc(config.naverSiteVerification)}">`
+    : '';
   return `<!doctype html>
 <html lang="${lang}">
 <head>
@@ -451,6 +454,7 @@ ${alternates}
 <meta name="twitter:image" content="${ogImage}">
 <meta name="theme-color" content="#0f1420">
 ${verify}
+${naverVerify}
 <link rel="icon" href="${href('/assets/favicon.svg')}" type="image/svg+xml">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
