@@ -70,6 +70,12 @@ function filter() {
     cat.hidden = !visible;
     any ||= visible;
   });
+  // Our own calculators answer many searches better than an outside site does.
+  const hits = [...document.querySelectorAll('.tool-hit')];
+  hits.forEach((h) => (h.hidden = q === '' || !h.dataset.search.includes(q)));
+  const toolHit = hits.some((h) => !h.hidden);
+  document.getElementById('tool-hits').hidden = !toolHit;
+  any ||= toolHit;
   // Favorites stay out of the way while a single category is selected.
   if (favCards.children.length) favSection.hidden = !!activeCat || ![...favCards.children].some((c) => !c.hidden);
   empty.hidden = any;
@@ -135,7 +141,8 @@ function paintVotes() {
   document.querySelectorAll('.vote').forEach((btn) => {
     const id = btn.dataset.site;
     btn.hidden = false;
-    btn.querySelector('b').textContent = counts[id] || 0;
+    // An empty count reads better than a row of zeros on a young site.
+    btn.querySelector('b').textContent = counts[id] || '';
     btn.setAttribute('aria-pressed', String(voted.includes(id)));
   });
 }

@@ -611,7 +611,7 @@ function siteCard(lang, s) {
 <p>${esc(s.desc[lang])}</p>
 <ul class="feats">${feats}</ul>
 ${stat}
-<div class="card-foot"><a class="visit" data-track-site="${siteId(s.url)}" href="${esc(s.url)}" target="_blank" rel="noopener">${t.visit} ↗</a><button class="vote" type="button" data-site="${siteId(s.url)}" aria-pressed="false" hidden>👍 <span>${t.recommend}</span> <b>0</b></button></div>
+<div class="card-foot"><a class="visit" data-track-site="${siteId(s.url)}" href="${esc(s.url)}" target="_blank" rel="noopener">${t.visit} ↗</a><button class="vote" type="button" data-site="${siteId(s.url)}" aria-pressed="false" hidden>👍 <span>${t.recommend}</span> <b></b></button></div>
 </div>
 </article>`;
 }
@@ -670,6 +670,15 @@ ${heroScene()}
 <header class="cat-head">${spriteSvg('star', 40)}<div><h3>${t.favHeading} <span id="fav-count-2">0</span></h3><p>${esc(t.favDesc)}</p></div></header>
 <div class="cards" id="fav-cards"></div>
 </section>
+<div class="tool-hits" id="tool-hits" hidden>
+${[
+  ['/tools/training/', 'sword', t.navTraining, '사냥터 레벨 레벨업 경험치 사냥 맵 training level exp map grind'],
+  ['/tools/scroll/', 'scroll', t.navScroll, '주문서 강화 작 공격력 업그레이드 슬롯 계산기 scroll upgrade slot calculator'],
+  ['/tools/drop-rate/', 'bag', t.navDrop, '확률 드롭 상자 박스 뽑기 계산기 drop rate box gacha chance calculator']
+]
+  .map(([p, icon, title, kw]) => `<a class="tool-hit" href="${href(langPath(lang, p))}" data-search="${esc(`${title} ${kw}`.toLowerCase())}">${spriteSvg(icon, 28)}<span><strong>${title}</strong><small>GMS Hub</small></span></a>`)
+  .join('')}
+</div>
 ${sections}
 <p id="no-results" class="empty" hidden>${t.noResults}</p>
 </div>

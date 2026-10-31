@@ -58,8 +58,9 @@ h2 { font-size: 1.35rem; margin: 48px 0 16px; }
 @media (max-width: 760px) {
   .header-inner { flex-wrap: wrap; gap: 8px; padding-top: 10px; }
   .brand { flex: 1; }
-  .tabs { order: 3; flex-basis: 100%; padding-bottom: 8px; }
-  .tab { padding: 7px 10px; font-size: 0.88rem; }
+  /* All four tabs visible on phones: icon over label, no hidden horizontal scroll. */
+  .tabs { order: 3; flex-basis: 100%; padding-bottom: 8px; display: grid; grid-template-columns: repeat(4, 1fr); }
+  .tab { flex-direction: column; justify-content: center; gap: 2px; padding: 6px 2px; font-size: 0.74rem; text-align: center; white-space: normal; line-height: 1.2; }
 }
 
 /* hero */
@@ -275,3 +276,12 @@ table.data { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 .band-link { font-size: 0.85rem; font-weight: 700; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--text); text-decoration: none; }
 a.band-link:hover { border-color: var(--accent); }
 .band-link.current { border-color: var(--accent); color: var(--accent); }
+
+/* in-site tools surfaced by the directory search */
+.tool-hits { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin-bottom: 18px; }
+.tool-hit { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--accent); background: var(--panel-2); color: var(--text); text-decoration: none; }
+.tool-hit[hidden] { display: none; }
+.tool-hit strong { display: block; }
+.tool-hit small { color: var(--muted); }
+.tool-hit:hover { background: var(--panel); }
+.tool-hits[hidden] { display: none; }
