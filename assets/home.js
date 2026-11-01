@@ -96,6 +96,19 @@ function setCategory(id) {
 
 document.querySelectorAll('.purpose').forEach((b) => b.addEventListener('click', () => setCategory(b.dataset.filter)));
 document.getElementById('filter-clear').addEventListener('click', () => setCategory(activeCat));
+// The sidebar points at sections a category filter or search may have hidden; reveal the target instead of doing nothing.
+document.querySelectorAll('.toc a[href^="#"]').forEach((a) =>
+  a.addEventListener('click', () => {
+    const target = document.getElementById(a.getAttribute('href').slice(1));
+    if (!target?.hidden) return;
+    if (activeCat && target.dataset.cat !== undefined) setCategory(target.id);
+    if (target.hidden && input.value) {
+      input.value = '';
+      filter();
+    }
+    if (target.hidden && activeCat) setCategory(activeCat);
+  })
+);
 
 input.addEventListener('input', filter);
 // Log the settled query, not every keystroke.
