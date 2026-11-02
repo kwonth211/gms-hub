@@ -24,12 +24,13 @@ const guides = readJson('data/guides.json').guides.map((g) => ({
 const LANGS = ['ko', 'en'];
 const BUILD_DATE = new Date().toISOString().slice(0, 10);
 const SITE_COUNT = sites.categories.reduce((n, c) => n + c.sites.length, 0);
+const CHECKED_SITE_COUNT = sites.categories.flatMap((c) => c.sites).filter((s) => s.checked !== false).length;
 
 const T = {
   ko: {
     gameName: '글로벌 메이플스토리 클래식 월드',
     gameBadge: '글로벌 메이플스토리 클래식 월드 전용',
-    notice: `수록된 사이트 ${SITE_COUNT}곳 모두 ${sites.checked}에 접속을 확인했어요 · 출처가 확인된 정보만 싣습니다`,
+    notice: `수록 링크 ${SITE_COUNT}개 · ${CHECKED_SITE_COUNT}개 접속 확인 (${sites.checked}) · 미확인 링크는 별도 표시해요`,
     navLinks: '사이트 모음',
     navTraining: '사냥터 찾기',
     navScroll: '주문서 계산기',
@@ -40,7 +41,7 @@ const T = {
     navGuides: '가이드',
     switchLang: 'English',
     homeTitle: '글로벌 메이플스토리 클래식 월드(글클메) 사이트 모음 · 시세 · 공략 · 계산기 | GMS Hub',
-    homeDesc: `글로벌 메이플스토리 클래식 월드(글클메) 공식 채널, 디스코드·레딧·디시 커뮤니티, DB·위키, 자유시장 시세, 보스 타이머, 빌드 플래너 ${SITE_COUNT}곳을 접속 확인 후 정리했어요. 레벨별 사냥터 찾기와 주문서 계산기도 있어요.`,
+    homeDesc: `글로벌 메이플스토리 클래식 월드(글클메) 공식 채널, 디스코드·레딧·디시 커뮤니티, DB·위키, 자유시장 시세, 보스 타이머, 빌드 플래너 ${SITE_COUNT}곳을 용도별로 정리했어요. 레벨별 사냥터 찾기와 주문서 계산기도 있어요.`,
     heroKicker: '글클메 유저를 위한 길잡이',
     heroTitle: '글로벌 클래식 메이플 사이트,<br>여기서 다 찾으세요',
     heroSub: '공식 공지부터 시세, 보스 타이머, 빌드 플래너까지. 흩어진 사이트를 용도별로 모았어요.',
@@ -178,7 +179,7 @@ const T = {
     aboutH1: 'GMS Hub 소개',
     aboutBody: `<p>GMS Hub는 <strong>글로벌 메이플스토리 클래식 월드</strong>를 하는 한국어·영어 유저가 필요한 사이트를 빨리 찾을 수 있게 만든 <strong>비공식 팬 사이트</strong>예요.</p>
 <h2>원칙</h2>
-<ul><li><strong>출처가 확인된 정보만 실어요.</strong> 사이트 설명은 각 사이트가 공개한 소개문과 메뉴에 있는 기능만 옮기고, 숫자에는 출처와 확인 날짜를 붙여요.</li><li>출처끼리 내용이 다르면 둘 다 보여주고, 확인되지 않은 내용은 확인되지 않았다고 적어요.</li><li>수록한 링크는 모두 접속을 확인했어요. 접속이 안 되는 사이트와 현금 거래 사이트는 올리지 않아요.</li></ul>
+<ul><li><strong>출처가 확인된 정보만 실어요.</strong> 사이트 설명은 각 사이트가 공개한 소개문과 메뉴에 있는 기능만 옮기고, 숫자에는 출처와 확인 날짜를 붙여요.</li><li>출처끼리 내용이 다르면 둘 다 보여주고, 확인되지 않은 내용은 확인되지 않았다고 적어요.</li><li>접속을 확인한 링크와 아직 확인하지 못한 참고 링크를 구분해 표시해요. 현금 거래 사이트는 올리지 않아요.</li></ul>
 <h2>다루는 게임</h2>
 <p>클래식 월드 하나만 다뤄요. 다른 메이플스토리 버전과는 맵, 몬스터, 강화 시스템이 달라서 섞지 않아요.</p>
 <h2>사이트 추가·오류 제보·문의</h2>
@@ -242,7 +243,7 @@ const T = {
   en: {
     gameName: 'Global MapleStory Classic World',
     gameBadge: 'Global MapleStory Classic World only',
-    notice: `All ${SITE_COUNT} listed sites were checked live on ${sites.checked} · Only sourced information`,
+    notice: `${SITE_COUNT} links · ${CHECKED_SITE_COUNT} checked live on ${sites.checked} · Unverified links are labeled`,
     navLinks: 'Site Directory',
     navTraining: 'Training Spots',
     navScroll: 'Scroll Calculator',
@@ -253,7 +254,7 @@ const T = {
     navGuides: 'Guides',
     switchLang: '한국어',
     homeTitle: 'Global MapleStory Classic World Sites: Prices, Guides, Boss Timers & Tools | GMS Hub',
-    homeDesc: `Every Global MapleStory Classic World site in one place: official channels, Discord, Reddit and Korean communities, databases and wikis, Free Market price trackers, boss timers and build planners. ${SITE_COUNT} sites, all checked live.`,
+    homeDesc: `Every Global MapleStory Classic World site in one place: official channels, Discord, Reddit and Korean communities, databases and wikis, Free Market price trackers, boss timers and build planners. ${SITE_COUNT} links, with unverified references labeled separately.`,
     heroKicker: 'Your guide to Classic World on the web',
     heroTitle: 'Every Global Classic World site,<br>in one place',
     heroSub: 'From official notices to price trackers, boss timers and build planners, sorted by what you need.',
@@ -391,7 +392,7 @@ const T = {
     aboutH1: 'About GMS Hub',
     aboutBody: `<p>GMS Hub is an <strong>unofficial fan site</strong> that helps English- and Korean-speaking <strong>Global MapleStory Classic World</strong> players find the right site fast.</p>
 <h2>Principles</h2>
-<ul><li><strong>Only sourced information.</strong> Site descriptions come from each site's own blurb and menus, and every number carries its source and check date.</li><li>When sources disagree we show both, and anything unconfirmed is labeled as such.</li><li>Every listed link was checked live. We never list dead or real-money trading sites.</li></ul>
+<ul><li><strong>Only sourced information.</strong> Site descriptions come from each site's own blurb and menus, and every number carries its source and check date.</li><li>When sources disagree we show both, and anything unconfirmed is labeled as such.</li><li>Links checked live and unverified references are labeled separately. We never list real-money trading sites.</li></ul>
 <h2>Which game</h2>
 <p>Classic World only. Other MapleStory versions have different maps, monsters and upgrade systems, so we keep them out.</p>
 <h2>Suggest a site, report an error or contact us</h2>
@@ -625,6 +626,7 @@ function siteCard(lang, s) {
     : `<div class="tile" style="--tint:${esc(s.tint || '#ff8a1f')}">${spriteSvg(s.icon || 'chat', 64)}<span>${esc(host(s.url))}</span></div>`;
   const langs = s.langs.map((l) => `<span class="lang ${l}">${esc(t.langNames[l] || l)}</span>`).join('');
   const feats = s.features[lang].map((f) => `<li>${esc(f)}</li>`).join('');
+  const unverified = s.checked === false ? `<p class="stat-line"><strong>${lang === 'ko' ? '접속·본문 미확인' : 'Access and content not yet verified'}</strong></p>` : '';
   const stat = s.stat
     ? `<p class="stat-line"><strong>${esc(s.stat[lang])}</strong> <span>${t.statSource}: ${esc(s.stat.source)} · ${esc(s.stat.date)}</span></p>`
     : '';
@@ -637,7 +639,7 @@ function siteCard(lang, s) {
 <span class="host">${esc(host(s.url))}</span>
 <p>${esc(s.desc[lang])}</p>
 <ul class="feats">${feats}</ul>
-${stat}
+${stat}${unverified}
 <div class="card-foot"><a class="visit" data-track-site="${siteId(s.url)}" href="${esc(s.url)}" target="_blank" rel="noopener">${t.visit} ↗</a><button class="vote" type="button" data-site="${siteId(s.url)}" aria-pressed="false" hidden>👍 <span>${t.recommend}</span> <b></b></button></div>
 </div>
 </article>`;
