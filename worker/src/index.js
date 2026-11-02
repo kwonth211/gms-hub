@@ -157,12 +157,12 @@ async function refreshSnapshot(env) {
   return data;
 }
 
-// Everything the item view needs for one item: its listings of the last week (cheapest open ones first, then sold), a
-// summary and a 7-day trend.
+// Everything the item view needs for one item: its listings of the last week (newest first, for the charts and the
+// where-to-buy list), and its ranking-style summary.
 async function itemDetail(env, item) {
   const { results } = await env.DB.prepare(
     `SELECT price, qty, sold, seller, channel, room, last_seen AS seen FROM listings WHERE item = ? AND last_seen >= datetime('now', '-7 days')
-     ORDER BY sold ASC, price ASC LIMIT 60`
+     ORDER BY last_seen DESC LIMIT 400`
   )
     .bind(item)
     .all();

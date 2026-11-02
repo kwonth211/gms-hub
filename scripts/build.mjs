@@ -35,6 +35,7 @@ const T = {
     navScroll: '주문서 계산기',
     navDrop: '확률 계산기',
     navPrice: '시세 검색',
+    navMarket: '실시간 시세',
     navAbout: '소개',
     navGuides: '가이드',
     switchLang: 'English',
@@ -247,6 +248,7 @@ const T = {
     navScroll: 'Scroll Calculator',
     navDrop: 'Odds Calculator',
     navPrice: 'Price Search',
+    navMarket: 'Live Market',
     navAbout: 'About',
     navGuides: 'Guides',
     switchLang: '한국어',
@@ -459,6 +461,7 @@ const PAGES = [
   { key: 'drop', path: '/tools/drop-rate/' },
   { key: 'price', path: '/tools/price/' },
   { key: 'scan', path: '/tools/scan/' },
+  { key: 'market', path: '/tools/market/' },
   { key: 'about', path: '/about/' },
   { key: 'privacy', path: '/privacy/' },
   { key: 'terms', path: '/terms/' }
@@ -564,7 +567,7 @@ function header(lang, pagePath, only) {
     ['/tools/training/', 'sword', t.navTraining],
     ['/tools/scroll/', 'scroll', t.navScroll],
     ['/tools/drop-rate/', 'bag', t.navDrop],
-    ['/tools/price/', 'coin', t.navPrice]
+    ['/tools/market/', 'coin', t.navMarket]
   ]
     .map(
       ([p, icon, label]) =>
@@ -654,7 +657,7 @@ const LIVE = {
     change: '전일 대비',
     sold: '팔림',
     isNew: 'NEW',
-    more: '아이템 시세 검색 →',
+    more: '실시간 시세 전체 보기 →',
     updated: '{t} 갱신',
     sparkLabel: '{name} 7일 추이: {from}에서 {to}',
     noTrend: '추이 데이터 부족',
@@ -673,7 +676,7 @@ const LIVE = {
     change: 'vs yesterday',
     sold: 'Sold',
     isNew: 'NEW',
-    more: 'Search item prices →',
+    more: 'Open the live market →',
     updated: 'updated {t}',
     sparkLabel: '{name} 7-day trend: {from} to {to}',
     noTrend: 'not enough data for a trend',
@@ -686,7 +689,7 @@ const LIVE = {
 function liveMarket(lang) {
   const t = LIVE[lang];
   return `<section class="wrap market" id="live-market" aria-labelledby="live-title"
- data-api="${esc(config.voteApi)}" data-items="${esc(href('/assets/items.json'))}" data-price="${esc(href(langPath(lang, '/tools/price/')))}"
+ data-api="${esc(config.voteApi)}" data-items="${esc(href('/assets/items.json'))}" data-price="${esc(href(langPath(lang, '/tools/market/')))}"
  data-text="${esc(JSON.stringify(t))}">
 <header class="market-head"><span class="live-dot" aria-hidden="true"></span><h2 id="live-title">${t.title}</h2><p>${t.sub}</p><small id="live-updated"></small><a class="btn small-btn market-scan" href="${href(langPath(lang, '/tools/scan/'))}">● ${t.scan}</a><strong class="market-preview" id="market-preview" hidden>${t.preview}</strong></header>
 <div class="market-grid">
@@ -697,7 +700,7 @@ function liveMarket(lang) {
 <div class="market-panel market-recent">
 <h3>${t.recent}</h3>
 <ol class="recent-list" id="live-rows"><li class="market-empty">${t.empty}</li></ol>
-<a class="market-more" href="${href(langPath(lang, '/tools/price/'))}">${t.more}</a>
+<a class="market-more" href="${href(langPath(lang, '/tools/market/'))}">${t.more}</a>
 </div>
 </div>
 <div class="spark-tip" id="spark-tip" role="tooltip" hidden></div>
@@ -1231,6 +1234,93 @@ function scanBody(lang) {
 ${jsonScript('i18n', { lang, ...t.i, itemsUrl: href('/assets/items.json'), glyphsUrl: href('/assets/shop-glyphs.json'), api: config.voteApi })}`;
 }
 
+// ---------- live market page ----------
+// The main price feature: search an item to see its statistics, a 7-day price trend, how listings spread over price bands
+// and where to buy it now; next to the live top 10 and the scrolling feed of scanned listings.
+const MK = {
+  ko: {
+    title: '글클메 실시간 자유시장 시세: 가격 추이·가격대 분포·지금 파는 곳 | GMS Hub',
+    desc: '글로벌 메이플스토리 클래식 월드 자유시장 실시간 시세. 유저들이 스캔한 상점 매물로 아이템별 평균가, 7일 가격 추이, 가격대 분포, 지금 가장 싸게 파는 상점(채널·방)을 보여 줘요.',
+    h1: '실시간 시세',
+    lead: '유저들이 스캔한 자유시장 상점을 모아 아이템별 시세를 보여 줘요. 아이템을 검색해 보세요.',
+    placeholder: '아이템 이름 (예: 장갑 공격력, 일비, 메탈 완드)',
+    stats: { listings: '24시간 매물', shops: '상점', items: '아이템', sold: '판매 확인' },
+    scan: '내 화면으로 상점 스캔',
+    top: '인기 아이템 TOP 10',
+    recent: '방금 올라온 매물',
+    pick: '아이템을 검색하거나 순위에서 골라 보세요.',
+    noData: '이 아이템은 아직 최근 7일 매물이 없어요. 스캔하면 바로 쌓여요.',
+    tiles: { avg: '평균가 (24시간)', low: '지금 최저가', last: '최근 판매가', count: '최근 7일 매물' },
+    trend: '가격 추이 (7일)',
+    trendNote: '선은 날짜별 중앙값, 띠는 그날의 최저~최고, 점은 매물 하나하나예요.',
+    dist: '가격대 분포',
+    distNote: '최근 7일 매물이 어느 가격대에 몰려 있는지 보여 줘요.',
+    where: '지금 파는 곳',
+    whereNote: '판매 중인 매물을 싼 순서로 보여 줘요. 팔린 매물은 아래에 있어요.',
+    sold: '팔림',
+    selling: '판매 중',
+    listings: '매물',
+    soldN: '판매',
+    median: '중앙값',
+    range: '범위',
+    external: '다른 시세 사이트에서 보기',
+    table: { price: '개당 가격', qty: '묶음', seller: '판매자', where: '위치', seen: '본 시각' }
+  },
+  en: {
+    title: 'MapleStory Classic World Live Free Market Prices: Trends, Price Spread, Where to Buy | GMS Hub',
+    desc: 'Live Free Market prices for MapleStory Classic World from shops players scanned: average price, 7-day trend, price spread and the cheapest shop (channel and room) for each item.',
+    h1: 'Live Market',
+    lead: 'Prices from Free Market shops players scanned. Search an item.',
+    placeholder: 'Item name (e.g. Gloves Attack, Ilbi, Metal Wand)',
+    stats: { listings: 'listings 24h', shops: 'shops', items: 'items', sold: 'seen sold' },
+    scan: 'Scan shops from my screen',
+    top: 'Top 10 items',
+    recent: 'Just listed',
+    pick: 'Search an item or pick one from the ranking.',
+    noData: 'No listings for this item in the last 7 days yet. Scanning adds them right away.',
+    tiles: { avg: 'Average (24h)', low: 'Cheapest now', last: 'Last sale', count: 'Listings (7 days)' },
+    trend: 'Price trend (7 days)',
+    trendNote: 'Line: daily median. Band: that day’s lowest to highest. Dots: individual listings.',
+    dist: 'Price spread',
+    distNote: 'Where the last 7 days of listings sit by price.',
+    where: 'Where to buy',
+    whereNote: 'Open listings, cheapest first. Sold ones are listed below.',
+    sold: 'Sold',
+    selling: 'For sale',
+    listings: 'listings',
+    soldN: 'sold',
+    median: 'median',
+    range: 'range',
+    external: 'See it on other price sites',
+    table: { price: 'Each', qty: 'Bundle', seller: 'Seller', where: 'Where', seen: 'Seen' }
+  }
+};
+
+function marketBody(lang) {
+  const t = MK[lang];
+  const stat = (k) => `<div><dd id="mk-stat-${k}">–</dd><dt>${t.stats[k]}</dt></div>`;
+  return `${pageHead(lang, 'coin', t.h1, t.lead)}
+<div class="wrap mk">
+<div class="mk-bar">
+<dl class="mk-stats"><span class="live-dot" aria-hidden="true"></span>${['listings', 'shops', 'items', 'sold'].map(stat).join('')}</dl>
+<a class="btn small-btn" href="${href(langPath(lang, '/tools/scan/'))}">● ${t.scan}</a>
+</div>
+<div class="mk-search panel">
+<input type="search" id="mk-q" placeholder="${esc(t.placeholder)}" autocomplete="off" aria-label="${esc(t.placeholder)}" aria-controls="mk-suggest">
+<ul id="mk-suggest" class="mk-suggest" role="listbox" hidden></ul>
+</div>
+<div class="mk-grid">
+<section class="mk-detail panel" id="mk-detail" aria-live="polite"><p class="muted">${t.pick}</p></section>
+<aside class="mk-side">
+<section class="panel"><h2>${t.top}</h2><ol class="rank-list mk-rank" id="rank-list"></ol></section>
+<section class="panel"><h2>${t.recent}</h2><ol class="recent-list mk-feed" id="live-rows"></ol></section>
+</aside>
+</div>
+<div class="spark-tip" id="spark-tip" role="tooltip" hidden></div>
+</div>
+${jsonScript('mk-data', { lang, api: config.voteApi, itemsUrl: href('/assets/items.json'), priceUrl: href(langPath(lang, '/tools/price/')), sites: PRICE_SITES, t, live: LIVE[lang] })}`;
+}
+
 function dropBody(lang) {
   const t = T[lang];
   const rows = drops.entries.length
@@ -1551,6 +1641,13 @@ for (const lang of LANGS) {
       body: dropBody(lang),
       scripts: ['drop.js'],
       ld: [appLd(t.dropH1, t.dropDesc, '/tools/drop-rate/'), breadcrumbLd(lang, t.dropH1, '/tools/drop-rate/')]
+    },
+    market: {
+      title: MK[lang].title,
+      desc: MK[lang].desc,
+      body: marketBody(lang),
+      scripts: ['market.js'],
+      ld: [appLd(MK[lang].h1, MK[lang].desc, '/tools/market/'), breadcrumbLd(lang, MK[lang].h1, '/tools/market/')]
     },
     scan: {
       title: SCAN[lang].title,
