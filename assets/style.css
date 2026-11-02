@@ -87,6 +87,9 @@ h2 { font-size: 1.35rem; margin: 48px 0 16px; }
   border-radius: 12px; padding: 0 14px;
 }
 .search-box input { flex: 1; background: none; border: 0; color: var(--text); font: inherit; font-size: 1rem; padding: 14px 0; outline: none; min-width: 0; }
+/* The box itself is the visible field, so the global input focus ring would draw a second frame inside it. */
+.search-box input:focus { outline: none; }
+.search-box:focus-within { box-shadow: 0 0 0 3px var(--accent-soft); }
 .hero-stats { display: flex; gap: 22px; margin: 18px 0 0; flex-wrap: wrap; }
 .hero-stats div { display: flex; flex-direction: column-reverse; }
 .hero-stats dt { font-size: 0.75rem; color: var(--muted); }
