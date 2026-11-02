@@ -552,16 +552,21 @@ function findPrefix(cols, prefix, share = 0.12) {
   return -1;
 }
 
-// The learned title closest to what is on screen, if it is close enough to be the same room.
-function roomFor(key, rooms, rescaled = false) {
+// The learned title closest to what is on screen. Every title starts with the same "Free Market <", so only the part after
+// that shared prefix (the room number) is compared; "<3>" and "<4>" differ in a handful of pixels and a whole-title
+// comparison would let one pass for the other. The nearest room must also clearly beat the runner-up.
+function roomFor(key, rooms, rescaled = false, skip = 0) {
   if (rooms[key] !== undefined) return rooms[key];
-  const cols = key.split('.').map(Number);
-  let best = null;
-  for (const [known, room] of Object.entries(rooms)) {
-    const d = colDiff(cols, known.split('.').map(Number));
-    if (!best || d < best.d) best = { d, room };
-  }
-  return best && best.d <= Math.max(4, Math.floor(inkOf(cols) * (rescaled ? 0.2 : 0.08))) ? best.room : 0;
+  const tail = key.split('.').map(Number).slice(skip);
+  const scored = Object.entries(rooms)
+    .map(([known, room]) => ({ room, d: colDiff(tail, known.split('.').map(Number).slice(skip)) }))
+    .sort((a, b) => a.d - b.d);
+  const [best, second] = scored;
+  if (!best) return 0;
+  const ink = inkOf(tail);
+  const close = best.d <= Math.max(2, Math.floor(ink * (rescaled ? 0.15 : 0.05)));
+  const clear = !second || second.room === best.room || second.d - best.d >= 3;
+  return close && clear ? best.room : 0;
 }
 
 // Free Market room number from the minimap title; null when no Free Market title is on screen.
@@ -581,7 +586,7 @@ export function findRoom(img, map, rescaled = false) {
   roomAt = hit.y0;
   lastRoomKey = hit.key;
   // 0 means "a Free Market room, but one whose title has not been learned yet".
-  return roomFor(hit.key, map.rooms, rescaled);
+  return roomFor(hit.key, map.rooms, rescaled, map.prefix.length);
 }
 
 export function mapColumns(img, x0, x1, y0) {
