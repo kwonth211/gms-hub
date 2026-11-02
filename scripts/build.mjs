@@ -195,7 +195,9 @@ const T = {
 <h2>방문 통계</h2>
 <p>사이트 개선을 위해 Cloudflare Web Analytics, Google Analytics, Microsoft Clarity로 방문 통계를 수집해요. 방문한 페이지, 체류 시간, 클릭한 버튼과 링크, 스크롤 같은 사용 기록이 익명으로 집계되며, Clarity는 개선을 위해 화면 이용 과정을 기록할 수 있어요. 검색창 등 입력값은 기록에서 가려져요. 자세한 내용은 <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google 개인정보처리방침</a>과 <a href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener">Microsoft 개인정보처리방침</a>을 참고하세요.</p>
 <h2>추천 기능</h2>
-<p>사이트 카드의 👍 추천을 누르면 같은 사람이 한 사이트를 여러 번 추천하지 못하게, 접속 IP 주소를 비밀 값과 섞어 되돌릴 수 없는 해시로 바꾼 뒤 추천한 사이트·시각과 함께 Cloudflare에 저장해요. IP 주소 원문은 저장하지 않아요. 추천 수를 보여주는 것 말고는 쓰지 않으며, 삭제를 원하면 아래 연락처로 알려주세요.</p>
+<p>사이트 카드의 👍 추천을 누르면 같은 사람이 한 사이트를 여러 번 추천하지 못하게, 접속 IP 주소를 비밀 값과 섞어 되돌릴 수 없는 해시로 바꾼 뒤 추천한 사이트·시각과 함께 Cloudflare에 저장해요. IP 주소 원문은 저장하지 않아요. 추천 수를 보여주는 것 말고는 쓰지 않으며, 삭제를 원하면 아래 연락처로 알려주세요.</p>${config.priceReports ? `
+<h2>시세 제보</h2>
+<p>시세 검색에서 가격을 올리면 아이템·가격·종류(팔림/파는 중/삽니다)·시각을 Cloudflare에 저장하고 모든 방문자에게 통계로 보여 줘요. 도배를 막기 위해 IP 주소를 추천 기능과 같은 방식의 되돌릴 수 없는 해시로 바꿔 함께 저장하며, IP 주소 원문은 저장하지 않아요.</p>` : ''}
 <h2>브라우저 저장소</h2>
 <p>언어 선택, 즐겨찾기, 추천한 사이트 목록은 사용자의 브라우저(localStorage)에만 저장되고 서버로 전송되지 않아요. 브라우저의 사이트 데이터를 지우면 함께 지워져요.</p>
 <h2>어린이</h2>
@@ -403,7 +405,9 @@ const T = {
 <h2>Analytics</h2>
 <p>To improve the site we use Cloudflare Web Analytics, Google Analytics and Microsoft Clarity. They record usage such as pages visited, time on page, buttons and links clicked, and scrolling, without identifying you; Clarity may record how the page is used for replay. Text typed into fields such as search is masked. See the <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a> and the <a href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener">Microsoft Privacy Statement</a>.</p>
 <h2>Recommendations</h2>
-<p>When you press 👍 on a site card, we turn your IP address into a salted, irreversible hash so one person can't recommend the same site twice, and store that hash with the site and time on Cloudflare. The raw IP address is never stored. It is used only to show recommendation counts; email us below to have it removed.</p>
+<p>When you press 👍 on a site card, we turn your IP address into a salted, irreversible hash so one person can't recommend the same site twice, and store that hash with the site and time on Cloudflare. The raw IP address is never stored. It is used only to show recommendation counts; email us below to have it removed.</p>${config.priceReports ? `
+<h2>Price reports</h2>
+<p>When you add a price in Price Search, we store the item, price, type (sold/selling/buying) and time on Cloudflare and show them to everyone as statistics. To stop spam we also store the same kind of salted, irreversible IP hash used for recommendations. The raw IP address is never stored.</p>` : ''}
 <h2>Browser storage</h2>
 <p>Your language choice, favorites and the list of sites you recommended are stored only in your browser (localStorage) and never sent to a server. Clearing site data in your browser removes them.</p>
 <h2>Children</h2>
@@ -684,7 +688,11 @@ ${heroScene()}
 <header class="cat-head">${spriteSvg('star', 40)}<div><h3>${t.favHeading} <span id="fav-count-2">0</span></h3><p>${esc(t.favDesc)}</p></div></header>
 <div class="cards" id="fav-cards"></div>
 </section>
-<div class="tool-hits item-hits" id="item-hits" data-items="${esc(href('/assets/items.json'))}" data-price="${esc(href(langPath(lang, '/tools/price/')))}" data-label="${esc(PR[lang].h1)}" hidden></div>
+<section class="item-hits" id="item-hits" data-items="${esc(href('/assets/items.json'))}" data-price="${esc(href(langPath(lang, '/tools/price/')))}" data-sites="${esc(JSON.stringify(PRICE_SITES))}" data-copied="${esc(PR[lang].copied)}" data-more="${esc(PR[lang].moreItems)}" hidden>
+<h3>${spriteSvg('coin', 24)}${PR[lang].h1}</h3>
+<div class="item-rows" id="item-rows"></div>
+<a class="more-items" id="more-items" href="#"></a>
+</section>
 <div class="tool-hits" id="tool-hits" hidden>
 ${[
   ['/tools/training/', 'sword', t.navTraining, '사냥터 레벨 레벨업 경험치 사냥 맵 training level exp map grind'],
@@ -894,6 +902,20 @@ const PR = {
     paid: '유료',
     direct: '바로 열림',
     copyNote: '이름 복사 후 열림',
+    moreItems: '{n}개 더 보기 →',
+    hubLabel: 'GMS Hub 유저 시세',
+    hubNone: '아직 제보가 없어요. 첫 시세를 올려 주세요.',
+    hubSummary: '최근 14일 {n}건 · {low}~{high}',
+    report: '시세 올리기',
+    pricePh: '가격 (예: 58만, 580k)',
+    submit: '올리기',
+    thanks: '고마워요! 바로 반영됐어요.',
+    badPrice: '가격을 알아볼 수 없어요. 58만, 580000, 580k처럼 적어 주세요.',
+    limit: '오늘은 제보를 많이 하셨어요. 내일 다시 올려 주세요.',
+    failed: '지금은 올릴 수 없어요. 잠시 후 다시 해 주세요.',
+    kinds: { sold: '팔린 가격', selling: '파는 가격', buying: '사는 가격' },
+    recent: '방금 올라온 시세',
+    recentNone: '아직 올라온 시세가 없어요. 아이템을 검색해서 첫 시세를 올려 주세요.',
     cats: { Equip: '장비', Use: '소비', Etc: '기타', Setup: '설치' },
     subs: {
       Wand: '완드', Staff: '스태프', Bow: '활', Crossbow: '석궁', Claw: '아대', Dagger: '단검', Spear: '창', 'Pole Arm': '폴암', Polearm: '폴암',
@@ -906,6 +928,9 @@ const PR = {
     },
     howHeading: '이렇게 쓰면 돼요',
     how: [
+      ...(config.priceReports
+        ? ['거래했거나 상점에서 본 가격이 있으면 "시세 올리기"로 10초 만에 올려 주세요. 가입은 필요 없어요. 올린 가격은 최근 14일 중앙값으로 묶여서 모두에게 보여요.']
+        : []),
       '아이템 이름을 한글로 입력하세요. 띄어쓰기는 달라도 찾아요. "주황포션"도 "주황 포션"으로 찾아요.',
       '주문서는 "장갑 공격력", "모자 민첩", "장공"처럼 부위와 능력치로 찾으면 돼요. 게임 안 이름에 영어가 섞여 있어도 한글 능력치로 찾을 수 있게 맞춰 뒀어요.',
       '결과에서 시세 사이트를 누르세요. FreeMarketClassic은 그 아이템 시세 페이지가, MapleMarket은 검색 결과가 바로 열려요.',
@@ -918,6 +943,7 @@ const PR = {
       ['MesoWatch', '유저들이 자유시장을 돌며 공유한 화면에서 팔린 가격을 모아요. 많이 거래되는 아이템 순위가 한눈에 보여요.'],
       ['meowdb', '유저가 직접 제보한 가격의 최근 14일 중앙값이에요. 한국어 화면을 지원해요.']
     ],
+    reportNote: '올린 가격은 누가 올렸는지 알 수 없게 저장돼요(접속 주소는 되돌릴 수 없는 값으로만 바꿔 도배를 막는 데 써요). 중앙값에서 5배 넘게 벗어난 가격은 오타로 보고 빼요.',
     sourceNote: '아이템 이름은 글로벌 메이플스토리 클래식 월드 게임 데이터에 들어 있는 공식 한국어·영어 이름이에요(maplestory.io 제공). 캐릭터 외형, 퀘스트 아이템, 캐시 아이템은 거래가 안 돼서 뺐어요. 사이트마다 시세가 다를 수 있으니 비싼 물건은 두세 곳을 같이 보세요.',
     tradingLink: '거래글 약어와 메소 빚 규칙은 <a href="{href}">거래와 메소 가이드</a>에 정리했어요.'
   },
@@ -937,10 +963,27 @@ const PR = {
     paid: 'paid',
     direct: 'opens the item',
     copyNote: 'copies the name, then opens',
+    moreItems: '{n} more →',
+    hubLabel: 'GMS Hub player prices',
+    hubNone: 'No reports yet. Be the first to add a price.',
+    hubSummary: '{n} reports in 14 days · {low}–{high}',
+    report: 'Add a price',
+    pricePh: 'Price (e.g. 580k, 1.2m)',
+    submit: 'Submit',
+    thanks: 'Thanks! Your price is in.',
+    badPrice: "Couldn't read that price. Try 580000, 580k or 1.2m.",
+    limit: "You've sent a lot of prices today. Please come back tomorrow.",
+    failed: "Couldn't send right now. Please try again shortly.",
+    kinds: { sold: 'Sold for', selling: 'Selling for', buying: 'Buying for' },
+    recent: 'Latest prices',
+    recentNone: 'No prices yet. Search an item and add the first one.',
     cats: { Equip: 'Equip', Use: 'Use', Etc: 'Etc', Setup: 'Setup' },
     subs: {},
     howHeading: 'How it works',
     how: [
+      ...(config.priceReports
+        ? ['Saw or paid a price? Use "Add a price" to share it in ten seconds, no sign-up. Reports are combined into a 14-day median everyone can see.']
+        : []),
       'Type part of an item name. Results update as you type.',
       'Click a tracker. FreeMarketClassic opens the item page and MapleMarket opens a search for it.',
       'MesoWatch and meowdb have no search links, so clicking them copies the item name first. Paste it into their search box.'
@@ -952,6 +995,7 @@ const PR = {
       ['MesoWatch', 'Sold prices read from shopping sessions players share.'],
       ['meowdb', '14-day median of player-reported prices.']
     ],
+    reportNote: 'Reports are stored anonymously (your connection address is only kept as a one-way hash to stop spam). Prices more than 5x away from the median are treated as typos and left out.',
     sourceNote: 'Item names come from the MapleStory Classic World game data (via maplestory.io). Hair, faces, quest items and cash items are left out because they cannot be traded. Trackers can disagree, so check two or three before a big trade.',
     tradingLink: ''
   }
@@ -976,11 +1020,12 @@ function priceBody(lang) {
 <ol>${t.how.map((x) => `<li>${esc(x)}</li>`).join('')}</ol>
 <h2>${t.sitesHeading}</h2>
 <ul>${t.sites.map(([n, d]) => `<li><strong>${n}</strong>: ${esc(d)}</li>`).join('')}</ul>
+${config.priceReports ? `<p class="muted">${esc(t.reportNote)}</p>` : ''}
 <p class="muted">${esc(t.sourceNote)}</p>
 ${t.tradingLink && guides.some((g) => g.slug === 'trading-and-mesos') ? `<p>${fill(t.tradingLink, { href: href(langPath('ko', '/guides/trading-and-mesos/')) })}</p>` : ''}
 </section>
 </div>
-${jsonScript('i18n', { lang, ...Object.fromEntries(Object.entries(t).filter(([k]) => ['none', 'more', 'level', 'copy', 'copied', 'paid', 'direct', 'copyNote', 'cats', 'subs'].includes(k))), sites: PRICE_SITES, aliases: lang === 'ko' ? STAT_ALIASES : {}, itemsUrl: href('/assets/items.json') })}`;
+${jsonScript('i18n', { lang, ...Object.fromEntries(Object.entries(t).filter(([k]) => ['none', 'more', 'level', 'copy', 'copied', 'paid', 'direct', 'copyNote', 'cats', 'subs', 'hubLabel', 'hubNone', 'hubSummary', 'report', 'pricePh', 'submit', 'thanks', 'badPrice', 'limit', 'failed', 'kinds', 'recent', 'recentNone'].includes(k))), sites: PRICE_SITES, aliases: lang === 'ko' ? STAT_ALIASES : {}, itemsUrl: href('/assets/items.json'), api: config.priceReports ? config.voteApi : '' })}`;
 }
 
 function dropBody(lang) {

@@ -82,11 +82,28 @@ function filter() {
   empty.hidden = any;
 }
 
-// Most searches here are item names ("메탈 완드"), which no listed site matches; offer the price search for them instead.
+// Most searches here are item names ("미스릴"), which no listed site matches. Show matching items with direct links to the
+// price trackers right here; trackers without linkable search get the English name copied before they open.
 const itemHits = document.getElementById('item-hits');
+const itemRows = document.getElementById('item-rows');
+const moreItems = document.getElementById('more-items');
+const priceSites = JSON.parse(itemHits.dataset.sites);
+const ITEM_ROWS = 5;
 let items = null;
 let itemsLoading = false;
 const squash = (s) => s.toLowerCase().replace(/\s+/g, '');
+const escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+
+function itemRow(it) {
+  const links = priceSites
+    .map((s) => {
+      const url = s.url.replace('{id}', it.id).replace('{en}', encodeURIComponent(it.en));
+      return `<a class="item-link${s.direct ? ' direct' : ''}" href="${escHtml(url)}" target="_blank" rel="noopener" data-site="${s.id}" data-item="${it.id}"${s.direct ? '' : ` data-copy="${escHtml(it.en)}"`}>${s.name}</a>`;
+    })
+    .join('');
+  return `<div class="item-row"><img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="28" height="28" loading="lazy"><span class="item-name"><strong>${escHtml(it.name)}</strong>${it.ko ? `<small>${escHtml(it.en)}</small>` : ''}</span><span class="item-links">${links}</span></div>`;
+}
+
 function showItemHits(q) {
   const flat = squash(q);
   if (flat.length < 2) {
@@ -99,23 +116,34 @@ function showItemHits(q) {
       fetch(itemHits.dataset.items)
         .then((r) => r.json())
         .then((rows) => {
-          items = rows.map(([id, ko, en]) => ({ id, name: ko || en, en, flat: squash(`${ko}${en}`) }));
+          items = rows.map(([id, ko, en]) => ({ id, ko, en, name: ko || en, flat: squash(`${ko}${en}`) }));
           filter();
         })
         .catch(() => {});
     }
     return false;
   }
-  const hits = items.filter((it) => it.flat.includes(flat)).sort((a, b) => a.name.length - b.name.length).slice(0, 4);
-  itemHits.innerHTML = hits
-    .map(
-      (it) =>
-        `<a class="tool-hit" href="${itemHits.dataset.price}?q=${encodeURIComponent(it.name)}"><img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="28" height="28" loading="lazy"><span><strong>${it.name.replace(/</g, '&lt;')}</strong><small>${itemHits.dataset.label}</small></span></a>`
-    )
-    .join('');
+  const hits = items.filter((it) => it.flat.includes(flat)).sort((a, b) => a.name.length - b.name.length || a.id - b.id);
+  itemRows.innerHTML = hits.slice(0, ITEM_ROWS).map(itemRow).join('');
+  moreItems.hidden = hits.length <= ITEM_ROWS;
+  moreItems.href = `${itemHits.dataset.price}?q=${encodeURIComponent(q.trim())}`;
+  moreItems.textContent = itemHits.dataset.more.replace('{n}', hits.length - ITEM_ROWS);
   itemHits.hidden = !hits.length;
   return hits.length > 0;
 }
+
+itemRows.addEventListener('click', (e) => {
+  const a = e.target.closest('.item-link');
+  if (!a) return;
+  track('price_link', { site_id: a.dataset.site, item_id: a.dataset.item, source: 'home' });
+  if (!a.dataset.copy) return;
+  navigator.clipboard?.writeText(a.dataset.copy).catch(() => {});
+  a.closest('.item-row').querySelector('.copied')?.remove();
+  const note = document.createElement('small');
+  note.className = 'copied';
+  note.textContent = itemHits.dataset.copied.replace('{en}', a.dataset.copy);
+  a.closest('.item-row').appendChild(note);
+});
 
 function setCategory(id) {
   activeCat = activeCat === id ? null : id;
