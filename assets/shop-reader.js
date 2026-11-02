@@ -463,33 +463,50 @@ export function priceFromLine(text) {
 }
 
 // ---------- channel ----------
-// The Change Channel window can be anywhere, so its text is not read at all: the highlighted cell is found by colour and its
-// channel is its position in the 8-column grid of grey cells around it.
-const CH_ON = [61, 169, 216];
-const CH_OFF = [177, 177, 177];
+// The Change Channel window can be anywhere, so its text is not read at all: the selected cell is found by its blue and its
+// channel is its position in the 8-column grid of cells around it. The mouse is usually over the window when it opens,
+// and a hovered cell changes colour, so cells are recognised by kind (a neutral grey, or a blue) rather than exact colour.
 const CH_DX = 70.1;
 const CH_DY = 22;
 const CH_COLS = 8;
 
+const pix = (img, x, y) => {
+  const i = (Math.round(y) * img.width + Math.round(x)) * 4;
+  return [img.data[i], img.data[i + 1], img.data[i + 2]];
+};
+// The selected cell: clearly blue (measured 61,169,216; hovered it turns lighter, still blue).
+const isPicked = ([r, g, b]) => b - r > 80 && g - r > 40 && b > 150;
+// Any cell: neutral grey from mid to light (177 normally, lighter or darker when hovered or pressed), or the blue one.
+const isCell = (p) => {
+  const [r, g, b] = p;
+  const hi = Math.max(r, g, b);
+  return isPicked(p) || (hi - Math.min(r, g, b) < 26 && hi >= 120 && hi <= 236);
+};
+
 export function findChannel(img) {
-  const { width, height, data } = img;
+  const { width, height } = img;
+  const inside = (x, y) => x >= 0 && y >= 0 && x < width && y < height;
   for (let y = 0; y < height; y += 2) {
     let start = -1;
     for (let x = 0; x <= width; x++) {
-      const on = x < width && near(data, (y * width + x) * 4, CH_ON, 16);
+      const on = x < width && isPicked(pix(img, x, y));
       if (on && start < 0) start = x;
       if (!on && start >= 0) {
         if (x - start >= 55 && x - start <= 75) {
           // Sample each neighbour cell near its right end, where the "CH.n" label never reaches.
           const px = x - 8;
-          const grey = (cx, cy) => cx >= 0 && cy >= 0 && cx < width && cy < height && near(data, (Math.round(cy) * width + Math.round(cx)) * 4, CH_OFF, 12);
+          const cell = (cx, cy) => inside(cx, cy) && isCell(pix(img, cx, cy));
           let col = 0;
-          while (col < CH_COLS && grey(px - (col + 1) * CH_DX, y)) col++;
+          while (col < CH_COLS && cell(px - (col + 1) * CH_DX, y)) col++;
           let right = 0;
-          while (right < CH_COLS && grey(px + (right + 1) * CH_DX, y)) right++;
+          while (right < CH_COLS && cell(px + (right + 1) * CH_DX, y)) right++;
+          // Rows above the selected one can only hold grey cells; the window's blue title bar must not count as a row.
+          const greyCell = (cx, cy) => inside(cx, cy) && !isPicked(pix(img, cx, cy)) && isCell(pix(img, cx, cy));
           let row = 0;
-          while (row < 10 && grey(px, y - (row + 1) * CH_DY)) row++;
-          if (col + right === CH_COLS - 1) return row * CH_COLS + col + 1;
+          while (row < 10 && greyCell(px, y - (row + 1) * CH_DY)) row++;
+          // Exactly eight cells in the row, and exactly one of them blue: that is the channel grid.
+          const blues = Array.from({ length: CH_COLS }, (_, k) => px + (k - col) * CH_DX).filter((cx) => inside(cx, y) && isPicked(pix(img, cx, y))).length;
+          if (col + right === CH_COLS - 1 && blues === 1) return row * CH_COLS + col + 1;
         }
         start = -1;
       }
