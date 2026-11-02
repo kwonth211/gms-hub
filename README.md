@@ -52,6 +52,16 @@ npx wrangler@3.114.0 deploy                                   # 코드 배포
 npx wrangler@3.114.0 d1 execute gms-hub-votes --remote --file=seed.sql   # 사이트 추가 후 새 ID 등록
 ```
 
+`CLOUDFLARE_API_TOKEN` 환경변수는 저장된 Wrangler OAuth 로그인보다 우선해요.
+로컬에서 D1 오류 `7403`이 나면 현재 토큰과 저장된 로그인 계정·권한을 확인해 주세요.
+2026-11-03에는 이 프로젝트의 같은 계정에 저장된 OAuth 로그인(`d1:write`)으로 접속을 확인했어요.
+해당 로그인을 사용할 때는 실행할 명령에서만 환경변수를 제외해요.
+
+```bash
+env -u CLOUDFLARE_API_TOKEN npx wrangler@3.114.0 whoami
+env -u CLOUDFLARE_API_TOKEN npx wrangler@3.114.0 d1 execute gms-hub-votes --remote --file=seed.sql
+```
+
 ## 상점 시세와 인식
 
 - 상점 스캔의 채널·자유시장 방은 자동 인식 또는 드롭다운 직접 선택을 지원해요. 직접 선택한 값이 우선하며, 이동할 때 선택을 바꿔 주세요. 이전 매물의 위치는 각 줄의 수정 버튼에서 고칠 수 있어요.
