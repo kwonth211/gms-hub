@@ -635,6 +635,35 @@ ${stat}
 </article>`;
 }
 
+// Latest shop listings players scanned, beside the hero. Stays hidden until the API returns at least one listing.
+const LIVE = {
+  ko: {
+    title: '실시간 자유시장',
+    sub: '유저들이 방금 스캔한 상점',
+    sold: '팔림',
+    more: '아이템 시세 검색 →',
+    updated: '{t} 갱신'
+  },
+  en: {
+    title: 'Live Free Market',
+    sub: 'Shops players just scanned',
+    sold: 'Sold',
+    more: 'Search item prices →',
+    updated: 'updated {t}'
+  }
+};
+
+function liveMarket(lang) {
+  const t = LIVE[lang];
+  return `<aside class="live-market" id="live-market" hidden aria-labelledby="live-title"
+ data-api="${esc(config.voteApi)}" data-items="${esc(href('/assets/items.json'))}" data-price="${esc(href(langPath(lang, '/tools/price/')))}"
+ data-sold="${esc(t.sold)}" data-updated="${esc(t.updated)}">
+<header><span class="live-dot" aria-hidden="true"></span><div><h2 id="live-title">${t.title}</h2><p>${t.sub}</p></div></header>
+<ol id="live-rows"></ol>
+<footer><a href="${href(langPath(lang, '/tools/price/'))}">${t.more}</a><small id="live-updated"></small></footer>
+</aside>`;
+}
+
 function homeBody(lang) {
   const t = T[lang];
   const cats = sites.categories;
@@ -675,6 +704,7 @@ ${heroScene()}
 <label class="search-box">🔍<input id="site-search" type="search" placeholder="${esc(t.searchPlaceholder)}" aria-label="${esc(t.searchPlaceholder)}"></label>
 <dl class="hero-stats"><div><dt>${t.statSites}</dt><dd>${SITE_COUNT}</dd></div><div><dt>${t.statCats}</dt><dd>${cats.length}</dd></div><div><dt>${t.statChecked}</dt><dd>${esc(sites.checked)}</dd></div></dl>
 </div>
+${liveMarket(lang)}
 </div>
 </section>
 ${lang === 'ko' ? adfitRails() : '' /* Kakao AdFit only serves Korean ads, so English pages stay ad-free */}
@@ -913,7 +943,6 @@ const PR = {
     submit: '올리기',
     thanks: '고마워요! 바로 반영됐어요.',
     badPrice: '가격을 알아볼 수 없어요. 58만, 580000, 580k처럼 적어 주세요.',
-    limit: '오늘은 제보를 많이 하셨어요. 내일 다시 올려 주세요.',
     failed: '지금은 올릴 수 없어요. 잠시 후 다시 해 주세요.',
     kinds: { sold: '팔린 가격', selling: '파는 가격', buying: '사는 가격' },
     recent: '방금 올라온 시세',
@@ -974,7 +1003,6 @@ const PR = {
     submit: 'Submit',
     thanks: 'Thanks! Your price is in.',
     badPrice: "Couldn't read that price. Try 580000, 580k or 1.2m.",
-    limit: "You've sent a lot of prices today. Please come back tomorrow.",
     failed: "Couldn't send right now. Please try again shortly.",
     kinds: { sold: 'Sold for', selling: 'Selling for', buying: 'Buying for' },
     recent: 'Latest prices',
@@ -1027,7 +1055,7 @@ ${config.priceReports ? `<p class="muted">${esc(t.reportNote)}</p>` : ''}
 ${t.tradingLink && guides.some((g) => g.slug === 'trading-and-mesos') ? `<p>${fill(t.tradingLink, { href: href(langPath('ko', '/guides/trading-and-mesos/')) })}</p>` : ''}
 </section>
 </div>
-${jsonScript('i18n', { lang, ...Object.fromEntries(Object.entries(t).filter(([k]) => ['none', 'more', 'level', 'copy', 'copied', 'paid', 'direct', 'copyNote', 'cats', 'subs', 'hubLabel', 'hubNone', 'hubSummary', 'report', 'pricePh', 'submit', 'thanks', 'badPrice', 'limit', 'failed', 'kinds', 'recent', 'recentNone'].includes(k))), sites: PRICE_SITES, aliases: lang === 'ko' ? STAT_ALIASES : {}, itemsUrl: href('/assets/items.json'), api: config.priceReports ? config.voteApi : '' })}`;
+${jsonScript('i18n', { lang, ...Object.fromEntries(Object.entries(t).filter(([k]) => ['none', 'more', 'level', 'copy', 'copied', 'paid', 'direct', 'copyNote', 'cats', 'subs', 'hubLabel', 'hubNone', 'hubSummary', 'report', 'pricePh', 'submit', 'thanks', 'badPrice', 'failed', 'kinds', 'recent', 'recentNone'].includes(k))), sites: PRICE_SITES, aliases: lang === 'ko' ? STAT_ALIASES : {}, itemsUrl: href('/assets/items.json'), api: config.priceReports ? config.voteApi : '' })}`;
 }
 
 // ---------- shop scanner (sample collection) ----------
@@ -1046,6 +1074,7 @@ const SCAN = {
     ],
     start: '메이플 창 공유하기',
     stop: '그만하기',
+    checks: { share: '화면 공유', shop: '상점 인식', channel: '채널 인식', room: '위치 인식', upload: '시세 반영' },
     resultsHeading: '인식한 상점 물건',
     colItem: '아이템', colPrice: '가격', colSeller: '판매자', colWhere: '위치', colState: '상태', colRead: '인식',
     resultsEmpty: '아직 인식한 물건이 없어요. 공유를 시작하고 자유시장에서 상점을 열어 보세요.',
@@ -1055,8 +1084,20 @@ const SCAN = {
       selling: '판매 중', sold: '팔림', ok: '정확', check: '확인 필요', each: '개당', now: '방금',
       summary: '이번 공유: 상점 {shops}곳 · 물건 {items}개 인식 · 그중 확인 필요 {check}개',
       skipped: '못 읽은 줄 {n}개는 건너뜀',
-      noChannel: '채널을 알려면 게임에서 채널 변경 창을 한 번 열었다 닫아 주세요.',
-      place: '현재 위치: {where}',
+      wait: '대기 중',
+      shareOn: '{w}×{h} 공유 중',
+      shareSize: '{w}×{h} · 1366×768 창 모드를 권장해요',
+      shopNone: '상점 창이 안 보여요. 상점을 열어 주세요',
+      shopOk: '{seller} 상점 · {n}개 읽음',
+      shopPartial: '{seller} 상점 · {n}개 읽음, {skip}개는 못 읽음',
+      channelOk: 'CH {ch}',
+      channelNone: '채널 변경 창을 한 번 열었다 닫아 주세요',
+      roomOk: '자유시장 {room}번 방',
+      roomUnknown: '아직 모르는 방이에요. 화면이 저장돼 다음 업데이트부터 인식돼요',
+      roomNone: '미니맵에 자유시장 방 이름이 보이게 해 주세요',
+      uploadOk: '{n}개 반영됨',
+      uploadNeed: '채널과 위치를 알아야 반영해요',
+      uploadFail: '반영 실패, 다시 시도할게요',
       stopped: '멈췄어요. 상점 화면 {n}장을 확인했어요.',
       denied: '화면 공유가 취소됐어요. 다시 눌러 메이플 창을 골라 주세요.',
       unsupported: '이 브라우저는 화면 공유를 지원하지 않아요. PC 크롬에서 열어 주세요.'
@@ -1073,6 +1114,7 @@ const SCAN = {
     ],
     start: 'Share your MapleStory window',
     stop: 'Stop',
+    checks: { share: 'Screen share', shop: 'Shop', channel: 'Channel', room: 'Location', upload: 'Price data' },
     resultsHeading: 'Items recognized',
     colItem: 'Item', colPrice: 'Price', colSeller: 'Seller', colWhere: 'Where', colState: 'Status', colRead: 'Read',
     resultsEmpty: 'Nothing recognized yet. Start sharing and open shops in the Free Market.',
@@ -1082,8 +1124,20 @@ const SCAN = {
       selling: 'For sale', sold: 'Sold', ok: 'OK', check: 'Check', each: 'each', now: 'now',
       summary: 'This session — shops: {shops} · items read: {items} · to check: {check}',
       skipped: 'skipped unreadable lines: {n}',
-      noChannel: 'To know your channel, open and close the Change Channel window once in the game.',
-      place: 'You are at: {where}',
+      wait: 'Waiting',
+      shareOn: 'Sharing {w}×{h}',
+      shareSize: '{w}×{h} · windowed 1366×768 works best',
+      shopNone: 'No shop window. Open a shop',
+      shopOk: "{seller}'s shop · {n} read",
+      shopPartial: "{seller}'s shop · {n} read, {skip} unreadable",
+      channelOk: 'CH {ch}',
+      channelNone: 'Open and close the Change Channel window once',
+      roomOk: 'Free Market room {room}',
+      roomUnknown: "A room we don't know yet. It is saved and will be recognized after the next update",
+      roomNone: 'Keep the Free Market room name visible on the minimap',
+      uploadOk: '{n} added',
+      uploadNeed: 'Needs channel and location first',
+      uploadFail: "Couldn't send, will retry",
       stopped: 'Stopped. {n} shop screens checked.',
       denied: 'Sharing was cancelled. Click again and pick the MapleStory window.',
       unsupported: "This browser can't share a window. Open this page in Chrome on a computer."
@@ -1103,7 +1157,9 @@ function scanBody(lang) {
 <button type="button" class="btn ghost" id="scan-stop">${t.stop}</button>
 </div>
 <p id="scan-status" class="scan-status" aria-live="polite"></p>
-<p id="scan-place" class="scan-place"></p>
+<ol class="scan-checks" aria-live="polite">${['share', 'shop', 'channel', 'room', 'upload']
+    .map((k) => `<li id="check-${k}" data-state="wait"><span class="dot" aria-hidden="true"></span><strong>${t.checks[k]}</strong><small>${esc(t.i.wait)}</small></li>`)
+    .join('')}</ol>
 <h2>${t.resultsHeading}</h2>
 <div class="scan-table-wrap"><table class="scan-table">
 <thead><tr><th>${t.colItem}</th><th>${t.colPrice}</th><th>${t.colSeller}</th><th>${t.colWhere}</th><th>${t.colState}</th><th>${t.colRead}</th></tr></thead>
@@ -1113,7 +1169,7 @@ function scanBody(lang) {
 <p class="muted">${esc(t.privacy)}</p>
 </div>
 </div>
-${jsonScript('i18n', { lang, ...t.i, itemsUrl: href('/assets/items.json'), glyphsUrl: href('/assets/shop-glyphs.json') })}`;
+${jsonScript('i18n', { lang, ...t.i, itemsUrl: href('/assets/items.json'), glyphsUrl: href('/assets/shop-glyphs.json'), api: config.voteApi })}`;
 }
 
 function dropBody(lang) {

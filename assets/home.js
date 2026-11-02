@@ -91,7 +91,14 @@ const priceSites = JSON.parse(itemHits.dataset.sites);
 const ITEM_ROWS = 5;
 const korean = document.documentElement.lang === 'ko';
 let items = null;
-let itemsLoading = false;
+let itemsPromise = null;
+// One shared fetch of the item index for the search and the live market widget.
+function loadItems() {
+  itemsPromise ||= fetch(itemHits.dataset.items)
+    .then((r) => r.json())
+    .then((rows) => (items = rows.map(([id, ko, en]) => ({ id, ko, en, name: korean ? ko || en : en, flat: squash(`${ko}${en}`) }))));
+  return itemsPromise;
+}
 const squash = (s) => s.toLowerCase().replace(/\s+/g, '');
 const escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 
@@ -112,16 +119,9 @@ function showItemHits(q) {
     return false;
   }
   if (!items) {
-    if (!itemsLoading) {
-      itemsLoading = true;
-      fetch(itemHits.dataset.items)
-        .then((r) => r.json())
-        .then((rows) => {
-          items = rows.map(([id, ko, en]) => ({ id, ko, en, name: korean ? ko || en : en, flat: squash(`${ko}${en}`) }));
-          filter();
-        })
-        .catch(() => {});
-    }
+    loadItems()
+      .then(filter)
+      .catch(() => {});
     return false;
   }
   const hits = items.filter((it) => it.flat.includes(flat)).sort((a, b) => a.name.length - b.name.length || a.id - b.id);
@@ -253,3 +253,53 @@ if (voteApi) {
     paintVotes();
   });
 }
+
+// Live Free Market widget: the newest listings players scanned, refreshed every minute while the tab is visible.
+const live = document.getElementById('live-market');
+const LIVE_ROWS = 8;
+const LIVE_REFRESH_MS = 60000;
+const liveNf = new Intl.NumberFormat(document.documentElement.lang);
+const liveRtf = new Intl.RelativeTimeFormat(document.documentElement.lang, { numeric: 'auto', style: 'short' });
+
+// D1 timestamps are UTC without a zone marker.
+function ago(utc) {
+  const s = Math.max(0, (Date.now() - Date.parse(`${utc.replace(' ', 'T')}Z`)) / 1000);
+  if (s < 60) return liveRtf.format(0, 'second');
+  if (s < 3600) return liveRtf.format(-Math.floor(s / 60), 'minute');
+  if (s < 86400) return liveRtf.format(-Math.floor(s / 3600), 'hour');
+  return liveRtf.format(-Math.floor(s / 86400), 'day');
+}
+
+async function refreshLive() {
+  if (!live || !live.dataset.api || document.hidden) return;
+  try {
+    const [rows] = await Promise.all([fetch(`${live.dataset.api}/listings/recent`).then((r) => (r.ok ? r.json() : [])), loadItems()]);
+    const byId = new Map(items.map((it) => [it.id, it]));
+    const shown = rows.filter((r) => byId.has(r.item)).slice(0, LIVE_ROWS);
+    if (!shown.length) return;
+    document.getElementById('live-rows').innerHTML = shown
+      .map((r) => {
+        const it = byId.get(r.item);
+        return `<li class="${r.sold ? 'sold' : ''}"><a href="${live.dataset.price}?q=${encodeURIComponent(it.name)}">
+<img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="28" height="28" loading="lazy">
+<span class="name">${escHtml(it.name)}${r.sold ? `<span class="tag">${escHtml(live.dataset.sold)}</span>` : ''}</span>
+<span class="price">${liveNf.format(r.price)}</span>
+<span class="meta">${escHtml(r.seller)} · CH ${r.channel} · FM${r.room}</span>
+<span class="ago">${ago(r.seen)}</span></a></li>`;
+      })
+      .join('');
+    document.getElementById('live-updated').textContent = live.dataset.updated.replace('{t}', ago(rows[0].seen));
+    live.hidden = false;
+  } catch (e) {}
+}
+
+if (live) {
+  refreshLive();
+  setInterval(refreshLive, LIVE_REFRESH_MS);
+  document.addEventListener('visibilitychange', refreshLive);
+  live.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href*="?q="]');
+    if (a) track('live_market_click', { item: decodeURIComponent(a.href.split('?q=')[1] || '') });
+  });
+}
+

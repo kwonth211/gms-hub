@@ -281,6 +281,7 @@ function findPrefix(cols, prefix) {
   return -1;
 }
 
+// Free Market room number from the minimap title; null when no Free Market title is on screen.
 export function findRoom(img, map) {
   if (!map?.prefix?.length) return null;
   const w = Math.min(img.width, MAP_AREA_W);
@@ -293,7 +294,8 @@ export function findRoom(img, map) {
   for (let y0 = 0; !hit && y0 + LINE_H < Math.min(img.height, MAP_AREA_H); y0++) hit = at(y0);
   if (!hit) return null;
   roomAt = hit.y0;
-  return map.rooms[hit.key] ?? null;
+  // 0 means "a Free Market room, but one whose title has not been learned yet".
+  return map.rooms[hit.key] ?? 0;
 }
 
 export function mapColumns(img, x0, x1, y0) {

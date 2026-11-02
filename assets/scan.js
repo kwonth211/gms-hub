@@ -87,13 +87,17 @@ function recognize(canvas) {
   const img = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
   const ch = findChannel(img);
   if (ch) channel = ch;
+  if (channel) check('channel', 'ok', fill(i18n.channelOk, { ch: channel }));
+  else check('channel', 'warn', i18n.channelNone);
+  // Changing channel always shows the channel window, so walking between rooms never makes the kept channel stale.
   const fm = findRoom(img, mapData);
-  // Walking into another room means the old channel reading may be stale only if the player also changed channel, which
-  // always shows the channel window, so the room alone never clears it.
   if (fm) room = fm;
-  showPlace();
+  if (fm === 0) check('room', 'warn', i18n.roomUnknown);
+  else if (room) check('room', 'ok', fill(i18n.roomOk, { room }));
+  else check('room', 'warn', i18n.roomNone);
   const rows = findShopRows(img);
   const owner = rows.length ? readOwner(img, Math.min(...rows.map((r) => r.top)), rows[0].x0, table) : '';
+  if (!rows.length) check('shop', 'warn', i18n.shopNone);
   // A line that matches no item is not shown; it is counted so the summary can say something was skipped.
   return rows.map((row) => {
     const name = readLine(img, row, 0, table);
@@ -115,10 +119,52 @@ function recognize(canvas) {
 
 const where = (ch, fm) => [ch ? `CH ${ch}` : '', fm ? `FM${fm}` : ''].filter(Boolean);
 
-function showPlace() {
-  const parts = where(channel, room);
-  $('scan-place').textContent = channel ? fill(i18n.place, { where: parts.join(' · ') }) : i18n.noChannel;
+// The five recognition steps under the buttons: each is waiting, fine, or needs something from the player.
+function check(step, state, text) {
+  const li = $(`check-${step}`);
+  li.dataset.state = state;
+  li.querySelector('small').textContent = text;
 }
+
+// Listings go to the shared price data once their seller, channel and room are all known; each one is sent again only
+// when it changes (a slot turning sold). Failed sends stay queued for the next frame.
+const SELLER = /^[A-Za-z0-9]{2,13}$/;
+const sent = new Map();
+let uploaded = 0;
+let sending = false;
+
+async function upload() {
+  if (!i18n.api || sending) return;
+  const ready = [...listings.values()].map((e) => e.r).filter((r) => r.sure && r.channel && r.room && SELLER.test(r.owner));
+  if (!ready.length) {
+    if (listings.size) check('upload', 'warn', i18n.uploadNeed);
+    return;
+  }
+  const fresh = ready.filter((r) => sent.get(listingKey(r)) !== r.sold);
+  if (!fresh.length) return;
+  sending = true;
+  try {
+    const res = await fetch(`${i18n.api}/listings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        items: fresh.map((r) => ({ item: r.item.id, price: r.price, sold: r.sold, seller: r.owner, channel: r.channel, room: r.room }))
+      })
+    });
+    if (!res.ok) throw new Error(String(res.status));
+    for (const r of fresh) {
+      if (!sent.has(listingKey(r))) uploaded++;
+      sent.set(listingKey(r), r.sold);
+    }
+    check('upload', 'ok', fill(i18n.uploadOk, { n: uploaded }));
+    track('scan_upload', { items: fresh.length });
+  } catch (e) {
+    check('upload', 'warn', i18n.uploadFail);
+  }
+  sending = false;
+}
+
+const listingKey = (r) => `${r.owner}|${r.room}|${r.item.id}|${r.price}`;
 
 // One line per distinct listing in this session; seeing it again only refreshes it (and marks it sold if it sold since).
 // A shop is its owner in a room; rows seen before the channel was known get it filled in once it is.
@@ -154,7 +200,7 @@ function show(found) {
       skipped++;
       continue;
     }
-    const key = `${r.owner}|${r.room}|${r.item.id}|${r.price}`;
+    const key = listingKey(r);
     let entry = listings.get(key);
     if (!entry) {
       entry = { tr: document.createElement('tr') };
@@ -165,6 +211,11 @@ function show(found) {
     render(r, entry.tr);
     results.prepend(entry.tr);
   }
+  const readNow = found.filter((r) => r.item).length;
+  const skipNow = found.length - readNow;
+  const seller = (found[0]?.owner || '').replace(/\?/g, '·') || '—';
+  check('shop', 'ok', fill(skipNow ? i18n.shopPartial : i18n.shopOk, { seller, n: readNow, skip: skipNow }));
+  upload();
   const all = [...listings.values()];
   const shops = new Set(all.map((e) => `${e.r.owner}|${e.r.room}`));
   $('scan-summary').textContent =
@@ -201,6 +252,9 @@ async function start() {
   await video.play();
   document.body.classList.add('scanning');
   stream.getVideoTracks()[0].addEventListener('ended', stop);
+  const size = { w: video.videoWidth, h: video.videoHeight };
+  // The reader is tuned for the 1366x768 windowed client (plus the title bar); other sizes scale the UI and break it.
+  check('share', size.w === 1366 ? 'ok' : 'warn', fill(size.w === 1366 ? i18n.shareOn : i18n.shareSize, size));
   say(fill(i18n.watching, { n: frames }));
   timer = setInterval(tick, TICK_MS);
   track('scan_start', { width: video.videoWidth, height: video.videoHeight });
@@ -213,6 +267,7 @@ function stop() {
   stream = null;
   lastSig = null;
   document.body.classList.remove('scanning');
+  ['share', 'shop', 'channel', 'room'].forEach((k) => check(k, 'wait', i18n.wait));
   say(fill(i18n.stopped, { n: frames }));
   track('scan_stop', { frames });
 }

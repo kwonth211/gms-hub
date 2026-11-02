@@ -206,7 +206,7 @@ result.addEventListener('submit', async (e) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ item: Number(form.dataset.id), price, kind: form.kind.value })
     });
-    msg.textContent = r.ok ? `${i18n.thanks} (${fmtPrice(price)})` : r.status === 429 ? i18n.limit : i18n.failed;
+    msg.textContent = r.ok ? `${i18n.thanks} (${fmtPrice(price)})` : i18n.failed;
     if (r.ok) {
       form.price.value = '';
       track('price_report', { item_id: form.dataset.id, kind: form.kind.value });
