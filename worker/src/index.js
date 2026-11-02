@@ -7,7 +7,8 @@
 // POST /listings {items: [{item, price (per item), qty (bundle size), sold, seller, channel, room}]} -> { stored }  (shop scanner; one row per listing)
 // POST /listings/fix {from: {item, price, seller, channel, room}, to: {item, price, qty, sold, seller}} -> { fixed }
 // GET  /listings/recent -> [{ item, price, qty, sold, seller, channel, room, seen }]
-// GET  /market/top -> { at, items: [{ item, rank, move, avg, n, sold, change, spark: [7 daily medians] }] }  (live ranking)
+// GET  /market/top -> { at, stats, items: [{ item, rank, move, avg, n, sold, change, spark: [7 daily medians] }] }  (stored every 5 min)
+// GET  /market/item?id= -> { item, listings: [...last 7 days], trend }
 // The shop scanner runs from the local dev server for now, so its origin may post scans too.
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
 
@@ -86,15 +87,30 @@ function rankAt(obs, end) {
   return [...score.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0]).map(([item]) => item);
 }
 
-async function marketTop(env) {
-  const { results } = await env.DB.prepare(
-    `SELECT item, price, sold, last_seen AS t FROM listings WHERE last_seen >= datetime('now', '-8 days')
+async function marketTop(env, only = null) {
+  // Reads stay proportional to one day of activity: the ranking needs the last 25 hours of everything, and the 8-day history
+  // is fetched only for the ten items that made the list (or the one item asked for).
+  const recent = (sql, ...args) => env.DB.prepare(sql).bind(...args).all().then((r) => r.results);
+  const window = (hours, filter, ids) =>
+    `SELECT item, price, sold, last_seen AS t FROM listings WHERE last_seen >= datetime('now', '-${hours} hours') ${filter}
      UNION ALL
-     SELECT item, price, kind = 'sold', created_at FROM prices WHERE kind != 'buying' AND created_at >= datetime('now', '-8 days')`
-  ).all();
+     SELECT item, price, kind = 'sold', created_at FROM prices WHERE kind != 'buying' AND created_at >= datetime('now', '-${hours} hours') ${filter}`;
+  let results;
+  if (only) results = await recent(window(192, 'AND item = ?'), only, only);
+  else {
+    const day = await recent(window(26, ''));
+    const now0 = Date.now();
+    const dayObs = day.map((r) => ({ item: r.item, sold: !!r.sold, t: parseUtc(r.t) }));
+    const ids = [...new Set([...rankAt(dayObs, now0).slice(0, TOP_N), ...rankAt(dayObs, now0 - 3600000).slice(0, TOP_N)])];
+    const marks = ids.map(() => '?').join(',') || 'NULL';
+    results = ids.length ? await recent(window(192, `AND item IN (${marks})`), ...ids, ...ids) : [];
+    // Items outside the top ten still count for the ranking itself.
+    const seen = new Set(ids);
+    results = results.concat(day.filter((r) => !seen.has(r.item)));
+  }
   const now = Date.now();
   const obs = results.map((r) => ({ item: r.item, price: r.price, sold: !!r.sold, t: parseUtc(r.t) }));
-  const ranked = rankAt(obs, now).slice(0, TOP_N);
+  const ranked = only ? (obs.some((o) => o.t > now - DAY) ? [only] : []) : rankAt(obs, now).slice(0, TOP_N);
   const before = rankAt(obs, now - 3600000);
   const byItem = new Map();
   for (const o of obs) (byItem.get(o.item) || byItem.set(o.item, []).get(o.item)).push(o);
@@ -109,7 +125,7 @@ async function marketTop(env) {
       rank: i + 1,
       // Positive = moved up; null = new to the ranking within the hour.
       move: prevRank < 0 ? null : prevRank - i,
-      avg: Math.round(day.reduce((a, b) => a + b, 0) / day.length),
+      avg: day.length ? Math.round(day.reduce((a, b) => a + b, 0) / day.length) : null,
       n: mine.filter((o) => o.t > now - DAY).length,
       sold: mine.filter((o) => o.sold && o.t > now - DAY).length,
       change: prev.length ? Math.round(((median(day) - median(prev)) / median(prev)) * 1000) / 10 : null,
@@ -120,10 +136,45 @@ async function marketTop(env) {
       })
     };
   });
-  return { at: new Date(now).toISOString(), items };
+  const day = obs.filter((o) => o.t > now - DAY);
+  const stats = {
+    listings: day.length,
+    sold: day.filter((o) => o.sold).length,
+    items: new Set(day.map((o) => o.item)).size
+  };
+  const shops = await env.DB.prepare(
+    "SELECT COUNT(DISTINCT seller || '|' || channel || '|' || room) AS n FROM listings WHERE last_seen >= datetime('now', '-1 day')"
+  ).first();
+  stats.shops = shops.n;
+  return { at: new Date(now).toISOString(), stats, items };
+}
+
+// The ranking is computed on a schedule (every 5 minutes) and stored, so the database work does not grow with visitors:
+// every page view reads one stored row.
+async function refreshSnapshot(env) {
+  const data = await marketTop(env);
+  await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key, json, at) VALUES ('market', ?, datetime('now'))").bind(JSON.stringify(data)).run();
+  return data;
+}
+
+// Everything the item view needs for one item: its listings of the last week (cheapest open ones first, then sold), a
+// summary and a 7-day trend.
+async function itemDetail(env, item) {
+  const { results } = await env.DB.prepare(
+    `SELECT price, qty, sold, seller, channel, room, last_seen AS seen FROM listings WHERE item = ? AND last_seen >= datetime('now', '-7 days')
+     ORDER BY sold ASC, price ASC LIMIT 60`
+  )
+    .bind(item)
+    .all();
+  const top = await marketTop(env, item);
+  return { item, listings: results, trend: top.items[0] || null };
 }
 
 export default {
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(refreshSnapshot(env));
+  },
+
   async fetch(req, env) {
     const url = new URL(req.url);
     const origin = req.headers.get('Origin') || '';
@@ -185,21 +236,23 @@ export default {
     }
 
     if (url.pathname === '/market/top' && req.method === 'GET') {
-      // Computed at most once a minute per location; every visitor in between gets the cached answer.
-      const cache = caches.default;
-      const key = new Request('https://cache.gms-hub/market/top');
-      let res = await cache.match(key);
-      if (!res) {
-        res = json(await marketTop(env), {}, 200, 'public, max-age=60');
-        await cache.put(key, res.clone());
-      }
-      return new Response(res.body, { headers: { ...Object.fromEntries(res.headers), ...cors } });
+      const row = await env.DB.prepare("SELECT json FROM snapshots WHERE key = 'market'").first();
+      const data = row ? JSON.parse(row.json) : await refreshSnapshot(env);
+      return json(data, cors, 200, 'public, max-age=60');
+    }
+
+    if (url.pathname === '/market/item' && req.method === 'GET') {
+      const item = Number(url.searchParams.get('id'));
+      if (!Number.isInteger(item) || item < 1000000 || item > 9999999) return json({ error: 'bad item' }, cors, 400);
+      return json(await itemDetail(env, item), cors, 200, 'public, max-age=30');
     }
 
     if (url.pathname === '/listings/recent' && req.method === 'GET') {
       const { results } = await env.DB.prepare(
-        'SELECT item, price, qty, sold, seller, channel, room, last_seen AS seen FROM listings ORDER BY last_seen DESC, id DESC LIMIT 30'
-      ).all();
+        'SELECT item, price, qty, sold, seller, channel, room, last_seen AS seen FROM listings ORDER BY last_seen DESC, id DESC LIMIT ?'
+      )
+        .bind(Math.min(100, Math.max(1, Number(url.searchParams.get('limit')) || 30)))
+        .all();
       return json(results, cors, 200, 'public, max-age=20');
     }
 

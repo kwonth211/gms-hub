@@ -6,3 +6,7 @@ compatibility_date = "2026-10-01"
 binding = "DB"
 database_name = "gms-hub-votes"
 database_id = "5e551116-5641-480e-99f3-70fd856cc675"
+
+# Live market ranking is recomputed on this schedule and stored, so page views never recompute it.
+[triggers]
+crons = ["*/5 * * * *"]
