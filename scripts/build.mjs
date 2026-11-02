@@ -1110,7 +1110,7 @@ const SCAN = {
     cardDesc: '메이플 창을 공유하면 열어 본 상점의 시세가 자동으로 올라가요. PC 크롬 전용.',
     lead: '메이플 창을 크롬으로 공유하고 자유시장을 돌면, 열어 본 상점의 물건과 가격을 자동으로 읽어 시세에 반영해요.',
     steps: [
-      ['창 모드로 실행', '메이플을 창 모드(1366×768 권장)로 켜고 언어는 영어로 두세요. 맥에서는 크롬과 메이플 둘 다 전체 화면이 아니어야 창을 공유할 수 있어요.'],
+      ['창 모드로 실행', '메이플을 창 모드로 켜고 언어는 영어로 두세요. 창 크기와 화면 배율은 자동으로 맞춰요. 맥에서는 크롬과 메이플 둘 다 전체 화면이 아니어야 창을 공유할 수 있어요.'],
       ['채널과 미니맵이 보이게', '화면에 채널 표시와 미니맵이 다 보이게 해 주세요. 어느 채널·방인지 알아내는 데 써요.'],
       ['자유시장에서 상점 열기', '공유를 시작하고 평소처럼 상점을 열어 보세요. 열어 본 상점이 아래 목록에 바로 나와요.']
     ],
@@ -1128,8 +1128,11 @@ const SCAN = {
       skipped: '못 읽은 줄 {n}개는 건너뜀',
       wait: '대기 중',
       shareOn: '{w}×{h} 공유 중',
-      shareSize: '{w}×{h} · 1366×768 창 모드를 권장해요',
+      shareRetina: '{w}×{h} 공유 중 (화면 배율 {k}배 → 게임 크기로 맞춰 읽어요)',
       shopNone: '상점 창이 안 보여요. 상점을 열어 주세요',
+      ocrLoading: '화면 배율에 맞는 글자 인식 엔진을 불러오는 중이에요 (처음 한 번, 약 10MB)',
+      ocrFail: '글자 인식 엔진을 불러오지 못했어요. 새로고침 후 다시 시도해 주세요',
+      readFail: '이 화면을 읽다가 문제가 생겼어요. 계속 공유하면 다음 화면에서 다시 읽어요',
       shopOk: '{seller} 상점 · {n}개 읽음',
       shopPartial: '{seller} 상점 · {n}개 읽음, {skip}개는 못 읽음',
       channelOk: 'CH {ch}',
@@ -1152,7 +1155,7 @@ const SCAN = {
     cardDesc: 'Share your game window and the shops you open become price data. Chrome on a computer.',
     lead: 'Share your MapleStory window in Chrome and walk the Free Market; the shops you open are read automatically and added to the prices.',
     steps: [
-      ['Run in windowed mode', 'Use windowed mode (1366×768 recommended) with the game in English. On a Mac, neither Chrome nor MapleStory can be full screen for window sharing to work.'],
+      ['Run in windowed mode', 'Use windowed mode with the game in English. Window size and screen scaling are handled automatically. On a Mac, neither Chrome nor MapleStory can be full screen for window sharing to work.'],
       ['Keep channel and minimap visible', 'Make sure the channel display and minimap are on screen. They tell us which channel and room you are in.'],
       ['Open shops in the Free Market', 'Start sharing and open shops as usual. Each shop you open shows up in the list below.']
     ],
@@ -1170,8 +1173,11 @@ const SCAN = {
       skipped: 'skipped unreadable lines: {n}',
       wait: 'Waiting',
       shareOn: 'Sharing {w}×{h}',
-      shareSize: '{w}×{h} · windowed 1366×768 works best',
+      shareRetina: 'Sharing {w}×{h} (screen scale {k}x, read at game size)',
       shopNone: 'No shop window. Open a shop',
+      ocrLoading: 'Loading the text reader for your screen scale (first time only, about 10MB)',
+      ocrFail: "Couldn't load the text reader. Reload and try again",
+      readFail: 'Something went wrong reading this screen. Keep sharing and the next one will be read',
       shopOk: "{seller}'s shop · {n} read",
       shopPartial: "{seller}'s shop · {n} read, {skip} unreadable",
       channelOk: 'CH {ch}',

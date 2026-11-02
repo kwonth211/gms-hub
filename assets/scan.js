@@ -1,7 +1,7 @@
 // Shop scanner. Players share the game window in Chrome; the page watches it and reports what it recognized. The game screen
 // itself is never shown back to the player. In local development (scripts/scan-dev.mjs) changed frames are also posted to the
 // dev server, which keeps them as samples for building the shop reader.
-import { findChannel, findRoom, findShopRows, lastRoomKey, matchItem, readLine, readOwner } from './shop-reader.js';
+import { detectScale, findChannel, findRoom, findShopRows, findShopRowsLoose, lastRoomKey, matchItem, parsePriceLine, readLine, readOwner } from './shop-reader.js';
 
 const i18n = JSON.parse(document.getElementById('i18n').textContent);
 const $ = (id) => document.getElementById(id);
@@ -64,11 +64,116 @@ function changed(a, b) {
   return n / a.length > CHANGE_RATIO;
 }
 
-function grab() {
+// Screen scaling (Retina 2x, Windows 125%/150%...) enlarges every game pixel before Chrome hands the window over, and the game
+// window itself can be any size. The scale is measured from the shop list's separator lines in the raw frame (the screen's
+// pixel ratio is the first guess), and each frame is drawn back down to game pixels before reading: nearest-neighbour for
+// whole-number scales, which restores letters exactly, smoothed otherwise, where the reader's letter matching absorbs the rest.
+let scale = Math.round((window.devicePixelRatio || 1) * 4) / 4;
+let lastFull = null;
+
+// ---------- OCR for non-integer scales ----------
+// At 125%/150%-style scaling the 1px letters cannot be restored exactly, so their text is read with Tesseract from the
+// full-resolution capture instead. It is fetched from a CDN only for players who need it.
+const TESSERACT_URL = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+let ocrWorker = null;
+async function ocrEngine() {
+  if (!ocrWorker) {
+    ocrWorker = (async () => {
+      check('shop', 'warn', i18n.ocrLoading);
+      if (!window.Tesseract)
+        await new Promise((ok, fail) => {
+          const el = document.createElement('script');
+          el.src = TESSERACT_URL;
+          el.onload = ok;
+          el.onerror = fail;
+          document.head.appendChild(el);
+        });
+      const w = await window.Tesseract.createWorker('eng');
+      await w.setParameters({ tessedit_pageseg_mode: '7' });
+      return w;
+    })();
+  }
+  return ocrWorker;
+}
+
+// Crop a rectangle given in game pixels out of the full capture, enlarge it k times, and binarise it with Otsu's threshold
+// (the blur of non-integer scaling leaves no fixed cut-off that works for every line), on a white margin Tesseract needs.
+const ALNUM = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+async function ocrRect(gx, gy, gw, gh, { light = false, k = 4, psm = '7', chars = '' } = {}) {
+  const worker = await ocrEngine();
+  const pad = 8;
+  const w = Math.round(gw * k);
+  const h = Math.round(gh * k);
+  const c = document.createElement('canvas');
+  c.width = w + pad * 2;
+  c.height = h + pad * 2;
+  const g = c.getContext('2d', { willReadFrequently: true });
+  g.imageSmoothingEnabled = true;
+  g.imageSmoothingQuality = 'high';
+  g.drawImage(lastFull, gx * scale, gy * scale, gw * scale, gh * scale, pad, pad, w, h);
+  const im = g.getImageData(pad, pad, w, h);
+  const hist = new Array(256).fill(0);
+  const lums = new Uint8Array(w * h);
+  for (let p = 0; p < lums.length; p++) {
+    const v = Math.round((im.data[p * 4] + im.data[p * 4 + 1] + im.data[p * 4 + 2]) / 3);
+    lums[p] = v;
+    hist[v]++;
+  }
+  let sum = 0;
+  for (let t = 0; t < 256; t++) sum += t * hist[t];
+  let sB = 0;
+  let wB = 0;
+  let best = -1;
+  let th = 128;
+  for (let t = 0; t < 256; t++) {
+    wB += hist[t];
+    const wF = lums.length - wB;
+    if (!wB || !wF) continue;
+    sB += t * hist[t];
+    const between = wB * wF * (sB / wB - (sum - sB) / wF) ** 2;
+    if (between > best) {
+      best = between;
+      th = t;
+    }
+  }
+  for (let p = 0; p < lums.length; p++) {
+    const ink = light ? lums[p] > th : lums[p] < th;
+    im.data[p * 4] = im.data[p * 4 + 1] = im.data[p * 4 + 2] = ink ? 0 : 255;
+  }
+  g.fillStyle = '#fff';
+  g.fillRect(0, 0, c.width, c.height);
+  g.putImageData(im, pad, pad);
+  await worker.setParameters({ tessedit_pageseg_mode: psm, tessedit_char_whitelist: chars });
+  return (await worker.recognize(c)).data.text.trim();
+}
+
+const majority = (reads) => {
+  const counts = new Map();
+  for (const r of reads.filter(Boolean)) counts.set(r, (counts.get(r) || 0) + 1);
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || '';
+};
+
+function raw() {
   const c = document.createElement('canvas');
   c.width = video.videoWidth;
   c.height = video.videoHeight;
-  c.getContext('2d').drawImage(video, 0, 0);
+  c.getContext('2d', { willReadFrequently: true }).drawImage(video, 0, 0);
+  return c;
+}
+
+function grab() {
+  const full = raw();
+  lastFull = full;
+  const measured = detectScale(full.getContext('2d').getImageData(0, 0, full.width, full.height));
+  if (measured) scale = Math.abs(measured - Math.round(measured)) < 0.04 ? Math.round(measured) : measured;
+  if (scale === 1) return full;
+  const c = document.createElement('canvas');
+  c.width = Math.round(full.width / scale);
+  c.height = Math.round(full.height / scale);
+  const g = c.getContext('2d', { willReadFrequently: true });
+  g.imageSmoothingEnabled = !Number.isInteger(scale);
+  g.imageSmoothingQuality = 'high';
+  g.drawImage(full, 0, 0, c.width, c.height);
   return c;
 }
 
@@ -83,23 +188,29 @@ async function keepSample(canvas) {
   }
 }
 
-// Every shop row on screen: item from the name line (matched against the item list), price from "<n> for <price> mesos".
-function recognize(canvas) {
+async function recognize(canvas) {
   const img = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+  const exact = Number.isInteger(scale);
   const ch = findChannel(img);
   if (ch) channel = ch;
   if (channel) check('channel', 'ok', fill(i18n.channelOk, { ch: channel }));
   else check('channel', 'warn', i18n.channelNone);
   // Changing channel always shows the channel window, so walking between rooms never makes the kept channel stale.
-  const fm = findRoom(img, mapData);
+  let fm = findRoom(img, mapData);
+  if (fm === null && !exact) fm = await roomByOcr(img);
   // An unknown room must not inherit the previous room's number, or its listings would be filed under the wrong room.
   if (fm !== null) room = fm || null;
   if (fm === 0) askRoom();
   else if (room) check('room', 'ok', fill(i18n.roomOk, { room }));
   else check('room', 'warn', i18n.roomNone);
-  const rows = findShopRows(img);
-  const owner = rows.length ? readOwner(img, Math.min(...rows.map((r) => r.top)), rows[0].x0, table) : '';
-  if (!rows.length) check('shop', 'warn', i18n.shopNone);
+  const rows = exact ? findShopRows(img) : findShopRowsLoose(img);
+  if (!rows.length) {
+    check('shop', 'warn', i18n.shopNone);
+    return [];
+  }
+  const listTop = Math.min(...rows.map((r) => r.top));
+  if (!exact) return readByOcr(rows, listTop, fm);
+  const owner = readOwner(img, listTop, rows[0].x0, table);
   // A line that matches no item is not shown; it is counted so the summary can say something was skipped.
   return rows.map((row) => {
     const name = readLine(img, row, 0, table);
@@ -119,6 +230,67 @@ function recognize(canvas) {
       sure: !!match && match.confidence >= 0.9 && !!m && !name.includes('?') && !priceText.includes('?')
     };
   });
+}
+
+// Same result shape as the exact path, from OCR of each row's two lines and the owner box.
+async function readByOcr(rows, listTop, fm) {
+  const x0 = rows[0].x0;
+  // Seller names are the shakiest read (small light-on-dark text), so three crops vote.
+  // One OCR worker: the reads run in turn, since each sets its own page mode and character list.
+  const ownerReads = [];
+  for (const o of [{ k: 4, psm: '7' }, { k: 8, psm: '8' }, { k: 6, psm: '7' }])
+    ownerReads.push((await ocrRect(x0 + 10, listTop - 19, 82, 14, { light: true, chars: ALNUM, ...o })).replace(/[^A-Za-z0-9]/g, ''));
+  const owner = majority(ownerReads);
+  const out = [];
+  for (const row of rows) {
+    const name = await ocrRect(row.x0 + 38, row.top + 3, row.x1 - row.x0 - 42, 17);
+    const priceText = await ocrRect(row.x0 + 38, row.top + 20, row.x1 - row.x0 - 42, 17);
+    const p = parsePriceLine(priceText);
+    const match = matchItem(name, items);
+    out.push({
+      sold: row.sold,
+      name,
+      item: match?.item || null,
+      price: p?.price || null,
+      owner,
+      channel,
+      room,
+      roomKey: null,
+      sure: !!match && match.confidence >= 0.85 && !!p && /^[A-Za-z0-9]{2,13}$/.test(owner)
+    });
+  }
+  return out;
+}
+
+// Minimap title by OCR when it cannot be matched pixel for pixel: light text lines in the minimap's top-left corner are each
+// read at three sizes and the room number must agree in two.
+async function roomByOcr(img) {
+  const lines = [];
+  let top = -1;
+  for (let y = 20; y < Math.min(img.height, 160); y++) {
+    let lit = 0;
+    for (let x = 44; x < Math.min(img.width, 200); x++) {
+      const i = (y * img.width + x) * 4;
+      if ((img.data[i] + img.data[i + 1] + img.data[i + 2]) / 3 > 215) lit++;
+    }
+    const on = lit > 8 && lit < 80;
+    if (on && top < 0) top = y;
+    if (!on && top >= 0) {
+      if (y - top >= 6 && y - top <= 14) lines.push({ top, h: y - top });
+      top = -1;
+    }
+  }
+  for (const line of lines) {
+    const reads = [];
+    for (const k of [3, 4, 5]) {
+      const text = (await ocrRect(44, line.top - 2, 150, line.h + 4, { light: true, k })).replace(/\s+/g, '');
+      const m = text.match(/Fre[ea]Mark[a-z]*[<(«]?(\d{1,2})/i);
+      if (m) reads.push(m[1]);
+    }
+    const room = reads.find((r) => reads.filter((x) => x === r).length >= 2);
+    if (room) return Number(room);
+  }
+  return null;
 }
 
 const where = (ch, fm) => [ch ? `CH ${ch}` : '', fm ? `FM${fm}` : ''].filter(Boolean);
@@ -278,19 +450,34 @@ function show(found) {
 // A change is only read once the screen has stopped changing: the shop list scrolls smoothly, and a frame caught mid-scroll
 // has every row a pixel or two off, which turns letters into nonsense.
 let settling = true;
-function tick() {
-  if (!video.videoWidth) return;
+// OCR can take a few seconds per shop, so a frame is only read when the previous one is done.
+let reading = false;
+async function tick() {
+  if (!video.videoWidth || reading) return;
   const sig = signature();
   if (changed(lastSig, sig)) settling = true;
   else if (settling) {
     settling = false;
     frames++;
-    const canvas = grab();
-    keepSample(canvas);
-    show(recognize(canvas));
-    say(fill(i18n.watching, { n: frames }));
+    reading = true;
+    try {
+      const canvas = grab();
+      showShare();
+      keepSample(canvas);
+      show(await recognize(canvas));
+      say(fill(i18n.watching, { n: frames }));
+    } catch (e) {
+      console.error('[scan]', e);
+      check('shop', 'warn', ocrWorker ? i18n.ocrFail : i18n.readFail);
+    }
+    reading = false;
   }
   lastSig = sig;
+}
+
+function showShare() {
+  const size = { w: video.videoWidth, h: video.videoHeight, k: +scale.toFixed(2) };
+  check('share', 'ok', fill(scale === 1 ? i18n.shareOn : i18n.shareRetina, size));
 }
 
 async function start() {
@@ -304,9 +491,7 @@ async function start() {
   await video.play();
   document.body.classList.add('scanning');
   stream.getVideoTracks()[0].addEventListener('ended', stop);
-  const size = { w: video.videoWidth, h: video.videoHeight };
-  // The reader is tuned for the 1366x768 windowed client (plus the title bar); other sizes scale the UI and break it.
-  check('share', size.w === 1366 ? 'ok' : 'warn', fill(size.w === 1366 ? i18n.shareOn : i18n.shareSize, size));
+  showShare();
   say(fill(i18n.watching, { n: frames }));
   timer = setInterval(tick, TICK_MS);
   track('scan_start', { width: video.videoWidth, height: video.videoHeight });

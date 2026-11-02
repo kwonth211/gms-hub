@@ -4,13 +4,59 @@
 
 const near = (d, i, [r, g, b], tol) => Math.abs(d[i] - r) <= tol && Math.abs(d[i + 1] - g) <= tol && Math.abs(d[i + 2] - b) <= tol;
 
-// Colors of the shop item list in the English client (1366x768 windowed, default UI skin).
+// Colors of the shop item list in the English client (1366x768 windowed, default UI skin). Tolerances leave room for the
+// small shifts a colour-managed screen capture (e.g. a Mac's display profile) introduces.
 const SEPARATOR = [157, 165, 174];
 const TEXT_BG = [205, 217, 228];
 const SOLD_BG = [243, 245, 248];
 const ROW_H = 40;
 const ICON_W = 36;
 const MIN_LIST_W = 180;
+// Other windows (the chat box) use the same line colour but are wider than the 198px list.
+const MAX_LIST_W = 210;
+
+// How much bigger than the game's own pixels this frame is, measured from the shop list's separator lines (198px long in the
+// game). Works for any window size and any screen scaling; null when no shop list is on screen.
+const LIST_W = 198;
+export function detectScale(img) {
+  const { width, height, data } = img;
+  // Separator runs of plausible list widths, then the spacing between them: rows are 40 game pixels apart, which stays
+  // measurable when blurring has smeared the line ends.
+  const runs = [];
+  for (let y = 0; y < height; y++) {
+    let start = -1;
+    for (let x = 0; x <= width; x++) {
+      const on = x < width && near(data, (y * width + x) * 4, SEPARATOR, 18);
+      if (on && start < 0) start = x;
+      if (!on && start >= 0) {
+        const len = x - start;
+        if (len >= LIST_W * 0.9 && len <= LIST_W * 4.2) runs.push({ y, x: start, len });
+        start = -1;
+      }
+    }
+  }
+  if (!runs.length) return null;
+  // Group by left edge (lines of one list share it), merging the 2-3 pixel rows a thick blurred line covers.
+  const groups = new Map();
+  for (const r of runs) {
+    const key = Math.round(r.x / 6);
+    if (!groups.has(key)) groups.set(key, []);
+    const g = groups.get(key);
+    const last = g[g.length - 1];
+    if (last && r.y - last.y <= 3) last.y = (last.y + r.y) / 2;
+    else g.push({ y: r.y, len: r.len });
+  }
+  const list = [...groups.values()].sort((a, b) => b.length - a.length)[0];
+  const gaps = [];
+  for (let k = 1; k < list.length; k++) gaps.push(list[k].y - list[k - 1].y);
+  const steady = gaps.filter((gap) => gap >= ROW_H * 0.9);
+  if (steady.length) {
+    steady.sort((a, b) => a - b);
+    return steady[Math.floor(steady.length / 2)] / ROW_H;
+  }
+  const lens = list.map((l) => l.len).sort((a, b) => a - b);
+  return lens[Math.floor(lens.length / 2)] / LIST_W;
+}
 
 // Every list row ends in a one-pixel separator line, so long separator runs give both the list's x-range and each row's bottom.
 function separators(img) {
@@ -19,10 +65,10 @@ function separators(img) {
   for (let y = 0; y < height; y++) {
     let start = -1;
     for (let x = 0; x <= width; x++) {
-      const on = x < width && near(data, (y * width + x) * 4, SEPARATOR, 4);
+      const on = x < width && near(data, (y * width + x) * 4, SEPARATOR, 6);
       if (on && start < 0) start = x;
       if (!on && start >= 0) {
-        if (x - start >= MIN_LIST_W) lines.push({ y, x0: start, x1: x - 1 });
+        if (x - start >= MIN_LIST_W && x - start <= MAX_LIST_W) lines.push({ y, x0: start, x1: x - 1 });
         start = -1;
       }
     }
@@ -33,8 +79,8 @@ function separators(img) {
 // Sampled in the strip above the name, which text never reaches (long names would cover any point on the text line).
 function rowState(img, x0, top) {
   const i = ((top + 5) * img.width + x0 + ICON_W + 60) * 4;
-  if (near(img.data, i, TEXT_BG, 6)) return 'open';
-  if (near(img.data, i, SOLD_BG, 6)) return 'sold';
+  if (near(img.data, i, TEXT_BG, 8)) return 'open';
+  if (near(img.data, i, SOLD_BG, 8)) return 'sold';
   return null;
 }
 
@@ -58,6 +104,91 @@ export function findShopRows(img) {
       const state = rowState(img, x0, top);
       if (state) rows.push({ x0, x1, top, sold: state === 'sold' });
     }
+  }
+  return rows;
+}
+
+// Rows for frames scaled back from a non-integer screen scale, where the 1px separator lines blur away. The text panel's flat
+// background survives scaling, so rows are found as 34px-tall bands of it, 160px wide, all starting at the same x.
+const PANEL_W = 161;
+export function findShopRowsLoose(img) {
+  const { width, height, data } = img;
+  const bgAt = (x, y) => {
+    const i = (y * width + x) * 4;
+    return near(data, i, TEXT_BG, 16) ? 1 : near(data, i, SOLD_BG, 8) ? 2 : 0;
+  };
+  // 1. The panel's left edge: x where unbroken 160px runs of panel background start most often (the blank pixel rows above,
+  //    between and below the two text lines give several per row).
+  const starts = new Map();
+  for (let y = 0; y < height; y++) {
+    let start = -1;
+    for (let x = 0; x <= width; x++) {
+      // Only the open-slot colour: the sold-slot colour is close to the white window chrome around the list.
+      const on = x < width && bgAt(x, y) === 1;
+      if (on && start < 0) start = x;
+      if (!on && start >= 0) {
+        if (x - start >= PANEL_W - 18 && x - start <= PANEL_W + 8) starts.set(start, (starts.get(start) || 0) + 1);
+        start = -1;
+      }
+    }
+  }
+  const top = [...starts.entries()].sort((a, b) => b[1] - a[1])[0];
+  if (!top || top[1] < 6) return [];
+  const x = top[0];
+  // 2. Rows lie between the list's dark separator lines (the divider inside a row is near-white, so it never counts, even
+  //    after blurring). A row is the 40px band from one separator to the next; the top and bottom rows are taken when panel
+  //    background fills the 40px beyond the outermost separators.
+  const n = (PANEL_W - 8) / 2;
+  const scan = (y) => {
+    let open = 0;
+    let sold = 0;
+    let light = 0;
+    for (let k = 4; k < PANEL_W - 4; k += 2) {
+      const i = (y * width + x + k) * 4;
+      light += (data[i] + data[i + 1] + data[i + 2]) / 3;
+      const b = bgAt(x + k, y);
+      if (b === 1) open++;
+      else if (b === 2) sold++;
+    }
+    return { open, sold, light: light / n };
+  };
+  const lines = [];
+  for (let y = 1; y < height - 1; y++) {
+    const here = scan(y);
+    if (here.open + here.sold > n * 0.3 || here.light > 215) continue;
+    // Sold rows have a white hairline two pixels under the separator, so either of two neighbours may carry the background.
+    const filledAt = (yy) => yy >= 0 && yy < height && scan(yy).open + scan(yy).sold >= n * 0.55;
+    if ((filledAt(y - 2) || filledAt(y - 3)) && (filledAt(y + 2) || filledAt(y + 3))) {
+      if (!lines.length || y - lines[lines.length - 1] > 3) lines.push(y);
+    }
+  }
+  // Keep the longest run of lines spaced one row apart; stray lines elsewhere in the window are dropped.
+  let chain = [];
+  for (let a = 0; a < lines.length; a++) {
+    const run = [lines[a]];
+    for (let b = a + 1; b < lines.length; b++) if (Math.abs(lines[b] - run[run.length - 1] - ROW_H) <= 3) run.push(lines[b]);
+    if (run.length > chain.length) chain = run;
+  }
+  if (!chain.length) return [];
+  const band = (from) => {
+    let open = 0;
+    let sold = 0;
+    let filled = 0;
+    for (let y = from + 3; y < from + 37 && y < height; y++) {
+      const r = scan(y);
+      open += r.open;
+      sold += r.sold;
+      if (r.open + r.sold >= n * 0.55) filled++;
+    }
+    return { open, sold, filled };
+  };
+  const tops = [chain[0] - ROW_H, ...chain];
+  const rows = [];
+  for (const t of tops) {
+    if (t < 0 || t + ROW_H > height) continue;
+    const b = band(t);
+    if (b.filled < 22) continue;
+    rows.push({ x0: x - ICON_W, x1: x - ICON_W + 197, top: t, sold: b.sold > b.open, loose: true });
   }
   return rows;
 }
@@ -171,10 +302,57 @@ function bandGlyphs(img, x0, x1, y0, ink) {
   return out;
 }
 
+// A frame scaled back from a non-integer screen scale (125%, 150%) can leave a letter a pixel or two off its learned shape.
+// Unknown shapes are matched to the closest learned letter of the same width, allowing a one-row shift, when the difference
+// stays small next to the letter's ink.
+const parseShape = (g) => g.split('.').map((c) => BigInt(parseInt(c, 36)));
+const popcount = (n) => {
+  let c = 0;
+  if (typeof n === 'number') for (; n; n &= n - 1) c++;
+  else for (; n; n &= n - 1n) c++;
+  return c;
+};
+const shapeCache = new WeakMap();
+
+function nearestLetter(g, table) {
+  let byWidth = shapeCache.get(table);
+  if (!byWidth) {
+    byWidth = new Map();
+    for (const [key, ch] of Object.entries(table)) {
+      const cols = parseShape(key);
+      if (!byWidth.has(cols.length)) byWidth.set(cols.length, []);
+      byWidth.get(cols.length).push({ cols, ch });
+    }
+    byWidth.memo = new Map();
+    shapeCache.set(table, byWidth);
+  }
+  if (byWidth.memo.has(g)) return byWidth.memo.get(g);
+  const cols = parseShape(g);
+  const ink = cols.reduce((a, c) => a + popcount(c), 0);
+  let best = null;
+  for (const w of [cols.length, cols.length - 1, cols.length + 1]) {
+    for (const cand of byWidth.get(w) || []) {
+      for (const shift of [0, 1, -1]) {
+        let d = Math.abs(w - cols.length) * 6;
+        for (let i = 0; i < Math.max(w, cols.length); i++) {
+          let a = cols[i] ?? 0n;
+          const b = cand.cols[i] ?? 0n;
+          a = shift > 0 ? a << 1n : shift < 0 ? a >> 1n : a;
+          d += popcount(a ^ b);
+        }
+        if (!best || d < best.d) best = { d, ch: cand.ch };
+      }
+    }
+  }
+  const ch = best && best.d <= Math.max(2, Math.floor(ink * 0.2)) ? best.ch : '?';
+  byWidth.memo.set(g, ch);
+  return ch;
+}
+
 const decode = (gs, table, spaces = true) =>
   gs
     .filter((g) => spaces || g !== ' ')
-    .map((g) => (g === ' ' ? ' ' : table[g] ?? '?'))
+    .map((g) => (g === ' ' ? ' ' : table[g] ?? nearestLetter(g, table)))
     .join('');
 
 // Item rows: line 0 is the name, line 1 "<n> for <price> mesos". Sold rows draw grey text, so their cut-off is lighter.
@@ -212,13 +390,13 @@ export function findChannel(img) {
   for (let y = 0; y < height; y += 2) {
     let start = -1;
     for (let x = 0; x <= width; x++) {
-      const on = x < width && near(data, (y * width + x) * 4, CH_ON, 10);
+      const on = x < width && near(data, (y * width + x) * 4, CH_ON, 16);
       if (on && start < 0) start = x;
       if (!on && start >= 0) {
         if (x - start >= 55 && x - start <= 75) {
           // Sample each neighbour cell near its right end, where the "CH.n" label never reaches.
           const px = x - 8;
-          const grey = (cx, cy) => cx >= 0 && cy >= 0 && cx < width && cy < height && near(data, (Math.round(cy) * width + Math.round(cx)) * 4, CH_OFF, 6);
+          const grey = (cx, cy) => cx >= 0 && cy >= 0 && cx < width && cy < height && near(data, (Math.round(cy) * width + Math.round(cx)) * 4, CH_OFF, 12);
           let col = 0;
           while (col < CH_COLS && grey(px - (col + 1) * CH_DX, y)) col++;
           let right = 0;
@@ -255,12 +433,6 @@ function lightColumns(img, x0, x1, y0) {
   return cols;
 }
 
-const popcount = (n) => {
-  let c = 0;
-  for (; n; n &= n - 1) c++;
-  return c;
-};
-
 // The title from its first lit column up to a wide gap or the minimap's frame (an almost fully lit column), as one key.
 export function titleKey(cols, start) {
   let end = start;
@@ -275,12 +447,35 @@ export function titleKey(cols, start) {
   return cols.slice(start, end).join('.');
 }
 
+// Column-by-column bit difference; a rescaled frame can differ from the learned title by a few pixels.
+const colDiff = (a, b) => {
+  let d = 0;
+  for (let k = 0; k < Math.max(a.length, b.length); k++) d += popcount((a[k] ?? 0) ^ (b[k] ?? 0));
+  return d;
+};
+const inkOf = (cols) => cols.reduce((n, c) => n + popcount(c), 0);
+
 function findPrefix(cols, prefix) {
-  outer: for (let x = 0; x + prefix.length <= cols.length; x++) {
-    for (let k = 0; k < prefix.length; k++) if (cols[x + k] !== prefix[k]) continue outer;
-    return x;
+  const budget = Math.max(3, Math.floor(inkOf(prefix) * 0.12));
+  for (let x = 0; x + prefix.length <= cols.length; x++) {
+    if (!cols[x]) continue;
+    let d = 0;
+    for (let k = 0; k < prefix.length && d <= budget; k++) d += popcount(cols[x + k] ^ prefix[k]);
+    if (d <= budget) return x;
   }
   return -1;
+}
+
+// The learned title closest to what is on screen, if it is close enough to be the same room.
+function roomFor(key, rooms) {
+  if (rooms[key] !== undefined) return rooms[key];
+  const cols = key.split('.').map(Number);
+  let best = null;
+  for (const [known, room] of Object.entries(rooms)) {
+    const d = colDiff(cols, known.split('.').map(Number));
+    if (!best || d < best.d) best = { d, room };
+  }
+  return best && best.d <= Math.max(4, Math.floor(inkOf(cols) * 0.08)) ? best.room : 0;
 }
 
 // Free Market room number from the minimap title; null when no Free Market title is on screen.
@@ -298,7 +493,7 @@ export function findRoom(img, map) {
   roomAt = hit.y0;
   lastRoomKey = hit.key;
   // 0 means "a Free Market room, but one whose title has not been learned yet".
-  return map.rooms[hit.key] ?? 0;
+  return roomFor(hit.key, map.rooms);
 }
 
 export function mapColumns(img, x0, x1, y0) {
