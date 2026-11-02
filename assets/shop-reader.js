@@ -412,7 +412,8 @@ export function readLine(img, row, line, table) {
 // Only the inside of the box counts as ink; its light border would otherwise join every letter into one shape.
 export function ownerGlyphs(img, listTop, x0, loose = false) {
   const limit = loose ? otsu(img, x0 + 10, x0 + 92, listTop - 19, listTop - 5) : 180;
-  const ink = (im, x, y) => y >= listTop - 19 && y <= listTop - 6 && lum(im, x, y) > limit;
+  // Rescaled frames can push descenders (p, g, y) a row lower; clipping them turns "p" into "n".
+  const ink = (im, x, y) => y >= listTop - 19 && y <= listTop - (loose ? 4 : 6) && lum(im, x, y) > limit;
   return bandGlyphs(img, x0 + 10, x0 + 92, listTop - 21, ink);
 }
 
@@ -474,11 +475,11 @@ let roomAt = null;
 // Pattern key of the last Free Market title seen, so a player can name a room the table does not know yet.
 export let lastRoomKey = null;
 
-function lightColumns(img, x0, x1, y0) {
+function lightColumns(img, x0, x1, y0, limit = 225) {
   const cols = [];
   for (let x = x0; x < x1; x++) {
     let bits = 0;
-    for (let y = 0; y < LINE_H; y++) if (lum(img, x, y0 + y) > 225) bits |= 1 << y;
+    for (let y = 0; y < LINE_H; y++) if (lum(img, x, y0 + y) > limit) bits |= 1 << y;
     cols.push(bits);
   }
   return cols;
@@ -506,8 +507,8 @@ const colDiff = (a, b) => {
 };
 const inkOf = (cols) => cols.reduce((n, c) => n + popcount(c), 0);
 
-function findPrefix(cols, prefix) {
-  const budget = Math.max(3, Math.floor(inkOf(prefix) * 0.12));
+function findPrefix(cols, prefix, share = 0.12) {
+  const budget = Math.max(3, Math.floor(inkOf(prefix) * share));
   for (let x = 0; x + prefix.length <= cols.length; x++) {
     if (!cols[x]) continue;
     let d = 0;
@@ -518,7 +519,7 @@ function findPrefix(cols, prefix) {
 }
 
 // The learned title closest to what is on screen, if it is close enough to be the same room.
-function roomFor(key, rooms) {
+function roomFor(key, rooms, rescaled = false) {
   if (rooms[key] !== undefined) return rooms[key];
   const cols = key.split('.').map(Number);
   let best = null;
@@ -526,16 +527,18 @@ function roomFor(key, rooms) {
     const d = colDiff(cols, known.split('.').map(Number));
     if (!best || d < best.d) best = { d, room };
   }
-  return best && best.d <= Math.max(4, Math.floor(inkOf(cols) * 0.08)) ? best.room : 0;
+  return best && best.d <= Math.max(4, Math.floor(inkOf(cols) * (rescaled ? 0.2 : 0.08))) ? best.room : 0;
 }
 
 // Free Market room number from the minimap title; null when no Free Market title is on screen.
-export function findRoom(img, map) {
+export function findRoom(img, map, rescaled = false) {
   if (!map?.prefix?.length) return null;
   const w = Math.min(img.width, MAP_AREA_W);
+  // A rescaled frame dims the title's white a little and moves a few pixels, so its cut-off and match budget are looser.
+  const limit = rescaled ? 200 : 225;
   const at = (y0) => {
-    const cols = lightColumns(img, 0, w, y0);
-    const x = findPrefix(cols, map.prefix);
+    const cols = lightColumns(img, 0, w, y0, limit);
+    const x = findPrefix(cols, map.prefix, rescaled ? 0.3 : 0.12);
     return x < 0 ? null : { y0, key: titleKey(cols, x) };
   };
   let hit = roomAt !== null && roomAt + LINE_H <= img.height ? at(roomAt) : null;
@@ -544,7 +547,7 @@ export function findRoom(img, map) {
   roomAt = hit.y0;
   lastRoomKey = hit.key;
   // 0 means "a Free Market room, but one whose title has not been learned yet".
-  return roomFor(hit.key, map.rooms);
+  return roomFor(hit.key, map.rooms, rescaled);
 }
 
 export function mapColumns(img, x0, x1, y0) {

@@ -198,7 +198,7 @@ async function recognize(canvas) {
   if (channel) check('channel', 'ok', fill(i18n.channelOk, { ch: channel }));
   else check('channel', 'warn', i18n.channelNone);
   // Changing channel always shows the channel window, so walking between rooms never makes the kept channel stale.
-  let fm = findRoom(img, mapData);
+  let fm = findRoom(img, mapData, scale !== 1);
   if (fm === null && scale !== 1) fm = await roomByOcr(img);
   // An unknown room must not inherit the previous room's number, or its listings would be filed under the wrong room.
   if (fm !== null) room = fm || null;
