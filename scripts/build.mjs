@@ -14,6 +14,11 @@ const training = readJson('data/training.json');
 const scrolls = readJson('data/scrolls.json');
 const drops = readJson('data/drops.json');
 const boxes = readJson('data/boxes.json');
+// Long-form articles; each body lives in data/guides/<slug>.<lang>.html and exists in one language only.
+const guides = readJson('data/guides.json').guides.map((g) => ({
+  ...g,
+  body: fs.readFileSync(path.join(root, 'data', 'guides', `${g.slug}.${g.lang}.html`), 'utf8')
+}));
 
 const LANGS = ['ko', 'en'];
 const BUILD_DATE = new Date().toISOString().slice(0, 10);
@@ -29,6 +34,7 @@ const T = {
     navScroll: '주문서 계산기',
     navDrop: '확률 계산기',
     navAbout: '소개',
+    navGuides: '가이드',
     switchLang: 'English',
     homeTitle: '글로벌 메이플스토리 클래식 월드(글클메) 사이트 모음 · 시세 · 공략 · 계산기 | GMS Hub',
     homeDesc: `글로벌 메이플스토리 클래식 월드(글클메) 공식 채널, 디스코드·레딧·디시 커뮤니티, DB·위키, 자유시장 시세, 보스 타이머, 빌드 플래너 ${SITE_COUNT}곳을 접속 확인 후 정리했어요. 레벨별 사냥터 찾기와 주문서 계산기도 있어요.`,
@@ -235,6 +241,7 @@ const T = {
     navScroll: 'Scroll Calculator',
     navDrop: 'Odds Calculator',
     navAbout: 'About',
+    navGuides: 'Guides',
     switchLang: '한국어',
     homeTitle: 'Global MapleStory Classic World Sites: Prices, Guides, Boss Timers & Tools | GMS Hub',
     homeDesc: `Every Global MapleStory Classic World site in one place: official channels, Discord, Reddit and Korean communities, databases and wikis, Free Market price trackers, boss timers and build planners. ${SITE_COUNT} sites, all checked live.`,
@@ -471,8 +478,10 @@ const siteId = (u) => {
 };
 const srcLink = (url, label) => `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(label || host(url))}</a>`;
 
-function head({ lang, title, desc, pagePath, noindex, ld = [] }) {
-  const alternates = pagePath
+function head({ lang, title, desc, pagePath, noindex, ld = [], only }) {
+  const alternates = only
+    ? ''
+    : pagePath
     ? LANGS.map((l) => `<link rel="alternate" hreflang="${l}" href="${absUrl(langPath(l, pagePath))}">`).join('\n') +
       `\n<link rel="alternate" hreflang="x-default" href="${absUrl(langPath(config.defaultLang, pagePath))}">`
     : '';
@@ -534,7 +543,7 @@ ${ld.map(ldScript).join('\n')}
 </head>`;
 }
 
-function header(lang, pagePath) {
+function header(lang, pagePath, only) {
   const t = T[lang];
   const other = lang === 'ko' ? 'en' : 'ko';
   const tabs = [
@@ -552,7 +561,7 @@ function header(lang, pagePath) {
 <header class="site-header"><div class="wrap header-inner">
 <a class="brand" href="${href(langPath(lang, '/'))}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>${esc(t.gameName)}</small></span></a>
 <nav class="tabs" aria-label="${esc(t.navLinks)}">${tabs}</nav>
-<a class="lang-switch" href="${href(langPath(other, pagePath || '/'))}" data-lang="${other}" hreflang="${other}">${t.switchLang}</a>
+<a class="lang-switch" href="${href(langPath(other, only ? '/' : pagePath || '/'))}" data-lang="${other}" hreflang="${other}">${t.switchLang}</a>
 </div></header>`;
 }
 
@@ -561,14 +570,14 @@ function footer(lang) {
   return `<footer class="site-footer"><div class="wrap">
 <div class="footer-brand">${spriteSvg('mushroom', 24)}<strong>GMS Hub</strong></div>
 <p>${esc(t.footerDisclaimer)}</p>
-<p><a href="${href(langPath(lang, '/about/'))}">${t.navAbout}</a> · <a href="${href(langPath(lang, '/privacy/'))}">${t.privacy}</a> · <a href="${href(langPath(lang, '/terms/'))}">${t.terms}</a> · <a href="mailto:${CONTACT_EMAIL}">${t.contact}</a> · <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub</a></p>
+<p>${guides.some((g) => g.lang === lang) ? `<a href="${href(langPath(lang, '/guides/'))}">${t.navGuides}</a> · ` : ''}<a href="${href(langPath(lang, '/about/'))}">${t.navAbout}</a> · <a href="${href(langPath(lang, '/privacy/'))}">${t.privacy}</a> · <a href="${href(langPath(lang, '/terms/'))}">${t.terms}</a> · <a href="mailto:${CONTACT_EMAIL}">${t.contact}</a> · <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub</a></p>
 </div></footer>`;
 }
 
-function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], ld = [] }) {
-  return `${head({ lang, title, desc, pagePath, ld })}
+function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], ld = [], only }) {
+  return `${head({ lang, title, desc, pagePath, ld, only })}
 <body data-page="${pageKey}">
-${header(lang, pagePath)}
+${header(lang, pagePath, only)}
 <main>${body}</main>
 ${footer(lang)}
 <script src="${href('/assets/common.js')}" defer></script>
@@ -691,7 +700,16 @@ ${tool('/tools/scroll/', 'scroll', t.navScroll, t.scCardDesc)}
 ${tool('/tools/drop-rate/', 'bag', t.navDrop, t.dropCardDesc)}
 </div>
 </section>
-<section class="wrap faq">
+${guides.some((g) => g.lang === lang)
+  ? `<section class="wrap">
+<h2>${t.navGuides}</h2>
+<div class="tool-cards">${guides
+      .filter((g) => g.lang === lang)
+      .map((g) => tool(guidePath(g), 'book', esc(g.h1), g.desc))
+      .join('')}</div>
+</section>
+`
+  : ''}<section class="wrap faq">
 <h2>${t.faqHeading}</h2>
 ${faq}
 </section>`;
@@ -1013,6 +1031,42 @@ function scrollGuide(lang) {
 
 const prose = (h1, body) => `<article class="wrap prose"><h1>${h1}</h1>${body.replaceAll('{issues}', issuesUrl)}</article>`;
 
+// ---------- guides ----------
+
+const guidePath = (g) => `/guides/${g.slug}/`;
+const fmtDate = (d) => d.replaceAll('-', '. ') + '.';
+
+function guideBody(g) {
+  const body = g.body
+    .replace(/<table>/g, '<div class="table-wrap"><table class="data">')
+    .replace(/<\/table>/g, '</table></div>');
+  const sources = g.sources
+    .map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a></li>`)
+    .join('');
+  return `<article class="wrap prose guide-article">
+<p class="crumbs"><a href="${href(langPath(g.lang, '/guides/'))}">${T[g.lang].navGuides}</a></p>
+<h1>${esc(g.h1)}</h1>
+<p class="byline">GMS Hub 작성 · 처음 쓴 날 ${fmtDate(g.published)} · 마지막 확인 ${fmtDate(g.updated)}</p>
+${body}
+<h2>참고한 자료</h2>
+<ul class="sources">${sources}</ul>
+<p class="muted">영상 내용은 요약해서 옮겼고, 숫자는 위 자료에서 확인한 것만 적었어요. 게임이 업데이트되면 내용이 달라질 수 있어요. 틀린 부분은 <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>이나 <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub 이슈</a>로 알려 주세요.</p>
+</article>`;
+}
+
+function guidesIndexBody(lang) {
+  const items = guides
+    .filter((g) => g.lang === lang)
+    .map(
+      (g) =>
+        `<li><a href="${href(langPath(lang, guidePath(g)))}"><strong>${esc(g.h1)}</strong></a><p>${esc(g.desc)}</p><small class="muted">${fmtDate(g.updated)}</small></li>`
+    )
+    .join('');
+  return `<article class="wrap prose"><h1>글클메 가이드</h1>
+<p>게임을 하면서 헷갈렸던 것들을 직접 확인해서 정리한 글이에요. 유튜브 공략 영상과 팬 사이트 자료를 서로 맞춰 보고, 출처가 있는 내용만 적어요.</p>
+<ul class="guide-list">${items}</ul></article>`;
+}
+
 // ---------- write ----------
 
 fs.rmSync(out, { recursive: true, force: true });
@@ -1109,6 +1163,50 @@ for (const lang of LANGS) {
     const def = p.band ? bandDef(p.band) : defs[p.key];
     write(path.join(lang, p.path, 'index.html'), page({ lang, pageKey: p.key, pagePath: p.path, ...def }));
   }
+
+  const langGuides = guides.filter((g) => g.lang === lang);
+  if (langGuides.length) {
+    write(
+      path.join(lang, 'guides', 'index.html'),
+      page({
+        lang,
+        pageKey: 'guides',
+        pagePath: '/guides/',
+        only: lang,
+        title: '글클메 가이드 모음 | GMS Hub',
+        desc: '글로벌 클래식 메이플 입문과 공략을 출처와 함께 정리한 GMS Hub 가이드 모음.',
+        body: guidesIndexBody(lang),
+        ld: [breadcrumbLd(lang, t.navGuides, '/guides/')]
+      })
+    );
+  }
+  for (const g of langGuides) {
+    const articleLd = {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: g.h1,
+      description: g.desc,
+      inLanguage: lang,
+      datePublished: g.published,
+      dateModified: g.updated,
+      author: { '@type': 'Organization', name: config.siteName, url: absUrl(langPath(lang, '/about/')) },
+      mainEntityOfPage: absUrl(langPath(lang, guidePath(g))),
+      about: { '@type': 'VideoGame', name: 'MapleStory Classic World' }
+    };
+    write(
+      path.join(lang, 'guides', g.slug, 'index.html'),
+      page({
+        lang,
+        pageKey: 'guide',
+        pagePath: guidePath(g),
+        only: lang,
+        title: `${g.title} | GMS Hub`,
+        desc: g.desc,
+        body: guideBody(g),
+        ld: [articleLd, breadcrumbLd(lang, g.h1, guidePath(g))]
+      })
+    );
+  }
 }
 
 // Root: send visitors to their language; crawlers follow the hreflang links.
@@ -1156,6 +1254,9 @@ const sitemapUrls = PAGES.flatMap((p) =>
       (l) => `<xhtml:link rel="alternate" hreflang="${l}" href="${absUrl(langPath(l, p.path))}"/>`
     ).join('')}<xhtml:link rel="alternate" hreflang="x-default" href="${absUrl(langPath(config.defaultLang, p.path))}"/></url>`
   )
+).concat(
+  [...new Set(guides.map((g) => g.lang))].map((l) => `<url><loc>${absUrl(langPath(l, '/guides/'))}</loc><lastmod>${BUILD_DATE}</lastmod></url>`),
+  guides.map((g) => `<url><loc>${absUrl(langPath(g.lang, guidePath(g)))}</loc><lastmod>${g.updated}</lastmod></url>`)
 ).join('\n');
 write(
   'sitemap.xml',

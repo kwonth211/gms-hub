@@ -265,6 +265,15 @@ table.data { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 .prose { max-width: 760px; padding-top: 40px; padding-bottom: 20px; }
 .prose h2 { font-size: 1.15rem; margin-top: 32px; }
 .prose p, .prose li { color: #c9d2e3; }
+.prose .table-wrap { margin: 14px 0; }
+.guide-article { line-height: 1.8; }
+.guide-article h2 { margin-top: 40px; }
+.crumbs { margin: 0; font-size: 0.85rem; }
+.byline { color: var(--muted); font-size: 0.85rem; margin-top: -4px; }
+.sources li { font-size: 0.9rem; }
+.guide-list { list-style: none; padding: 0; display: grid; gap: 12px; }
+.guide-list li { padding: 16px 18px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+.guide-list p { margin: 6px 0; font-size: 0.92rem; }
 
 /* footer */
 .site-footer { margin-top: 72px; padding: 28px 0 44px; border-top: 1px solid var(--line); background: #0a0e17; color: var(--muted); font-size: 0.85rem; }
