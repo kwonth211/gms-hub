@@ -635,33 +635,62 @@ ${stat}
 </article>`;
 }
 
-// Latest shop listings players scanned, beside the hero. Stays hidden until the API returns at least one listing.
+// Live Free Market section above "What are you looking for?": a realtime-search style top 10 with average price, day-over-day
+// change and a 7-day trend, next to the newest scanned listings. Hidden until the API has something to show.
 const LIVE = {
   ko: {
     title: '실시간 자유시장',
-    sub: '유저들이 방금 스캔한 상점',
+    sub: '유저들이 스캔한 상점과 제보한 시세로 집계해요 · 1분마다 갱신',
+    top: '인기 아이템 TOP 10',
+    topNote: '최근 24시간 매물·판매 기준',
+    recent: '방금 올라온 매물',
+    avg: '평균가',
+    trend: '7일 추이',
+    change: '전일 대비',
     sold: '팔림',
+    isNew: 'NEW',
     more: '아이템 시세 검색 →',
-    updated: '{t} 갱신'
+    updated: '{t} 갱신',
+    sparkLabel: '{name} 7일 추이: {from}에서 {to}',
+    noTrend: '추이 데이터 부족'
   },
   en: {
     title: 'Live Free Market',
-    sub: 'Shops players just scanned',
+    sub: 'From shops players scanned and prices they reported · refreshed every minute',
+    top: 'Top 10 items',
+    topNote: 'by listings and sales in the last 24 hours',
+    recent: 'Just listed',
+    avg: 'Avg',
+    trend: '7-day trend',
+    change: 'vs yesterday',
     sold: 'Sold',
+    isNew: 'NEW',
     more: 'Search item prices →',
-    updated: 'updated {t}'
+    updated: 'updated {t}',
+    sparkLabel: '{name} 7-day trend: {from} to {to}',
+    noTrend: 'not enough data for a trend'
   }
 };
 
 function liveMarket(lang) {
   const t = LIVE[lang];
-  return `<aside class="live-market" id="live-market" hidden aria-labelledby="live-title"
+  return `<section class="wrap market" id="live-market" hidden aria-labelledby="live-title"
  data-api="${esc(config.voteApi)}" data-items="${esc(href('/assets/items.json'))}" data-price="${esc(href(langPath(lang, '/tools/price/')))}"
- data-sold="${esc(t.sold)}" data-updated="${esc(t.updated)}">
-<header><span class="live-dot" aria-hidden="true"></span><div><h2 id="live-title">${t.title}</h2><p>${t.sub}</p></div></header>
-<ol id="live-rows"></ol>
-<footer><a href="${href(langPath(lang, '/tools/price/'))}">${t.more}</a><small id="live-updated"></small></footer>
-</aside>`;
+ data-text="${esc(JSON.stringify(t))}">
+<header class="market-head"><span class="live-dot" aria-hidden="true"></span><h2 id="live-title">${t.title}</h2><p>${t.sub}</p><small id="live-updated"></small></header>
+<div class="market-grid">
+<div class="market-panel market-top" id="market-top" hidden>
+<h3>${t.top} <small>${t.topNote}</small></h3>
+<ol class="rank-list" id="rank-list"></ol>
+</div>
+<div class="market-panel market-recent">
+<h3>${t.recent}</h3>
+<ol class="recent-list" id="live-rows"></ol>
+<a class="market-more" href="${href(langPath(lang, '/tools/price/'))}">${t.more}</a>
+</div>
+</div>
+<div class="spark-tip" id="spark-tip" role="tooltip" hidden></div>
+</section>`;
 }
 
 function homeBody(lang) {
@@ -704,10 +733,10 @@ ${heroScene()}
 <label class="search-box">🔍<input id="site-search" type="search" placeholder="${esc(t.searchPlaceholder)}" aria-label="${esc(t.searchPlaceholder)}"></label>
 <dl class="hero-stats"><div><dt>${t.statSites}</dt><dd>${SITE_COUNT}</dd></div><div><dt>${t.statCats}</dt><dd>${cats.length}</dd></div><div><dt>${t.statChecked}</dt><dd>${esc(sites.checked)}</dd></div></dl>
 </div>
-${liveMarket(lang)}
 </div>
 </section>
 ${lang === 'ko' ? adfitRails() : '' /* Kakao AdFit only serves Korean ads, so English pages stay ad-free */}
+${liveMarket(lang)}
 <section class="wrap purposes-wrap">
 <h2>${t.purposeHeading}</h2>
 <div class="purposes">${purposes}</div>

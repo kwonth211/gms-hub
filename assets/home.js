@@ -254,12 +254,28 @@ if (voteApi) {
   });
 }
 
-// Live Free Market widget: the newest listings players scanned, refreshed every minute while the tab is visible.
+// Live Free Market section: realtime-search style top 10 (average price, change, 7-day sparkline) and the newest listings,
+// refreshed every minute while the tab is visible.
 const live = document.getElementById('live-market');
-const LIVE_ROWS = 8;
+const LIVE_ROWS = 5;
 const LIVE_REFRESH_MS = 60000;
-const liveNf = new Intl.NumberFormat(document.documentElement.lang);
-const liveRtf = new Intl.RelativeTimeFormat(document.documentElement.lang, { numeric: 'auto', style: 'short' });
+const lang = document.documentElement.lang;
+const liveRtf = new Intl.RelativeTimeFormat(lang, { numeric: 'auto', style: 'short' });
+const dayFmt = new Intl.DateTimeFormat(lang, { month: 'numeric', day: 'numeric' });
+const liveText = live ? JSON.parse(live.dataset.text) : {};
+
+// Korean players think in 만/억; elsewhere k/m/b.
+function mesos(n) {
+  if (korean) {
+    if (n >= 1e8) return `${+(n / 1e8).toFixed(2)}억`;
+    if (n >= 1e4) return `${+(n / 1e4).toFixed(n >= 1e6 ? 0 : 1)}만`;
+    return n.toLocaleString('ko');
+  }
+  if (n >= 1e9) return `${+(n / 1e9).toFixed(2)}b`;
+  if (n >= 1e6) return `${+(n / 1e6).toFixed(2)}m`;
+  if (n >= 1e3) return `${+(n / 1e3).toFixed(1)}k`;
+  return String(n);
+}
 
 // D1 timestamps are UTC without a zone marker.
 function ago(utc) {
@@ -270,36 +286,111 @@ function ago(utc) {
   return liveRtf.format(-Math.floor(s / 86400), 'day');
 }
 
+// 7 daily medians, oldest first. Days without data break the line rather than being bridged; the latest point is marked.
+function sparkline(values, name) {
+  const pts = values.map((v, i) => ({ v, i })).filter((p) => p.v != null);
+  if (pts.length < 2) return `<span class="spark-empty">${escHtml(liveText.noTrend)}</span>`;
+  const W = 64;
+  const H = 24;
+  const lo = Math.min(...pts.map((p) => p.v));
+  const hi = Math.max(...pts.map((p) => p.v));
+  const x = (i) => (i / (values.length - 1)) * W;
+  const y = (v) => (hi === lo ? H / 2 : 2 + (1 - (v - lo) / (hi - lo)) * (H - 4));
+  let d = '';
+  values.forEach((v, i) => {
+    if (v == null) return;
+    d += `${i > 0 && values[i - 1] != null ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`;
+  });
+  const last = pts[pts.length - 1];
+  const hits = values
+    .map((v, i) => (v == null ? '' : `<rect x="${(x(i) - W / 12).toFixed(1)}" y="-4" width="${(W / 6).toFixed(1)}" height="${H + 8}" data-i="${i}" data-v="${v}"/>`))
+    .join('');
+  const label = liveText.sparkLabel.replace('{name}', name).replace('{from}', mesos(pts[0].v)).replace('{to}', mesos(last.v));
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escHtml(label)}"><path d="${d}"/><circle cx="${x(last.i).toFixed(1)}" cy="${y(last.v).toFixed(1)}" r="2.5"/>${hits}</svg>`;
+}
+
+function moveCell(move) {
+  if (move == null) return `<span class="move new">${liveText.isNew}</span>`;
+  if (move > 0) return `<span class="move up" aria-label="+${move}">▲${move}</span>`;
+  if (move < 0) return `<span class="move down" aria-label="${move}">▼${-move}</span>`;
+  return '<span class="move">–</span>';
+}
+
+function changeCell(change) {
+  if (change == null) return '<span class="chg">–</span>';
+  const cls = change > 0 ? 'up' : change < 0 ? 'down' : '';
+  return `<span class="chg ${cls}">${change > 0 ? '▲' : change < 0 ? '▼' : ''}${Math.abs(change)}%</span>`;
+}
+
+function renderTop(top, byId) {
+  const rows = top.items.filter((r) => byId.has(r.item));
+  document.getElementById('market-top').hidden = !rows.length;
+  document.getElementById('rank-list').innerHTML = rows
+    .map((r) => {
+      const it = byId.get(r.item);
+      return `<li><a href="${live.dataset.price}?q=${encodeURIComponent(it.name)}">
+<span class="rank">${r.rank}</span>${moveCell(r.move)}
+<img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="26" height="26" loading="lazy">
+<span class="name" title="${escHtml(it.name)}">${escHtml(it.name)}</span>
+<span class="avg"><small>${escHtml(liveText.avg)}</small>${mesos(r.avg)}</span>
+${sparkline(r.spark, it.name)}
+${changeCell(r.change)}</a></li>`;
+    })
+    .join('');
+  return rows.length;
+}
+
+function renderRecent(rows, byId) {
+  const shown = rows.filter((r) => byId.has(r.item)).slice(0, LIVE_ROWS);
+  document.getElementById('live-rows').innerHTML = shown
+    .map((r) => {
+      const it = byId.get(r.item);
+      return `<li class="${r.sold ? 'sold' : ''}"><a href="${live.dataset.price}?q=${encodeURIComponent(it.name)}">
+<img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="26" height="26" loading="lazy">
+<span class="name">${escHtml(it.name)}${r.sold ? `<span class="tag">${escHtml(liveText.sold)}</span>` : ''}</span>
+<span class="price">${mesos(r.price)}</span>
+<span class="meta">${escHtml(r.seller)} · CH ${r.channel} · FM${r.room}</span>
+<span class="ago">${ago(r.seen)}</span></a></li>`;
+    })
+    .join('');
+  return shown.length;
+}
+
 async function refreshLive() {
   if (!live || !live.dataset.api || document.hidden) return;
   try {
-    const [rows] = await Promise.all([fetch(`${live.dataset.api}/listings/recent`).then((r) => (r.ok ? r.json() : [])), loadItems()]);
+    const get = (path) => fetch(`${live.dataset.api}${path}`).then((r) => (r.ok ? r.json() : null));
+    const [top, recent] = await Promise.all([get('/market/top'), get('/listings/recent'), loadItems()]);
     const byId = new Map(items.map((it) => [it.id, it]));
-    const shown = rows.filter((r) => byId.has(r.item)).slice(0, LIVE_ROWS);
-    if (!shown.length) return;
-    document.getElementById('live-rows').innerHTML = shown
-      .map((r) => {
-        const it = byId.get(r.item);
-        return `<li class="${r.sold ? 'sold' : ''}"><a href="${live.dataset.price}?q=${encodeURIComponent(it.name)}">
-<img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="28" height="28" loading="lazy">
-<span class="name">${escHtml(it.name)}${r.sold ? `<span class="tag">${escHtml(live.dataset.sold)}</span>` : ''}</span>
-<span class="price">${liveNf.format(r.price)}</span>
-<span class="meta">${escHtml(r.seller)} · CH ${r.channel} · FM${r.room}</span>
-<span class="ago">${ago(r.seen)}</span></a></li>`;
-      })
-      .join('');
-    document.getElementById('live-updated').textContent = live.dataset.updated.replace('{t}', ago(rows[0].seen));
+    const ranked = top ? renderTop(top, byId) : 0;
+    const listed = recent ? renderRecent(recent, byId) : 0;
+    if (!ranked && !listed) return;
+    if (recent?.length) document.getElementById('live-updated').textContent = liveText.updated.replace('{t}', ago(recent[0].seen));
     live.hidden = false;
   } catch (e) {}
 }
 
+// One tooltip for every sparkline: the day and its median, following the pointer.
+const tip = document.getElementById('spark-tip');
 if (live) {
+  live.addEventListener('pointermove', (e) => {
+    const rect = e.target.closest('.spark rect');
+    if (!rect) {
+      tip.hidden = true;
+      return;
+    }
+    const daysAgo = 6 - Number(rect.dataset.i);
+    tip.innerHTML = `<b>${mesos(Number(rect.dataset.v))}</b>${dayFmt.format(new Date(Date.now() - daysAgo * 86400000))}`;
+    tip.style.left = `${e.clientX + 12}px`;
+    tip.style.top = `${e.clientY - 40}px`;
+    tip.hidden = false;
+  });
+  live.addEventListener('pointerleave', () => (tip.hidden = true));
+  live.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href*="?q="]');
+    if (a) track('live_market_click', { item: decodeURIComponent(a.href.split('?q=')[1] || ''), list: a.closest('#rank-list') ? 'top' : 'recent' });
+  });
   refreshLive();
   setInterval(refreshLive, LIVE_REFRESH_MS);
   document.addEventListener('visibilitychange', refreshLive);
-  live.addEventListener('click', (e) => {
-    const a = e.target.closest('a[href*="?q="]');
-    if (a) track('live_market_click', { item: decodeURIComponent(a.href.split('?q=')[1] || '') });
-  });
 }
-

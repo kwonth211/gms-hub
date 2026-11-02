@@ -6,6 +6,7 @@
 // POST /price {item, price, kind} -> { ok }  (kind: sold | selling | buying)
 // POST /listings {items: [{item, price, sold, seller, channel, room}]} -> { stored }  (shop scanner; one row per listing)
 // GET  /listings/recent -> [{ item, price, sold, seller, channel, room, seen }]
+// GET  /market/top -> { at, items: [{ item, rank, move, avg, n, sold, change, spark: [7 daily medians] }] }  (live ranking)
 // The shop scanner runs from the local dev server for now, so its origin may post scans too.
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
 
@@ -67,6 +68,60 @@ function summarize(rows) {
   return { n: kept.length, median: median(prices), low: Math.min(...prices), high: Math.max(...prices), last: kept[0].created_at, ...byKind };
 }
 
+// ---------- live ranking ----------
+const DAY = 86400000;
+const TOP_N = 10;
+const parseUtc = (s) => Date.parse(`${s.replace(' ', 'T')}Z`);
+const trimmed = (prices) => {
+  const mid = median(prices);
+  return prices.length >= 3 ? prices.filter((p) => p <= mid * 5 && p >= mid / 5) : prices;
+};
+
+// Items ranked by how much market activity players saw in the last 24 hours: every listing seen counts once and a sale
+// counts three times, since a sale is the stronger signal. Rank movement compares with the same window an hour earlier.
+function rankAt(obs, end) {
+  const score = new Map();
+  for (const o of obs) if (o.t > end - DAY && o.t <= end) score.set(o.item, (score.get(o.item) || 0) + (o.sold ? 3 : 1));
+  return [...score.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0]).map(([item]) => item);
+}
+
+async function marketTop(env) {
+  const { results } = await env.DB.prepare(
+    `SELECT item, price, sold, last_seen AS t FROM listings WHERE last_seen >= datetime('now', '-8 days')
+     UNION ALL
+     SELECT item, price, kind = 'sold', created_at FROM prices WHERE kind != 'buying' AND created_at >= datetime('now', '-8 days')`
+  ).all();
+  const now = Date.now();
+  const obs = results.map((r) => ({ item: r.item, price: r.price, sold: !!r.sold, t: parseUtc(r.t) }));
+  const ranked = rankAt(obs, now).slice(0, TOP_N);
+  const before = rankAt(obs, now - 3600000);
+  const byItem = new Map();
+  for (const o of obs) (byItem.get(o.item) || byItem.set(o.item, []).get(o.item)).push(o);
+  const items = ranked.map((item, i) => {
+    const mine = byItem.get(item);
+    const window = (from, to) => trimmed(mine.filter((o) => o.t > from && o.t <= to).map((o) => o.price));
+    const day = window(now - DAY, now);
+    const prev = window(now - 2 * DAY, now - DAY);
+    const prevRank = before.indexOf(item);
+    return {
+      item,
+      rank: i + 1,
+      // Positive = moved up; null = new to the ranking within the hour.
+      move: prevRank < 0 ? null : prevRank - i,
+      avg: Math.round(day.reduce((a, b) => a + b, 0) / day.length),
+      n: mine.filter((o) => o.t > now - DAY).length,
+      sold: mine.filter((o) => o.sold && o.t > now - DAY).length,
+      change: prev.length ? Math.round(((median(day) - median(prev)) / median(prev)) * 1000) / 10 : null,
+      // Oldest first; a day with no observations is null so the line shows a gap instead of inventing a value.
+      spark: Array.from({ length: 7 }, (_, k) => {
+        const ps = window(now - (7 - k) * DAY, now - (6 - k) * DAY);
+        return ps.length ? median(ps) : null;
+      })
+    };
+  });
+  return { at: new Date(now).toISOString(), items };
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
@@ -126,6 +181,18 @@ export default {
       for (const k in mids) mids[k] = mids[k].length >= 3 ? median(mids[k]) : null;
       const shown = results.filter((r) => !mids[r.item] || (r.price <= mids[r.item] * 5 && r.price >= mids[r.item] / 5)).slice(0, 20);
       return json(shown, cors, 200, 'public, max-age=30');
+    }
+
+    if (url.pathname === '/market/top' && req.method === 'GET') {
+      // Computed at most once a minute per location; every visitor in between gets the cached answer.
+      const cache = caches.default;
+      const key = new Request('https://cache.gms-hub/market/top');
+      let res = await cache.match(key);
+      if (!res) {
+        res = json(await marketTop(env), {}, 200, 'public, max-age=60');
+        await cache.put(key, res.clone());
+      }
+      return new Response(res.body, { headers: { ...Object.fromEntries(res.headers), ...cors } });
     }
 
     if (url.pathname === '/listings/recent' && req.method === 'GET') {
