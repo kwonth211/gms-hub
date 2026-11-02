@@ -1036,6 +1036,14 @@ const prose = (h1, body) => `<article class="wrap prose"><h1>${h1}</h1>${body.re
 const guidePath = (g) => `/guides/${g.slug}/`;
 const fmtDate = (d) => d.replaceAll('-', '. ') + '.';
 
+// Every guide ends with links to the other guides, so a reader from search can keep going.
+const related = (g) => {
+  const others = guides.filter((o) => o.lang === g.lang && o.slug !== g.slug);
+  return others.length
+    ? `<h2>다른 가이드</h2>\n<ul class="sources">${others.map((o) => `<li><a href="${href(langPath(o.lang, guidePath(o)))}">${esc(o.h1)}</a></li>`).join('')}</ul>`
+    : '';
+};
+
 function guideBody(g) {
   const body = g.body
     .replace(/<table>/g, '<div class="table-wrap"><table class="data">')
@@ -1048,9 +1056,9 @@ function guideBody(g) {
 <h1>${esc(g.h1)}</h1>
 <p class="byline">GMS Hub 작성 · 처음 쓴 날 ${fmtDate(g.published)} · 마지막 확인 ${fmtDate(g.updated)}</p>
 ${body}
-<h2>참고한 자료</h2>
-<ul class="sources">${sources}</ul>
-<p class="muted">영상 내용은 요약해서 옮겼고, 숫자는 위 자료에서 확인한 것만 적었어요. 게임이 업데이트되면 내용이 달라질 수 있어요. 틀린 부분은 <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>이나 <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub 이슈</a>로 알려 주세요.</p>
+${sources ? `<h2>참고한 자료</h2>\n<ul class="sources">${sources}</ul>` : ''}
+${related(g)}
+<p class="muted">공개된 공략 자료와 팬 데이터베이스를 서로 맞춰 보고 정리했어요. 자료끼리 숫자가 다르면 확인된 쪽만 적거나 다르다고 밝혔어요. 게임이 업데이트되면 내용이 달라질 수 있어요. 틀린 부분은 <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>이나 <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub 이슈</a>로 알려 주세요.</p>
 </article>`;
 }
 
@@ -1063,7 +1071,7 @@ function guidesIndexBody(lang) {
     )
     .join('');
   return `<article class="wrap prose"><h1>글클메 가이드</h1>
-<p>게임을 하면서 헷갈렸던 것들을 직접 확인해서 정리한 글이에요. 유튜브 공략 영상과 팬 사이트 자료를 서로 맞춰 보고, 출처가 있는 내용만 적어요.</p>
+<p>글클메를 하다 보면 헷갈리는 것들을 한 주제씩 정리한 글이에요. 공개된 공략 자료와 팬 데이터베이스를 서로 맞춰 보고, 확인된 내용만 적어요.</p>
 <ul class="guide-list">${items}</ul></article>`;
 }
 

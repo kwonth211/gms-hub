@@ -3,16 +3,74 @@
     {
       "slug": "getting-started",
       "lang": "ko",
-      "title": "글클메 처음 시작할 때 알아둘 것: 한국어 설정, 스탯, 물약, 채팅 약어, 시민권",
+      "title": "글클메 처음 시작할 때 알아둘 것: 한국어 설정, 스탯, 물약, 채팅 약어",
       "h1": "글클메 처음 시작할 때 알아둘 것",
-      "desc": "글로벌 클래식 메이플 입문자용 정리. 한국어 설정, 1차 전직 전 스탯, 초반 물약 효율, 파티 경험치 규칙, 채팅·거래 약어(C/O, A/W, LFP), 12레벨 시민권까지 출처와 함께 정리했어요.",
+      "desc": "글로벌 클래식 메이플 입문 정리. 한국어 설정, 1차 전직 전 스탯, 초반 물약 효율, 파티 경험치 규칙, 채팅·거래 약어(C/O, A/W, LFP)까지.",
       "published": "2026-11-02",
       "updated": "2026-11-02",
       "sources": [
-        { "title": "플투 — 글클메 시작할때 알아두면 좋은 꿀팁 (YouTube)", "url": "https://www.youtube.com/watch?v=_WmoGlRbNOc" },
-        { "title": "근팔 — 글로벌 클래식 메이플 정식 오픈! 처음 시작 전 필수 시청, 입문 완벽 정리 (YouTube)", "url": "https://www.youtube.com/watch?v=zvTKBVjv76g" },
-        { "title": "NiaMeowDB — Beginner's Guide: First Steps in Maple World (2026-10-23 업데이트)", "url": "https://meowdb.com/msclassic/guides/beginners-guide-first-steps-in-maple-world" },
+        { "title": "NiaMeowDB — Beginner's Guide: First Steps in Maple World", "url": "https://meowdb.com/msclassic/guides/beginners-guide-first-steps-in-maple-world" }
+      ]
+    },
+    {
+      "slug": "choose-your-job",
+      "lang": "ko",
+      "title": "글클메 직업 고르기: 2차 직업 10개, 옛 메이플과 달라진 스킬 정리",
+      "h1": "글클메 직업 고르기: 옛 메이플과 달라진 점",
+      "desc": "글로벌 클래식 메이플 2차 직업 10개의 바뀐 스킬. 스피어맨 하이퍼바디 이동, 클레릭 블레스 변경, 불독 2차 광역, 시프 스틸 버프까지 직업 선택에 필요한 것만.",
+      "published": "2026-11-02",
+      "updated": "2026-11-02",
+      "sources": []
+    },
+    {
+      "slug": "leveling-1-30",
+      "lang": "ko",
+      "title": "글클메 1~30레벨 사냥터 동선: 세 공략 사이트가 같이 추천한 곳",
+      "h1": "글클메 1~30레벨 사냥 동선",
+      "desc": "NiaMeowDB, MS-Classic, Henesys.GG의 레벨별 추천을 합쳐 여러 곳이 동시에 추천한 사냥터를 골랐어요. 지하철 1호선, 개미굴, 커닝 파티 퀘스트까지 구간별 정리.",
+      "published": "2026-11-02",
+      "updated": "2026-11-02",
+      "sources": [
+        { "title": "NiaMeowDB — Best grind maps for every level", "url": "https://meowdb.com/msclassic/guides/best-grind-maps-every-level" },
+        { "title": "MS-Classic — Where to train level 10-30", "url": "https://ms-classic.com/guides/where-to-train-level-10-30" },
+        { "title": "Henesys.GG", "url": "https://henesys.gg/" }
+      ]
+    },
+    {
+      "slug": "best-early-quests",
+      "lang": "ko",
+      "title": "글클메 꼭 챙길 퀘스트 7개: 주문서 보상, NPC 위치, 재료 정리",
+      "h1": "글클메 꼭 챙길 퀘스트 7개",
+      "desc": "16~44레벨에 놓치면 아까운 퀘스트 7개. 피아, 제인, 동료의 증명, 아르웬의 유리구두, 슈미, 저주받은 인형, 제인의 도전의 NPC 위치와 재료, 보상.",
+      "published": "2026-11-02",
+      "updated": "2026-11-02",
+      "sources": [
+        { "title": "NiaMeowDB — Quest tracker", "url": "https://meowdb.com/msclassic/ko/quest-tracker" }
+      ]
+    },
+    {
+      "slug": "citizenship-and-housing",
+      "lang": "ko",
+      "title": "글클메 시민권과 집 정리: 등급별 할인, 9등급 장갑 주문서, 집 가구",
+      "h1": "글클메 시민권과 집",
+      "desc": "12레벨부터 시작하는 시민권의 등급별 필요 레벨과 할인율, 마을별 전용 주문서, 9등급 장갑 공격력 하급 4만 메소, 집 구매 조건과 쓸모 있는 가구.",
+      "published": "2026-11-02",
+      "updated": "2026-11-02",
+      "sources": [
         { "title": "NiaMeowDB — 시민권", "url": "https://meowdb.com/msclassic/ko/citizenship" }
+      ]
+    },
+    {
+      "slug": "scroll-odds",
+      "lang": "ko",
+      "title": "글클메 주문서 확률 계산: 중급 5장이면 몇이 붙을까, 카오스는 얼마나 터질까",
+      "h1": "글클메 주문서, 바르기 전에 확률부터",
+      "desc": "하급·중급·고급·카오스 주문서를 장갑 5회에 발랐을 때의 결과 확률을 직접 계산했어요. 중급 평균 +6, 고급 5장 중 하나도 안 붙을 확률 59%, 카오스 5회 파괴 95%.",
+      "published": "2026-11-02",
+      "updated": "2026-11-02",
+      "sources": [
+        { "title": "MS-Classic — Scroll tiers explained", "url": "https://ms-classic.com/guides/scroll-tiers-lesser-intermediate-greater-explained" },
+        { "title": "MapleClassic Wiki — Scrolling", "url": "https://mapleclassic.wiki/wiki/Scrolling" }
       ]
     }
   ]
