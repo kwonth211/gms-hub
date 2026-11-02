@@ -115,13 +115,14 @@ function render() {
 
 // Player-reported prices from our own API, fetched per batch of visible cards.
 let summaryTimer;
-function loadSummaries(ids) {
+function loadSummaries(ids, fresh = false) {
   if (!i18n.api || !ids.length) return;
   clearTimeout(summaryTimer);
   summaryTimer = setTimeout(async () => {
     let data = {};
     try {
-      const r = await fetch(`${i18n.api}/prices?ids=${ids.join(',')}`);
+      // Right after a report the browser's 30-second cached copy would hide it, so that refresh skips the cache.
+      const r = await fetch(`${i18n.api}/prices?ids=${ids.join(',')}`, fresh ? { cache: 'reload' } : {});
       if (r.ok) data = await r.json();
     } catch (e) {}
     ids.forEach((id) => paintSummary(id, data[id]));
@@ -209,7 +210,7 @@ result.addEventListener('submit', async (e) => {
     if (r.ok) {
       form.price.value = '';
       track('price_report', { item_id: form.dataset.id, kind: form.kind.value });
-      loadSummaries([Number(form.dataset.id)]);
+      loadSummaries([Number(form.dataset.id)], true);
     }
   } catch (err) {
     msg.textContent = i18n.failed;
