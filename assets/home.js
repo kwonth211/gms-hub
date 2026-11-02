@@ -218,7 +218,8 @@ function sortByVotes() {
 function paintVotes() {
   document.querySelectorAll('.vote').forEach((btn) => {
     const id = btn.dataset.site;
-    btn.hidden = false;
+    // Newly added links may be published before their vote ID is registered.
+    btn.hidden = !Object.hasOwn(counts, id);
     // An empty count reads better than a row of zeros on a young site.
     btn.querySelector('b').textContent = counts[id] || '';
     btn.setAttribute('aria-pressed', String(voted.includes(id)));
