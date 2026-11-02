@@ -374,9 +374,21 @@ a.band-link:hover { border-color: var(--accent); }
 .scan-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .scan-status { margin: 0; font-weight: 700; color: var(--ok); min-height: 1.4em; }
 .scan-panel h2 { font-size: 1rem; margin: 6px 0 0; }
-.scan-results { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
-.scan-results li { padding: 8px 12px; border-radius: 10px; background: var(--panel-2); }
-.scan-results .empty { padding: 16px; }
+.scan-table-wrap { overflow-x: auto; }
+.scan-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.scan-table th { text-align: left; font-size: 0.75rem; color: var(--muted); padding: 6px 10px; border-bottom: 1px solid var(--line); }
+.scan-table td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.scan-table tr.fresh td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+.scan-table tr.sold td { opacity: 0.5; }
+.scan-table tr.sold .price { text-decoration: line-through; }
+.scan-table .item { display: flex; align-items: center; gap: 10px; }
+.scan-table .item img { image-rendering: pixelated; }
+.scan-table .item small { display: block; color: var(--muted); font-size: 0.75rem; }
+.scan-table .price { font-weight: 800; white-space: nowrap; }
+.scan-table .badge { font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); white-space: nowrap; }
+.scan-table .badge.ok { color: var(--ok); border-color: var(--ok); }
+.scan-table .badge.check { color: var(--accent-2); border-color: var(--accent); }
+.scan-table .empty td { text-align: center; color: var(--muted); padding: 20px; }
 #scan-start { background: #ff4d4d; color: #fff; }
 .scanning #scan-start { opacity: 0.5; pointer-events: none; }
 

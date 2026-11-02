@@ -583,7 +583,7 @@ function footer(lang) {
 </div></footer>`;
 }
 
-function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], ld = [], only, noindex }) {
+function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], modules = [], ld = [], only, noindex }) {
   return `${head({ lang, title, desc, pagePath, ld, only, noindex })}
 <body data-page="${pageKey}">
 ${header(lang, pagePath, only)}
@@ -591,6 +591,7 @@ ${header(lang, pagePath, only)}
 ${footer(lang)}
 <script src="${href('/assets/common.js')}" defer></script>
 ${scripts.map((s) => `<script src="${href(`/assets/${s}`)}" defer></script>`).join('\n')}
+${modules.map((s) => `<script type="module" src="${href(`/assets/${s}`)}"></script>`).join('\n')}
 </body>
 </html>`;
 }
@@ -1046,10 +1047,13 @@ const SCAN = {
     start: '메이플 창 공유하기',
     stop: '그만하기',
     resultsHeading: '인식한 상점 물건',
+    colItem: '아이템', colPrice: '가격', colState: '상태', colRead: '인식',
     resultsEmpty: '아직 인식한 물건이 없어요. 공유를 시작하고 자유시장에서 상점을 열어 보세요.',
     privacy: '공유한 화면은 이 컴퓨터 안에서만 읽고, 읽어 낸 아이템과 가격만 시세에 반영해요. 게임 화면 자체는 어디에도 올리지 않아요.',
     i: {
       watching: '공유 중 · 상점 화면 {n}장 확인',
+      selling: '판매 중', sold: '팔림', ok: '정확', check: '확인 필요', each: '개당', now: '방금',
+      summary: '이번 공유: 물건 {items}개 인식 · 그중 확인 필요 {check}개',
       stopped: '멈췄어요. 상점 화면 {n}장을 확인했어요.',
       denied: '화면 공유가 취소됐어요. 다시 눌러 메이플 창을 골라 주세요.',
       unsupported: '이 브라우저는 화면 공유를 지원하지 않아요. PC 크롬에서 열어 주세요.'
@@ -1067,10 +1071,13 @@ const SCAN = {
     start: 'Share your MapleStory window',
     stop: 'Stop',
     resultsHeading: 'Items recognized',
+    colItem: 'Item', colPrice: 'Price', colState: 'Status', colRead: 'Read',
     resultsEmpty: 'Nothing recognized yet. Start sharing and open shops in the Free Market.',
     privacy: 'The shared screen is read only on this computer; just the items and prices it finds go into the price data. The game screen itself is never uploaded.',
     i: {
       watching: 'Sharing · {n} shop screens checked',
+      selling: 'For sale', sold: 'Sold', ok: 'OK', check: 'Check', each: 'each', now: 'now',
+      summary: 'This session: {items} items read · {check} need a check',
       stopped: 'Stopped. {n} shop screens checked.',
       denied: 'Sharing was cancelled. Click again and pick the MapleStory window.',
       unsupported: "This browser can't share a window. Open this page in Chrome on a computer."
@@ -1091,11 +1098,15 @@ function scanBody(lang) {
 </div>
 <p id="scan-status" class="scan-status" aria-live="polite"></p>
 <h2>${t.resultsHeading}</h2>
-<ul id="scan-results" class="scan-results"><li class="empty">${esc(t.resultsEmpty)}</li></ul>
+<div class="scan-table-wrap"><table class="scan-table">
+<thead><tr><th>${t.colItem}</th><th>${t.colPrice}</th><th>${t.colState}</th><th>${t.colRead}</th></tr></thead>
+<tbody id="scan-results"><tr class="empty"><td colspan="4">${esc(t.resultsEmpty)}</td></tr></tbody>
+</table></div>
+<p id="scan-summary" class="muted"></p>
 <p class="muted">${esc(t.privacy)}</p>
 </div>
 </div>
-${jsonScript('i18n', { lang, ...t.i })}`;
+${jsonScript('i18n', { lang, ...t.i, itemsUrl: href('/assets/items.json'), glyphsUrl: href('/assets/shop-glyphs.json') })}`;
 }
 
 function dropBody(lang) {
@@ -1449,9 +1460,10 @@ for (const lang of LANGS) {
   }
   if (process.env.GMS_DEV) {
     const pagePath = '/tools/scan/';
+    write('assets/shop-glyphs.json', fs.readFileSync(path.join(root, 'data/shop-glyphs.json')));
     write(
       path.join(lang, pagePath, 'index.html'),
-      page({ lang, pageKey: 'scan', pagePath, title: SCAN[lang].title, desc: SCAN[lang].lead, body: scanBody(lang), scripts: ['scan.js'], noindex: true })
+      page({ lang, pageKey: 'scan', pagePath, title: SCAN[lang].title, desc: SCAN[lang].lead, body: scanBody(lang), modules: ['scan.js'], noindex: true })
     );
   }
 

@@ -1,0 +1,10 @@
+{
+  "name": "gms-hub-scan-tools",
+  "private": true,
+  "type": "module",
+  "description": "Mac-only tools for building the shop reader from samples in ~/gms-hub-samples",
+  "dependencies": {
+    "pngjs": "^7.0.0",
+    "tesseract.js": "^5.1.1"
+  }
+}
