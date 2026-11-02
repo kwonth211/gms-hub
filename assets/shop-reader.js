@@ -270,7 +270,9 @@ export function matchItem(text, items) {
   if (confidence < 0.75) return null;
   // A name cut short in the list ("Gloves Attack Scr...") can fit several items equally well, typically the tiers of one
   // scroll. Those come back as alternatives for the caller to settle (by price, or by asking the player).
-  return { item: best.item, confidence, alternatives: ties.length > 1 ? ties : null };
+  // Several ids can share one exact name (two "Red Potion"s); those are the same thing to a buyer, not a real choice.
+  const distinct = [...new Map(ties.map((it) => [it.en, it])).values()];
+  return { item: best.item, confidence, alternatives: distinct.length > 1 ? distinct : null };
 }
 
 // "25 for 80 mesos" -> { qty: 25, price: 80 }. OCR sometimes reads the commas as dots or drops them, both are fine.
