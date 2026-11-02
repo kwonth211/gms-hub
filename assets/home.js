@@ -349,7 +349,7 @@ function renderRecent(rows, byId) {
       return `<li class="${r.sold ? 'sold' : ''}"><a href="${live.dataset.price}?q=${encodeURIComponent(it.name)}">
 <img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="26" height="26" loading="lazy">
 <span class="name">${escHtml(it.name)}${r.sold ? `<span class="tag">${escHtml(liveText.sold)}</span>` : ''}</span>
-<span class="price">${mesos(r.price)}</span>
+<span class="price">${mesos(r.price)}${r.qty > 1 ? ` <small>×${r.qty}</small>` : ''}</span>
 <span class="meta">${escHtml(r.seller)} · CH ${r.channel} · FM${r.room}</span>
 <span class="ago">${ago(r.seen)}</span></a></li>`;
     })

@@ -388,6 +388,7 @@ a.band-link:hover { border-color: var(--accent); }
 .scan-table .item img { image-rendering: pixelated; }
 .scan-table .item small { display: block; color: var(--muted); font-size: 0.75rem; }
 .scan-table .price { font-weight: 800; white-space: nowrap; }
+.scan-table .price .bundle { display: block; font-weight: 400; color: var(--muted); font-size: 0.72rem; }
 .scan-table .badge { font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); white-space: nowrap; }
 .scan-table .badge.ok { color: var(--ok); border-color: var(--ok); }
 .scan-table .badge.check { color: var(--accent-2); border-color: var(--accent); }

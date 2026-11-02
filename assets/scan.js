@@ -231,11 +231,14 @@ async function recognize(canvas) {
       }
       if (!p) p = ocr.price;
     }
+    // "100 for 5,000 mesos" is 100 items at 50 each: prices are kept per item so bundles compare with single listings.
+    const qty = p?.qty || 1;
     out.push({
       sold: row.sold,
       name,
       item: match?.item || null,
-      price: p?.price || null,
+      qty,
+      price: p?.price ? Math.max(1, Math.round(p.price / qty)) : null,
       owner,
       channel,
       room,
@@ -402,7 +405,7 @@ async function upload() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        items: fresh.map((r) => ({ item: r.item.id, price: r.price, sold: r.sold, seller: r.owner, channel: r.channel, room: r.room }))
+        items: fresh.map((r) => ({ item: r.item.id, price: r.price, qty: r.qty, sold: r.sold, seller: r.owner, channel: r.channel, room: r.room }))
       })
     });
     if (!res.ok) throw new Error(String(res.status));
@@ -431,7 +434,7 @@ function render(r, tr) {
   const icon = r.item ? `<img src="https://maplestory.io/api/MCW/1/item/${r.item.id}/icon" alt="" width="28" height="28">` : '';
   tr.classList.toggle('sold', r.sold);
   tr.innerHTML = `<td><span class="item">${icon}<span>${esc(title)}${sub}</span></span></td>
-<td class="price">${r.price ? `${nf.format(r.price)} <small>${i18n.each}</small>` : '?'}</td>
+<td class="price">${r.price ? `${nf.format(r.price)} <small>${i18n.each}</small>${r.qty > 1 ? `<small class="bundle">${fill(i18n.bundle, { n: nf.format(r.qty), total: nf.format(r.price * r.qty) })}</small>` : ''}` : '?'}</td>
 <td class="seller">${esc(r.owner.replace(/\?/g, '·')) || '—'}</td>
 <td>${where(r.channel, r.room).map((w) => `<span class="where">${w}</span>`).join(' ') || '—'}</td>
 <td>${r.sold ? i18n.sold : i18n.selling}</td>

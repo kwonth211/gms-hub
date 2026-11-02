@@ -4,7 +4,7 @@
 // GET  /prices?ids=1,2 -> { "<itemId>": { n, median, low, high, last, sold, selling, buying } }  (last 14 days, outliers dropped)
 // GET  /prices/recent  -> [{ item, price, kind, at }]  (newest player reports)
 // POST /price {item, price, kind} -> { ok }  (kind: sold | selling | buying)
-// POST /listings {items: [{item, price, sold, seller, channel, room}]} -> { stored }  (shop scanner; one row per listing)
+// POST /listings {items: [{item, price (per item), qty (bundle size), sold, seller, channel, room}]} -> { stored }  (shop scanner; one row per listing)
 // GET  /listings/recent -> [{ item, price, sold, seller, channel, room, seen }]
 // GET  /market/top -> { at, items: [{ item, rank, move, avg, n, sold, change, spark: [7 daily medians] }] }  (live ranking)
 // The shop scanner runs from the local dev server for now, so its origin may post scans too.
@@ -197,7 +197,7 @@ export default {
 
     if (url.pathname === '/listings/recent' && req.method === 'GET') {
       const { results } = await env.DB.prepare(
-        'SELECT item, price, sold, seller, channel, room, last_seen AS seen FROM listings ORDER BY last_seen DESC, id DESC LIMIT 30'
+        'SELECT item, price, qty, sold, seller, channel, room, last_seen AS seen FROM listings ORDER BY last_seen DESC, id DESC LIMIT 30'
       ).all();
       return json(results, cors, 200, 'public, max-age=20');
     }
@@ -224,6 +224,7 @@ export default {
         (r) =>
           valid.has(r.item) &&
           Number.isInteger(r.price) && r.price >= 1 && r.price <= 10_000_000_000 &&
+          (r.qty === undefined || (Number.isInteger(r.qty) && r.qty >= 1 && r.qty <= 10000)) &&
           typeof r.seller === 'string' && /^[A-Za-z0-9]{2,13}$/.test(r.seller) &&
           Number.isInteger(r.channel) && r.channel >= 1 && r.channel <= 40 &&
           Number.isInteger(r.room) && r.room >= 1 && r.room <= 40
@@ -233,10 +234,10 @@ export default {
       const reporter = await visitorHash(ip, 'scan', env.VOTE_SALT);
       // Seeing the same listing again only moves its last-seen time, and a slot once seen sold stays sold.
       const stmt = env.DB.prepare(
-        `INSERT INTO listings (item, price, sold, seller, channel, room, reporter) VALUES (?, ?, ?, ?, ?, ?, ?)
+        `INSERT INTO listings (item, price, qty, sold, seller, channel, room, reporter) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT (seller, item, price, channel, room) DO UPDATE SET last_seen = datetime('now'), sold = MAX(sold, excluded.sold)`
       );
-      await env.DB.batch(ok.map((r) => stmt.bind(r.item, r.price, r.sold ? 1 : 0, r.seller, r.channel, r.room, reporter)));
+      await env.DB.batch(ok.map((r) => stmt.bind(r.item, r.price, r.qty || 1, r.sold ? 1 : 0, r.seller, r.channel, r.room, reporter)));
       return json({ stored: ok.length }, cors);
     }
 

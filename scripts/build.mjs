@@ -1124,6 +1124,7 @@ const SCAN = {
     i: {
       watching: '공유 중 · 상점 화면 {n}장 확인',
       selling: '판매 중', sold: '팔림', ok: '정확', check: '확인 필요', each: '개당', now: '방금',
+      bundle: '{n}개 묶음 {total}',
       summary: '이번 공유: 상점 {shops}곳 · 물건 {items}개 인식 · 그중 확인 필요 {check}개',
       skipped: '못 읽은 줄 {n}개는 건너뜀',
       wait: '대기 중',
@@ -1169,6 +1170,7 @@ const SCAN = {
     i: {
       watching: 'Sharing · {n} shop screens checked',
       selling: 'For sale', sold: 'Sold', ok: 'OK', check: 'Check', each: 'each', now: 'now',
+      bundle: '{n} for {total}',
       summary: 'This session — shops: {shops} · items read: {items} · to check: {check}',
       skipped: 'skipped unreadable lines: {n}',
       wait: 'Waiting',
