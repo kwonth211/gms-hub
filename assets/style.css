@@ -406,6 +406,18 @@ a.band-link:hover { border-color: var(--accent); }
 .scan-checks [data-state='warn'] { border-color: var(--accent); }
 .scan-checks [data-state='warn'] .dot { background: var(--accent); }
 .scan-checks [data-state='warn'] small { color: var(--accent-2); }
+.scan-table .edit-btn { font: inherit; background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 6px; padding: 2px 8px; cursor: pointer; }
+.scan-table .edit-btn:hover { color: var(--text); border-color: var(--accent); }
+.scan-table .alt-pick { display: block; margin-top: 4px; font-size: 0.78rem; padding: 3px 6px; max-width: 240px; }
+.row-edit { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: flex-end; padding: 6px 0; }
+.row-edit label { display: flex; flex-direction: column; gap: 3px; font-size: 0.72rem; color: var(--muted); }
+.row-edit input { padding: 6px 8px; font-size: 0.85rem; }
+.row-edit input[name='item'] { width: 240px; }
+.row-edit input[name='price'], .row-edit input[name='seller'] { width: 130px; }
+.row-edit input[name='qty'] { width: 80px; }
+.row-edit .check-line { flex-direction: row; align-items: center; gap: 6px; color: var(--text); }
+.row-edit .edit-msg { flex-basis: 100%; margin: 0; font-size: 0.78rem; color: var(--accent-2); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .scan-table .empty td { text-align: center; color: var(--muted); padding: 20px; }
 #scan-start { background: #ff4d4d; color: #fff; }
 .scanning #scan-start { opacity: 0.5; pointer-events: none; }

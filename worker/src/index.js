@@ -5,7 +5,8 @@
 // GET  /prices/recent  -> [{ item, price, kind, at }]  (newest player reports)
 // POST /price {item, price, kind} -> { ok }  (kind: sold | selling | buying)
 // POST /listings {items: [{item, price (per item), qty (bundle size), sold, seller, channel, room}]} -> { stored }  (shop scanner; one row per listing)
-// GET  /listings/recent -> [{ item, price, sold, seller, channel, room, seen }]
+// POST /listings/fix {from: {item, price, seller, channel, room}, to: {item, price, qty, sold, seller}} -> { fixed }
+// GET  /listings/recent -> [{ item, price, qty, sold, seller, channel, room, seen }]
 // GET  /market/top -> { at, items: [{ item, rank, move, avg, n, sold, change, spark: [7 daily medians] }] }  (live ranking)
 // The shop scanner runs from the local dev server for now, so its origin may post scans too.
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
@@ -212,6 +213,33 @@ export default {
       const reporter = await visitorHash(req.headers.get('CF-Connecting-IP') || '', 'room', env.VOTE_SALT);
       await env.DB.prepare('INSERT INTO room_titles (key, room, reporter) VALUES (?, ?, ?)').bind(key, room, reporter).run();
       return json({ ok: true }, cors);
+    }
+
+    // A player correcting a line they sent: the row is matched by its old values and by the sender's hash, so nobody can edit
+    // someone else's scans. If the corrected listing already exists, the mistaken row is simply removed.
+    if (url.pathname === '/listings/fix' && req.method === 'POST') {
+      if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
+      const body = await req.json().catch(() => null);
+      const from = body?.from || {};
+      const to = body?.to || {};
+      const valid = await knownItems().catch(() => null);
+      if (!valid) return json({ error: 'item index unavailable' }, cors, 503);
+      const okTo =
+        valid.has(to.item) && Number.isInteger(to.price) && to.price >= 1 && to.price <= 10_000_000_000 &&
+        Number.isInteger(to.qty) && to.qty >= 1 && to.qty <= 10000 && typeof to.seller === 'string' && /^[A-Za-z0-9]{2,13}$/.test(to.seller);
+      if (!okTo || !Number.isInteger(from.item) || !Number.isInteger(from.price)) return json({ error: 'bad input' }, cors, 400);
+      const reporter = await visitorHash(req.headers.get('CF-Connecting-IP') || '', 'scan', env.VOTE_SALT);
+      const where = 'seller = ? AND item = ? AND price = ? AND channel = ? AND room = ? AND reporter = ?';
+      const keys = [from.seller, from.item, from.price, from.channel, from.room, reporter];
+      try {
+        const res = await env.DB.prepare(`UPDATE listings SET item = ?, price = ?, qty = ?, sold = ?, seller = ?, last_seen = datetime('now') WHERE ${where}`)
+          .bind(to.item, to.price, to.qty, to.sold ? 1 : 0, to.seller, ...keys)
+          .run();
+        return json({ fixed: res.meta.changes }, cors);
+      } catch (e) {
+        await env.DB.prepare(`DELETE FROM listings WHERE ${where}`).bind(...keys).run();
+        return json({ fixed: 1, merged: true }, cors);
+      }
     }
 
     if (url.pathname === '/listings' && req.method === 'POST') {

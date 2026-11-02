@@ -255,15 +255,22 @@ export function matchItem(text, items) {
   if (t.length < 3) return null;
   const cut = /\.{2,}|…\s*$/.test(text.trim());
   let best = null;
+  let ties = [];
   for (const it of items) {
     const n = it.key || (it.key = norm(it.en));
     const target = cut ? n.slice(0, t.length) : n;
     const d = distance(t, target);
-    if (!best || d < best.d) best = { item: it, d };
+    if (!best || d < best.d) {
+      best = { item: it, d };
+      ties = [it];
+    } else if (d === best.d) ties.push(it);
   }
   if (!best) return null;
   const confidence = 1 - best.d / Math.max(t.length, 1);
-  return confidence >= 0.75 ? { item: best.item, confidence } : null;
+  if (confidence < 0.75) return null;
+  // A name cut short in the list ("Gloves Attack Scr...") can fit several items equally well, typically the tiers of one
+  // scroll. Those come back as alternatives for the caller to settle (by price, or by asking the player).
+  return { item: best.item, confidence, alternatives: ties.length > 1 ? ties : null };
 }
 
 // "25 for 80 mesos" -> { qty: 25, price: 80 }. OCR sometimes reads the commas as dots or drops them, both are fine.

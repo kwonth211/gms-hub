@@ -237,6 +237,7 @@ async function recognize(canvas) {
       sold: row.sold,
       name,
       item: match?.item || null,
+      alternatives: match?.alternatives || null,
       qty,
       price: p?.price ? Math.max(1, Math.round(p.price / qty)) : null,
       owner,
@@ -244,10 +245,42 @@ async function recognize(canvas) {
       room,
       // Rows read in a room nobody has named yet remember its title, so naming it later fills them in.
       roomKey: fm === 0 ? lastRoomKey : null,
-      sure: !!match && match.confidence >= 0.85 && !!p && SELLER.test(owner)
+      sure: !!match && match.confidence >= 0.85 && !match.alternatives && !!p && SELLER.test(owner)
     });
   }
+  await settleAlternatives(out);
   return out;
+}
+
+// Shared price data for the candidates of cut-short names; fetched once per item per session.
+const reference = new Map();
+async function referencePrices(ids) {
+  const missing = ids.filter((id) => !reference.has(id));
+  if (missing.length && i18n.api) {
+    try {
+      const r = await fetch(`${i18n.api}/prices?ids=${missing.join(',')}`);
+      const data = r.ok ? await r.json() : {};
+      for (const id of missing) reference.set(id, data[id]?.median || null);
+    } catch (e) {}
+  }
+  return ids.map((id) => reference.get(id) || null);
+}
+
+// The tiers of a scroll differ in price by an order of magnitude, so the candidate whose known price is nearest (on a log
+// scale) to the listing wins, if it is clearly nearer than the next. Otherwise the row stays "check" and the player picks.
+async function settleAlternatives(rows) {
+  for (const r of rows) {
+    if (!r.alternatives || !r.price) continue;
+    const refs = await referencePrices(r.alternatives.map((it) => it.id));
+    const scored = r.alternatives
+      .map((it, i) => ({ it, gap: refs[i] ? Math.abs(Math.log(r.price / refs[i])) : Infinity }))
+      .sort((a, b) => a.gap - b.gap);
+    const [first, second] = scored;
+    if (first.gap < Math.log(2.5) && (!second || second.gap - first.gap > Math.log(2))) {
+      r.item = first.it;
+      r.sure = SELLER.test(r.owner);
+    }
+  }
 }
 
 // OCR fallbacks for a scaled capture, read from the full-resolution frame.
@@ -381,7 +414,7 @@ function shopFor(rows) {
   return shop;
 }
 
-const leader = (shop) => [...shop.votes.entries()].sort((a, b) => b[1] - a[1])[0] || ['', 0];
+const leader = (shop) => (shop.override ? [shop.override, Infinity] : [...shop.votes.entries()].sort((a, b) => b[1] - a[1])[0] || ['', 0]);
 const shopReady = (shop) => {
   const [name, n] = leader(shop);
   return SELLER.test(name) && (n >= 2 || shop.closed || Date.now() - shop.since > SHOP_SETTLE_MS);
@@ -438,7 +471,105 @@ function render(r, tr) {
 <td class="seller">${esc(r.owner.replace(/\?/g, '·')) || '—'}</td>
 <td>${where(r.channel, r.room).map((w) => `<span class="where">${w}</span>`).join(' ') || '—'}</td>
 <td>${r.sold ? i18n.sold : i18n.selling}</td>
-<td><span class="badge ${r.sure ? 'ok' : 'check'}">${r.sure ? i18n.ok : i18n.check}</span></td>`;
+<td><span class="badge ${r.sure ? 'ok' : 'check'}">${r.edited ? i18n.edited : r.sure ? i18n.ok : i18n.check}</span></td>
+<td><button type="button" class="edit-btn" aria-label="${esc(i18n.edit)}" title="${esc(i18n.edit)}">✎</button></td>`;
+  if (r.alternatives && !r.sure) {
+    const pick = document.createElement('select');
+    pick.className = 'alt-pick';
+    pick.setAttribute('aria-label', i18n.pickItem);
+    pick.innerHTML = r.alternatives.map((it) => `<option value="${it.id}"${it === r.item ? ' selected' : ''}>${esc(itemName(it))}</option>`).join('');
+    pick.addEventListener('change', () => applyEdit(r, tr, { item: r.alternatives.find((it) => it.id === Number(pick.value)) }));
+    tr.querySelector('td .item > span').appendChild(pick);
+  }
+}
+
+const itemName = (it) => (i18n.lang === 'ko' ? it.ko || it.en : it.en);
+
+// ---------- inline edit ----------
+// Any recognised line can be corrected in place. A line already sent is corrected on the server too (only by the browser
+// that sent it); a corrected seller applies to the whole shop.
+const priceText = (t) => {
+  const v = t.replace(/[,\s]|메소|mesos?/gi, '').toLowerCase();
+  const m = v.match(/^(\d+(?:\.\d+)?)(억|만|b|m|k)?$/);
+  if (!m) return null;
+  const mult = { 억: 1e8, 만: 1e4, b: 1e9, m: 1e6, k: 1e3 }[m[2]] || 1;
+  const n = Math.round(parseFloat(m[1]) * mult);
+  return n >= 1 && n <= 1e10 ? n : null;
+};
+
+let namesList = null;
+function itemsDatalist() {
+  if (namesList) return namesList;
+  namesList = document.createElement('datalist');
+  namesList.id = 'scan-item-names';
+  namesList.innerHTML = items.map((it) => `<option value="${esc(itemName(it))}"></option>`).join('');
+  document.body.appendChild(namesList);
+  return namesList;
+}
+
+function openEditor(r, tr) {
+  itemsDatalist();
+  tr.classList.add('editing');
+  tr.innerHTML = `<td colspan="7"><form class="row-edit">
+<label>${i18n.colItem}<input name="item" list="scan-item-names" value="${esc(r.item ? itemName(r.item) : r.name)}" autocomplete="off"></label>
+<label>${i18n.colPrice} (${i18n.each})<input name="price" value="${r.price || ''}" inputmode="decimal"></label>
+<label>${i18n.qty}<input name="qty" type="number" min="1" max="10000" value="${r.qty || 1}"></label>
+<label>${i18n.colSeller}<input name="seller" value="${esc(r.owner)}" maxlength="13" autocomplete="off"></label>
+<label class="check-line"><input name="sold" type="checkbox"${r.sold ? ' checked' : ''}> ${i18n.sold}</label>
+<button class="btn small-btn" type="submit">${i18n.save}</button><button class="btn ghost small-btn" type="button" data-cancel>${i18n.cancel}</button>
+<p class="edit-msg" aria-live="polite"></p></form></td>`;
+  const form = tr.querySelector('form');
+  form.querySelector('[data-cancel]').addEventListener('click', () => {
+    tr.classList.remove('editing');
+    render(r, tr);
+  });
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = form.item.value.trim();
+    const item = items.find((it) => itemName(it) === name || it.en === name || it.ko === name);
+    const price = priceText(form.price.value);
+    const seller = form.seller.value.trim();
+    if (!item || !price || !SELLER.test(seller)) {
+      form.querySelector('.edit-msg').textContent = i18n.editInvalid;
+      return;
+    }
+    tr.classList.remove('editing');
+    applyEdit(r, tr, { item, price, qty: Math.max(1, Number(form.qty.value) || 1), sold: form.sold.checked, seller });
+  });
+  form.item.focus();
+}
+
+async function applyEdit(r, tr, change) {
+  const oldKey = listingKey(r);
+  const wasSent = sent.has(oldKey);
+  const before = { item: r.item?.id, price: r.price, seller: r.owner, channel: r.channel, room: r.room };
+  if (change.seller && change.seller !== r.owner) {
+    r.shop.override = change.seller;
+    for (const e of listings.values())
+      if (e.r.shop === r.shop) {
+        e.r.owner = change.seller;
+        if (e.r !== r) render(e.r, e.tr);
+      }
+  }
+  Object.assign(r, { ...change, owner: r.shop.override || r.owner, alternatives: null, sure: true, edited: true });
+  delete r.seller;
+  const entry = listings.get(oldKey);
+  listings.delete(oldKey);
+  listings.set(listingKey(r), entry);
+  render(r, tr);
+  track('scan_edit', { item_id: r.item.id });
+  if (wasSent && i18n.api) {
+    sent.delete(oldKey);
+    try {
+      const res = await fetch(`${i18n.api}/listings/fix`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: before, to: { item: r.item.id, price: r.price, qty: r.qty, sold: r.sold, seller: r.owner } })
+      });
+      if (res.ok) sent.set(listingKey(r), r.sold);
+    } catch (e) {}
+  }
+  upload();
 }
 
 function show(found) {
@@ -494,6 +625,14 @@ function show(found) {
     fill(i18n.summary, { shops: shopIds.size, items: all.length, check: all.filter((e) => !e.r.sure).length }) +
     (skipped ? ` · ${fill(i18n.skipped, { n: skipped })}` : '');
 }
+
+results.addEventListener('click', (e) => {
+  const btn = e.target.closest('.edit-btn');
+  if (!btn) return;
+  const tr = btn.closest('tr');
+  const entry = [...listings.values()].find((x) => x.tr === tr);
+  if (entry) openEditor(entry.r, tr);
+});
 
 // A change is only read once the screen has stopped changing: the shop list scrolls smoothly, and a frame caught mid-scroll
 // has every row a pixel or two off, which turns letters into nonsense.
