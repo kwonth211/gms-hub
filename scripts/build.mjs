@@ -583,8 +583,8 @@ function footer(lang) {
 </div></footer>`;
 }
 
-function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], ld = [], only }) {
-  return `${head({ lang, title, desc, pagePath, ld, only })}
+function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], ld = [], only, noindex }) {
+  return `${head({ lang, title, desc, pagePath, ld, only, noindex })}
 <body data-page="${pageKey}">
 ${header(lang, pagePath, only)}
 <main>${body}</main>
@@ -1029,6 +1029,91 @@ ${t.tradingLink && guides.some((g) => g.slug === 'trading-and-mesos') ? `<p>${fi
 ${jsonScript('i18n', { lang, ...Object.fromEntries(Object.entries(t).filter(([k]) => ['none', 'more', 'level', 'copy', 'copied', 'paid', 'direct', 'copyNote', 'cats', 'subs', 'hubLabel', 'hubNone', 'hubSummary', 'report', 'pricePh', 'submit', 'thanks', 'badPrice', 'limit', 'failed', 'kinds', 'recent', 'recentNone'].includes(k))), sites: PRICE_SITES, aliases: lang === 'ko' ? STAT_ALIASES : {}, itemsUrl: href('/assets/items.json'), api: config.priceReports ? config.voteApi : '' })}`;
 }
 
+// ---------- shop scanner (sample collection) ----------
+
+// First step of shop scanning: players share the game window and we save exact frames locally, to build the shop reader from.
+// Kept out of the nav and sitemap until the reader itself ships.
+const SCAN = {
+  ko: {
+    title: '상점 스캔 샘플 수집 | GMS Hub',
+    h1: '상점 스캔 (샘플 수집)',
+    lead: '메이플 창을 크롬으로 공유하면, 상점 화면을 그대로 이미지로 저장해요. 이 샘플로 상점 자동 인식기를 만들어요.',
+    steps: [
+      ['창 모드로 실행', '메이플을 창 모드(1366×768 권장)로 켜고 언어는 영어로 두세요. 맥에서는 크롬과 메이플 둘 다 전체 화면이 아니어야 창을 공유할 수 있어요.'],
+      ['채널과 미니맵이 보이게', '화면에 채널 표시와 미니맵이 다 보이게 해 주세요. 어느 채널·방인지 알아내는 데 써요.'],
+      ['자유시장에서 상점 열기', '공유를 시작하고 상점을 3~5개 열었다 닫아 주세요. 아이템이 많은 상점, 팔린(회색) 칸이 있는 상점이면 더 좋아요.']
+    ],
+    dir: '저장할 폴더 고르기',
+    dirNone: '(안 고르면 다운로드 폴더에 저장돼요)',
+    auto: '화면이 바뀔 때 자동 저장',
+    record: '영상(webm)도 같이 녹화',
+    start: '메이플 창 공유하기',
+    shot: '지금 저장',
+    stop: '그만하기',
+    privacy: '공유한 화면은 이 컴퓨터에서만 처리되고 어디에도 올라가지 않아요. 저장된 파일은 직접 확인한 뒤 전달해 주세요.',
+    i: {
+      saved: '{n}장 저장 ({w}×{h})',
+      auto: '자동',
+      sharing: '공유 중 ({w}×{h}). 이제 게임에서 상점을 열어 보세요.',
+      stopped: '멈췄어요. 모두 {n}장 저장했어요.',
+      denied: '화면 공유가 취소됐어요. 다시 눌러 메이플 창을 골라 주세요.',
+      unsupported: '이 브라우저는 화면 공유를 지원하지 않아요. PC 크롬에서 열어 주세요.'
+    }
+  },
+  en: {
+    title: 'Shop Scan Sample Collection | GMS Hub',
+    h1: 'Shop Scan (sample collection)',
+    lead: 'Share your MapleStory window in Chrome and we save shop screens as exact images, to build the automatic shop reader.',
+    steps: [
+      ['Run in windowed mode', 'Use windowed mode (1366×768 recommended) with the game in English. On a Mac, neither Chrome nor MapleStory can be full screen for window sharing to work.'],
+      ['Keep channel and minimap visible', 'Make sure the channel display and minimap are on screen. They tell us which channel and room you are in.'],
+      ['Open shops in the Free Market', 'Start sharing, then open and close 3–5 shops. Shops with many items or greyed-out sold slots help most.']
+    ],
+    dir: 'Choose a folder',
+    dirNone: '(otherwise files go to Downloads)',
+    auto: 'Save automatically when the screen changes',
+    record: 'Also record video (webm)',
+    start: 'Share your MapleStory window',
+    shot: 'Save now',
+    stop: 'Stop',
+    privacy: 'The shared screen is processed only on this computer and never uploaded. Check the saved files yourself before sending them.',
+    i: {
+      saved: '{n} saved ({w}×{h})',
+      auto: 'auto',
+      sharing: 'Sharing ({w}×{h}). Now open shops in the game.',
+      stopped: 'Stopped. {n} images saved in total.',
+      denied: 'Sharing was cancelled. Click again and pick the MapleStory window.',
+      unsupported: "This browser can't share a window. Open this page in Chrome on a computer."
+    }
+  }
+};
+
+function scanBody(lang) {
+  const t = SCAN[lang];
+  const steps = t.steps.map(([h, d], n) => `<li><b>${n + 1}</b><strong>${esc(h)}</strong><span>${esc(d)}</span></li>`).join('');
+  return `${pageHead(lang, 'megaphone', t.h1, t.lead)}
+<div class="wrap scan">
+<ol class="scan-steps">${steps}</ol>
+<div class="panel scan-panel">
+<div class="scan-options">
+<button type="button" class="btn ghost small-btn" id="scan-dir">${t.dir}</button> <span class="muted" id="scan-dir-name">${t.dirNone}</span>
+<label><input type="checkbox" id="scan-auto" checked> ${t.auto}</label>
+<label><input type="checkbox" id="scan-record"> ${t.record}</label>
+</div>
+<div class="scan-actions">
+<button type="button" class="btn" id="scan-start">● ${t.start}</button>
+<button type="button" class="btn ghost" id="scan-shot">${t.shot}</button>
+<button type="button" class="btn ghost" id="scan-stop">${t.stop}</button>
+</div>
+<p id="scan-status" class="scan-status" aria-live="polite"></p>
+<video id="scan-video" muted playsinline></video>
+<div id="scan-thumbs" class="scan-thumbs"></div>
+<p class="muted">${esc(t.privacy)}</p>
+</div>
+</div>
+${jsonScript('i18n', { lang, ...t.i })}`;
+}
+
 function dropBody(lang) {
   const t = T[lang];
   const rows = drops.entries.length
@@ -1377,6 +1462,13 @@ for (const lang of LANGS) {
   for (const p of PAGES) {
     const def = p.band ? bandDef(p.band) : defs[p.key];
     write(path.join(lang, p.path, 'index.html'), page({ lang, pageKey: p.key, pagePath: p.path, ...def }));
+  }
+  {
+    const pagePath = '/tools/scan/';
+    write(
+      path.join(lang, pagePath, 'index.html'),
+      page({ lang, pageKey: 'scan', pagePath, title: SCAN[lang].title, desc: SCAN[lang].lead, body: scanBody(lang), scripts: ['scan.js'], noindex: true })
+    );
   }
 
   const langGuides = guides.filter((g) => g.lang === lang);
