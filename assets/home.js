@@ -356,11 +356,40 @@ function renderRecent(rows, byId) {
   return shown.length;
 }
 
+// ?preview=market shows the section with made-up numbers (clearly labelled) so it can be reviewed before real scans exist.
+const PREVIEW = new URLSearchParams(location.search).get('preview') === 'market';
+const PREVIEW_ITEMS = [[1372002, 580000], [2000001, 25], [2040801, 250000], [2070001, 122000], [2040800, 1150000], [2070006, 433000], [1472001, 95000], [2000002, 40], [4010000, 78], [4020000, 70]];
+
+function previewData() {
+  let seed = 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const stamp = (minAgo) => new Date(Date.now() - minAgo * 60000).toISOString().slice(0, 19).replace('T', ' ');
+  const items = PREVIEW_ITEMS.map(([item, base], i) => {
+    const spark = Array.from({ length: 7 }, (_, d) => Math.round(base * (1 + (rnd() - 0.5) * 0.16 + (i % 3 === 0 ? d * 0.012 : -d * 0.008))));
+    const change = Math.round(((spark[6] - spark[5]) / spark[5]) * 1000) / 10;
+    return { item, rank: i + 1, move: i === 2 ? null : Math.round((rnd() - 0.5) * 6), avg: spark[6], n: 20 - i, sold: 6 - (i % 4), change, spark };
+  });
+  const sellers = ['SampleShop1', 'SampleShop2', 'SampleShop3', 'SampleShop4', 'SampleShop5'];
+  const recent = PREVIEW_ITEMS.slice(0, 5).map(([item, base], i) => ({
+    item,
+    price: Math.round(base * (0.95 + rnd() * 0.1)),
+    sold: i % 3 === 1 ? 1 : 0,
+    seller: sellers[i],
+    channel: 1 + Math.floor(rnd() * 40),
+    room: 1 + Math.floor(rnd() * 22),
+    seen: stamp(i * 4 + 1)
+  }));
+  return [{ items }, recent];
+}
+
 async function refreshLive() {
   if (!live || !live.dataset.api || document.hidden) return;
   try {
     const get = (path) => fetch(`${live.dataset.api}${path}`).then((r) => (r.ok ? r.json() : null));
-    const [top, recent] = await Promise.all([get('/market/top'), get('/listings/recent'), loadItems()]);
+    const [top, recent] = PREVIEW
+      ? [...previewData(), await loadItems()]
+      : await Promise.all([get('/market/top'), get('/listings/recent'), loadItems()]);
+    document.getElementById('market-preview').hidden = !PREVIEW;
     const byId = new Map(items.map((it) => [it.id, it]));
     const ranked = top ? renderTop(top, byId) : 0;
     const listed = recent ? renderRecent(recent, byId) : 0;

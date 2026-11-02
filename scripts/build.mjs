@@ -652,7 +652,8 @@ const LIVE = {
     more: '아이템 시세 검색 →',
     updated: '{t} 갱신',
     sparkLabel: '{name} 7일 추이: {from}에서 {to}',
-    noTrend: '추이 데이터 부족'
+    noTrend: '추이 데이터 부족',
+    preview: '미리보기 · 실제 시세가 아닌 예시 데이터예요'
   },
   en: {
     title: 'Live Free Market',
@@ -668,7 +669,8 @@ const LIVE = {
     more: 'Search item prices →',
     updated: 'updated {t}',
     sparkLabel: '{name} 7-day trend: {from} to {to}',
-    noTrend: 'not enough data for a trend'
+    noTrend: 'not enough data for a trend',
+    preview: 'Preview · sample data, not real prices'
   }
 };
 
@@ -677,7 +679,7 @@ function liveMarket(lang) {
   return `<section class="wrap market" id="live-market" hidden aria-labelledby="live-title"
  data-api="${esc(config.voteApi)}" data-items="${esc(href('/assets/items.json'))}" data-price="${esc(href(langPath(lang, '/tools/price/')))}"
  data-text="${esc(JSON.stringify(t))}">
-<header class="market-head"><span class="live-dot" aria-hidden="true"></span><h2 id="live-title">${t.title}</h2><p>${t.sub}</p><small id="live-updated"></small></header>
+<header class="market-head"><span class="live-dot" aria-hidden="true"></span><h2 id="live-title">${t.title}</h2><p>${t.sub}</p><small id="live-updated"></small><strong class="market-preview" id="market-preview" hidden>${t.preview}</strong></header>
 <div class="market-grid">
 <div class="market-panel market-top" id="market-top" hidden>
 <h3>${t.top} <small>${t.topNote}</small></h3>
