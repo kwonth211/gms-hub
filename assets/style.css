@@ -106,6 +106,22 @@ h2 { font-size: 1.35rem; margin: 48px 0 16px; }
 .toc a.active { background: var(--panel-2); box-shadow: inset 3px 0 0 var(--accent); }
 .purpose span { font-weight: 800; }
 .purpose small { color: var(--muted); font-size: 0.78rem; }
+/* Phones: search visitors bounced before seeing a single site (first card sat ~1,400px down), so tighten everything above the list. */
+@media (max-width: 760px) {
+  .hero { min-height: 0; }
+  .hero-inner { padding-top: 16px; padding-bottom: 16px; }
+  .hero-card { padding: 18px; }
+  .hero-card h1 { font-size: 1.45rem; word-break: keep-all; }
+  .hero-card p { font-size: 0.9rem; margin-bottom: 12px; }
+  .hero-stats { margin-top: 12px; gap: 16px; }
+  .hero-stats dd { font-size: 1.05rem; }
+  .purposes-wrap h2 { font-size: 1.1rem; margin: 18px 0 10px; }
+  .purposes { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .purpose { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 10px; row-gap: 2px; align-items: center; padding: 10px 12px; }
+  .purpose .sprite { grid-row: span 2; width: 26px; height: 26px; }
+  .purpose span { font-size: 0.88rem; }
+  .directory { margin-top: 24px; }
+}
 
 /* directory */
 .directory { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 28px; margin-top: 40px; }
