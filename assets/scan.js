@@ -1,7 +1,7 @@
 // Shop scanner. Players share the game window in Chrome; the page watches it and reports what it recognized. The game screen
 // itself is never shown back to the player. In local development (scripts/scan-dev.mjs) changed frames are also posted to the
 // dev server, which keeps them as samples for building the shop reader.
-import { detectScale, findChannel, findRoom, findShopRows, findShopRowsLoose, lastRoomKey, matchItem, parsePriceLine, priceFromLine, readLine, readOwner } from './shop-reader.js';
+import { detectScale, findChannel, findRoom, findShopRows, findShopRowsLoose, lastRoomKey, matchItem, parsePriceLine, priceFromLine, readLine, readOwner, scrollTier } from './shop-reader.js';
 
 const i18n = JSON.parse(document.getElementById('i18n').textContent);
 const $ = (id) => document.getElementById(id);
@@ -230,6 +230,12 @@ async function recognize(canvas) {
         match = matchItem(name, items);
       }
       if (!p) p = ocr.price;
+    }
+    // A scroll name cut before its tier fits every tier; the icon's tint says which one it is.
+    if (match?.alternatives) {
+      const tier = scrollTier(img, row);
+      const byTier = tier && match.alternatives.find((it) => it.en.endsWith(`: ${tier}`));
+      if (byTier) match = { ...match, item: byTier, alternatives: null };
     }
     // "100 for 5,000 mesos" is 100 items at 50 each: prices are kept per item so bundles compare with single listings.
     const qty = p?.qty || 1;

@@ -587,3 +587,42 @@ export function findRoom(img, map, rescaled = false) {
 export function mapColumns(img, x0, x1, y0) {
   return lightColumns(img, x0, x1, y0);
 }
+
+// ---------- scroll tier by icon colour ----------
+// Scroll icons are tinted by tier, and the icon is always fully visible even when the name is cut short: grey-teal for
+// Lesser (100%), brown for Intermediate (60%), yellow for Greater (10%), greyish brown for Chaos. Sold slots fade the icon
+// toward white, which keeps the tint's direction but not its strength, so the tier is read from the direction of the
+// average colour (what is left after removing its grey part) and how saturated it is. Measured on the game's own icons:
+// Lesser 128,153,151 · Intermediate 191,114,72 · Greater 208,161,66 · Chaos 134,120,116.
+const SLOT_BG = [224, 223, 212];
+
+export function scrollTier(img, row) {
+  let n = 0;
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  for (let y = row.top + 4; y < row.top + 26; y++)
+    for (let x = row.x0 + 3; x < row.x0 + ICON_W - 3; x++) {
+      const i = (y * img.width + x) * 4;
+      const [pr, pg, pb] = [img.data[i], img.data[i + 1], img.data[i + 2]];
+      if (Math.max(pr, pg, pb) < 60 || Math.min(pr, pg, pb) > 235 || near(img.data, i, SLOT_BG, 14) || near(img.data, i, SOLD_BG, 10)) continue;
+      r += pr;
+      g += pg;
+      b += pb;
+      n++;
+    }
+  if (n < 40) return null;
+  [r, g, b] = [r / n, g / n, b / n];
+  const lo = Math.min(r, g, b);
+  const hi = Math.max(r, g, b);
+  const sat = (hi - lo) / hi;
+  if (hi - lo < 4) return null;
+  // Blue-green tint: Lesser.
+  if (g > r && b > r) return 'Lesser';
+  if (r > g && g >= b) {
+    if (sat < (row.sold ? 0.09 : 0.2)) return 'Chaos';
+    // Yellow keeps much more green than brown does.
+    return (g - lo) / (r - lo) > 0.5 ? 'Greater' : 'Intermediate';
+  }
+  return null;
+}
