@@ -169,12 +169,13 @@ async function refreshSnapshot(env) {
 async function itemDetail(env, item) {
   const { results } = await env.DB.prepare(
     `SELECT price, qty, sold, seller, channel, room, last_seen AS seen FROM listings WHERE item = ? AND last_seen >= datetime('now', '-7 days')
-     ORDER BY last_seen DESC LIMIT 400`
+     ORDER BY last_seen DESC, id DESC LIMIT 401`
   )
     .bind(item)
     .all();
   const top = await marketTop(env, item);
-  return { item, listings: results, trend: top.items[0] || null };
+  return { item, listings: results.slice(0, 400), trend: top.items[0] || null,
+    asOf: new Date().toISOString(), limit: 400, truncated: results.length > 400 };
 }
 
 export default {

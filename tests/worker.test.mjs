@@ -84,3 +84,19 @@ test('rankings publish a median with an explicit sold/asking basis and matching 
   assert.equal(data.items[0].spark.at(-1), 12);
   assert.equal(data.stats.listings, 3);
 });
+
+test('item details disclose truncation and return the latest 400 observations deterministically', async () => {
+  const env = environment();
+  const insert = env.sqlite.prepare("INSERT INTO listings (item, price, seller, channel, room, reporter) VALUES (4000000, ?, 'Test', 1, 1, 'test')");
+  for (let i = 1; i <= 401; i++) insert.run(i);
+  const get = async () => (await worker.fetch(new Request('https://test.invalid/market/item?id=4000000'), env)).json();
+  const data = await get();
+  assert.equal(data.limit, 400);
+  assert.equal(data.truncated, true);
+  assert.equal(data.listings.length, 400);
+  assert.equal(data.listings[0].price, 401);
+  assert.equal(data.listings.at(-1).price, 2);
+  assert.ok(Number.isFinite(Date.parse(data.asOf)));
+  env.sqlite.prepare('DELETE FROM listings WHERE price = 401').run();
+  assert.equal((await get()).truncated, false);
+});

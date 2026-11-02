@@ -498,6 +498,10 @@ const scriptSrc = (name) => {
   const version = createHash('sha256').update(fs.readFileSync(path.join(root, 'assets', name))).digest('hex').slice(0, 12);
   return href(`/assets/${name}?v=${version}`);
 };
+// Give module entry points and their relative imports the same content version.
+// This avoids mixing a cached dependency with a newly deployed chart/scanner module.
+const moduleFiles = fs.readdirSync(path.join(root, 'assets')).filter((name) => name.endsWith('.js')).sort();
+const moduleVersion = createHash('sha256').update(moduleFiles.map((name) => `${name}\n${fs.readFileSync(path.join(root, 'assets', name), 'utf8')}`).join('\n')).digest('hex').slice(0, 12);
 const srcLink = (url, label) => `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(label || host(url))}</a>`;
 
 function head({ lang, title, desc, pagePath, noindex, ld = [], only }) {
@@ -556,7 +560,7 @@ ${naverVerify}
 <link rel="icon" href="${href('/assets/favicon.svg')}" type="image/svg+xml">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<link rel="stylesheet" href="${href('/assets/style.css')}">
+<link rel="stylesheet" href="${scriptSrc('style.css')}">
 ${adsense}
 ${ga}
 ${clarity}
@@ -605,7 +609,7 @@ ${header(lang, pagePath, only)}
 ${footer(lang)}
 <script src="${href('/assets/common.js')}" defer></script>
 ${scripts.map((s) => `<script src="${scriptSrc(s)}" defer></script>`).join('\n')}
-${modules.map((s) => `<script type="module" src="${href(`/assets/${s}`)}"></script>`).join('\n')}
+${modules.map((s) => `<script type="module" src="${href(`/assets/${s}?v=${moduleVersion}`)}"></script>`).join('\n')}
 </body>
 </html>`;
 }
@@ -1349,7 +1353,7 @@ function marketBody(lang) {
 <ul id="mk-suggest" class="mk-suggest" role="listbox" hidden></ul>
 </div>
 <div class="mk-grid">
-<section class="mk-detail panel" id="mk-detail" aria-live="polite"><p class="muted">${t.pick}</p></section>
+<section class="mk-detail panel" id="mk-detail"><p class="muted">${t.pick}</p></section>
 <aside class="mk-side">
 <section class="panel"><h2>${t.top}</h2><ol class="rank-list mk-rank" id="rank-list"></ol></section>
 <section class="panel"><h2>${t.recent}</h2><ol class="recent-list mk-feed" id="live-rows"></ol></section>
@@ -1843,6 +1847,10 @@ const seed = sites.categories
 fs.writeFileSync(path.join(root, 'worker', 'seed.sql'), `${seed}\n`);
 
 fs.cpSync(path.join(root, 'assets'), path.join(out, 'assets'), { recursive: true });
+for (const name of moduleFiles) {
+  const source = fs.readFileSync(path.join(root, 'assets', name), 'utf8');
+  write(`assets/${name}`, source.replace(/(from\s+['"])(\.\.?\/[^'"?]+\.js)(['"])/g, `$1$2?v=${moduleVersion}$3`));
+}
 // Compact item index for the price search: [id, korean, english, category, subcategory, level].
 write('assets/shop-glyphs.json', fs.readFileSync(path.join(root, 'data/shop-glyphs.json')));
 write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko || '', i.en, i.cat, i.sub, i.lv || 0])));
