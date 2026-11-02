@@ -376,7 +376,8 @@ function nearestLetter(g, table) {
   if (byWidth.memo.has(g)) return byWidth.memo.get(g);
   const cols = parseShape(g);
   const ink = cols.reduce((a, c) => a + popcount(c), 0);
-  let best = null;
+  // Best distance per letter, so the winner can be compared with the closest *other* letter.
+  const perLetter = new Map();
   for (const w of [cols.length, cols.length - 1, cols.length + 1]) {
     for (const cand of byWidth.get(w) || []) {
       for (const shift of [0, 1, -1]) {
@@ -387,11 +388,18 @@ function nearestLetter(g, table) {
           a = shift > 0 ? a << 1n : shift < 0 ? a >> 1n : a;
           d += popcount(a ^ b);
         }
-        if (!best || d < best.d) best = { d, ch: cand.ch };
+        if (!perLetter.has(cand.ch) || d < perLetter.get(cand.ch)) perLetter.set(cand.ch, d);
       }
     }
   }
-  const ch = best && best.d <= Math.max(2, Math.floor(ink * 0.2)) ? best.ch : '?';
+  const ranked = [...perLetter.entries()].sort((a, b) => a[1] - b[1]);
+  const [best, second] = ranked;
+  // Digits decide prices, where 8-for-9 is worse than no read: a digit must beat the runner-up clearly, or it stays unknown
+  // and the row goes to the slower OCR reader instead.
+  const digit = best && /\d/.test(best[0]);
+  const margin = !second ? Infinity : second[1] - best[1];
+  const ok = best && best[1] <= Math.max(2, Math.floor(ink * 0.2)) && (!digit || margin >= 3);
+  const ch = ok ? best[0] : '?';
   byWidth.memo.set(g, ch);
   return ch;
 }

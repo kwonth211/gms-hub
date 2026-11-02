@@ -352,12 +352,44 @@ function check(step, state, text) {
 // when it changes (a slot turning sold). Failed sends stay queued for the next frame.
 const SELLER = /^[A-Za-z0-9]{2,13}$/;
 const sent = new Map();
+
+// A shop is tracked across frames by what it sells, not by its owner's name: the name is the shakiest read on a scaled
+// screen, so each frame's read is a vote and the shop goes by the most frequent one. Its listings upload once that name
+// has been read the same way twice, or when the player moves on to another shop (or stops), whichever comes first.
+const SHOP_SETTLE_MS = 8000;
+const shops = [];
+let currentShop = null;
+
+function shopFor(rows) {
+  const keys = new Set(rows.filter((r) => r.item && r.price).map((r) => `${r.item.id}|${r.price}`));
+  const read = rows[0]?.owner || '';
+  let shop = shops.find(
+    (s) => s.room === room && ([...keys].filter((k) => s.keys.has(k)).length >= Math.min(2, keys.size) || (SELLER.test(read) && s.votes.has(read)))
+  );
+  if (!shop) {
+    shop = { id: shops.length + 1, room, votes: new Map(), keys: new Set(), since: Date.now() };
+    shops.push(shop);
+  }
+  if (currentShop && currentShop !== shop) currentShop.closed = true;
+  currentShop = shop;
+  shop.closed = false;
+  keys.forEach((k) => shop.keys.add(k));
+  if (SELLER.test(read)) shop.votes.set(read, (shop.votes.get(read) || 0) + 1);
+  return shop;
+}
+
+const leader = (shop) => [...shop.votes.entries()].sort((a, b) => b[1] - a[1])[0] || ['', 0];
+const shopReady = (shop) => {
+  const [name, n] = leader(shop);
+  return SELLER.test(name) && (n >= 2 || shop.closed || Date.now() - shop.since > SHOP_SETTLE_MS);
+};
 let uploaded = 0;
 let sending = false;
 
 async function upload() {
   if (!i18n.api || sending) return;
-  const ready = [...listings.values()].map((e) => e.r).filter((r) => r.sure && r.channel && r.room && SELLER.test(r.owner));
+  for (const e of listings.values()) e.r.owner = leader(e.r.shop)[0];
+  const ready = [...listings.values()].map((e) => e.r).filter((r) => r.sure && r.channel && r.room && shopReady(r.shop));
   if (!ready.length) {
     if (listings.size) check('upload', 'warn', i18n.uploadNeed);
     return;
@@ -386,7 +418,7 @@ async function upload() {
   sending = false;
 }
 
-const listingKey = (r) => `${r.owner}|${r.room}|${r.item.id}|${r.price}`;
+const listingKey = (r) => `${r.shop.id}|${r.item.id}|${r.price}`;
 
 // One line per distinct listing in this session; seeing it again only refreshes it (and marks it sold if it sold since).
 // A shop is its owner in a room; rows seen before the channel was known get it filled in once it is.
@@ -419,6 +451,12 @@ function show(found) {
   }
   results.querySelector('.empty')?.remove();
   results.querySelectorAll('tr.fresh').forEach((tr) => tr.classList.remove('fresh'));
+  const shop = shopFor(found);
+  const name = leader(shop)[0];
+  found.forEach((r) => {
+    r.shop = shop;
+    r.owner = name;
+  });
   // Prepending in reverse keeps the rows in the same order as on screen.
   for (const r of [...found].reverse()) {
     if (!r.item) {
@@ -436,15 +474,21 @@ function show(found) {
     render(r, entry.tr);
     results.prepend(entry.tr);
   }
+  // The shop's name may have changed with this frame's vote; earlier rows of the same shop follow it.
+  for (const e of listings.values())
+    if (e.r.shop === shop && e.r.owner !== name) {
+      e.r.owner = name;
+      render(e.r, e.tr);
+    }
   const readNow = found.filter((r) => r.item).length;
   const skipNow = found.length - readNow;
-  const seller = (found[0]?.owner || '').replace(/\?/g, '·') || '—';
+  const seller = name || '—';
   check('shop', 'ok', fill(skipNow ? i18n.shopPartial : i18n.shopOk, { seller, n: readNow, skip: skipNow }));
   upload();
   const all = [...listings.values()];
-  const shops = new Set(all.map((e) => `${e.r.owner}|${e.r.room}`));
+  const shopIds = new Set(all.map((e) => e.r.shop.id));
   $('scan-summary').textContent =
-    fill(i18n.summary, { shops: shops.size, items: all.length, check: all.filter((e) => !e.r.sure).length }) +
+    fill(i18n.summary, { shops: shopIds.size, items: all.length, check: all.filter((e) => !e.r.sure).length }) +
     (skipped ? ` · ${fill(i18n.skipped, { n: skipped })}` : '');
 }
 
@@ -455,6 +499,8 @@ let settling = true;
 let reading = false;
 async function tick() {
   if (!video.videoWidth || reading) return;
+  // A shop left open without changes still needs its settle time to pass before uploading.
+  upload();
   const sig = signature();
   if (changed(lastSig, sig)) settling = true;
   else if (settling) {
@@ -501,6 +547,8 @@ async function start() {
 function stop() {
   clearInterval(timer);
   timer = null;
+  if (currentShop) currentShop.closed = true;
+  upload();
   stream?.getTracks().forEach((t) => t.stop());
   stream = null;
   lastSig = null;
