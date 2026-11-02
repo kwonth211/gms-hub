@@ -11,6 +11,7 @@ const readJson = (p) => JSON.parse(fs.readFileSync(path.join(root, p), 'utf8'));
 const config = readJson('site.config.json');
 const sites = readJson('data/sites.json');
 const training = readJson('data/training.json');
+const itemsData = readJson('data/items.json');
 const scrolls = readJson('data/scrolls.json');
 const drops = readJson('data/drops.json');
 const boxes = readJson('data/boxes.json');
@@ -33,6 +34,7 @@ const T = {
     navTraining: '사냥터 찾기',
     navScroll: '주문서 계산기',
     navDrop: '확률 계산기',
+    navPrice: '시세 검색',
     navAbout: '소개',
     navGuides: '가이드',
     switchLang: 'English',
@@ -240,6 +242,7 @@ const T = {
     navTraining: 'Training Spots',
     navScroll: 'Scroll Calculator',
     navDrop: 'Odds Calculator',
+    navPrice: 'Price Search',
     navAbout: 'About',
     navGuides: 'Guides',
     switchLang: '한국어',
@@ -446,6 +449,7 @@ const PAGES = [
   { key: 'training', path: '/tools/training/' },
   { key: 'scroll', path: '/tools/scroll/' },
   { key: 'drop', path: '/tools/drop-rate/' },
+  { key: 'price', path: '/tools/price/' },
   { key: 'about', path: '/about/' },
   { key: 'privacy', path: '/privacy/' },
   { key: 'terms', path: '/terms/' }
@@ -550,7 +554,8 @@ function header(lang, pagePath, only) {
     ['/', 'book', t.navLinks],
     ['/tools/training/', 'sword', t.navTraining],
     ['/tools/scroll/', 'scroll', t.navScroll],
-    ['/tools/drop-rate/', 'bag', t.navDrop]
+    ['/tools/drop-rate/', 'bag', t.navDrop],
+    ['/tools/price/', 'coin', t.navPrice]
   ]
     .map(
       ([p, icon, label]) =>
@@ -679,11 +684,13 @@ ${heroScene()}
 <header class="cat-head">${spriteSvg('star', 40)}<div><h3>${t.favHeading} <span id="fav-count-2">0</span></h3><p>${esc(t.favDesc)}</p></div></header>
 <div class="cards" id="fav-cards"></div>
 </section>
+<div class="tool-hits item-hits" id="item-hits" data-items="${esc(href('/assets/items.json'))}" data-price="${esc(href(langPath(lang, '/tools/price/')))}" data-label="${esc(PR[lang].h1)}" hidden></div>
 <div class="tool-hits" id="tool-hits" hidden>
 ${[
   ['/tools/training/', 'sword', t.navTraining, '사냥터 레벨 레벨업 경험치 사냥 맵 training level exp map grind'],
   ['/tools/scroll/', 'scroll', t.navScroll, '주문서 강화 작 공격력 업그레이드 슬롯 계산기 scroll upgrade slot calculator'],
-  ['/tools/drop-rate/', 'bag', t.navDrop, '확률 드롭 상자 박스 뽑기 계산기 drop rate box gacha chance calculator']
+  ['/tools/drop-rate/', 'bag', t.navDrop, '확률 드롭 상자 박스 뽑기 계산기 drop rate box gacha chance calculator'],
+  ['/tools/price/', 'coin', t.navPrice, '시세 가격 얼마 메소 아이템 거래 price market item mesos']
 ]
   .map(([p, icon, title, kw]) => `<a class="tool-hit" href="${href(langPath(lang, p))}" data-search="${esc(`${title} ${kw}`.toLowerCase())}">${spriteSvg(icon, 28)}<span><strong>${title}</strong><small>GMS Hub</small></span></a>`)
   .join('')}
@@ -698,6 +705,7 @@ ${sections}
 ${tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc)}
 ${tool('/tools/scroll/', 'scroll', t.navScroll, t.scCardDesc)}
 ${tool('/tools/drop-rate/', 'bag', t.navDrop, t.dropCardDesc)}
+${tool('/tools/price/', 'coin', t.navPrice, PR[lang].cardDesc)}
 </div>
 </section>
 ${guides.some((g) => g.lang === lang)
@@ -857,6 +865,123 @@ ${jsonScript('i18n', { lang, distSucc: t.distSucc, distBoom: t.distBoom })}`;
 }
 
 // ---------- drops ----------
+
+// ---------- price search ----------
+
+// Where each item link goes. FreeMarketClassic keys pages by game item id and MapleMarket searches by English name; MesoWatch
+// and meowdb have no linkable search, so the client copies the English name before opening them.
+const PRICE_SITES = [
+  { id: 'freemarketclassic', name: 'FreeMarketClassic', url: 'https://freemarketclassic.com/item/{id}?hl=en', direct: true },
+  { id: 'maplemarket', name: 'MapleMarket', url: 'https://maplemarket.fyi/prices?q={en}', direct: true, paid: true },
+  { id: 'mesowatch', name: 'MesoWatch', url: 'https://meso.watch/' },
+  { id: 'meowdb', name: 'meowdb', url: 'https://meowdb.com/msclassic/free-market' }
+];
+
+const PR = {
+  ko: {
+    title: '글클메 아이템 시세 검색 (한글 이름으로 찾기) · 글로벌 메이플스토리 클래식 월드 | GMS Hub',
+    desc: '글클메 아이템을 한글 이름으로 검색하고, 영어 이름과 함께 FreeMarketClassic·MapleMarket·MesoWatch·meowdb 시세로 바로 이동해요. 아이템 2천여 개 수록.',
+    h1: '아이템 시세 검색',
+    lead: '아이템을 한글로 검색하면 영어 이름을 찾아 시세 사이트로 바로 연결해 줘요.',
+    cardDesc: '한글 아이템 이름으로 검색해서 시세 사이트로 바로 이동해요.',
+    placeholder: '아이템 이름 (예: 메탈 완드, 장갑 공격력, 일비)',
+    popular: '많이 찾는 아이템',
+    none: '"{q}"에 맞는 아이템이 없어요. 띄어쓰기를 바꾸거나 영어 이름으로도 찾아보세요.',
+    more: '결과가 많아서 {n}개만 보여 줘요. 조금 더 자세히 입력해 보세요.',
+    level: '{lv}레벨',
+    copy: '영어 이름 복사',
+    copied: '"{en}" 복사했어요. 열린 사이트 검색창에 붙여넣으세요.',
+    paid: '유료',
+    direct: '바로 열림',
+    copyNote: '이름 복사 후 열림',
+    cats: { Equip: '장비', Use: '소비', Etc: '기타', Setup: '설치' },
+    subs: {
+      Wand: '완드', Staff: '스태프', Bow: '활', Crossbow: '석궁', Claw: '아대', Dagger: '단검', Spear: '창', 'Pole Arm': '폴암', Polearm: '폴암',
+      'One-Handed Sword': '한손검', 'Two-Handed Sword': '두손검', 'One-Handed Axe': '한손도끼', 'Two-Handed Axe': '두손도끼',
+      'One-Handed Blunt Weapon': '한손둔기', 'Two-Handed Blunt': '두손둔기', 'One-Handed BW': '한손둔기', 'Two-Handed BW': '두손둔기',
+      Hat: '모자', Top: '상의', Bottom: '하의', Overall: '한벌옷', Shoes: '신발', Glove: '장갑', Shield: '방패', Cape: '망토', Earrings: '귀고리', Ring: '반지',
+      Potion: '물약', 'Food and Drink': '음식', Thrown: '표창', Arrow: '화살', 'Crossbow Bolt': '석궁 화살', 'Teleport Item': '귀환 주문서',
+      Helmet: '투구 주문서', Topwear: '상의 주문서', Bottomwear: '하의 주문서', Gloves: '장갑 주문서', 'Monster Drop': '몬스터 드롭', 'Mineral Ore': '광물', 'Rare Ore': '보석 원석',
+      Gem: '보석', Chair: '의자', Furniture: '가구', Decoration: '장식', 'Summoning Sack': '소환 주머니', 'Pet Food': '펫 먹이', 'EXP Buff': '경험치 버프'
+    },
+    howHeading: '이렇게 쓰면 돼요',
+    how: [
+      '아이템 이름을 한글로 입력하세요. 띄어쓰기는 달라도 찾아요. "주황포션"도 "주황 포션"으로 찾아요.',
+      '주문서는 "장갑 공격력", "모자 민첩", "장공"처럼 부위와 능력치로 찾으면 돼요. 게임 안 이름에 영어가 섞여 있어도 한글 능력치로 찾을 수 있게 맞춰 뒀어요.',
+      '결과에서 시세 사이트를 누르세요. FreeMarketClassic은 그 아이템 시세 페이지가, MapleMarket은 검색 결과가 바로 열려요.',
+      'MesoWatch와 meowdb는 주소로 바로 검색하는 기능이 없어서, 누르는 순간 영어 이름을 복사해 둬요. 열린 사이트 검색창에 붙여넣기만 하면 돼요.'
+    ],
+    sitesHeading: '시세 사이트는 이렇게 달라요',
+    sites: [
+      ['FreeMarketClassic', '상점 가격과 실제 팔린 가격을 날짜별로 보여 줘요. 아이템 하나의 추이를 보기 좋아요.'],
+      ['MapleMarket', '지금 가장 싸게 파는 상점의 채널과 방 번호까지 나와요. 시세를 보려면 유료 구독이 필요해요.'],
+      ['MesoWatch', '유저들이 자유시장을 돌며 공유한 화면에서 팔린 가격을 모아요. 많이 거래되는 아이템 순위가 한눈에 보여요.'],
+      ['meowdb', '유저가 직접 제보한 가격의 최근 14일 중앙값이에요. 한국어 화면을 지원해요.']
+    ],
+    sourceNote: '아이템 이름은 글로벌 메이플스토리 클래식 월드 게임 데이터에 들어 있는 공식 한국어·영어 이름이에요(maplestory.io 제공). 캐릭터 외형, 퀘스트 아이템, 캐시 아이템은 거래가 안 돼서 뺐어요. 사이트마다 시세가 다를 수 있으니 비싼 물건은 두세 곳을 같이 보세요.',
+    tradingLink: '거래글 약어와 메소 빚 규칙은 <a href="{href}">거래와 메소 가이드</a>에 정리했어요.'
+  },
+  en: {
+    title: 'MapleStory Classic World Item Price Search: Jump to Every Price Tracker | GMS Hub',
+    desc: 'Search MapleStory Classic World items by name (English or Korean) and open their prices on FreeMarketClassic, MapleMarket, MesoWatch and meowdb in one click.',
+    h1: 'Item Price Search',
+    lead: 'Type an item name and jump straight to its price on the Free Market trackers.',
+    cardDesc: 'Find an item by name and open its price on each tracker.',
+    placeholder: 'Item name (e.g. Metal Wand, Gloves Attack, Ilbi)',
+    popular: 'Popular items',
+    none: 'No items match "{q}". Try a shorter or different spelling.',
+    more: 'Showing the first {n}. Type a little more to narrow it down.',
+    level: 'Lv. {lv}',
+    copy: 'Copy name',
+    copied: 'Copied "{en}". Paste it into the search box on the site that opened.',
+    paid: 'paid',
+    direct: 'opens the item',
+    copyNote: 'copies the name, then opens',
+    cats: { Equip: 'Equip', Use: 'Use', Etc: 'Etc', Setup: 'Setup' },
+    subs: {},
+    howHeading: 'How it works',
+    how: [
+      'Type part of an item name. Results update as you type.',
+      'Click a tracker. FreeMarketClassic opens the item page and MapleMarket opens a search for it.',
+      'MesoWatch and meowdb have no search links, so clicking them copies the item name first. Paste it into their search box.'
+    ],
+    sitesHeading: 'How the trackers differ',
+    sites: [
+      ['FreeMarketClassic', 'Shop prices and sold prices by day for each item.'],
+      ['MapleMarket', 'Cheapest current shop with channel and room. Needs a paid subscription.'],
+      ['MesoWatch', 'Sold prices read from shopping sessions players share.'],
+      ['meowdb', '14-day median of player-reported prices.']
+    ],
+    sourceNote: 'Item names come from the MapleStory Classic World game data (via maplestory.io). Hair, faces, quest items and cash items are left out because they cannot be traded. Trackers can disagree, so check two or three before a big trade.',
+    tradingLink: ''
+  }
+};
+
+// Typed stat names in Korean, matched against the English words the Korean client keeps in scroll names.
+const STAT_ALIASES = { 투구: '모자', 장공: '장갑 attack', 장마: '장갑 magic attack', 귀작: '귀고리', 공격력: 'attack', 공: 'attack', 마력: 'magic attack', 마공: 'magic attack', 힘: 'str', 민첩: 'dex', 덱: 'dex', 지력: 'int', 인트: 'int', 행운: 'luk', 럭: 'luk', 명중: 'accuracy', 명중률: 'accuracy', 회피: 'avoid', 회피율: 'avoid', 방어력: 'defense', 방어: 'defense', 이동속도: 'speed', 이속: 'speed', 점프: 'jump', 체력: 'hp' };
+const POPULAR = { ko: ['장갑 공격력', '일비', '메탈 완드', '주황 포션', '마나 엘릭서', '청동의 원석'], en: ['Gloves Attack', 'Ilbi', 'Metal Wand', 'Orange Potion', 'Mana Elixir', 'Bronze Ore'] };
+
+function priceBody(lang) {
+  const t = PR[lang];
+  const chips = POPULAR[lang].map((q) => `<button type="button" class="chip" data-q="${esc(q)}">${esc(q)}</button>`).join('');
+  return `${pageHead(lang, 'coin', t.h1, t.lead)}
+<div class="wrap">
+<form id="pr-form" class="panel price-search" role="search" onsubmit="return false">
+<input type="search" id="pr-q" name="q" placeholder="${esc(t.placeholder)}" autocomplete="off" aria-label="${esc(t.h1)}">
+<div class="chips"><span>${t.popular}</span>${chips}</div>
+</form>
+<section id="pr-result" class="item-list" aria-live="polite"></section>
+<section class="prose wide">
+<h2>${t.howHeading}</h2>
+<ol>${t.how.map((x) => `<li>${esc(x)}</li>`).join('')}</ol>
+<h2>${t.sitesHeading}</h2>
+<ul>${t.sites.map(([n, d]) => `<li><strong>${n}</strong>: ${esc(d)}</li>`).join('')}</ul>
+<p class="muted">${esc(t.sourceNote)}</p>
+${t.tradingLink && guides.some((g) => g.slug === 'trading-and-mesos') ? `<p>${fill(t.tradingLink, { href: href(langPath('ko', '/guides/trading-and-mesos/')) })}</p>` : ''}
+</section>
+</div>
+${jsonScript('i18n', { lang, ...Object.fromEntries(Object.entries(t).filter(([k]) => ['none', 'more', 'level', 'copy', 'copied', 'paid', 'direct', 'copyNote', 'cats', 'subs'].includes(k))), sites: PRICE_SITES, aliases: lang === 'ko' ? STAT_ALIASES : {}, itemsUrl: href('/assets/items.json') })}`;
+}
 
 function dropBody(lang) {
   const t = T[lang];
@@ -1178,6 +1303,13 @@ for (const lang of LANGS) {
       scripts: ['drop.js'],
       ld: [appLd(t.dropH1, t.dropDesc, '/tools/drop-rate/'), breadcrumbLd(lang, t.dropH1, '/tools/drop-rate/')]
     },
+    price: {
+      title: PR[lang].title,
+      desc: PR[lang].desc,
+      body: priceBody(lang),
+      scripts: ['price.js'],
+      ld: [appLd(PR[lang].h1, PR[lang].desc, '/tools/price/'), breadcrumbLd(lang, PR[lang].h1, '/tools/price/')]
+    },
     about: { title: t.aboutTitle, desc: t.aboutDesc, body: prose(t.aboutH1, t.aboutBody), ld: [breadcrumbLd(lang, t.aboutH1, '/about/')] },
     privacy: { title: t.privacyTitle, desc: t.privacyDesc, body: prose(t.privacyH1, t.privacyBody) },
     terms: { title: t.termsTitle, desc: t.termsDesc, body: prose(t.termsH1, t.termsBody) }
@@ -1319,5 +1451,7 @@ const seed = sites.categories
 fs.writeFileSync(path.join(root, 'worker', 'seed.sql'), `${seed}\n`);
 
 fs.cpSync(path.join(root, 'assets'), path.join(out, 'assets'), { recursive: true });
+// Compact item index for the price search: [id, korean, english, category, subcategory, level].
+write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko || '', i.en, i.cat, i.sub, i.lv || 0])));
 
 console.log(`Built ${PAGES.length * LANGS.length} pages, ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);

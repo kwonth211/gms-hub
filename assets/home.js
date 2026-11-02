@@ -76,9 +76,45 @@ function filter() {
   const toolHit = hits.some((h) => !h.hidden);
   document.getElementById('tool-hits').hidden = !toolHit;
   any ||= toolHit;
+  any ||= showItemHits(q);
   // Favorites stay out of the way while a single category is selected.
   if (favCards.children.length) favSection.hidden = !!activeCat || ![...favCards.children].some((c) => !c.hidden);
   empty.hidden = any;
+}
+
+// Most searches here are item names ("메탈 완드"), which no listed site matches; offer the price search for them instead.
+const itemHits = document.getElementById('item-hits');
+let items = null;
+let itemsLoading = false;
+const squash = (s) => s.toLowerCase().replace(/\s+/g, '');
+function showItemHits(q) {
+  const flat = squash(q);
+  if (flat.length < 2) {
+    itemHits.hidden = true;
+    return false;
+  }
+  if (!items) {
+    if (!itemsLoading) {
+      itemsLoading = true;
+      fetch(itemHits.dataset.items)
+        .then((r) => r.json())
+        .then((rows) => {
+          items = rows.map(([id, ko, en]) => ({ id, name: ko || en, en, flat: squash(`${ko}${en}`) }));
+          filter();
+        })
+        .catch(() => {});
+    }
+    return false;
+  }
+  const hits = items.filter((it) => it.flat.includes(flat)).sort((a, b) => a.name.length - b.name.length).slice(0, 4);
+  itemHits.innerHTML = hits
+    .map(
+      (it) =>
+        `<a class="tool-hit" href="${itemHits.dataset.price}?q=${encodeURIComponent(it.name)}"><img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="28" height="28" loading="lazy"><span><strong>${it.name.replace(/</g, '&lt;')}</strong><small>${itemHits.dataset.label}</small></span></a>`
+    )
+    .join('');
+  itemHits.hidden = !hits.length;
+  return hits.length > 0;
 }
 
 function setCategory(id) {
