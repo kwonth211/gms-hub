@@ -583,12 +583,12 @@ function footer(lang) {
 </div></footer>`;
 }
 
-function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], ld = [], only, rails }) {
+function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], ld = [], only }) {
   return `${head({ lang, title, desc, pagePath, ld, only })}
 <body data-page="${pageKey}">
 ${header(lang, pagePath, only)}
 <main>${body}</main>
-${rails ? adfitRails() : ''}${footer(lang)}
+${footer(lang)}
 <script src="${href('/assets/common.js')}" defer></script>
 ${scripts.map((s) => `<script src="${href(`/assets/${s}`)}" defer></script>`).join('\n')}
 </body>
@@ -676,6 +676,7 @@ ${heroScene()}
 </div>
 </div>
 </section>
+${lang === 'ko' ? adfitRails() : '' /* Kakao AdFit only serves Korean ads, so English pages stay ad-free */}
 <section class="wrap purposes-wrap">
 <h2>${t.purposeHeading}</h2>
 <div class="purposes">${purposes}</div>
@@ -1231,12 +1232,13 @@ ${adfitIns(mobile, 320, 100, 0, 759)}${adfitIns(pc, 728, 90, 760)}
 ${adfitLoader}</aside>`;
 }
 
-// Skyscrapers in the empty gutters beside the 1200px layout; only screens wide enough to fit them without covering content get them.
+// Skyscrapers in the empty gutters beside the 1200px layout, pinned next to the purpose section (not following the scroll);
+// only screens wide enough to fit them without covering content get them.
 function adfitRails() {
   const { railLeft, railRight } = config.adfit || {};
   if (!railLeft && !railRight) return '';
   const rail = (unit, side) =>
-    unit ? `<div class="ad-rail ad-rail-${side}">${adfitIns(unit, 160, 600, 1580)}</div>` : '';
+    unit ? `<div class="ad-rail ad-rail-${side}">${adfitIns(unit, 160, 600, 1600)}</div>` : '';
   return `<aside class="ad-rails" aria-label="Advertisement">${rail(railLeft, 'left')}${rail(railRight, 'right')}
 ${adfitLoader}</aside>`;
 }
@@ -1326,7 +1328,7 @@ for (const lang of LANGS) {
   });
 
   const defs = {
-    home: { title: t.homeTitle, desc: t.homeDesc, body: homeBody(lang), scripts: ['home.js'], ld: [websiteLd, directoryLd, faqLd], rails: lang === 'ko' },  // Kakao AdFit only serves Korean ads, so English pages stay ad-free
+    home: { title: t.homeTitle, desc: t.homeDesc, body: homeBody(lang), scripts: ['home.js'], ld: [websiteLd, directoryLd, faqLd] },
     training: {
       title: t.trTitle,
       desc: t.trDesc,

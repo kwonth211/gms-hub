@@ -368,7 +368,8 @@ a.band-link:hover { border-color: var(--accent); }
 /* ads */
 .ad-slot { margin: 36px 0; text-align: center; min-height: 104px; }
 .ad-slot .ad-label { display: block; margin-bottom: 6px; color: #64748b; font-size: 10px; letter-spacing: 0.12em; }
-.ad-rail { position: fixed; top: 120px; width: 160px; z-index: 5; }
-.ad-rail-left { right: calc(50% + 600px + 16px); }
-.ad-rail-right { left: calc(50% + 600px + 16px); }
-@media (max-width: 1579px) { .ad-rails { display: none; } }
+.ad-rails { position: relative; height: 0; }
+.ad-rail { position: absolute; top: 24px; width: 160px; }
+.ad-rail-left { right: calc(50% + 600px + 32px); }
+.ad-rail-right { left: calc(50% + 600px + 32px); }
+@media (max-width: 1599px) { .ad-rails { display: none; } }
