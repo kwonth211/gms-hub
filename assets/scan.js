@@ -9,7 +9,7 @@ const status = $('scan-status');
 const results = $('scan-results');
 const fill = (s, v) => s.replace(/\{(\w+)\}/g, (_, k) => v[k]);
 
-const TICK_MS = 1000;
+const TICK_MS = 500;
 // Share of sampled pixels that must change before a frame counts as new: opening or scrolling a shop passes, idle animation does not.
 const CHANGE_RATIO = 0.04;
 const SAMPLE_URL = '/__scan/frame';
@@ -94,6 +94,7 @@ function recognize(canvas) {
   showPlace();
   const rows = findShopRows(img);
   const owner = rows.length ? readOwner(img, Math.min(...rows.map((r) => r.top)), rows[0].x0, table) : '';
+  // A line that matches no item is not shown; it is counted so the summary can say something was skipped.
   return rows.map((row) => {
     const name = readLine(img, row, 0, table);
     const priceText = readLine(img, row, 1, table);
@@ -122,6 +123,7 @@ function showPlace() {
 // One line per distinct listing in this session; seeing it again only refreshes it (and marks it sold if it sold since).
 // A shop is its owner in a room; rows seen before the channel was known get it filled in once it is.
 const listings = new Map();
+let skipped = 0;
 
 function render(r, tr) {
   const title = r.item ? (i18n.lang === 'ko' ? r.item.ko || r.item.en : r.item.en) : r.name;
@@ -148,7 +150,11 @@ function show(found) {
   results.querySelectorAll('tr.fresh').forEach((tr) => tr.classList.remove('fresh'));
   // Prepending in reverse keeps the rows in the same order as on screen.
   for (const r of [...found].reverse()) {
-    const key = `${r.owner}|${r.room}|${r.item?.id || r.name}|${r.price}`;
+    if (!r.item) {
+      skipped++;
+      continue;
+    }
+    const key = `${r.owner}|${r.room}|${r.item.id}|${r.price}`;
     let entry = listings.get(key);
     if (!entry) {
       entry = { tr: document.createElement('tr') };
@@ -161,13 +167,20 @@ function show(found) {
   }
   const all = [...listings.values()];
   const shops = new Set(all.map((e) => `${e.r.owner}|${e.r.room}`));
-  $('scan-summary').textContent = fill(i18n.summary, { shops: shops.size, items: all.length, check: all.filter((e) => !e.r.sure).length });
+  $('scan-summary').textContent =
+    fill(i18n.summary, { shops: shops.size, items: all.length, check: all.filter((e) => !e.r.sure).length }) +
+    (skipped ? ` · ${fill(i18n.skipped, { n: skipped })}` : '');
 }
 
+// A change is only read once the screen has stopped changing: the shop list scrolls smoothly, and a frame caught mid-scroll
+// has every row a pixel or two off, which turns letters into nonsense.
+let settling = true;
 function tick() {
   if (!video.videoWidth) return;
   const sig = signature();
-  if (changed(lastSig, sig)) {
+  if (changed(lastSig, sig)) settling = true;
+  else if (settling) {
+    settling = false;
     frames++;
     const canvas = grab();
     keepSample(canvas);

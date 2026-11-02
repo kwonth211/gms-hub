@@ -119,7 +119,12 @@ let rowsUsed = 0;
 let lines = 0;
 for (const f of readdirSync(samples).filter((f) => f.endsWith('.png')).sort()) {
   const img = PNG.sync.read(readFileSync(path.join(samples, f)));
-  for (const row of findShopRows(img)) {
+  const all = findShopRows(img);
+  const listTop = all.length ? Math.min(...all.map((r) => r.top)) : 0;
+  for (const row of all) {
+    // Rows caught mid-scroll sit a pixel or two off the 40px grid; their shapes are distorted and must not be learned.
+    const off = (row.top - listTop) % 40;
+    if (off !== 0 && !(off === 1 && row.top === Math.max(...all.map((r) => r.top)))) continue;
     const nameG = glyphs(img, row, 0);
     const priceG = glyphs(img, row, 1);
     const key = nameG.join('|') + '#' + priceG.join('|');
@@ -178,7 +183,10 @@ let conflicts = 0;
 for (const [into, from] of [[table, votes]])
   for (const [g, v] of Object.entries(from)) {
     const [best, n] = Object.entries(v).sort((a, b) => b[1] - a[1])[0];
-    if (Object.keys(v).length > 1) conflicts++;
+    if (Object.keys(v).length > 1) {
+      conflicts++;
+      if (process.env.DEBUG) console.log("conflict", JSON.stringify(v));
+    }
     if (!into[g] || n > 1) into[g] = best;
   }
 writeFileSync(out, JSON.stringify({ updated: new Date().toISOString().slice(0, 10), glyphs: table, map }) + '\n');
