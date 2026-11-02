@@ -289,7 +289,8 @@ function ago(utc) {
 // 7 daily medians, oldest first. Days without data break the line rather than being bridged; the latest point is marked.
 function sparkline(values, name) {
   const pts = values.map((v, i) => ({ v, i })).filter((p) => p.v != null);
-  if (pts.length < 2) return `<span class="spark-empty">${escHtml(liveText.noTrend)}</span>`;
+  // Fewer than two days of data: a quiet dash in the trend slot, with the reason for screen readers and on hover.
+  if (pts.length < 2) return `<span class="spark-empty" title="${escHtml(liveText.noTrend)}" aria-label="${escHtml(liveText.noTrend)}">–</span>`;
   const W = 64;
   const H = 24;
   const lo = Math.min(...pts.map((p) => p.v));
