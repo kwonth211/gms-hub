@@ -9,7 +9,10 @@
       "published": "2026-11-02",
       "updated": "2026-11-02",
       "sources": [
-        { "title": "NiaMeowDB — Beginner's Guide: First Steps in Maple World", "url": "https://meowdb.com/msclassic/guides/beginners-guide-first-steps-in-maple-world" }
+        {
+          "title": "NiaMeowDB — Beginner's Guide: First Steps in Maple World",
+          "url": "https://meowdb.com/msclassic/guides/beginners-guide-first-steps-in-maple-world"
+        }
       ]
     },
     {
@@ -31,9 +34,18 @@
       "published": "2026-11-02",
       "updated": "2026-11-02",
       "sources": [
-        { "title": "NiaMeowDB — Best grind maps for every level", "url": "https://meowdb.com/msclassic/guides/best-grind-maps-every-level" },
-        { "title": "MS-Classic — Where to train level 10-30", "url": "https://ms-classic.com/guides/where-to-train-level-10-30" },
-        { "title": "Henesys.GG", "url": "https://henesys.gg/" }
+        {
+          "title": "NiaMeowDB — Best grind maps for every level",
+          "url": "https://meowdb.com/msclassic/guides/best-grind-maps-every-level"
+        },
+        {
+          "title": "MS-Classic — Where to train level 10-30",
+          "url": "https://ms-classic.com/guides/where-to-train-level-10-30"
+        },
+        {
+          "title": "Henesys.GG",
+          "url": "https://henesys.gg/"
+        }
       ]
     },
     {
@@ -45,8 +57,31 @@
       "published": "2026-11-02",
       "updated": "2026-11-02",
       "sources": [
-        { "title": "NiaMeowDB — Quest tracker", "url": "https://meowdb.com/msclassic/ko/quest-tracker" }
+        {
+          "title": "NiaMeowDB — Quest tracker",
+          "url": "https://meowdb.com/msclassic/ko/quest-tracker"
+        }
       ]
+    },
+    {
+      "slug": "kerning-party-quest",
+      "lang": "ko",
+      "title": "글클메 커닝 파티퀘스트(커파) 공략: 러시·보너스, 스테이지별 진행, 발판 순서",
+      "h1": "글클메 커닝 파티 퀘스트 공략",
+      "desc": "21레벨부터 가는 커파의 러시·보너스 파티 차이, 파티 구하는 영어 표현, 1단계 문제 답, 밧줄·고양이·술통 발판을 한 번도 겹치지 않게 푸는 시도 순서, 킹 슬라임 공략.",
+      "published": "2026-11-02",
+      "updated": "2026-11-02",
+      "sources": []
+    },
+    {
+      "slug": "second-job",
+      "lang": "ko",
+      "title": "글클메 2차 전직 가이드: 직업별 기본 추천, 무기, 30~70레벨 사냥터",
+      "h1": "글클메 2차 전직: 무엇을 고르고 어디로 갈까",
+      "desc": "검 파이터·썬콜·어쌔신·헌터를 기본으로 추천하는 이유, 완드가 스태프보다 나은 이유, 불독과 썬콜의 사냥터가 다른 이유, 직업별 30~70레벨 사냥터.",
+      "published": "2026-11-02",
+      "updated": "2026-11-02",
+      "sources": []
     },
     {
       "slug": "citizenship-and-housing",
@@ -57,7 +92,10 @@
       "published": "2026-11-02",
       "updated": "2026-11-02",
       "sources": [
-        { "title": "NiaMeowDB — 시민권", "url": "https://meowdb.com/msclassic/ko/citizenship" }
+        {
+          "title": "NiaMeowDB — 시민권",
+          "url": "https://meowdb.com/msclassic/ko/citizenship"
+        }
       ]
     },
     {
@@ -69,9 +107,25 @@
       "published": "2026-11-02",
       "updated": "2026-11-02",
       "sources": [
-        { "title": "MS-Classic — Scroll tiers explained", "url": "https://ms-classic.com/guides/scroll-tiers-lesser-intermediate-greater-explained" },
-        { "title": "MapleClassic Wiki — Scrolling", "url": "https://mapleclassic.wiki/wiki/Scrolling" }
+        {
+          "title": "MS-Classic — Scroll tiers explained",
+          "url": "https://ms-classic.com/guides/scroll-tiers-lesser-intermediate-greater-explained"
+        },
+        {
+          "title": "MapleClassic Wiki — Scrolling",
+          "url": "https://mapleclassic.wiki/wiki/Scrolling"
+        }
       ]
+    },
+    {
+      "slug": "trading-and-mesos",
+      "lang": "ko",
+      "title": "글클메 거래와 메소: 거래 열리는 조건, 거래글 약어, 메소 빚, 초반 메소 모으기",
+      "h1": "글클메 거래와 메소 가이드",
+      "desc": "새 계정 거래 조건(15레벨+24시간), WTS·C/O·A/W·neg 같은 거래글 약어, 현금 거래 메소에 걸리는 '메소 빚' 시스템, 초반에 메소를 모으는 현실적인 방법.",
+      "published": "2026-11-02",
+      "updated": "2026-11-02",
+      "sources": []
     }
   ]
 }
