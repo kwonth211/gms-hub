@@ -1,7 +1,7 @@
 // Shop scanner. Players share the game window in Chrome; the page watches it and reports what it recognized. The game screen
 // itself is never shown back to the player. In local development (scripts/scan-dev.mjs) changed frames are also posted to the
 // dev server, which keeps them as samples for building the shop reader.
-import { detectScale, findChannel, findRoom, findShopRows, findShopRowsLoose, lastRoomKey, matchItem, parsePriceLine, readLine, readOwner } from './shop-reader.js';
+import { detectScale, findChannel, findRoom, findShopRows, findShopRowsLoose, lastRoomKey, matchItem, parsePriceLine, priceFromLine, readLine, readOwner } from './shop-reader.js';
 
 const i18n = JSON.parse(document.getElementById('i18n').textContent);
 const $ = (id) => document.getElementById(id);
@@ -171,7 +171,10 @@ function grab() {
   c.width = Math.round(full.width / scale);
   c.height = Math.round(full.height / scale);
   const g = c.getContext('2d', { willReadFrequently: true });
-  g.imageSmoothingEnabled = !Number.isInteger(scale);
+  // Averaging rather than picking pixels: a Mac scales a non-Retina game window up smoothly, so even an exact 2x capture has
+  // blended pixels, and the average of each block is the closest thing to the original pixel. Where the capture really
+  // duplicated pixels, the average is that pixel exactly.
+  g.imageSmoothingEnabled = true;
   g.imageSmoothingQuality = 'high';
   g.drawImage(full, 0, 0, c.width, c.height);
   return c;
@@ -190,63 +193,44 @@ async function keepSample(canvas) {
 
 async function recognize(canvas) {
   const img = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
-  const exact = Number.isInteger(scale);
   const ch = findChannel(img);
   if (ch) channel = ch;
   if (channel) check('channel', 'ok', fill(i18n.channelOk, { ch: channel }));
   else check('channel', 'warn', i18n.channelNone);
   // Changing channel always shows the channel window, so walking between rooms never makes the kept channel stale.
   let fm = findRoom(img, mapData);
-  if (fm === null && !exact) fm = await roomByOcr(img);
+  if (fm === null && scale !== 1) fm = await roomByOcr(img);
   // An unknown room must not inherit the previous room's number, or its listings would be filed under the wrong room.
   if (fm !== null) room = fm || null;
   if (fm === 0) askRoom();
   else if (room) check('room', 'ok', fill(i18n.roomOk, { room }));
   else check('room', 'warn', i18n.roomNone);
-  const rows = exact ? findShopRows(img) : findShopRowsLoose(img);
+  // Pixel-exact rows first; a scaled or blurred capture falls back to the blur-tolerant finder.
+  let rows = findShopRows(img);
+  if (!rows.length) rows = findShopRowsLoose(img);
   if (!rows.length) {
     check('shop', 'warn', i18n.shopNone);
     return [];
   }
+  const loose = rows[0].loose;
   const listTop = Math.min(...rows.map((r) => r.top));
-  if (!exact) return readByOcr(rows, listTop, fm);
-  const owner = readOwner(img, listTop, rows[0].x0, table);
-  // A line that matches no item is not shown; it is counted so the summary can say something was skipped.
-  return rows.map((row) => {
-    const name = readLine(img, row, 0, table);
-    const priceText = readLine(img, row, 1, table);
-    const m = priceText.match(/^(\d+)for([\d,]+)mesos$/);
-    const match = matchItem(name, items);
-    return {
-      sold: row.sold,
-      name,
-      item: match?.item || null,
-      price: m ? Number(m[2].replace(/,/g, '')) : null,
-      owner,
-      channel,
-      room,
-      // Rows read in a room nobody has named yet remember its title, so naming it later fills them in.
-      roomKey: fm === 0 ? lastRoomKey : null,
-      sure: !!match && match.confidence >= 0.9 && !!m && !name.includes('?') && !priceText.includes('?')
-    };
-  });
-}
-
-// Same result shape as the exact path, from OCR of each row's two lines and the owner box.
-async function readByOcr(rows, listTop, fm) {
-  const x0 = rows[0].x0;
-  // Seller names are the shakiest read (small light-on-dark text), so three crops vote.
-  // One OCR worker: the reads run in turn, since each sets its own page mode and character list.
-  const ownerReads = [];
-  for (const o of [{ k: 4, psm: '7' }, { k: 8, psm: '8' }, { k: 6, psm: '7' }])
-    ownerReads.push((await ocrRect(x0 + 10, listTop - 19, 82, 14, { light: true, chars: ALNUM, ...o })).replace(/[^A-Za-z0-9]/g, ''));
-  const owner = majority(ownerReads);
+  let owner = readOwner(img, listTop, rows[0].x0, table, loose);
+  if (!SELLER.test(owner) && scale !== 1) owner = await ownerByOcr(rows[0].x0, listTop);
   const out = [];
   for (const row of rows) {
-    const name = await ocrRect(row.x0 + 38, row.top + 3, row.x1 - row.x0 - 42, 17);
-    const priceText = await ocrRect(row.x0 + 38, row.top + 20, row.x1 - row.x0 - 42, 17);
-    const p = parsePriceLine(priceText);
-    const match = matchItem(name, items);
+    let name = readLine(img, row, 0, table);
+    const priceText = readLine(img, row, 1, table);
+    let p = priceFromLine(priceText);
+    let match = matchItem(name, items);
+    // Only lines the letter table could not settle go to OCR, and only when the capture was scaled.
+    if ((!match || !p) && scale !== 1) {
+      const ocr = await rowByOcr(row);
+      if (!match) {
+        name = ocr.name;
+        match = matchItem(name, items);
+      }
+      if (!p) p = ocr.price;
+    }
     out.push({
       sold: row.sold,
       name,
@@ -255,11 +239,28 @@ async function readByOcr(rows, listTop, fm) {
       owner,
       channel,
       room,
-      roomKey: null,
-      sure: !!match && match.confidence >= 0.85 && !!p && /^[A-Za-z0-9]{2,13}$/.test(owner)
+      // Rows read in a room nobody has named yet remember its title, so naming it later fills them in.
+      roomKey: fm === 0 ? lastRoomKey : null,
+      sure: !!match && match.confidence >= 0.85 && !!p && SELLER.test(owner)
     });
   }
   return out;
+}
+
+// OCR fallbacks for a scaled capture, read from the full-resolution frame.
+async function ownerByOcr(x0, listTop) {
+  // Seller names are the shakiest read (small light-on-dark text), so three crops vote. One OCR worker: the reads run in
+  // turn, since each sets its own page mode and character list.
+  const reads = [];
+  for (const o of [{ k: 4, psm: '7' }, { k: 8, psm: '8' }, { k: 6, psm: '7' }])
+    reads.push((await ocrRect(x0 + 10, listTop - 19, 82, 14, { light: true, chars: ALNUM, ...o })).replace(/[^A-Za-z0-9]/g, ''));
+  return majority(reads);
+}
+
+async function rowByOcr(row) {
+  const name = await ocrRect(row.x0 + 38, row.top + 3, row.x1 - row.x0 - 42, 17);
+  const price = parsePriceLine(await ocrRect(row.x0 + 38, row.top + 20, row.x1 - row.x0 - 42, 17));
+  return { name, price };
 }
 
 // Minimap title by OCR when it cannot be matched pixel for pixel: light text lines in the minimap's top-left corner are each

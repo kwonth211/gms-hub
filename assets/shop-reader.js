@@ -275,6 +275,36 @@ const lum = (img, x, y) => {
   return (img.data[i] + img.data[i + 1] + img.data[i + 2]) / 3;
 };
 const darkInk = (limit) => (img, x, y) => lum(img, x, y) < limit;
+
+// Otsu's threshold over a rectangle: the brightness that best splits text from background. Frames scaled back from a
+// non-integer screen scale blur grey text into its background, where no fixed cut-off works.
+function otsu(img, x0, x1, y0, y1) {
+  const hist = new Array(256).fill(0);
+  let total = 0;
+  for (let y = Math.max(0, y0); y < Math.min(img.height, y1); y++)
+    for (let x = Math.max(0, x0); x < Math.min(img.width, x1); x++) {
+      hist[Math.round(lum(img, x, y))]++;
+      total++;
+    }
+  let sum = 0;
+  for (let t = 0; t < 256; t++) sum += t * hist[t];
+  let sB = 0;
+  let wB = 0;
+  let best = -1;
+  let th = 128;
+  for (let t = 0; t < 256; t++) {
+    wB += hist[t];
+    const wF = total - wB;
+    if (!wB || !wF) continue;
+    sB += t * hist[t];
+    const between = wB * wF * (sB / wB - (sum - sB) / wF) ** 2;
+    if (between > best) {
+      best = between;
+      th = t;
+    }
+  }
+  return th;
+}
 const lightInk = (limit) => (img, x, y) => lum(img, x, y) > limit;
 
 // Glyph patterns of one 17px text band, left to right, with ' ' where letters are 4+ columns apart.
@@ -357,23 +387,44 @@ const decode = (gs, table, spaces = true) =>
 
 // Item rows: line 0 is the name, line 1 "<n> for <price> mesos". Sold rows draw grey text, so their cut-off is lighter.
 export function glyphs(img, row, line) {
-  return bandGlyphs(img, row.x0 + ICON_W + 2, row.x1 - 4, row.top + (line === 0 ? 3 : 20), darkInk(row.sold ? 200 : 140));
+  const x0 = row.x0 + ICON_W + 2;
+  const x1 = row.x1 - 4;
+  const y0 = row.top + (line === 0 ? 3 : 20);
+  // Rows found on a rescaled frame get a cut-off fitted to their own pixels; exact frames keep the fixed ones.
+  const limit = row.loose ? otsu(img, x0, x1, y0, y0 + LINE_H) + 1 : row.sold ? 200 : 140;
+  return bandGlyphs(img, x0, x1, y0, darkInk(limit));
 }
 
 // Digits are padded to a fixed width, which looks like spaces, so price lines drop spaces altogether.
+// Rows found on a rescaled frame can sit a pixel above or below where the letters really are, so those are read at three
+// heights and the read with the fewest unknown letters wins.
+const unknowns = (t) => (t.match(/\?/g) || []).length * 4 + (t.trim() ? 0 : 50) - t.replace(/[^A-Za-z0-9]/g, '').length;
+function bestShift(read, loose) {
+  if (!loose) return read(0);
+  return [0, -1, 1].map(read).sort((a, b) => unknowns(a) - unknowns(b))[0];
+}
+
 export function readLine(img, row, line, table) {
-  return decode(glyphs(img, row, line), table, line === 0);
+  return bestShift((dy) => decode(glyphs(img, { ...row, top: row.top + dy }, line), table, line === 0), row.loose);
 }
 
 // The shop owner's name sits in a dark box under their avatar, in the list font drawn light on dark.
 // Only the inside of the box counts as ink; its light border would otherwise join every letter into one shape.
-export function ownerGlyphs(img, listTop, x0) {
-  const ink = (im, x, y) => y >= listTop - 19 && y <= listTop - 6 && lum(im, x, y) > 180;
+export function ownerGlyphs(img, listTop, x0, loose = false) {
+  const limit = loose ? otsu(img, x0 + 10, x0 + 92, listTop - 19, listTop - 5) : 180;
+  const ink = (im, x, y) => y >= listTop - 19 && y <= listTop - 6 && lum(im, x, y) > limit;
   return bandGlyphs(img, x0 + 10, x0 + 92, listTop - 21, ink);
 }
 
-export function readOwner(img, listTop, x0, table) {
-  return decode(ownerGlyphs(img, listTop, x0), table).trim();
+export function readOwner(img, listTop, x0, table, loose = false) {
+  return bestShift((dy) => decode(ownerGlyphs(img, listTop + dy, x0, loose), table).trim(), loose);
+}
+
+// "<qty> for <price> mesos" as read from the glyphs (spaces dropped). Blur can fuse the "me" of "mesos" into one unknown shape;
+// that is accepted, but the digits themselves must all be read.
+export function priceFromLine(text) {
+  const m = text.match(/^(\d+)for(\d{1,3}(?:,\d{3})*)(?:mesos|[me?]{1,2}sos)$/);
+  return m ? { qty: Number(m[1]), price: Number(m[2].replace(/,/g, '')) } : null;
 }
 
 // ---------- channel ----------
