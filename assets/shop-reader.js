@@ -30,8 +30,9 @@ function separators(img) {
   return lines;
 }
 
+// Sampled in the strip above the name, which text never reaches (long names would cover any point on the text line).
 function rowState(img, x0, top) {
-  const i = ((top + 10) * img.width + x0 + ICON_W + 120) * 4;
+  const i = ((top + 5) * img.width + x0 + ICON_W + 60) * 4;
   if (near(img.data, i, TEXT_BG, 6)) return 'open';
   if (near(img.data, i, SOLD_BG, 6)) return 'sold';
   return null;
@@ -133,53 +134,168 @@ export function parseRow(row, nameText, priceText, items) {
 }
 
 // ---------- bitmap-font reading ----------
-// The list uses a fixed 1px bitmap font with at least one blank column between letters, so each letter is an exact pixel
-// pattern. A glyph table learned from labelled samples (scripts/scan-tools/learn-glyphs.mjs) maps patterns back to letters.
+// Game text uses fixed 1px bitmap fonts with at least one blank column between letters, so each letter is an exact pixel
+// pattern. Glyph tables learned from labelled samples (scripts/scan-tools/learn-glyphs.mjs) map patterns back to letters.
 
 const LINE_H = 17;
-// Word gaps are 4+ blank columns in names; digits are padded to a fixed width, so price lines ignore spaces altogether.
 const SPACE_GAP = 4;
-
-function inkAt(img, x, y, sold) {
+const lum = (img, x, y) => {
   const i = (y * img.width + x) * 4;
-  const lum = (img.data[i] + img.data[i + 1] + img.data[i + 2]) / 3;
-  return lum < (sold ? 200 : 140);
-}
+  return (img.data[i] + img.data[i + 1] + img.data[i + 2]) / 3;
+};
+const darkInk = (limit) => (img, x, y) => lum(img, x, y) < limit;
+const lightInk = (limit) => (img, x, y) => lum(img, x, y) > limit;
 
-// Split one text line of a row into glyph patterns, with spaces where the gap between letters is wide.
-export function glyphs(img, row, line) {
-  const x0 = row.x0 + ICON_W + 2;
-  const x1 = row.x1 - 4;
-  const y0 = row.top + (line === 0 ? 3 : 20);
-  const cols = [];
-  for (let x = x0; x < x1; x++) {
-    let bits = 0n;
-    for (let y = 0; y < LINE_H; y++) if (inkAt(img, x, y0 + y, row.sold)) bits |= 1n << BigInt(y);
-    cols.push(bits);
-  }
+// Glyph patterns of one 17px text band, left to right, with ' ' where letters are 4+ columns apart.
+function bandGlyphs(img, x0, x1, y0, ink) {
   const out = [];
   let start = -1;
   let gap = 0;
-  for (let i = 0; i <= cols.length; i++) {
-    const ink = i < cols.length && cols[i] !== 0n;
-    if (ink && start < 0) {
+  let cols = [];
+  for (let x = x0; x <= x1; x++) {
+    let bits = 0n;
+    if (x < x1) for (let y = 0; y < LINE_H; y++) if (ink(img, x, y0 + y)) bits |= 1n << BigInt(y);
+    if (bits && start < 0) {
       if (out.length && gap >= SPACE_GAP) out.push(' ');
-      start = i;
+      start = x;
+      cols = [];
     }
-    if (!ink && start >= 0) {
-      out.push(cols.slice(start, i).map((c) => c.toString(36)).join('.'));
+    if (bits) cols.push(bits.toString(36));
+    if (!bits && start >= 0) {
+      out.push(cols.join('.'));
       start = -1;
       gap = 0;
     }
-    if (!ink && start < 0) gap++;
+    if (!bits && start < 0) gap++;
   }
   return out;
 }
 
-// Letters the table does not know come back as "?", which item matching tolerates and price reading treats as unreadable.
-export function readLine(img, row, line, table) {
-  return glyphs(img, row, line)
-    .filter((g) => line === 0 || g !== ' ')
+const decode = (gs, table, spaces = true) =>
+  gs
+    .filter((g) => spaces || g !== ' ')
     .map((g) => (g === ' ' ? ' ' : table[g] ?? '?'))
     .join('');
+
+// Item rows: line 0 is the name, line 1 "<n> for <price> mesos". Sold rows draw grey text, so their cut-off is lighter.
+export function glyphs(img, row, line) {
+  return bandGlyphs(img, row.x0 + ICON_W + 2, row.x1 - 4, row.top + (line === 0 ? 3 : 20), darkInk(row.sold ? 200 : 140));
+}
+
+// Digits are padded to a fixed width, which looks like spaces, so price lines drop spaces altogether.
+export function readLine(img, row, line, table) {
+  return decode(glyphs(img, row, line), table, line === 0);
+}
+
+// The shop owner's name sits in a dark box under their avatar, in the list font drawn light on dark.
+// Only the inside of the box counts as ink; its light border would otherwise join every letter into one shape.
+export function ownerGlyphs(img, listTop, x0) {
+  const ink = (im, x, y) => y >= listTop - 19 && y <= listTop - 6 && lum(im, x, y) > 180;
+  return bandGlyphs(img, x0 + 10, x0 + 92, listTop - 21, ink);
+}
+
+export function readOwner(img, listTop, x0, table) {
+  return decode(ownerGlyphs(img, listTop, x0), table).trim();
+}
+
+// ---------- channel ----------
+// The Change Channel window can be anywhere, so its text is not read at all: the highlighted cell is found by colour and its
+// channel is its position in the 8-column grid of grey cells around it.
+const CH_ON = [61, 169, 216];
+const CH_OFF = [177, 177, 177];
+const CH_DX = 70.1;
+const CH_DY = 22;
+const CH_COLS = 8;
+
+export function findChannel(img) {
+  const { width, height, data } = img;
+  for (let y = 0; y < height; y += 2) {
+    let start = -1;
+    for (let x = 0; x <= width; x++) {
+      const on = x < width && near(data, (y * width + x) * 4, CH_ON, 10);
+      if (on && start < 0) start = x;
+      if (!on && start >= 0) {
+        if (x - start >= 55 && x - start <= 75) {
+          // Sample each neighbour cell near its right end, where the "CH.n" label never reaches.
+          const px = x - 8;
+          const grey = (cx, cy) => cx >= 0 && cy >= 0 && cx < width && cy < height && near(data, (Math.round(cy) * width + Math.round(cx)) * 4, CH_OFF, 6);
+          let col = 0;
+          while (col < CH_COLS && grey(px - (col + 1) * CH_DX, y)) col++;
+          let right = 0;
+          while (right < CH_COLS && grey(px + (right + 1) * CH_DX, y)) right++;
+          let row = 0;
+          while (row < 10 && grey(px, y - (row + 1) * CH_DY)) row++;
+          if (col + right === CH_COLS - 1) return row * CH_COLS + col + 1;
+        }
+        start = -1;
+      }
+    }
+  }
+  return null;
+}
+
+// ---------- room ----------
+// The minimap title ("Free Market <10>") uses an outlined font whose letters break into pieces, so it is not read letter by
+// letter. Instead the whole title is matched as one pixel pattern: a stored prefix ("Free M...") finds it anywhere in the
+// top-left of the screen, and the full line is looked up among titles already seen for each room.
+const MAP_AREA_W = 600;
+const MAP_AREA_H = 450;
+const MAP_END_GAP = 6;
+let roomAt = null;
+
+function lightColumns(img, x0, x1, y0) {
+  const cols = [];
+  for (let x = x0; x < x1; x++) {
+    let bits = 0;
+    for (let y = 0; y < LINE_H; y++) if (lum(img, x, y0 + y) > 225) bits |= 1 << y;
+    cols.push(bits);
+  }
+  return cols;
+}
+
+const popcount = (n) => {
+  let c = 0;
+  for (; n; n &= n - 1) c++;
+  return c;
+};
+
+// The title from its first lit column up to a wide gap or the minimap's frame (an almost fully lit column), as one key.
+export function titleKey(cols, start) {
+  let end = start;
+  let gap = 0;
+  for (let x = start; x < cols.length && gap < MAP_END_GAP; x++) {
+    if (popcount(cols[x]) >= 13) break;
+    if (cols[x]) {
+      end = x + 1;
+      gap = 0;
+    } else gap++;
+  }
+  return cols.slice(start, end).join('.');
+}
+
+function findPrefix(cols, prefix) {
+  outer: for (let x = 0; x + prefix.length <= cols.length; x++) {
+    for (let k = 0; k < prefix.length; k++) if (cols[x + k] !== prefix[k]) continue outer;
+    return x;
+  }
+  return -1;
+}
+
+export function findRoom(img, map) {
+  if (!map?.prefix?.length) return null;
+  const w = Math.min(img.width, MAP_AREA_W);
+  const at = (y0) => {
+    const cols = lightColumns(img, 0, w, y0);
+    const x = findPrefix(cols, map.prefix);
+    return x < 0 ? null : { y0, key: titleKey(cols, x) };
+  };
+  let hit = roomAt !== null && roomAt + LINE_H <= img.height ? at(roomAt) : null;
+  for (let y0 = 0; !hit && y0 + LINE_H < Math.min(img.height, MAP_AREA_H); y0++) hit = at(y0);
+  if (!hit) return null;
+  roomAt = hit.y0;
+  return map.rooms[hit.key] ?? null;
+}
+
+export function mapColumns(img, x0, x1, y0) {
+  return lightColumns(img, x0, x1, y0);
 }

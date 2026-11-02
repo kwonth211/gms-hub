@@ -1047,13 +1047,15 @@ const SCAN = {
     start: '메이플 창 공유하기',
     stop: '그만하기',
     resultsHeading: '인식한 상점 물건',
-    colItem: '아이템', colPrice: '가격', colState: '상태', colRead: '인식',
+    colItem: '아이템', colPrice: '가격', colSeller: '판매자', colWhere: '위치', colState: '상태', colRead: '인식',
     resultsEmpty: '아직 인식한 물건이 없어요. 공유를 시작하고 자유시장에서 상점을 열어 보세요.',
     privacy: '공유한 화면은 이 컴퓨터 안에서만 읽고, 읽어 낸 아이템과 가격만 시세에 반영해요. 게임 화면 자체는 어디에도 올리지 않아요.',
     i: {
       watching: '공유 중 · 상점 화면 {n}장 확인',
       selling: '판매 중', sold: '팔림', ok: '정확', check: '확인 필요', each: '개당', now: '방금',
-      summary: '이번 공유: 물건 {items}개 인식 · 그중 확인 필요 {check}개',
+      summary: '이번 공유: 상점 {shops}곳 · 물건 {items}개 인식 · 그중 확인 필요 {check}개',
+      noChannel: '채널을 알려면 게임에서 채널 변경 창을 한 번 열었다 닫아 주세요.',
+      place: '현재 위치: {where}',
       stopped: '멈췄어요. 상점 화면 {n}장을 확인했어요.',
       denied: '화면 공유가 취소됐어요. 다시 눌러 메이플 창을 골라 주세요.',
       unsupported: '이 브라우저는 화면 공유를 지원하지 않아요. PC 크롬에서 열어 주세요.'
@@ -1071,13 +1073,15 @@ const SCAN = {
     start: 'Share your MapleStory window',
     stop: 'Stop',
     resultsHeading: 'Items recognized',
-    colItem: 'Item', colPrice: 'Price', colState: 'Status', colRead: 'Read',
+    colItem: 'Item', colPrice: 'Price', colSeller: 'Seller', colWhere: 'Where', colState: 'Status', colRead: 'Read',
     resultsEmpty: 'Nothing recognized yet. Start sharing and open shops in the Free Market.',
     privacy: 'The shared screen is read only on this computer; just the items and prices it finds go into the price data. The game screen itself is never uploaded.',
     i: {
       watching: 'Sharing · {n} shop screens checked',
       selling: 'For sale', sold: 'Sold', ok: 'OK', check: 'Check', each: 'each', now: 'now',
-      summary: 'This session: {items} items read · {check} need a check',
+      summary: 'This session — shops: {shops} · items read: {items} · to check: {check}',
+      noChannel: 'To know your channel, open and close the Change Channel window once in the game.',
+      place: 'You are at: {where}',
       stopped: 'Stopped. {n} shop screens checked.',
       denied: 'Sharing was cancelled. Click again and pick the MapleStory window.',
       unsupported: "This browser can't share a window. Open this page in Chrome on a computer."
@@ -1097,10 +1101,11 @@ function scanBody(lang) {
 <button type="button" class="btn ghost" id="scan-stop">${t.stop}</button>
 </div>
 <p id="scan-status" class="scan-status" aria-live="polite"></p>
+<p id="scan-place" class="scan-place"></p>
 <h2>${t.resultsHeading}</h2>
 <div class="scan-table-wrap"><table class="scan-table">
-<thead><tr><th>${t.colItem}</th><th>${t.colPrice}</th><th>${t.colState}</th><th>${t.colRead}</th></tr></thead>
-<tbody id="scan-results"><tr class="empty"><td colspan="4">${esc(t.resultsEmpty)}</td></tr></tbody>
+<thead><tr><th>${t.colItem}</th><th>${t.colPrice}</th><th>${t.colSeller}</th><th>${t.colWhere}</th><th>${t.colState}</th><th>${t.colRead}</th></tr></thead>
+<tbody id="scan-results"><tr class="empty"><td colspan="6">${esc(t.resultsEmpty)}</td></tr></tbody>
 </table></div>
 <p id="scan-summary" class="muted"></p>
 <p class="muted">${esc(t.privacy)}</p>
