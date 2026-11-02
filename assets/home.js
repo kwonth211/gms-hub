@@ -333,7 +333,7 @@ function renderTop(top, byId) {
 <span class="rank">${r.rank}</span>${moveCell(r.move)}
 <img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="26" height="26" loading="lazy">
 <span class="name" title="${escHtml(it.name)}">${escHtml(it.name)}</span>
-<span class="avg"><small>${escHtml(liveText.avg)}</small>${mesos(r.avg)}</span>
+<span class="avg"><small>${r.median != null ? escHtml(r.basis === 'sold' ? liveText.soldMedian : liveText.askMedian) : escHtml(liveText.avg)}</small>${mesos(r.median ?? r.avg)}</span>
 ${sparkline(r.spark, it.name)}
 ${changeCell(r.change)}</a></li>`;
     })

@@ -142,7 +142,7 @@ function paintSummary(id, sum) {
     .filter((k) => sum[k])
     .map((k) => `${i18n.kinds[k]} ${fmtPrice(sum[k].median)}`)
     .join(' · ');
-  value.innerHTML = `<b>${fmtPrice(sum.median)}</b> <small>${esc(fill(i18n.hubSummary, { n: sum.n, low: fmtPrice(sum.low), high: fmtPrice(sum.high) }))}${kinds ? `<br>${esc(kinds)}` : ''}</small>`;
+  value.innerHTML = `<b>${fmtPrice(sum.median)}</b> <small>${sum.basis ? `${esc(i18n.kinds[sum.basis])} · ` : ''}${esc(fill(i18n.hubSummary, { n: sum.n, low: fmtPrice(sum.low), high: fmtPrice(sum.high) }))}${kinds ? `<br>${esc(kinds)}` : ''}</small>`;
 }
 
 async function renderRecent() {

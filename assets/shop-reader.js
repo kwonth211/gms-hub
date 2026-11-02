@@ -277,11 +277,14 @@ export function matchItem(text, items) {
 
 // "25 for 80 mesos" -> { qty: 25, price: 80 }. OCR sometimes reads the commas as dots or drops them, both are fine.
 export function parsePriceLine(text) {
-  const m = text.replace(/[oO](?=[\d,.]*\s*mesos)/g, '0').match(/(\d+)\s*for\s*([\d,.\s]+?)\s*meso/i);
+  // Anchor both ends: an unread leading digit must never turn 9,000 into 900.
+  // Separators must form complete thousands groups. A malformed group needs review.
+  const number = '(?:\\d{1,3}(?:[, .]\\d{3})+|\\d+)';
+  const m = text.trim().match(new RegExp(`^(${number})\\s*for\\s*(${number})\\s*mesos?$`, 'i'));
   if (!m) return null;
   const price = Number(m[2].replace(/[,.\s]/g, ''));
-  const qty = Number(m[1]);
-  return price > 0 && qty > 0 ? { qty, price } : null;
+  const qty = Number(m[1].replace(/[,.\s]/g, ''));
+  return Number.isSafeInteger(price) && price > 0 && price <= 1e10 && qty > 0 && qty <= 10000 ? { qty, price } : null;
 }
 
 export function parseRow(row, nameText, priceText, items) {
@@ -458,8 +461,7 @@ export function readOwner(img, listTop, x0, table, loose = false) {
 // "<qty> for <price> mesos" as read from the glyphs (spaces dropped). Blur can fuse the "me" of "mesos" into one unknown shape;
 // that is accepted, but the digits themselves must all be read.
 export function priceFromLine(text) {
-  const m = text.match(/^(\d+)for(\d{1,3}(?:,\d{3})*)(?:mesos|[me?]{1,2}sos)$/);
-  return m ? { qty: Number(m[1]), price: Number(m[2].replace(/,/g, '')) } : null;
+  return parsePriceLine(text.replace(/[me?]{1,2}sos$/, 'mesos'));
 }
 
 // ---------- channel ----------

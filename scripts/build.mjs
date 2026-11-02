@@ -652,7 +652,7 @@ const LIVE = {
     top: '인기 아이템 TOP 10',
     topNote: '최근 24시간 매물·판매 기준',
     recent: '방금 올라온 매물',
-    avg: '평균가',
+    avg: '평균가', soldMedian: '판매 완료 중앙값', askMedian: '판매 중 중앙값',
     trend: '7일 추이',
     change: '전일 대비',
     sold: '팔림',
@@ -671,7 +671,7 @@ const LIVE = {
     top: 'Top 10 items',
     topNote: 'by listings and sales in the last 24 hours',
     recent: 'Just listed',
-    avg: 'Avg',
+    avg: 'Avg', soldMedian: 'Sold median', askMedian: 'Asking median',
     trend: '7-day trend',
     change: 'vs yesterday',
     sold: 'Sold',
@@ -1114,7 +1114,7 @@ const SCAN = {
     lead: '메이플 창을 크롬으로 공유하고 자유시장을 돌면, 열어 본 상점의 물건과 가격을 자동으로 읽어 시세에 반영해요.',
     steps: [
       ['창 모드로 실행', '메이플을 창 모드로 켜고 언어는 영어로 두세요. 창 크기와 화면 배율은 자동으로 맞춰요. 맥에서는 크롬과 메이플 둘 다 전체 화면이 아니어야 창을 공유할 수 있어요.'],
-      ['채널과 미니맵이 보이게', '화면에 채널 표시와 미니맵이 다 보이게 해 주세요. 어느 채널·방인지 알아내는 데 써요.'],
+      ['채널·방 선택', '아래에서 현재 채널과 자유시장 방을 선택하세요. 자동 인식도 사용할 수 있어요. 직접 선택했다면 이동할 때 바꿔 주세요.'],
       ['자유시장에서 상점 열기', '공유를 시작하고 평소처럼 상점을 열어 보세요. 열어 본 상점이 아래 목록에 바로 나와요.']
     ],
     start: '메이플 창 공유하기',
@@ -1125,11 +1125,14 @@ const SCAN = {
     resultsEmpty: '아직 인식한 물건이 없어요. 공유를 시작하고 자유시장에서 상점을 열어 보세요.',
     privacy: '공유한 화면은 이 컴퓨터 안에서만 읽고, 읽어 낸 아이템과 가격만 시세에 반영해요. 게임 화면 자체는 어디에도 올리지 않아요.',
     i: {
+      loading: '아이템·글자 데이터를 불러오는 중이에요…', ready: '준비됐어요. 채널·방을 고르고 화면을 공유하세요.', dataFail: '인식 데이터를 불러오지 못했어요. 다시 시도해 주세요.',
+      duplicateEdit: '같은 매물이 이미 있어요. 기존 줄을 수정해 주세요.', retry: '다시 시도', manual: '직접 선택', channelLabel: '채널', roomLabel: '자유시장 방', chooseLocation: '선택해 주세요',
+      locationChanged: '선택한 위치는 다음 인식부터 적용돼요. 기존 매물은 각 줄에서 수정할 수 있어요.', sending: '전송 중이에요. 완료 후 수정해 주세요.',
       watching: '공유 중 · 상점 화면 {n}장 확인',
-      selling: '판매 중', sold: '팔림', ok: '정확', check: '확인 필요', each: '개당', now: '방금',
+      selling: '판매 중', sold: '판매 완료 표시', ok: '인식됨', check: '확인 필요', each: '개당', now: '방금',
       bundle: '{n}개 묶음 {total}',
       edit: '이 줄 고치기', edited: '수정함', pickItem: '아이템 고르기', qty: '묶음 개수', save: '저장', cancel: '취소',
-      editInvalid: '아이템은 목록에서 고르고, 가격은 58만·580000처럼, 판매자는 영문·숫자로 적어 주세요',
+      editInvalid: '아이템·채널·방을 선택하고 가격, 1~10,000의 정수 수량, 영문·숫자 판매자명을 확인해 주세요',
       colItem: '아이템', colPrice: '가격', colSeller: '판매자',
       summary: '이번 공유: 상점 {shops}곳 · 물건 {items}개 인식 · 그중 확인 필요 {check}개',
       skipped: '못 읽은 줄 {n}개는 건너뜀',
@@ -1143,13 +1146,13 @@ const SCAN = {
       shopOk: '{seller} 상점 · {n}개 읽음',
       shopPartial: '{seller} 상점 · {n}개 읽음, {skip}개는 못 읽음',
       channelOk: 'CH {ch}',
-      channelNone: '채널 변경 창을 한 번 열었다 닫아 주세요',
+      channelNone: '위 드롭다운에서 채널을 선택하거나 채널 변경 창을 열어 주세요',
       roomOk: '자유시장 {room}번 방',
       roomAsk: '처음 보는 방이에요. 미니맵의 방 번호를 한 번만 알려 주세요',
       roomSave: '확인',
-      roomNone: '미니맵에 자유시장 방 이름이 보이게 해 주세요',
+      roomNone: '위 드롭다운에서 방을 선택해 주세요',
       uploadOk: '{n}개 반영됨',
-      uploadNeed: '채널과 위치를 알아야 반영해요',
+      uploadNeed: '아이템·가격을 두 번 확인하고, 판매자·채널·방이 있어야 반영해요',
       uploadFail: '반영 실패, 다시 시도할게요',
       stopped: '멈췄어요. 상점 화면 {n}장을 확인했어요.',
       denied: '화면 공유가 취소됐어요. 다시 눌러 메이플 창을 골라 주세요.',
@@ -1163,7 +1166,7 @@ const SCAN = {
     lead: 'Share your MapleStory window in Chrome and walk the Free Market; the shops you open are read automatically and added to the prices.',
     steps: [
       ['Run in windowed mode', 'Use windowed mode with the game in English. Window size and screen scaling are handled automatically. On a Mac, neither Chrome nor MapleStory can be full screen for window sharing to work.'],
-      ['Keep channel and minimap visible', 'Make sure the channel display and minimap are on screen. They tell us which channel and room you are in.'],
+      ['Choose channel and room', 'Select your current channel and Free Market room below, or use automatic detection. Update manual selections when you move.'],
       ['Open shops in the Free Market', 'Start sharing and open shops as usual. Each shop you open shows up in the list below.']
     ],
     start: 'Share your MapleStory window',
@@ -1174,6 +1177,9 @@ const SCAN = {
     resultsEmpty: 'Nothing recognized yet. Start sharing and open shops in the Free Market.',
     privacy: 'The shared screen is read only on this computer; just the items and prices it finds go into the price data. The game screen itself is never uploaded.',
     i: {
+      loading: 'Loading item and text data…', ready: 'Ready. Choose your location and share your window.', dataFail: 'Could not load recognition data. Please retry.',
+      duplicateEdit: 'This listing already exists. Edit its existing row.', retry: 'Retry', manual: 'Manual', channelLabel: 'Channel', roomLabel: 'Free Market room', chooseLocation: 'Choose location',
+      locationChanged: 'Location applies to the next read. Use each row’s edit button to correct earlier listings.', sending: 'Sending. Please edit after the upload finishes.',
       watching: 'Sharing · {n} shop screens checked',
       selling: 'For sale', sold: 'Sold', ok: 'OK', check: 'Check', each: 'each', now: 'now',
       bundle: '{n} for {total}',
@@ -1192,13 +1198,13 @@ const SCAN = {
       shopOk: "{seller}'s shop · {n} read",
       shopPartial: "{seller}'s shop · {n} read, {skip} unreadable",
       channelOk: 'CH {ch}',
-      channelNone: 'Open and close the Change Channel window once',
+      channelNone: 'Choose a channel above or open the Change Channel window',
       roomOk: 'Free Market room {room}',
       roomAsk: 'A room we have not seen yet. Tell us its number from the minimap, just once',
       roomSave: 'Save',
-      roomNone: 'Keep the Free Market room name visible on the minimap',
+      roomNone: 'Choose a Free Market room above',
       uploadOk: '{n} added',
-      uploadNeed: 'Needs channel and location first',
+      uploadNeed: 'Needs two matching reads, seller, channel and room',
       uploadFail: "Couldn't send, will retry",
       stopped: 'Stopped. {n} shop screens checked.',
       denied: 'Sharing was cancelled. Click again and pick the MapleStory window.',
@@ -1207,6 +1213,10 @@ const SCAN = {
   }
 };
 
+function locationChoices(lang, prefix) {
+  return `<option value="">${lang === 'ko' ? '자동 인식' : 'Automatic'}</option>` + Array.from({ length: 40 }, (_, i) => `<option value="${i + 1}">${prefix} ${i + 1}</option>`).join('');
+}
+
 function scanBody(lang) {
   const t = SCAN[lang];
   const steps = t.steps.map(([h, d], n) => `<li><b>${n + 1}</b><strong>${esc(h)}</strong><span>${esc(d)}</span></li>`).join('');
@@ -1214,10 +1224,17 @@ function scanBody(lang) {
 <div class="wrap scan">
 <ol class="scan-steps">${steps}</ol>
 <div class="panel scan-panel">
+<fieldset class="scan-location"><legend>${lang === 'ko' ? '현재 상점 위치' : 'Current shop location'}</legend>
+<label>${t.i.channelLabel}<select id="scan-channel">${locationChoices(lang, 'CH')}</select></label>
+<label>${t.i.roomLabel}<select id="scan-room">${locationChoices(lang, 'FM')}</select></label>
+<p class="muted">${lang === 'ko' ? '인식이 안 되면 직접 선택하세요. 직접 선택한 값이 우선하며, 채널·방을 이동하면 변경해 주세요.' : 'Choose manually if detection fails. Manual choices take priority; update them when you move.'}</p>
+</fieldset>
 <div class="scan-actions">
 <button type="button" class="btn" id="scan-start">● ${t.start}</button>
-<button type="button" class="btn ghost" id="scan-stop">${t.stop}</button>
+<button type="button" class="btn ghost" id="scan-stop" disabled>${t.stop}</button>
 </div>
+<button type="button" class="btn ghost small-btn" id="scan-retry-data" hidden>${t.i.retry}</button>
+<button type="button" class="btn ghost small-btn" id="scan-retry-upload" hidden>${lang === 'ko' ? '시세 반영 다시 시도' : 'Retry price upload'}</button>
 <p id="scan-status" class="scan-status" aria-live="polite"></p>
 <ol class="scan-checks" aria-live="polite">${['share', 'shop', 'channel', 'room', 'upload']
     .map((k) => `<li id="check-${k}" data-state="wait"><span class="dot" aria-hidden="true"></span><strong>${t.checks[k]}</strong><small>${esc(t.i.wait)}</small></li>`)
@@ -1240,7 +1257,7 @@ ${jsonScript('i18n', { lang, ...t.i, itemsUrl: href('/assets/items.json'), glyph
 const MK = {
   ko: {
     title: '글클메 실시간 자유시장 시세: 가격 추이·가격대 분포·지금 파는 곳 | GMS Hub',
-    desc: '글로벌 메이플스토리 클래식 월드 자유시장 실시간 시세. 유저들이 스캔한 상점 매물로 아이템별 평균가, 7일 가격 추이, 가격대 분포, 지금 가장 싸게 파는 상점(채널·방)을 보여 줘요.',
+    desc: '글로벌 메이플스토리 클래식 월드 자유시장 실시간 시세. 유저들이 스캔한 상점 매물로 판매 중·판매 완료 중앙값, 7일 가격 추이, 최근 확인한 매물의 채널·방을 보여 줘요.',
     h1: '실시간 시세',
     lead: '유저들이 스캔한 자유시장 상점을 모아 아이템별 시세를 보여 줘요. 아이템을 검색해 보세요.',
     placeholder: '아이템 이름 (예: 장갑 공격력, 일비, 메탈 완드)',
@@ -1250,13 +1267,13 @@ const MK = {
     recent: '방금 올라온 매물',
     pick: '아이템을 검색하거나 순위에서 골라 보세요.',
     noData: '이 아이템은 아직 최근 7일 매물이 없어요. 스캔하면 바로 쌓여요.',
-    tiles: { avg: '평균가 (24시간)', low: '지금 최저가', last: '최근 판매가', count: '최근 7일 매물' },
+    tiles: { avg: '판매 중 중앙값 (24시간)', low: '관측 최저가 (24시간)', last: '판매 완료 중앙값 (24시간)', count: '최근 7일 매물' },
     trend: '가격 추이 (7일)',
     trendNote: '선은 날짜별 중앙값, 띠는 그날의 최저~최고, 점은 매물 하나하나예요.',
     dist: '가격대 분포',
     distNote: '최근 7일 매물이 어느 가격대에 몰려 있는지 보여 줘요.',
-    where: '지금 파는 곳',
-    whereNote: '판매 중인 매물을 싼 순서로 보여 줘요. 팔린 매물은 아래에 있어요.',
+    where: '최근 확인한 판매 매물',
+    whereNote: '최근 24시간 안에 확인한 판매 중 매물이에요. 실제 재고는 달라질 수 있어요. 가격은 개당 메소예요.',
     sold: '팔림',
     selling: '판매 중',
     listings: '매물',
@@ -1264,11 +1281,17 @@ const MK = {
     median: '중앙값',
     range: '범위',
     external: '다른 시세 사이트에서 보기',
+    loading: '시세를 불러오는 중이에요…', failed: '시세를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.', retry: '다시 시도',
+    emptyRank: '최근 24시간 순위 데이터가 없어요.', emptyFeed: '아직 등록된 상점 매물이 없어요.', noMatches: '일치하는 아이템이 없어요. 다른 이름으로 검색해 보세요.',
+    refreshed: '갱신', staleData: '갱신 실패 · 이전 데이터를 표시하고 있어요', sample: '표본이 3개 미만이면 시세 참고용으로만 봐 주세요.',
+    filterChannel: '모든 채널', filterRoom: '모든 방', sortPrice: '낮은 가격순', sortRecent: '최근 확인순', noOpen: '이 조건에 맞는 최근 판매 매물이 없어요.',
+    history: '판매 완료·오래된 매물', stale: '24시간 경과', total: '묶음 총액', priceUnit: '메소 / 개', excluded: '극단적인 가격 {n}개는 통계에서 제외했어요.',
+    chartSelling: '판매 중 기록', chartSold: '판매 완료 기록', chartEmpty: '선택한 상태의 기록이 없어요.',
     table: { price: '개당 가격', qty: '묶음', seller: '판매자', where: '위치', seen: '본 시각' }
   },
   en: {
     title: 'MapleStory Classic World Live Free Market Prices: Trends, Price Spread, Where to Buy | GMS Hub',
-    desc: 'Live Free Market prices for MapleStory Classic World from shops players scanned: average price, 7-day trend, price spread and the cheapest shop (channel and room) for each item.',
+    desc: 'Live Free Market prices for MapleStory Classic World from shops players scanned: separate asking and sold medians, 7-day trends and recently observed shops (channel and room) for each item.',
     h1: 'Live Market',
     lead: 'Prices from Free Market shops players scanned. Search an item.',
     placeholder: 'Item name (e.g. Gloves Attack, Ilbi, Metal Wand)',
@@ -1278,13 +1301,13 @@ const MK = {
     recent: 'Just listed',
     pick: 'Search an item or pick one from the ranking.',
     noData: 'No listings for this item in the last 7 days yet. Scanning adds them right away.',
-    tiles: { avg: 'Average (24h)', low: 'Cheapest now', last: 'Last sale', count: 'Listings (7 days)' },
+    tiles: { avg: 'Asking median (24h)', low: 'Lowest seen (24h)', last: 'Sold median (24h)', count: 'Listings (7 days)' },
     trend: 'Price trend (7 days)',
     trendNote: 'Line: daily median. Band: that day’s lowest to highest. Dots: individual listings.',
     dist: 'Price spread',
     distNote: 'Where the last 7 days of listings sit by price.',
     where: 'Where to buy',
-    whereNote: 'Open listings, cheapest first. Sold ones are listed below.',
+    whereNote: 'Open listings seen in the last 24 hours. Availability may have changed. Prices are mesos per item.',
     sold: 'Sold',
     selling: 'For sale',
     listings: 'listings',
@@ -1292,6 +1315,12 @@ const MK = {
     median: 'median',
     range: 'range',
     external: 'See it on other price sites',
+    loading: 'Loading prices…', failed: 'Could not load prices. Please try again.', retry: 'Retry',
+    emptyRank: 'No ranking data in the last 24 hours.', emptyFeed: 'No shop listings yet.', noMatches: 'No matching items. Try another name.',
+    refreshed: 'Updated', staleData: 'Refresh failed · showing previous data', sample: 'Fewer than 3 observations: treat the price as a rough reference.',
+    filterChannel: 'All channels', filterRoom: 'All rooms', sortPrice: 'Lowest price', sortRecent: 'Most recent', noOpen: 'No recent open listings match these filters.',
+    history: 'Sold and older listings', stale: 'Over 24h old', total: 'Bundle total', priceUnit: 'mesos / item', excluded: '{n} extreme prices excluded from statistics.',
+    chartSelling: 'Asking prices', chartSold: 'Sold prices', chartEmpty: 'No observations for this status.',
     table: { price: 'Each', qty: 'Bundle', seller: 'Seller', where: 'Where', seen: 'Seen' }
   }
 };
@@ -1305,8 +1334,11 @@ function marketBody(lang) {
 <dl class="mk-stats"><span class="live-dot" aria-hidden="true"></span>${['listings', 'shops', 'items', 'sold'].map(stat).join('')}</dl>
 <a class="btn small-btn" href="${href(langPath(lang, '/tools/scan/'))}">● ${t.scan}</a>
 </div>
+<p id="mk-status" class="muted" role="status">${t.loading}</p>
+<button type="button" id="mk-retry" class="btn ghost small-btn" hidden>${t.retry}</button>
 <div class="mk-search panel">
-<input type="search" id="mk-q" placeholder="${esc(t.placeholder)}" autocomplete="off" aria-label="${esc(t.placeholder)}" aria-controls="mk-suggest">
+<input type="search" id="mk-q" placeholder="${esc(t.placeholder)}" autocomplete="off" aria-label="${esc(t.placeholder)}" aria-controls="mk-suggest" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-describedby="mk-search-status">
+<p id="mk-search-status" class="muted" role="status" hidden></p>
 <ul id="mk-suggest" class="mk-suggest" role="listbox" hidden></ul>
 </div>
 <div class="mk-grid">
@@ -1646,7 +1678,7 @@ for (const lang of LANGS) {
       title: MK[lang].title,
       desc: MK[lang].desc,
       body: marketBody(lang),
-      scripts: ['market.js'],
+      modules: ['market.js'],
       ld: [appLd(MK[lang].h1, MK[lang].desc, '/tools/market/'), breadcrumbLd(lang, MK[lang].h1, '/tools/market/')]
     },
     scan: {

@@ -1,7 +1,9 @@
 // Shop scanner. Players share the game window in Chrome; the page watches it and reports what it recognized. The game screen
 // itself is never shown back to the player. In local development (scripts/scan-dev.mjs) changed frames are also posted to the
 // dev server, which keeps them as samples for building the shop reader.
-import { detectScale, findChannel, findRoom, findShopRows, findShopRowsLoose, lastRoomKey, matchItem, parsePriceLine, priceFromLine, readLine, readOwner, scrollTier } from './shop-reader.js';
+import { detectScale, findChannel, findRoom, findShopRows, findShopRowsLoose, matchItem, parsePriceLine, priceFromLine, readLine, readOwner, scrollTier } from './shop-reader.js';
+
+import { SELLER, validLocation, listingKey, payload, fingerprint, validListing, canUpload, sameShop, verifiedPrice } from './scan-state.js';
 
 const i18n = JSON.parse(document.getElementById('i18n').textContent);
 const $ = (id) => document.getElementById(id);
@@ -27,18 +29,54 @@ let mapData = null;
 // The channel is only visible while the Change Channel window is open, so the last one seen is kept until the player moves.
 let channel = null;
 let room = null;
-const seen = new Map();
+let locationRevision = 0;
+let sessionRevision = 0;
+let dataReady = false;
 const nf = new Intl.NumberFormat(i18n.lang);
-const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-Promise.all([fetch(i18n.itemsUrl).then((r) => r.json()), fetch(i18n.glyphsUrl).then((r) => r.json())])
-  .then(([rows, glyphs]) => {
+async function loadData() {
+  $('scan-start').disabled = true;
+  say(i18n.loading);
+  try {
+    const get = async (url) => {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(String(res.status));
+      return res.json();
+    };
+    const [rows, glyphs] = await Promise.all([get(i18n.itemsUrl), get(i18n.glyphsUrl)]);
     items = rows.map(([id, ko, en]) => ({ id, ko, en }));
     table = glyphs.glyphs;
     mapData = glyphs.map;
-    Object.assign(mapData.rooms, taughtRooms());
-  })
-  .catch(() => {});
+    dataReady = true;
+    $('scan-start').disabled = !navigator.mediaDevices?.getDisplayMedia;
+    $('scan-retry-data').hidden = true;
+    say(navigator.mediaDevices?.getDisplayMedia ? i18n.ready : i18n.unsupported);
+  } catch {
+    say(i18n.dataFail);
+    $('scan-retry-data').hidden = false;
+  }
+}
+$('scan-retry-data').addEventListener('click', loadData);
+
+function locationStatus() {
+  for (const [key, value] of [['channel', channel], ['room', room]]) {
+    const manual = Number($(`scan-${key}`).value);
+    check(key, value ? 'ok' : 'warn', value
+      ? fill(key === 'channel' ? i18n.channelOk : i18n.roomOk, { ch: value, room: value }) + (manual ? ` · ${i18n.manual}` : '')
+      : key === 'channel' ? i18n.channelNone : i18n.roomNone);
+  }
+}
+for (const key of ['channel', 'room']) $('scan-' + key).addEventListener('change', () => {
+  locationRevision++;
+  channel = Number($('scan-channel').value) || null;
+  room = Number($('scan-room').value) || null;
+  currentShop = null;
+  lastSig = null;
+  settling = true;
+  locationStatus();
+  say(i18n.locationChanged);
+});
 
 function say(text) {
   status.textContent = text;
@@ -71,9 +109,7 @@ function changed(a, b) {
 let scale = Math.round((window.devicePixelRatio || 1) * 4) / 4;
 let lastFull = null;
 
-// ---------- OCR for non-integer scales ----------
-// At 125%/150%-style scaling the 1px letters cannot be restored exactly, so their text is read with Tesseract from the
-// full-resolution capture instead. It is fetched from a CDN only for players who need it.
+// OCR fallback for unreadable text, including compressed or unfamiliar glyphs at 1x.
 const TESSERACT_URL = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
 let ocrWorker = null;
 async function ocrEngine() {
@@ -91,7 +127,7 @@ async function ocrEngine() {
       const w = await window.Tesseract.createWorker('eng');
       await w.setParameters({ tessedit_pageseg_mode: '7' });
       return w;
-    })();
+    })().catch((err) => { ocrWorker = null; throw err; });
   }
   return ocrWorker;
 }
@@ -193,18 +229,14 @@ async function keepSample(canvas) {
 
 async function recognize(canvas) {
   const img = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
-  const ch = findChannel(img);
-  if (ch) channel = ch;
-  if (channel) check('channel', 'ok', fill(i18n.channelOk, { ch: channel }));
-  else check('channel', 'warn', i18n.channelNone);
-  // Changing channel always shows the channel window, so walking between rooms never makes the kept channel stale.
-  let fm = findRoom(img, mapData, scale !== 1);
-  if (fm === null && scale !== 1) fm = await roomByOcr(img);
-  // An unknown room must not inherit the previous room's number, or its listings would be filed under the wrong room.
-  if (fm !== null) room = fm || null;
-  if (fm === 0) askRoom();
-  else if (room) check('room', 'ok', fill(i18n.roomOk, { room }));
-  else check('room', 'warn', i18n.roomNone);
+  const manualChannel = Number($('scan-channel').value);
+  const manualRoom = Number($('scan-room').value);
+  const ch = manualChannel || findChannel(img);
+  if (validLocation(ch)) channel = ch;
+  const fm = manualRoom || findRoom(img, mapData, scale !== 1);
+  // A hidden or unreadable minimap is not evidence that we are still in the previous room.
+  room = validLocation(fm) ? fm : null;
+  locationStatus();
   // Pixel-exact rows first; a scaled or blurred capture falls back to the blur-tolerant finder.
   let rows = findShopRows(img);
   if (!rows.length) rows = findShopRowsLoose(img);
@@ -215,21 +247,26 @@ async function recognize(canvas) {
   const loose = rows[0].loose;
   const listTop = Math.min(...rows.map((r) => r.top));
   let owner = readOwner(img, listTop, rows[0].x0, table, loose);
-  if (!SELLER.test(owner) && scale !== 1) owner = await ownerByOcr(rows[0].x0, listTop);
+  if (!SELLER.test(owner)) {
+    try { owner = await ownerByOcr(rows[0].x0, listTop); } catch { /* Keep the row available for manual correction. */ }
+  }
   const out = [];
   for (const row of rows) {
     let name = readLine(img, row, 0, table);
     const priceText = readLine(img, row, 1, table);
     let p = priceFromLine(priceText);
     let match = matchItem(name, items);
-    // Only lines the letter table could not settle go to OCR, and only when the capture was scaled.
-    if ((!match || !p) && scale !== 1) {
-      const ocr = await rowByOcr(row);
-      if (!match) {
-        name = ocr.name;
-        match = matchItem(name, items);
-      }
-      if (!p) p = ocr.price;
+    const needsPriceCheck = scale !== 1 || !!row.loose;
+    // Uncertain lines use OCR at any display scale; failure must not discard the other readable rows.
+    if (needsPriceCheck || !match || match.confidence < 0.85 || !p) {
+      try {
+        const ocr = await rowByOcr(row, !match || match.confidence < 0.85);
+        if (!match || match.confidence < 0.85) {
+          name = ocr.name;
+          match = matchItem(name, items);
+        }
+        p = verifiedPrice(p, ocr.price, needsPriceCheck);
+      } catch { if (needsPriceCheck) p = null; }
     }
     // A scroll name cut before its tier fits every tier; the icon's tint says which one it is.
     if (match?.alternatives) {
@@ -249,44 +286,10 @@ async function recognize(canvas) {
       owner,
       channel,
       room,
-      // Rows read in a room nobody has named yet remember its title, so naming it later fills them in.
-      roomKey: fm === 0 ? lastRoomKey : null,
-      sure: !!match && match.confidence >= 0.85 && !match.alternatives && !!p && SELLER.test(owner)
+      sure: !!match && match.confidence >= 0.85 && !match.alternatives && !!p && p.price % qty === 0 && SELLER.test(owner)
     });
   }
-  await settleAlternatives(out);
   return out;
-}
-
-// Shared price data for the candidates of cut-short names; fetched once per item per session.
-const reference = new Map();
-async function referencePrices(ids) {
-  const missing = ids.filter((id) => !reference.has(id));
-  if (missing.length && i18n.api) {
-    try {
-      const r = await fetch(`${i18n.api}/prices?ids=${missing.join(',')}`);
-      const data = r.ok ? await r.json() : {};
-      for (const id of missing) reference.set(id, data[id]?.median || null);
-    } catch (e) {}
-  }
-  return ids.map((id) => reference.get(id) || null);
-}
-
-// The tiers of a scroll differ in price by an order of magnitude, so the candidate whose known price is nearest (on a log
-// scale) to the listing wins, if it is clearly nearer than the next. Otherwise the row stays "check" and the player picks.
-async function settleAlternatives(rows) {
-  for (const r of rows) {
-    if (!r.alternatives || !r.price) continue;
-    const refs = await referencePrices(r.alternatives.map((it) => it.id));
-    const scored = r.alternatives
-      .map((it, i) => ({ it, gap: refs[i] ? Math.abs(Math.log(r.price / refs[i])) : Infinity }))
-      .sort((a, b) => a.gap - b.gap);
-    const [first, second] = scored;
-    if (first.gap < Math.log(2.5) && (!second || second.gap - first.gap > Math.log(2))) {
-      r.item = first.it;
-      r.sure = SELLER.test(r.owner);
-    }
-  }
 }
 
 // OCR fallbacks for a scaled capture, read from the full-resolution frame.
@@ -296,92 +299,20 @@ async function ownerByOcr(x0, listTop) {
   const reads = [];
   for (const o of [{ k: 4, psm: '7' }, { k: 8, psm: '8' }, { k: 6, psm: '7' }])
     reads.push((await ocrRect(x0 + 10, listTop - 19, 82, 14, { light: true, chars: ALNUM, ...o })).replace(/[^A-Za-z0-9]/g, ''));
-  return majority(reads);
+  const name = majority(reads);
+  return reads.filter((r) => r === name).length >= 2 ? name : '';
 }
 
-async function rowByOcr(row) {
-  const name = await ocrRect(row.x0 + 38, row.top + 3, row.x1 - row.x0 - 42, 17);
-  const price = parsePriceLine(await ocrRect(row.x0 + 38, row.top + 20, row.x1 - row.x0 - 42, 17));
+async function rowByOcr(row, readName = true) {
+  const name = readName ? await ocrRect(row.x0 + 38, row.top + 3, row.x1 - row.x0 - 42, 17) : '';
+  // Two independent crop sizes must agree on both quantity and total price.
+  const prices = [];
+  for (const k of [4, 6]) prices.push(parsePriceLine(await ocrRect(row.x0 + 38, row.top + 20, row.x1 - row.x0 - 42, 17, { k })));
+  const price = prices[0] && prices[1] && prices[0].qty === prices[1].qty && prices[0].price === prices[1].price ? prices[0] : null;
   return { name, price };
 }
 
-// Minimap title by OCR when it cannot be matched pixel for pixel: light text lines in the minimap's top-left corner are each
-// read at three sizes and the room number must agree in two.
-async function roomByOcr(img) {
-  const lines = [];
-  let top = -1;
-  for (let y = 20; y < Math.min(img.height, 160); y++) {
-    let lit = 0;
-    for (let x = 44; x < Math.min(img.width, 200); x++) {
-      const i = (y * img.width + x) * 4;
-      if ((img.data[i] + img.data[i + 1] + img.data[i + 2]) / 3 > 215) lit++;
-    }
-    const on = lit > 8 && lit < 80;
-    if (on && top < 0) top = y;
-    if (!on && top >= 0) {
-      if (y - top >= 6 && y - top <= 14) lines.push({ top, h: y - top });
-      top = -1;
-    }
-  }
-  for (const line of lines) {
-    const reads = [];
-    for (const k of [3, 4, 5]) {
-      const text = (await ocrRect(44, line.top - 2, 150, line.h + 4, { light: true, k })).replace(/\s+/g, '');
-      const m = text.match(/Fre[ea]Mark[a-z]*[<(«]?(\d{1,2})/i);
-      if (m) reads.push(m[1]);
-    }
-    const room = reads.find((r) => reads.filter((x) => x === r).length >= 2);
-    if (room) return Number(room);
-  }
-  return null;
-}
-
 const where = (ch, fm) => [ch ? `CH ${ch}` : '', fm ? `FM${fm}` : ''].filter(Boolean);
-
-// Rooms the table does not know yet can be named by the player once; the answer is kept in this browser and sent to the
-// server so the shared table can learn it.
-const TAUGHT_KEY = 'gmshub_rooms';
-function taughtRooms() {
-  try {
-    return JSON.parse(localStorage.getItem(TAUGHT_KEY) || '{}');
-  } catch (e) {
-    return {};
-  }
-}
-
-function askRoom() {
-  const li = $('check-room');
-  if (li.querySelector('form')) return;
-  li.dataset.state = 'warn';
-  li.querySelector('small').textContent = i18n.roomAsk;
-  const key = lastRoomKey;
-  const form = document.createElement('form');
-  form.className = 'room-ask';
-  form.innerHTML = `<input type="number" min="1" max="40" inputmode="numeric" aria-label="${i18n.roomAsk}" required><button class="btn small-btn" type="submit">${i18n.roomSave}</button>`;
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const n = Number(form.querySelector('input').value);
-    if (!Number.isInteger(n) || n < 1 || n > 40) return;
-    mapData.rooms[key] = n;
-    const taught = taughtRooms();
-    taught[key] = n;
-    try {
-      localStorage.setItem(TAUGHT_KEY, JSON.stringify(taught));
-    } catch (err) {}
-    if (i18n.api) fetch(`${i18n.api}/room-title`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key, room: n }) }).catch(() => {});
-    room = n;
-    for (const entry of listings.values())
-      if (entry.r.roomKey === key && !entry.r.room) {
-        entry.r.room = n;
-        render(entry.r, entry.tr);
-      }
-    upload();
-    form.remove();
-    check('room', 'ok', fill(i18n.roomOk, { room: n }));
-    track('scan_room_taught', { room: n });
-  });
-  li.appendChild(form);
-}
 
 // The five recognition steps under the buttons: each is waiting, fine, or needs something from the player.
 function check(step, state, text) {
@@ -392,80 +323,88 @@ function check(step, state, text) {
 
 // Listings go to the shared price data once their seller, channel and room are all known; each one is sent again only
 // when it changes (a slot turning sold). Failed sends stay queued for the next frame.
-const SELLER = /^[A-Za-z0-9]{2,13}$/;
 const sent = new Map();
 
-// A shop is tracked across frames by what it sells, not by its owner's name: the name is the shakiest read on a scaled
-// screen, so each frame's read is a vote and the shop goes by the most frequent one. Its listings upload once that name
-// has been read the same way twice, or when the player moves on to another shop (or stops), whichever comes first.
-const SHOP_SETTLE_MS = 8000;
+// Seller and location identify a shop. Leaving a shop or stopping never upgrades a single uncertain read.
 const shops = [];
 let currentShop = null;
 
 function shopFor(rows) {
-  const keys = new Set(rows.filter((r) => r.item && r.price).map((r) => `${r.item.id}|${r.price}`));
   const read = rows[0]?.owner || '';
-  let shop = shops.find(
-    (s) => s.room === room && ([...keys].filter((k) => s.keys.has(k)).length >= Math.min(2, keys.size) || (SELLER.test(read) && s.votes.has(read)))
-  );
+  let shop = sameShop(currentShop, rows, channel, room) ? currentShop : shops.find((s) => sameShop(s, rows, channel, room));
+  // Keep an unreadable owner's current list available for manual correction, without merging other shops by price.
+  if (!shop && currentShop && !SELLER.test(read) && currentShop.channel === channel && currentShop.room === room &&
+      currentShop.signature === rows.map((r) => `${r.name}|${r.price}`).join(';')) shop = currentShop;
   if (!shop) {
-    shop = { id: shops.length + 1, room, votes: new Map(), keys: new Set(), since: Date.now() };
+    shop = { id: shops.length + 1, channel, room, votes: new Map() };
     shops.push(shop);
   }
-  if (currentShop && currentShop !== shop) currentShop.closed = true;
   currentShop = shop;
-  shop.closed = false;
-  keys.forEach((k) => shop.keys.add(k));
+  shop.signature = rows.map((r) => `${r.name}|${r.price}`).join(';');
   if (SELLER.test(read)) shop.votes.set(read, (shop.votes.get(read) || 0) + 1);
   return shop;
 }
 
-const leader = (shop) => (shop.override ? [shop.override, Infinity] : [...shop.votes.entries()].sort((a, b) => b[1] - a[1])[0] || ['', 0]);
-const shopReady = (shop) => {
-  const [name, n] = leader(shop);
-  return SELLER.test(name) && (n >= 2 || shop.closed || Date.now() - shop.since > SHOP_SETTLE_MS);
-};
+const leader = (shop) => shop.override ? [shop.override, Infinity] : [...shop.votes.entries()].sort((a, b) => b[1] - a[1])[0] || ['', 0];
+const shopReady = (shop) => SELLER.test(leader(shop)[0]) && leader(shop)[1] >= 2;
 let uploaded = 0;
 let sending = false;
+let retryAt = 0;
+let failures = 0;
 
 async function upload() {
-  if (!i18n.api || sending) return;
-  for (const e of listings.values()) e.r.owner = leader(e.r.shop)[0];
-  const ready = [...listings.values()].map((e) => e.r).filter((r) => r.sure && r.channel && r.room && shopReady(r.shop));
-  if (!ready.length) {
-    if (listings.size) check('upload', 'warn', i18n.uploadNeed);
+  if (!i18n.api || sending || Date.now() < retryAt) return;
+  const ready = [...listings.values()].map((e) => e.r).filter((r) => canUpload(r) && (r.edited || shopReady(r.shop)));
+  // Copy the payload before awaiting the network; later edits must not be marked as sent by an older response.
+  const fresh = ready.filter((r) => sent.get(listingKey(r)) !== fingerprint(r)).slice(0, 100)
+    .map((r) => ({ r, key: listingKey(r), body: payload(r), signature: fingerprint(r) }));
+  if (!fresh.length) {
+    if (uploaded) check('upload', 'ok', fill(i18n.uploadOk, { n: uploaded }));
+    else if (listings.size) check('upload', 'warn', i18n.uploadNeed);
     return;
   }
-  const fresh = ready.filter((r) => sent.get(listingKey(r)) !== r.sold);
-  if (!fresh.length) return;
   sending = true;
+  let succeeded = false;
   try {
-    const res = await fetch(`${i18n.api}/listings`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        items: fresh.map((r) => ({ item: r.item.id, price: r.price, qty: r.qty, sold: r.sold, seller: r.owner, channel: r.channel, room: r.room }))
-      })
-    });
-    if (!res.ok) throw new Error(String(res.status));
-    for (const r of fresh) {
-      if (!sent.has(listingKey(r))) uploaded++;
-      sent.set(listingKey(r), r.sold);
+    // Corrections are retried as corrections, never inserted as duplicate new prices.
+    for (const entry of fresh.filter((e) => e.r.pendingCorrection)) {
+      const res = await fetch(`${i18n.api}/listings/fix`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: entry.r.pendingCorrection, to: entry.body }) });
+      const data = await res.json();
+      if (!res.ok || data.fixed !== 1) throw new Error('Correction not acknowledged');
+      delete entry.r.pendingCorrection;
+      sent.set(entry.key, entry.signature);
+    }
+    const inserts = fresh.filter((e) => sent.get(e.key) !== e.signature);
+    if (inserts.length) {
+      const res = await fetch(`${i18n.api}/listings`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: inserts.map((e) => e.body) }) });
+      const data = await res.json();
+      if (!res.ok || data.stored !== inserts.length) throw new Error('Incomplete upload');
+      for (const e of inserts) {
+        if (!sent.has(e.key)) uploaded++;
+        sent.set(e.key, e.signature);
+      }
     }
     check('upload', 'ok', fill(i18n.uploadOk, { n: uploaded }));
     track('scan_upload', { items: fresh.length });
-  } catch (e) {
+    failures = 0;
+    succeeded = true;
+  } catch {
+    retryAt = Date.now() + Math.min(30000, 1000 * 2 ** Math.min(++failures, 5));
     check('upload', 'warn', i18n.uploadFail);
+  } finally {
+    sending = false;
+    $('scan-retry-upload').hidden = ![...listings.values()].some((e) => canUpload(e.r) && sent.get(listingKey(e.r)) !== fingerprint(e.r));
+    if (succeeded && !$('scan-retry-upload').hidden) queueMicrotask(upload);
   }
-  sending = false;
 }
-
-const listingKey = (r) => `${r.shop.id}|${r.item.id}|${r.price}`;
+$('scan-retry-upload').addEventListener('click', () => { retryAt = 0; upload(); });
 
 // One line per distinct listing in this session; seeing it again only refreshes it (and marks it sold if it sold since).
-// A shop is its owner in a room; rows seen before the channel was known get it filled in once it is.
+// An unresolved location stays with its original frame and can be corrected in the row editor.
 const listings = new Map();
-let skipped = 0;
+const correctedKeys = new Set();
 
 function render(r, tr) {
   const title = r.item ? (i18n.lang === 'ko' ? r.item.ko || r.item.en : r.item.en) : r.name;
@@ -483,8 +422,8 @@ function render(r, tr) {
     const pick = document.createElement('select');
     pick.className = 'alt-pick';
     pick.setAttribute('aria-label', i18n.pickItem);
-    pick.innerHTML = r.alternatives.map((it) => `<option value="${it.id}"${it === r.item ? ' selected' : ''}>${esc(itemName(it))}</option>`).join('');
-    pick.addEventListener('change', () => applyEdit(r, tr, { item: r.alternatives.find((it) => it.id === Number(pick.value)) }));
+    pick.innerHTML = `<option value="">${esc(i18n.pickItem)}</option>` + r.alternatives.map((it) => `<option value="${it.id}">${esc(itemName(it))}</option>`).join('');
+    pick.addEventListener('change', () => { if (pick.value) applyEdit(r, tr, { item: r.alternatives.find((it) => it.id === Number(pick.value)) }); });
     tr.querySelector('td .item > span').appendChild(pick);
   }
 }
@@ -493,7 +432,7 @@ const itemName = (it) => (i18n.lang === 'ko' ? it.ko || it.en : it.en);
 
 // ---------- inline edit ----------
 // Any recognised line can be corrected in place. A line already sent is corrected on the server too (only by the browser
-// that sent it); a corrected seller applies to the whole shop.
+// that sent it). Corrections are kept even when the same screen is scanned again.
 const priceText = (t) => {
   const v = t.replace(/[,\s]|메소|mesos?/gi, '').toLowerCase();
   const m = v.match(/^(\d+(?:\.\d+)?)(억|만|b|m|k)?$/);
@@ -521,6 +460,8 @@ function openEditor(r, tr) {
 <label>${i18n.colPrice} (${i18n.each})<input name="price" value="${r.price || ''}" inputmode="decimal"></label>
 <label>${i18n.qty}<input name="qty" type="number" min="1" max="10000" value="${r.qty || 1}"></label>
 <label>${i18n.colSeller}<input name="seller" value="${esc(r.owner)}" maxlength="13" autocomplete="off"></label>
+<label>${i18n.channelLabel}<select name="channel">${locationOptions(r.channel, 'CH')}</select></label>
+<label>${i18n.roomLabel}<select name="room">${locationOptions(r.room, 'FM')}</select></label>
 <label class="check-line"><input name="sold" type="checkbox"${r.sold ? ' checked' : ''}> ${i18n.sold}</label>
 <button class="btn small-btn" type="submit">${i18n.save}</button><button class="btn ghost small-btn" type="button" data-cancel>${i18n.cancel}</button>
 <p class="edit-msg" aria-live="polite"></p></form></td>`;
@@ -535,60 +476,55 @@ function openEditor(r, tr) {
     const item = items.find((it) => itemName(it) === name || it.en === name || it.ko === name);
     const price = priceText(form.price.value);
     const seller = form.seller.value.trim();
-    if (!item || !price || !SELLER.test(seller)) {
+    const qty = Number(form.qty.value);
+    const channel = Number(form.channel.value);
+    const room = Number(form.room.value);
+    if (!validListing({ item, price, qty, owner: seller, channel, room })) {
       form.querySelector('.edit-msg').textContent = i18n.editInvalid;
       return;
     }
     tr.classList.remove('editing');
-    applyEdit(r, tr, { item, price, qty: Math.max(1, Number(form.qty.value) || 1), sold: form.sold.checked, seller });
+    applyEdit(r, tr, { item, price, qty, sold: form.sold.checked, owner: seller, channel, room });
   });
   form.item.focus();
 }
 
-async function applyEdit(r, tr, change) {
+const locationOptions = (value, prefix) => `<option value="">${i18n.chooseLocation}</option>` + Array.from({ length: 40 }, (_, i) => `<option value="${i + 1}"${value === i + 1 ? ' selected' : ''}>${prefix} ${i + 1}</option>`).join('');
+
+function applyEdit(r, tr, change) {
+  if (sending) { check('upload', 'warn', i18n.sending); render(r, tr); return; }
   const oldKey = listingKey(r);
+  const before = payload(r);
   const wasSent = sent.has(oldKey);
-  const before = { item: r.item?.id, price: r.price, seller: r.owner, channel: r.channel, room: r.room };
-  if (change.seller && change.seller !== r.owner) {
-    r.shop.override = change.seller;
-    for (const e of listings.values())
-      if (e.r.shop === r.shop) {
-        e.r.owner = change.seller;
-        if (e.r !== r) render(e.r, e.tr);
-      }
+  const next = { ...r, ...change };
+  if (listingKey(next) !== oldKey && listings.has(listingKey(next))) {
+    check('upload', 'warn', i18n.duplicateEdit);
+    render(r, tr);
+    return;
   }
-  Object.assign(r, { ...change, owner: r.shop.override || r.owner, alternatives: null, sure: true, edited: true });
-  delete r.seller;
+  Object.assign(r, change, { alternatives: null, edited: true });
+  r.sure = validListing(r);
+  if (wasSent) r.pendingCorrection ||= before;
   const entry = listings.get(oldKey);
   listings.delete(oldKey);
   listings.set(listingKey(r), entry);
+  if (oldKey !== listingKey(r)) correctedKeys.add(oldKey);
+  sent.delete(oldKey);
   render(r, tr);
-  track('scan_edit', { item_id: r.item.id });
-  if (wasSent && i18n.api) {
-    sent.delete(oldKey);
-    try {
-      const res = await fetch(`${i18n.api}/listings/fix`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: before, to: { item: r.item.id, price: r.price, qty: r.qty, sold: r.sold, seller: r.owner } })
-      });
-      if (res.ok) sent.set(listingKey(r), r.sold);
-    } catch (e) {}
-  }
+  updateSummary();
+  retryAt = 0;
+  track('scan_edit', { item_id: r.item?.id });
   upload();
 }
 
+function updateSummary() {
+  const all = [...listings.values()];
+  $('scan-summary').textContent = fill(i18n.summary, { shops: new Set(all.map((e) => e.r.shop.id)).size,
+    items: all.length, check: all.filter((e) => !canUpload(e.r)).length });
+}
+
 function show(found) {
-  if (channel)
-    for (const entry of listings.values())
-      if (!entry.r.channel && entry.r.room === room) {
-        entry.r.channel = channel;
-        render(entry.r, entry.tr);
-      }
-  if (!found.length) {
-    upload();
-    return;
-  }
+  if (!found.length) { currentShop = null; upload(); return; }
   results.querySelector('.empty')?.remove();
   results.querySelectorAll('tr.fresh').forEach((tr) => tr.classList.remove('fresh'));
   const shop = shopFor(found);
@@ -599,16 +535,15 @@ function show(found) {
   });
   // Prepending in reverse keeps the rows in the same order as on screen.
   for (const r of [...found].reverse()) {
-    if (!r.item) {
-      skipped++;
-      continue;
-    }
     const key = listingKey(r);
+    if (correctedKeys.has(key)) continue;
     let entry = listings.get(key);
     if (!entry) {
       entry = { tr: document.createElement('tr') };
       listings.set(key, entry);
     }
+    if (entry.r?.edited || entry.tr.classList.contains('editing')) continue;
+    r.confirmations = entry.r?.sure && r.sure && fingerprint(entry.r) === fingerprint(r) ? (entry.r.confirmations || 1) + 1 : 1;
     entry.r = r;
     entry.tr.classList.add('fresh');
     render(r, entry.tr);
@@ -616,7 +551,7 @@ function show(found) {
   }
   // The shop's name may have changed with this frame's vote; earlier rows of the same shop follow it.
   for (const e of listings.values())
-    if (e.r.shop === shop && e.r.owner !== name) {
+    if (e.r.shop === shop && !e.r.edited && !sent.has(listingKey(e.r)) && e.r.owner !== name) {
       e.r.owner = name;
       render(e.r, e.tr);
     }
@@ -625,11 +560,7 @@ function show(found) {
   const seller = name || '—';
   check('shop', 'ok', fill(skipNow ? i18n.shopPartial : i18n.shopOk, { seller, n: readNow, skip: skipNow }));
   upload();
-  const all = [...listings.values()];
-  const shopIds = new Set(all.map((e) => e.r.shop.id));
-  $('scan-summary').textContent =
-    fill(i18n.summary, { shops: shopIds.size, items: all.length, check: all.filter((e) => !e.r.sure).length }) +
-    (skipped ? ` · ${fill(i18n.skipped, { n: skipped })}` : '');
+  updateSummary();
 }
 
 results.addEventListener('click', (e) => {
@@ -637,7 +568,7 @@ results.addEventListener('click', (e) => {
   if (!btn) return;
   const tr = btn.closest('tr');
   const entry = [...listings.values()].find((x) => x.tr === tr);
-  if (entry) openEditor(entry.r, tr);
+  if (entry && !sending) openEditor(entry.r, tr);
 });
 
 // A change is only read once the screen has stopped changing: the shop list scrolls smoothly, and a frame caught mid-scroll
@@ -645,27 +576,33 @@ results.addEventListener('click', (e) => {
 let settling = true;
 // OCR can take a few seconds per shop, so a frame is only read when the previous one is done.
 let reading = false;
+let lastRead = 0;
 async function tick() {
-  if (!video.videoWidth || reading) return;
+  if (!stream || !dataReady || !video.videoWidth || reading) return;
   // A shop left open without changes still needs its settle time to pass before uploading.
   upload();
   const sig = signature();
   if (changed(lastSig, sig)) settling = true;
-  else if (settling) {
+  else if (settling || Date.now() - lastRead > 3000) {
+    const saveSample = settling;
     settling = false;
     frames++;
     reading = true;
     try {
+      const revision = locationRevision;
+      const session = sessionRevision;
       const canvas = grab();
       showShare();
-      keepSample(canvas);
-      show(await recognize(canvas));
+      if (saveSample) keepSample(canvas);
+      const found = await recognize(canvas);
+      if (revision !== locationRevision || session !== sessionRevision) return;
+      show(found);
       say(fill(i18n.watching, { n: frames }));
     } catch (e) {
       console.error('[scan]', e);
       check('shop', 'warn', ocrWorker ? i18n.ocrFail : i18n.readFail);
     }
-    reading = false;
+    finally { reading = false; lastRead = Date.now(); }
   }
   lastSig = sig;
 }
@@ -676,15 +613,20 @@ function showShare() {
 }
 
 async function start() {
+  if (!dataReady || stream || reading) return;
+  $('scan-start').disabled = true;
+  sessionRevision++;
   try {
     stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 10 }, audio: false });
   } catch (e) {
     say(i18n.denied);
+    $('scan-start').disabled = false;
     return;
   }
   video.srcObject = stream;
-  await video.play();
+  try { await video.play(); } catch { stop(); say(i18n.readFail); return; }
   document.body.classList.add('scanning');
+  $('scan-stop').disabled = false;
   stream.getVideoTracks()[0].addEventListener('ended', stop);
   showShare();
   say(fill(i18n.watching, { n: frames }));
@@ -695,12 +637,18 @@ async function start() {
 function stop() {
   clearInterval(timer);
   timer = null;
-  if (currentShop) currentShop.closed = true;
+  sessionRevision++;
+  currentShop = null;
   upload();
   stream?.getTracks().forEach((t) => t.stop());
   stream = null;
   lastSig = null;
   document.body.classList.remove('scanning');
+  $('scan-stop').disabled = true;
+  $('scan-start').disabled = !dataReady;
+  channel = Number($('scan-channel').value) || null;
+  room = Number($('scan-room').value) || null;
+  settling = true;
   ['share', 'shop', 'channel', 'room'].forEach((k) => check(k, 'wait', i18n.wait));
   say(fill(i18n.stopped, { n: frames }));
   track('scan_stop', { frames });
@@ -713,3 +661,5 @@ if (!navigator.mediaDevices?.getDisplayMedia) {
   $('scan-start').disabled = true;
   say(i18n.unsupported);
 }
+
+loadData();

@@ -554,6 +554,20 @@ a.band-link:hover { border-color: var(--accent); }
 }
 
 /* ads */
+.scan-location { display: flex; flex-wrap: wrap; gap: 12px 20px; margin: 0 0 20px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-2); }
+.scan-location legend { font-weight: 800; padding: 0 6px; }
+.scan-location label, .mk-filters label { display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; flex: 1; min-width: 140px; }
+.scan-location select, .row-edit select, .mk-filters select { width: 100%; min-height: 44px; padding: 8px 12px; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+.scan-location p { flex-basis: 100%; margin: 0; font-size: 0.8rem; }
+.mk-filters { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+.mk-where small { display: block; font-size: 0.7rem; color: var(--muted); font-weight: 400; }
+.mk-tiles dd { font-size: clamp(0.95rem, 1.5vw, 1.25rem); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.mk-chart-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+.mk-chart-tabs [aria-pressed="true"] { color: var(--accent); border-color: var(--accent); background: var(--panel-2); }
+.mk-history { margin-top: 24px; }
+.mk-history summary { padding: 12px 0; cursor: pointer; font-weight: 700; }
+select:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (max-width: 480px) { .mk-filters label { min-width: 100px; } .scan-location { padding: 12px; } }
 .ad-slot { margin: 36px 0; text-align: center; min-height: 104px; }
 .ad-slot .ad-label { display: block; margin-bottom: 6px; color: #64748b; font-size: 10px; letter-spacing: 0.12em; }
 .ad-rails { position: relative; height: 0; }
@@ -561,3 +575,6 @@ a.band-link:hover { border-color: var(--accent); }
 .ad-rail-left { right: calc(50% + 600px + 32px); }
 .ad-rail-right { left: calc(50% + 600px + 32px); }
 @media (max-width: 1599px) { .ad-rails { display: none; } }
+
+.mk-head > div { min-width: 0; flex: 1; }
+.mk-head > button { flex: none; margin-left: auto; }

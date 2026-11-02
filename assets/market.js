@@ -1,3 +1,4 @@
+import { DAY, parseUtc, median, marketRows } from './market-data.js';
 // Live market page: item search with statistics, a 7-day price trend and a price-spread chart, where to buy now, plus the
 // live top 10 and the scrolling feed of scanned listings.
 const D = JSON.parse(document.getElementById('mk-data').textContent);
@@ -7,7 +8,6 @@ const korean = D.lang === 'ko';
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const squash = (s) => s.toLowerCase().replace(/\s+/g, '');
-const DAY = 86400000;
 const rtf = new Intl.RelativeTimeFormat(D.lang, { numeric: 'auto', style: 'short' });
 const dayFmt = new Intl.DateTimeFormat(D.lang, { month: 'numeric', day: 'numeric' });
 const nf = new Intl.NumberFormat(D.lang);
@@ -16,7 +16,6 @@ const icon = (id, size = 28) => `<img src="https://maplestory.io/api/MCW/1/item/
 let items = [];
 let byId = new Map();
 const nameOf = (it) => (korean ? it.ko || it.en : it.en);
-const parseUtc = (s) => Date.parse(`${s.replace(' ', 'T')}Z`);
 
 // Korean players think in 만/억; elsewhere k/m/b.
 function mesos(n) {
@@ -39,12 +38,6 @@ function ago(utc) {
   if (s < 86400) return rtf.format(-Math.floor(s / 3600), 'hour');
   return rtf.format(-Math.floor(s / 86400), 'day');
 }
-
-const median = (xs) => {
-  const s = [...xs].sort((a, b) => a - b);
-  const m = s.length >> 1;
-  return s.length % 2 ? s[m] : Math.round((s[m - 1] + s[m]) / 2);
-};
 
 // ---------- tooltip shared by the charts ----------
 const tip = $('spark-tip');
@@ -148,48 +141,80 @@ const sites = (it) =>
     .map((s) => `<a href="${esc(s.url.replace('{id}', it.id).replace('{en}', encodeURIComponent(it.en)))}" target="_blank" rel="noopener">${s.name}</a>`)
     .join(' · ');
 
+let selectedItem = null;
+let requestNumber = 0;
+let itemRequest = null;
 async function loadItem(id, push = true) {
   const it = byId.get(id);
   if (!it) return;
+  selectedItem = id;
+  const request = ++requestNumber;
+  itemRequest?.abort();
+  itemRequest = new AbortController();
+  hideTip();
   if (push) history.replaceState(null, '', `?item=${id}`);
   const box = $('mk-detail');
-  box.innerHTML = `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(nameOf(it))}</h2>${it.ko && korean ? `<small>${esc(it.en)}</small>` : ''}</div></header><p class="muted">…</p>`;
+  box.setAttribute('aria-busy', 'true');
+  const head = `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(nameOf(it))}</h2>${it.ko && korean ? `<small>${esc(it.en)}</small>` : ''}</div><button type="button" class="btn ghost small-btn" data-refresh-item>${korean ? '새로고침' : 'Refresh'}</button></header>`;
+  box.innerHTML = `${head}<p class="muted">${T.loading}</p>`;
   let data = null;
   try {
-    const r = await fetch(`${D.api}/market/item?id=${id}`);
+    const r = await fetch(`${D.api}/market/item?id=${id}`, { signal: itemRequest.signal });
     if (r.ok) data = await r.json();
   } catch (e) {}
-  const raw = (data?.listings || []).map((r) => ({ ...r, t: parseUtc(r.seen) }));
-  // Same typo rule as the server's summaries: far from the median means a misread or a joke price.
-  const mid = raw.length ? median(raw.map((r) => r.price)) : 0;
-  const rows = raw.length >= 3 ? raw.filter((r) => r.price <= mid * 5 && r.price >= mid / 5) : raw;
-  const head = box.querySelector('header').outerHTML;
+  if (request !== requestNumber) return;
+  box.setAttribute('aria-busy', 'false');
+  if (!data || !Array.isArray(data.listings)) {
+    box.innerHTML = `${head}<p role="status">${T.failed}</p><button class="btn small-btn" data-retry>${T.retry}</button><p class="mk-ext">${T.external}: ${sites(it)}</p>`;
+    box.querySelector('[data-retry]').addEventListener('click', () => loadItem(id, false));
+    return;
+  }
+  const summary = marketRows(data.listings);
+  const { rows, open, sold: soldRows, stale } = summary;
   if (!rows.length) {
     box.innerHTML = `${head}<p class="muted">${T.noData}</p><p class="mk-ext">${T.external}: ${sites(it)}</p>`;
     return;
   }
-  const open = rows.filter((r) => !r.sold).sort((a, b) => a.price - b.price);
-  const soldRows = rows.filter((r) => r.sold).sort((a, b) => b.t - a.t);
-  const day = rows.filter((r) => r.t > Date.now() - DAY).map((r) => r.price);
   const tiles = [
-    [T.tiles.avg, day.length ? mesos(Math.round(day.reduce((a, b) => a + b, 0) / day.length)) : '–'],
-    [T.tiles.low, open.length ? mesos(open[0].price) : '–'],
-    [T.tiles.last, soldRows.length ? mesos(soldRows[0].price) : '–'],
+    [T.tiles.avg, summary.askingMedian == null ? '–' : nf.format(summary.askingMedian)],
+    [T.tiles.low, open.length ? nf.format(open[0].price) : '–'],
+    [T.tiles.last, summary.soldMedian == null ? '–' : nf.format(summary.soldMedian)],
     [T.tiles.count, `${nf.format(rows.length)}`]
   ];
-  const trend = trendChart(rows);
-  const spread = spreadChart(rows);
+  let chartSold = false;
   const line = (r) =>
-    `<tr class="${r.sold ? 'sold' : ''}"><td class="num">${mesos(r.price)}</td><td>${r.qty > 1 ? `×${nf.format(r.qty)}` : ''}</td><td>${esc(r.seller)}</td><td><span class="where">CH ${r.channel}</span> <span class="where">FM${r.room}</span></td><td class="muted">${r.sold ? T.sold : ago(r.seen)}</td></tr>`;
+    `<tr class="${r.sold ? 'sold' : ''}"><td class="num">${nf.format(r.price)}</td><td>${nf.format(r.qty)}<small>${T.total} ${nf.format(r.price * r.qty)}</small></td><td>${esc(r.seller)}</td><td><span class="where">CH ${r.channel}</span> <span class="where">FM ${r.room}</span></td><td class="muted">${ago(r.seen)}<small>${r.sold ? T.sold : Date.now() - r.t >= DAY ? T.stale : T.selling}</small></td></tr>`;
+  const table = (rs) => `<div class="mk-where"><table><thead><tr><th>${T.table.price}</th><th>${T.table.qty}</th><th>${T.table.seller}</th><th>${T.table.where}</th><th>${T.table.seen}</th></tr></thead><tbody>${rs.map(line).join('')}</tbody></table></div>`;
+  const options = (key) => [...new Set(open.map((r) => r[key]))].sort((a, b) => a - b).map((n) => `<option value="${n}">${key === 'channel' ? 'CH' : 'FM'} ${n}</option>`).join('');
   box.innerHTML = `${head}
+<p class="muted note">${T.priceUnit}</p>
 <dl class="mk-tiles">${tiles.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
-<section><h3>${T.trend}</h3><p class="muted note">${T.trendNote}</p>${trend.svg}
-<p class="legend"><span class="key dot-key"></span>${T.selling} <span class="key ring-key"></span>${T.sold} <span class="key line-key"></span>${T.median} <span class="key band-key"></span>${T.range}</p></section>
-<section><h3>${T.dist}</h3><p class="muted note">${T.distNote}</p>${spread.svg}</section>
+<p class="muted note">${T.sample}${summary.excluded ? ` ${T.excluded.replace('{n}', summary.excluded)}` : ''}</p>
 <section><h3>${T.where}</h3><p class="muted note">${T.whereNote}</p>
-<div class="mk-where"><table><thead><tr><th>${T.table.price}</th><th>${T.table.qty}</th><th>${T.table.seller}</th><th>${T.table.where}</th><th>${T.table.seen}</th></tr></thead>
-<tbody>${open.map(line).join('')}${soldRows.map(line).join('')}</tbody></table></div></section>
+<div class="mk-filters">
+<label>${T.table.where}<select id="mk-channel"><option value="">${T.filterChannel}</option>${options('channel')}</select></label>
+<label>${T.filterRoom}<select id="mk-room"><option value="">${T.filterRoom}</option>${options('room')}</select></label>
+<label>${korean ? '정렬' : 'Sort'}<select id="mk-sort"><option value="price">${T.sortPrice}</option><option value="recent">${T.sortRecent}</option></select></label>
+</div><div id="mk-open"></div></section>
+<div class="mk-chart-tabs" role="group" aria-label="${T.trend}"><button type="button" class="btn ghost small-btn" data-chart="selling" aria-pressed="true">${T.chartSelling}</button><button type="button" class="btn ghost small-btn" data-chart="sold" aria-pressed="false">${T.chartSold}</button></div>
+<div id="mk-charts"></div>
+<details class="mk-history"><summary>${T.history} (${soldRows.length + stale.length})</summary>${table([...soldRows, ...stale])}</details>
 <p class="mk-ext">${T.external}: ${sites(it)}</p>`;
+  function renderOpen() {
+    let filtered = open.filter((r) => (!$('mk-channel').value || r.channel === Number($('mk-channel').value)) && (!$('mk-room').value || r.room === Number($('mk-room').value)));
+    if ($('mk-sort').value === 'recent') filtered.sort((a, b) => b.t - a.t);
+    $('mk-open').innerHTML = filtered.length ? table(filtered) : `<p class="market-empty">${T.noOpen}</p>`;
+  }
+  ['mk-channel', 'mk-room', 'mk-sort'].forEach((key) => $(key).addEventListener('change', renderOpen));
+  renderOpen();
+  function renderCharts() {
+    hideTip();
+    const chartRows = rows.filter((r) => r.sold === chartSold);
+    const area = $('mk-charts');
+    if (!chartRows.length) { area.innerHTML = `<p class="market-empty">${T.chartEmpty}</p>`; return; }
+    const trend = trendChart(chartRows);
+    const spread = spreadChart(chartRows);
+    area.innerHTML = `<section><h3>${T.trend}</h3><p class="muted note">${T.trendNote}</p>${trend.svg}</section><section><h3>${T.dist}</h3><p class="muted note">${T.distNote}</p>${spread.svg}</section>`;
   // Hover: the trend shows a crosshair and the day's numbers; the spread shows the band's range and counts.
   const [trendSvg, spreadSvg] = box.querySelectorAll('svg.chart');
   const cross = box.querySelector('#trend-cross');
@@ -218,6 +243,13 @@ async function loadItem(id, push = true) {
     showTip(`<b>${mesos(Math.round(b.from))} – ${mesos(Math.round(b.to))}</b>${b.count} ${T.listings} · ${b.sold} ${T.soldN}`, e);
   });
   spreadSvg.addEventListener('pointerleave', hideTip);
+  }
+  box.querySelectorAll('[data-chart]').forEach((button) => button.addEventListener('click', () => {
+    chartSold = button.dataset.chart === 'sold';
+    box.querySelectorAll('[data-chart]').forEach((b) => b.setAttribute('aria-pressed', String(b === button)));
+    renderCharts();
+  }));
+  renderCharts();
   track('market_item', { item_id: id, listings: rows.length });
 }
 
@@ -225,13 +257,16 @@ async function loadItem(id, push = true) {
 const input = $('mk-q');
 const suggest = $('mk-suggest');
 let active = -1;
+$('mk-detail').addEventListener('click', (e) => {
+  if (e.target.closest('[data-refresh-item]') && selectedItem) loadItem(selectedItem, false);
+});
 
 function matches(q) {
   const f = squash(q);
   if (f.length < 1) return [];
   return items
     .filter((it) => it.flat.includes(f))
-    .sort((a, b) => !b.flat.startsWith(f) - !a.flat.startsWith(f) || nameOf(a).length - nameOf(b).length)
+    .sort((a, b) => !a.flat.startsWith(f) - !b.flat.startsWith(f) || nameOf(a).length - nameOf(b).length)
     .slice(0, 8);
 }
 
@@ -239,13 +274,23 @@ function renderSuggest() {
   const list = matches(input.value);
   active = -1;
   suggest.hidden = !list.length;
+  input.setAttribute('aria-expanded', String(list.length > 0));
+  input.removeAttribute('aria-activedescendant');
+  $('mk-search-status').hidden = !input.value.trim() || !!list.length;
+  $('mk-search-status').textContent = T.noMatches;
   suggest.innerHTML = list
-    .map((it, i) => `<li role="option" id="mk-opt-${i}" data-id="${it.id}">${icon(it.id, 24)}<span>${esc(nameOf(it))}${korean && it.ko ? ` <small>${esc(it.en)}</small>` : ''}</span></li>`)
+    .map((it, i) => `<li role="option" aria-selected="false" id="mk-opt-${i}" data-id="${it.id}">${icon(it.id, 24)}<span>${esc(nameOf(it))}${korean && it.ko ? ` <small>${esc(it.en)}</small>` : ''}</span></li>`)
     .join('');
 }
 
-function choose(id) {
+function hideSuggest() {
   suggest.hidden = true;
+  input.setAttribute('aria-expanded', 'false');
+  input.removeAttribute('aria-activedescendant');
+}
+
+function choose(id) {
+  hideSuggest();
   input.value = nameOf(byId.get(id));
   loadItem(id);
 }
@@ -255,20 +300,21 @@ input.addEventListener('keydown', (e) => {
   const opts = [...suggest.querySelectorAll('li')];
   if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
     e.preventDefault();
+    if (!opts.length || suggest.hidden) return;
     active = (active + (e.key === 'ArrowDown' ? 1 : -1) + opts.length) % opts.length;
-    opts.forEach((o, i) => o.classList.toggle('on', i === active));
+    opts.forEach((o, i) => { o.classList.toggle('on', i === active); o.setAttribute('aria-selected', String(i === active)); });
     input.setAttribute('aria-activedescendant', opts[active]?.id || '');
   } else if (e.key === 'Enter') {
     const pick = opts[active] || opts[0];
-    if (pick) choose(Number(pick.dataset.id));
-  } else if (e.key === 'Escape') suggest.hidden = true;
+    if (pick && !suggest.hidden) choose(Number(pick.dataset.id));
+  } else if (e.key === 'Escape') hideSuggest();
 });
 suggest.addEventListener('click', (e) => {
   const li = e.target.closest('li');
   if (li) choose(Number(li.dataset.id));
 });
 document.addEventListener('click', (e) => {
-  if (!e.target.closest('.mk-search')) suggest.hidden = true;
+  if (!e.target.closest('.mk-search')) hideSuggest();
 });
 
 // ---------- ranking & feed ----------
@@ -294,27 +340,36 @@ const moveCell = (m) =>
 const changeCell = (c) =>
   c == null ? '<span class="chg">–</span>' : `<span class="chg ${c > 0 ? 'up' : c < 0 ? 'down' : ''}">${c > 0 ? '▲' : c < 0 ? '▼' : ''}${Math.abs(c)}%</span>`;
 
+let refreshing = false;
+let hadMarketData = false;
 async function refresh() {
-  if (document.hidden) return;
+  if (document.hidden || refreshing) return;
+  refreshing = true;
   const get = (p) => fetch(`${D.api}${p}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
   const [top, recent] = await Promise.all([get('/market/top'), get('/listings/recent?limit=60')]);
+  $('mk-retry').hidden = !!top && !!recent;
+  $('mk-status').textContent = top && recent ? `${korean ? '시장 목록' : 'Market feed'} ${T.refreshed} ${new Date().toLocaleTimeString(D.lang)} · ${korean ? '30초마다 확인' : 'Checked every 30s'}` : hadMarketData ? T.staleData : T.failed;
+  hadMarketData ||= !!top && !!recent;
   if (top?.stats) for (const k of ['listings', 'shops', 'items', 'sold']) $(`mk-stat-${k}`).textContent = nf.format(top.stats[k] || 0);
   if (top)
     $('rank-list').innerHTML = top.items
       .filter((r) => byId.has(r.item))
       .map((r) => {
         const it = byId.get(r.item);
-        return `<li><a href="?item=${it.id}" data-id="${it.id}"><span class="rank">${r.rank}</span>${moveCell(r.move)}${icon(it.id, 26)}<span class="name" title="${esc(nameOf(it))}">${esc(nameOf(it))}</span><span class="avg"><small>${L.avg}</small>${mesos(r.avg)}</span>${sparkline(r.spark)}${changeCell(r.change)}</a></li>`;
+        return `<li><a href="?item=${it.id}" data-id="${it.id}"><span class="rank">${r.rank}</span>${moveCell(r.move)}${icon(it.id, 26)}<span class="name" title="${esc(nameOf(it))}">${esc(nameOf(it))}</span><span class="avg"><small>${r.median != null ? `${r.basis === 'sold' ? T.sold : T.selling} · ${T.median}` : L.avg}</small>${mesos(r.median ?? r.avg)}</span>${sparkline(r.spark)}${changeCell(r.change)}</a></li>`;
       })
-      .join('');
+      .join('') || `<li class="market-empty">${T.emptyRank}</li>`;
+  else if (!hadMarketData) $('rank-list').innerHTML = `<li class="market-empty">${T.failed}</li>`;
   if (recent)
     $('live-rows').innerHTML = recent
       .filter((r) => byId.has(r.item))
       .map((r) => {
         const it = byId.get(r.item);
-        return `<li class="${r.sold ? 'sold' : ''}"><a href="?item=${it.id}" data-id="${it.id}">${icon(it.id, 26)}<span class="name">${esc(nameOf(it))}${r.sold ? `<span class="tag">${L.sold}</span>` : ''}</span><span class="price">${mesos(r.price)}${r.qty > 1 ? ` <small>×${r.qty}</small>` : ''}</span><span class="meta">${esc(r.seller)} · CH ${r.channel} · FM${r.room}</span><span class="ago">${ago(r.seen)}</span></a></li>`;
+        return `<li class="${r.sold ? 'sold' : ''}"><a href="?item=${it.id}" data-id="${it.id}">${icon(it.id, 26)}<span class="name">${esc(nameOf(it))}${r.sold ? `<span class="tag">${L.sold}</span>` : ''}</span><span class="price">${nf.format(r.price)}${r.qty > 1 ? ` <small>×${r.qty}</small>` : ''}</span><span class="meta">${esc(r.seller)} · CH ${r.channel} · FM${r.room}</span><span class="ago">${ago(r.seen)}</span></a></li>`;
       })
-      .join('');
+      .join('') || `<li class="market-empty">${T.emptyFeed}</li>`;
+  else if (!hadMarketData) $('live-rows').innerHTML = `<li class="market-empty">${T.failed}</li>`;
+  refreshing = false;
 }
 
 // Ranking and feed rows open the item here instead of navigating away.
@@ -329,8 +384,11 @@ document.querySelector('.mk-side').addEventListener('click', (e) => {
 });
 
 // ---------- start ----------
+function initialize() {
+$('mk-retry').hidden = true;
+$('mk-status').textContent = T.loading;
 fetch(D.itemsUrl)
-  .then((r) => r.json())
+  .then((r) => { if (!r.ok) throw new Error('items'); return r.json(); })
   .then((rows) => {
     items = rows.map(([id, ko, en]) => ({ id, ko, en, flat: squash(`${ko}${en}`) }));
     byId = new Map(items.map((it) => [it.id, it]));
@@ -348,6 +406,15 @@ fetch(D.itemsUrl)
       }
     }
     refresh();
-    setInterval(refresh, 30000);
-    document.addEventListener('visibilitychange', refresh);
+  }).catch(() => {
+    $('mk-status').textContent = T.failed;
+    $('mk-retry').hidden = false;
   });
+}
+$('mk-retry').addEventListener('click', () => {
+  if (!items.length) initialize();
+  else { refresh(); if (selectedItem) loadItem(selectedItem, false); }
+});
+setInterval(refresh, 30000);
+document.addEventListener('visibilitychange', refresh);
+initialize();

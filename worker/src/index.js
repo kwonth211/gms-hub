@@ -57,9 +57,11 @@ const median = (xs) => {
 
 // One typo (an extra zero) should not move the price, so reports far from the item's median are ignored once there are a few.
 function summarize(rows) {
-  const all = rows.map((r) => r.price);
-  const mid = median(all);
-  const kept = rows.length >= 3 ? rows.filter((r) => r.price <= mid * 5 && r.price >= mid / 5) : rows;
+  const kept = KINDS.flatMap((kind) => {
+    const group = rows.filter((r) => r.kind === kind);
+    const mid = median(group.map((r) => r.price));
+    return group.length >= 3 ? group.filter((r) => r.price <= mid * 5 && r.price >= mid / 5) : group;
+  }).sort((a, b) => b.created_at.localeCompare(a.created_at));
   const prices = kept.map((r) => r.price);
   const byKind = Object.fromEntries(
     KINDS.map((k) => {
@@ -67,7 +69,9 @@ function summarize(rows) {
       return [k, ps.length ? { n: ps.length, median: median(ps) } : null];
     })
   );
-  return { n: kept.length, median: median(prices), low: Math.min(...prices), high: Math.max(...prices), last: kept[0].created_at, ...byKind };
+  // The headline uses observed sales first, then asks, then buy offers; unlike kinds are never averaged together.
+  const primary = byKind.sold || byKind.selling || byKind.buying;
+  return { n: kept.length, median: primary.median, basis: byKind.sold ? 'sold' : byKind.selling ? 'selling' : 'buying', low: Math.min(...prices), high: Math.max(...prices), last: kept[0].created_at, ...byKind };
 }
 
 // ---------- live ranking ----------
@@ -116,7 +120,8 @@ async function marketTop(env, only = null) {
   for (const o of obs) (byItem.get(o.item) || byItem.set(o.item, []).get(o.item)).push(o);
   const items = ranked.map((item, i) => {
     const mine = byItem.get(item);
-    const window = (from, to) => trimmed(mine.filter((o) => o.t > from && o.t <= to).map((o) => o.price));
+    const useSold = mine.some((o) => o.sold && o.t > now - DAY && o.t <= now);
+    const window = (from, to) => trimmed(mine.filter((o) => o.sold === useSold && o.t > from && o.t <= to).map((o) => o.price));
     const day = window(now - DAY, now);
     const prev = window(now - 2 * DAY, now - DAY);
     const prevRank = before.indexOf(item);
@@ -126,6 +131,8 @@ async function marketTop(env, only = null) {
       // Positive = moved up; null = new to the ranking within the hour.
       move: prevRank < 0 ? null : prevRank - i,
       avg: day.length ? Math.round(day.reduce((a, b) => a + b, 0) / day.length) : null,
+      median: day.length ? median(day) : null,
+      basis: useSold ? 'sold' : 'selling',
       n: mine.filter((o) => o.t > now - DAY).length,
       sold: mine.filter((o) => o.sold && o.t > now - DAY).length,
       change: prev.length ? Math.round(((median(day) - median(prev)) / median(prev)) * 1000) / 10 : null,
@@ -236,7 +243,7 @@ export default {
     }
 
     if (url.pathname === '/market/top' && req.method === 'GET') {
-      const row = await env.DB.prepare("SELECT json FROM snapshots WHERE key = 'market'").first();
+      const row = await env.DB.prepare("SELECT json FROM snapshots WHERE key = 'market' AND at >= datetime('now', '-5 minutes')").first();
       const data = row ? JSON.parse(row.json) : await refreshSnapshot(env);
       return json(data, cors, 200, 'public, max-age=60');
     }
@@ -274,49 +281,63 @@ export default {
       if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
       const body = await req.json().catch(() => null);
       const from = body?.from || {};
-      const to = body?.to || {};
+      const to = { ...body?.to, channel: body?.to?.channel ?? from.channel, room: body?.to?.room ?? from.room };
       const valid = await knownItems().catch(() => null);
       if (!valid) return json({ error: 'item index unavailable' }, cors, 503);
       const okTo =
         valid.has(to.item) && Number.isInteger(to.price) && to.price >= 1 && to.price <= 10_000_000_000 &&
-        Number.isInteger(to.qty) && to.qty >= 1 && to.qty <= 10000 && typeof to.seller === 'string' && /^[A-Za-z0-9]{2,13}$/.test(to.seller);
-      if (!okTo || !Number.isInteger(from.item) || !Number.isInteger(from.price)) return json({ error: 'bad input' }, cors, 400);
+        Number.isInteger(to.qty) && to.qty >= 1 && to.qty <= 10000 && typeof to.seller === 'string' && /^[A-Za-z0-9]{2,13}$/.test(to.seller) &&
+        typeof to.sold === 'boolean' && Number.isInteger(to.channel) && to.channel >= 1 && to.channel <= 40 &&
+        Number.isInteger(to.room) && to.room >= 1 && to.room <= 40;
+      if (!okTo || !Number.isInteger(from.item) || !Number.isInteger(from.price) ||
+          typeof from.seller !== 'string' || !/^[A-Za-z0-9]{2,13}$/.test(from.seller) ||
+          !Number.isInteger(from.channel) || from.channel < 1 || from.channel > 40 ||
+          !Number.isInteger(from.room) || from.room < 1 || from.room > 40) return json({ error: 'bad input' }, cors, 400);
       const reporter = await visitorHash(req.headers.get('CF-Connecting-IP') || '', 'scan', env.VOTE_SALT);
       const where = 'seller = ? AND item = ? AND price = ? AND channel = ? AND room = ? AND reporter = ?';
       const keys = [from.seller, from.item, from.price, from.channel, from.room, reporter];
+      const original = await env.DB.prepare(`SELECT id FROM listings WHERE ${where}`).bind(...keys).first();
+      const target = await env.DB.prepare('SELECT id, reporter, qty, sold FROM listings WHERE seller = ? AND item = ? AND price = ? AND channel = ? AND room = ?')
+        .bind(to.seller, to.item, to.price, to.channel, to.room).first();
+      // A lost response may be retried. Acknowledge only a correction belonging to this reporter with identical values.
+      if (!original) return target?.reporter === reporter && target.qty === to.qty && target.sold === Number(to.sold)
+        ? json({ fixed: 1 }, cors) : json({ error: 'listing not found' }, cors, 404);
+      if (target && target.id !== original.id) return json({ error: 'listing already exists' }, cors, 409);
       try {
-        const res = await env.DB.prepare(`UPDATE listings SET item = ?, price = ?, qty = ?, sold = ?, seller = ?, last_seen = datetime('now') WHERE ${where}`)
-          .bind(to.item, to.price, to.qty, to.sold ? 1 : 0, to.seller, ...keys)
+        const res = await env.DB.prepare(`UPDATE listings SET item = ?, price = ?, qty = ?, sold = ?, seller = ?, channel = ?, room = ? WHERE ${where}`)
+          .bind(to.item, to.price, to.qty, to.sold ? 1 : 0, to.seller, to.channel, to.room, ...keys)
           .run();
         return json({ fixed: res.meta.changes }, cors);
       } catch (e) {
-        await env.DB.prepare(`DELETE FROM listings WHERE ${where}`).bind(...keys).run();
-        return json({ fixed: 1, merged: true }, cors);
+        // A database error must never erase the original observation.
+        return json({ error: 'correction failed' }, cors, 503);
       }
     }
 
     if (url.pathname === '/listings' && req.method === 'POST') {
       if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
       const body = await req.json().catch(() => null);
-      const rows = Array.isArray(body?.items) ? body.items.slice(0, 100) : [];
+      if (!Array.isArray(body?.items) || !body.items.length || body.items.length > 100) return json({ error: 'send 1 to 100 listings' }, cors, 400);
+      const rows = body.items;
       const valid = await knownItems().catch(() => null);
       if (!valid) return json({ error: 'item index unavailable' }, cors, 503);
       const ok = rows.filter(
         (r) =>
           valid.has(r.item) &&
           Number.isInteger(r.price) && r.price >= 1 && r.price <= 10_000_000_000 &&
+          typeof r.sold === 'boolean' &&
           (r.qty === undefined || (Number.isInteger(r.qty) && r.qty >= 1 && r.qty <= 10000)) &&
           typeof r.seller === 'string' && /^[A-Za-z0-9]{2,13}$/.test(r.seller) &&
           Number.isInteger(r.channel) && r.channel >= 1 && r.channel <= 40 &&
           Number.isInteger(r.room) && r.room >= 1 && r.room <= 40
       );
-      if (!ok.length) return json({ stored: 0 }, cors);
+      if (ok.length !== rows.length) return json({ error: 'invalid listing', stored: 0 }, cors, 400);
       const ip = req.headers.get('CF-Connecting-IP') || '';
       const reporter = await visitorHash(ip, 'scan', env.VOTE_SALT);
       // Seeing the same listing again only moves its last-seen time, and a slot once seen sold stays sold.
       const stmt = env.DB.prepare(
         `INSERT INTO listings (item, price, qty, sold, seller, channel, room, reporter) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-         ON CONFLICT (seller, item, price, channel, room) DO UPDATE SET last_seen = datetime('now'), sold = MAX(sold, excluded.sold)`
+         ON CONFLICT (seller, item, price, channel, room) DO UPDATE SET last_seen = datetime('now'), qty = excluded.qty, sold = MAX(sold, excluded.sold)`
       );
       await env.DB.batch(ok.map((r) => stmt.bind(r.item, r.price, r.qty || 1, r.sold ? 1 : 0, r.seller, r.channel, r.room, reporter)));
       return json({ stored: ok.length }, cors);
