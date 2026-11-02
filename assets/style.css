@@ -310,3 +310,7 @@ a.band-link:hover { border-color: var(--accent); }
 .tool-hit small { color: var(--muted); }
 .tool-hit:hover { background: var(--panel); }
 .tool-hits[hidden] { display: none; }
+
+/* ads */
+.ad-slot { margin: 36px 0; text-align: center; min-height: 104px; }
+.ad-slot .ad-label { display: block; margin-bottom: 6px; color: #64748b; font-size: 10px; letter-spacing: 0.12em; }

@@ -1044,6 +1044,18 @@ const related = (g) => {
     : '';
 };
 
+// Kakao AdFit units are size-fixed, so render the 320x100 unit on phones and 728x90 elsewhere; renders nothing until units are configured.
+function adfitSlot() {
+  const { mobile, pc } = config.adfit || {};
+  if (!mobile && !pc) return '';
+  const ins = (unit, w, h, media) =>
+    unit ? `<ins class="kakao_ad_area" style="display:none" data-ad-unit="${esc(unit)}" data-ad-width="${w}" data-ad-height="${h}" data-media="${media}"></ins>` : '';
+  return `<aside class="ad-slot" aria-label="Advertisement"><span class="ad-label">ADVERTISEMENT</span>
+${ins(mobile, 320, 100, 'mobile')}${ins(pc, 728, 90, 'pc')}
+<script>(function(){var a=document.currentScript.parentNode,k=a.querySelector('[data-media="'+(innerWidth<760?'mobile':'pc')+'"]');if(k)a.querySelectorAll('ins').forEach(function(e){if(e!==k)e.remove()})})()</script>
+<script async src="//t1.daumcdn.net/kas/static/ba.min.js"></script></aside>`;
+}
+
 function guideBody(g) {
   const body = g.body
     .replace(/<table>/g, '<div class="table-wrap"><table class="data">')
@@ -1056,6 +1068,7 @@ function guideBody(g) {
 <h1>${esc(g.h1)}</h1>
 <p class="byline">GMS Hub 작성 · 처음 쓴 날 ${fmtDate(g.published)} · 마지막 확인 ${fmtDate(g.updated)}</p>
 ${body}
+${adfitSlot()}
 ${sources ? `<h2>참고한 자료</h2>\n<ul class="sources">${sources}</ul>` : ''}
 ${related(g)}
 <p class="muted">공개된 공략 자료와 팬 데이터베이스를 서로 맞춰 보고 정리했어요. 자료끼리 숫자가 다르면 확인된 쪽만 적거나 다르다고 밝혔어요. 게임이 업데이트되면 내용이 달라질 수 있어요. 틀린 부분은 <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>이나 <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub 이슈</a>로 알려 주세요.</p>
