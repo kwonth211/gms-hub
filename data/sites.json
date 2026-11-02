@@ -240,32 +240,6 @@
             "source": "Discord invite API",
             "date": "2026-10-28"
           }
-        },
-        {
-          "name": "아카라이브 · 메이플스토리 클래식 참고 글",
-          "url": "https://arca.live/b/maplestoryclassic/185589612",
-          "icon": "chat",
-          "tint": "#3b82f6",
-          "langs": [
-            "ko"
-          ],
-          "checked": false,
-          "desc": {
-            "ko": "아카라이브 maplestoryclassic 채널의 공유받은 게시글 링크예요. 원문으로 바로 이동할 수 있어요.",
-            "en": "A shared reference post in Arca Live’s maplestoryclassic channel. Open the original Korean post."
-          },
-          "features": {
-            "ko": [
-              "한국어",
-              "아카라이브",
-              "참고 게시글"
-            ],
-            "en": [
-              "Korean",
-              "Arca Live",
-              "Reference post"
-            ]
-          }
         }
       ]
     },

@@ -7,7 +7,6 @@ INSERT OR IGNORE INTO votes (site, count) VALUES ('reddit-com-r-msclassicworld',
 INSERT OR IGNORE INTO votes (site, count) VALUES ('gall-dcinside-com-mgallery-board-lists-id-maplestoryclassworld', 0);
 INSERT OR IGNORE INTO votes (site, count) VALUES ('gall-dcinside-com-mgallery-board-lists-id-classicworld', 0);
 INSERT OR IGNORE INTO votes (site, count) VALUES ('discord-gg-e7kutcmpxw', 0);
-INSERT OR IGNORE INTO votes (site, count) VALUES ('arca-live-b-maplestoryclassic-185589612', 0);
 INSERT OR IGNORE INTO votes (site, count) VALUES ('meowdb-com-msclassic-ko', 0);
 INSERT OR IGNORE INTO votes (site, count) VALUES ('henesys-gg', 0);
 INSERT OR IGNORE INTO votes (site, count) VALUES ('maplestory-quest', 0);
