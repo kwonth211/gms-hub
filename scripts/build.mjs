@@ -574,12 +574,12 @@ function footer(lang) {
 </div></footer>`;
 }
 
-function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], ld = [], only }) {
+function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], ld = [], only, rails }) {
   return `${head({ lang, title, desc, pagePath, ld, only })}
 <body data-page="${pageKey}">
 ${header(lang, pagePath, only)}
 <main>${body}</main>
-${footer(lang)}
+${rails ? adfitRails() : ''}${footer(lang)}
 <script src="${href('/assets/common.js')}" defer></script>
 ${scripts.map((s) => `<script src="${href(`/assets/${s}`)}" defer></script>`).join('\n')}
 </body>
@@ -1044,16 +1044,31 @@ const related = (g) => {
     : '';
 };
 
-// Kakao AdFit units are size-fixed, so render the 320x100 unit on phones and 728x90 elsewhere; renders nothing until units are configured.
+// Kakao AdFit units are size-fixed, so each <ins> declares the viewport it fits and the inline script drops the rest before the
+// loader runs (a hidden unit would still count impressions). Renders nothing for units left blank in site.config.json.
+const adfitIns = (unit, w, h, minWidth = 0, maxWidth = 99999) =>
+  unit
+    ? `<ins class="kakao_ad_area" style="display:none" data-ad-unit="${esc(unit)}" data-ad-width="${w}" data-ad-height="${h}" data-min="${minWidth}" data-max="${maxWidth}"></ins>`
+    : '';
+const adfitLoader = `<script>(function(){var a=document.currentScript.parentNode;a.querySelectorAll('ins[data-min]').forEach(function(e){if(innerWidth<+e.dataset.min||innerWidth>+e.dataset.max)e.remove()});if(!a.querySelector('ins'))a.remove()})()</script>
+<script async src="//t1.kakaocdn.net/kas/static/ba.min.js"></script>`;
+
 function adfitSlot() {
   const { mobile, pc } = config.adfit || {};
   if (!mobile && !pc) return '';
-  const ins = (unit, w, h, media) =>
-    unit ? `<ins class="kakao_ad_area" style="display:none" data-ad-unit="${esc(unit)}" data-ad-width="${w}" data-ad-height="${h}" data-media="${media}"></ins>` : '';
   return `<aside class="ad-slot" aria-label="Advertisement"><span class="ad-label">ADVERTISEMENT</span>
-${ins(mobile, 320, 100, 'mobile')}${ins(pc, 728, 90, 'pc')}
-<script>(function(){var a=document.currentScript.parentNode,k=a.querySelector('[data-media="'+(innerWidth<760?'mobile':'pc')+'"]');if(k)a.querySelectorAll('ins').forEach(function(e){if(e!==k)e.remove()})})()</script>
-<script async src="//t1.daumcdn.net/kas/static/ba.min.js"></script></aside>`;
+${adfitIns(mobile, 320, 100, 0, 759)}${adfitIns(pc, 728, 90, 760)}
+${adfitLoader}</aside>`;
+}
+
+// Skyscrapers in the empty gutters beside the 1200px layout; only screens wide enough to fit them without covering content get them.
+function adfitRails() {
+  const { railLeft, railRight } = config.adfit || {};
+  if (!railLeft && !railRight) return '';
+  const rail = (unit, side) =>
+    unit ? `<div class="ad-rail ad-rail-${side}">${adfitIns(unit, 160, 600, 1580)}</div>` : '';
+  return `<aside class="ad-rails" aria-label="Advertisement">${rail(railLeft, 'left')}${rail(railRight, 'right')}
+${adfitLoader}</aside>`;
 }
 
 function guideBody(g) {
@@ -1141,7 +1156,7 @@ for (const lang of LANGS) {
   });
 
   const defs = {
-    home: { title: t.homeTitle, desc: t.homeDesc, body: homeBody(lang), scripts: ['home.js'], ld: [websiteLd, directoryLd, faqLd] },
+    home: { title: t.homeTitle, desc: t.homeDesc, body: homeBody(lang), scripts: ['home.js'], ld: [websiteLd, directoryLd, faqLd], rails: true },
     training: {
       title: t.trTitle,
       desc: t.trDesc,
