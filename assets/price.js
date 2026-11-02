@@ -45,7 +45,9 @@ function fmtPrice(n) {
 function prepare(rows) {
   return rows.map(([id, ko, en, cat, sub, lv]) => {
     const hay = `${ko} ${en}`.toLowerCase();
-    return { id, ko, en, cat, sub, lv, hay, flat: squash(hay), name: ko || en };
+    // Korean pages lead with the Korean name and show the English one under it; English pages use English only.
+    const name = i18n.lang === 'ko' ? ko || en : en;
+    return { id, ko, en, cat, sub, lv, hay, flat: squash(hay), name };
   });
 }
 
@@ -63,7 +65,7 @@ function search(q) {
   const hits = items.filter((it) => it.flat.includes(whole) || words.every((w) => it.hay.includes(w) || it.flat.includes(squash(w))));
   // Exact names first, then names that start with the query, then shorter names.
   const rank = (it) => (squash(it.name) === whole || squash(it.en) === whole ? 0 : squash(it.name).startsWith(whole) || squash(it.en).startsWith(whole) ? 1 : 2);
-  return hits.sort((a, b) => rank(a) - rank(b) || !!b.ko - !!a.ko || a.name.length - b.name.length || a.id - b.id);
+  return hits.sort((a, b) => rank(a) - rank(b) || (i18n.lang === 'ko' ? !!b.ko - !!a.ko : 0) || a.name.length - b.name.length || a.id - b.id);
 }
 
 function siteLink(site, it) {
@@ -73,8 +75,8 @@ function siteLink(site, it) {
 }
 
 function card(it) {
-  const kind = [i18n.subs[it.sub] || i18n.cats[it.cat] || it.sub, it.lv ? fill(i18n.level, { lv: it.lv }) : ''].filter(Boolean).join(' · ');
-  const en = it.ko && it.en !== it.ko ? `<span class="en">${esc(it.en)}</span>` : '';
+  const kind = [i18n.subs[it.sub] || (i18n.lang === 'ko' ? i18n.cats[it.cat] : it.sub), it.lv ? fill(i18n.level, { lv: it.lv }) : ''].filter(Boolean).join(' · ');
+  const en = it.name !== it.en ? `<span class="en">${esc(it.en)}</span>` : '';
   return `<article class="item-card" data-id="${it.id}">
 <div class="item-head"><img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="32" height="32" loading="lazy"><div><strong>${esc(it.name)}</strong>${en}<small>${esc(kind)}</small></div></div>
 ${i18n.api ? `<div class="hub-price" data-id="${it.id}"><span class="hub-label">${i18n.hubLabel}</span><span class="hub-value">…</span></div>` : ''}

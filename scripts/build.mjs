@@ -1326,7 +1326,7 @@ for (const lang of LANGS) {
   });
 
   const defs = {
-    home: { title: t.homeTitle, desc: t.homeDesc, body: homeBody(lang), scripts: ['home.js'], ld: [websiteLd, directoryLd, faqLd], rails: true },
+    home: { title: t.homeTitle, desc: t.homeDesc, body: homeBody(lang), scripts: ['home.js'], ld: [websiteLd, directoryLd, faqLd], rails: lang === 'ko' },  // Kakao AdFit only serves Korean ads, so English pages stay ad-free
     training: {
       title: t.trTitle,
       desc: t.trDesc,

@@ -89,6 +89,7 @@ const itemRows = document.getElementById('item-rows');
 const moreItems = document.getElementById('more-items');
 const priceSites = JSON.parse(itemHits.dataset.sites);
 const ITEM_ROWS = 5;
+const korean = document.documentElement.lang === 'ko';
 let items = null;
 let itemsLoading = false;
 const squash = (s) => s.toLowerCase().replace(/\s+/g, '');
@@ -101,7 +102,7 @@ function itemRow(it) {
       return `<a class="item-link${s.direct ? ' direct' : ''}" href="${escHtml(url)}" target="_blank" rel="noopener" data-site="${s.id}" data-item="${it.id}"${s.direct ? '' : ` data-copy="${escHtml(it.en)}"`}>${s.name}</a>`;
     })
     .join('');
-  return `<div class="item-row"><img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="28" height="28" loading="lazy"><span class="item-name"><strong>${escHtml(it.name)}</strong>${it.ko ? `<small>${escHtml(it.en)}</small>` : ''}</span><span class="item-links">${links}</span></div>`;
+  return `<div class="item-row"><img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="28" height="28" loading="lazy"><span class="item-name"><strong>${escHtml(it.name)}</strong>${it.name !== it.en ? `<small>${escHtml(it.en)}</small>` : ''}</span><span class="item-links">${links}</span></div>`;
 }
 
 function showItemHits(q) {
@@ -116,7 +117,7 @@ function showItemHits(q) {
       fetch(itemHits.dataset.items)
         .then((r) => r.json())
         .then((rows) => {
-          items = rows.map(([id, ko, en]) => ({ id, ko, en, name: ko || en, flat: squash(`${ko}${en}`) }));
+          items = rows.map(([id, ko, en]) => ({ id, ko, en, name: korean ? ko || en : en, flat: squash(`${ko}${en}`) }));
           filter();
         })
         .catch(() => {});
