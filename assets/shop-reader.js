@@ -19,14 +19,22 @@ const MAX_LIST_W = 210;
 // game). Works for any window size and any screen scaling; null when no shop list is on screen.
 const LIST_W = 198;
 export function detectScale(img) {
-  const { width, height, data } = img;
-  // Separator runs of plausible list widths, then the spacing between them: rows are 40 game pixels apart, which stays
-  // measurable when blurring has smeared the line ends.
+  const { width, height } = img;
+  // Separator lines blur into 2-3px bands when the capture is scaled smoothly, so they are found as thin dark lines: pixels
+  // clearly darker than the panel rows three or four pixels above and below, in runs as long as the (scaled) list.
+  const dark = (x, y) => {
+    const l = lum(img, x, y);
+    for (const d of [3, 4]) {
+      if (y - d < 0 || y + d >= height) continue;
+      if (l < lum(img, x, y - d) - 25 && l < lum(img, x, y + d) - 25 && l > 90) return true;
+    }
+    return false;
+  };
   const runs = [];
-  for (let y = 0; y < height; y++) {
+  for (let y = 4; y < height - 4; y++) {
     let start = -1;
     for (let x = 0; x <= width; x++) {
-      const on = x < width && near(data, (y * width + x) * 4, SEPARATOR, 18);
+      const on = x < width && dark(x, y);
       if (on && start < 0) start = x;
       if (!on && start >= 0) {
         const len = x - start;
@@ -36,26 +44,35 @@ export function detectScale(img) {
     }
   }
   if (!runs.length) return null;
-  // Group by left edge (lines of one list share it), merging the 2-3 pixel rows a thick blurred line covers.
+  // Group by left edge (lines of one list share it), merging the rows one thick blurred line covers.
   const groups = new Map();
   for (const r of runs) {
-    const key = Math.round(r.x / 6);
+    const key = Math.round(r.x / 8);
     if (!groups.has(key)) groups.set(key, []);
     const g = groups.get(key);
     const last = g[g.length - 1];
-    if (last && r.y - last.y <= 3) last.y = (last.y + r.y) / 2;
-    else g.push({ y: r.y, len: r.len });
+    if (last && r.y - last.last <= 3) {
+      last.last = r.y;
+      last.y = (last.first + r.y) / 2;
+    } else g.push({ y: r.y, first: r.y, last: r.y, len: r.len });
   }
-  const list = [...groups.values()].sort((a, b) => b.length - a.length)[0];
-  const gaps = [];
-  for (let k = 1; k < list.length; k++) gaps.push(list[k].y - list[k - 1].y);
-  const steady = gaps.filter((gap) => gap >= ROW_H * 0.9);
-  if (steady.length) {
-    steady.sort((a, b) => a - b);
-    return steady[Math.floor(steady.length / 2)] / ROW_H;
+  // The list: the group whose lines are spaced most regularly (rows are 40 game pixels apart).
+  let best = null;
+  for (const g of groups.values()) {
+    if (g.length < 2) continue;
+    const gaps = [];
+    for (let k = 1; k < g.length; k++) gaps.push(g[k].y - g[k - 1].y);
+    gaps.sort((a, b) => a - b);
+    const mid = gaps[Math.floor(gaps.length / 2)];
+    const steady = gaps.filter((gap) => Math.abs(gap - mid) <= 2).length;
+    const scale = mid / ROW_H;
+    const lens = g.map((l) => l.len).sort((a, b) => a - b);
+    const byLen = lens[Math.floor(lens.length / 2)] / LIST_W;
+    // Spacing and line length must tell the same story, which rules out other evenly spaced lines on screen.
+    if (Math.abs(scale - byLen) > 0.25 * scale) continue;
+    if (!best || steady > best.steady) best = { scale, steady };
   }
-  const lens = list.map((l) => l.len).sort((a, b) => a - b);
-  return lens[Math.floor(lens.length / 2)] / LIST_W;
+  return best ? best.scale : null;
 }
 
 // Every list row ends in a one-pixel separator line, so long separator runs give both the list's x-range and each row's bottom.
