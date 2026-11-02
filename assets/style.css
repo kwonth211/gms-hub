@@ -397,6 +397,8 @@ a.band-link:hover { border-color: var(--accent); }
 .scan-checks li { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; align-items: center; padding: 10px 12px; border-radius: 10px; background: var(--panel-2); border: 1px solid var(--line); }
 .scan-checks .dot { grid-row: span 2; width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
 .scan-checks strong { font-size: 0.85rem; }
+.room-ask { grid-column: 1 / -1; display: flex; gap: 6px; margin-top: 6px; }
+.room-ask input { width: 70px; padding: 6px 8px; }
 .scan-checks small { font-size: 0.75rem; color: var(--muted); }
 .scan-checks [data-state='ok'] { border-color: var(--ok); }
 .scan-checks [data-state='ok'] .dot { background: var(--ok); }
@@ -456,6 +458,8 @@ a.band-link:hover { border-color: var(--accent); }
 .recent-list li.sold .name, .recent-list li.sold .price { opacity: 0.55; }
 .recent-list li.sold .price { text-decoration: line-through; }
 .recent-list .tag { font-size: 0.62rem; font-weight: 800; padding: 1px 5px; border-radius: 4px; border: 1px solid var(--line); margin-left: 4px; }
+.market-empty { padding: 14px 4px; font-size: 0.85rem; color: var(--muted); line-height: 1.5; }
+.market-scan { margin-left: auto; }
 .market-more { display: inline-block; margin-top: 10px; font-size: 0.82rem; color: var(--accent-2); }
 @media (max-width: 1000px) {
   .market-grid { grid-template-columns: 1fr; }

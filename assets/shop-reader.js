@@ -242,6 +242,8 @@ const MAP_AREA_W = 600;
 const MAP_AREA_H = 450;
 const MAP_END_GAP = 6;
 let roomAt = null;
+// Pattern key of the last Free Market title seen, so a player can name a room the table does not know yet.
+export let lastRoomKey = null;
 
 function lightColumns(img, x0, x1, y0) {
   const cols = [];
@@ -294,6 +296,7 @@ export function findRoom(img, map) {
   for (let y0 = 0; !hit && y0 + LINE_H < Math.min(img.height, MAP_AREA_H); y0++) hit = at(y0);
   if (!hit) return null;
   roomAt = hit.y0;
+  lastRoomKey = hit.key;
   // 0 means "a Free Market room, but one whose title has not been learned yet".
   return map.rooms[hit.key] ?? 0;
 }

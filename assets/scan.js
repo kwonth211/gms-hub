@@ -1,7 +1,7 @@
 // Shop scanner. Players share the game window in Chrome; the page watches it and reports what it recognized. The game screen
 // itself is never shown back to the player. In local development (scripts/scan-dev.mjs) changed frames are also posted to the
 // dev server, which keeps them as samples for building the shop reader.
-import { findChannel, findRoom, findShopRows, matchItem, readLine, readOwner } from './shop-reader.js';
+import { findChannel, findRoom, findShopRows, lastRoomKey, matchItem, readLine, readOwner } from './shop-reader.js';
 
 const i18n = JSON.parse(document.getElementById('i18n').textContent);
 const $ = (id) => document.getElementById(id);
@@ -36,6 +36,7 @@ Promise.all([fetch(i18n.itemsUrl).then((r) => r.json()), fetch(i18n.glyphsUrl).t
     items = rows.map(([id, ko, en]) => ({ id, ko, en }));
     table = glyphs.glyphs;
     mapData = glyphs.map;
+    Object.assign(mapData.rooms, taughtRooms());
   })
   .catch(() => {});
 
@@ -91,8 +92,9 @@ function recognize(canvas) {
   else check('channel', 'warn', i18n.channelNone);
   // Changing channel always shows the channel window, so walking between rooms never makes the kept channel stale.
   const fm = findRoom(img, mapData);
-  if (fm) room = fm;
-  if (fm === 0) check('room', 'warn', i18n.roomUnknown);
+  // An unknown room must not inherit the previous room's number, or its listings would be filed under the wrong room.
+  if (fm !== null) room = fm || null;
+  if (fm === 0) askRoom();
   else if (room) check('room', 'ok', fill(i18n.roomOk, { room }));
   else check('room', 'warn', i18n.roomNone);
   const rows = findShopRows(img);
@@ -112,12 +114,59 @@ function recognize(canvas) {
       owner,
       channel,
       room,
+      // Rows read in a room nobody has named yet remember its title, so naming it later fills them in.
+      roomKey: fm === 0 ? lastRoomKey : null,
       sure: !!match && match.confidence >= 0.9 && !!m && !name.includes('?') && !priceText.includes('?')
     };
   });
 }
 
 const where = (ch, fm) => [ch ? `CH ${ch}` : '', fm ? `FM${fm}` : ''].filter(Boolean);
+
+// Rooms the table does not know yet can be named by the player once; the answer is kept in this browser and sent to the
+// server so the shared table can learn it.
+const TAUGHT_KEY = 'gmshub_rooms';
+function taughtRooms() {
+  try {
+    return JSON.parse(localStorage.getItem(TAUGHT_KEY) || '{}');
+  } catch (e) {
+    return {};
+  }
+}
+
+function askRoom() {
+  const li = $('check-room');
+  if (li.querySelector('form')) return;
+  li.dataset.state = 'warn';
+  li.querySelector('small').textContent = i18n.roomAsk;
+  const key = lastRoomKey;
+  const form = document.createElement('form');
+  form.className = 'room-ask';
+  form.innerHTML = `<input type="number" min="1" max="40" inputmode="numeric" aria-label="${i18n.roomAsk}" required><button class="btn small-btn" type="submit">${i18n.roomSave}</button>`;
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const n = Number(form.querySelector('input').value);
+    if (!Number.isInteger(n) || n < 1 || n > 40) return;
+    mapData.rooms[key] = n;
+    const taught = taughtRooms();
+    taught[key] = n;
+    try {
+      localStorage.setItem(TAUGHT_KEY, JSON.stringify(taught));
+    } catch (err) {}
+    if (i18n.api) fetch(`${i18n.api}/room-title`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key, room: n }) }).catch(() => {});
+    room = n;
+    for (const entry of listings.values())
+      if (entry.r.roomKey === key && !entry.r.room) {
+        entry.r.room = n;
+        render(entry.r, entry.tr);
+      }
+    upload();
+    form.remove();
+    check('room', 'ok', fill(i18n.roomOk, { room: n }));
+    track('scan_room_taught', { room: n });
+  });
+  li.appendChild(form);
+}
 
 // The five recognition steps under the buttons: each is waiting, fine, or needs something from the player.
 function check(step, state, text) {
@@ -191,7 +240,10 @@ function show(found) {
         entry.r.channel = channel;
         render(entry.r, entry.tr);
       }
-  if (!found.length) return;
+  if (!found.length) {
+    upload();
+    return;
+  }
   results.querySelector('.empty')?.remove();
   results.querySelectorAll('tr.fresh').forEach((tr) => tr.classList.remove('fresh'));
   // Prepending in reverse keeps the rows in the same order as on screen.

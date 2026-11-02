@@ -198,6 +198,8 @@ const T = {
 <p>사이트 카드의 👍 추천을 누르면 같은 사람이 한 사이트를 여러 번 추천하지 못하게, 접속 IP 주소를 비밀 값과 섞어 되돌릴 수 없는 해시로 바꾼 뒤 추천한 사이트·시각과 함께 Cloudflare에 저장해요. IP 주소 원문은 저장하지 않아요. 추천 수를 보여주는 것 말고는 쓰지 않으며, 삭제를 원하면 아래 연락처로 알려주세요.</p>${config.priceReports ? `
 <h2>시세 제보</h2>
 <p>시세 검색에서 가격을 올리면 아이템·가격·종류(팔림/파는 중/삽니다)·시각을 Cloudflare에 저장하고 모든 방문자에게 통계로 보여 줘요. 도배를 막기 위해 IP 주소를 추천 기능과 같은 방식의 되돌릴 수 없는 해시로 바꿔 함께 저장하며, IP 주소 원문은 저장하지 않아요.</p>` : ''}
+<h2>상점 스캔</h2>
+<p>상점 스캔에서 공유한 게임 화면은 사용자의 브라우저 안에서만 읽고, 화면 이미지는 어디에도 보내지 않아요. 읽어 낸 아이템·가격·판매 여부와 함께 게임 안에 공개적으로 표시되는 상점 주인의 캐릭터 이름, 채널, 자유시장 방 번호를 Cloudflare에 저장하고 시세 통계와 '방금 올라온 매물'로 보여 줘요. 도배를 막기 위해 IP 주소를 되돌릴 수 없는 해시로 바꿔 함께 저장하며, IP 주소 원문은 저장하지 않아요. 자신의 캐릭터 정보 삭제를 원하면 아래 연락처로 알려 주세요.</p>
 <h2>브라우저 저장소</h2>
 <p>언어 선택, 즐겨찾기, 추천한 사이트 목록은 사용자의 브라우저(localStorage)에만 저장되고 서버로 전송되지 않아요. 브라우저의 사이트 데이터를 지우면 함께 지워져요.</p>
 <h2>어린이</h2>
@@ -408,6 +410,8 @@ const T = {
 <p>When you press 👍 on a site card, we turn your IP address into a salted, irreversible hash so one person can't recommend the same site twice, and store that hash with the site and time on Cloudflare. The raw IP address is never stored. It is used only to show recommendation counts; email us below to have it removed.</p>${config.priceReports ? `
 <h2>Price reports</h2>
 <p>When you add a price in Price Search, we store the item, price, type (sold/selling/buying) and time on Cloudflare and show them to everyone as statistics. To stop spam we also store the same kind of salted, irreversible IP hash used for recommendations. The raw IP address is never stored.</p>` : ''}
+<h2>Shop scan</h2>
+<p>The game screen you share in Shop Scan is read only inside your browser and the image is never sent anywhere. What it reads (item, price, sold or not) is stored on Cloudflare together with the shop owner's character name as shown publicly in the game, the channel and the Free Market room, and shown as price statistics and "Just listed". To stop spam we also store a salted, irreversible hash of your IP address; the raw IP is never stored. To have your character's listings removed, email us below.</p>
 <h2>Browser storage</h2>
 <p>Your language choice, favorites and the list of sites you recommended are stored only in your browser (localStorage) and never sent to a server. Clearing site data in your browser removes them.</p>
 <h2>Children</h2>
@@ -454,6 +458,7 @@ const PAGES = [
   { key: 'scroll', path: '/tools/scroll/' },
   { key: 'drop', path: '/tools/drop-rate/' },
   { key: 'price', path: '/tools/price/' },
+  { key: 'scan', path: '/tools/scan/' },
   { key: 'about', path: '/about/' },
   { key: 'privacy', path: '/privacy/' },
   { key: 'terms', path: '/terms/' }
@@ -636,7 +641,7 @@ ${stat}
 }
 
 // Live Free Market section above "What are you looking for?": a realtime-search style top 10 with average price, day-over-day
-// change and a 7-day trend, next to the newest scanned listings. Hidden until the API has something to show.
+// change and a 7-day trend, next to the newest scanned listings. With no data yet it invites the first scan.
 const LIVE = {
   ko: {
     title: '실시간 자유시장',
@@ -653,7 +658,9 @@ const LIVE = {
     updated: '{t} 갱신',
     sparkLabel: '{name} 7일 추이: {from}에서 {to}',
     noTrend: '추이 데이터 부족',
-    preview: '미리보기 · 실제 시세가 아닌 예시 데이터예요'
+    preview: '미리보기 · 실제 시세가 아닌 예시 데이터예요',
+    scan: '내 화면으로 상점 스캔',
+    empty: '아직 올라온 매물이 없어요. PC 크롬에서 메이플 창을 공유하고 상점을 열면 여기에 바로 나와요.'
   },
   en: {
     title: 'Live Free Market',
@@ -670,16 +677,18 @@ const LIVE = {
     updated: 'updated {t}',
     sparkLabel: '{name} 7-day trend: {from} to {to}',
     noTrend: 'not enough data for a trend',
-    preview: 'Preview · sample data, not real prices'
+    preview: 'Preview · sample data, not real prices',
+    scan: 'Scan shops from my screen',
+    empty: 'No listings yet. Share your MapleStory window in Chrome on a computer and open shops; they show up here right away.'
   }
 };
 
 function liveMarket(lang) {
   const t = LIVE[lang];
-  return `<section class="wrap market" id="live-market" hidden aria-labelledby="live-title"
+  return `<section class="wrap market" id="live-market" aria-labelledby="live-title"
  data-api="${esc(config.voteApi)}" data-items="${esc(href('/assets/items.json'))}" data-price="${esc(href(langPath(lang, '/tools/price/')))}"
  data-text="${esc(JSON.stringify(t))}">
-<header class="market-head"><span class="live-dot" aria-hidden="true"></span><h2 id="live-title">${t.title}</h2><p>${t.sub}</p><small id="live-updated"></small><strong class="market-preview" id="market-preview" hidden>${t.preview}</strong></header>
+<header class="market-head"><span class="live-dot" aria-hidden="true"></span><h2 id="live-title">${t.title}</h2><p>${t.sub}</p><small id="live-updated"></small><a class="btn small-btn market-scan" href="${href(langPath(lang, '/tools/scan/'))}">● ${t.scan}</a><strong class="market-preview" id="market-preview" hidden>${t.preview}</strong></header>
 <div class="market-grid">
 <div class="market-panel market-top" id="market-top" hidden>
 <h3>${t.top} <small>${t.topNote}</small></h3>
@@ -687,7 +696,7 @@ function liveMarket(lang) {
 </div>
 <div class="market-panel market-recent">
 <h3>${t.recent}</h3>
-<ol class="recent-list" id="live-rows"></ol>
+<ol class="recent-list" id="live-rows"><li class="market-empty">${t.empty}</li></ol>
 <a class="market-more" href="${href(langPath(lang, '/tools/price/'))}">${t.more}</a>
 </div>
 </div>
@@ -777,6 +786,7 @@ ${tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc)}
 ${tool('/tools/scroll/', 'scroll', t.navScroll, t.scCardDesc)}
 ${tool('/tools/drop-rate/', 'bag', t.navDrop, t.dropCardDesc)}
 ${tool('/tools/price/', 'coin', t.navPrice, PR[lang].cardDesc)}
+${tool('/tools/scan/', 'megaphone', SCAN[lang].h1, SCAN[lang].cardDesc)}
 </div>
 </section>
 ${guides.some((g) => g.lang === lang)
@@ -1092,11 +1102,12 @@ ${jsonScript('i18n', { lang, ...Object.fromEntries(Object.entries(t).filter(([k]
 // ---------- shop scanner (sample collection) ----------
 
 // First step of shop scanning: players share the game window and we save exact frames locally, to build the shop reader from.
-// Only built for local development (GMS_DEV=1) until the reader itself works.
+// Players share the game window and the page reads open shops into the shared price data.
 const SCAN = {
   ko: {
-    title: '상점 스캔 | GMS Hub',
+    title: '글클메 상점 스캔: 화면 공유로 자유시장 시세 올리기 | GMS Hub',
     h1: '상점 스캔',
+    cardDesc: '메이플 창을 공유하면 열어 본 상점의 시세가 자동으로 올라가요. PC 크롬 전용.',
     lead: '메이플 창을 크롬으로 공유하고 자유시장을 돌면, 열어 본 상점의 물건과 가격을 자동으로 읽어 시세에 반영해요.',
     steps: [
       ['창 모드로 실행', '메이플을 창 모드(1366×768 권장)로 켜고 언어는 영어로 두세요. 맥에서는 크롬과 메이플 둘 다 전체 화면이 아니어야 창을 공유할 수 있어요.'],
@@ -1124,7 +1135,8 @@ const SCAN = {
       channelOk: 'CH {ch}',
       channelNone: '채널 변경 창을 한 번 열었다 닫아 주세요',
       roomOk: '자유시장 {room}번 방',
-      roomUnknown: '아직 모르는 방이에요. 화면이 저장돼 다음 업데이트부터 인식돼요',
+      roomAsk: '처음 보는 방이에요. 미니맵의 방 번호를 한 번만 알려 주세요',
+      roomSave: '확인',
       roomNone: '미니맵에 자유시장 방 이름이 보이게 해 주세요',
       uploadOk: '{n}개 반영됨',
       uploadNeed: '채널과 위치를 알아야 반영해요',
@@ -1135,8 +1147,9 @@ const SCAN = {
     }
   },
   en: {
-    title: 'Shop Scan | GMS Hub',
+    title: 'Shop Scan: Share Your Screen to Add Free Market Prices | GMS Hub',
     h1: 'Shop Scan',
+    cardDesc: 'Share your game window and the shops you open become price data. Chrome on a computer.',
     lead: 'Share your MapleStory window in Chrome and walk the Free Market; the shops you open are read automatically and added to the prices.',
     steps: [
       ['Run in windowed mode', 'Use windowed mode (1366×768 recommended) with the game in English. On a Mac, neither Chrome nor MapleStory can be full screen for window sharing to work.'],
@@ -1164,7 +1177,8 @@ const SCAN = {
       channelOk: 'CH {ch}',
       channelNone: 'Open and close the Change Channel window once',
       roomOk: 'Free Market room {room}',
-      roomUnknown: "A room we don't know yet. It is saved and will be recognized after the next update",
+      roomAsk: 'A room we have not seen yet. Tell us its number from the minimap, just once',
+      roomSave: 'Save',
       roomNone: 'Keep the Free Market room name visible on the minimap',
       uploadOk: '{n} added',
       uploadNeed: 'Needs channel and location first',
@@ -1524,6 +1538,13 @@ for (const lang of LANGS) {
       scripts: ['drop.js'],
       ld: [appLd(t.dropH1, t.dropDesc, '/tools/drop-rate/'), breadcrumbLd(lang, t.dropH1, '/tools/drop-rate/')]
     },
+    scan: {
+      title: SCAN[lang].title,
+      desc: SCAN[lang].lead,
+      body: scanBody(lang),
+      modules: ['scan.js'],
+      ld: [appLd(SCAN[lang].h1, SCAN[lang].lead, '/tools/scan/'), breadcrumbLd(lang, SCAN[lang].h1, '/tools/scan/')]
+    },
     price: {
       title: PR[lang].title,
       desc: PR[lang].desc,
@@ -1551,14 +1572,6 @@ for (const lang of LANGS) {
   for (const p of PAGES) {
     const def = p.band ? bandDef(p.band) : defs[p.key];
     write(path.join(lang, p.path, 'index.html'), page({ lang, pageKey: p.key, pagePath: p.path, ...def }));
-  }
-  if (process.env.GMS_DEV) {
-    const pagePath = '/tools/scan/';
-    write('assets/shop-glyphs.json', fs.readFileSync(path.join(root, 'data/shop-glyphs.json')));
-    write(
-      path.join(lang, pagePath, 'index.html'),
-      page({ lang, pageKey: 'scan', pagePath, title: SCAN[lang].title, desc: SCAN[lang].lead, body: scanBody(lang), modules: ['scan.js'], noindex: true })
-    );
   }
 
   const langGuides = guides.filter((g) => g.lang === lang);
@@ -1681,6 +1694,7 @@ fs.writeFileSync(path.join(root, 'worker', 'seed.sql'), `${seed}\n`);
 
 fs.cpSync(path.join(root, 'assets'), path.join(out, 'assets'), { recursive: true });
 // Compact item index for the price search: [id, korean, english, category, subcategory, level].
+write('assets/shop-glyphs.json', fs.readFileSync(path.join(root, 'data/shop-glyphs.json')));
 write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko || '', i.en, i.cat, i.sub, i.lv || 0])));
 
 console.log(`Built ${PAGES.length * LANGS.length} pages, ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);

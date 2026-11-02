@@ -393,9 +393,8 @@ async function refreshLive() {
     const byId = new Map(items.map((it) => [it.id, it]));
     const ranked = top ? renderTop(top, byId) : 0;
     const listed = recent ? renderRecent(recent, byId) : 0;
-    if (!ranked && !listed) return;
+    if (!listed) document.getElementById('live-rows').innerHTML = `<li class="market-empty">${escHtml(liveText.empty)}</li>`;
     if (recent?.length) document.getElementById('live-updated').textContent = liveText.updated.replace('{t}', ago(recent[0].seen));
-    live.hidden = false;
   } catch (e) {}
 }
 

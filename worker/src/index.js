@@ -202,6 +202,18 @@ export default {
       return json(results, cors, 200, 'public, max-age=20');
     }
 
+    // Players name Free Market rooms the scanner does not know; collected here and merged into the shared table by hand.
+    if (url.pathname === '/room-title' && req.method === 'POST') {
+      if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
+      const body = await req.json().catch(() => null);
+      const room = Number(body?.room);
+      const key = typeof body?.key === 'string' ? body.key : '';
+      if (!Number.isInteger(room) || room < 1 || room > 40 || !/^[0-9.]{10,4000}$/.test(key)) return json({ error: 'bad input' }, cors, 400);
+      const reporter = await visitorHash(req.headers.get('CF-Connecting-IP') || '', 'room', env.VOTE_SALT);
+      await env.DB.prepare('INSERT INTO room_titles (key, room, reporter) VALUES (?, ?, ?)').bind(key, room, reporter).run();
+      return json({ ok: true }, cors);
+    }
+
     if (url.pathname === '/listings' && req.method === 'POST') {
       if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
       const body = await req.json().catch(() => null);
