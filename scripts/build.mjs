@@ -1,6 +1,7 @@
 // Static site generator for GMS Hub. No dependencies: `node scripts/build.mjs`.
 import fs from 'node:fs';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { spriteSvg, heroScene } from './sprites.mjs';
 
@@ -493,6 +494,10 @@ const siteId = (u) => {
   const x = new URL(u);
   return `${x.hostname.replace(/^www\./, '')}${x.pathname}${x.search}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80);
 };
+const scriptSrc = (name) => {
+  const version = createHash('sha256').update(fs.readFileSync(path.join(root, 'assets', name))).digest('hex').slice(0, 12);
+  return href(`/assets/${name}?v=${version}`);
+};
 const srcLink = (url, label) => `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(label || host(url))}</a>`;
 
 function head({ lang, title, desc, pagePath, noindex, ld = [], only }) {
@@ -599,7 +604,7 @@ ${header(lang, pagePath, only)}
 <main>${body}</main>
 ${footer(lang)}
 <script src="${href('/assets/common.js')}" defer></script>
-${scripts.map((s) => `<script src="${href(`/assets/${s}`)}" defer></script>`).join('\n')}
+${scripts.map((s) => `<script src="${scriptSrc(s)}" defer></script>`).join('\n')}
 ${modules.map((s) => `<script type="module" src="${href(`/assets/${s}`)}"></script>`).join('\n')}
 </body>
 </html>`;
