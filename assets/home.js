@@ -72,6 +72,9 @@ function filter() {
 
 const korean = document.documentElement.lang === 'ko';
 const searchPanel = document.getElementById('search-results');
+const searchShell = document.querySelector('.home-search-shell');
+const searchSubmit = document.querySelector('.search-submit');
+let searchOpen = false;
 const searchGroups = document.getElementById('search-groups');
 const searchStatus = document.getElementById('search-status');
 const searchEmpty = document.getElementById('search-empty');
@@ -151,13 +154,26 @@ function resultRow(entry) {
   return `<a class="search-result" href="${escHtml(entry.href)}" data-result-type="${entry.type}" data-result-id="${escHtml(entry.id)}"${external ? ` target="_blank" rel="noopener" aria-label="${escHtml(entry.title)} · ${labels.external}"` : ''}>${icon}<span class="search-result-copy"><strong>${escHtml(entry.title)}</strong><small>${escHtml(entry.description || '')}</small></span><span class="search-result-action">${entry.type === 'item' ? labels.market : external ? '↗' : '→'}</span></a>`;
 }
 
+function sizeSearchPanel() {
+  const box = searchShell.getBoundingClientRect();
+  const viewport = window.visualViewport;
+  const top = (viewport?.offsetTop || 0) + 12;
+  const bottom = top + (viewport?.height || window.innerHeight) - 24;
+  const below = bottom - box.bottom - 8;
+  const above = box.top - top - 8;
+  const openAbove = below < 180 && above > below;
+  searchPanel.classList.toggle('above', openAbove);
+  searchPanel.style.maxHeight = `${Math.max(140, Math.min(480, openAbove ? above : below))}px`;
+}
+
 function renderSearch() {
   const query = input.value.trim();
-  const active = !!query;
+  const active = !!query && searchOpen;
   searchPanel.hidden = !active;
   clearSearch.hidden = !input.value;
-  document.body.classList.toggle('search-active', active);
+  searchSubmit.setAttribute('aria-expanded', String(active));
   if (!active) return;
+  sizeSearchPanel();
   searchMatches = searchEntries([...staticEntries, ...itemEntries], query);
   const counts = { all: searchMatches.length, item: 0, site: 0, tool: 0 };
   searchMatches.forEach((entry) => counts[entry.type]++);
@@ -185,23 +201,32 @@ function renderSearch() {
   searchEmpty.hidden = !!visible || (!items && (searchType === 'all' || searchType === 'item'));
 }
 
-function syncSearchUrl() {
-  const url = new URL(location.href);
-  const query = input.value.trim();
-  if (query) url.searchParams.set('q', query); else url.searchParams.delete('q');
-  history.replaceState(null, '', url);
+// The popup never changes the page URL, layout or scroll position.
+function closeSearch(restoreFocus = false) {
+  if (restoreFocus) input.focus({ preventScroll: true });
+  searchOpen = false;
+  renderSearch();
+}
+function focusResult(link) {
+  if (!link) return;
+  link.focus({ preventScroll: true });
+  const box = searchPanel.getBoundingClientRect();
+  const row = link.getBoundingClientRect();
+  if (row.bottom > box.bottom) searchPanel.scrollTop += row.bottom - box.bottom + 8;
+  else if (row.top < box.top) searchPanel.scrollTop -= box.top - row.top + 8;
 }
 function updateSearch() {
+  searchOpen = !!input.value.trim();
   expanded.clear();
+  searchPanel.scrollTop = 0;
   renderSearch();
-  syncSearchUrl();
   if (input.value.trim() && !items && !itemsPromise && !itemError) loadItems().catch(() => {});
 }
 function resetSearch() {
   input.value = '';
   searchType = 'all';
   updateSearch();
-  input.focus();
+  input.focus({ preventScroll: true });
 }
 clearSearch.addEventListener('click', resetSearch);
 retryItems.addEventListener('click', () => { loadItems().catch(() => {}); renderSearch(); });
@@ -214,21 +239,44 @@ searchPanel.addEventListener('click', (e) => {
     const previousCount = searchGroups.querySelectorAll(`[data-result-type="${kind}"]`).length;
     expanded.set(kind, previousCount + PAGE_ROWS);
     renderSearch();
-    searchGroups.querySelectorAll(`[data-result-type="${kind}"]`)[previousCount]?.focus();
+    focusResult(searchGroups.querySelectorAll(`[data-result-type="${kind}"]`)[previousCount]);
   }
   const result = e.target.closest('[data-result-type]');
   if (result) track('home_search_click', { result_type: result.dataset.resultType, result_id: result.dataset.resultId });
 });
 document.getElementById('home-search').addEventListener('submit', (e) => {
   e.preventDefault();
+  input.focus({ preventScroll: true });
   updateSearch();
-  searchGroups.querySelector('.search-result')?.focus();
 });
 input.addEventListener('keydown', (e) => {
   if (e.isComposing) return;
-  if (e.key === 'Escape') { e.preventDefault(); resetSearch(); }
-  if (e.key === 'ArrowDown') { e.preventDefault(); searchGroups.querySelector('.search-result')?.focus(); }
+  if (e.key === 'ArrowDown' && input.value.trim()) {
+    e.preventDefault();
+    searchOpen = true;
+    renderSearch();
+    focusResult(searchGroups.querySelector('.search-result'));
+  }
 });
+searchShell.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !e.isComposing) {
+    e.preventDefault();
+    closeSearch(true);
+  }
+});
+for (const event of ['focus', 'click']) {
+  input.addEventListener(event, () => {
+    searchOpen = !!input.value.trim();
+    renderSearch();
+  });
+}
+window.addEventListener('resize', () => { if (searchOpen) sizeSearchPanel(); });
+window.visualViewport?.addEventListener('resize', () => { if (searchOpen) sizeSearchPanel(); });
+for (const event of ['pointerdown', 'focusin']) {
+  document.addEventListener(event, (e) => {
+    if (!searchShell.contains(e.target)) closeSearch();
+  });
+}
 input.addEventListener('input', (e) => { if (!e.isComposing) updateSearch(); });
 input.addEventListener('compositionend', updateSearch);
 // Log the settled query with the count across every result type.

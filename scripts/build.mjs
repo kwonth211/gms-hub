@@ -757,12 +757,12 @@ ${heroScene()}
 <span class="kicker">${esc(t.heroKicker)}</span>
 <h1>${t.heroTitle}</h1>
 <p>${esc(t.heroSub)}</p>
+<div class="home-search-shell">
 <form class="search-box" id="home-search" role="search">
 <span aria-hidden="true">⌕</span><input id="site-search" type="search" autocomplete="off" maxlength="120" placeholder="${esc(t.searchPlaceholder)}" aria-label="${esc(t.searchPlaceholder)}" aria-controls="search-results" aria-describedby="search-help">
 <button type="button" id="search-clear" aria-label="${lang === 'ko' ? '검색어 지우기' : 'Clear search'}" hidden>×</button>
-<button type="submit" class="search-submit">${lang === 'ko' ? '검색' : 'Search'}</button>
+<button type="submit" class="search-submit" aria-controls="search-results" aria-expanded="false">${lang === 'ko' ? '검색' : 'Search'}</button>
 </form>
-<p class="search-help" id="search-help">${lang === 'ko' ? '한글·영문·초성으로 검색하세요. 예: 장공, 미스릴, 디스코드' : 'Search by name or keyword. Try Gloves Attack, Mithril or Discord.'}</p>
 <section class="unified-search" id="search-results" aria-label="${lang === 'ko' ? '통합 검색 결과' : 'Search results'}" data-items="${esc(href('/assets/items.json'))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" hidden>
 <div class="search-summary"><h2>${lang === 'ko' ? '검색 결과' : 'Search results'}</h2><span id="search-status" role="status" aria-live="polite" aria-atomic="true"></span></div>
 <div class="search-filters" role="group" aria-label="${lang === 'ko' ? '검색 결과 종류' : 'Result type'}">
@@ -772,6 +772,8 @@ ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이�
 <div id="search-groups"></div>
 <p id="search-empty" class="search-empty" hidden>${lang === 'ko' ? '일치하는 결과가 없어요. 더 짧은 이름이나 영문 이름으로 검색해 보세요.' : 'No matches. Try a shorter name or an English item name.'}</p>
 </section>
+</div>
+<p class="search-help" id="search-help">${lang === 'ko' ? '한글·영문·초성으로 검색하세요. 예: 장공, 미스릴, 디스코드' : 'Search by name or keyword. Try Gloves Attack, Mithril or Discord.'}</p>
 <dl class="hero-stats"><div><dt>${t.statSites}</dt><dd>${SITE_COUNT}</dd></div><div><dt>${t.statCats}</dt><dd>${cats.length}</dd></div><div><dt>${t.statChecked}</dt><dd>${esc(sites.checked)}</dd></div></dl>
 </div>
 </div>
