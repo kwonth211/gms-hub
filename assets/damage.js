@@ -1,5 +1,6 @@
 // Hits-to-kill calculator page. Fills the character from the player's stat window (screen share + OCR, read in this browser
 // only) or from typed numbers, then lists every monster with the chosen skill's damage, uses to kill and hit chance.
+import { INK_LEVELS, parseJob, parseValue, readLayout, rescale, valueImage, vote } from './stat-reader.js';
 import { accuracyNeeded, baseAccuracy, fromWindow, hitChance, hitRange, hitsToKill, masteryLevel, SECOND_JOBS, skillsFor, WEAPONS, windowRange } from './damage-calc.js';
 
 const data = JSON.parse(document.getElementById('dm-data').textContent);
@@ -248,105 +249,48 @@ async function captureFrame() {
     const c = document.createElement('canvas');
     c.width = video.videoWidth;
     c.height = video.videoHeight;
-    c.getContext('2d').drawImage(video, 0, 0);
-    return c;
+    const g = c.getContext('2d', { willReadFrequently: true });
+    g.drawImage(video, 0, 0);
+    return g.getImageData(0, 0, c.width, c.height);
   } finally {
     for (const tr of stream.getTracks()) tr.stop();
   }
 }
 
-// Crop, enlarge and binarise with Otsu's threshold so small game text reads as clean black on white whatever the screen
-// scaling. Light text on a dark window is inverted.
-function prepare(src, x, y, w, h, k) {
+function toCanvas(im) {
   const c = document.createElement('canvas');
-  c.width = Math.round(w * k);
-  c.height = Math.round(h * k);
-  const g = c.getContext('2d', { willReadFrequently: true });
-  g.imageSmoothingEnabled = true;
-  g.imageSmoothingQuality = 'high';
-  g.drawImage(src, x, y, w, h, 0, 0, c.width, c.height);
-  const img = g.getImageData(0, 0, c.width, c.height);
-  const d = img.data;
-  const hist = new Array(256).fill(0);
-  const lum = new Uint8Array(d.length / 4);
-  for (let i = 0; i < lum.length; i++) {
-    lum[i] = (d[i * 4] * 299 + d[i * 4 + 1] * 587 + d[i * 4 + 2] * 114) / 1000;
-    hist[lum[i]]++;
-  }
-  let sum = 0;
-  for (let v = 0; v < 256; v++) sum += v * hist[v];
-  let sumB = 0;
-  let wB = 0;
-  let best = 0;
-  let th = 128;
-  for (let v = 0; v < 256; v++) {
-    wB += hist[v];
-    if (!wB) continue;
-    const wF = lum.length - wB;
-    if (!wF) break;
-    sumB += v * hist[v];
-    const between = wB * wF * (sumB / wB - (sum - sumB) / wF) ** 2;
-    if (between > best) {
-      best = between;
-      th = v;
-    }
-  }
-  const darkCount = hist.slice(0, th + 1).reduce((a, b) => a + b, 0);
-  const lightBg = darkCount < lum.length / 2;
-  for (let i = 0; i < lum.length; i++) {
-    const ink = lightBg ? lum[i] <= th : lum[i] > th;
-    d[i * 4] = d[i * 4 + 1] = d[i * 4 + 2] = ink ? 0 : 255;
-  }
-  g.putImageData(img, 0, 0);
+  c.width = im.width;
+  c.height = im.height;
+  c.getContext('2d').putImageData(new ImageData(im.data, im.width, im.height), 0, 0);
   return c;
 }
 
-const LABEL = /^(STR|DEX|INT|LUK)[:.]?$/i;
+const NUMBER_KEYS = ['level', 'str', 'dex', 'int', 'luk', 'attack', 'magic', 'acc'];
 
-// First pass over the whole frame finds where the four stat labels sit; the window around them is then read again larger.
-async function locate(frame) {
+// The stat window's boxes are found by colour (stat-reader.js); only the numbers inside go through OCR. Each box is read
+// at three ink cut-offs, and on scaled screens also from a copy shrunk back to game size; the most common answer wins.
+async function readStats(img) {
+  const layout = readLayout(img);
+  if (!layout || (!layout.str && !layout.level)) return null;
+  // Screen scale from the row pitch (18 game pixels between STR, DEX, INT and LUK), steadier than one box's height.
+  const s = layout.str && layout.luk ? (layout.luk.y0 - layout.str.y0) / 54 : layout.rowHeight / 15;
+  const small = s >= 1.2 ? rescale(img, s) : null;
+  const shrink = (c) => ({ ...c, x0: c.x0 / s, x1: c.x1 / s, y0: c.y0 / s, y1: c.y1 / s });
   const w = await ocr();
-  await w.setParameters({ tessedit_pageseg_mode: '11' });
-  for (const k of [1, 2]) {
-    const img = k === 1 ? frame : prepare(frame, 0, 0, frame.width, frame.height, 2);
-    const { data: res } = await w.recognize(img);
-    const hits = res.words.filter((x) => LABEL.test(x.text.trim()));
-    if (hits.length >= 2) {
-      const box = hits.map((x) => x.bbox).map((b) => ({ x0: b.x0 / k, y0: b.y0 / k, x1: b.x1 / k, y1: b.y1 / k }));
-      const lineH = Math.max(8, ...box.map((b) => b.y1 - b.y0));
-      const x0 = Math.min(...box.map((b) => b.x0));
-      const y0 = Math.min(...box.map((b) => b.y0));
-      const y1 = Math.max(...box.map((b) => b.y1));
-      return { x: x0 - lineH * 2, y: y0 - lineH * 14, w: lineH * 26, h: y1 - y0 + lineH * 26, lineH };
+  await w.setParameters({ tessedit_pageseg_mode: '7', tessedit_char_whitelist: '0123456789-/()% ' });
+  const out = { detail: !!layout.attack };
+  for (const k of NUMBER_KEYS) {
+    if (!layout[k]) continue;
+    const reads = [];
+    for (const ink of INK_LEVELS) {
+      reads.push(parseValue(k, (await w.recognize(toCanvas(valueImage(img, layout[k], { ink })))).data.text));
+      if (small) reads.push(parseValue(k, (await w.recognize(toCanvas(valueImage(small, shrink(layout[k]), { ink })))).data.text));
     }
+    out[k] = vote(reads);
   }
-  return null;
-}
-
-const NUM = (s) => (s.match(/\d[\d,]*/g) || []).map((x) => Number(x.replace(/,/g, '')));
-const JOBS = [
-  [/spearman/i, 'spearman', 'spear'], [/fighter/i, 'fighter'], [/page/i, 'page'], [/crossbow/i, 'crossbowman', 'crossbow'], [/hunter/i, 'hunter', 'bow'],
-  [/assassin/i, 'assassin', 'claw'], [/bandit/i, 'bandit', 'dagger'], [/cleric/i, 'cleric', 'wand'], [/(f\/p|fire)/i, 'fp', 'wand'], [/(i\/l|ice)/i, 'il', 'wand'],
-  [/warrior/i, ''], [/(bowman|archer)/i, '', 'bow'], [/(rogue|thief)/i, '', 'claw'], [/magician/i, '', 'wand']
-];
-
-// Lines are matched by their label; the stat window may show "STR 132" or "STR 127 (+5)", so the first number counts.
-function parse(text) {
-  const out = {};
-  for (const raw of text.split('\n')) {
-    const line = raw.replace(/[|]/g, ' ').replace(/\s+/g, ' ').trim();
-    if (!line) continue;
-    const up = line.toUpperCase();
-    const nums = NUM(line);
-    if (/^(STR|DEX|INT|LUK)\b/.test(up) && nums.length) out[up.slice(0, 3).toLowerCase()] = nums[0];
-    else if (/\b(LEVEL|LV)\b/.test(up) && nums.length && !out.level) out.level = nums[0];
-    else if (/(ATT|ATK|ATTACK|DAMAGE)/.test(up) && !/MAGIC|M\.?ATT|DEF/.test(up) && nums.length >= 2) out.range = [nums[0], nums[1]];
-    else if (/MAGIC|M\.?ATT/.test(up) && !/DEF/.test(up) && nums.length) out.magic = nums[0];
-    else if (/ACC/.test(up) && nums.length) out.acc = nums[0];
-    if (/JOB/.test(up)) {
-      const hit = JOBS.find(([re]) => re.test(line.replace(/job/i, '')));
-      if (hit && out.job === undefined) out.job = hit;
-    }
+  if (layout.job) {
+    await w.setParameters({ tessedit_pageseg_mode: '6', tessedit_char_whitelist: '' });
+    out.job = parseJob((await w.recognize(toCanvas(valueImage(img, layout.job, { ink: 175 })))).data.text);
   }
   return out;
 }
@@ -363,24 +307,14 @@ async function readFromScreen() {
     return say(t.denied);
   }
   try {
-    ocr();
     say(t.reading);
-    const area = await locate(frame);
-    if (!area) {
+    const r = await readStats(frame);
+    if (!r) {
       track('damage_read', { result: 'not_found', width: frame.width });
       return say(t.notFound);
     }
-    const x = Math.max(0, Math.round(area.x));
-    const y = Math.max(0, Math.round(area.y));
-    const w = Math.min(frame.width - x, Math.round(area.w));
-    const h = Math.min(frame.height - y, Math.round(area.h));
-    // Aim for letters about 30px tall, the size Tesseract reads best.
-    const k = Math.max(1, Math.min(5, 30 / area.lineH));
-    const worker = await ocr();
-    await worker.setParameters({ tessedit_pageseg_mode: '6' });
-    const { data: res } = await worker.recognize(prepare(frame, x, y, w, h, k));
-    apply(parse(res.text));
-  } catch (e) {
+    apply(r);
+  } catch {
     say(t.notFound);
     track('damage_read', { result: 'error' });
   } finally {
@@ -407,16 +341,16 @@ function apply(r) {
   for (const k of ['str', 'dex', 'int', 'luk']) put(`dm-${k}`, r[k], k);
   const mage = WEAPONS[$('dm-weapon').value].job === 'mage';
   if (mage) put('dm-magic', r.magic, 'magic');
-  else if (r.range) {
-    put('dm-min', Math.min(...r.range), 'range');
-    put('dm-max', Math.max(...r.range), 'range');
+  else if (r.attack) {
+    put('dm-min', Math.min(...r.attack), 'range');
+    put('dm-max', Math.max(...r.attack), 'range');
   } else got.range = false;
   put('dm-acc', r.acc, 'acc');
   const keys = ['level', 'str', 'dex', 'int', 'luk', mage ? 'magic' : 'range', 'acc', 'job'];
   $('dm-checks').innerHTML = keys.map((k) => `<li data-state="${got[k] ? 'ok' : 'miss'}"><span class="dot" aria-hidden="true"></span>${esc(t.fields[k])} <small>${got[k] ? t.read : t.miss}</small></li>`).join('');
   $('dm-checks').hidden = false;
   const okCount = keys.filter((k) => got[k]).length;
-  say(okCount >= 6 ? t.done : t.partial);
+  say(okCount >= 6 ? t.done : r.detail ? t.partial : t.noDetail);
   track('damage_read', { result: okCount >= 6 ? 'ok' : 'partial', fields: okCount });
   syncVisibility();
   renderSkills();
