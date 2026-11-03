@@ -706,7 +706,7 @@ function liveMarket(lang) {
  data-text="${esc(JSON.stringify(t))}">
 <header class="market-head"><span class="live-dot" aria-hidden="true"></span><h2 id="live-title">${t.title}</h2><p>${t.sub}</p><small id="live-updated"></small><a class="btn small-btn market-scan" href="${href(langPath(lang, '/tools/scan/'))}">● ${t.scan}</a><strong class="market-preview" id="market-preview" hidden>${t.preview}</strong></header>
 <div class="market-grid">
-<div class="market-panel market-top" id="market-top" hidden>
+<div class="market-panel market-top" id="market-top">
 <h3>${t.top} <small>${t.topNote}</small></h3>
 <ol class="rank-list" id="rank-list"></ol>
 </div>
