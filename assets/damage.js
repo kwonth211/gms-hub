@@ -1,0 +1,477 @@
+// Hits-to-kill calculator page. Fills the character from the player's stat window (screen share + OCR, read in this browser
+// only) or from typed numbers, then lists every monster with the chosen skill's damage, uses to kill and hit chance.
+import { accuracyNeeded, baseAccuracy, fromWindow, hitChance, hitRange, hitsToKill, masteryLevel, SECOND_JOBS, skillsFor, WEAPONS, windowRange } from './damage-calc.js';
+
+const data = JSON.parse(document.getElementById('dm-data').textContent);
+const t = data.t;
+const lang = data.lang;
+const $ = (id) => document.getElementById(id);
+const fill = (s, v) => s.replace(/\{(\w+)\}/g, (_, k) => v[k] ?? '');
+const fmt = (n) => Math.round(n).toLocaleString(lang === 'ko' ? 'ko-KR' : 'en-US');
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const STORE = 'gmshub_dmg';
+const track = (name, params) => window.gtag?.('event', name, params);
+
+let mobs = [];
+let weapons = [];
+let skillId = 'basic';
+let showAll = false;
+let powerTouched = false;
+
+// ---------- inputs ----------
+
+for (const [k, label] of Object.entries(t.weapons)) $('dm-weapon').append(new Option(label, k));
+
+function fillSeconds() {
+  const job = WEAPONS[$('dm-weapon').value].job;
+  const keep = $('dm-second').value;
+  $('dm-second').replaceChildren(new Option(t.none, ''), ...SECOND_JOBS[job].map((k) => new Option(t.seconds[k], k)));
+  if (SECOND_JOBS[job].includes(keep)) $('dm-second').value = keep;
+}
+
+const val = (id) => {
+  const v = $(id).value.trim();
+  return v === '' ? null : Number(v);
+};
+
+function state() {
+  const weapon = $('dm-weapon').value;
+  return {
+    weapon,
+    job: WEAPONS[weapon].job,
+    second: $('dm-second').value,
+    level: val('dm-level'),
+    stats: { str: val('dm-str') ?? 4, dex: val('dm-dex') ?? 4, int: val('dm-int') ?? 4, luk: val('dm-luk') ?? 4 },
+    min: val('dm-min'),
+    max: val('dm-max'),
+    magic: val('dm-magic'),
+    acc: val('dm-acc'),
+    rage: $('dm-rage').checked,
+    weaponId: $('dm-wsearch').dataset.id ? Number($('dm-wsearch').dataset.id) : null,
+    extra: val('dm-extra') ?? 0,
+    mastery: val('dm-mastery') ?? 0,
+    power: val('dm-power')
+  };
+}
+
+function save() {
+  const s = state();
+  try {
+    localStorage.setItem(STORE, JSON.stringify({ ...s, skillId, wname: $('dm-wsearch').value }));
+  } catch {}
+}
+
+function restore() {
+  let s;
+  try {
+    s = JSON.parse(localStorage.getItem(STORE) || 'null');
+  } catch {}
+  if (!s) return;
+  if (WEAPONS[s.weapon]) $('dm-weapon').value = s.weapon;
+  fillSeconds();
+  $('dm-second').value = s.second || '';
+  const put = (id, v) => { if (v !== null && v !== undefined) $(id).value = v; };
+  put('dm-level', s.level);
+  for (const k of ['str', 'dex', 'int', 'luk']) put(`dm-${k}`, s.stats?.[k]);
+  put('dm-min', s.min);
+  put('dm-max', s.max);
+  put('dm-magic', s.magic);
+  put('dm-acc', s.acc);
+  put('dm-extra', s.extra || null);
+  put('dm-mastery', s.mastery || null);
+  $('dm-rage').checked = !!s.rage;
+  if (s.wname) {
+    $('dm-wsearch').value = s.wname;
+    if (s.weaponId) $('dm-wsearch').dataset.id = s.weaponId;
+  }
+  if (s.skillId) skillId = s.skillId;
+  if (s.power) {
+    $('dm-power').value = s.power;
+    powerTouched = true;
+  }
+}
+
+// Fields that only make sense for the current job are hidden rather than ignored silently.
+function syncVisibility() {
+  const job = WEAPONS[$('dm-weapon').value].job;
+  for (const el of document.querySelectorAll('[data-phys]')) el.hidden = job === 'mage';
+  $('dm-magic').closest('label').hidden = job !== 'mage';
+  for (const el of document.querySelectorAll('[data-warrior]')) el.hidden = job !== 'warrior';
+}
+
+function renderSkills() {
+  const s = state();
+  const list = skillsFor(s.weapon, s.second);
+  if (!list.some((k) => k.id === skillId)) {
+    skillId = list[0].id;
+    powerTouched = false;
+  }
+  $('dm-skills').replaceChildren(
+    ...list.map((k) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip';
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', String(k.id === skillId));
+      b.innerHTML = `${esc(t.skills[k.id])} <small>${k.power}%${k.lines > 1 ? ` · ${fill(t.lines, { n: k.lines })}` : ''}${k.mobs > 1 ? ` · ${fill(t.mobsHit, { n: k.mobs })}` : ''}</small>`;
+      b.addEventListener('click', () => {
+        skillId = k.id;
+        powerTouched = false;
+        renderSkills();
+        update();
+      });
+      return b;
+    })
+  );
+  const skill = list.find((k) => k.id === skillId);
+  if (!powerTouched) $('dm-power').value = skill.power;
+}
+
+// ---------- weapon picker (manual range) ----------
+
+function fillWeapons() {
+  const type = $('dm-weapon').value;
+  const list = weapons.filter((w) => w.type === type);
+  $('dm-wlist').replaceChildren(...list.map((w) => new Option(`${w.name} (Lv ${w.lv}, ${w.watk || w.matk})`, `${w.name} (Lv ${w.lv}, ${w.watk || w.matk})`)));
+}
+
+function pickWeapon() {
+  const v = $('dm-wsearch').value;
+  const w = weapons.find((x) => v === `${x.name} (Lv ${x.lv}, ${x.watk || x.matk})` || v === x.name || v === x.en);
+  if (w) $('dm-wsearch').dataset.id = w.id;
+  else delete $('dm-wsearch').dataset.id;
+}
+
+// The attack and mastery the formulas need: solved from the stat window range when given, otherwise from the weapon.
+function attackModel(s) {
+  if (s.job === 'mage') return s.magic ? { magic: s.magic, mastery: 0 } : null;
+  const ap = s.rage ? 40 : 0;
+  if (s.min && s.max && s.max >= s.min) {
+    const solved = fromWindow({ weapon: s.weapon, stats: s.stats, min: s.min, max: s.max });
+    if (solved) return { watk: solved.watk, mastery: solved.mastery, ap };
+  }
+  const w = weapons.find((x) => x.id === s.weaponId);
+  if (!w) return null;
+  const watk = w.watk + s.extra;
+  const mastery = masteryLevel(s.mastery);
+  const r = windowRange({ weapon: s.weapon, stats: s.stats, watk, mastery });
+  $('dm-estimated').textContent = `${t.estimated}: ${fmt(Math.trunc(r.min))} ~ ${fmt(Math.trunc(r.max))}`;
+  return { watk, mastery, ap };
+}
+
+// ---------- results ----------
+
+function elementTags(m) {
+  const tags = [];
+  for (const [, el, code] of m.el.matchAll(/([A-Z])(\d)/g)) {
+    const name = { F: lang === 'ko' ? '불' : 'Fire', I: lang === 'ko' ? '얼음' : 'Ice', L: lang === 'ko' ? '번개' : 'Lightning', S: lang === 'ko' ? '독' : 'Poison', H: lang === 'ko' ? '성' : 'Holy', P: lang === 'ko' ? '물리' : 'Physical' }[el];
+    const kind = { 1: 'immune', 2: 'strong', 3: 'weak' }[code];
+    if (name && kind) tags.push(`<span class="tag ${kind}">${name} ${t[kind]}</span>`);
+  }
+  if (m.undead) tags.push(`<span class="tag">${t.undead}</span>`);
+  if (m.boss) tags.push(`<span class="tag">${t.boss}</span>`);
+  return tags.join('');
+}
+
+function update() {
+  const s = state();
+  save();
+  const skill = skillsFor(s.weapon, s.second).find((k) => k.id === skillId);
+  const model = s.level ? attackModel(s) : null;
+  if (!model || !skill) {
+    $('dm-rows').innerHTML = `<tr class="empty"><td colspan="7">${esc(t.needStats)}</td></tr>`;
+    return;
+  }
+  if (s.min && s.max) $('dm-estimated').textContent = '';
+  const acc = s.acc ?? baseAccuracy(s.job, s.level, s.stats);
+  const q = $('dm-mob-q').value.trim().toLowerCase();
+  const list = mobs.filter((m) => {
+    if (q) return m.name.toLowerCase().includes(q) || m.en.toLowerCase().includes(q);
+    return showAll || (m.lv >= s.level - 20 && m.lv <= s.level + 15 && !m.boss);
+  });
+  if (!list.length) {
+    $('dm-rows').innerHTML = `<tr class="empty"><td colspan="7">${esc(t.emptyMobs)}</td></tr>`;
+    return;
+  }
+  const power = s.power || skill.power;
+  $('dm-rows').innerHTML = list
+    .map((m) => {
+      const r = hitRange({ weapon: s.weapon, stats: s.stats, watk: model.watk, magic: model.magic, mastery: model.mastery, ap: model.ap, skill, power, mob: m });
+      const n = hitsToKill(r, skill.lines, m.hp);
+      const p = hitChance(acc, s.level, m);
+      const need = accuracyNeeded(s.level, m);
+      const cut = (k) => (Number.isFinite(k) ? fill(t.hits, { n: k }) : t.never);
+      const cls = n.sure === 1 ? 'one' : n.sure === 2 ? 'two' : '';
+      const accCls = p >= 1 ? 'ok' : p >= 0.8 ? 'warn' : 'bad';
+      const dmg = r.max ? `${fmt(r.min)} ~ ${fmt(r.max)}${skill.lines > 1 ? ` ×${skill.lines}` : ''}` : t.never;
+      return `<tr class="${cls}"><th scope="row">${esc(m.name)}<span class="dm-tags">${elementTags(m)}</span></th><td>${m.lv}</td><td>${fmt(m.hp)}</td><td>${dmg}</td><td class="dm-sure">${cut(n.sure)}</td><td>${cut(n.avg)}</td><td class="dm-acc ${accCls}" title="${esc(fill(t.accNeed, { n: need }))}">${Math.floor(p * 100)}%<small>${esc(fill(t.accNeed, { n: need }))}</small></td></tr>`;
+    })
+    .join('');
+}
+
+// ---------- reading the stat window ----------
+
+const TESSERACT_URL = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+let worker = null;
+async function ocr() {
+  if (!worker) {
+    worker = (async () => {
+      say(t.loadingOcr);
+      if (!window.Tesseract)
+        await new Promise((ok, fail) => {
+          const el = document.createElement('script');
+          el.src = TESSERACT_URL;
+          el.onload = ok;
+          el.onerror = fail;
+          document.head.appendChild(el);
+        });
+      return window.Tesseract.createWorker('eng');
+    })().catch((e) => {
+      worker = null;
+      throw e;
+    });
+  }
+  return worker;
+}
+
+const say = (msg) => { $('dm-status').textContent = msg; };
+
+async function captureFrame() {
+  const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 5 }, audio: false });
+  try {
+    const video = document.createElement('video');
+    video.muted = true;
+    video.srcObject = stream;
+    await video.play();
+    // The first frames after sharing starts can be blank while the capture warms up.
+    await new Promise((r) => setTimeout(r, 700));
+    const c = document.createElement('canvas');
+    c.width = video.videoWidth;
+    c.height = video.videoHeight;
+    c.getContext('2d').drawImage(video, 0, 0);
+    return c;
+  } finally {
+    for (const tr of stream.getTracks()) tr.stop();
+  }
+}
+
+// Crop, enlarge and binarise with Otsu's threshold so small game text reads as clean black on white whatever the screen
+// scaling. Light text on a dark window is inverted.
+function prepare(src, x, y, w, h, k) {
+  const c = document.createElement('canvas');
+  c.width = Math.round(w * k);
+  c.height = Math.round(h * k);
+  const g = c.getContext('2d', { willReadFrequently: true });
+  g.imageSmoothingEnabled = true;
+  g.imageSmoothingQuality = 'high';
+  g.drawImage(src, x, y, w, h, 0, 0, c.width, c.height);
+  const img = g.getImageData(0, 0, c.width, c.height);
+  const d = img.data;
+  const hist = new Array(256).fill(0);
+  const lum = new Uint8Array(d.length / 4);
+  for (let i = 0; i < lum.length; i++) {
+    lum[i] = (d[i * 4] * 299 + d[i * 4 + 1] * 587 + d[i * 4 + 2] * 114) / 1000;
+    hist[lum[i]]++;
+  }
+  let sum = 0;
+  for (let v = 0; v < 256; v++) sum += v * hist[v];
+  let sumB = 0;
+  let wB = 0;
+  let best = 0;
+  let th = 128;
+  for (let v = 0; v < 256; v++) {
+    wB += hist[v];
+    if (!wB) continue;
+    const wF = lum.length - wB;
+    if (!wF) break;
+    sumB += v * hist[v];
+    const between = wB * wF * (sumB / wB - (sum - sumB) / wF) ** 2;
+    if (between > best) {
+      best = between;
+      th = v;
+    }
+  }
+  const darkCount = hist.slice(0, th + 1).reduce((a, b) => a + b, 0);
+  const lightBg = darkCount < lum.length / 2;
+  for (let i = 0; i < lum.length; i++) {
+    const ink = lightBg ? lum[i] <= th : lum[i] > th;
+    d[i * 4] = d[i * 4 + 1] = d[i * 4 + 2] = ink ? 0 : 255;
+  }
+  g.putImageData(img, 0, 0);
+  return c;
+}
+
+const LABEL = /^(STR|DEX|INT|LUK)[:.]?$/i;
+
+// First pass over the whole frame finds where the four stat labels sit; the window around them is then read again larger.
+async function locate(frame) {
+  const w = await ocr();
+  await w.setParameters({ tessedit_pageseg_mode: '11' });
+  for (const k of [1, 2]) {
+    const img = k === 1 ? frame : prepare(frame, 0, 0, frame.width, frame.height, 2);
+    const { data: res } = await w.recognize(img);
+    const hits = res.words.filter((x) => LABEL.test(x.text.trim()));
+    if (hits.length >= 2) {
+      const box = hits.map((x) => x.bbox).map((b) => ({ x0: b.x0 / k, y0: b.y0 / k, x1: b.x1 / k, y1: b.y1 / k }));
+      const lineH = Math.max(8, ...box.map((b) => b.y1 - b.y0));
+      const x0 = Math.min(...box.map((b) => b.x0));
+      const y0 = Math.min(...box.map((b) => b.y0));
+      const y1 = Math.max(...box.map((b) => b.y1));
+      return { x: x0 - lineH * 2, y: y0 - lineH * 14, w: lineH * 26, h: y1 - y0 + lineH * 26, lineH };
+    }
+  }
+  return null;
+}
+
+const NUM = (s) => (s.match(/\d[\d,]*/g) || []).map((x) => Number(x.replace(/,/g, '')));
+const JOBS = [
+  [/spearman/i, 'spearman', 'spear'], [/fighter/i, 'fighter'], [/page/i, 'page'], [/crossbow/i, 'crossbowman', 'crossbow'], [/hunter/i, 'hunter', 'bow'],
+  [/assassin/i, 'assassin', 'claw'], [/bandit/i, 'bandit', 'dagger'], [/cleric/i, 'cleric', 'wand'], [/(f\/p|fire)/i, 'fp', 'wand'], [/(i\/l|ice)/i, 'il', 'wand'],
+  [/warrior/i, ''], [/(bowman|archer)/i, '', 'bow'], [/(rogue|thief)/i, '', 'claw'], [/magician/i, '', 'wand']
+];
+
+// Lines are matched by their label; the stat window may show "STR 132" or "STR 127 (+5)", so the first number counts.
+function parse(text) {
+  const out = {};
+  for (const raw of text.split('\n')) {
+    const line = raw.replace(/[|]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!line) continue;
+    const up = line.toUpperCase();
+    const nums = NUM(line);
+    if (/^(STR|DEX|INT|LUK)\b/.test(up) && nums.length) out[up.slice(0, 3).toLowerCase()] = nums[0];
+    else if (/\b(LEVEL|LV)\b/.test(up) && nums.length && !out.level) out.level = nums[0];
+    else if (/(ATT|ATK|ATTACK|DAMAGE)/.test(up) && !/MAGIC|M\.?ATT|DEF/.test(up) && nums.length >= 2) out.range = [nums[0], nums[1]];
+    else if (/MAGIC|M\.?ATT/.test(up) && !/DEF/.test(up) && nums.length) out.magic = nums[0];
+    else if (/ACC/.test(up) && nums.length) out.acc = nums[0];
+    if (/JOB/.test(up)) {
+      const hit = JOBS.find(([re]) => re.test(line.replace(/job/i, '')));
+      if (hit && out.job === undefined) out.job = hit;
+    }
+  }
+  return out;
+}
+
+async function readFromScreen() {
+  if (!navigator.mediaDevices?.getDisplayMedia) return say(t.unsupported);
+  $('dm-read').disabled = true;
+  say(t.sharing);
+  let frame;
+  try {
+    frame = await captureFrame();
+  } catch {
+    $('dm-read').disabled = false;
+    return say(t.denied);
+  }
+  try {
+    ocr();
+    say(t.reading);
+    const area = await locate(frame);
+    if (!area) {
+      track('damage_read', { result: 'not_found', width: frame.width });
+      return say(t.notFound);
+    }
+    const x = Math.max(0, Math.round(area.x));
+    const y = Math.max(0, Math.round(area.y));
+    const w = Math.min(frame.width - x, Math.round(area.w));
+    const h = Math.min(frame.height - y, Math.round(area.h));
+    // Aim for letters about 30px tall, the size Tesseract reads best.
+    const k = Math.max(1, Math.min(5, 30 / area.lineH));
+    const worker = await ocr();
+    await worker.setParameters({ tessedit_pageseg_mode: '6' });
+    const { data: res } = await worker.recognize(prepare(frame, x, y, w, h, k));
+    apply(parse(res.text));
+  } catch (e) {
+    say(t.notFound);
+    track('damage_read', { result: 'error' });
+  } finally {
+    $('dm-read').disabled = false;
+  }
+}
+
+function apply(r) {
+  const got = {};
+  const put = (id, v, key) => {
+    if (v === undefined || v === null || Number.isNaN(v)) return (got[key] = false);
+    $(id).value = v;
+    $(id).classList.add('dm-filled');
+    got[key] = true;
+  };
+  if (r.job) {
+    const [, second, weapon] = r.job;
+    if (weapon && WEAPONS[$('dm-weapon').value].job !== WEAPONS[weapon].job) $('dm-weapon').value = weapon;
+    fillSeconds();
+    if (second) $('dm-second').value = second;
+    got.job = true;
+  } else got.job = false;
+  put('dm-level', r.level, 'level');
+  for (const k of ['str', 'dex', 'int', 'luk']) put(`dm-${k}`, r[k], k);
+  const mage = WEAPONS[$('dm-weapon').value].job === 'mage';
+  if (mage) put('dm-magic', r.magic, 'magic');
+  else if (r.range) {
+    put('dm-min', Math.min(...r.range), 'range');
+    put('dm-max', Math.max(...r.range), 'range');
+  } else got.range = false;
+  put('dm-acc', r.acc, 'acc');
+  const keys = ['level', 'str', 'dex', 'int', 'luk', mage ? 'magic' : 'range', 'acc', 'job'];
+  $('dm-checks').innerHTML = keys.map((k) => `<li data-state="${got[k] ? 'ok' : 'miss'}"><span class="dot" aria-hidden="true"></span>${esc(t.fields[k])} <small>${got[k] ? t.read : t.miss}</small></li>`).join('');
+  $('dm-checks').hidden = false;
+  const okCount = keys.filter((k) => got[k]).length;
+  say(okCount >= 6 ? t.done : t.partial);
+  track('damage_read', { result: okCount >= 6 ? 'ok' : 'partial', fields: okCount });
+  syncVisibility();
+  renderSkills();
+  update();
+}
+
+// ---------- wiring ----------
+
+fillSeconds();
+restore();
+syncVisibility();
+renderSkills();
+
+$('dm-weapon').addEventListener('change', () => {
+  fillSeconds();
+  syncVisibility();
+  fillWeapons();
+  $('dm-wsearch').value = '';
+  delete $('dm-wsearch').dataset.id;
+  renderSkills();
+  update();
+});
+$('dm-second').addEventListener('change', () => {
+  renderSkills();
+  update();
+});
+$('dm-power').addEventListener('input', () => {
+  powerTouched = true;
+  update();
+});
+$('dm-wsearch').addEventListener('input', () => {
+  pickWeapon();
+  update();
+});
+for (const id of ['dm-level', 'dm-str', 'dm-dex', 'dm-int', 'dm-luk', 'dm-min', 'dm-max', 'dm-magic', 'dm-acc', 'dm-extra', 'dm-mastery', 'dm-rage', 'dm-mob-q'])
+  $(id).addEventListener('input', (e) => {
+    e.target.classList.remove('dm-filled');
+    update();
+  });
+for (const [id, all] of [['dm-near', false], ['dm-all', true]])
+  $(id).addEventListener('click', () => {
+    showAll = all;
+    $('dm-near').setAttribute('aria-pressed', String(!all));
+    $('dm-all').setAttribute('aria-pressed', String(all));
+    update();
+  });
+$('dm-read').addEventListener('click', readFromScreen);
+if (!navigator.mediaDevices?.getDisplayMedia) $('dm-read').disabled = true;
+
+Promise.all([fetch(data.mobsUrl).then((r) => r.json()), fetch(data.weaponsUrl).then((r) => r.json())])
+  .then(([m, w]) => {
+    mobs = m.map(([id, ko, en, lv, hp, wdef, mdef, eva, el, undead, boss, mp]) => ({ id, name: (lang === 'ko' && ko) || en, en, lv, hp, wdef, mdef, eva, el, undead, boss, mp }));
+    weapons = w.map(([id, ko, en, type, lv, watk, matk]) => ({ id, name: (lang === 'ko' && ko) || en, en, type, lv, watk, matk }));
+    fillWeapons();
+    pickWeapon();
+    update();
+  })
+  .catch(() => say(lang === 'ko' ? '몬스터 데이터를 불러오지 못했어요. 새로고침해 주세요.' : 'Could not load monster data. Please reload.'));

@@ -464,6 +464,7 @@ const PAGES = [
   { key: 'price', path: '/tools/price/' },
   { key: 'scan', path: '/tools/scan/' },
   { key: 'market', path: '/tools/market/' },
+  { key: 'damage', path: '/tools/damage/' },
   { key: 'about', path: '/about/' },
   { key: 'privacy', path: '/privacy/' },
   { key: 'terms', path: '/terms/' }
@@ -577,6 +578,7 @@ function header(lang, pagePath, only) {
     ['/tools/training/', 'sword', t.navTraining],
     ['/tools/scroll/', 'scroll', t.navScroll],
     ['/tools/drop-rate/', 'bag', t.navDrop],
+    ['/tools/damage/', 'hammer', DMG[lang].h1],
     ['/tools/market/', 'coin', t.navMarket]
   ]
     .map(
@@ -800,6 +802,7 @@ ${tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc)}
 ${tool('/tools/scroll/', 'scroll', t.navScroll, t.scCardDesc)}
 ${tool('/tools/drop-rate/', 'bag', t.navDrop, t.dropCardDesc)}
 ${tool('/tools/price/', 'coin', t.navPrice, PR[lang].cardDesc)}
+${tool('/tools/damage/', 'hammer', DMG[lang].h1, DMG[lang].cardDesc)}
 ${tool('/tools/scan/', 'megaphone', SCAN[lang].h1, SCAN[lang].cardDesc)}
 </div>
 </section>
@@ -1262,6 +1265,134 @@ function scanBody(lang) {
 ${jsonScript('i18n', { lang, ...t.i, itemsUrl: href('/assets/items.json'), glyphsUrl: href('/assets/shop-glyphs.json'), api: config.voteApi })}`;
 }
 
+// ---------- hits-to-kill calculator ----------
+// Reads the player's own stat window from a shared game screen (or takes typed numbers) and shows, for every monster, the
+// damage per use of the chosen skill and how many uses it takes. Monster and weapon numbers come from the game's client data.
+const DMG = {
+  ko: {
+    title: '글클메 몇 방 컷 계산기: 스탯 창 화면 인식으로 몬스터별 처치 타수 | GMS Hub',
+    desc: '글로벌 메이플스토리 클래식 월드 몇 방 컷 계산기. 게임 화면을 공유하면 능력치 창의 스탯과 공격 범위를 자동으로 읽어, 스킬별로 몬스터를 몇 번에 잡는지와 명중률을 보여 줘요.',
+    h1: '몇 방 컷 계산기',
+    lead: '게임 화면을 공유하면 능력치 창을 읽어 자동으로 채워요. 스킬을 고르면 몬스터마다 몇 방에 잡히는지 바로 보여 줘요.',
+    cardDesc: '능력치 창을 화면 공유로 읽어서 몬스터별로 몇 방에 잡히는지, 명중이 충분한지 계산해요.',
+    me: '내 캐릭터',
+    read: '화면에서 능력치 읽기',
+    readHint: '게임에서 능력치 창(단축키 S)을 열어 두고 누르세요. 화면은 이 브라우저 안에서만 읽고 어디에도 저장하거나 보내지 않아요.',
+    level: '레벨', weapon: '무기 종류', second: '2차 직업', none: '선택 안 함',
+    range: '능력치 창 공격 범위', rangeHint: '능력치 창 공격력 옆의 "최소 ~ 최대" 숫자예요.',
+    magic: '마력 (능력치 창)', acc: '명중 (능력치 창)', accHint: '비우면 스탯만으로 계산해요(장비 명중 제외).',
+    manual: '공격 범위를 모를 때: 무기로 계산', weaponPick: '무기', weaponPh: '무기 이름 검색', extra: '추가 공격력 (주문서·장갑·표창)', mastery: '마스터리 스킬 레벨 (0~20)',
+    estimated: '계산된 능력치 창 범위', rage: '분노 (공격력 +40)',
+    skill: '스킬', power: '스킬 배율 (%)', powerHint: '마스터 기준이에요. 스킬 레벨이 낮으면 직접 고치세요.',
+    mobs: '몬스터별 결과', search: '몬스터 이름 검색', near: '내 레벨 근처', all: '전체',
+    cols: { mob: '몬스터', lv: 'Lv', hp: 'HP', dmg: '한 번에 주는 피해', sure: '확정', avg: '평균', acc: '명중률' },
+    hits: '{n}방', never: '불가', lines: '{n}타', mobsHit: '최대 {n}마리',
+    accNeed: '100% 명중에 필요한 명중 {n}',
+    emptyMobs: '조건에 맞는 몬스터가 없어요.', needStats: '레벨, 스탯, 공격 범위(또는 무기)를 넣으면 결과가 나와요.',
+    note: '확정은 매번 최저 데미지가 나와도 잡히는 횟수, 평균은 평균 데미지 기준이에요. 크리티컬, 지속 피해, 파이널 어택 추가타, 버프 시간은 넣지 않았어요. 공식은 커뮤니티가 검증한 클래식 월드 데미지 공식이고, 몬스터·무기 수치는 게임 클라이언트 데이터예요.',
+    i: {
+      loadingOcr: '글자 인식 엔진을 불러오는 중이에요… (처음 한 번만 몇 초 걸려요)',
+      sharing: '공유할 게임 창을 선택하세요.', denied: '화면 공유가 취소됐어요.', unsupported: '이 브라우저는 화면 공유를 지원하지 않아요. PC의 크롬이나 엣지를 써 주세요.',
+      reading: '능력치 창을 찾는 중이에요…', notFound: '능력치 창을 찾지 못했어요. 게임에서 능력치 창(S)을 열고, 창이 가려지지 않게 한 뒤 다시 눌러 주세요.',
+      done: '읽은 값을 채웠어요. 틀린 숫자가 있으면 바로 고치세요.', partial: '일부만 읽었어요. 비어 있는 칸을 채워 주세요.',
+      fields: { level: '레벨', str: 'STR', dex: 'DEX', int: 'INT', luk: 'LUK', range: '공격 범위', magic: '마력', acc: '명중', job: '직업' },
+      read: '읽음', miss: '못 읽음',
+      skills: { basic: '기본 공격', power_strike: '파워 스트라이크', slash_blast: '슬래시 블러스트', rush: '돌진', fa_fighter: '파이널 어택 (파이터)', fa_page: '파이널 어택 (페이지)', fa_spear: '파이널 어택 (스피어맨)', arrow_blow: '애로우 블로우', double_shot: '더블 샷', arrow_bomb: '애로우 봄', fa_bow: '파이널 어택 (헌터)', iron_arrow: '아이언 애로우', fa_crossbow: '파이널 어택 (사수)', lucky_seven: '럭키 세븐', drain: '드레인', double_stab: '더블 스탭', savage_blow: '새비지 블로우', steal: '스틸', energy_bolt: '에너지 볼트', magic_claw: '매직 클로', fire_arrow: '파이어 애로우', poison_breath: '포이즌 브레스', cold_beam: '콜드 빔', thunder_bolt: '썬더볼트', holy_arrow: '홀리 애로우' },
+      weapons: { '1h_sword': '한손검', '2h_sword': '두손검', '1h_axe': '한손도끼', '1h_blunt': '한손둔기', '2h_axe': '두손도끼', '2h_blunt': '두손둔기', spear: '창', polearm: '폴암', bow: '활', crossbow: '석궁', claw: '아대', dagger: '단검', wand: '완드', staff: '스태프' },
+      seconds: { fighter: '파이터', page: '페이지', spearman: '스피어맨', hunter: '헌터', crossbowman: '사수', assassin: '어쌔신', bandit: '시프', fp: '위자드(불독)', il: '위자드(썬콜)', cleric: '클레릭' },
+      weak: '약점', strong: '반감', immune: '무효', undead: '언데드', boss: '보스'
+    }
+  },
+  en: {
+    title: 'MapleStory Classic World Hits-to-Kill Calculator: Read Your Stat Window From Screen Share | GMS Hub',
+    desc: 'Hits-to-kill calculator for MapleStory Classic World. Share your game screen and it reads your stat window, then shows how many hits each skill needs per monster and your hit chance.',
+    h1: 'Hits-to-Kill Calculator',
+    lead: 'Share your game screen and it fills in your stat window for you. Pick a skill to see how many hits every monster takes.',
+    cardDesc: 'Reads your stat window from a screen share and shows how many hits each monster takes and whether your accuracy is enough.',
+    me: 'My character',
+    read: 'Read stats from screen',
+    readHint: 'Open the stat window in game (S key) and press this. The screen is read only inside this browser and is never saved or sent anywhere.',
+    level: 'Level', weapon: 'Weapon type', second: '2nd job', none: 'Not chosen',
+    range: 'Stat window attack range', rangeHint: 'The "min ~ max" numbers next to attack in the stat window.',
+    magic: 'Magic (stat window)', acc: 'Accuracy (stat window)', accHint: 'Leave blank to use stats only (no equipment accuracy).',
+    manual: 'Don’t know the range? Use your weapon', weaponPick: 'Weapon', weaponPh: 'Search weapon name', extra: 'Extra attack (scrolls, gloves, stars)', mastery: 'Mastery skill level (0-20)',
+    estimated: 'Calculated stat window range', rage: 'Rage (+40 Attack Power)',
+    skill: 'Skill', power: 'Skill damage (%)', powerHint: 'Max skill level. Change it if your skill is lower.',
+    mobs: 'Results by monster', search: 'Search monster', near: 'Near my level', all: 'All',
+    cols: { mob: 'Monster', lv: 'Lv', hp: 'HP', dmg: 'Damage per use', sure: 'Sure', avg: 'Avg', acc: 'Hit' },
+    hits: '{n} hits', never: 'No', lines: '{n} lines', mobsHit: 'up to {n} mobs',
+    accNeed: '{n} accuracy for 100%',
+    emptyMobs: 'No monsters match.', needStats: 'Enter level, stats and the attack range (or a weapon) to see results.',
+    note: 'Sure = uses needed even if every hit rolls its minimum; Avg = with average rolls. Crits, damage over time, Final Attack follow-ups and buff uptime are left out. The formula is the community-tested Classic World damage formula; monster and weapon numbers come from the game client data.',
+    i: {
+      loadingOcr: 'Loading the text reader… (a few seconds the first time)',
+      sharing: 'Pick the game window to share.', denied: 'Screen sharing was cancelled.', unsupported: 'This browser can’t share the screen. Use Chrome or Edge on a PC.',
+      reading: 'Looking for the stat window…', notFound: 'Couldn’t find the stat window. Open it in game (S), make sure nothing covers it, and try again.',
+      done: 'Filled in what was read. Fix any wrong number right in the box.', partial: 'Only some values were read. Fill in the empty boxes.',
+      fields: { level: 'Level', str: 'STR', dex: 'DEX', int: 'INT', luk: 'LUK', range: 'Attack range', magic: 'Magic', acc: 'Accuracy', job: 'Job' },
+      read: 'read', miss: 'not read',
+      skills: { basic: 'Basic attack', power_strike: 'Power Strike', slash_blast: 'Slash Blast', rush: 'Rush', fa_fighter: 'Final Attack (Fighter)', fa_page: 'Final Attack (Page)', fa_spear: 'Final Attack (Spearman)', arrow_blow: 'Arrow Blow', double_shot: 'Double Shot', arrow_bomb: 'Arrow Bomb', fa_bow: 'Final Attack (Hunter)', iron_arrow: 'Iron Arrow', fa_crossbow: 'Final Attack (Crossbowman)', lucky_seven: 'Lucky Seven', drain: 'Drain', double_stab: 'Double Stab', savage_blow: 'Savage Blow', steal: 'Steal', energy_bolt: 'Energy Bolt', magic_claw: 'Magic Claw', fire_arrow: 'Fire Arrow', poison_breath: 'Poison Breath', cold_beam: 'Cold Beam', thunder_bolt: 'Thunder Bolt', holy_arrow: 'Holy Arrow' },
+      weapons: { '1h_sword': '1H Sword', '2h_sword': '2H Sword', '1h_axe': '1H Axe', '1h_blunt': '1H Blunt', '2h_axe': '2H Axe', '2h_blunt': '2H Blunt', spear: 'Spear', polearm: 'Polearm', bow: 'Bow', crossbow: 'Crossbow', claw: 'Claw', dagger: 'Dagger', wand: 'Wand', staff: 'Staff' },
+      seconds: { fighter: 'Fighter', page: 'Page', spearman: 'Spearman', hunter: 'Hunter', crossbowman: 'Crossbowman', assassin: 'Assassin', bandit: 'Bandit', fp: 'Wizard (F/P)', il: 'Wizard (I/L)', cleric: 'Cleric' },
+      weak: 'weak', strong: 'resists', immune: 'immune', undead: 'undead', boss: 'boss'
+    }
+  }
+};
+
+function damageBody(lang) {
+  const t = DMG[lang];
+  const num = (id, label, attrs = '') => `<label class="dm-field"><span>${label}</span><input id="${id}" type="number" inputmode="numeric" min="0" ${attrs}></label>`;
+  return `${pageHead(lang, 'hammer', t.h1, t.lead)}
+<div class="wrap dm">
+<section class="panel dm-me" aria-labelledby="dm-me-h">
+<div class="dm-head"><h2 id="dm-me-h">${t.me}</h2><button type="button" class="btn" id="dm-read">● ${t.read}</button></div>
+<p class="muted small">${esc(t.readHint)}</p>
+<p id="dm-status" class="dm-status" aria-live="polite"></p>
+<ul id="dm-checks" class="dm-checks" hidden></ul>
+<div class="dm-grid">
+${num('dm-level', t.level, 'max="200"')}
+<label class="dm-field"><span>${t.weapon}</span><select id="dm-weapon"></select></label>
+<label class="dm-field"><span>${t.second}</span><select id="dm-second"></select></label>
+</div>
+<div class="dm-grid dm-stats">
+${num('dm-str', 'STR')}${num('dm-dex', 'DEX')}${num('dm-int', 'INT')}${num('dm-luk', 'LUK')}
+</div>
+<div class="dm-grid">
+<label class="dm-field dm-range" data-phys><span>${t.range}</span><span class="dm-pair"><input id="dm-min" type="number" inputmode="numeric" min="0" aria-label="min"><b>~</b><input id="dm-max" type="number" inputmode="numeric" min="0" aria-label="max"></span><small>${esc(t.rangeHint)}</small></label>
+${num('dm-magic', t.magic, 'data-magic')}
+<label class="dm-field"><span>${t.acc}</span><input id="dm-acc" type="number" inputmode="numeric" min="0"><small>${esc(t.accHint)}</small></label>
+</div>
+<label class="dm-check" data-warrior><input type="checkbox" id="dm-rage"> ${t.rage}</label>
+<details class="dm-manual" id="dm-manual" data-phys>
+<summary>${t.manual}</summary>
+<div class="dm-grid">
+<label class="dm-field dm-wide"><span>${t.weaponPick}</span><input id="dm-wsearch" type="search" list="dm-wlist" placeholder="${esc(t.weaponPh)}" autocomplete="off"><datalist id="dm-wlist"></datalist></label>
+${num('dm-extra', t.extra)}
+${num('dm-mastery', t.mastery, 'max="20"')}
+</div>
+<p class="muted small" id="dm-estimated"></p>
+</details>
+</section>
+<section class="panel dm-skill" aria-labelledby="dm-skill-h">
+<h2 id="dm-skill-h">${t.skill}</h2>
+<div class="dm-skills" id="dm-skills" role="radiogroup" aria-labelledby="dm-skill-h"></div>
+<label class="dm-field dm-power"><span>${t.power}</span><input id="dm-power" type="number" inputmode="numeric" min="1"><small>${esc(t.powerHint)}</small></label>
+</section>
+<section class="panel dm-out" aria-labelledby="dm-out-h">
+<div class="dm-head"><h2 id="dm-out-h">${t.mobs}</h2>
+<div class="dm-filter"><input id="dm-mob-q" type="search" placeholder="${esc(t.search)}" autocomplete="off" aria-label="${esc(t.search)}">
+<div class="seg" role="group"><button type="button" id="dm-near" aria-pressed="true">${t.near}</button><button type="button" id="dm-all" aria-pressed="false">${t.all}</button></div></div></div>
+<div class="dm-table-wrap"><table class="dm-table">
+<thead><tr><th>${t.cols.mob}</th><th>${t.cols.lv}</th><th>${t.cols.hp}</th><th>${t.cols.dmg}</th><th>${t.cols.sure}</th><th>${t.cols.avg}</th><th>${t.cols.acc}</th></tr></thead>
+<tbody id="dm-rows"><tr class="empty"><td colspan="7">${esc(t.needStats)}</td></tr></tbody>
+</table></div>
+<p class="muted small">${esc(t.note)}</p>
+<p class="muted small">${lang === 'ko' ? `레벨별 사냥터는 <a href="${href(langPath(lang, '/tools/training/'))}">사냥터 찾기</a>와 <a href="${href(langPath(lang, '/guides/leveling-30-70/'))}">30~70레벨 사냥터 가이드</a>에서 볼 수 있어요.` : `For where to train, see the <a href="${href(langPath(lang, '/tools/training/'))}">training spot finder</a>.`}</p>
+</section>
+</div>
+${jsonScript('dm-data', { lang, t: { ...t.i, hits: t.hits, never: t.never, lines: t.lines, mobsHit: t.mobsHit, accNeed: t.accNeed, emptyMobs: t.emptyMobs, needStats: t.needStats, estimated: t.estimated, none: t.none }, mobsUrl: href('/assets/mobs.json'), weaponsUrl: href('/assets/weapons.json') })}`;
+}
+
 // ---------- live market page ----------
 // The main price feature: search an item to see its statistics, a 7-day price trend, how listings spread over price bands
 // and where to buy it now; next to the live top 10 and the scrolling feed of scanned listings.
@@ -1692,6 +1823,13 @@ for (const lang of LANGS) {
       modules: ['market.js'],
       ld: [appLd(MK[lang].h1, MK[lang].desc, '/tools/market/'), breadcrumbLd(lang, MK[lang].h1, '/tools/market/')]
     },
+    damage: {
+      title: DMG[lang].title,
+      desc: DMG[lang].desc,
+      body: damageBody(lang),
+      modules: ['damage.js'],
+      ld: [appLd(DMG[lang].h1, DMG[lang].desc, '/tools/damage/'), breadcrumbLd(lang, DMG[lang].h1, '/tools/damage/')]
+    },
     scan: {
       title: SCAN[lang].title,
       desc: SCAN[lang].lead,
@@ -1853,6 +1991,9 @@ for (const name of moduleFiles) {
 }
 // Compact item index for the price search: [id, korean, english, category, subcategory, level].
 write('assets/shop-glyphs.json', fs.readFileSync(path.join(root, 'data/shop-glyphs.json')));
+// Hits-to-kill calculator data: [id, ko, en, level, hp, wdef, mdef, eva, elements, undead, boss, mp] and weapons [id, ko, en, type, level, watk, matk].
+write('assets/mobs.json', JSON.stringify(readJson('data/mobs.json').mobs.map((m) => [m.id, m.ko || '', m.en, m.lv, m.hp, m.wdef, m.mdef, m.eva, m.el || '', m.undead ? 1 : 0, m.boss ? 1 : 0, m.mp])));
+write('assets/weapons.json', JSON.stringify(readJson('data/weapons.json').weapons.map((w) => [w.id, w.ko || '', w.en, w.type, w.lv, w.watk || 0, w.matk || 0])));
 write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko || '', i.en, i.cat, i.sub, i.lv || 0])));
 
 console.log(`Built ${PAGES.length * LANGS.length} pages, ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);
