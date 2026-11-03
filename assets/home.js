@@ -1,9 +1,10 @@
+import { indexEntry, searchEntries } from './search-index.js';
+
 const input = document.getElementById('site-search');
 const main = document.querySelector('.dir-main');
 const favSection = document.getElementById('favorites');
 const favCards = document.getElementById('fav-cards');
 const favToc = document.getElementById('fav-toc');
-const empty = document.getElementById('no-results');
 const originals = [...document.querySelectorAll('[data-cat] .site-card')];
 const FAV_KEY = 'gmshub_favs';
 const filterBar = document.getElementById('filter-bar');
@@ -61,89 +62,188 @@ document.addEventListener('click', (e) => {
   renderFavs();
 });
 
+// Category browsing is independent of the global search.
 function filter() {
-  const q = input.value.trim().toLowerCase();
-  document.querySelectorAll('.site-card').forEach((c) => (c.hidden = q !== '' && !c.dataset.search.includes(q)));
-  let any = false;
   document.querySelectorAll('[data-cat]').forEach((cat) => {
-    const visible = (!activeCat || cat.id === activeCat) && [...cat.querySelectorAll('.site-card')].some((c) => !c.hidden);
-    cat.hidden = !visible;
-    any ||= visible;
+    cat.hidden = !!activeCat && cat.id !== activeCat;
   });
-  // Our own calculators answer many searches better than an outside site does.
-  const hits = [...document.querySelectorAll('.tool-hit')];
-  hits.forEach((h) => (h.hidden = q === '' || !h.dataset.search.includes(q)));
-  const toolHit = hits.some((h) => !h.hidden);
-  document.getElementById('tool-hits').hidden = !toolHit;
-  any ||= toolHit;
-  any ||= showItemHits(q);
-  // Favorites stay out of the way while a single category is selected.
-  if (favCards.children.length) favSection.hidden = !!activeCat || ![...favCards.children].some((c) => !c.hidden);
-  empty.hidden = any;
+  favSection.hidden = !!activeCat || !favCards.children.length;
 }
 
-// Most searches here are item names ("미스릴"), which no listed site matches. Show matching items with direct links to the
-// price trackers right here; trackers without linkable search get the English name copied before they open.
-const itemHits = document.getElementById('item-hits');
-const itemRows = document.getElementById('item-rows');
-const moreItems = document.getElementById('more-items');
-const priceSites = JSON.parse(itemHits.dataset.sites);
-const ITEM_ROWS = 5;
 const korean = document.documentElement.lang === 'ko';
+const searchPanel = document.getElementById('search-results');
+const searchGroups = document.getElementById('search-groups');
+const searchStatus = document.getElementById('search-status');
+const searchEmpty = document.getElementById('search-empty');
+const itemState = document.getElementById('search-item-state');
+const retryItems = document.getElementById('search-retry');
+const clearSearch = document.getElementById('search-clear');
+const escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+const labels = korean
+  ? { item: '아이템', site: '사이트', tool: '도구·가이드', market: '시세 보기', loading: '아이템을 불러오는 중…', error: '아이템을 불러오지 못했어요. 사이트와 도구는 계속 검색할 수 있어요.', partial: ' · 아이템 불러오는 중', failed: ' · 아이템 검색 일시 불가', external: '새 탭에서 열기' }
+  : { item: 'Items', site: 'Sites', tool: 'Tools & guides', market: 'View prices', loading: 'Loading items…', error: 'Items could not be loaded. Sites and tools are still searchable.', partial: ' · loading items', failed: ' · items unavailable', external: 'Opens in a new tab' };
+const siteAliases = { 'meso.watch': '메소워치 메소 와치', 'maplemarket.fyi': '메이플마켓', 'meowdb.com': '니아먀오 니아메오', 'henesys.gg': '헤네시스', 'discord.com': '디스코드 디코', 'discord.gg': '디스코드 디코', 'reddit.com': '레딧', 'metaroad.gg': '메타로드' };
+const toolKeywords = {
+  training: '사냥터 레벨업 경험치 사냥 맵 training level exp map grind',
+  scroll: '주문서 강화 작 공격력 업그레이드 슬롯 계산기 scroll upgrade slot calculator',
+  'drop-rate': '확률 드롭 상자 박스 뽑기 계산기 drop rate box gacha chance calculator',
+  market: '시세 가격 메소 아이템 거래 매물 가격변동 그래프 차트 price market item mesos',
+  price: '시세 가격 메소 아이템 거래 price market item mesos',
+  scan: '상점 스캔 이미지 인식 화면 공유 shop scan scanner ocr',
+  damage: '몇방 몇 방 컷 데미지 대미지 딜 명중률 몬스터 계산기 damage hits kill accuracy calculator',
+};
+const staticEntries = [
+  ...originals.map((card) => {
+    const a = card.querySelector('h4 a');
+    const host = new URL(a.href).hostname.replace(/^www\./, '');
+    const category = card.closest('[data-cat]').dataset.name;
+    const aliases = Object.entries(siteAliases).filter(([domain]) => host === domain || host.endsWith(`.${domain}`)).map(([, words]) => words).join(' ');
+    return indexEntry({ type: 'site', id: card.dataset.id, title: a.textContent.trim(), href: a.getAttribute('href'), description: `${category} · ${host}`, names: [a.textContent.trim(), host, aliases], keywords: `${card.dataset.search} ${category}` });
+  }),
+  ...[...document.querySelectorAll('.tool-card')].map((a) => indexEntry({
+    type: 'tool', id: a.getAttribute('href'), title: a.querySelector('strong').textContent.trim(), href: a.getAttribute('href'),
+    description: a.querySelector('p').textContent.trim(),
+    keywords: `${a.textContent} ${toolKeywords[new URL(a.href).pathname.split('/').filter(Boolean).at(-1)] || ''}`,
+  })),
+];
 let items = null;
+let itemEntries = [];
 let itemsPromise = null;
-// One shared fetch of the item index for the search and the live market widget.
+let itemError = false;
+let searchType = 'all';
+let searchMatches = [];
+const expanded = new Map();
+const INITIAL_ROWS = 4;
+const PAGE_ROWS = 20;
+
+// Search and the live market widget share one request. A failed request can be retried.
 function loadItems() {
-  itemsPromise ||= fetch(itemHits.dataset.items)
-    .then((r) => r.json())
-    .then((rows) => (items = rows.map(([id, ko, en]) => ({ id, ko, en, name: korean ? ko || en : en, flat: squash(`${ko}${en}`) }))));
+  if (items) return Promise.resolve(items);
+  if (itemsPromise) return itemsPromise;
+  itemError = false;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  itemsPromise = fetch(searchPanel.dataset.items, { signal: controller.signal })
+    .then((r) => {
+      if (!r.ok) throw new Error(`Item index: ${r.status}`);
+      return r.json();
+    })
+    .then((rows) => {
+      if (!Array.isArray(rows) || !rows.length || rows.some((row) => !Array.isArray(row) || !Number.isInteger(row[0]) || typeof row[2] !== 'string')) throw new Error('Invalid item index');
+      items = rows.map(([id, ko, en]) => ({ id, ko, en, name: korean ? ko || en : en }));
+      itemEntries = items.map((it) => indexEntry({
+        type: 'item', id: it.id, title: it.name, names: [it.ko, it.en, String(it.id)],
+        keywords: '아이템 item', description: korean ? it.en : it.ko,
+        href: `${searchPanel.dataset.market}?item=${it.id}`,
+      }));
+      return items;
+    })
+    .catch((error) => { itemError = true; throw error; })
+    .finally(() => { clearTimeout(timeout); itemsPromise = null; renderSearch(); });
   return itemsPromise;
 }
-const squash = (s) => s.toLowerCase().replace(/\s+/g, '');
-const escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 
-function itemRow(it) {
-  const links = priceSites
-    .map((s) => {
-      const url = s.url.replace('{id}', it.id).replace('{en}', encodeURIComponent(it.en));
-      return `<a class="item-link${s.direct ? ' direct' : ''}" href="${escHtml(url)}" target="_blank" rel="noopener" data-site="${s.id}" data-item="${it.id}"${s.direct ? '' : ` data-copy="${escHtml(it.en)}"`}>${s.name}</a>`;
-    })
-    .join('');
-  return `<div class="item-row"><img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="28" height="28" loading="lazy"><span class="item-name"><strong>${escHtml(it.name)}</strong>${it.name !== it.en ? `<small>${escHtml(it.en)}</small>` : ''}</span><span class="item-links">${links}</span></div>`;
+function resultRow(entry) {
+  const external = entry.type === 'site';
+  const icon = entry.type === 'item'
+    ? `<img src="https://maplestory.io/api/MCW/1/item/${entry.id}/icon" alt="" width="30" height="30" loading="lazy">`
+    : `<span class="search-result-icon" aria-hidden="true">${external ? '↗' : '⌘'}</span>`;
+  return `<a class="search-result" href="${escHtml(entry.href)}" data-result-type="${entry.type}" data-result-id="${escHtml(entry.id)}"${external ? ` target="_blank" rel="noopener" aria-label="${escHtml(entry.title)} · ${labels.external}"` : ''}>${icon}<span class="search-result-copy"><strong>${escHtml(entry.title)}</strong><small>${escHtml(entry.description || '')}</small></span><span class="search-result-action">${entry.type === 'item' ? labels.market : external ? '↗' : '→'}</span></a>`;
 }
 
-function showItemHits(q) {
-  const flat = squash(q);
-  if (flat.length < 2) {
-    itemHits.hidden = true;
-    return false;
-  }
-  if (!items) {
-    loadItems()
-      .then(filter)
-      .catch(() => {});
-    return false;
-  }
-  const hits = items.filter((it) => it.flat.includes(flat)).sort((a, b) => a.name.length - b.name.length || a.id - b.id);
-  itemRows.innerHTML = hits.slice(0, ITEM_ROWS).map(itemRow).join('');
-  moreItems.hidden = hits.length <= ITEM_ROWS;
-  moreItems.href = `${itemHits.dataset.price}?q=${encodeURIComponent(q.trim())}`;
-  moreItems.textContent = itemHits.dataset.more.replace('{n}', hits.length - ITEM_ROWS);
-  itemHits.hidden = !hits.length;
-  return hits.length > 0;
+function renderSearch() {
+  const query = input.value.trim();
+  const active = !!query;
+  searchPanel.hidden = !active;
+  clearSearch.hidden = !input.value;
+  document.body.classList.toggle('search-active', active);
+  if (!active) return;
+  searchMatches = searchEntries([...staticEntries, ...itemEntries], query);
+  const counts = { all: searchMatches.length, item: 0, site: 0, tool: 0 };
+  searchMatches.forEach((entry) => counts[entry.type]++);
+  document.querySelectorAll('[data-count]').forEach((el) => {
+    el.textContent = el.dataset.count === 'item' && !items ? (itemError ? '!' : '…') : counts[el.dataset.count].toLocaleString();
+  });
+  document.querySelectorAll('[data-search-type]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.searchType === searchType)));
+  const suffix = !items ? itemError ? labels.failed : labels.partial : '';
+  searchStatus.textContent = `${korean ? `총 ${counts.all.toLocaleString()}개` : `${counts.all.toLocaleString()} results`}${suffix}`;
+  itemState.hidden = !!items || (searchType !== 'all' && searchType !== 'item');
+  itemState.querySelector('span').textContent = itemError ? labels.error : labels.loading;
+  retryItems.hidden = !itemError;
+  let visible = 0;
+  searchGroups.innerHTML = ['item', 'site', 'tool'].map((type) => {
+    if (searchType !== 'all' && searchType !== type) return '';
+    const matches = searchMatches.filter((entry) => entry.type === type);
+    if (!matches.length) return '';
+    visible += matches.length;
+    const limit = expanded.get(type) || (searchType === 'all' ? INITIAL_ROWS : PAGE_ROWS);
+    const shown = matches.slice(0, limit);
+    const more = matches.length - shown.length;
+    return `<section class="search-group" aria-labelledby="search-heading-${type}"><header><h3 id="search-heading-${type}">${labels[type]} <span>${matches.length.toLocaleString()}</span></h3>${type === 'item' ? `<small>${labels.market} →</small>` : ''}</header><div class="search-result-list">${shown.map(resultRow).join('')}</div>${more ? `<button type="button" class="search-more" data-search-more="${type}">${korean ? `${labels[type]} ${Math.min(PAGE_ROWS, more)}개 더 보기 · ${more.toLocaleString()}개 남음` : `Show ${Math.min(PAGE_ROWS, more)} more · ${more.toLocaleString()} remaining`} ↓</button>` : ''}</section>`;
+  }).join('');
+  // Don't report an empty item result while its index is loading or unavailable.
+  searchEmpty.hidden = !!visible || (!items && (searchType === 'all' || searchType === 'item'));
 }
 
-itemRows.addEventListener('click', (e) => {
-  const a = e.target.closest('.item-link');
-  if (!a) return;
-  track('price_link', { site_id: a.dataset.site, item_id: a.dataset.item, source: 'home' });
-  if (!a.dataset.copy) return;
-  navigator.clipboard?.writeText(a.dataset.copy).catch(() => {});
-  a.closest('.item-row').querySelector('.copied')?.remove();
-  const note = document.createElement('small');
-  note.className = 'copied';
-  note.textContent = itemHits.dataset.copied.replace('{en}', a.dataset.copy);
-  a.closest('.item-row').appendChild(note);
+function syncSearchUrl() {
+  const url = new URL(location.href);
+  const query = input.value.trim();
+  if (query) url.searchParams.set('q', query); else url.searchParams.delete('q');
+  history.replaceState(null, '', url);
+}
+function updateSearch() {
+  expanded.clear();
+  renderSearch();
+  syncSearchUrl();
+  if (input.value.trim() && !items && !itemsPromise && !itemError) loadItems().catch(() => {});
+}
+function resetSearch() {
+  input.value = '';
+  searchType = 'all';
+  updateSearch();
+  input.focus();
+}
+clearSearch.addEventListener('click', resetSearch);
+retryItems.addEventListener('click', () => { loadItems().catch(() => {}); renderSearch(); });
+searchPanel.addEventListener('click', (e) => {
+  const type = e.target.closest('[data-search-type]');
+  if (type) { searchType = type.dataset.searchType; expanded.clear(); renderSearch(); }
+  const more = e.target.closest('[data-search-more]');
+  if (more) {
+    const kind = more.dataset.searchMore;
+    const previousCount = searchGroups.querySelectorAll(`[data-result-type="${kind}"]`).length;
+    expanded.set(kind, previousCount + PAGE_ROWS);
+    renderSearch();
+    searchGroups.querySelectorAll(`[data-result-type="${kind}"]`)[previousCount]?.focus();
+  }
+  const result = e.target.closest('[data-result-type]');
+  if (result) track('home_search_click', { result_type: result.dataset.resultType, result_id: result.dataset.resultId });
+});
+document.getElementById('home-search').addEventListener('submit', (e) => {
+  e.preventDefault();
+  updateSearch();
+  searchGroups.querySelector('.search-result')?.focus();
+});
+input.addEventListener('keydown', (e) => {
+  if (e.isComposing) return;
+  if (e.key === 'Escape') { e.preventDefault(); resetSearch(); }
+  if (e.key === 'ArrowDown') { e.preventDefault(); searchGroups.querySelector('.search-result')?.focus(); }
+});
+input.addEventListener('input', (e) => { if (!e.isComposing) updateSearch(); });
+input.addEventListener('compositionend', updateSearch);
+// Log the settled query with the count across every result type.
+let searchTimer;
+input.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    const term = input.value.trim();
+    if (term) track('search', { search_term: term, results: searchMatches.length });
+  }, 1200);
+});
+window.addEventListener('popstate', () => {
+  input.value = new URLSearchParams(location.search).get('q') || '';
+  searchType = 'all';
+  updateSearch();
 });
 
 function setCategory(id) {
@@ -168,27 +268,15 @@ document.querySelectorAll('.toc a[href^="#"]').forEach((a) =>
     if (!target?.hidden) return;
     if (activeCat && target.dataset.cat !== undefined) setCategory(target.id);
     if (target.hidden && input.value) {
-      input.value = '';
-      filter();
+      resetSearch();
     }
     if (target.hidden && activeCat) setCategory(activeCat);
   })
 );
 
-input.addEventListener('input', filter);
-// Log the settled query, not every keystroke.
-let searchTimer;
-input.addEventListener('input', () => {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => {
-    const term = input.value.trim();
-    if (term) track('search', { search_term: term, results: document.querySelectorAll('[data-cat] .site-card:not([hidden])').length });
-  }, 1200);
-});
-const q = new URLSearchParams(location.search).get('q');
-if (q) input.value = q;
+input.value = new URLSearchParams(location.search).get('q') || '';
 renderFavs();
-if (q) document.querySelector('.directory').scrollIntoView();
+updateSearch();
 
 // Shared upvotes (Cloudflare Worker + D1). Hidden unless the build configured an API.
 const voteApi = main.dataset.voteApi;

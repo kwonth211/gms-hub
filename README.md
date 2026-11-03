@@ -20,6 +20,12 @@ node scripts/build.mjs   # dist/ 생성 (의존성 없음)
 
 `main`에 푸시하면 GitHub Actions가 빌드해서 GitHub Pages(https://gms-hub.com)에 배포해요. DNS는 Cloudflare(프록시 끔)에서 GitHub Pages IP를 가리켜요.
 
+## 메인 통합 검색
+
+메인 검색은 `assets/search-index.js`에서 아이템·사이트·도구·가이드를 함께 검색해요. 한글/영문, 띄어쓰기, 초성, 장공·장마 같은 주문서 약어를 지원하며 아이템은 자체 시세 페이지로 연결해요. 사이트와 도구는 홈페이지 카드에서 자동으로 색인하고, 아이템 목록은 실시간 시세 위젯과 한 번만 내려받아 공유해요. 검색은 브라우저에서 처리하므로 AI 호출이 없어요.
+
+`node --test tests/search.test.mjs`로 동시 검색 누락, 순위, 한글 동의어, 초성 검색을 검증할 수 있어요.
+
 ## 데이터 관리 (관리자 페이지)
 
 `/admin/`에서 GitHub Fine-grained 토큰(이 저장소의 Contents: Read and write)으로 로그인하면

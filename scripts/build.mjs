@@ -44,9 +44,9 @@ const T = {
     homeTitle: '글로벌 메이플스토리 클래식 월드(글클메) 사이트 모음 · 시세 · 공략 · 계산기 | GMS Hub',
     homeDesc: `글로벌 메이플스토리 클래식 월드(글클메) 공식 채널, 디스코드·레딧·디시 커뮤니티, DB·위키, 자유시장 시세, 보스 타이머, 빌드 플래너 ${SITE_COUNT}곳을 용도별로 정리했어요. 레벨별 사냥터 찾기와 주문서 계산기도 있어요.`,
     heroKicker: '글클메 유저를 위한 길잡이',
-    heroTitle: '글로벌 클래식 메이플 사이트,<br>여기서 다 찾으세요',
-    heroSub: '공식 공지부터 시세, 보스 타이머, 빌드 플래너까지. 흩어진 사이트를 용도별로 모았어요.',
-    searchPlaceholder: '사이트 검색 (예: 시세, 디스코드, 보스, 빌드)',
+    heroTitle: '아이템·시세·유용한 사이트, <br>한 번에 찾아보세요',
+    heroSub: '아이템부터 공략과 도구까지 한곳에서 검색하고, 필요한 사이트로 바로 이동하세요.',
+    searchPlaceholder: '아이템, 사이트, 도구 검색',
     statSites: '수록 사이트',
     statCats: '카테고리',
     statChecked: '접속 확인',
@@ -257,9 +257,9 @@ const T = {
     homeTitle: 'Global MapleStory Classic World Sites: Prices, Guides, Boss Timers & Tools | GMS Hub',
     homeDesc: `Every Global MapleStory Classic World site in one place: official channels, Discord, Reddit and Korean communities, databases and wikis, Free Market price trackers, boss timers and build planners. ${SITE_COUNT} links, with unverified references labeled separately.`,
     heroKicker: 'Your guide to Classic World on the web',
-    heroTitle: 'Every Global Classic World site,<br>in one place',
-    heroSub: 'From official notices to price trackers, boss timers and build planners, sorted by what you need.',
-    searchPlaceholder: 'Search sites (e.g. prices, discord, boss, build)',
+    heroTitle: 'Items, prices and useful sites, <br>all in one search',
+    heroSub: 'Find items, guides and tools together, then go straight to the prices or sites you need.',
+    searchPlaceholder: 'Search items, sites and tools',
     statSites: 'Sites',
     statCats: 'Categories',
     statChecked: 'Checked live',
@@ -757,7 +757,21 @@ ${heroScene()}
 <span class="kicker">${esc(t.heroKicker)}</span>
 <h1>${t.heroTitle}</h1>
 <p>${esc(t.heroSub)}</p>
-<label class="search-box">🔍<input id="site-search" type="search" placeholder="${esc(t.searchPlaceholder)}" aria-label="${esc(t.searchPlaceholder)}"></label>
+<form class="search-box" id="home-search" role="search">
+<span aria-hidden="true">⌕</span><input id="site-search" type="search" autocomplete="off" maxlength="120" placeholder="${esc(t.searchPlaceholder)}" aria-label="${esc(t.searchPlaceholder)}" aria-controls="search-results" aria-describedby="search-help">
+<button type="button" id="search-clear" aria-label="${lang === 'ko' ? '검색어 지우기' : 'Clear search'}" hidden>×</button>
+<button type="submit" class="search-submit">${lang === 'ko' ? '검색' : 'Search'}</button>
+</form>
+<p class="search-help" id="search-help">${lang === 'ko' ? '한글·영문·초성으로 검색하세요. 예: 장공, 미스릴, 디스코드' : 'Search by name or keyword. Try Gloves Attack, Mithril or Discord.'}</p>
+<section class="unified-search" id="search-results" aria-label="${lang === 'ko' ? '통합 검색 결과' : 'Search results'}" data-items="${esc(href('/assets/items.json'))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" hidden>
+<div class="search-summary"><h2>${lang === 'ko' ? '검색 결과' : 'Search results'}</h2><span id="search-status" role="status" aria-live="polite" aria-atomic="true"></span></div>
+<div class="search-filters" role="group" aria-label="${lang === 'ko' ? '검색 결과 종류' : 'Result type'}">
+${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이템' : 'Items'], ['site', lang === 'ko' ? '사이트' : 'Sites'], ['tool', lang === 'ko' ? '도구·가이드' : 'Tools & guides']].map(([type, label]) => `<button type="button" data-search-type="${type}" aria-pressed="${type === 'all'}">${label} <span data-count="${type}">0</span></button>`).join('')}
+</div>
+<div id="search-item-state" class="search-item-state" hidden><span></span> <button type="button" id="search-retry" hidden>${lang === 'ko' ? '다시 불러오기' : 'Retry'}</button></div>
+<div id="search-groups"></div>
+<p id="search-empty" class="search-empty" hidden>${lang === 'ko' ? '일치하는 결과가 없어요. 더 짧은 이름이나 영문 이름으로 검색해 보세요.' : 'No matches. Try a shorter name or an English item name.'}</p>
+</section>
 <dl class="hero-stats"><div><dt>${t.statSites}</dt><dd>${SITE_COUNT}</dd></div><div><dt>${t.statCats}</dt><dd>${cats.length}</dd></div><div><dt>${t.statChecked}</dt><dd>${esc(sites.checked)}</dd></div></dl>
 </div>
 </div>
@@ -776,23 +790,7 @@ ${liveMarket(lang)}
 <header class="cat-head">${spriteSvg('star', 40)}<div><h3>${t.favHeading} <span id="fav-count-2">0</span></h3><p>${esc(t.favDesc)}</p></div></header>
 <div class="cards" id="fav-cards"></div>
 </section>
-<section class="item-hits" id="item-hits" data-items="${esc(href('/assets/items.json'))}" data-price="${esc(href(langPath(lang, '/tools/price/')))}" data-sites="${esc(JSON.stringify(PRICE_SITES))}" data-copied="${esc(PR[lang].copied)}" data-more="${esc(PR[lang].moreItems)}" hidden>
-<h3>${spriteSvg('coin', 24)}${PR[lang].h1}</h3>
-<div class="item-rows" id="item-rows"></div>
-<a class="more-items" id="more-items" href="#"></a>
-</section>
-<div class="tool-hits" id="tool-hits" hidden>
-${[
-  ['/tools/training/', 'sword', t.navTraining, '사냥터 레벨 레벨업 경험치 사냥 맵 training level exp map grind'],
-  ['/tools/scroll/', 'scroll', t.navScroll, '주문서 강화 작 공격력 업그레이드 슬롯 계산기 scroll upgrade slot calculator'],
-  ['/tools/drop-rate/', 'bag', t.navDrop, '확률 드롭 상자 박스 뽑기 계산기 drop rate box gacha chance calculator'],
-  ['/tools/price/', 'coin', t.navPrice, '시세 가격 얼마 메소 아이템 거래 price market item mesos']
-]
-  .map(([p, icon, title, kw]) => `<a class="tool-hit" href="${href(langPath(lang, p))}" data-search="${esc(`${title} ${kw}`.toLowerCase())}">${spriteSvg(icon, 28)}<span><strong>${title}</strong><small>GMS Hub</small></span></a>`)
-  .join('')}
-</div>
 ${sections}
-<p id="no-results" class="empty" hidden>${t.noResults}</p>
 </div>
 </div>
 <section class="wrap">
@@ -801,6 +799,7 @@ ${sections}
 ${tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc)}
 ${tool('/tools/scroll/', 'scroll', t.navScroll, t.scCardDesc)}
 ${tool('/tools/drop-rate/', 'bag', t.navDrop, t.dropCardDesc)}
+${tool('/tools/market/', 'coin', t.navMarket, MK[lang].lead)}
 ${tool('/tools/price/', 'coin', t.navPrice, PR[lang].cardDesc)}
 ${tool('/tools/damage/', 'hammer', DMG[lang].h1, DMG[lang].cardDesc)}
 ${tool('/tools/scan/', 'megaphone', SCAN[lang].h1, SCAN[lang].cardDesc)}
@@ -1794,7 +1793,7 @@ for (const lang of LANGS) {
   });
 
   const defs = {
-    home: { title: t.homeTitle, desc: t.homeDesc, body: homeBody(lang), scripts: ['home.js'], ld: [websiteLd, directoryLd, faqLd] },
+    home: { title: t.homeTitle, desc: t.homeDesc, body: homeBody(lang), modules: ['home.js'], ld: [websiteLd, directoryLd, faqLd] },
     training: {
       title: t.trTitle,
       desc: t.trDesc,
