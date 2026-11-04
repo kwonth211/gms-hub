@@ -1,5 +1,5 @@
 {
-  "checked": "2026-10-28",
+  "checked": "2026-11-04",
   "categories": [
     {
       "id": "official",
@@ -76,10 +76,10 @@
             ]
           },
           "stat": {
-            "ko": "멤버 145,562명",
-            "en": "145,562 members",
+            "ko": "멤버 147,440명",
+            "en": "147,440 members",
             "source": "Discord invite API",
-            "date": "2026-10-28"
+            "date": "2026-11-04"
           }
         },
         {
@@ -140,10 +140,10 @@
             ]
           },
           "stat": {
-            "ko": "멤버 30,626명 · 접속 10,638명",
-            "en": "30,626 members · 10,638 online",
+            "ko": "멤버 33,738명 · 접속 14,235명",
+            "en": "33,738 members · 14,235 online",
             "source": "Discord invite API",
-            "date": "2026-10-28"
+            "date": "2026-11-04"
           }
         },
         {
@@ -235,10 +235,10 @@
             ]
           },
           "stat": {
-            "ko": "멤버 1,018명",
-            "en": "1,018 members",
+            "ko": "멤버 1,184명",
+            "en": "1,184 members",
             "source": "Discord invite API",
-            "date": "2026-10-28"
+            "date": "2026-11-04"
           }
         }
       ]
@@ -289,7 +289,7 @@
             "ko": "시세 380,000건+ 기록",
             "en": "380,000+ prices recorded",
             "source": "site banner",
-            "date": "2026-10-28"
+            "date": "2026-11-04"
           }
         },
         {
@@ -350,7 +350,8 @@
               "Guilds",
               "Raw data"
             ]
-          }
+          },
+          "checked": false
         },
         {
           "name": "MSCW Guidebook",
@@ -709,14 +710,14 @@
             ]
           },
           "stat": {
-            "ko": "시세 115,737건 기록",
-            "en": "115,737 prices recorded",
+            "ko": "시세 186,306건 기록",
+            "en": "186,306 prices recorded",
             "source": "site homepage",
-            "date": "2026-10-28"
+            "date": "2026-11-04"
           }
         },
         {
-          "name": "HubCW",
+          "name": "MetaCW",
           "url": "https://hubcw.com/",
           "shot": "hubcw",
           "langs": [
@@ -744,10 +745,10 @@
             ]
           },
           "stat": {
-            "ko": "거래 30,756건 기록",
-            "en": "30,756 recorded sales",
+            "ko": "거래 50,528건 기록",
+            "en": "50,528 recorded sales",
             "source": "site homepage",
-            "date": "2026-10-28"
+            "date": "2026-11-04"
           }
         },
         {
@@ -996,7 +997,8 @@
               "Skill planner",
               "Build planner"
             ]
-          }
+          },
+          "checked": false
         },
         {
           "name": "MetaRoad Build Planner",
