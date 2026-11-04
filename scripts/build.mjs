@@ -1480,6 +1480,7 @@ function marketBody(lang) {
 <div class="mk-bar">
 <dl class="mk-stats"><span class="live-dot" aria-hidden="true"></span>${['listings', 'shops', 'items', 'sold'].map(stat).join('')}</dl>
 <a class="btn small-btn" href="${href(langPath(lang, '/tools/scan/'))}">● ${t.scan}</a>
+<a class="btn ghost small-btn" href="${href(langPath(lang, '/items/'))}">${IT[lang].indexLink}</a>
 </div>
 <p id="mk-status" class="muted" role="status">${t.loading}</p>
 <button type="button" id="mk-retry" class="btn ghost small-btn" hidden>${t.retry}</button>
@@ -1497,7 +1498,7 @@ function marketBody(lang) {
 </div>
 <div class="spark-tip" id="spark-tip" role="tooltip" hidden></div>
 </div>
-${jsonScript('mk-data', { lang, api: config.voteApi, itemsUrl: href('/assets/items.json'), priceUrl: href(langPath(lang, '/tools/price/')), sites: PRICE_SITES, t, live: LIVE[lang] })}`;
+${jsonScript('mk-data', { lang, api: config.voteApi, itemsUrl: href('/assets/items.json'), priceUrl: href(langPath(lang, '/tools/price/')), sites: PRICE_SITES, t, live: LIVE[lang], itemBase: href(langPath(lang, '/items/')), itemLink: IT[lang].pageLink })}`;
 }
 
 function dropBody(lang) {
@@ -1749,6 +1750,193 @@ function guidesIndexBody(lang) {
 // ---------- write ----------
 
 fs.rmSync(out, { recursive: true, force: true });
+// ---------- item pages ----------
+// One page per item, so "<item> 시세" searches land on that item. Prices come from data/item-prices.json (player scans only,
+// refreshed by scripts/fetch-item-prices.mjs before each build); an item with no price in the last 14 days stays noindex.
+const itemPrices = fs.existsSync(path.join(root, 'data/item-prices.json')) ? readJson('data/item-prices.json') : { updated: '', prices: {} };
+const PRICES_DATE = (itemPrices.updated || BUILD_DATE).slice(0, 10);
+const itemSlug = (i) => `${i.id}-${i.en.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`.replace(/-$/, '');
+const itemPath = (i) => `/items/${itemSlug(i)}/`;
+const priceOf = (i) => itemPrices.prices[i.id] || null;
+const itemName = (lang, i) => (lang === 'ko' && i.ko ? i.ko : i.en);
+const PRICED = itemsData.items.filter(priceOf);
+const WEAPON_SUB = /Wand|Staff|Bow|Claw|Dagger|Spear|Pole ?Arm|Sword|Axe|Blunt|BW/;
+const itemIcon = (id, size) => `<img src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="${size}" height="${size}" loading="lazy">`;
+
+// Korean players think in 만/억; elsewhere k/m/b (same as the live market page).
+function mesoText(lang, n) {
+  if (lang === 'ko') {
+    if (n >= 1e8) return `${+(n / 1e8).toFixed(2)}억`;
+    if (n >= 1e4) return `${+(n / 1e4).toFixed(n >= 1e6 ? 0 : 1)}만`;
+    return n.toLocaleString('ko');
+  }
+  if (n >= 1e9) return `${+(n / 1e9).toFixed(2)}b`;
+  if (n >= 1e6) return `${+(n / 1e6).toFixed(2)}m`;
+  if (n >= 1e3) return `${+(n / 1e3).toFixed(1)}k`;
+  return String(n);
+}
+
+const IT = {
+  ko: {
+    title: '{name} 시세 · 가격 (글클메 자유시장) | GMS Hub',
+    desc: '{name} 글클메 자유시장 시세: {basis} 중앙값 {median} 메소 (최근 14일 매물 {n}건, {low}~{high}). 유저가 스캔한 상점 매물 기준이고, 7일 추이와 지금 파는 채널·방도 보여 줘요.',
+    descNone: '{name} 글로벌 메이플 클래식 월드 아이템 정보 ({info}). 최근 14일 스캔 시세가 아직 없어요. 상점을 스캔하면 시세가 바로 쌓여요.',
+    h1: '{name} 시세',
+    lead: '글로벌 메이플스토리 클래식 월드 자유시장에서 유저들이 직접 스캔한 상점 매물로 계산한 시세예요.',
+    basis: { sold: '거래가', selling: '판매가', buying: '구매가' },
+    headline: '{basis} 중앙값 · 최근 14일',
+    count: '매물 {n}건',
+    range: '최저 {low} ~ 최고 {high}',
+    unit: '메소 / 개',
+    kinds: { sold: '판매 완료', selling: '판매 중', buying: '구매 희망' },
+    asOf: '시세 기준 {date} · 마지막 확인 {last}',
+    none: '최근 14일 동안 스캔된 매물이 아직 없어요. 자유시장에서 이 아이템을 파는 상점을 스캔하면 바로 시세가 생겨요.',
+    scan: '내 화면으로 상점 스캔하기',
+    infoH: '아이템 정보',
+    info: { cat: '분류', lv: '레벨', ko: '한글 이름', en: '영어 이름', id: '아이템 ID' },
+    liveH: '실시간 매물과 7일 추이',
+    liveNote: '이 부분은 페이지를 열 때 시세 서버에서 새로 받아 와요.',
+    open: '지금 파는 곳 (최근 24시간, 낮은 가격순)',
+    market: '실시간 시세 화면에서 자세히 보기',
+    related: '비슷한 아이템 시세',
+    tools: '같이 쓰면 좋은 도구',
+    scrollTool: '주문서 성공 확률 계산기',
+    damageTool: '사냥터별 몇 방 계산기',
+    external: '다른 시세 사이트에서 보기',
+    method: '시세는 유저가 직접 스캔하거나 올린 매물만 모아 계산해요. 중앙값에서 5배 넘게 벗어난 가격은 빼고, 판매 완료 기록이 있으면 그 가격을, 없으면 판매 중 가격을 기준으로 보여 줘요. 실제 거래 가격은 다를 수 있어요.',
+    loading: '매물을 불러오는 중이에요…', failed: '실시간 매물을 불러오지 못했어요.', noData: '최근 7일 매물이 없어요.', noOpen: '최근 24시간 안에 확인한 판매 매물이 없어요.',
+    table: { price: '개당 가격', qty: '묶음', seller: '판매자', where: '위치', seen: '본 시각' },
+    indexTitle: '글클메 아이템 시세 모음: 자유시장 가격 {n}개 | GMS Hub',
+    indexDesc: '글로벌 메이플 클래식 월드 자유시장에서 최근 14일 동안 스캔된 아이템 {n}개의 시세를 분류별로 모았어요. 매일 갱신돼요.',
+    indexH1: '아이템별 시세',
+    indexLead: '최근 14일 동안 스캔된 아이템 {n}개예요. 매일 갱신돼요. 아이템을 누르면 추이와 파는 곳을 볼 수 있어요.',
+    indexLink: '아이템별 시세 모아 보기',
+    pageLink: '이 아이템 시세 페이지',
+    cats: { Equip: '장비', Use: '소비', Etc: '기타', Setup: '설치' }
+  },
+  en: {
+    title: '{name} Price – MapleStory Classic World Free Market | GMS Hub',
+    desc: '{name} price in MapleStory Classic World: {basis} median {median} mesos ({n} listings in 14 days, {low}–{high}). From Free Market shops players scanned, with a 7-day trend and where it is for sale now.',
+    descNone: '{name} in MapleStory Classic World ({info}). No scanned price in the last 14 days yet; scanning a shop that sells it adds one right away.',
+    h1: '{name} Price',
+    lead: 'Prices from Free Market shops players scanned in Global MapleStory Classic World.',
+    basis: { sold: 'sold', selling: 'asking', buying: 'buying' },
+    headline: '{basis} median · last 14 days',
+    count: '{n} listings',
+    range: 'Low {low} – high {high}',
+    unit: 'mesos / item',
+    kinds: { sold: 'Sold', selling: 'Asking', buying: 'Buying' },
+    asOf: 'Prices as of {date} · last seen {last}',
+    none: 'No scanned listings in the last 14 days yet. Scan a Free Market shop that sells it and the price shows up right away.',
+    scan: 'Scan shops from my screen',
+    infoH: 'Item info',
+    info: { cat: 'Type', lv: 'Level', ko: 'Korean name', en: 'Name', id: 'Item ID' },
+    liveH: 'Live listings and 7-day trend',
+    liveNote: 'This part loads fresh from the price server when you open the page.',
+    open: 'For sale now (last 24 hours, cheapest first)',
+    market: 'Open it in the Live Market',
+    related: 'Similar items',
+    tools: 'Related tools',
+    scrollTool: 'Scroll success calculator',
+    damageTool: 'Hits-to-kill calculator',
+    external: 'See it on other price sites',
+    method: 'Only listings players scanned or reported count. Prices more than 5× away from the median are dropped; the headline uses sold prices when there are any, otherwise asking prices. Real trades can differ.',
+    loading: 'Loading listings…', failed: 'Could not load live listings.', noData: 'No listings in the last 7 days.', noOpen: 'No open listings seen in the last 24 hours.',
+    table: { price: 'Each', qty: 'Bundle', seller: 'Seller', where: 'Where', seen: 'Seen' },
+    indexTitle: 'MapleStory Classic World Item Prices: {n} Free Market Items | GMS Hub',
+    indexDesc: 'Free Market prices for {n} MapleStory Classic World items scanned in the last 14 days, grouped by type and refreshed daily.',
+    indexH1: 'Item prices',
+    indexLead: '{n} items scanned in the last 14 days, refreshed daily. Open one for its trend and where it is for sale.',
+    indexLink: 'Browse prices by item',
+    pageLink: 'Item price page',
+    cats: { Equip: 'Equip', Use: 'Use', Etc: 'Etc', Setup: 'Setup' }
+  }
+};
+
+const subLabel = (lang, i) => (lang === 'ko' ? PR.ko.subs[i.sub] : i.sub) || IT[lang].cats[i.cat] || i.cat;
+const itemInfoText = (lang, i) => [subLabel(lang, i), i.lv ? `Lv. ${i.lv}` : ''].filter(Boolean).join(' · ');
+
+function itemDesc(lang, i) {
+  const t = IT[lang];
+  const p = priceOf(i);
+  const name = itemName(lang, i);
+  if (!p) return fill(t.descNone, { name, info: itemInfoText(lang, i) });
+  return fill(t.desc, { name, basis: t.basis[p.basis], median: mesoText(lang, p.median), n: p.n, low: mesoText(lang, p.low), high: mesoText(lang, p.high) });
+}
+
+// Same type first, then nearest level; priced neighbours lead so the links go to pages with something on them.
+function relatedItems(i) {
+  return itemsData.items
+    .filter((x) => x.id !== i.id && x.cat === i.cat && (x.sub === i.sub || !i.sub))
+    .sort((a, b) => !!priceOf(b) - !!priceOf(a) || Math.abs((a.lv || 0) - (i.lv || 0)) - Math.abs((b.lv || 0) - (i.lv || 0)) || a.id - b.id)
+    .slice(0, 8);
+}
+
+const itemLink = (lang, i) => {
+  const p = priceOf(i);
+  return `<li><a href="${href(langPath(lang, itemPath(i)))}">${itemIcon(i.id, 24)}<span>${esc(itemName(lang, i))}</span><small>${p ? `${mesoText(lang, p.median)} · ${IT[lang].basis[p.basis]}` : esc(itemInfoText(lang, i))}</small></a></li>`;
+};
+
+function itemBody(lang, i) {
+  const t = IT[lang];
+  const p = priceOf(i);
+  const name = itemName(lang, i);
+  const nf = new Intl.NumberFormat(lang);
+  const kinds = p ? ['sold', 'selling', 'buying'].filter((k) => p[k]).map((k) => `<li><span>${t.kinds[k]}</span><b>${nf.format(p[k].median)}</b><small>${fill(t.count, { n: p[k].n })}</small></li>`).join('') : '';
+  const price = p
+    ? `<p class="item-headline-label">${fill(t.headline, { basis: t.basis[p.basis] })}</p>
+<p class="item-headline"><b>${nf.format(p.median)}</b> <span>${t.unit}</span></p>
+<p class="muted">${fill(t.count, { n: p.n })} · ${fill(t.range, { low: nf.format(p.low), high: nf.format(p.high) })}</p>
+<ul class="item-kinds">${kinds}</ul>
+<p class="muted note">${fill(t.asOf, { date: PRICES_DATE, last: p.last.slice(0, 10) })}</p>`
+    : `<p>${t.none}</p><p><a class="btn small-btn" href="${href(langPath(lang, '/tools/scan/'))}">● ${t.scan}</a></p>`;
+  const rows = [
+    [t.info.cat, `${esc(IT[lang].cats[i.cat] || i.cat)}${i.sub ? ` · ${esc(subLabel(lang, i))}` : ''}`],
+    i.lv ? [t.info.lv, `${i.lv}`] : null,
+    lang === 'ko' ? [t.info.en, esc(i.en)] : i.ko ? [t.info.ko, esc(i.ko)] : null,
+    [t.info.id, `${i.id}`]
+  ].filter(Boolean);
+  const tools = [
+    i.cat === 'Use' && /\bScroll\b/.test(i.en) ? `<a href="${href(langPath(lang, '/tools/scroll/'))}">${t.scrollTool}</a>` : '',
+    i.cat === 'Equip' && WEAPON_SUB.test(i.sub || '') ? `<a href="${href(langPath(lang, '/tools/damage/'))}">${t.damageTool}</a>` : ''
+  ].filter(Boolean);
+  const external = PRICE_SITES.map((s) => `<a href="${esc(s.url.replace('{id}', i.id).replace('{en}', encodeURIComponent(i.en)))}" target="_blank" rel="noopener">${esc(s.name)}</a>`).join(' · ');
+  return `<section class="page-head wrap">
+<p class="crumbs"><a href="${href(langPath(lang, '/tools/market/'))}">${T[lang].navMarket}</a> › <a href="${href(langPath(lang, '/items/'))}">${t.indexH1}</a></p>
+<span class="badge-game">${esc(T[lang].gameBadge)}</span>
+<h1 class="item-title">${itemIcon(i.id, 40)}<span>${esc(fill(t.h1, { name }))}${lang === 'ko' && i.ko ? `<small class="en-name">${esc(i.en)}</small>` : ''}</span></h1>
+<p class="lead">${esc(t.lead)}</p>
+</section>
+<div class="wrap item-page">
+<div class="item-grid">
+<section class="panel item-price">${price}</section>
+<section class="panel item-info"><h2>${t.infoH}</h2><dl>${rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
+${tools.length ? `<h3>${t.tools}</h3><p>${tools.join(' · ')}</p>` : ''}</section>
+</div>
+<section class="panel item-live"><h2>${t.liveH}</h2><p class="muted note">${t.liveNote}</p>
+<div id="mk-charts"></div>
+<h3>${t.open}</h3><div id="it-open" aria-live="polite"><p class="muted">${t.loading}</p></div>
+<p><a class="btn small-btn" href="${href(langPath(lang, `/tools/market/?item=${i.id}`))}">${t.market}</a></p></section>
+<section class="panel"><h2>${t.related}</h2><ul class="item-links">${relatedItems(i).map((x) => itemLink(lang, x)).join('')}</ul></section>
+<p class="muted small">${t.method}</p>
+<p class="muted small">${t.external}: ${external}</p>
+</div>
+${jsonScript('it-data', { lang, id: i.id, api: config.voteApi, t: { loading: t.loading, failed: t.failed, noData: t.noData, noOpen: t.noOpen, table: t.table } })}`;
+}
+
+function itemsIndexBody(lang) {
+  const t = IT[lang];
+  const n = PRICED.length;
+  const groups = ['Equip', 'Use', 'Etc', 'Setup']
+    .map((cat) => [cat, PRICED.filter((i) => i.cat === cat).sort((a, b) => priceOf(b).n - priceOf(a).n || a.id - b.id)])
+    .filter(([, list]) => list.length);
+  return `${pageHead(lang, 'coin', t.indexH1, fill(t.indexLead, { n }))}
+<div class="wrap item-page">
+${groups.map(([cat, list]) => `<section class="panel"><h2>${t.cats[cat]} <small class="muted">${list.length}</small></h2><ul class="item-links">${list.map((i) => itemLink(lang, i)).join('')}</ul></section>`).join('\n')}
+<p class="muted small">${t.method}</p>
+</div>`;
+}
+
 const write = (rel, content) => {
   const file = path.join(out, rel);
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -1914,6 +2102,37 @@ for (const lang of LANGS) {
       })
     );
   }
+
+  const it = IT[lang];
+  write(
+    path.join(lang, 'items', 'index.html'),
+    page({
+      lang,
+      pageKey: 'items',
+      pagePath: '/items/',
+      title: fill(it.indexTitle, { n: PRICED.length }),
+      desc: fill(it.indexDesc, { n: PRICED.length }),
+      body: itemsIndexBody(lang),
+      ld: [breadcrumbLd(lang, it.indexH1, '/items/')]
+    })
+  );
+  for (const i of itemsData.items) {
+    const name = itemName(lang, i);
+    write(
+      path.join(lang, itemPath(i), 'index.html'),
+      page({
+        lang,
+        pageKey: 'item',
+        pagePath: itemPath(i),
+        title: fill(it.title, { name }),
+        desc: itemDesc(lang, i),
+        body: itemBody(lang, i),
+        modules: ['item.js'],
+        noindex: !priceOf(i),
+        ld: [breadcrumbLd(lang, fill(it.h1, { name }), itemPath(i))]
+      })
+    );
+  }
 }
 
 // Root: send visitors to their language; crawlers follow the hreflang links.
@@ -1963,7 +2182,15 @@ const sitemapUrls = PAGES.flatMap((p) =>
   )
 ).concat(
   [...new Set(guides.map((g) => g.lang))].map((l) => `<url><loc>${absUrl(langPath(l, '/guides/'))}</loc><lastmod>${BUILD_DATE}</lastmod></url>`),
-  guides.map((g) => `<url><loc>${absUrl(langPath(g.lang, guidePath(g)))}</loc><lastmod>${g.updated}</lastmod></url>`)
+  guides.map((g) => `<url><loc>${absUrl(langPath(g.lang, guidePath(g)))}</loc><lastmod>${g.updated}</lastmod></url>`),
+  // Only items with a recent price are indexable, so only those go in the sitemap.
+  [{ path: '/items/' }, ...PRICED.map((i) => ({ path: itemPath(i) }))].flatMap((p) =>
+    LANGS.map(
+      (lang) => `<url><loc>${absUrl(langPath(lang, p.path))}</loc><lastmod>${PRICES_DATE}</lastmod>${LANGS.map(
+        (l) => `<xhtml:link rel="alternate" hreflang="${l}" href="${absUrl(langPath(l, p.path))}"/>`
+      ).join('')}<xhtml:link rel="alternate" hreflang="x-default" href="${absUrl(langPath(config.defaultLang, p.path))}"/></url>`
+    )
+  )
 ).join('\n');
 write(
   'sitemap.xml',
@@ -2001,4 +2228,4 @@ write('assets/mobs.json', JSON.stringify(readJson('data/mobs.json').mobs.map((m)
 write('assets/weapons.json', JSON.stringify(readJson('data/weapons.json').weapons.map((w) => [w.id, w.ko || '', w.en, w.type, w.lv, w.watk || 0, w.matk || 0])));
 write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko || '', i.en, i.cat, i.sub, i.lv || 0])));
 
-console.log(`Built ${PAGES.length * LANGS.length} pages, ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);
+console.log(`Built ${PAGES.length * LANGS.length} pages + ${itemsData.items.length * LANGS.length} item pages (${PRICED.length} priced), ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);

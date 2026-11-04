@@ -233,6 +233,22 @@ export default {
       return json(out, cors, 200, 'public, max-age=30');
     }
 
+    if (url.pathname === '/prices/all' && req.method === 'GET') {
+      // Item pages bake these into static HTML for search engines, so only player scans and reports count, never imported rows.
+      const real = "reporter NOT LIKE 'initial:%' AND reporter NOT LIKE 'seed:%'";
+      const { results } = await env.DB.prepare(
+        `SELECT item, price, kind, created_at FROM prices WHERE created_at >= ${WINDOW} AND ${real}
+         UNION ALL
+         SELECT item, price, CASE WHEN sold THEN 'sold' ELSE 'selling' END, last_seen FROM listings WHERE last_seen >= ${WINDOW} AND ${real}
+         ORDER BY created_at DESC`
+      ).all();
+      const byItem = new Map();
+      for (const r of results) (byItem.get(r.item) || byItem.set(r.item, []).get(r.item)).push(r);
+      const out = {};
+      for (const [item, rows] of byItem) out[item] = summarize(rows);
+      return json(out, cors, 200, 'public, max-age=600');
+    }
+
     if (url.pathname === '/prices/recent' && req.method === 'GET') {
       const { results } = await env.DB.prepare('SELECT item, price, kind, created_at AS at FROM prices ORDER BY id DESC LIMIT 40').all();
       // Same outlier rule as the summaries, so a troll price never shows up in the feed either.
