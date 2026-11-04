@@ -274,6 +274,9 @@ async function recognize(canvas) {
       const byTier = tier && match.alternatives.find((it) => it.en.endsWith(`: ${tier}`));
       if (byTier) match = { ...match, item: byTier, alternatives: null };
     }
+    // A line that matches no item and holds no word (a cut-off row, a cursor or tooltip over it) is shown as unreadable
+    // rather than as the stray marks OCR made of it.
+    if (!match && !/[A-Za-z가-힣]{2}/.test(name)) name = '';
     // "100 for 5,000 mesos" is 100 items at 50 each: prices are kept per item so bundles compare with single listings.
     const qty = p?.qty || 1;
     out.push({
@@ -332,6 +335,9 @@ let currentShop = null;
 function shopFor(rows) {
   const read = rows[0]?.owner || '';
   let shop = sameShop(currentShop, rows, channel, room) ? currentShop : shops.find((s) => sameShop(s, rows, channel, room));
+  // One seller has one shop, and changing channel closes it: the same seller still on screen under a new channel read means
+  // that read was wrong (a cell picked in the Change Channel window, or a frame from before the move).
+  if (!shop && currentShop && SELLER.test(read) && leader(currentShop)[0] === read) shop = currentShop;
   // Keep an unreadable owner's current list available for manual correction, without merging other shops by price.
   if (!shop && currentShop && !SELLER.test(read) && currentShop.channel === channel && currentShop.room === room &&
       currentShop.signature === rows.map((r) => `${r.name}|${r.price}`).join(';')) shop = currentShop;
@@ -407,7 +413,7 @@ const listings = new Map();
 const correctedKeys = new Set();
 
 function render(r, tr) {
-  const title = r.item ? (i18n.lang === 'ko' ? r.item.ko || r.item.en : r.item.en) : r.name;
+  const title = r.item ? (i18n.lang === 'ko' ? r.item.ko || r.item.en : r.item.en) : r.name || i18n.unreadable;
   const sub = r.item && title !== r.item.en ? `<small>${esc(r.item.en)}</small>` : '';
   const icon = r.item ? `<img src="https://maplestory.io/api/MCW/1/item/${r.item.id}/icon" alt="" width="28" height="28">` : '';
   tr.classList.toggle('sold', r.sold);
@@ -532,6 +538,7 @@ function show(found) {
   found.forEach((r) => {
     r.shop = shop;
     r.owner = name;
+    r.channel = shop.channel;
   });
   // Prepending in reverse keeps the rows in the same order as on screen.
   for (const r of [...found].reverse()) {
