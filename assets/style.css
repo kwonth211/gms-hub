@@ -748,3 +748,4 @@ input.dm-filled { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset
   .search-box input { font-size: .88rem; }
   .search-box button { padding: 6px 9px; font-size: .82rem; }
 }
+.en-name { display: block; margin-top: 2px; color: var(--muted); font-size: .72rem; font-weight: 400; }

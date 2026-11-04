@@ -826,14 +826,18 @@ ${faq}
 
 const minRec = (s) => Math.min(...s.recs.map((r) => r.min));
 
+// Korean pages lead with the client's Korean name and keep the English one beside it, since guides and players use both.
+const spotName = (lang, s) => (lang === 'ko' && s.ko ? `${esc(s.ko)} <small class="en-name">${esc(s.map)}</small>` : esc(s.map));
+const mobName = (lang, m) => esc(lang === 'ko' && m.ko ? m.ko : m.name);
+
 function trainingRows(lang, spots) {
   const nf = new Intl.NumberFormat(lang);
   const src = training.sources;
   return spots
     .map((s) => {
       const caution = training.cautions.find((c) => c.map === s.map);
-      return `<tr><td><strong>${esc(s.map)}</strong>${caution ? `<div class="caution">⚠ ${esc(caution.text[lang])}</div>` : ''}</td><td>${
-        s.monsters.map((m) => `${esc(m.name)} <span class="lv">${m.level}</span>`).join('<br>') || '—'
+      return `<tr><td><strong>${spotName(lang, s)}</strong>${caution ? `<div class="caution">⚠ ${esc(caution.text[lang])}</div>` : ''}</td><td>${
+        s.monsters.map((m) => `${mobName(lang, m)} <span class="lv">${m.level}</span>`).join('<br>') || '—'
       }</td><td>${s.recs.map((r) => `<span class="rec ${r.source}">${esc(src[r.source].name)} ${r.min}–${r.max}</span>`).join(' ')}</td><td>${
         s.meowdbExpHr ? nf.format(s.meowdbExpHr) : '—'
       }</td></tr>`;

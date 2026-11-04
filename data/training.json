@@ -28,11 +28,13 @@
    "monsters": [
     {
      "name": "Snail",
-     "level": 1
+     "level": 1,
+     "ko": "달팽이"
     },
     {
      "name": "Blue Snail",
-     "level": 2
+     "level": 2,
+     "ko": "파란 달팽이"
     }
    ],
    "recs": [
@@ -42,22 +44,26 @@
      "max": 7
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "달팽이 사냥터 II"
   },
   {
    "map": "Mushroom Garden",
    "monsters": [
     {
      "name": "Shroom",
-     "level": 3
+     "level": 3,
+     "ko": "쉬룸"
     },
     {
      "name": "Snail",
-     "level": 1
+     "level": 1,
+     "ko": "달팽이"
     },
     {
      "name": "Orange Mushroom",
-     "level": 8
+     "level": 8,
+     "ko": "주황 버섯"
     }
    ],
    "recs": [
@@ -67,22 +73,26 @@
      "max": 10
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "버섯 정원"
   },
   {
    "map": "The Tree That Grew II",
    "monsters": [
     {
      "name": "Slime",
-     "level": 6
+     "level": 6,
+     "ko": "슬라임"
     },
     {
      "name": "Stump",
-     "level": 5
+     "level": 5,
+     "ko": "스텀프"
     },
     {
      "name": "Dark Stump",
-     "level": 11
+     "level": 11,
+     "ko": "다크 스텀프"
     }
    ],
    "recs": [
@@ -97,22 +107,26 @@
      "max": 15
     }
    ],
-   "meowdbExpHr": 318571
+   "meowdbExpHr": 318571,
+   "ko": "자라난 나무 II"
   },
   {
    "map": "L Forest I",
    "monsters": [
     {
      "name": "Ribbon Pig",
-     "level": 10
+     "level": 10,
+     "ko": "리본 돼지"
     },
     {
      "name": "Pig",
-     "level": 7
+     "level": 7,
+     "ko": "돼지"
     },
     {
      "name": "Shroom",
-     "level": 3
+     "level": 3,
+     "ko": "쉬룸"
     }
    ],
    "recs": [
@@ -127,18 +141,21 @@
      "max": 16
     }
    ],
-   "meowdbExpHr": 333525
+   "meowdbExpHr": 333525,
+   "ko": "L 숲 I"
   },
   {
    "map": "Construction Site North of Kerning City",
    "monsters": [
     {
      "name": "Dark Stump",
-     "level": 11
+     "level": 11,
+     "ko": "다크 스텀프"
     },
     {
      "name": "Red Snail",
-     "level": 4
+     "level": 4,
+     "ko": "빨간 달팽이"
     }
    ],
    "recs": [
@@ -148,14 +165,16 @@
      "max": 10
     }
    ],
-   "meowdbExpHr": 297499
+   "meowdbExpHr": 297499,
+   "ko": "커닝시티 북쪽 공사장"
   },
   {
    "map": "Kerning City Construction Site",
    "monsters": [
     {
      "name": "Octopus",
-     "level": 12
+     "level": 12,
+     "ko": "옥토퍼스"
     }
    ],
    "recs": [
@@ -165,18 +184,21 @@
      "max": 14
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "커닝시티 공사장"
   },
   {
    "map": "The Rain-Forest East of Henesys",
    "monsters": [
     {
      "name": "Ribbon Pig",
-     "level": 10
+     "level": 10,
+     "ko": "리본 돼지"
     },
     {
      "name": "Pig",
-     "level": 7
+     "level": 7,
+     "ko": "돼지"
     }
    ],
    "recs": [
@@ -186,22 +208,26 @@
      "max": 14
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "헤네시스 동쪽 레인 숲"
   },
   {
    "map": "Henesys Hunting Ground III",
    "monsters": [
     {
      "name": "Green Mushroom",
-     "level": 14
+     "level": 14,
+     "ko": "초록 버섯"
     },
     {
      "name": "Orange Mushroom",
-     "level": 8
+     "level": 8,
+     "ko": "주황 버섯"
     },
     {
      "name": "Slime",
-     "level": 6
+     "level": 6,
+     "ko": "슬라임"
     }
    ],
    "recs": [
@@ -216,22 +242,26 @@
      "max": 20
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "헤네시스 사냥터 III"
   },
   {
    "map": "West Rocky Mountain III",
    "monsters": [
     {
      "name": "Green Mushroom",
-     "level": 14
+     "level": 14,
+     "ko": "초록 버섯"
     },
     {
      "name": "Stump",
-     "level": 5
+     "level": 5,
+     "ko": "스텀프"
     },
     {
      "name": "Red Snail",
-     "level": 4
+     "level": 4,
+     "ko": "빨간 달팽이"
     }
    ],
    "recs": [
@@ -246,18 +276,21 @@
      "max": 20
     }
    ],
-   "meowdbExpHr": 572857
+   "meowdbExpHr": 572857,
+   "ko": "서쪽 바위산 III"
   },
   {
    "map": "Tree Dungeon, Forest Up North IV",
    "monsters": [
     {
      "name": "Green Mushroom",
-     "level": 14
+     "level": 14,
+     "ko": "초록 버섯"
     },
     {
      "name": "Slime",
-     "level": 6
+     "level": 6,
+     "ko": "슬라임"
     }
    ],
    "recs": [
@@ -272,14 +305,16 @@
      "max": 19
     }
    ],
-   "meowdbExpHr": 343571
+   "meowdbExpHr": 343571,
+   "ko": "나무 던전, 북쪽 숲 IV"
   },
   {
    "map": "Line 1 <Area 1>",
    "monsters": [
     {
      "name": "Bubbling",
-     "level": 15
+     "level": 15,
+     "ko": "버블링"
     }
    ],
    "recs": [
@@ -299,18 +334,21 @@
      "max": 21
     }
    ],
-   "meowdbExpHr": 640000
+   "meowdbExpHr": 640000,
+   "ko": "1호선 <1구역>"
   },
   {
    "map": "Dungeon, Southern Forest III",
    "monsters": [
     {
      "name": "Green Mushroom",
-     "level": 14
+     "level": 14,
+     "ko": "초록 버섯"
     },
     {
      "name": "Slime",
-     "level": 6
+     "level": 6,
+     "ko": "슬라임"
     }
    ],
    "recs": [
@@ -320,22 +358,26 @@
      "max": 19
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "던전, 남쪽 숲 III"
   },
   {
    "map": "Dangerous Steam",
    "monsters": [
     {
      "name": "Stirge",
-     "level": 20
+     "level": 20,
+     "ko": "스티지"
     },
     {
      "name": "Horny Mushroom",
-     "level": 22
+     "level": 22,
+     "ko": "뿔 버섯"
     },
     {
      "name": "Zombie Mushroom",
-     "level": 24
+     "level": 24,
+     "ko": "좀비 버섯"
     }
    ],
    "recs": [
@@ -350,14 +392,16 @@
      "max": 24
     }
    ],
-   "meowdbExpHr": 671786
+   "meowdbExpHr": 671786,
+   "ko": "위험한 증기"
   },
   {
    "map": "Transfer Area",
    "monsters": [
     {
      "name": "Stirge",
-     "level": 20
+     "level": 20,
+     "ko": "스티지"
     }
    ],
    "recs": [
@@ -372,14 +416,16 @@
      "max": 24
     }
    ],
-   "meowdbExpHr": 502143
+   "meowdbExpHr": 502143,
+   "ko": "환승 구역"
   },
   {
    "map": "Tree Dungeon, Forest Up North III",
    "monsters": [
     {
      "name": "Horny Mushroom",
-     "level": 22
+     "level": 22,
+     "ko": "뿔 버섯"
     }
    ],
    "recs": [
@@ -389,22 +435,26 @@
      "max": 20
     }
    ],
-   "meowdbExpHr": 434286
+   "meowdbExpHr": 434286,
+   "ko": "나무 던전, 북쪽 숲 III"
   },
   {
    "map": "Dark Cave",
    "monsters": [
     {
      "name": "Stirge",
-     "level": 20
+     "level": 20,
+     "ko": "스티지"
     },
     {
      "name": "Horny Mushroom",
-     "level": 22
+     "level": 22,
+     "ko": "뿔 버섯"
     },
     {
      "name": "Zombie Mushroom",
-     "level": 24
+     "level": 24,
+     "ko": "좀비 버섯"
     }
    ],
    "recs": [
@@ -419,22 +469,26 @@
      "max": 23
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "다크 동굴"
   },
   {
    "map": "Damp Forest",
    "monsters": [
     {
      "name": "Jr. Necki",
-     "level": 21
+     "level": 21,
+     "ko": "주니어 네키"
     },
     {
      "name": "Octopus",
-     "level": 12
+     "level": 12,
+     "ko": "옥토퍼스"
     },
     {
      "name": "Slime",
-     "level": 6
+     "level": 6,
+     "ko": "슬라임"
     }
    ],
    "recs": [
@@ -444,18 +498,21 @@
      "max": 24
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "축축한 숲"
   },
   {
    "map": "Ant Tunnel III",
    "monsters": [
     {
      "name": "Zombie Mushroom",
-     "level": 24
+     "level": 24,
+     "ko": "좀비 버섯"
     },
     {
      "name": "Horny Mushroom",
-     "level": 22
+     "level": 22,
+     "ko": "뿔 버섯"
     }
    ],
    "recs": [
@@ -475,26 +532,31 @@
      "max": 27
     }
    ],
-   "meowdbExpHr": 1536786
+   "meowdbExpHr": 1536786,
+   "ko": "개미 터널 III"
   },
   {
    "map": "Deep Ant Tunnel I",
    "monsters": [
     {
      "name": "Zombie Mushroom",
-     "level": 24
+     "level": 24,
+     "ko": "좀비 버섯"
     },
     {
      "name": "Horny Mushroom",
-     "level": 22
+     "level": 22,
+     "ko": "뿔 버섯"
     },
     {
      "name": "Evil Eye",
-     "level": 27
+     "level": 27,
+     "ko": "이블아이"
     },
     {
      "name": "Jr. Boogie",
-     "level": 35
+     "level": 35,
+     "ko": "주니어 부기"
     }
    ],
    "recs": [
@@ -509,22 +571,26 @@
      "max": 30
     }
    ],
-   "meowdbExpHr": 1078060
+   "meowdbExpHr": 1078060,
+   "ko": "깊은 개미 터널 I"
   },
   {
    "map": "Ant Tunnel Park",
    "monsters": [
     {
      "name": "Evil Eye",
-     "level": 27
+     "level": 27,
+     "ko": "이블아이"
     },
     {
      "name": "Zombie Mushroom",
-     "level": 24
+     "level": 24,
+     "ko": "좀비 버섯"
     },
     {
      "name": "Horny Mushroom",
-     "level": 22
+     "level": 22,
+     "ko": "뿔 버섯"
     }
    ],
    "recs": [
@@ -544,22 +610,26 @@
      "max": 30
     }
    ],
-   "meowdbExpHr": 981785
+   "meowdbExpHr": 981785,
+   "ko": "개미굴 광장"
   },
   {
    "map": "1st Accompaniment <Last Stage>",
    "monsters": [
     {
      "name": "King Slime",
-     "level": 32
+     "level": 32,
+     "ko": "킹 슬라임"
     },
     {
      "name": "Curse Eye",
-     "level": 29
+     "level": 29,
+     "ko": "커즈 아이"
     },
     {
      "name": "Jr. Necki",
-     "level": 25
+     "level": 25,
+     "ko": "주니어 네키"
     }
    ],
    "recs": [
@@ -569,22 +639,26 @@
      "max": 30
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "1번째 동행 <마지막 단계>"
   },
   {
    "map": "The Land of Wild Boar II",
    "monsters": [
     {
      "name": "Wild Boar",
-     "level": 25
+     "level": 25,
+     "ko": "와일드 보어"
     },
     {
      "name": "Axe Stump",
-     "level": 17
+     "level": 17,
+     "ko": "엑스텀프"
     },
     {
      "name": "Dark Stump",
-     "level": 11
+     "level": 11,
+     "ko": "다크 스텀프"
     }
    ],
    "recs": [
@@ -594,14 +668,16 @@
      "max": 30
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "와일드보어의 땅 II"
   },
   {
    "map": "The Cave of Evil Eye III",
    "monsters": [
     {
      "name": "Evil Eye",
-     "level": 27
+     "level": 27,
+     "ko": "이블아이"
     }
    ],
    "recs": [
@@ -611,18 +687,21 @@
      "max": 30
     }
    ],
-   "meowdbExpHr": 680206
+   "meowdbExpHr": 680206,
+   "ko": "이블아이의 동굴 III"
   },
   {
    "map": "Line 2 <Area 1>",
    "monsters": [
     {
      "name": "Jr. Wraith",
-     "level": 34
+     "level": 34,
+     "ko": "주니어 레이스"
     },
     {
      "name": "Jr. Necki",
-     "level": 21
+     "level": 21,
+     "ko": "주니어 네키"
     }
    ],
    "recs": [
@@ -642,18 +721,21 @@
      "max": 40
     }
    ],
-   "meowdbExpHr": 2151429
+   "meowdbExpHr": 2151429,
+   "ko": "2호선 <1구역>"
   },
   {
    "map": "Line 1 <Area 2>",
    "monsters": [
     {
      "name": "Jr. Wraith",
-     "level": 34
+     "level": 34,
+     "ko": "주니어 레이스"
     },
     {
      "name": "Stirge",
-     "level": 20
+     "level": 20,
+     "ko": "스티지"
     }
    ],
    "recs": [
@@ -668,22 +750,26 @@
      "max": 40
     }
    ],
-   "meowdbExpHr": 1903929
+   "meowdbExpHr": 1903929,
+   "ko": "1호선 <2구역>"
   },
   {
    "map": "The Burnt Land V",
    "monsters": [
     {
      "name": "Fire Boar",
-     "level": 32
+     "level": 32,
+     "ko": "파이어보어"
     },
     {
      "name": "Lupin",
-     "level": 37
+     "level": 37,
+     "ko": "루팡"
     },
     {
      "name": "Dark Axe Stump",
-     "level": 23
+     "level": 23,
+     "ko": "다크 엑스텀프"
     }
    ],
    "recs": [
@@ -698,14 +784,16 @@
      "max": 35
     }
    ],
-   "meowdbExpHr": 1032143
+   "meowdbExpHr": 1032143,
+   "ko": "불탄 땅 V"
   },
   {
    "map": "Tree Dungeon, Forest Up North IX",
    "monsters": [
     {
      "name": "Curse Eye",
-     "level": 33
+     "level": 33,
+     "ko": "커즈 아이"
     }
    ],
    "recs": [
@@ -715,22 +803,26 @@
      "max": 35
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "나무 던전, 북쪽 숲 IX"
   },
   {
    "map": "The Swamp of Despair II",
    "monsters": [
     {
      "name": "Ligator",
-     "level": 31
+     "level": 31,
+     "ko": "리게이터"
     },
     {
      "name": "Horny Mushroom",
-     "level": 22
+     "level": 22,
+     "ko": "뿔 버섯"
     },
     {
      "name": "Jr. Necki",
-     "level": 21
+     "level": 21,
+     "ko": "주니어 네키"
     }
    ],
    "recs": [
@@ -740,18 +832,21 @@
      "max": 36
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "절망의 늪 II"
   },
   {
    "map": "A Look-Out Shed Around the Beach",
    "monsters": [
     {
      "name": "Lorang",
-     "level": 38
+     "level": 38,
+     "ko": "로랑"
     },
     {
      "name": "Lupin",
-     "level": 37
+     "level": 37,
+     "ko": "루팡"
     }
    ],
    "recs": [
@@ -771,18 +866,21 @@
      "max": 42
     }
    ],
-   "meowdbExpHr": 1162261
+   "meowdbExpHr": 1162261,
+   "ko": "해변 주변 전망 오두막"
   },
   {
    "map": "Lorang Lorang",
    "monsters": [
     {
      "name": "Lorang",
-     "level": 38
+     "level": 38,
+     "ko": "로랑"
     },
     {
      "name": "Lupin",
-     "level": 37
+     "level": 37,
+     "ko": "루팡"
     }
    ],
    "recs": [
@@ -797,18 +895,21 @@
      "max": 40
     }
    ],
-   "meowdbExpHr": 1108929
+   "meowdbExpHr": 1108929,
+   "ko": "로랑 로랑"
   },
   {
    "map": "Monkey Forest II",
    "monsters": [
     {
      "name": "Zombie Lupin",
-     "level": 41
+     "level": 41,
+     "ko": "좀비 루팡"
     },
     {
      "name": "Lupin",
-     "level": 37
+     "level": 37,
+     "ko": "루팡"
     }
    ],
    "recs": [
@@ -823,18 +924,21 @@
      "max": 40
     }
    ],
-   "meowdbExpHr": 1062500
+   "meowdbExpHr": 1062500,
+   "ko": "원숭이 숲 II"
   },
   {
    "map": "Monkey Swamp III",
    "monsters": [
     {
      "name": "Zombie Lupin",
-     "level": 41
+     "level": 41,
+     "ko": "좀비 루팡"
     },
     {
      "name": "Jr. Necki",
-     "level": 21
+     "level": 21,
+     "ko": "주니어 네키"
     }
    ],
    "recs": [
@@ -854,18 +958,21 @@
      "max": 44
     }
    ],
-   "meowdbExpHr": 1138571
+   "meowdbExpHr": 1138571,
+   "ko": "원숭이 늪 III"
   },
   {
    "map": "Tree Dungeon, Monkey Forest II",
    "monsters": [
     {
      "name": "Zombie Lupin",
-     "level": 41
+     "level": 41,
+     "ko": "좀비 루팡"
     },
     {
      "name": "Curse Eye",
-     "level": 33
+     "level": 33,
+     "ko": "커즈 아이"
     }
    ],
    "recs": [
@@ -880,18 +987,21 @@
      "max": 45
     }
    ],
-   "meowdbExpHr": 916429
+   "meowdbExpHr": 916429,
+   "ko": "나무 던전, 원숭이 숲 II"
   },
   {
    "map": "Tree Dungeon, Monkey Forest I",
    "monsters": [
     {
      "name": "Zombie Lupin",
-     "level": 41
+     "level": 41,
+     "ko": "좀비 루팡"
     },
     {
      "name": "Curse Eye",
-     "level": 33
+     "level": 33,
+     "ko": "커즈 아이"
     }
    ],
    "recs": [
@@ -901,18 +1011,21 @@
      "max": 45
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "나무 던전, 원숭이 숲 I"
   },
   {
    "map": "Dangerous Valley",
    "monsters": [
     {
      "name": "Copper Drake",
-     "level": 45
+     "level": 45,
+     "ko": "카파 드레이크"
     },
     {
      "name": "Fire Boar",
-     "level": 32
+     "level": 32,
+     "ko": "파이어보어"
     }
    ],
    "recs": [
@@ -927,18 +1040,21 @@
      "max": 45
     }
    ],
-   "meowdbExpHr": 946786
+   "meowdbExpHr": 946786,
+   "ko": "위험한 골짜기"
   },
   {
    "map": "The Tunnel That Lost Light I",
    "monsters": [
     {
      "name": "Drake",
-     "level": 50
+     "level": 50,
+     "ko": "드레이크"
     },
     {
      "name": "Cold Eye",
-     "level": 40
+     "level": 40,
+     "ko": "콜드 아이"
     }
    ],
    "recs": [
@@ -948,22 +1064,26 @@
      "max": 46
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "빛을 잃은 터널 I"
   },
   {
    "map": "Line 2 <Area 2>",
    "monsters": [
     {
      "name": "Wraith",
-     "level": 48
+     "level": 48,
+     "ko": "레이스"
     },
     {
      "name": "Jr. Wraith",
-     "level": 34
+     "level": 34,
+     "ko": "주니어 레이스"
     },
     {
      "name": "Jr. Necki",
-     "level": 21
+     "level": 21,
+     "ko": "주니어 네키"
     }
    ],
    "recs": [
@@ -983,14 +1103,16 @@
      "max": 55
     }
    ],
-   "meowdbExpHr": 3488571
+   "meowdbExpHr": 3488571,
+   "ko": "2호선 <2구역>"
   },
   {
    "map": "Line 2 <Area 3>",
    "monsters": [
     {
      "name": "Wraith",
-     "level": 48
+     "level": 48,
+     "ko": "레이스"
     }
    ],
    "recs": [
@@ -1005,14 +1127,16 @@
      "max": 55
     }
    ],
-   "meowdbExpHr": 2962857
+   "meowdbExpHr": 2962857,
+   "ko": "2호선 <3구역>"
   },
   {
    "map": "Line 1 <Area 4>",
    "monsters": [
     {
      "name": "Wraith",
-     "level": 48
+     "level": 48,
+     "ko": "레이스"
     }
    ],
    "recs": [
@@ -1027,18 +1151,21 @@
      "max": 55
     }
    ],
-   "meowdbExpHr": 2570714
+   "meowdbExpHr": 2570714,
+   "ko": "1호선 <4구역>"
   },
   {
    "map": "Hot Sand",
    "monsters": [
     {
      "name": "Clang",
-     "level": 49
+     "level": 49,
+     "ko": "클랑"
     },
     {
      "name": "Tortie",
-     "level": 46
+     "level": 46,
+     "ko": "토티"
     }
    ],
    "recs": [
@@ -1048,18 +1175,21 @@
      "max": 50
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "뜨거운 모래"
   },
   {
    "map": "Lorang and Clang",
    "monsters": [
     {
      "name": "Clang",
-     "level": 49
+     "level": 49,
+     "ko": "클랑"
     },
     {
      "name": "Lorang",
-     "level": 38
+     "level": 38,
+     "ko": "로랑"
     }
    ],
    "recs": [
@@ -1079,22 +1209,26 @@
      "max": 55
     }
    ],
-   "meowdbExpHr": 1816786
+   "meowdbExpHr": 1816786,
+   "ko": "로랑과 클랑"
   },
   {
    "map": "Dangerous Croko II",
    "monsters": [
     {
      "name": "Croco",
-     "level": 52
+     "level": 52,
+     "ko": "크로코"
     },
     {
      "name": "Jr. Necki",
-     "level": 21
+     "level": 21,
+     "ko": "주니어 네키"
     },
     {
      "name": "Slime",
-     "level": 6
+     "level": 6,
+     "ko": "슬라임"
     }
    ],
    "recs": [
@@ -1114,22 +1248,26 @@
      "max": 58
     }
    ],
-   "meowdbExpHr": 1582500
+   "meowdbExpHr": 1582500,
+   "ko": "위험한 크로코 II"
   },
   {
    "map": "Clang and Lorang",
    "monsters": [
     {
      "name": "Clang",
-     "level": 49
+     "level": 49,
+     "ko": "클랑"
     },
     {
      "name": "Tortie",
-     "level": 46
+     "level": 46,
+     "ko": "토티"
     },
     {
      "name": "Lorang",
-     "level": 38
+     "level": 38,
+     "ko": "로랑"
     }
    ],
    "recs": [
@@ -1139,18 +1277,21 @@
      "max": 55
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "클랑과 로랑"
   },
   {
    "map": "The Forest of Evil II",
    "monsters": [
     {
      "name": "Malady",
-     "level": 55
+     "level": 55,
+     "ko": "맬러디"
     },
     {
      "name": "Zombie Lupin",
-     "level": 41
+     "level": 41,
+     "ko": "좀비 루팡"
     }
    ],
    "recs": [
@@ -1160,18 +1301,21 @@
      "max": 55
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "악의 숲 II"
   },
   {
    "map": "Camp 1",
    "monsters": [
     {
      "name": "Officer Skeleton",
-     "level": 63
+     "level": 63,
+     "ko": "스켈레톤 장교"
     },
     {
      "name": "Skeleton Soldier",
-     "level": 57
+     "level": 57,
+     "ko": "스켈레톤 사병"
     }
    ],
    "recs": [
@@ -1181,18 +1325,21 @@
      "max": 62
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "캠프 1"
   },
   {
    "map": "Camp 2",
    "monsters": [
     {
      "name": "Officer Skeleton",
-     "level": 63
+     "level": 63,
+     "ko": "스켈레톤 장교"
     },
     {
      "name": "Skeleton Soldier",
-     "level": 57
+     "level": 57,
+     "ko": "스켈레톤 사병"
     }
    ],
    "recs": [
@@ -1202,26 +1349,31 @@
      "max": 62
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "캠프 2"
   },
   {
    "map": "Sleepy Dungeon V",
    "monsters": [
     {
      "name": "Dark Stone Golem",
-     "level": 58
+     "level": 58,
+     "ko": "다크 스톤 골렘"
     },
     {
      "name": "Lupin",
-     "level": 37
+     "level": 37,
+     "ko": "루팡"
     },
     {
      "name": "Jr. Boogie",
-     "level": 35
+     "level": 35,
+     "ko": "주니어 부기"
     },
     {
      "name": "Curse Eye",
-     "level": 33
+     "level": 33,
+     "ko": "커즈 아이"
     }
    ],
    "recs": [
@@ -1241,22 +1393,26 @@
      "max": 70
     }
    ],
-   "meowdbExpHr": 2585073
+   "meowdbExpHr": 2585073,
+   "ko": "슬리피 던전 V"
   },
   {
    "map": "Sleepy Dungeon III",
    "monsters": [
     {
      "name": "Dark Stone Golem",
-     "level": 58
+     "level": 58,
+     "ko": "다크 스톤 골렘"
     },
     {
      "name": "Lupin",
-     "level": 37
+     "level": 37,
+     "ko": "루팡"
     },
     {
      "name": "Curse Eye",
-     "level": 33
+     "level": 33,
+     "ko": "커즈 아이"
     }
    ],
    "recs": [
@@ -1271,22 +1427,26 @@
      "max": 62
     }
    ],
-   "meowdbExpHr": 1421809
+   "meowdbExpHr": 1421809,
+   "ko": "슬리피 던전 III"
   },
   {
    "map": "Golem's Temple III",
    "monsters": [
     {
      "name": "Stone Golem",
-     "level": 56
+     "level": 56,
+     "ko": "스톤 골렘"
     },
     {
      "name": "Lupin",
-     "level": 37
+     "level": 37,
+     "ko": "루팡"
     },
     {
      "name": "Blue Mushroom",
-     "level": 19
+     "level": 19,
+     "ko": "파란 버섯"
     }
    ],
    "recs": [
@@ -1296,18 +1456,21 @@
      "max": 62
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "골렘의 사원 III"
   },
   {
    "map": "Camp 3",
    "monsters": [
     {
      "name": "Officer Skeleton",
-     "level": 63
+     "level": 63,
+     "ko": "스켈레톤 장교"
     },
     {
      "name": "Skeleton Soldier",
-     "level": 57
+     "level": 57,
+     "ko": "스켈레톤 사병"
     }
    ],
    "recs": [
@@ -1317,22 +1480,26 @@
      "max": 70
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "캠프 3"
   },
   {
    "map": "Dangerous Valley II",
    "monsters": [
     {
      "name": "Red Drake",
-     "level": 60
+     "level": 60,
+     "ko": "레드 드레이크"
     },
     {
      "name": "Copper Drake",
-     "level": 45
+     "level": 45,
+     "ko": "카파 드레이크"
     },
     {
      "name": "Fire Boar",
-     "level": 32
+     "level": 32,
+     "ko": "파이어보어"
     }
    ],
    "recs": [
@@ -1352,18 +1519,21 @@
      "max": 68
     }
    ],
-   "meowdbExpHr": 677269
+   "meowdbExpHr": 677269,
+   "ko": "위험한 골짜기 II"
   },
   {
    "map": "Remains <Cliff>",
    "monsters": [
     {
      "name": "Commander Skeleton",
-     "level": 73
+     "level": 73,
+     "ko": "스켈레톤 지휘관"
     },
     {
      "name": "Officer Skeleton",
-     "level": 63
+     "level": 63,
+     "ko": "스켈레톤 장교"
     }
    ],
    "recs": [
@@ -1373,18 +1543,21 @@
      "max": 70
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "유적의 낭떠러지"
   },
   {
    "map": "Wild Kargo's Area",
    "monsters": [
     {
      "name": "Wild Kargo",
-     "level": 62
+     "level": 62,
+     "ko": "와일드카고"
     },
     {
      "name": "Cold Eye",
-     "level": 40
+     "level": 40,
+     "ko": "콜드 아이"
     }
    ],
    "recs": [
@@ -1394,22 +1567,26 @@
      "max": 70
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "와일드카고의 구역"
   },
   {
    "map": "Drake's Meal Table",
    "monsters": [
     {
      "name": "Wild Kargo",
-     "level": 62
+     "level": 62,
+     "ko": "와일드카고"
     },
     {
      "name": "Drake",
-     "level": 50
+     "level": 50,
+     "ko": "드레이크"
     },
     {
      "name": "Cold Eye",
-     "level": 40
+     "level": 40,
+     "ko": "콜드 아이"
     }
    ],
    "recs": [
@@ -1419,18 +1596,21 @@
      "max": 70
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "드레이크의 식탁"
   },
   {
    "map": "Sanctuary Entrance I",
    "monsters": [
     {
      "name": "Tauromacis",
-     "level": 70
+     "level": 70,
+     "ko": "타우로마시스"
     },
     {
      "name": "Cold Eye",
-     "level": 40
+     "level": 40,
+     "ko": "콜드 아이"
     }
    ],
    "recs": [
@@ -1445,22 +1625,26 @@
      "max": 75
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "성역 입구 I"
   },
   {
    "map": "Sanctuary Entrance IV",
    "monsters": [
     {
      "name": "Taurospear",
-     "level": 75
+     "level": 75,
+     "ko": "타우로스피어"
     },
     {
      "name": "Tauromacis",
-     "level": 70
+     "level": 70,
+     "ko": "타우로마시스"
     },
     {
      "name": "Cold Eye",
-     "level": 40
+     "level": 40,
+     "ko": "콜드 아이"
     }
    ],
    "recs": [
@@ -1475,7 +1659,8 @@
      "max": 80
     }
    ],
-   "meowdbExpHr": null
+   "meowdbExpHr": null,
+   "ko": "성역 입구 IV"
   }
  ],
  "cautions": [

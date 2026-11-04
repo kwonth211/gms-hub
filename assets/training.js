@@ -6,6 +6,9 @@ const nf = new Intl.NumberFormat(i18n.lang);
 const fill = (s, v) => s.replace(/\{(\w+)\}/g, (_, k) => v[k]);
 const tooHigh = (spot, lv) => spot.monsters.filter((m) => m.level - lv >= 5).length;
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const ko = i18n.lang === 'ko';
+const spotName = (s) => (ko && s.ko ? `${esc(s.ko)} <small class="en-name">${esc(s.map)}</small>` : esc(s.map));
+const mobName = (m) => esc(ko && m.ko ? m.ko : m.name);
 
 function show(lv) {
   const matches = data.spots
@@ -25,11 +28,11 @@ function show(lv) {
       const mobs = s.monsters
         .map((m) => {
           const d = m.level - lv;
-          return `<span class="mob${d >= 5 ? ' hi' : ''}">${esc(m.name)} Lv.${m.level}${d >= 5 ? `<em>${fill(i18n.higher, { d })}</em>` : ''}</span>`;
+          return `<span class="mob${d >= 5 ? ' hi' : ''}">${mobName(m)} Lv.${m.level}${d >= 5 ? `<em>${fill(i18n.higher, { d })}</em>` : ''}</span>`;
         })
         .join('');
       return `<article class="spot${recs.length === top && top > 1 ? ' top' : ''}">
-<div class="spot-head"><strong>${esc(s.map)}</strong><span class="agree">${fill(i18n.agree, { n: recs.length })}</span></div>
+<div class="spot-head"><strong>${spotName(s)}</strong><span class="agree">${fill(i18n.agree, { n: recs.length })}</span></div>
 <div class="mobs">${mobs}</div>
 <div class="recs">${s.recs.map((r) => `<span class="rec ${r.source}${recs.includes(r) ? '' : ' off'}">${esc(data.sources[r.source].name)} ${r.min}–${r.max}</span>`).join('')}</div>
 ${s.meowdbExpHr ? `<span class="exp">${i18n.expHr} (NiaMeowDB): ${nf.format(s.meowdbExpHr)}</span>` : ''}
