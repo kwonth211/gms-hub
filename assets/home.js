@@ -146,12 +146,38 @@ function loadItems() {
   return itemsPromise;
 }
 
+// Item rows carry the scanned market price, so a search answers "how much?" without opening the market page.
+const priceApi = main.dataset.voteApi;
+const prices = new Map();
+let priceTimer = null;
+function queuePrices(ids) {
+  const missing = ids.filter((id) => !prices.has(id)).slice(0, 60);
+  if (!priceApi || !missing.length) return;
+  clearTimeout(priceTimer);
+  priceTimer = setTimeout(async () => {
+    try {
+      const r = await fetch(`${priceApi}/prices?ids=${missing.join(',')}`);
+      if (!r.ok) return;
+      const data = await r.json();
+      missing.forEach((id) => prices.set(id, data[id] || null));
+      // Re-rendering while a result has focus would drop it; the prices show on the next keystroke instead.
+      if (!searchPanel.contains(document.activeElement)) renderSearch();
+    } catch (e) {}
+  }, 250);
+}
+const priceBasis = korean ? { sold: '거래가', selling: '판매가', buying: '구매가' } : { sold: 'Sold', selling: 'Asking', buying: 'Buying' };
+function priceTag(id) {
+  const p = prices.get(id);
+  if (!p?.median) return labels.market;
+  return `<b>${mesos(p.median)}</b><small>${priceBasis[p.basis]} · ${korean ? `${p.n}건` : `${p.n} seen`}</small>`;
+}
+
 function resultRow(entry) {
   const external = entry.type === 'site';
   const icon = entry.type === 'item'
     ? `<img src="https://maplestory.io/api/MCW/1/item/${entry.id}/icon" alt="" width="30" height="30" loading="lazy">`
     : `<span class="search-result-icon" aria-hidden="true">${external ? '↗' : '⌘'}</span>`;
-  return `<a class="search-result" href="${escHtml(entry.href)}" data-result-type="${entry.type}" data-result-id="${escHtml(entry.id)}"${external ? ` target="_blank" rel="noopener" aria-label="${escHtml(entry.title)} · ${labels.external}"` : ''}>${icon}<span class="search-result-copy"><strong>${escHtml(entry.title)}</strong><small>${escHtml(entry.description || '')}</small></span><span class="search-result-action">${entry.type === 'item' ? labels.market : external ? '↗' : '→'}</span></a>`;
+  return `<a class="search-result" href="${escHtml(entry.href)}" data-result-type="${entry.type}" data-result-id="${escHtml(entry.id)}"${external ? ` target="_blank" rel="noopener" aria-label="${escHtml(entry.title)} · ${labels.external}"` : ''}>${icon}<span class="search-result-copy"><strong>${escHtml(entry.title)}</strong><small>${escHtml(entry.description || '')}</small></span><span class="search-result-action${entry.type === 'item' && prices.get(entry.id)?.median ? ' priced' : ''}">${entry.type === 'item' ? priceTag(entry.id) : external ? '↗' : '→'}</span></a>`;
 }
 
 function sizeSearchPanel() {
@@ -189,8 +215,16 @@ function renderSearch() {
   let visible = 0;
   searchGroups.innerHTML = ['item', 'site', 'tool'].map((type) => {
     if (searchType !== 'all' && searchType !== type) return '';
-    const matches = searchMatches.filter((entry) => entry.type === type);
+    let matches = searchMatches.filter((entry) => entry.type === type);
     if (!matches.length) return '';
+    if (type === 'item') {
+      // Items with recent listings go first (after an exact name match), keeping search order within each half.
+      queuePrices(matches.slice(0, 60).map((entry) => entry.id));
+      const priced = (entry) => !!prices.get(entry.id)?.median;
+      const exact = matches[0].title.replace(/\s+/g, '').toLowerCase() === query.replace(/\s+/g, '').toLowerCase() ? [matches[0]] : [];
+      const rest = matches.slice(exact.length);
+      matches = [...exact, ...rest.filter(priced), ...rest.filter((entry) => !priced(entry))];
+    }
     visible += matches.length;
     const limit = expanded.get(type) || (searchType === 'all' ? INITIAL_ROWS : PAGE_ROWS);
     const shown = matches.slice(0, limit);
