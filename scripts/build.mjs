@@ -2149,7 +2149,11 @@ ${spriteSvg('mushroom', 64)}
 <script>
 (function(){var saved;try{saved=localStorage.getItem('cb_lang')}catch(e){}
 var lang=saved||((navigator.language||'').toLowerCase().indexOf('ko')===0?'ko':'en');
-location.replace('${config.basePath}/'+lang+'/'+location.search);})();
+// Search engines link this root page; after the redirect the referrer reads as our own site, so carry the real source
+// over as UTM tags or every Naver/Google visit shows up as internal traffic in GA4 and Clarity.
+var q=location.search,from='';try{from=new URL(document.referrer).hostname}catch(e){}
+if(from&&from!==location.hostname&&!/[?&]utm_source=/.test(q)){q+=(q?'&':'?')+'utm_source='+encodeURIComponent(from)+'&utm_medium='+(/(^|\\.)(naver|google|bing|daum|yahoo|duckduckgo)\\./.test(from)?'organic':'referral')}
+location.replace('${config.basePath}/'+lang+'/'+q);})();
 </script>
 <script src="${href('/assets/common.js')}" defer></script>
 </body></html>`
