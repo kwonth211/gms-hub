@@ -1687,6 +1687,38 @@ const related = (g) => {
     : '';
 };
 
+// Search visitors who land on a guide tend to leave without clicking anything, so each guide names the tools it pairs with
+// (guides.json "tools"): a row of links under the byline and full cards after the article.
+const guideTool = (lang, key) => {
+  const t = T[lang];
+  return {
+    training: ['/tools/training/', 'sword', t.navTraining, t.trCardDesc],
+    damage: ['/tools/damage/', 'hammer', DMG[lang].h1, DMG[lang].cardDesc],
+    scroll: ['/tools/scroll/', 'scroll', t.navScroll, t.scCardDesc],
+    'drop-rate': ['/tools/drop-rate/', 'bag', t.navDrop, t.dropCardDesc],
+    market: ['/tools/market/', 'coin', t.navMarket, MK[lang].lead],
+    price: ['/tools/price/', 'coin', t.navPrice, PR[lang].cardDesc],
+    scan: ['/tools/scan/', 'megaphone', SCAN[lang].h1, SCAN[lang].cardDesc]
+  }[key];
+};
+const guideToolChips = (g) =>
+  (g.tools || []).length
+    ? `<p class="guide-tools">같이 쓰는 도구 ${g.tools
+        .map((k) => guideTool(g.lang, k))
+        .map(([p, icon, label]) => `<a href="${href(langPath(g.lang, p))}">${spriteSvg(icon, 18)}${esc(label)}</a>`)
+        .join('')}</p>`
+    : '';
+const guideToolCards = (g) =>
+  (g.tools || []).length
+    ? `<h2>이 글과 같이 쓰는 도구</h2>\n<div class="tool-cards">${g.tools
+        .map((k) => guideTool(g.lang, k))
+        .map(
+          ([p, icon, label, desc]) =>
+            `<a class="tool-card" href="${href(langPath(g.lang, p))}">${spriteSvg(icon, 44)}<strong>${esc(label)}</strong><p>${esc(desc)}</p><span>${T[g.lang].open} →</span></a>`
+        )
+        .join('')}</div>`
+    : '';
+
 // Kakao AdFit units are size-fixed, so each <ins> declares the viewport it fits and the inline script drops the rest before the
 // loader runs (a hidden unit would still count impressions). Renders nothing for units left blank in site.config.json.
 const adfitIns = (unit, w, h, minWidth = 0, maxWidth = 99999) =>
@@ -1726,7 +1758,9 @@ function guideBody(g) {
 <p class="crumbs"><a href="${href(langPath(g.lang, '/guides/'))}">${T[g.lang].navGuides}</a></p>
 <h1>${esc(g.h1)}</h1>
 <p class="byline">GMS Hub 작성 · 처음 쓴 날 ${fmtDate(g.published)} · 마지막 확인 ${fmtDate(g.updated)}</p>
+${guideToolChips(g)}
 ${body}
+${guideToolCards(g)}
 ${adfitSlot()}
 ${sources ? `<h2>참고한 자료</h2>\n<ul class="sources">${sources}</ul>` : ''}
 ${related(g)}

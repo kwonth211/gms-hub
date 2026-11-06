@@ -13,6 +13,11 @@
           "title": "NiaMeowDB — Beginner's Guide: First Steps in Maple World",
           "url": "https://meowdb.com/msclassic/guides/beginners-guide-first-steps-in-maple-world"
         }
+      ],
+      "tools": [
+        "training",
+        "drop-rate",
+        "market"
       ]
     },
     {
@@ -23,7 +28,11 @@
       "desc": "글로벌 클래식 메이플 2차 직업 10개의 바뀐 스킬. 스피어맨 하이퍼바디 이동, 클레릭 블레스 변경, 불독 2차 광역, 시프 스틸 버프까지 직업 선택에 필요한 것만.",
       "published": "2026-11-02",
       "updated": "2026-11-02",
-      "sources": []
+      "sources": [],
+      "tools": [
+        "damage",
+        "training"
+      ]
     },
     {
       "slug": "leveling-1-30",
@@ -46,6 +55,10 @@
           "title": "Henesys.GG",
           "url": "https://henesys.gg/"
         }
+      ],
+      "tools": [
+        "training",
+        "damage"
       ]
     },
     {
@@ -61,6 +74,10 @@
           "title": "NiaMeowDB — Quest tracker",
           "url": "https://meowdb.com/msclassic/ko/quest-tracker"
         }
+      ],
+      "tools": [
+        "training",
+        "drop-rate"
       ]
     },
     {
@@ -71,7 +88,11 @@
       "desc": "21레벨부터 가는 커파의 러시·보너스 파티 차이, 파티 구하는 영어 표현, 1단계 문제 답, 밧줄·고양이·술통 발판을 한 번도 겹치지 않게 푸는 시도 순서, 킹 슬라임 공략.",
       "published": "2026-11-02",
       "updated": "2026-11-02",
-      "sources": []
+      "sources": [],
+      "tools": [
+        "training",
+        "damage"
+      ]
     },
     {
       "slug": "second-job",
@@ -81,7 +102,11 @@
       "desc": "검 파이터·썬콜·어쌔신·헌터를 기본으로 추천하는 이유, 완드가 스태프보다 나은 이유, 불독과 썬콜의 사냥터가 다른 이유, 직업별 30~70레벨 사냥터.",
       "published": "2026-11-02",
       "updated": "2026-11-02",
-      "sources": []
+      "sources": [],
+      "tools": [
+        "damage",
+        "training"
+      ]
     },
     {
       "slug": "citizenship-and-housing",
@@ -96,6 +121,10 @@
           "title": "NiaMeowDB — 시민권",
           "url": "https://meowdb.com/msclassic/ko/citizenship"
         }
+      ],
+      "tools": [
+        "market",
+        "price"
       ]
     },
     {
@@ -115,6 +144,10 @@
           "title": "MapleClassic Wiki — Scrolling",
           "url": "https://mapleclassic.wiki/wiki/Scrolling"
         }
+      ],
+      "tools": [
+        "scroll",
+        "market"
       ]
     },
     {
@@ -125,7 +158,12 @@
       "desc": "새 계정 거래 조건(15레벨+24시간), WTS·C/O·A/W·neg 같은 거래글 약어, 현금 거래 메소에 걸리는 '메소 빚' 시스템, 초반에 메소를 모으는 현실적인 방법.",
       "published": "2026-11-02",
       "updated": "2026-11-02",
-      "sources": []
+      "sources": [],
+      "tools": [
+        "market",
+        "price",
+        "scan"
+      ]
     },
     {
       "slug": "leveling-30-70",
@@ -135,7 +173,11 @@
       "desc": "로랑, 원숭이의 숲, 레이스, 유적의 무덤, 슬리피 던전 4, 발굴지 캠프까지. 구간별 정석과 덜 붐비는 대안, 같은 레벨 기준 필요 명중을 정리했어요.",
       "published": "2026-11-03",
       "updated": "2026-11-03",
-      "sources": []
+      "sources": [],
+      "tools": [
+        "training",
+        "damage"
+      ]
     },
     {
       "slug": "warrior-build",
@@ -145,7 +187,12 @@
       "desc": "파이터·페이지·스피어맨 2차 SP 순서(돌진 1 → 마스터리 5 → 부스터 1), 바뀐 1차 스킬, DEX는 얼마나 찍을지, 40레벨 제작 무기와 사냥터.",
       "published": "2026-11-03",
       "updated": "2026-11-03",
-      "sources": []
+      "sources": [],
+      "tools": [
+        "damage",
+        "training",
+        "scroll"
+      ]
     },
     {
       "slug": "archer-build",
@@ -155,7 +202,12 @@
       "desc": "마스터리 5 → 부스터 1, 파이널 어택 먼저냐 애로우 봄 먼저냐, 라이덴·레드 바이퍼·발터2000·헤클러 교체 시점, 로랑과 콜드 아이까지.",
       "published": "2026-11-03",
       "updated": "2026-11-03",
-      "sources": []
+      "sources": [],
+      "tools": [
+        "damage",
+        "training",
+        "scroll"
+      ]
     },
     {
       "slug": "mage-build",
@@ -165,7 +217,12 @@
       "desc": "INT·LUK 스탯 맞추는 법, 1차 경제형 SP, 콜드 빔과 썬더볼트 중 뭘 먼저 찍을지, 독이 안 드는 몬스터, 힐이 안 드는 성 약점 몬스터까지.",
       "published": "2026-11-03",
       "updated": "2026-11-03",
-      "sources": []
+      "sources": [],
+      "tools": [
+        "damage",
+        "training",
+        "scroll"
+      ]
     },
     {
       "slug": "thief-build",
@@ -175,7 +232,12 @@
       "desc": "LUK 위주에 DEX는 아대만큼, 1차 SP는 30레벨 전에 다 쓰기, 레벨별 아대와 표창, 리본 돼지부터 개미굴까지 사냥터와 시프·어쌔신 30~40레벨.",
       "published": "2026-11-03",
       "updated": "2026-11-03",
-      "sources": []
+      "sources": [],
+      "tools": [
+        "damage",
+        "training",
+        "scroll"
+      ]
     }
   ]
 }

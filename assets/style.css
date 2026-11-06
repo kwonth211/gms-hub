@@ -193,6 +193,11 @@ h2 { font-size: 1.35rem; margin: 48px 0 16px; }
 .tool-card strong { font-size: 1.1rem; }
 .tool-card p { margin: 0; color: var(--muted); font-size: 0.9rem; flex: 1; }
 .tool-card span { color: var(--accent); font-weight: 800; font-size: 0.9rem; }
+.prose .guide-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--muted); font-size: 0.9rem; }
+.guide-tools a { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); color: var(--text); font-weight: 700; text-decoration: none; }
+.guide-tools a:hover { border-color: var(--accent); }
+.guide-article .tool-cards { margin: 8px 0 24px; }
+.guide-article .tool-card p { color: var(--muted); }
 
 /* faq */
 .faq details { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 4px 18px; margin-bottom: 8px; }
