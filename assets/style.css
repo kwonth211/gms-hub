@@ -254,6 +254,9 @@ input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1p
 .rec.msclassic { border-color: #ff8a1f; }
 .rec.henesys { border-color: #4fd18b; }
 .rec.off { opacity: 0.35; text-decoration: line-through; }
+a.rec { text-decoration: none; }
+a.mob { text-decoration: none; color: inherit; }
+a.rec:hover, a.mob:hover { border-color: var(--accent); color: var(--text); }
 .spot .exp { font-size: 0.8rem; color: var(--muted); }
 .caution { font-size: 0.8rem; color: #ffd27a; margin-top: 4px; }
 

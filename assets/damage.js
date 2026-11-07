@@ -404,6 +404,10 @@ Promise.all([fetch(data.mobsUrl).then((r) => r.json()), fetch(data.weaponsUrl).t
   .then(([m, w]) => {
     mobs = m.map(([id, ko, en, lv, hp, wdef, mdef, eva, el, undead, boss, mp]) => ({ id, name: (lang === 'ko' && ko) || en, en, lv, hp, wdef, mdef, eva, el, undead, boss, mp }));
     weapons = w.map(([id, ko, en, type, lv, watk, matk]) => ({ id, name: (lang === 'ko' && ko) || en, en, type, lv, watk, matk }));
+    // The training finder links each monster here as ?mob=<English name>.
+    const mob = new URLSearchParams(location.search).get('mob');
+    const hit = mob && mobs.find((x) => x.en.toLowerCase() === mob.toLowerCase());
+    if (hit) $('dm-mob-q').value = hit.name;
     fillWeapons();
     pickWeapon();
     update();

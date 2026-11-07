@@ -889,7 +889,7 @@ ${trainingSources(lang)}
 </section>
 </div>
 ${jsonScript('training-data', training)}
-${jsonScript('i18n', { lang, trResultTitle: t.trResultTitle, trNone: t.trNone, agree: t.agree, higher: t.higher, expHr: t.expHr, caution: t.caution })}`;
+${jsonScript('i18n', { lang, trResultTitle: t.trResultTitle, trNone: t.trNone, agree: t.agree, higher: t.higher, expHr: t.expHr, caution: t.caution, damageUrl: href(langPath(lang, '/tools/damage/')), mobTitle: lang === 'ko' ? '이 몬스터를 몇 방에 잡는지 계산' : 'Hits to kill this monster', srcTitle: lang === 'ko' ? '이 출처의 사냥터 글 열기' : 'Open this source' })}`;
 }
 
 // Spots any source recommends inside the band; more agreeing sources first.
