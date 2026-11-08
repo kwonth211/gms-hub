@@ -7,6 +7,7 @@ const squash = (s) => s.toLowerCase().replace(/\s+/g, '');
 const MAX = 30;
 let items = null;
 let byId = new Map();
+let twins = new Map();
 
 // Korean players write prices as 58만 or 1.2억, others as 580k or 1.2m; plain digits and commas work everywhere.
 function parsePrice(text) {
@@ -51,6 +52,14 @@ function prepare(rows) {
   });
 }
 
+// A few names belong to more than one item (male and female versions of armour, older copies of potions), so their cards
+// would look identical. Armour IDs carry the gender in one digit; other repeats show their ID.
+function twinNote(it) {
+  if (twins.get(it.en.toLowerCase()) < 2) return '';
+  if ([104, 105, 106].includes(Math.floor(it.id / 10000))) return Math.floor(it.id / 1000) % 10 ? i18n.twin.female : i18n.twin.male;
+  return fill(i18n.twin.other, { id: it.id });
+}
+
 function terms(q) {
   return q
     .toLowerCase()
@@ -75,7 +84,7 @@ function siteLink(site, it) {
 }
 
 function card(it) {
-  const kind = [i18n.subs[it.sub] || (i18n.lang === 'ko' ? i18n.cats[it.cat] : it.sub), it.lv ? fill(i18n.level, { lv: it.lv }) : ''].filter(Boolean).join(' · ');
+  const kind = [i18n.subs[it.sub] || (i18n.lang === 'ko' ? i18n.cats[it.cat] : it.sub), it.lv ? fill(i18n.level, { lv: it.lv }) : '', twinNote(it)].filter(Boolean).join(' · ');
   const en = it.name !== it.en ? `<span class="en">${esc(it.en)}</span>` : '';
   return `<article class="item-card" data-id="${it.id}">
 <div class="item-head"><img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="32" height="32" loading="lazy"><div><strong>${esc(it.name)}</strong>${en}<small>${esc(kind)}</small></div></div>
@@ -239,6 +248,7 @@ fetch(i18n.itemsUrl)
   .then((rows) => {
     items = prepare(rows);
     byId = new Map(items.map((it) => [it.id, it]));
+    items.forEach((it) => twins.set(it.en.toLowerCase(), (twins.get(it.en.toLowerCase()) || 0) + 1));
     render();
   })
   .catch(() => {});

@@ -997,6 +997,7 @@ const PR = {
     paid: '유료',
     direct: '바로 열림',
     copyNote: '이름 복사 후 열림',
+    twin: { male: '남성용', female: '여성용', other: '이름이 같은 아이템 있음 · ID {id}' },
     moreItems: '{n}개 더 보기 →',
     hubLabel: 'GMS Hub 유저 시세',
     hubNone: '아직 제보가 없어요. 첫 시세를 올려 주세요.',
@@ -1057,6 +1058,7 @@ const PR = {
     paid: 'paid',
     direct: 'opens the item',
     copyNote: 'copies the name, then opens',
+    twin: { male: 'Male', female: 'Female', other: 'Shares its name with another item · ID {id}' },
     moreItems: '{n} more →',
     hubLabel: 'GMS Hub player prices',
     hubNone: 'No reports yet. Be the first to add a price.',
@@ -1118,7 +1120,7 @@ ${config.priceReports ? `<p class="muted">${esc(t.reportNote)}</p>` : ''}
 ${t.tradingLink && guides.some((g) => g.slug === 'trading-and-mesos') ? `<p>${fill(t.tradingLink, { href: href(langPath('ko', '/guides/trading-and-mesos/')) })}</p>` : ''}
 </section>
 </div>
-${jsonScript('i18n', { lang, ...Object.fromEntries(Object.entries(t).filter(([k]) => ['none', 'more', 'level', 'copy', 'copied', 'paid', 'direct', 'copyNote', 'cats', 'subs', 'hubLabel', 'hubNone', 'hubSummary', 'report', 'pricePh', 'submit', 'thanks', 'badPrice', 'failed', 'kinds', 'recent', 'recentNone'].includes(k))), sites: PRICE_SITES, aliases: lang === 'ko' ? STAT_ALIASES : {}, itemsUrl: href('/assets/items.json'), api: config.priceReports ? config.voteApi : '' })}`;
+${jsonScript('i18n', { lang, ...Object.fromEntries(Object.entries(t).filter(([k]) => ['none', 'more', 'level', 'copy', 'copied', 'paid', 'direct', 'copyNote', 'twin', 'cats', 'subs', 'hubLabel', 'hubNone', 'hubSummary', 'report', 'pricePh', 'submit', 'thanks', 'badPrice', 'failed', 'kinds', 'recent', 'recentNone'].includes(k))), sites: PRICE_SITES, aliases: lang === 'ko' ? STAT_ALIASES : {}, itemsUrl: href('/assets/items.json'), api: config.priceReports ? config.voteApi : '' })}`;
 }
 
 // ---------- shop scanner (sample collection) ----------
