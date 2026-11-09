@@ -864,7 +864,7 @@ input.dm-filled { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset
 
 @media(min-width:1051px){.mb-workspace:not(.has-selection) .mb-list-controls { grid-template-columns:1.25fr 1fr 1fr 1.2fr 1fr; }}
 
-/* Original player accounts: conditions and gaps remain visible beside every claim. */
+/* Training filters and supporting guidance. */
 .tr-page { padding-bottom: 40px; }
 .tr-review-note { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 16px 20px; margin: 0 0 22px; border-radius: 8px; }
 .tr-review-note p { margin: 6px 0 0; line-height: 1.75; }
@@ -899,3 +899,46 @@ input.dm-filled { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset
   .tr-evidence dl > div { grid-template-columns: 1fr; gap: 3px; }
   .tr-evidence footer { flex-direction: column; overflow-wrap: anywhere; }
 }
+
+/* Conditional training routes: scan entry/cost first, expand the route when needed. */
+.tr-intro { display:flex; justify-content:space-between; align-items:center; gap:20px; margin:0 0 20px; }
+.tr-intro strong { font-size:1.2rem; }
+.tr-intro p { color:var(--muted); margin:7px 0 0; }
+.tr-intro > span { white-space:nowrap; padding:8px 14px; border:1px solid var(--line); border-radius:30px; color:var(--accent-2); font-weight:700; }
+.tr-filters { background:linear-gradient(135deg,var(--panel),var(--panel-2)); }
+.tr-filters > .tr-check { flex-basis:100%; padding:0; font-size:.9rem; }
+.tr-result-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; margin:30px 0 15px; }
+.tr-result-head h2 { margin:0; }
+.tr-result-head > a { font-size:.9rem; }
+.tr-route-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; align-items:start; }
+.tr-route { margin:0; min-width:0; padding:24px; }
+.tr-route h3 { font-size:1.25rem; margin:15px 0 5px; line-height:1.5; word-break:keep-all; }
+.tr-route .tr-monsters { font-size:.86rem; color:var(--accent-2); margin:0 0 14px; }
+.tr-route > p { line-height:1.75; }
+.tr-route dl { display:grid; gap:15px; padding-top:16px; border-top:1px solid var(--line); margin:16px 0; }
+.tr-route dt { font-size:.82rem; font-weight:800; color:var(--muted); margin-bottom:5px; }
+.tr-route dd { margin:0; line-height:1.75; font-size:.94rem; }
+.tr-route details { border-top:1px solid var(--line); padding-top:15px; }
+.tr-route summary { cursor:pointer; font-size:.9rem; font-weight:700; color:var(--accent-2); padding:4px 0; }
+.tr-route summary:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
+.tr-route details dl { border:0; padding-top:0; }
+.tr-meta .tr-conditional { color:var(--text); background:var(--accent-soft); }
+.guide-toc { border:1px solid var(--line); background:var(--panel); border-radius:12px; padding:20px 24px; margin:24px 0 35px; }
+.guide-toc ol { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px 25px; margin-bottom:0; font-size:.9rem; }
+.guide-article h2[id] { scroll-margin-top:100px; }
+@media(max-width:760px) {
+  .tr-route-list { grid-template-columns:1fr; }
+  .tr-filters { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .tr-filters input[type=number] { width:100%; }
+  .tr-filters > .tr-check,.tr-filters button,.tr-filter-help { grid-column:1/-1; }
+  .tr-filters label,.tr-filters select { min-width:0; }
+  .tr-intro { align-items:start; }
+  .tr-intro strong { font-size:1.05rem; }
+  .tr-intro p { font-size:.9rem; }
+  .tr-intro > span { font-size:.85rem; padding:5px 9px; }
+  .tr-route { padding:19px; }
+  .guide-toc ol { grid-template-columns:1fr; }
+}
+
+.tr-route:only-child { grid-column:1 / -1; }
+.guide-article h1, .guide-article h2 { word-break:keep-all; overflow-wrap:break-word; }

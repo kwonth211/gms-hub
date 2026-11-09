@@ -1,0 +1,110 @@
+{
+  "reviewed": "2026-11-10",
+  "publication": "Sources retained for maintenance; source identities and transcripts excluded from public HTML/JSON. Facts paraphrased; trial ranges and comparison methods are editorial advice, not measurements.",
+  "sources": [
+    {
+      "id": "pltwo",
+      "url": "https://www.youtube.com/watch?v=Rq0ptQ43nXE",
+      "author": "플투",
+      "checked": "2026-11-10",
+      "kind": "gameplay",
+      "notes": "0:40 1~10 퀘스트; 1:48 원거리 10~15 공사장 화면; 3:37 공사장 대안; 4:13 위험한 증기 스티지. 음악 구간 지도는 화면 확인. 정식 오픈 직전 작성이므로 현재 최적 순위로 채택하지 않음."
+    },
+    {
+      "id": "mujin",
+      "url": "https://www.youtube.com/watch?v=W8wB9hkoTNQ",
+      "author": "무진박",
+      "checked": "2026-11-10",
+      "kind": "gameplay",
+      "notes": "0:46 헤네시스→15 추락주의; 1:31 20 아대/개미굴 2타; 1:54 메바/스티지; 2:32 35 가디언/주니어 레이스; 2:59 40 보닌/로랑6인; 3:58 48레이스; 4:18 50대 무덤III(정확한 발음 불명확,52는 편집상 보수적 시험구간); 4:41 58군영1. 직접60까지. 고가드롭가격·득템수익은 제외."
+    },
+    {
+      "id": "geun",
+      "url": "https://www.youtube.com/watch?v=MG9EnQhxQ9E",
+      "author": "근팔",
+      "checked": "2026-11-10",
+      "kind": "gameplay",
+      "notes": "0:54 파퀘보너스;1:21 발굴지I(27사례);1:57 II;2:09 III35+;2:32 개미굴1타;4:21 불타버린땅35+2타;5:33 서쪽바위산IV;6:18 근접커즈아이;7:55 슬리피던전II40루팡/커즈2타. 3:18~4:20광고 제외. 시간당환산·캐시샵이동법 제외."
+    },
+    {
+      "id": "hunter",
+      "url": "https://www.youtube.com/watch?v=28b5EHrfkeQ",
+      "author": "용암갈매기",
+      "checked": "2026-11-10",
+      "kind": "gameplay",
+      "notes": "0:38 리게이터;1:25 주니어레이스포커스10;3:04 깊은개미굴I지붕;3:57 강화발터43로랑2타/왼쪽;6:12콜드아이;9:16 50초반명중도핑 다크골렘 적자;11:50소울애로우/마스터리/부스터;15:07직접31~35리게이터35~43개미굴43~51로랑. 헌터 경험을 사수 고정SP로 확장하지 않음."
+    },
+    {
+      "id": "quest",
+      "url": "https://www.youtube.com/watch?v=6fmkWFIQGVk",
+      "author": "한식도시락",
+      "checked": "2026-11-10",
+      "kind": "gameplay",
+      "notes": "0:50피아16갓20+20;1:18제인20;2:21라케리스21/4인/동료의증표;4:58인내의숲25;6:28법사2차30/검은구슬30. 제작자 정정댓글: 인내의숲 보상 DEF를 DEX로 잘못 읽음. 전신방어60/10이며 돈벌이로 소개하지 않음. https://www.youtube.com/watch?v=6fmkWFIQGVk&lc=UgyEHl7yR3G3-54n9u94AaABAg"
+    },
+    {
+      "id": "warrior-play",
+      "url": "https://www.youtube.com/watch?v=R6WkjIUJWac",
+      "author": "김폐지",
+      "checked": "2026-11-10",
+      "kind": "gameplay",
+      "notes": "제목은 클레릭이지만 본인은 전사. 0:00 37/물약부족;2:20이블아이2인(파트너2타), 약분당1000으로파퀘복귀;4:16클레릭파트너힐의회복비절감. 현금/코디투기부분제외."
+    },
+    {
+      "id": "fighter-play",
+      "url": "https://www.youtube.com/watch?v=Jm-WnK35Yxk",
+      "author": "겜창헬스",
+      "checked": "2026-11-10",
+      "kind": "gameplay",
+      "notes": "71도끼파이터 실제캐릭터리뷰.1:52장비/50제공83두손도끼;2:35 30~60어려움분노이후파티;3:59유적적자;6:50~8:47카고영역사냥/몸박. 이후광고·미출시3/4차추측제외."
+    },
+    {
+      "id": "cleric-play",
+      "url": "https://www.youtube.com/watch?v=zBQfZfvFwik",
+      "author": "겜창헬스",
+      "checked": "2026-11-10",
+      "kind": "gameplay",
+      "notes": "0:00 49/57클레릭 홀리애로우/힐, 강화페어리완드;2:05레이스;3:42전직직후에너지볼트오래사용;4:24텔포레벨에따른비용;5:13군영/유적층분담;8:15 65썬콜빙결은느려짐. 영상앞의 힐데미지없다는말은뒤의힐200시연과충돌하므로 무딜로서술하지않음. 흑자·미래필수직업예측제외."
+    },
+    {
+      "id": "fire-guide",
+      "url": "https://www.youtube.com/watch?v=VnfR4BlBdCY",
+      "author": "자동사냥",
+      "checked": "2026-11-10",
+      "kind": "editorial-guide",
+      "notes": "2:19파이어애로우지형/화상버그;3:25텔포낮은레벨MP소비;4:09스킬분기;5:03다크엑스텀프/주니어레이스/콜드아이;6:03레이스명중;6:41드레이크파이어보어내성. 자료종합영상으로 직접측정 아님, 명중고정수치·시간당경험치·무조건매직가드끄기 제외."
+    },
+    {
+      "id": "thief-guide",
+      "url": "https://www.youtube.com/watch?v=AL4MrH7hxMg",
+      "author": "추억서리",
+      "checked": "2026-11-10",
+      "kind": "editorial-guide",
+      "notes": "10/18선발대/정식오픈전자료.4:44현자의숲·나무던전;5:02스티지/파퀘;8:01 30초반주니어레이스미스;10:15퓨전단검전환비용;11:44이블아이/루팡. 고정순위/SP/시세·현재최고무기 주장제외."
+    },
+    {
+      "id": "voyage-warrior",
+      "url": "https://www.youtube.com/watch?v=1oxhDtCZo8A",
+      "author": "단풍항해",
+      "checked": "2026-11-10",
+      "kind": "editorial-guide",
+      "notes": "10/31 v1.1.0 종합공략.10:06무기별마스터리;10:32초반돼지/주황버섯;10:48나무던전;11:18버블링/개미굴;11:49커즈/원숭이숲;13:17회복효율;14:18 3차미출시. 데이터해석과조건부제안이며 직접실측 아님."
+    },
+    {
+      "id": "citizenship",
+      "url": "https://www.youtube.com/watch?v=P1fUwQ8gAQc",
+      "author": "클메CM",
+      "checked": "2026-11-10",
+      "kind": "editorial-guide",
+      "notes": "0:39 12아서/록시;0:50게시판;1:37승급확인;3:34 2등급집/17퀘스트/비안카·스칼렛;4:20창고가구;4:57마을별장비계열. 종합영상으로 직접구입측정 아님. 미확정집값·시세·승급소요일수·기여도소멸가설 제외."
+    },
+    {
+      "id": "bandit-play",
+      "url": "https://www.youtube.com/watch?v=nvcoDa0MlPs",
+      "author": "겜창헬스",
+      "checked": "2026-11-10",
+      "kind": "gameplay",
+      "notes": "0:00 76시프 성역입구;0:22강화신기타;1:09님블리커버리;2:14스틸/세비지비교;4:10콜드아이. 한국 제작자의 외국인 캐릭터 관찰. 흑자 주장은 추측이며 채택하지 않음.5:57이후 광고 제외."
+    }
+  ]
+}

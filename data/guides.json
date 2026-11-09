@@ -3,19 +3,23 @@
     {
       "slug": "getting-started",
       "lang": "ko",
-      "title": "글클메 입문: 공략을 고르기 전에 확인할 것",
-      "h1": "글클메 입문: 공략을 고르기 전에 확인할 것",
-      "desc": "게임 버전, 원문 작성자의 조건, 실제 물약 소비와 사이트 자료의 확인 범위를 구분하는 이용 안내.",
+      "title": "글클메 시작하기: 첫날 준비와 육성 순서",
+      "h1": "글클메 시작하기: 첫날 준비와 육성 순서",
+      "desc": "첫 직업 선택부터 전직·물약·퀘스트·시세 이용까지 첫날 진행 순서를 안내해요.",
       "published": "2026-11-02",
       "updated": "2026-11-10",
       "sources": [
         {
-          "title": "CarPresent5681 — Level 20 archer potion costs",
-          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xf4k6g/new_player_money_problem/"
+          "title": "플투",
+          "url": "https://www.youtube.com/watch?v=Rq0ptQ43nXE"
         },
         {
-          "title": "TinyAdhesiveness5773 — Level 13 magician supplies",
-          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xcu0dc/made_a_magician_and_ran_out_of_money_and_potions/"
+          "title": "한식도시락",
+          "url": "https://www.youtube.com/watch?v=6fmkWFIQGVk"
+        },
+        {
+          "title": "무진박",
+          "url": "https://www.youtube.com/watch?v=W8wB9hkoTNQ"
         }
       ],
       "tools": [
@@ -25,40 +29,90 @@
       ],
       "reviewed": "2026-11-10",
       "status": "published",
-      "evidenceKind": "player-accounts"
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "pltwo",
+        "quest",
+        "mujin"
+      ]
     },
     {
       "slug": "choose-your-job",
       "lang": "ko",
-      "title": "글클메 직업 고르기: 옛 메이플과 달라진 점 · 재검증 중",
-      "h1": "글클메 직업 고르기: 옛 메이플과 달라진 점",
-      "desc": "스킬 변경과 직업별 우열을 뒷받침하는 현재 버전의 원문이 연결돼 있지 않았어요.",
+      "title": "글클메 직업 선택: 사냥 방식·비용·파티 역할",
+      "h1": "글클메 직업 선택: 사냥 방식·비용·파티 역할",
+      "desc": "전사·궁수·마법사·도적의 거리 관리와 소모품, 2차 분기를 비교해요.",
       "published": "2026-11-02",
       "updated": "2026-11-10",
-      "sources": [],
+      "sources": [
+        {
+          "title": "용암갈매기",
+          "url": "https://www.youtube.com/watch?v=28b5EHrfkeQ"
+        },
+        {
+          "title": "무진박",
+          "url": "https://www.youtube.com/watch?v=W8wB9hkoTNQ"
+        },
+        {
+          "title": "김폐지",
+          "url": "https://www.youtube.com/watch?v=R6WkjIUJWac"
+        },
+        {
+          "title": "겜창헬스",
+          "url": "https://www.youtube.com/watch?v=Jm-WnK35Yxk"
+        },
+        {
+          "title": "겜창헬스",
+          "url": "https://www.youtube.com/watch?v=zBQfZfvFwik"
+        },
+        {
+          "title": "단풍항해",
+          "url": "https://www.youtube.com/watch?v=1oxhDtCZo8A"
+        }
+      ],
       "tools": [
         "training"
       ],
       "reviewed": "2026-11-10",
-      "status": "withheld",
-      "reviewReason": "스킬 변경과 직업별 우열을 뒷받침하는 현재 버전의 원문이 연결돼 있지 않았어요."
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "hunter",
+        "mujin",
+        "warrior-play",
+        "fighter-play",
+        "cleric-play",
+        "voyage-warrior"
+      ]
     },
     {
       "slug": "leveling-1-30",
       "lang": "ko",
-      "title": "글클메 1~30레벨: 사냥터보다 먼저 확인할 물약 비용",
-      "h1": "글클메 1~30레벨: 사냥터보다 먼저 확인할 물약 비용",
-      "desc": "레벨만으로 개미굴을 추천하던 안내를 철회하고, 초반 플레이 원문과 비용 비교 방법을 정리했어요.",
+      "title": "글클메 1~30레벨: 직업별 동선과 첫 장비",
+      "h1": "글클메 1~30레벨: 직업별 동선과 첫 장비",
+      "desc": "1~10 전직 준비, 10~20 직업별 사냥, 20대 물약 절약과 커닝 파퀘까지 단계별로 정리했어요.",
       "published": "2026-11-02",
       "updated": "2026-11-10",
       "sources": [
         {
-          "title": "CarPresent5681 — Level 20 archer potion costs",
-          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xf4k6g/new_player_money_problem/"
+          "title": "플투",
+          "url": "https://www.youtube.com/watch?v=Rq0ptQ43nXE"
         },
         {
-          "title": "TinyAdhesiveness5773 — Level 13 magician supplies",
-          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xcu0dc/made_a_magician_and_ran_out_of_money_and_potions/"
+          "title": "무진박",
+          "url": "https://www.youtube.com/watch?v=W8wB9hkoTNQ"
+        },
+        {
+          "title": "한식도시락",
+          "url": "https://www.youtube.com/watch?v=6fmkWFIQGVk"
+        },
+        {
+          "title": "단풍항해",
+          "url": "https://www.youtube.com/watch?v=1oxhDtCZo8A"
+        },
+        {
+          "title": "추억서리",
+          "url": "https://www.youtube.com/watch?v=AL4MrH7hxMg"
         }
       ],
       "tools": [
@@ -67,41 +121,59 @@
       ],
       "reviewed": "2026-11-10",
       "status": "published",
-      "evidenceKind": "player-accounts"
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "pltwo",
+        "mujin",
+        "quest",
+        "voyage-warrior",
+        "thief-guide"
+      ]
     },
     {
       "slug": "best-early-quests",
       "lang": "ko",
-      "title": "글클메 꼭 챙길 퀘스트 7개 · 재검증 중",
-      "h1": "글클메 꼭 챙길 퀘스트 7개",
-      "desc": "개별 퀘스트의 필요 레벨·재료·보상과 판매 수익을 확인할 원문이 부족했어요.",
+      "title": "글클메 초반 퀘스트: 피아·제인·커파 동선",
+      "h1": "글클메 초반 퀘스트: 피아·제인·커파 동선",
+      "desc": "레벨별 시작점과 버섯 재료 동선, 파퀘 보상, 인내의 숲 보상 오해를 정리했어요.",
       "published": "2026-11-02",
       "updated": "2026-11-10",
       "sources": [
         {
-          "title": "NiaMeowDB — Quest tracker",
-          "url": "https://meowdb.com/msclassic/ko/quest-tracker"
+          "title": "한식도시락",
+          "url": "https://www.youtube.com/watch?v=6fmkWFIQGVk"
         }
       ],
       "tools": [
         "training"
       ],
       "reviewed": "2026-11-10",
-      "status": "withheld",
-      "reviewReason": "개별 퀘스트의 필요 레벨·재료·보상과 판매 수익을 확인할 원문이 부족했어요."
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "quest"
+      ]
     },
     {
       "slug": "kerning-party-quest",
       "lang": "ko",
-      "title": "커닝 파티 퀘스트: 러시·보너스 후기 읽기",
-      "h1": "커닝 파티 퀘스트: 러시·보너스 후기 읽기",
-      "desc": "커파를 언제 그만둘지 레벨만으로 정하지 않고, 원문에 있는 참여 경험과 비용의 한계를 정리해요.",
+      "title": "커닝 파퀘: 입장 준비·단계별 진행·보너스팟",
+      "h1": "커닝 파퀘: 입장 준비·단계별 진행·보너스팟",
+      "desc": "21레벨 입장부터 쿠폰 문제, 발판 조합, 킹슬라임과 보너스 사냥까지 정리했어요.",
       "published": "2026-11-02",
       "updated": "2026-11-10",
       "sources": [
         {
-          "title": "Zionics — Levels 35–40, rush and bonus",
-          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xq7hw3/comment/19sa6f4904qpv/"
+          "title": "한식도시락",
+          "url": "https://www.youtube.com/watch?v=6fmkWFIQGVk"
+        },
+        {
+          "title": "근팔",
+          "url": "https://www.youtube.com/watch?v=MG9EnQhxQ9E"
+        },
+        {
+          "title": "김폐지",
+          "url": "https://www.youtube.com/watch?v=R6WkjIUJWac"
         }
       ],
       "tools": [
@@ -110,44 +182,75 @@
       ],
       "reviewed": "2026-11-10",
       "status": "published",
-      "evidenceKind": "player-accounts"
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "quest",
+        "geun",
+        "warrior-play"
+      ]
     },
     {
       "slug": "second-job",
       "lang": "ko",
-      "title": "글클메 2차 전직: 무엇을 고르고 어디로 갈까 · 재검증 중",
-      "h1": "글클메 2차 전직: 무엇을 고르고 어디로 갈까",
-      "desc": "기본 추천 직업, 무기 우열과 30~70레벨 동선에 직접 근거가 없었어요.",
-      "published": "2026-11-02",
-      "updated": "2026-11-10",
-      "sources": [],
-      "tools": [
-        "training"
-      ],
-      "reviewed": "2026-11-10",
-      "status": "withheld",
-      "reviewReason": "기본 추천 직업, 무기 우열과 30~70레벨 동선에 직접 근거가 없었어요."
-    },
-    {
-      "slug": "citizenship-and-housing",
-      "lang": "ko",
-      "title": "글클메 시민권과 집 · 재검증 중",
-      "h1": "글클메 시민권과 집",
-      "desc": "등급별 할인, 전용 주문서 가격과 집 조건의 현재 버전을 확인하지 못했어요.",
+      "title": "글클메 2차 전직: 시험 준비와 전직 직후 사냥",
+      "h1": "글클메 2차 전직: 시험 준비와 전직 직후 사냥",
+      "desc": "30레벨 전직 준비물, 시험 진행, 직업 선택과 전직 직후 스킬·장비 점검 순서예요.",
       "published": "2026-11-02",
       "updated": "2026-11-10",
       "sources": [
         {
-          "title": "NiaMeowDB — 시민권",
-          "url": "https://meowdb.com/msclassic/ko/citizenship"
+          "title": "한식도시락",
+          "url": "https://www.youtube.com/watch?v=6fmkWFIQGVk"
+        },
+        {
+          "title": "추억서리",
+          "url": "https://www.youtube.com/watch?v=AL4MrH7hxMg"
+        },
+        {
+          "title": "용암갈매기",
+          "url": "https://www.youtube.com/watch?v=28b5EHrfkeQ"
+        },
+        {
+          "title": "단풍항해",
+          "url": "https://www.youtube.com/watch?v=1oxhDtCZo8A"
         }
       ],
       "tools": [
         "training"
       ],
       "reviewed": "2026-11-10",
-      "status": "withheld",
-      "reviewReason": "등급별 할인, 전용 주문서 가격과 집 조건의 현재 버전을 확인하지 못했어요."
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "quest",
+        "thief-guide",
+        "hunter",
+        "voyage-warrior"
+      ]
+    },
+    {
+      "slug": "citizenship-and-housing",
+      "lang": "ko",
+      "title": "글클메 시민권·집: 가입부터 일일 의뢰까지",
+      "h1": "글클메 시민권·집: 가입부터 일일 의뢰까지",
+      "desc": "마을 선택, 시민센터·게시판 동선, 승급 확인과 집·가구 구매 예산을 정리했어요.",
+      "published": "2026-11-02",
+      "updated": "2026-11-10",
+      "sources": [
+        {
+          "title": "클메CM",
+          "url": "https://www.youtube.com/watch?v=P1fUwQ8gAQc"
+        }
+      ],
+      "tools": [
+        "training"
+      ],
+      "reviewed": "2026-11-10",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "citizenship"
+      ]
     },
     {
       "slug": "scroll-odds",
@@ -201,23 +304,47 @@
     {
       "slug": "leveling-30-70",
       "lang": "ko",
-      "title": "글클메 30레벨 이후: 플레이 후기와 확인 범위",
-      "h1": "글클메 30레벨 이후: 플레이 후기와 확인 범위",
-      "desc": "37레벨 클레릭, 39→40레벨 주니어 레이스, 32~46레벨 파이어보어 후기의 조건과 미확인 사항.",
+      "title": "글클메 30~70레벨: 직업별 갈림길과 이동 기준",
+      "h1": "글클메 30~70레벨: 직업별 갈림길과 이동 기준",
+      "desc": "30대 파퀘·발굴지부터 로랑·레이스·군영까지, 직업과 장비 조건으로 이동 시점을 정리했어요.",
       "published": "2026-11-03",
       "updated": "2026-11-10",
       "sources": [
         {
-          "title": "HughJassLOL — Level 37 cleric, Jr. Wraith",
-          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xpep2n/comment/19s8d2wggrezl/"
+          "title": "근팔",
+          "url": "https://www.youtube.com/watch?v=MG9EnQhxQ9E"
         },
         {
-          "title": "kamikq — Level 39 to 40 account",
-          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xq7hw3/comment/19sa3xy91brcy/"
+          "title": "무진박",
+          "url": "https://www.youtube.com/watch?v=W8wB9hkoTNQ"
         },
         {
-          "title": "SuuuushiCat — Fire Boars and Hollow Tree 6",
-          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xitkic/comment/19rufmspn7kn6/"
+          "title": "용암갈매기",
+          "url": "https://www.youtube.com/watch?v=28b5EHrfkeQ"
+        },
+        {
+          "title": "김폐지",
+          "url": "https://www.youtube.com/watch?v=R6WkjIUJWac"
+        },
+        {
+          "title": "겜창헬스",
+          "url": "https://www.youtube.com/watch?v=zBQfZfvFwik"
+        },
+        {
+          "title": "겜창헬스",
+          "url": "https://www.youtube.com/watch?v=Jm-WnK35Yxk"
+        },
+        {
+          "title": "자동사냥",
+          "url": "https://www.youtube.com/watch?v=VnfR4BlBdCY"
+        },
+        {
+          "title": "단풍항해",
+          "url": "https://www.youtube.com/watch?v=1oxhDtCZo8A"
+        },
+        {
+          "title": "겜창헬스",
+          "url": "https://www.youtube.com/watch?v=nvcoDa0MlPs"
         }
       ],
       "tools": [
@@ -226,88 +353,195 @@
       ],
       "reviewed": "2026-11-10",
       "status": "published",
-      "evidenceKind": "player-accounts"
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "geun",
+        "mujin",
+        "hunter",
+        "warrior-play",
+        "cleric-play",
+        "fighter-play",
+        "fire-guide",
+        "voyage-warrior",
+        "bandit-play"
+      ]
     },
     {
       "slug": "warrior-build",
       "lang": "ko",
-      "title": "글클메 전사 육성 가이드 · 재검증 중",
-      "h1": "글클메 전사 육성 가이드",
-      "desc": "SP 순서와 특정 레벨의 처치 타수를 입증할 장비·스킬·실측 자료가 없었어요.",
+      "title": "글클메 전사: 명중·몸박·무기별 스킬 관리",
+      "h1": "글클메 전사: 명중·몸박·무기별 스킬 관리",
+      "desc": "전사 초반 적자를 줄이는 동선, 무기 교체와 2차 선택, 파티 운영을 정리했어요.",
       "published": "2026-11-03",
       "updated": "2026-11-10",
-      "sources": [],
+      "sources": [
+        {
+          "title": "단풍항해",
+          "url": "https://www.youtube.com/watch?v=1oxhDtCZo8A"
+        },
+        {
+          "title": "김폐지",
+          "url": "https://www.youtube.com/watch?v=R6WkjIUJWac"
+        },
+        {
+          "title": "겜창헬스",
+          "url": "https://www.youtube.com/watch?v=Jm-WnK35Yxk"
+        },
+        {
+          "title": "근팔",
+          "url": "https://www.youtube.com/watch?v=MG9EnQhxQ9E"
+        }
+      ],
       "tools": [
         "training"
       ],
       "reviewed": "2026-11-10",
-      "status": "withheld",
-      "reviewReason": "SP 순서와 특정 레벨의 처치 타수를 입증할 장비·스킬·실측 자료가 없었어요."
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "voyage-warrior",
+        "warrior-play",
+        "fighter-play",
+        "geun"
+      ]
     },
     {
       "slug": "archer-build",
       "lang": "ko",
-      "title": "글클메 궁수 육성 가이드 · 재검증 중",
-      "h1": "글클메 궁수 육성 가이드",
-      "desc": "특정 레벨 무조건 원킬, 무기 교체 시점과 흑자 동선에 원문 근거가 없었어요.",
+      "title": "글클메 궁수: 헌터 동선과 2타 장비 기준",
+      "h1": "글클메 궁수: 헌터 동선과 2타 장비 기준",
+      "desc": "헌터의 리게이터·깊은 개미굴·로랑 동선과 명중·마스터리·층별 사냥 운영을 정리했어요.",
       "published": "2026-11-03",
       "updated": "2026-11-10",
-      "sources": [],
+      "sources": [
+        {
+          "title": "용암갈매기",
+          "url": "https://www.youtube.com/watch?v=28b5EHrfkeQ"
+        },
+        {
+          "title": "무진박",
+          "url": "https://www.youtube.com/watch?v=W8wB9hkoTNQ"
+        },
+        {
+          "title": "근팔",
+          "url": "https://www.youtube.com/watch?v=MG9EnQhxQ9E"
+        }
+      ],
       "tools": [
         "training"
       ],
       "reviewed": "2026-11-10",
-      "status": "withheld",
-      "reviewReason": "특정 레벨 무조건 원킬, 무기 교체 시점과 흑자 동선에 원문 근거가 없었어요."
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "hunter",
+        "mujin",
+        "geun"
+      ]
     },
     {
       "slug": "mage-build",
       "lang": "ko",
-      "title": "글클메 마법사 육성 가이드 · 재검증 중",
-      "h1": "글클메 마법사 육성 가이드",
-      "desc": "경제형 SP와 물약 효율의 근거가 없고, 다른 글의 물약 가격과도 맞지 않았어요.",
+      "title": "글클메 마법사: 불독·썬콜·클레릭 운영과 MP 비용",
+      "h1": "글클메 마법사: 불독·썬콜·클레릭 운영과 MP 비용",
+      "desc": "주력기 전환, 텔레포트 비용, 불독 지형 판정과 클레릭 힐 오해를 구분한 육성 안내예요.",
       "published": "2026-11-03",
       "updated": "2026-11-10",
-      "sources": [],
+      "sources": [
+        {
+          "title": "자동사냥",
+          "url": "https://www.youtube.com/watch?v=VnfR4BlBdCY"
+        },
+        {
+          "title": "겜창헬스",
+          "url": "https://www.youtube.com/watch?v=zBQfZfvFwik"
+        },
+        {
+          "title": "한식도시락",
+          "url": "https://www.youtube.com/watch?v=6fmkWFIQGVk"
+        },
+        {
+          "title": "용암갈매기",
+          "url": "https://www.youtube.com/watch?v=28b5EHrfkeQ"
+        }
+      ],
       "tools": [
         "training"
       ],
       "reviewed": "2026-11-10",
-      "status": "withheld",
-      "reviewReason": "경제형 SP와 물약 효율의 근거가 없고, 다른 글의 물약 가격과도 맞지 않았어요."
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "fire-guide",
+        "cleric-play",
+        "quest",
+        "hunter"
+      ]
     },
     {
       "slug": "thief-build",
       "lang": "ko",
-      "title": "글클메 도적 1~40레벨 육성 · 재검증 중",
-      "h1": "글클메 도적 1~40레벨 육성",
-      "desc": "정해진 명중률·SP 순서·레벨별 동선을 확인할 플레이 원문이 없었어요.",
+      "title": "글클메 도적: 표도·시프 동선과 무기 전환",
+      "h1": "글클메 도적: 표도·시프 동선과 무기 전환",
+      "desc": "표도 1~60 동선과 스티지 1타, 로랑 파티, 시프 단검 전환 비용을 나눠 정리했어요.",
       "published": "2026-11-03",
       "updated": "2026-11-10",
-      "sources": [],
+      "sources": [
+        {
+          "title": "무진박",
+          "url": "https://www.youtube.com/watch?v=W8wB9hkoTNQ"
+        },
+        {
+          "title": "추억서리",
+          "url": "https://www.youtube.com/watch?v=AL4MrH7hxMg"
+        },
+        {
+          "title": "근팔",
+          "url": "https://www.youtube.com/watch?v=MG9EnQhxQ9E"
+        },
+        {
+          "title": "겜창헬스",
+          "url": "https://www.youtube.com/watch?v=zBQfZfvFwik"
+        },
+        {
+          "title": "겜창헬스",
+          "url": "https://www.youtube.com/watch?v=nvcoDa0MlPs"
+        }
+      ],
       "tools": [
         "training"
       ],
       "reviewed": "2026-11-10",
-      "status": "withheld",
-      "reviewReason": "정해진 명중률·SP 순서·레벨별 동선을 확인할 플레이 원문이 없었어요."
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "mujin",
+        "thief-guide",
+        "geun",
+        "cleric-play",
+        "bandit-play"
+      ]
     },
     {
       "slug": "getting-started",
       "lang": "en",
-      "title": "Starting Classic World: evaluating guides",
-      "h1": "Starting Classic World: evaluating guides",
-      "desc": "Check game version, original player conditions, supply costs and the limits of site data.",
+      "title": "Getting started: your first sessions",
+      "h1": "Getting started: your first sessions",
+      "desc": "Plan your first class, advancement, supply reserve, quests and market checks.",
       "published": "2026-11-09",
       "updated": "2026-11-10",
       "sources": [
         {
-          "title": "CarPresent5681 — Level 20 archer potion costs",
-          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xf4k6g/new_player_money_problem/"
+          "title": "플투",
+          "url": "https://www.youtube.com/watch?v=Rq0ptQ43nXE"
         },
         {
-          "title": "TinyAdhesiveness5773 — Level 13 magician supplies",
-          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xcu0dc/made_a_magician_and_ran_out_of_money_and_potions/"
+          "title": "한식도시락",
+          "url": "https://www.youtube.com/watch?v=6fmkWFIQGVk"
+        },
+        {
+          "title": "무진박",
+          "url": "https://www.youtube.com/watch?v=W8wB9hkoTNQ"
         }
       ],
       "tools": [
@@ -317,40 +551,90 @@
       ],
       "reviewed": "2026-11-10",
       "status": "published",
-      "evidenceKind": "player-accounts"
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "pltwo",
+        "quest",
+        "mujin"
+      ]
     },
     {
       "slug": "choose-your-job",
       "lang": "en",
-      "title": "Choosing a Job in Classic World · Under review",
-      "h1": "Choosing a Job in Classic World",
-      "desc": "Current-version sources were missing for skill changes and class rankings.",
+      "title": "Choose a class by play style, costs and party role",
+      "h1": "Choose a class by play style, costs and party role",
+      "desc": "Compare melee and ranged play, supplies and second-job decisions without a fixed tier list.",
       "published": "2026-11-09",
       "updated": "2026-11-10",
-      "sources": [],
+      "sources": [
+        {
+          "title": "용암갈매기",
+          "url": "https://www.youtube.com/watch?v=28b5EHrfkeQ"
+        },
+        {
+          "title": "무진박",
+          "url": "https://www.youtube.com/watch?v=W8wB9hkoTNQ"
+        },
+        {
+          "title": "김폐지",
+          "url": "https://www.youtube.com/watch?v=R6WkjIUJWac"
+        },
+        {
+          "title": "겜창헬스",
+          "url": "https://www.youtube.com/watch?v=Jm-WnK35Yxk"
+        },
+        {
+          "title": "겜창헬스",
+          "url": "https://www.youtube.com/watch?v=zBQfZfvFwik"
+        },
+        {
+          "title": "단풍항해",
+          "url": "https://www.youtube.com/watch?v=1oxhDtCZo8A"
+        }
+      ],
       "tools": [
         "training"
       ],
       "reviewed": "2026-11-10",
-      "status": "withheld",
-      "reviewReason": "Current-version sources were missing for skill changes and class rankings."
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "hunter",
+        "mujin",
+        "warrior-play",
+        "fighter-play",
+        "cleric-play",
+        "voyage-warrior"
+      ]
     },
     {
       "slug": "leveling-1-30",
       "lang": "en",
-      "title": "Levels 1–30: check supply costs before choosing a map",
-      "h1": "Levels 1–30: check supply costs before choosing a map",
-      "desc": "Early player accounts and a cost comparison method, replacing level-only Ant Tunnel recommendations.",
+      "title": "Levels 1–30: routes, equipment and supplies",
+      "h1": "Levels 1–30: routes, equipment and supplies",
+      "desc": "A staged route through first-job training, early equipment, supply control and Kerning PQ.",
       "published": "2026-11-09",
       "updated": "2026-11-10",
       "sources": [
         {
-          "title": "CarPresent5681 — Level 20 archer potion costs",
-          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xf4k6g/new_player_money_problem/"
+          "title": "플투",
+          "url": "https://www.youtube.com/watch?v=Rq0ptQ43nXE"
         },
         {
-          "title": "TinyAdhesiveness5773 — Level 13 magician supplies",
-          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xcu0dc/made_a_magician_and_ran_out_of_money_and_potions/"
+          "title": "무진박",
+          "url": "https://www.youtube.com/watch?v=W8wB9hkoTNQ"
+        },
+        {
+          "title": "한식도시락",
+          "url": "https://www.youtube.com/watch?v=6fmkWFIQGVk"
+        },
+        {
+          "title": "단풍항해",
+          "url": "https://www.youtube.com/watch?v=1oxhDtCZo8A"
+        },
+        {
+          "title": "추억서리",
+          "url": "https://www.youtube.com/watch?v=AL4MrH7hxMg"
         }
       ],
       "tools": [
@@ -359,41 +643,59 @@
       ],
       "reviewed": "2026-11-10",
       "status": "published",
-      "evidenceKind": "player-accounts"
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "pltwo",
+        "mujin",
+        "quest",
+        "voyage-warrior",
+        "thief-guide"
+      ]
     },
     {
       "slug": "best-early-quests",
       "lang": "en",
-      "title": "Seven Early Quests Worth Doing · Under review",
-      "h1": "Seven Early Quests Worth Doing",
-      "desc": "Quest-specific level, material, reward and profit claims lacked sufficient sources.",
+      "title": "Early quests: Pia, Jane and KPQ errands",
+      "h1": "Early quests: Pia, Jane and KPQ errands",
+      "desc": "Level checkpoints, mushroom collections, KPQ errands and the Forest of Patience reward correction.",
       "published": "2026-11-09",
       "updated": "2026-11-10",
       "sources": [
         {
-          "title": "NiaMeowDB — Quest tracker",
-          "url": "https://meowdb.com/msclassic/ko/quest-tracker"
+          "title": "한식도시락",
+          "url": "https://www.youtube.com/watch?v=6fmkWFIQGVk"
         }
       ],
       "tools": [
         "training"
       ],
       "reviewed": "2026-11-10",
-      "status": "withheld",
-      "reviewReason": "Quest-specific level, material, reward and profit claims lacked sufficient sources."
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "quest"
+      ]
     },
     {
       "slug": "kerning-party-quest",
       "lang": "en",
-      "title": "Kerning PQ: reading rush and bonus accounts",
-      "h1": "Kerning PQ: reading rush and bonus accounts",
-      "desc": "A reported KPQ experience, with limits on conclusions about levels, speed and profit.",
+      "title": "Kerning PQ: preparation, stages and bonus parties",
+      "h1": "Kerning PQ: preparation, stages and bonus parties",
+      "desc": "Prepare for entry, coupon questions, combinations, King Slime and bonus training.",
       "published": "2026-11-09",
       "updated": "2026-11-10",
       "sources": [
         {
-          "title": "Zionics — Levels 35–40, rush and bonus",
-          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xq7hw3/comment/19sa6f4904qpv/"
+          "title": "한식도시락",
+          "url": "https://www.youtube.com/watch?v=6fmkWFIQGVk"
+        },
+        {
+          "title": "근팔",
+          "url": "https://www.youtube.com/watch?v=MG9EnQhxQ9E"
+        },
+        {
+          "title": "김폐지",
+          "url": "https://www.youtube.com/watch?v=R6WkjIUJWac"
         }
       ],
       "tools": [
@@ -402,44 +704,75 @@
       ],
       "reviewed": "2026-11-10",
       "status": "published",
-      "evidenceKind": "player-accounts"
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "quest",
+        "geun",
+        "warrior-play"
+      ]
     },
     {
       "slug": "second-job",
       "lang": "en",
-      "title": "Second Job: Which to Pick · Under review",
-      "h1": "Second Job: Which to Pick",
-      "desc": "Default class picks, weapon rankings and level 30–70 routes lacked direct evidence.",
-      "published": "2026-11-09",
-      "updated": "2026-11-10",
-      "sources": [],
-      "tools": [
-        "training"
-      ],
-      "reviewed": "2026-11-10",
-      "status": "withheld",
-      "reviewReason": "Default class picks, weapon rankings and level 30–70 routes lacked direct evidence."
-    },
-    {
-      "slug": "citizenship-and-housing",
-      "lang": "en",
-      "title": "Citizenship and Housing · Under review",
-      "h1": "Citizenship and Housing",
-      "desc": "Current citizenship discounts, scroll prices and housing requirements were not established.",
+      "title": "Second job: trial preparation and first sessions",
+      "h1": "Second job: trial preparation and first sessions",
+      "desc": "Prepare at level 30, complete the trial and choose your next skill and equipment steps.",
       "published": "2026-11-09",
       "updated": "2026-11-10",
       "sources": [
         {
-          "title": "NiaMeowDB — Citizenship",
-          "url": "https://meowdb.com/msclassic/citizenship"
+          "title": "한식도시락",
+          "url": "https://www.youtube.com/watch?v=6fmkWFIQGVk"
+        },
+        {
+          "title": "추억서리",
+          "url": "https://www.youtube.com/watch?v=AL4MrH7hxMg"
+        },
+        {
+          "title": "용암갈매기",
+          "url": "https://www.youtube.com/watch?v=28b5EHrfkeQ"
+        },
+        {
+          "title": "단풍항해",
+          "url": "https://www.youtube.com/watch?v=1oxhDtCZo8A"
         }
       ],
       "tools": [
         "training"
       ],
       "reviewed": "2026-11-10",
-      "status": "withheld",
-      "reviewReason": "Current citizenship discounts, scroll prices and housing requirements were not established."
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "quest",
+        "thief-guide",
+        "hunter",
+        "voyage-warrior"
+      ]
+    },
+    {
+      "slug": "citizenship-and-housing",
+      "lang": "en",
+      "title": "Citizenship and housing: enrollment and daily errands",
+      "h1": "Citizenship and housing: enrollment and daily errands",
+      "desc": "Choose a town, use the community board, check promotion and budget housing separately.",
+      "published": "2026-11-09",
+      "updated": "2026-11-10",
+      "sources": [
+        {
+          "title": "클메CM",
+          "url": "https://www.youtube.com/watch?v=P1fUwQ8gAQc"
+        }
+      ],
+      "tools": [
+        "training"
+      ],
+      "reviewed": "2026-11-10",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "citizenship"
+      ]
     },
     {
       "slug": "scroll-odds",
@@ -493,23 +826,47 @@
     {
       "slug": "leveling-30-70",
       "lang": "en",
-      "title": "Training after level 30: accounts and evidence limits",
-      "h1": "Training after level 30: accounts and evidence limits",
-      "desc": "Conditions and gaps in player accounts of Jr. Wraiths, Fire Boars and later training.",
+      "title": "Levels 30–70: class routes and readiness",
+      "h1": "Levels 30–70: class routes and readiness",
+      "desc": "Compare party quests, excavation, Lorang, Wraith and Camp routes by class and readiness.",
       "published": "2026-11-09",
       "updated": "2026-11-10",
       "sources": [
         {
-          "title": "HughJassLOL — Level 37 cleric, Jr. Wraith",
-          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xpep2n/comment/19s8d2wggrezl/"
+          "title": "근팔",
+          "url": "https://www.youtube.com/watch?v=MG9EnQhxQ9E"
         },
         {
-          "title": "kamikq — Level 39 to 40 account",
-          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xq7hw3/comment/19sa3xy91brcy/"
+          "title": "무진박",
+          "url": "https://www.youtube.com/watch?v=W8wB9hkoTNQ"
         },
         {
-          "title": "SuuuushiCat — Fire Boars and Hollow Tree 6",
-          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xitkic/comment/19rufmspn7kn6/"
+          "title": "용암갈매기",
+          "url": "https://www.youtube.com/watch?v=28b5EHrfkeQ"
+        },
+        {
+          "title": "김폐지",
+          "url": "https://www.youtube.com/watch?v=R6WkjIUJWac"
+        },
+        {
+          "title": "겜창헬스",
+          "url": "https://www.youtube.com/watch?v=zBQfZfvFwik"
+        },
+        {
+          "title": "겜창헬스",
+          "url": "https://www.youtube.com/watch?v=Jm-WnK35Yxk"
+        },
+        {
+          "title": "자동사냥",
+          "url": "https://www.youtube.com/watch?v=VnfR4BlBdCY"
+        },
+        {
+          "title": "단풍항해",
+          "url": "https://www.youtube.com/watch?v=1oxhDtCZo8A"
+        },
+        {
+          "title": "겜창헬스",
+          "url": "https://www.youtube.com/watch?v=nvcoDa0MlPs"
         }
       ],
       "tools": [
@@ -518,71 +875,174 @@
       ],
       "reviewed": "2026-11-10",
       "status": "published",
-      "evidenceKind": "player-accounts"
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "geun",
+        "mujin",
+        "hunter",
+        "warrior-play",
+        "cleric-play",
+        "fighter-play",
+        "fire-guide",
+        "voyage-warrior",
+        "bandit-play"
+      ]
     },
     {
       "slug": "warrior-build",
       "lang": "en",
-      "title": "Warrior Build Guide · Under review",
-      "h1": "Warrior Build Guide",
-      "desc": "SP order and fixed-level hit counts lacked equipment, skill and measured evidence.",
+      "title": "Warrior: accuracy, contact damage and weapon skills",
+      "h1": "Warrior: accuracy, contact damage and weapon skills",
+      "desc": "Reduce avoidable supply costs and compare weapon skills, second jobs and party roles.",
       "published": "2026-11-09",
       "updated": "2026-11-10",
-      "sources": [],
+      "sources": [
+        {
+          "title": "단풍항해",
+          "url": "https://www.youtube.com/watch?v=1oxhDtCZo8A"
+        },
+        {
+          "title": "김폐지",
+          "url": "https://www.youtube.com/watch?v=R6WkjIUJWac"
+        },
+        {
+          "title": "겜창헬스",
+          "url": "https://www.youtube.com/watch?v=Jm-WnK35Yxk"
+        },
+        {
+          "title": "근팔",
+          "url": "https://www.youtube.com/watch?v=MG9EnQhxQ9E"
+        }
+      ],
       "tools": [
         "training"
       ],
       "reviewed": "2026-11-10",
-      "status": "withheld",
-      "reviewReason": "SP order and fixed-level hit counts lacked equipment, skill and measured evidence."
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "voyage-warrior",
+        "warrior-play",
+        "fighter-play",
+        "geun"
+      ]
     },
     {
       "slug": "archer-build",
       "lang": "en",
-      "title": "Bowman Build Guide · Under review",
-      "h1": "Bowman Build Guide",
-      "desc": "Guaranteed one-hit claims, weapon upgrade timing and profitable routes lacked original evidence.",
+      "title": "Bowman: Hunter routes and reliable two-hit kills",
+      "h1": "Bowman: Hunter routes and reliable two-hit kills",
+      "desc": "Hunter progression through Ligator, Deep Ant Tunnel and Lorang, with accuracy and platform conditions.",
       "published": "2026-11-09",
       "updated": "2026-11-10",
-      "sources": [],
+      "sources": [
+        {
+          "title": "용암갈매기",
+          "url": "https://www.youtube.com/watch?v=28b5EHrfkeQ"
+        },
+        {
+          "title": "무진박",
+          "url": "https://www.youtube.com/watch?v=W8wB9hkoTNQ"
+        },
+        {
+          "title": "근팔",
+          "url": "https://www.youtube.com/watch?v=MG9EnQhxQ9E"
+        }
+      ],
       "tools": [
         "training"
       ],
       "reviewed": "2026-11-10",
-      "status": "withheld",
-      "reviewReason": "Guaranteed one-hit claims, weapon upgrade timing and profitable routes lacked original evidence."
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "hunter",
+        "mujin",
+        "geun"
+      ]
     },
     {
       "slug": "mage-build",
       "lang": "en",
-      "title": "Magician Build Guide · Under review",
-      "h1": "Magician Build Guide",
-      "desc": "Economic SP and potion-efficiency claims were unsourced and inconsistent with another guide.",
+      "title": "Magician: Fire/Poison, Ice/Lightning and Cleric costs",
+      "h1": "Magician: Fire/Poison, Ice/Lightning and Cleric costs",
+      "desc": "Compare attack transitions, Teleport costs, Fire Arrow terrain and Cleric attack choices.",
       "published": "2026-11-09",
       "updated": "2026-11-10",
-      "sources": [],
+      "sources": [
+        {
+          "title": "자동사냥",
+          "url": "https://www.youtube.com/watch?v=VnfR4BlBdCY"
+        },
+        {
+          "title": "겜창헬스",
+          "url": "https://www.youtube.com/watch?v=zBQfZfvFwik"
+        },
+        {
+          "title": "한식도시락",
+          "url": "https://www.youtube.com/watch?v=6fmkWFIQGVk"
+        },
+        {
+          "title": "용암갈매기",
+          "url": "https://www.youtube.com/watch?v=28b5EHrfkeQ"
+        }
+      ],
       "tools": [
         "training"
       ],
       "reviewed": "2026-11-10",
-      "status": "withheld",
-      "reviewReason": "Economic SP and potion-efficiency claims were unsourced and inconsistent with another guide."
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "fire-guide",
+        "cleric-play",
+        "quest",
+        "hunter"
+      ]
     },
     {
       "slug": "thief-build",
       "lang": "en",
-      "title": "Thief Build Guide (Levels 1-40) · Under review",
-      "h1": "Thief Build Guide (Levels 1-40)",
-      "desc": "Fixed accuracy, SP order and level routes lacked original gameplay evidence.",
+      "title": "Thief: Assassin, Bandit and weapon transitions",
+      "h1": "Thief: Assassin, Bandit and weapon transitions",
+      "desc": "Claw-user progression, one-hit Stirges, Lorang parties and the cost of switching to daggers.",
       "published": "2026-11-09",
       "updated": "2026-11-10",
-      "sources": [],
+      "sources": [
+        {
+          "title": "무진박",
+          "url": "https://www.youtube.com/watch?v=W8wB9hkoTNQ"
+        },
+        {
+          "title": "추억서리",
+          "url": "https://www.youtube.com/watch?v=AL4MrH7hxMg"
+        },
+        {
+          "title": "근팔",
+          "url": "https://www.youtube.com/watch?v=MG9EnQhxQ9E"
+        },
+        {
+          "title": "겜창헬스",
+          "url": "https://www.youtube.com/watch?v=zBQfZfvFwik"
+        },
+        {
+          "title": "겜창헬스",
+          "url": "https://www.youtube.com/watch?v=nvcoDa0MlPs"
+        }
+      ],
       "tools": [
         "training"
       ],
       "reviewed": "2026-11-10",
-      "status": "withheld",
-      "reviewReason": "Fixed accuracy, SP order and level routes lacked original gameplay evidence."
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "mujin",
+        "thief-guide",
+        "geun",
+        "cleric-play",
+        "bandit-play"
+      ]
     }
   ]
 }

@@ -4,7 +4,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { spriteSvg, heroScene } from './sprites.mjs';
-import { selectExperiences, experienceCards, jobNames, validateTraining } from '../assets/training-evidence.js';
+import { selectRoutes, routeCards, publicTrainingData, jobNames, validateTraining } from '../assets/training-evidence.js';
 import { SKILLS as DMG_SKILLS, windowRange as dmgWindow, hitRange as dmgHit, hitsToKill as dmgKill, accuracyNeeded as dmgAccNeed } from '../assets/damage-calc.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -14,7 +14,8 @@ const readJson = (p) => JSON.parse(fs.readFileSync(path.join(root, p), 'utf8'));
 const config = readJson('site.config.json');
 const sites = readJson('data/sites.json');
 const training = readJson('data/training.json');
-validateTraining(training);
+const editorialEvidence = readJson('data/editorial/korean-guides.json');
+validateTraining(training, editorialEvidence);
 const itemsData = readJson('data/items.json');
 const scrolls = readJson('data/scrolls.json');
 // Korean pages use the client's own tier names (하급·중급·상급·혼돈); English keeps Lesser/Intermediate/Greater/Chaos.
@@ -31,6 +32,7 @@ const publishedGuides = guides.filter((g) => g.status === 'published');
 for (const g of guides) {
   if (!['published', 'withheld'].includes(g.status)) throw new Error(`Missing editorial review: ${g.slug}`);
   if (g.status === 'published' && (!g.sources.length || !g.evidenceKind || !g.reviewed)) throw new Error(`Missing evidence: ${g.slug}`);
+  if (g.evidenceKind === 'conditional-guide' && (!g.evidenceRefs?.length || g.evidenceRefs.some(id => !editorialEvidence.sources.some(s => s.id === id)))) throw new Error(`Unresolved guide evidence: ${g.slug}`);
   if (g.status === 'withheld' && !g.reviewReason) throw new Error(`Missing review reason: ${g.slug}`);
 }
 const LANGS = ['ko', 'en'];
@@ -44,7 +46,7 @@ const T = {
     gameBadge: '글로벌 메이플스토리 클래식 월드 전용',
     notice: `수록 링크 ${SITE_COUNT}개 · ${CHECKED_SITE_COUNT}개 접속 확인 (${sites.checked}) · 접속 확인은 내용 검증을 뜻하지 않아요`,
     navLinks: '사이트 모음',
-    navTraining: "사냥터 후기",
+    navTraining: "사냥터 추천",
     navScroll: '주문서 계산기',
     navDrop: '확률 계산기',
     navPrice: '시세 검색',
@@ -53,7 +55,7 @@ const T = {
     navGuides: '가이드',
     switchLang: 'English',
     homeTitle: '글로벌 메이플스토리 클래식 월드(글클메) 사이트 모음 · 시세 · 공략 · 계산기 | GMS Hub',
-    homeDesc: `글로벌 메이플스토리 클래식 월드(글클메) 공식 채널, 디스코드·레딧·디시 커뮤니티, DB·위키, 자유시장 시세, 보스 타이머, 빌드 플래너 ${SITE_COUNT}곳을 용도별로 정리했어요. 플레이 원문을 모은 사냥터 후기와 주문서 계산기도 있어요.`,
+    homeDesc: `글로벌 메이플스토리 클래식 월드(글클메) 공식 채널, 디스코드·레딧·디시 커뮤니티, DB·위키, 자유시장 시세, 보스 타이머, 빌드 플래너 ${SITE_COUNT}곳을 용도별로 정리했어요. 직업별 조건을 정리한 사냥터 추천와 주문서 계산기도 있어요.`,
     heroKicker: '글클메 유저를 위한 길잡이',
     heroTitle: '아이템·시세·유용한 사이트, <br>한 번에 찾아보세요',
     heroSub: '아이템부터 공략과 도구까지 한곳에서 검색하고, 필요한 사이트로 바로 이동하세요.',
@@ -87,17 +89,17 @@ const T = {
     statSource: '출처',
     langNames: { ko: '한국어', en: 'EN', zh: '中文', ja: '日本語', es: 'ES', pt: 'PT' },
     toolsHeading: 'GMS Hub 자체 도구',
-    trCardDesc: "플레이 원문의 레벨·직업·장비 조건과 물약 비용을 비교해요.",
+    trCardDesc: "직업·레벨별 진입 조건, 사냥 동선과 물약 비용을 비교해요.",
     scCardDesc: 'Lesser·Intermediate·Greater·Chaos 주문서로 몇 번 붙고 터질 확률이 얼마인지 계산해요.',
     dropCardDesc: "입력한 드롭률이 일정하고 시도가 독립일 때의 획득 확률을 계산해요.",
     open: '열기',
     faqHeading: '자주 묻는 질문',
     sourcesLabel: '출처',
 
-    trTitle: "글클메 사냥터 후기 · 플레이 조건과 물약 비용 | GMS Hub",
-    trDesc: "원문 작성자의 레벨과 직업, 장비, 물약 비용을 구분한 개인 사냥 후기. 조건이 없는 추천과 이론 경험치 순위를 제외했어요.",
-    trH1: "사냥터 · 플레이 후기",
-    trLead: "어디서, 어떤 조건으로 사냥했는지 원문과 함께 확인하세요. 내 조건과 맞는 기록이 없으면 확인되지 않았다고 표시해요.",
+    trTitle: "글클메 사냥터 추천 · 직업별 동선·물약 비용 | GMS Hub",
+    trDesc: "직업과 레벨에 맞는 사냥터의 진입 조건, 위치, 층별 동선, 물약 비용, 다음 이동 시점과 대체 장소를 비교하세요.",
+    trH1: "사냥터 추천",
+    trLead: "내 직업과 레벨에 맞춰, 무리 없이 잡히는 다음 사냥터를 찾아보세요.",
     level: '내 레벨',
     showSpots: '찾기',
     trResultTitle: '{lv}레벨 추천 사냥터',
@@ -112,12 +114,12 @@ const T = {
     colExp: '경험치/시간 (NiaMeowDB)',
     caution: '주의',
     trSourcesHeading: '출처',
-    trBandNav: "레벨 구간별 원문 후기",
-    trBandTitle: "글클메 {a}~{b}레벨 플레이 후기와 확인 범위 | GMS Hub",
-    trBandDesc: "{a}~{b}레벨을 직접 언급한 개인 플레이 기록 {n}건. 직업·장비·물약 비용의 확인 범위를 원문과 비교하세요.",
-    trBandH1: "{a}~{b}레벨 플레이 후기",
-    trBandLead: "이 구간을 직접 언급한 기록 {n}건이에요. 추천 레벨이나 효율 순위가 아니에요.",
-    trBandFinder: "레벨·직업으로 후기 찾기 →",
+    trBandNav: "레벨별 사냥 동선",
+    trBandTitle: "글클메 {a}~{b}레벨 사냥터 · 조건과 동선 | GMS Hub",
+    trBandDesc: "{a}~{b}레벨에 비교할 사냥 경로 {n}개. 직업별 처치 타수, 물약 비용, 이동 동선과 대체 사냥터를 정리했어요.",
+    trBandH1: "{a}~{b}레벨 사냥 동선",
+    trBandLead: "이 구간에서 비교할 경로 {n}개예요. 같은 레벨이어도 직업과 장비에 따라 이동 시점이 달라져요.",
+    trBandFinder: "내 조건으로 사냥터 찾기 →",
     noDate: '날짜 표기 없음',
 
     scTitle: '글클메 주문서 계산기 · 확률 (Lesser·Intermediate·Greater·Chaos) | GMS Hub',
@@ -191,9 +193,9 @@ const T = {
     aboutH1: 'GMS Hub 소개',
     aboutBody: `<p>GMS Hub는 <strong>글로벌 메이플스토리 클래식 월드</strong>를 하는 한국어·영어 유저를 위한 <strong>비공식 팬 사이트</strong>예요. 처음에는 흩어져 있는 공략·시세·계산기 사이트를 한곳에 모으려고 시작했고, 지금은 직접 만든 도구와 가이드를 함께 운영해요.</p>
 <h2>무엇이 있나요</h2>
-<ul><li><strong>계산기:</strong> <a href="/ko/tools/scroll/">주문서 계산기</a>, <a href="/ko/tools/drop-rate/">확률 계산기</a>, <a href="/ko/tools/damage/">몇 방 컷 계산기</a>는 공개 데이터와 계산 모델을 사용해요. 결과는 입력값과 가정에 따른 추정치예요. 공식과 예시는 각 페이지 아래에 적어 두었어요.</li><li><strong>사냥터 후기:</strong> 플레이를 직접 서술한 <a href="/ko/tools/training/">원문과 조건</a>을 보여 줘요. 이론 경험치나 추천 사이트 수로 순위를 매기지 않아요.</li><li><strong>실시간 시세:</strong> 유저가 상점 스캐너로 읽은 자유시장 매물을 모아 <a href="/ko/tools/market/">아이템별 시세</a>를 계산해요. 계산 방법은 시세 페이지 아래에 있어요.</li><li><strong>가이드:</strong> 육성, 전직, 파티 퀘스트, 주문서, 거래를 다룬 <a href="/ko/guides/">한국어 가이드</a>를 직접 써요.</li><li><strong>사이트 모음:</strong> 클래식 월드 관련 사이트를 용도별로 정리하고 접속 여부를 확인해요.</li></ul>
+<ul><li><strong>계산기:</strong> <a href="/ko/tools/scroll/">주문서 계산기</a>, <a href="/ko/tools/drop-rate/">확률 계산기</a>, <a href="/ko/tools/damage/">몇 방 컷 계산기</a>는 공개 데이터와 계산 모델을 사용해요. 결과는 입력값과 가정에 따른 추정치예요. 공식과 예시는 각 페이지 아래에 적어 두었어요.</li><li><strong>사냥터 추천:</strong> <a href="/ko/tools/training/">직업별 조건과 동선</a>을 정리해요. 실제 플레이와 공략을 참고하며, 레벨만으로 효율을 보장하지 않아요.</li><li><strong>실시간 시세:</strong> 유저가 상점 스캐너로 읽은 자유시장 매물을 모아 <a href="/ko/tools/market/">아이템별 시세</a>를 계산해요. 계산 방법은 시세 페이지 아래에 있어요.</li><li><strong>가이드:</strong> 육성, 전직, 파티 퀘스트, 주문서, 거래를 다룬 <a href="/ko/guides/">한국어 가이드</a>를 직접 써요.</li><li><strong>사이트 모음:</strong> 클래식 월드 관련 사이트를 용도별로 정리하고 접속 여부를 확인해요.</li></ul>
 <h2>원칙</h2>
-<ul><li><strong>자료의 성격과 한계를 구분해요.</strong> 개인 후기는 원문을 읽고 요약하지만 결과를 재현한 실험은 아니에요. 근거가 부족한 기존 가이드는 재검증 표시와 함께 비공개로 전환했어요.</li><li>출처끼리 내용이 다르면 둘 다 보여주고, 확인되지 않은 내용은 확인되지 않았다고 적어요.</li><li>접속 확인은 해당 사이트 전체 내용의 검증을 뜻하지 않아요. 확인하지 못한 링크는 따로 표시해요. 현금 거래 사이트는 올리지 않아요.</li></ul>
+<ul><li><strong>자료의 성격과 한계를 구분해요.</strong> 플레이 기록과 공략을 검토하고 장비·파티 조건을 붙여 재구성해요. 모든 조건에서 같은 결과를 재현한 실험은 아니에요.</li><li>자료가 충돌하면 조건과 정정 내용을 확인하고, 불확실한 수익과 고정 순위는 안내에서 제외해요.</li><li>접속 확인은 해당 사이트 전체 내용의 검증을 뜻하지 않아요. 확인하지 못한 링크는 따로 표시해요. 현금 거래 사이트는 올리지 않아요.</li></ul>
 <h2>다루는 게임</h2>
 <p>클래식 월드 하나만 다뤄요. 다른 메이플스토리 버전과는 맵, 몬스터, 강화 시스템이 달라서 섞지 않아요.</p>
 <h2>사이트 추가·오류 제보·문의</h2>
@@ -259,7 +261,7 @@ const T = {
     gameBadge: 'Global MapleStory Classic World only',
     notice: `${SITE_COUNT} links · ${CHECKED_SITE_COUNT} checked live on ${sites.checked} · Access checks do not verify content`,
     navLinks: 'Site Directory',
-    navTraining: "Training accounts",
+    navTraining: "Training routes",
     navScroll: 'Scroll Calculator',
     navDrop: 'Odds Calculator',
     navPrice: 'Price Search',
@@ -302,17 +304,17 @@ const T = {
     statSource: 'Source',
     langNames: { ko: 'Korean', en: 'EN', zh: '中文', ja: '日本語', es: 'ES', pt: 'PT' },
     toolsHeading: 'GMS Hub Tools',
-    trCardDesc: "Compare original player accounts, conditions and supply costs.",
+    trCardDesc: "Compare class routes, entry conditions, rotations and supply costs.",
     scCardDesc: 'See how many Lesser, Intermediate, Greater or Chaos scrolls pass and how likely a boom is.',
     dropCardDesc: "Calculate odds assuming the supplied drop rate stays constant across independent attempts.",
     open: 'Open',
     faqHeading: 'FAQ',
     sourcesLabel: 'Sources',
 
-    trTitle: "Classic World Training Accounts: Conditions and Supply Costs | GMS Hub",
-    trDesc: "Original player accounts with reported levels, classes, equipment and supply costs. No inferred routes or theoretical EXP ranking.",
-    trH1: "Training · Player Accounts",
-    trLead: "Read where and under what conditions people played, with original sources and explicit gaps.",
+    trTitle: "Classic World Training Routes: Conditions and Supply Costs | GMS Hub",
+    trDesc: "Conditional class routes with entry requirements, rotations, supply costs and alternatives.",
+    trH1: "Training Routes",
+    trLead: "Find a manageable next route for your class, equipment and level.",
     level: 'My level',
     showSpots: 'Find',
     trResultTitle: 'Training spots for level {lv}',
@@ -327,12 +329,12 @@ const T = {
     colExp: 'EXP/hr (NiaMeowDB)',
     caution: 'Caution',
     trSourcesHeading: 'Sources',
-    trBandNav: "Accounts by reported level",
-    trBandTitle: "Classic World Level {a}–{b} Player Accounts and Evidence Limits | GMS Hub",
-    trBandDesc: "{n} personal accounts explicitly covering levels {a}–{b}, with class, equipment and supply-cost limits.",
-    trBandH1: "Level {a}–{b} Player Accounts",
-    trBandLead: "{n} accounts explicitly mention this interval. These are reported levels, not recommendations or efficiency rankings.",
-    trBandFinder: "Filter accounts by level and class →",
+    trBandNav: "Routes by level",
+    trBandTitle: "Classic World Level {a}–{b} Training Routes | GMS Hub",
+    trBandDesc: "Compare {n} conditional routes across levels {a}–{b}, with entry requirements and supply costs.",
+    trBandH1: "Level {a}–{b} Training Routes",
+    trBandLead: "Compare {n} routes in this band. Read class, gear and supply requirements before moving.",
+    trBandFinder: "Find routes for your setup →",
     noDate: 'undated',
 
     scTitle: 'Global MapleStory Classic World Scroll Calculator: Lesser, Intermediate, Greater & Chaos Odds | GMS Hub',
@@ -406,9 +408,9 @@ const T = {
     aboutH1: 'About GMS Hub',
     aboutBody: `<p>GMS Hub is an <strong>unofficial fan site</strong> for English- and Korean-speaking <strong>Global MapleStory Classic World</strong> players. It started as one place to find the scattered guide, price and calculator sites, and now also runs its own tools and guides.</p>
 <h2>What's here</h2>
-<ul><li><strong>Calculators:</strong> the <a href="/en/tools/scroll/">scroll calculator</a>, <a href="/en/tools/drop-rate/">odds calculator</a> and <a href="/en/tools/damage/">hits-to-kill calculator</a> use public data and mathematical models, with results conditional on their inputs and assumptions. Each page explains its formulas with a worked example.</li><li><strong>Training accounts:</strong> <a href="/en/tools/training/">original first-person reports and their conditions</a>, without theoretical EXP rankings.</li><li><strong>Live prices:</strong> Free Market listings that players read with the shop scanner, turned into <a href="/en/tools/market/">per-item prices</a>. The method is described under the market page.</li><li><strong>Guides:</strong> Korean and English accounts and tool guides; unsupported older advice is withheld pending review.</li><li><strong>Site directory:</strong> Classic World sites grouped by purpose, with each link checked.</li></ul>
+<ul><li><strong>Calculators:</strong> the <a href="/en/tools/scroll/">scroll calculator</a>, <a href="/en/tools/drop-rate/">odds calculator</a> and <a href="/en/tools/damage/">hits-to-kill calculator</a> use public data and mathematical models, with results conditional on their inputs and assumptions. Each page explains its formulas with a worked example.</li><li><strong>Training routes:</strong> <a href="/en/tools/training/">class-specific entry conditions, rotations and costs</a>, without theoretical EXP rankings.</li><li><strong>Live prices:</strong> Free Market listings that players read with the shop scanner, turned into <a href="/en/tools/market/">per-item prices</a>. The method is described under the market page.</li><li><strong>Guides:</strong> Detailed Korean and English progression, quest and tool guides.</li><li><strong>Site directory:</strong> Classic World sites grouped by purpose, with each link checked.</li></ul>
 <h2>Principles</h2>
-<ul><li><strong>Evidence has limits.</strong> Reviewing a personal account does not independently reproduce its results. Unsupported older guides have been withheld with review notices.</li><li>When sources disagree we show both, and anything unconfirmed is labeled as such.</li><li>Link-access checks do not validate a site’s claims. Unchecked links are labeled separately. We never list real-money trading sites.</li></ul>
+<ul><li><strong>Evidence has limits.</strong> We synthesize gameplay and guides with explicit gear and party conditions; these are not controlled benchmarks for every setup.</li><li>We check corrections and conflicting conditions instead of promising fixed profit or rankings.</li><li>Link-access checks do not validate a site’s claims. Unchecked links are labeled separately. We never list real-money trading sites.</li></ul>
 <h2>Which game</h2>
 <p>Classic World only. Other MapleStory versions have different maps, monsters and upgrade systems, so we keep them out.</p>
 <h2>Suggest a site, report an error or contact us</h2>
@@ -491,7 +493,7 @@ const MOBS = readJson('data/mobs.json').mobs.map((m) => {
   const o = MOB_OVERRIDES[m.en] || {};
   return { ...m, ...(o.ko ? { ko: o.ko } : {}), ...(o.hp ? { hp: o.hp } : {}), aka: o.aka || [], status: o.status };
 });
-// Retain old band URLs while replacing their unsupported recommendations with sourced accounts.
+// Retain level-band URLs with conditional routes and detailed entry requirements.
 const TR_BANDS = [[1, 10], [11, 20], [21, 30], [31, 40], [41, 50], [51, 60], [61, 80]];
 const TR_MAX = TR_BANDS.at(-1)[1];
 const bandPath = ([a, b]) => `/tools/training/level-${a}-${b}/`;
@@ -841,7 +843,7 @@ ${faq}
 
 // ---------- training ----------
 
-const bandSpots = (band) => selectExperiences(training.experiences, { band });
+const bandSpots = (band) => selectRoutes(training.routes, { band, advanced: true });
 function bandNav(lang, current) {
   const t = T[lang];
   return `<nav class="band-nav" aria-label="${esc(t.trBandNav)}"><h2>${t.trBandNav}</h2><div>${TR_BANDS.map((band) => {
@@ -850,37 +852,36 @@ function bandNav(lang, current) {
   }).join('')}</div></nav>`;
 }
 function trainingMethod(lang) {
-  const tr = (ko, en) => lang === 'ko' ? ko : en;
-  return `<section class="panel tr-method"><h2>${tr('후기를 고르는 기준', 'How accounts are selected')}</h2>
-<p>${esc(training.method[lang])}</p><ul>
-<li>${tr('원문에 적힌 레벨·직업·처치 타수만 옮겨요. 모르는 조건은 미기재로 표시해요.', 'Only explicitly stated levels, classes and hit counts are included. Missing details stay unspecified.')}</li>
-<li>${tr('게시일을 확정하지 못한 글은 날짜 미확인으로 표시해요. 원문 확인일은 게임 내 측정일이나 최신 패치 검증일이 아니에요.', 'Unconfirmed publication dates are labeled. Review dates are not gameplay measurement dates or patch validation dates.')}</li>
-<li>${tr('과거 테스트 영상, 계산상 최대 경험치, 다른 글을 다시 요약한 표는 현재 레벨 추천의 근거로 쓰지 않아요.', 'Earlier-test footage, theoretical maximum EXP and aggregated guide tables do not establish current level recommendations.')}</li>
-<li>${tr('포션이 늘었다는 말과 순수익은 달라요. 물약·탄약·이동 비용과 실제 판매 수입을 같이 보세요.', 'More potions do not establish net profit. Compare consumable and travel costs with actual proceeds.')}</li></ul>
-<p><a href="${href(langPath(lang, '/guides/leveling-1-30/'))}">${tr('물약 비용과 사냥 결과 비교하기 →', 'Compare supplies and hunting results →')}</a></p></section>`;
+  const tr = (ko,en) => lang === 'ko' ? ko : en;
+  return `<section class="panel tr-method"><h2>${tr('새 사냥터는 이렇게 비교하세요','Compare a new map in three steps')}</h2><ol>
+<li>${tr('<strong>같은 장비로 10분씩.</strong> 버프·파티 인원·담당 층을 맞추고 미스와 처치 타수를 봐요.','<strong>Use equal ten-minute trials.</strong> Keep gear, buffs, party size and platform role comparable; check misses and casts per kill.')}</li>
+<li>${tr('<strong>경험치와 비용을 같이.</strong> 획득 메소와 실제 판매 수입에서 사용한 물약·탄약·이동비를 빼요. 미판매 희귀 아이템은 따로 적어요.','<strong>Compare EXP and costs.</strong> Subtract consumed supplies and travel from looted Mesos and actual sales; keep unsold rare drops separate.')}</li>
+<li>${tr('<strong>이동은 조건이 맞을 때.</strong> 레벨 범위는 이동을 검토하는 구간이에요. 공격 횟수·명중·물약 소비가 나빠지면 이전 맵을 유지하세요.','<strong>Move when the conditions work.</strong> Levels are trial windows. Stay on your previous map if hits, accuracy or supply consumption worsen.')}</li></ol>
+<p>${tr('실제 플레이와 공략을 바탕으로 재구성한 조건부 안내예요. 같은 결과를 모든 장비에서 재현한 실측표는 아니에요.','These conditional routes synthesize gameplay and guides; they are not controlled benchmarks for every setup.')}</p>
+<p><a href="${href(langPath(lang,'/guides/leveling-1-30/'))}">${tr('1~30레벨 상세 동선','Detailed early progression')}</a> · <a href="${href(langPath(lang,'/guides/leveling-30-70/'))}">${tr('30레벨 이후 직업별 분기','Class routes after 30')}</a></p></section>`;
 }
 function trainingBody(lang) {
-  const t = T[lang]; const tr = (ko, en) => lang === 'ko' ? ko : en;
-  const initial = selectExperiences(training.experiences, { level: 20 });
-  return `${pageHead(lang, 'sword', t.trH1, t.trLead)}<div class="wrap tr-page">
-<div class="tr-review-note"><strong>${tr('레벨만으로 사냥터를 추천하던 안내를 수정했어요.', 'Level-only recommendations have been withdrawn.')}</strong><p>${tr('원문에서 플레이를 직접 서술한 기록 '+training.experiences.length+'건을 정리했어요. 적자·흑자를 보장하는 추천표가 아니며, 같은 레벨이어도 장비와 물약 소비가 다를 수 있어요.', 'We summarized '+training.experiences.length+' first-person accounts. These are not profit guarantees; gear and supply consumption can differ at the same level.')}</p></div>
+  const t=T[lang]; const tr=(ko,en)=>lang==='ko'?ko:en;
+  const initial=selectRoutes(training.routes,{level:20});
+  return `${pageHead(lang,'sword',t.trH1,t.trLead)}<div class="wrap tr-page">
+<div class="tr-intro"><div><strong>${tr('내 조건에 맞는 다음 사냥터','Find your next training route')}</strong><p>${tr('진입 기준부터 물약 비용, 자리 없을 때 대안까지 한 번에 비교하세요.','Compare entry conditions, supply costs and alternatives.')}</p></div><span>${training.routes.length}${tr('개 경로',' routes')}</span></div>
 <form id="tr-form" class="panel tr-filters">
 <label>${t.level}<input type="number" name="lv" min="1" max="100" value="20" required inputmode="numeric"></label>
-<label>${tr('직업', 'Class')}<select name="job" aria-label="${tr('직업', 'Class')}"><option value="">${tr('모든 직업', 'All classes')}</option>${Object.entries(jobNames[lang]).map(([key,label]) => `<option value="${key}">${label}</option>`).join('')}</select></label>
-<label class="tr-check"><input name="all" type="checkbox">${tr('모든 레벨 보기', 'Show all levels')}</label>
-<label class="tr-check"><input name="unknown" type="checkbox" disabled>${tr('직업 미기재 후기 포함', 'Include unspecified classes')}</label>
-<button class="btn" type="submit">${tr('후기 찾기', 'Find accounts')}</button>
-<p class="tr-filter-help">${tr('레벨은 원문에 직접 적힌 구간만 일치시켜요. 직업을 고르면 그 직업이 명시된 후기만 보여요.', 'Levels match only explicitly reported intervals. Selecting a class shows accounts that name that class.')}</p>
-</form><h2 id="tr-status" role="status">${tr('20레벨을 직접 언급한 후기', 'Accounts explicitly covering level 20')} ${initial.length}</h2>
-<section id="tr-result">${experienceCards(initial, lang)}</section><noscript><p>${tr('조건 검색에는 JavaScript가 필요해요. 아래 레벨 구간 링크에서도 원문 후기를 볼 수 있어요.', 'Filters require JavaScript. The level-band links below also display original accounts.')}</p></noscript>
-${bandNav(lang)}${trainingMethod(lang)}</div>${jsonScript('training-data', training)}`;
+<label>${tr('직업','Class')}<select name="job"><option value="">${tr('모든 직업','All classes')}</option>${Object.entries(jobNames[lang]).map(([key,label])=>`<option value="${key}">${label}</option>`).join('')}</select></label>
+<label>${tr('우선순위','Priority')}<select name="goal"><option value="balanced">${tr('전체 비교','Compare all')}</option><option value="economy">${tr('물약 절약','Lower supply cost')}</option></select></label>
+<label>${tr('사냥 방식','Party setup')}<select name="party"><option value="any">${tr('솔로 + 파티','Solo + party')}</option><option value="solo">${tr('솔로 가능한 곳','Solo options')}</option></select></label>
+<button class="btn" type="submit">${tr('사냥터 찾기','Find routes')}</button>
+<label class="tr-check"><input name="advanced" type="checkbox">${tr('장비·명중 조건이 까다로운 후보도 보기','Include demanding gear / accuracy options')}</label>
+<p class="tr-filter-help">${tr('표시 레벨은 이동 검토 구간이에요. 카드의 진입 기준을 먼저 확인하세요.','Levels are trial windows; read each card’s entry conditions first.')}</p>
+</form><div class="tr-result-head"><h2 id="tr-status" role="status">${tr('20레벨 사냥 후보','Options for level 20')} ${initial.length}${tr('곳','')}</h2><a href="${href(langPath(lang,'/guides/choose-your-job/'))}">${tr('직업별 육성 가이드 →','Class guides →')}</a></div>
+<section id="tr-result">${routeCards(initial,lang)}</section><noscript><p>${tr('조건 검색에는 JavaScript가 필요해요. 아래 레벨별 페이지에서 전체 경로를 볼 수 있어요.','Filters require JavaScript. Browse the level-band pages below for all routes.')}</p></noscript>
+${bandNav(lang)}${trainingMethod(lang)}</div>${jsonScript('training-data',publicTrainingData(training))}`;
 }
-function trainingBandBody(lang, band) {
-  const t = T[lang]; const rows = bandSpots(band); const vars = { a: band[0], b: band[1], n: rows.length };
-  return `${pageHead(lang, 'sword', fill(t.trBandH1, vars), fill(t.trBandLead, vars))}<div class="wrap tr-page">
-<p class="tr-review-note">${esc(training.method[lang])}</p>${experienceCards(rows, lang)}
-<p><a class="btn" href="${href(langPath(lang, '/tools/training/'))}?lv=${band[0]}">${t.trBandFinder}</a></p>
-${bandNav(lang, band)}${trainingMethod(lang)}</div>`;
+function trainingBandBody(lang,band) {
+  const t=T[lang]; const rows=bandSpots(band); const vars={a:band[0],b:band[1],n:rows.length};
+  return `${pageHead(lang,'sword',fill(t.trBandH1,vars),fill(t.trBandLead,vars))}<div class="wrap tr-page">
+<p class="tr-review-note">${lang==='ko'?'이 구간과 겹치는 모든 직업의 경로예요. 장비 조건부 후보도 포함되니 진입 기준과 직업을 확인하세요.':'All class routes overlapping this band, including gear-dependent trials. Check class and entry conditions.'}</p>${routeCards(rows,lang)}
+<p><a class="btn" href="${href(langPath(lang,'/tools/training/'))}?lv=${band[0]}">${t.trBandFinder}</a></p>${bandNav(lang,band)}${trainingMethod(lang)}</div>`;
 }
 
 // ---------- scrolls ----------
@@ -1718,13 +1719,13 @@ const fmtDate = (d) => d.replaceAll('-', '. ') + '.';
 // Every guide ends with links to the other guides, so a reader from search can keep going.
 const GUIDE_T = {
   ko: { toolsChip: '같이 쓰는 도구', toolsHeading: '이 글과 같이 쓰는 도구', more: '다른 가이드', sources: '참고한 자료', byline: (g) => `GMS Hub 작성 · 처음 쓴 날 ${fmtDate(g.published)} · 수정 ${fmtDate(g.updated)}`,
-    note: '개인 플레이 후기, 계산 가정, 사이트 기능을 구분해 적어요. 원문 확인은 결과의 재현이나 현재 게임 버전의 검증을 뜻하지 않아요. 틀린 부분은 {mail}이나 {issues}로 알려 주세요.', issues: 'GitHub 이슈',
-    indexH1: '글클메 가이드', indexLead: '원문을 확인한 플레이 사례와 계산·시세 이용 안내예요. 근거가 부족한 기존 육성 정보는 재검증 목록으로 분리했어요.',
-    indexTitle: '글클메 가이드 모음 | GMS Hub', indexDesc: '글로벌 클래식 메이플 입문과 공략을 출처와 함께 정리한 GMS Hub 가이드 모음.' },
+    note: '장비와 패치에 따라 처치 타수와 비용이 달라질 수 있어요. 잘못된 내용은 {mail}이나 {issues}로 알려 주세요.', issues: 'GitHub 이슈',
+    indexH1: '글클메 가이드', indexLead: '시작 준비부터 직업별 육성, 퀘스트와 거래까지. 필요한 단계의 가이드를 골라 보세요.',
+    indexTitle: '글클메 가이드 모음 | GMS Hub', indexDesc: '글로벌 클래식 메이플 직업별 육성, 사냥 동선, 퀘스트와 시세 이용 가이드.' },
   en: { toolsChip: 'Tools for this guide', toolsHeading: 'Tools to use with this guide', more: 'More guides', sources: 'Sources', byline: (g) => `By GMS Hub · Published ${g.published} · Updated ${g.updated}`,
-    note: 'We distinguish personal accounts, mathematical assumptions and site behavior. Reviewing a source does not independently reproduce its results or validate the current patch; report mistakes to {mail} or on {issues}.', issues: 'GitHub issues',
-    indexH1: 'MapleStory Classic World Guides', indexLead: 'Original player accounts and guides to our calculations and prices. Unsupported older advice is listed separately as under review.',
-    indexTitle: 'Classic World Player Accounts and Tool Guides | GMS Hub', indexDesc: 'Original player accounts, supply costs, conditional probability models and market data interpretation. Unsupported older build guides are under review.' }
+    note: 'Gear and patches can change kill thresholds and costs. Report corrections to {mail} or on {issues}.', issues: 'GitHub issues',
+    indexH1: 'MapleStory Classic World Guides', indexLead: 'Getting started, class progression, quests and market tools. Choose the guide for your next step.',
+    indexTitle: 'Classic World Class, Quest and Training Guides | GMS Hub', indexDesc: 'Class progression, training conditions, quest routes, supply costs and market tools.' }
 };
 // A guide written in both languages gets hreflang links and a language switch to its twin; a single-language guide has none.
 const guideBoth = (slug) => LANGS.every((l) => guides.some((g) => g.slug === slug && g.lang === l));
@@ -1798,22 +1799,20 @@ ${adfitLoader}</aside>`;
 function guideBody(g) {
   if (g.status === 'withheld') return `<article class="wrap prose guide-article"><p class="crumbs"><a href="${href(langPath(g.lang, '/guides/'))}">${T[g.lang].navGuides}</a></p><h1>${esc(g.h1)}</h1><section class="panel tr-review-note"><h2>${g.lang === 'ko' ? '자료 재검증 중 · 기존 안내 비공개' : 'Under review · previous advice withheld'}</h2><p>${esc(g.reviewReason)}</p><p>${g.lang === 'ko' ? '잘못된 추천을 계속 노출하지 않도록 기존 본문을 내렸어요. 현재 버전의 원문과 플레이 조건을 확보한 뒤 다시 공개할 예정이에요.' : 'The earlier body has been withheld to avoid presenting unsupported advice. It requires current-version original evidence before republication.'}</p><small>2026-11-10</small></section>${related(g)}</article>`;
 
-  const body = g.body
+  const toc = [];
+  const body = g.body.replace(/<h2>(.*?)<\/h2>/g, (_,title) => { const id = `section-${toc.length+1}`; toc.push({id,title}); return `<h2 id="${id}">${title}</h2>`; })
     .replace(/<table>/g, '<div class="table-wrap"><table class="data">')
     .replace(/<\/table>/g, '</table></div>');
-  const sources = g.sources
-    .map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a></li>`)
-    .join('');
   return `<article class="wrap prose guide-article">
 <p class="crumbs"><a href="${href(langPath(g.lang, '/guides/'))}">${T[g.lang].navGuides}</a></p>
 <h1>${esc(g.h1)}</h1>
 <p class="byline">${GUIDE_T[g.lang].byline(g)}</p>
 ${guideToolChips(g)}
-<p class="tr-evidence-label">${g.lang === 'ko' ? ({ 'player-accounts': '개인 플레이 원문 검토 · 효율 재현 미검증', 'mathematical-model': '수학적 가정에 따른 계산 안내', 'site-behavior': '사이트 기능·데이터 해석 안내' }[g.evidenceKind]) : ({ 'player-accounts': 'Original accounts reviewed · outcomes not independently reproduced', 'mathematical-model': 'Conditional mathematical model', 'site-behavior': 'Site behavior and data interpretation' }[g.evidenceKind])} · ${g.reviewed}</p>
+${toc.length > 2 ? `<nav class="guide-toc" aria-label="${g.lang==='ko'?'이 글의 순서':'On this page'}"><strong>${g.lang==='ko'?'이 글에서':'On this page'}</strong><ol>${toc.map(t=>`<li><a href="#${t.id}">${t.title}</a></li>`).join('')}</ol></nav>` : ''}
 ${body}
 ${guideToolCards(g)}
 ${adfitSlot()}
-${sources ? `<h2>${GUIDE_T[g.lang].sources}</h2>\n<ul class="sources">${sources}</ul>` : ''}
+
 ${related(g)}
 <p class="muted">${GUIDE_T[g.lang].note.replace('{mail}', `<a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>`).replace('{issues}', `<a href="${issuesUrl}" target="_blank" rel="noopener">${GUIDE_T[g.lang].issues}</a>`)}</p>
 </article>`;
@@ -1829,7 +1828,7 @@ function guidesIndexBody(lang) {
     .join('');
   return `<article class="wrap prose"><h1>${GUIDE_T[lang].indexH1}</h1>
 <p>${GUIDE_T[lang].indexLead}</p>
-<ul class="guide-list">${items}</ul><details class="panel"><summary>${lang === 'ko' ? '재검증 중인 기존 가이드 8개 주제' : '8 earlier topics under review'}</summary><p>${lang === 'ko' ? '근거 없는 수치와 육성 순서는 본문에서 내렸어요.' : 'Unsupported numbers and build orders have been withheld.'}</p><ul>${guides.filter((g) => g.lang === lang && g.status === 'withheld').map((g) => `<li><a href="${href(langPath(lang, guidePath(g)))}">${esc(g.h1)}</a> — ${esc(g.reviewReason)}</li>`).join('')}</ul></details></article>`;
+<ul class="guide-list">${items}</ul></article>`;
 }
 
 // ---------- write ----------
