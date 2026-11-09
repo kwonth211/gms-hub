@@ -1788,7 +1788,7 @@ function guidesIndexBody(lang) {
 fs.rmSync(out, { recursive: true, force: true });
 // ---------- item pages ----------
 // One page per item, so "<item> 시세" searches land on that item. Prices come from data/item-prices.json (player scans only,
-// refreshed by scripts/fetch-item-prices.mjs before each build); an item with no price in the last 14 days stays noindex.
+// refreshed by scripts/fetch-item-prices.mjs before each build); items with fewer than MIN_INDEX_LISTINGS recent listings stay noindex.
 const itemPrices = fs.existsSync(path.join(root, 'data/item-prices.json')) ? readJson('data/item-prices.json') : { updated: '', prices: {} };
 const PRICES_DATE = (itemPrices.updated || BUILD_DATE).slice(0, 10);
 const itemSlug = (i) => `${i.id}-${i.en.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`.replace(/-$/, '');
@@ -1796,6 +1796,10 @@ const itemPath = (i) => `/items/${itemSlug(i)}/`;
 const priceOf = (i) => itemPrices.prices[i.id] || null;
 const itemName = (lang, i) => (lang === 'ko' && i.ko ? i.ko : i.en);
 const PRICED = itemsData.items.filter(priceOf);
+// Google crawled the one- and two-listing pages and left them out ("crawled, not indexed"): a single shop price is too thin
+// to stand as a page. Only items seen at least this often are indexable; the rest join automatically as scans pile up.
+const MIN_INDEX_LISTINGS = 3;
+const INDEXABLE = PRICED.filter((i) => priceOf(i).n >= MIN_INDEX_LISTINGS);
 const WEAPON_SUB = /Wand|Staff|Bow|Claw|Dagger|Spear|Pole ?Arm|Sword|Axe|Blunt|BW/;
 const itemIcon = (id, size) => `<img src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="${size}" height="${size}" loading="lazy">`;
 
@@ -2164,7 +2168,7 @@ for (const lang of LANGS) {
         desc: itemDesc(lang, i),
         body: itemBody(lang, i),
         modules: ['item.js'],
-        noindex: !priceOf(i),
+        noindex: !INDEXABLE.includes(i),
         ld: [breadcrumbLd(lang, fill(it.h1, { name }), itemPath(i))]
       })
     );
@@ -2195,6 +2199,25 @@ location.replace('${config.basePath}/'+lang+'/'+q);})();
 </body></html>`
 );
 
+// The top band folds into the one below when it has few maps (61-70 + 71-80 became 61-80), which turned already-crawled
+// band URLs into 404s. Every 10-level band and two-band span that is not a page now redirects to the band holding its
+// first level, so a regrouping never strands a URL Google knows about.
+const bandPaths = new Set(TR_BANDS.map(bandPath));
+for (let a = 1; a <= TR_MAX; a += 10) {
+  for (const b of [a + 9, a + 19]) {
+    const from = bandPath([a, b]);
+    if (bandPaths.has(from)) continue;
+    const to = bandPath(TR_BANDS.find(([x, y]) => x <= a && a <= y) || TR_BANDS.at(-1));
+    for (const lang of LANGS) {
+      const url = absUrl(langPath(lang, to));
+      write(
+        langPath(lang, from).replace(/^\//, '') + 'index.html',
+        `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><title>GMS Hub</title><link rel="canonical" href="${url}"><meta http-equiv="refresh" content="0; url=${url}"></head><body><a href="${url}">${url}</a><script>location.replace(${JSON.stringify(langPath(lang, to))}+location.search)</script></body></html>`
+      );
+    }
+  }
+}
+
 write(
   '404.html',
   `${head({ lang: 'ko', title: '404 | GMS Hub', desc: T.ko.notFound, noindex: true })}
@@ -2214,17 +2237,19 @@ ${jsonScript('admin-config', config.github)}
 </body></html>`
 );
 
+// Tool and home pages get no <lastmod>: the site rebuilds every day, and a date that moves daily without the page
+// changing teaches Google to ignore our lastmod everywhere (guides and item prices keep their real dates).
 const sitemapUrls = PAGES.flatMap((p) =>
   LANGS.map(
-    (lang) => `<url><loc>${absUrl(langPath(lang, p.path))}</loc><lastmod>${BUILD_DATE}</lastmod>${LANGS.map(
+    (lang) => `<url><loc>${absUrl(langPath(lang, p.path))}</loc>${LANGS.map(
       (l) => `<xhtml:link rel="alternate" hreflang="${l}" href="${absUrl(langPath(l, p.path))}"/>`
     ).join('')}<xhtml:link rel="alternate" hreflang="x-default" href="${absUrl(langPath(config.defaultLang, p.path))}"/></url>`
   )
 ).concat(
-  [...new Set(guides.map((g) => g.lang))].map((l) => `<url><loc>${absUrl(langPath(l, '/guides/'))}</loc><lastmod>${BUILD_DATE}</lastmod></url>`),
+  [...new Set(guides.map((g) => g.lang))].map((l) => `<url><loc>${absUrl(langPath(l, '/guides/'))}</loc><lastmod>${guides.filter((g) => g.lang === l).map((g) => g.updated).sort().at(-1)}</lastmod></url>`),
   guides.map((g) => `<url><loc>${absUrl(langPath(g.lang, guidePath(g)))}</loc><lastmod>${g.updated}</lastmod></url>`),
-  // Only items with a recent price are indexable, so only those go in the sitemap.
-  [{ path: '/items/' }, ...PRICED.map((i) => ({ path: itemPath(i) }))].flatMap((p) =>
+  // Only indexable items (enough recent listings) go in the sitemap.
+  [{ path: '/items/' }, ...INDEXABLE.map((i) => ({ path: itemPath(i) }))].flatMap((p) =>
     LANGS.map(
       (lang) => `<url><loc>${absUrl(langPath(lang, p.path))}</loc><lastmod>${PRICES_DATE}</lastmod>${LANGS.map(
         (l) => `<xhtml:link rel="alternate" hreflang="${l}" href="${absUrl(langPath(l, p.path))}"/>`
