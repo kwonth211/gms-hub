@@ -7,11 +7,12 @@
 // POST /listings {items: [{item, price (per item), qty (bundle size), sold, seller, channel, room}]} -> { stored }  (shop scanner; one row per listing)
 // POST /listings/fix {from: {item, price, seller, channel, room}, to: {item, price, qty, sold, seller}} -> { fixed }
 // GET  /listings/recent -> [{ item, price, qty, sold, seller, channel, room, seen }]
-// GET  /market/top -> { at, stats, items: [{ item, rank, move, avg, n, sold, change, spark: [7 daily medians] }] }  (stored every 5 min)
+// GET  /market/top -> { at, stats, items: [{ item, rank, move, avg, n, sold, change, spark: [7 daily medians] }] }  (stored every 15 min)
 // GET  /market/item?id= -> { item, listings: [...last 7 days], trend }
 // The shop scanner runs from the local dev server for now, so its origin may post scans too.
 import { handleMarketBatch } from './market-batch.js';
 import { marketCatalog, browseListings, browseReports, marketHistory } from './market-browser.js';
+import { cachedPublicResponse } from './public-cache.js';
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
 
 function corsHeaders(origin) {
@@ -158,7 +159,7 @@ async function marketTop(env, only = null) {
   return { at: new Date(now).toISOString(), stats, items };
 }
 
-// The ranking is computed on a schedule (every 5 minutes) and stored, so the database work does not grow with visitors:
+// The ranking is computed on a schedule (every 15 minutes) and stored, so the database work does not grow with visitors:
 // every page view reads one stored row.
 async function refreshSnapshot(env) {
   const data = await marketTop(env);
@@ -180,7 +181,7 @@ async function itemDetail(env, item) {
     asOf: new Date().toISOString(), limit: 400, truncated: results.length > 400 };
 }
 
-export default {
+const api = {
   async scheduled(event, env, ctx) {
     ctx.waitUntil(refreshSnapshot(env));
   },
@@ -267,7 +268,7 @@ export default {
       try {
         let data;
         if (url.pathname === '/market/catalog') {
-          const cached = await env.DB.prepare("SELECT json FROM snapshots WHERE key='market-catalog' AND at>=datetime('now','-1 minute')").first();
+          const cached = await env.DB.prepare("SELECT json FROM snapshots WHERE key='market-catalog' AND at>=datetime('now','-5 minutes')").first();
           data = cached ? JSON.parse(cached.json) : await marketCatalog(env);
           if (!cached) await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('market-catalog',?,datetime('now'))").bind(JSON.stringify(data)).run();
         } else if (url.pathname === '/market/listings') data = await browseListings(env, url.searchParams);
@@ -281,7 +282,7 @@ export default {
     }
 
     if (url.pathname === '/market/top' && req.method === 'GET') {
-      const row = await env.DB.prepare("SELECT json FROM snapshots WHERE key = 'market' AND at >= datetime('now', '-5 minutes')").first();
+      const row = await env.DB.prepare("SELECT json FROM snapshots WHERE key = 'market' AND at >= datetime('now', '-15 minutes')").first();
       const data = row ? JSON.parse(row.json) : await refreshSnapshot(env);
       return json(data, cors, 200, 'public, max-age=60');
     }
@@ -374,10 +375,13 @@ export default {
       const reporter = await visitorHash(ip, 'scan', env.VOTE_SALT);
       // Seeing the same listing again only moves its last-seen time, and a slot once seen sold stays sold.
       const stmt = env.DB.prepare(
-        `INSERT INTO listings (item, price, qty, sold, seller, channel, room, reporter) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `INSERT INTO listings (item, price, qty, sold, seller, channel, room, reporter) SELECT ?, ?, ?, ?, ?, ?, ?, ?
+         WHERE NOT EXISTS (SELECT 1 FROM listings WHERE seller=? AND item=? AND price=? AND channel=? AND room=?
+           AND qty=? AND sold>=? AND last_seen>=datetime('now','-15 minutes'))
          ON CONFLICT (seller, item, price, channel, room) DO UPDATE SET last_seen = datetime('now'), qty = excluded.qty, sold = MAX(sold, excluded.sold)`
       );
-      await env.DB.batch(ok.map((r) => stmt.bind(r.item, r.price, r.qty || 1, r.sold ? 1 : 0, r.seller, r.channel, r.room, reporter)));
+      await env.DB.batch(ok.map((r) => stmt.bind(r.item, r.price, r.qty || 1, r.sold ? 1 : 0, r.seller, r.channel, r.room, reporter,
+        r.seller,r.item,r.price,r.channel,r.room,r.qty || 1,r.sold ? 1 : 0)));
       return json({ stored: ok.length }, cors);
     }
 
@@ -413,4 +417,9 @@ export default {
 
     return json({ error: 'not found' }, cors, 404);
   }
+};
+
+export default {
+  scheduled: api.scheduled,
+  fetch: (req, env, ctx) => cachedPublicResponse(req, () => api.fetch(req, env), ctx)
 };

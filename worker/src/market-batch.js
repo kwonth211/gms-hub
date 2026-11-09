@@ -1,5 +1,11 @@
 // Authenticated, idempotent ingestion for the private deterministic collector.
-const reply = (body, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
+const reply = (body, status = 200, headers = {}) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store', ...headers } });
+const limits = env => ({
+  dailyRows: Math.max(1, Math.min(2000, Number(env.MARKET_BATCH_DAILY_ROWS) || 2000)),
+  intervalSeconds: env.MARKET_BATCH_MIN_INTERVAL_SECONDS === undefined ? 21600 : Math.max(0, Number(env.MARKET_BATCH_MIN_INTERVAL_SECONDS) || 0)
+});
+const usageSql = `SELECT COALESCE(SUM(CASE WHEN received_at >= date('now') THEN accepted ELSE 0 END),0) AS rows,
+  MAX(received_at) AS lastAt FROM market_batch_runs`;
 const digest = async value => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)))].map(x => x.toString(16).padStart(2, '0')).join('');
 export function validBatch(body, known, now = Date.now()) {
   if (!body || !/^[a-f0-9-]{36}$/.test(body.runId || '') || body.world !== 'Windia' ||
@@ -39,22 +45,36 @@ export async function handleMarketBatch(req, env, knownItems) {
   const replay = row => row.payload_hash === hash ? reply({ ok: true, duplicate: true, accepted: row.accepted, observationsAdded: 0, listingsChanged: 0 }) : reply({ error: 'run ID reused with different data' }, 409);
   const existing = await previous();
   if (existing) return replay(existing);
+  if (env.MARKET_BATCH_PAUSED === 'true') return reply({ error: 'collection paused to protect database quota' }, 423);
   const known = await knownItems().catch(() => null);
   if (!known) return reply({ error: 'item index unavailable' }, 503);
   if (!validBatch(body, known)) return reply({ error: 'invalid batch' }, 400);
-  const receipt = env.DB.prepare('INSERT INTO market_batch_runs (run_id, payload_hash, started_at, finished_at, shops, accepted) VALUES (?, ?, ?, ?, ?, ?)')
-    .bind(body.runId, hash, body.startedAt, body.finishedAt, body.shops, body.rows.length);
+  const policy = limits(env);
+  const usage = await env.DB.prepare(usageSql).first();
+  const quotaReply = () => reply({ error: 'collector daily budget or interval reached', policy }, 429, { 'Retry-After': String(Math.max(3600, policy.intervalSeconds)) });
+  if (usage.rows + body.rows.length > policy.dailyRows || (usage.lastAt && Date.now() - Date.parse(usage.lastAt.replace(' ', 'T') + 'Z') < policy.intervalSeconds * 1000)) return quotaReply();
+  // Recheck inside the transaction so concurrent clients cannot pass the same budget check.
+  const receipt = env.DB.prepare(`INSERT INTO market_batch_runs (run_id, payload_hash, started_at, finished_at, shops, accepted)
+    SELECT ?,?,?,?,?,? WHERE (SELECT COALESCE(SUM(accepted),0) FROM market_batch_runs WHERE received_at >= date('now')) + ? <= ?
+    AND NOT EXISTS (SELECT 1 FROM market_batch_runs WHERE received_at > datetime('now', ?))`)
+    .bind(body.runId, hash, body.startedAt, body.finishedAt, body.shops, body.rows.length, body.rows.length, policy.dailyRows, `-${policy.intervalSeconds} seconds`);
   const listing = env.DB.prepare(`INSERT INTO listings (item,price,qty,sold,seller,channel,room,reporter,first_seen,last_seen)
-    VALUES (?,?,1,0,?,?,?,'batch:market',?,?) ON CONFLICT (seller,item,price,channel,room) DO UPDATE SET
+    SELECT ?,?,1,0,?,?,?,'batch:market',?,?
+    WHERE EXISTS (SELECT 1 FROM market_batch_runs WHERE run_id=? AND payload_hash=?)
+    AND NOT EXISTS (SELECT 1 FROM listings WHERE item=? AND price=? AND seller=? AND channel=? AND room=? AND last_seen>=?)
+    ON CONFLICT (seller,item,price,channel,room) DO UPDATE SET
     last_seen=excluded.last_seen, qty=CASE WHEN listings.sold=0 THEN excluded.qty ELSE listings.qty END
     WHERE excluded.last_seen > listings.last_seen`);
-  const observation = env.DB.prepare(`INSERT OR IGNORE INTO market_observations (item,price,seller,channel,room,seen,run_id) VALUES (?,?,?,?,?,?,?)`);
   try {
-    const results = await env.DB.batch([receipt, ...body.rows.map(r => listing.bind(r.item,r.price,r.seller,r.channel,r.room,r.seen,r.seen)),
-      ...body.rows.map(r => observation.bind(r.item,r.price,r.seller,r.channel,r.room,r.seen,body.runId))]);
+    // listing_history triggers already preserve these observations. Keep the legacy archive read-only.
+    const results = await env.DB.batch([receipt, ...body.rows.map(r => listing.bind(r.item,r.price,r.seller,r.channel,r.room,r.seen,r.seen,
+      body.runId,hash,r.item,r.price,r.seller,r.channel,r.room,r.seen))]);
+    if (!results[0].meta.changes) return quotaReply();
+    const changed = results.slice(1).filter(r => r.meta.changes > 0).length;
     return reply({ ok: true, duplicate: false, accepted: body.rows.length,
-      listingsChanged: results.slice(1, 1 + body.rows.length).reduce((n,r) => n + r.meta.changes, 0),
-      observationsAdded: results.slice(1 + body.rows.length).reduce((n,r) => n + r.meta.changes, 0) });
+      listingsChanged: changed, observationsAdded: changed, historyStorage: 'listing_history',
+      rowsRead: results.reduce((n,r) => n + (r.meta.rows_read || 0), 0),
+      rowsWritten: results.reduce((n,r) => n + (r.meta.rows_written || 0), 0) });
   } catch {
     // A concurrent identical retry is harmless. Any other failed transaction has no partial writes.
     const raced = await previous().catch(() => null);

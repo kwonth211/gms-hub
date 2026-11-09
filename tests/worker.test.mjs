@@ -100,3 +100,17 @@ test('item details disclose truncation and return the latest 400 observations de
   env.sqlite.prepare('DELETE FROM listings WHERE price = 401').run();
   assert.equal((await get()).truncated, false);
 });
+
+test('identical scanner frames within 15 minutes cause no writes; stock and sold changes still persist',async()=>{
+ const e=environment();await send(e,'/listings',{items:[row]});
+ const before=e.sqlite.prepare('SELECT total_changes() AS n').get().n;
+ const sequence=e.sqlite.prepare("SELECT seq FROM sqlite_sequence WHERE name='listings'").get().seq;
+ await send(e,'/listings',{items:[row]});await send(e,'/listings',{items:[row]});
+ assert.equal(e.sqlite.prepare('SELECT total_changes() AS n').get().n,before);
+ assert.equal(e.sqlite.prepare("SELECT seq FROM sqlite_sequence WHERE name='listings'").get().seq,sequence);
+ await send(e,'/listings',{items:[{...row,qty:2,sold:true}]});
+ assert.deepEqual({...e.sqlite.prepare('SELECT qty,sold FROM listings').get()},{qty:2,sold:1});
+ e.sqlite.exec("UPDATE listings SET last_seen=datetime('now','-16 minutes')");
+ await send(e,'/listings',{items:[{...row,qty:2,sold:true}]});
+ assert.ok(Date.now()-Date.parse(e.sqlite.prepare('SELECT last_seen FROM listings').get().last_seen.replace(' ','T')+'Z')<5000);
+});

@@ -2,11 +2,17 @@ name = "gms-hub-votes"
 main = "src/index.js"
 compatibility_date = "2026-10-01"
 
+[vars]
+# Keep ingestion paused after the quota incident; this flag does not affect browsing.
+MARKET_BATCH_PAUSED = "true"
+MARKET_BATCH_DAILY_ROWS = "2000"
+MARKET_BATCH_MIN_INTERVAL_SECONDS = "21600"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "gms-hub-votes"
 database_id = "5e551116-5641-480e-99f3-70fd856cc675"
 
-# Live market ranking is recomputed on this schedule and stored, so page views never recompute it.
+# Market ranking is recomputed every 15 minutes on this schedule and stored, so page views never recompute it.
 [triggers]
-crons = ["*/5 * * * *"]
+crons = ["*/15 * * * *"]
