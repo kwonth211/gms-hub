@@ -1086,3 +1086,11 @@ input.dm-filled { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset
   .tabs { order: 3; flex-basis: 100%; display: grid; grid-template-columns: repeat(7,1fr); padding-bottom: 8px; }
   .tabs .tab { justify-content: center; }
 }
+
+.collection-status { display:flex; align-items:center; gap:10px 18px; flex-wrap:wrap; border:1px solid var(--line); border-radius:10px; background:var(--panel); padding:13px 16px; margin:14px 0 20px; font-size:.8rem; }
+.collection-status strong { display:flex; align-items:center; gap:8px; color:var(--muted); }
+.collection-status strong::before { content:''; width:7px; height:7px; border-radius:50%; background:currentColor; flex:none; }
+.collection-status span { color:var(--muted); }
+.collection-status[data-state='recent'] strong { color:var(--ok); }
+.collection-status:is([data-state='budget_wait'],[data-state='delayed']) strong { color:var(--accent-2); }
+#live-market:not([data-collection-state='recent']) .live-dot { background:var(--muted); box-shadow:none; animation:none; }

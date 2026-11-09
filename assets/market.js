@@ -1,3 +1,4 @@
+import './collection-status.js';
 import { DAY, parseUtc } from "./market-data.js";
 import { makeMarketIndex, catalogRows, matchingIds } from "./market-catalog.js";
 import { mountMarketCharts } from "./market-charts.js";

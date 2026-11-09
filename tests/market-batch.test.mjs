@@ -2,12 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
-import { handleMarketBatch } from '../worker/src/market-batch.js';
+import { handleMarketBatch, collectionPolicy, getCollectionStatus } from '../worker/src/market-batch.js';
 const iso = t => new Date(t).toISOString();
 const seen = t => iso(t).slice(0,19).replace('T',' ');
 function environment() {
   const sqlite = new DatabaseSync(':memory:');
-  for (const file of ['schema.sql','migrations/0001_market_batch.sql','migrations/0002_listing_history.sql']) sqlite.exec(fs.readFileSync(new URL('../worker/'+file,import.meta.url),'utf8'));
+  for (const file of ['schema.sql','migrations/0001_market_batch.sql','migrations/0002_listing_history.sql','migrations/0003_market_batch_usage_index.sql']) sqlite.exec(fs.readFileSync(new URL('../worker/'+file,import.meta.url),'utf8'));
   const DB = { failAt: null, prepare(sql,args=[]) { return { bind(...a) { return DB.prepare(sql,a); }, async first() { return sqlite.prepare(sql).get(...args)||null; }, async all() { return {results:sqlite.prepare(sql).all(...args)}; }, async run() { if (DB.failAt && sql.includes(DB.failAt)) throw Error('test failure'); return {meta:{changes:Number(sqlite.prepare(sql).run(...args).changes)}}; } }; }, async batch(stmts) {
     sqlite.exec('BEGIN'); try { const out=[]; for (const s of stmts) out.push(await s.run()); sqlite.exec('COMMIT'); return out; } catch(e) { sqlite.exec('ROLLBACK'); throw e; }
   }};
@@ -79,4 +79,33 @@ test('duplicate observations do not write the legacy archive or the autoincremen
  assert.equal(result.data.historyStorage,'listing_history');assert.equal(result.data.observationsAdded,0);
  assert.equal(e.sqlite.prepare("SELECT seq FROM sqlite_sequence WHERE name='listings'").get().seq,sequence);
  assert.equal(count(e,'market_observations'),0);assert.equal(count(e,'listing_history'),10);
+});
+
+test('hourly 50-row policy rejects old 500-row clients and exposes read-only preflight',async()=>{
+ const e=environment();Object.assign(e,{MARKET_BATCH_DAILY_ROWS:'1200',MARKET_BATCH_MIN_INTERVAL_SECONDS:'3600',MARKET_BATCH_MAX_ROWS:'50'});
+ assert.equal((await post(e,batch(51))).status,400);assert.equal(count(e,'market_batch_runs'),0);
+ assert.equal((await post(e,batch(50))).status,200);
+ const before=e.sqlite.prepare('SELECT total_changes() AS n').get().n;
+ const req=new Request('https://test/internal/market-batch?preflight=1',{headers:{Authorization:'Bearer test-token'}});
+ const s=await (await handleMarketBatch(req,e,known)).json();
+ assert.equal(s.ready,false);assert.equal(s.reason,'cooldown');assert.equal(s.maxRows,50);assert.ok(!s.runs);
+ assert.equal(e.sqlite.prepare('SELECT total_changes() AS n').get().n,before);
+});
+test('policy respects historical daily usage and resumes at UTC midnight without clearing receipts',()=>{
+ const e={MARKET_BATCH_DAILY_ROWS:'1200',MARKET_BATCH_MIN_INTERVAL_SECONDS:'3600',MARKET_BATCH_MAX_ROWS:'50'};
+ const now=Date.parse('2026-11-09T23:30:00Z');
+ const s=collectionPolicy(e,{rows:7035,lastAt:'2026-11-09 22:08:16'},now);
+ assert.equal(s.ready,false);assert.equal(s.reason,'daily_budget');assert.equal(s.nextEligibleAt,'2026-11-10T00:00:00.000Z');
+ const reset=collectionPolicy(e,{rows:0,lastAt:'2026-11-09 22:08:16'},Date.parse('2026-11-10T00:00:00Z'));assert.equal(reset.ready,true);assert.equal(reset.maxRows,50);
+ const partial=collectionPolicy(e,{rows:1190,lastAt:null},now);assert.equal(partial.maxRows,10);
+ assert.equal(collectionPolicy(e,{rows:1190,lastAt:null},now,50).reason,'daily_budget');
+});
+test('status distinguishes paused, never ingested and delayed data, not merely a healthy HTTP response',async()=>{
+ const e=environment();e.MARKET_BATCH_MIN_INTERVAL_SECONDS='3600';
+ assert.equal((await getCollectionStatus(e)).state,'waiting');
+ await post(e,batch());assert.equal((await getCollectionStatus(e)).state,'recent');
+ e.sqlite.exec("UPDATE market_batch_runs SET received_at=datetime('now','-3 hours')");assert.equal((await getCollectionStatus(e)).state,'delayed');
+ e.MARKET_BATCH_PAUSED='true';assert.equal((await getCollectionStatus(e)).state,'paused');
+ const plan=e.sqlite.prepare("EXPLAIN QUERY PLAN SELECT SUM(accepted) FROM market_batch_runs WHERE received_at>=date('now')").all();
+ assert.ok(plan.some(r=>r.detail.includes('market_batch_runs_received_at')));
 });

@@ -1,5 +1,6 @@
 importScripts('config.private.js');
-const SCHEDULE = 'gms-market-15m', WATCHDOG = 'gms-market-watchdog', RETRY = 'gms-market-upload';
+const SCHEDULE = 'gms-market-hourly', WATCHDOG = 'gms-market-watchdog', RETRY = 'gms-market-upload';
+const INTERVAL = 60 * 60000;
 const COLLECT_RETRY = 'gms-market-collect-retry';
 const PAGE = 'https://meso.watch/?gms-batch=1';
 const ENDPOINT = 'https://gms-hub-votes.kwonth211.workers.dev/internal/market-batch';
@@ -11,11 +12,15 @@ const owned = tab => tab?.url?.startsWith(PAGE) || tab?.pendingUrl?.startsWith(P
 async function broadcast() {
   const s = await get();
   // No secret is ever included in content-script messages or the public DOM.
-  return { ...s, nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
+  return { ...s, version: '0.3.0', nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
 }
 async function ensureAlarms() {
   const s = await get();
-  if (s.enabled && !await chrome.alarms.get(SCHEDULE)) await chrome.alarms.create(SCHEDULE, { delayInMinutes: 1, periodInMinutes: 15 });
+  await chrome.alarms.clear('gms-market-15m');
+  const scheduled = await chrome.alarms.get(SCHEDULE);
+  const gate = Math.max((s.lastAttemptAt || 0) + INTERVAL, s.lastSuccessAt ? Date.parse(s.lastSuccessAt) + INTERVAL : 0, s.retryAt || 0);
+  if (s.enabled && (!scheduled || scheduled.periodInMinutes !== 60 || scheduled.scheduledTime < gate))
+    await chrome.alarms.create(SCHEDULE, { when: Math.max(Date.now() + 60000, gate), periodInMinutes: 60 });
   if (s.enabled && s.retryAt && !await chrome.alarms.get(COLLECT_RETRY)) await chrome.alarms.create(COLLECT_RETRY, { when: Math.max(Date.now() + 1000, s.retryAt) });
   if (!await chrome.alarms.get(WATCHDOG)) await chrome.alarms.create(WATCHDOG, { periodInMinutes: 1 });
 }
@@ -35,7 +40,7 @@ async function recover(error, report = null) {
   if (s.run?.tabId) await chrome.tabs.sendMessage(s.run.tabId, { type: 'cancel' }).catch(() => {});
   if (report) s.lastReport = report;
   s.collectionFailures = (s.collectionFailures || 0) + 1;
-  const minutes = Math.min(60, 5 * 2 ** Math.min(4, s.collectionFailures - 1));
+  const minutes = 60;
   s.retryAt = Date.now() + minutes * 60000;
   s.error = `${error} · ${minutes}분 뒤 자동 재시도`;
   if (s.run) s.history = [{ runId: s.run.runId, mode: s.run.mode, trigger: s.run.trigger, status: 'retrying', at: new Date().toISOString(), error }, ...(s.history || [])].slice(0, 20);
@@ -47,8 +52,41 @@ async function launch(mode, trigger) {
   if (s.run || s.pending) return { busy: true };
   if (['alarm', 'retry'].includes(trigger) && s.retryAt > Date.now()) return { waiting: true };
   if (mode !== 'test' && !GMS_BATCH_CONFIG.token) throw new Error('DB 수집 키가 설정되지 않았습니다.');
+  let maxRows = 50;
+  if (mode !== 'test') {
+    // Manual actions, retries and restored alarms all share the same crawl limit.
+    const localNext = Math.max((s.lastAttemptAt || 0) + INTERVAL, s.lastSuccessAt ? Date.parse(s.lastSuccessAt) + INTERVAL : 0);
+    let response, policy;
+    try {
+      response = await fetch(ENDPOINT + '?preflight=1', { headers: { Authorization: `Bearer ${GMS_BATCH_CONFIG.token}` }, signal: AbortSignal.timeout(25000) });
+      if (!response.ok) throw new Error(String(response.status));
+      policy = await response.json();
+      if (!policy.policy || typeof policy.ready !== 'boolean') throw new Error('invalid policy');
+    } catch {
+      if (response?.status === 401 || response?.status === 403) await stop('수집 인증 확인 필요');
+      else await recover('수집 한도 확인 실패');
+      return { waiting: true };
+    }
+    s.policy = policy.policy;
+    if (policy.reason === 'paused') { await stop('서버에서 수집을 중지했습니다.'); return { waiting: true }; }
+    if (!policy.ready) {
+      s.retryAt = Math.max(Date.now() + 60000, Date.parse(policy.nextEligibleAt) || Date.now() + INTERVAL);
+      s.waitReason = policy.reason; s.error = null; await put(s);
+      if (s.enabled) await chrome.alarms.create(COLLECT_RETRY, { when: s.retryAt });
+      return { waiting: true, nextAt: s.retryAt };
+    }
+    if (localNext > Date.now()) {
+      s.retryAt = localNext; s.waitReason = 'interval'; s.error = null; await put(s);
+      if (s.enabled) await chrome.alarms.create(COLLECT_RETRY, { when: s.retryAt });
+      return { waiting: true, nextAt: s.retryAt };
+    }
+    maxRows = Math.min(50, Number(policy.maxRows));
+    if (!Number.isInteger(maxRows) || maxRows < 1) { await stop('수집 허용 건수를 확인할 수 없습니다.'); return { waiting: true }; }
+    s.lastAttemptAt = Date.now();
+  }
   s.error = null; s.retryAt = null; await chrome.alarms.clear(COLLECT_RETRY);
-  s.run = { runId: crypto.randomUUID(), mode, trigger, startedAt: Date.now(), cursor: s.cursor || 0, phase: 'loading', tabId: null };
+  s.waitReason = null;
+  s.run = { runId: crypto.randomUUID(), mode, trigger, maxRows, startedAt: Date.now(), cursor: s.cursor || 0, phase: 'loading', tabId: null };
   await put(s);
   const tab = s.workerTabId ? await chrome.tabs.get(s.workerTabId).catch(() => null) : null;
   try {
@@ -84,7 +122,7 @@ async function upload() {
     if (retryable && pending.attempts < 3) {
       s.pending = pending; s.error = `DB 저장 재시도 대기 (${pending.attempts}/3)`; await put(s);
       const retryAfter = Number(response?.headers.get('Retry-After')) || 60;
-      await chrome.alarms.create(RETRY, { delayInMinutes: Math.min(15, Math.max(1, retryAfter / 60)) });
+      await chrome.alarms.create(RETRY, { delayInMinutes: Math.max(1, retryAfter / 60) });
       return;
     }
     await stop(`DB 저장 실패 (${code || '연결 오류'}). 결과를 보존했습니다. 재시도 버튼으로 복구할 수 있습니다.`, s.lastReport);
@@ -99,6 +137,7 @@ async function upload() {
   current.history = [{ runId: current.lastReport.runId, mode: 'production', trigger: pending.trigger, status: 'stored',
     at: current.lastSuccessAt, shops: current.lastReport.shops, rows: receipt.accepted, receipt }, ...(current.history || [])].slice(0, 20);
   await put(current); await chrome.alarms.clear(RETRY);
+  await ensureAlarms();
 }
 async function finish(report, sender) {
   const s = await get();
@@ -146,7 +185,7 @@ async function message(m, sender) {
   if (m.type === 'run') return launch('production', 'manual');
   if (m.type === 'enable') {
     const s = await get(); if (s.pending) throw new Error('보관된 결과를 먼저 저장하세요.');
-    s.enabled = true; s.error = null; s.retryAt = null; s.collectionFailures = 0;
+    s.enabled = true; s.error = null; s.retryAt = null; s.waitReason = null; s.collectionFailures = 0;
     await chrome.alarms.clear(COLLECT_RETRY); await put(s); await ensureAlarms(); return broadcast();
   }
   if (m.type === 'disable') { const s = await get(); s.enabled = false; if (s.retryAt) s.error = '자동 재시도를 사용자가 껐습니다.'; s.retryAt = null; await put(s); await chrome.alarms.clear(SCHEDULE); await chrome.alarms.clear(COLLECT_RETRY); return broadcast(); }

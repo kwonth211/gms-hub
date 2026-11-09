@@ -10,7 +10,7 @@
 // GET  /market/top -> { at, stats, items: [{ item, rank, move, avg, n, sold, change, spark: [7 daily medians] }] }  (stored every 15 min)
 // GET  /market/item?id= -> { item, listings: [...last 7 days], trend }
 // The shop scanner runs from the local dev server for now, so its origin may post scans too.
-import { handleMarketBatch } from './market-batch.js';
+import { handleMarketBatch, getCollectionStatus } from './market-batch.js';
 import { marketCatalog, browseListings, browseReports, marketHistory } from './market-browser.js';
 import { cachedPublicResponse } from './public-cache.js';
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
@@ -193,6 +193,12 @@ const api = {
     // Private extension service worker uses a narrowly scoped ingestion token, never public CORS.
     if (url.pathname === '/internal/market-batch') return handleMarketBatch(req, env, knownItems);
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
+
+    if (url.pathname === '/market/status' && req.method === 'GET') {
+      const s = await getCollectionStatus(env);
+      return json({ state: s.state, lastSuccessAt: s.lastSuccessAt, nextEligibleAt: s.nextEligibleAt,
+        intervalSeconds: s.policy.intervalSeconds, asOf: s.asOf }, cors, 200, 'public, max-age=180');
+    }
 
     if (url.pathname === '/votes' && req.method === 'GET') {
       const { results } = await env.DB.prepare('SELECT site, count FROM votes').all();

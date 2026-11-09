@@ -3,10 +3,11 @@ main = "src/index.js"
 compatibility_date = "2026-10-01"
 
 [vars]
-# Keep ingestion paused after the quota incident; this flag does not affect browsing.
-MARKET_BATCH_PAUSED = "true"
-MARKET_BATCH_DAILY_ROWS = "2000"
-MARKET_BATCH_MIN_INTERVAL_SECONDS = "21600"
+# Small hourly batches; existing daily usage is retained across a policy change.
+MARKET_BATCH_PAUSED = "false"
+MARKET_BATCH_DAILY_ROWS = "1200"
+MARKET_BATCH_MIN_INTERVAL_SECONDS = "3600"
+MARKET_BATCH_MAX_ROWS = "50"
 
 [[d1_databases]]
 binding = "DB"

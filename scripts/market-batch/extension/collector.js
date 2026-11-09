@@ -3,7 +3,9 @@
   const key = r => JSON.stringify([r.item, r.price, r.seller, r.channel, r.room]);
   const failure = (code, message) => Object.assign(new Error(message), { code });
   async function collect(options, progress = async () => {}, cancelled = () => false, pause = localPause) {
-    const report = { version: '0.2.3', runId: options.runId, world: 'Windia', startedAt: new Date().toISOString(),
+    const maxRows = options.mode === 'test' ? 40 : Math.min(50, Math.max(1, Number(options.maxRows) || 50));
+    const maxShops = options.mode === 'test' ? 40 : 120;
+    const report = { version: '0.3.0', runId: options.runId, world: 'Windia', startedAt: new Date().toISOString(),
       status: 'running', rows: [], shops: 0, rejected: {}, queue: [], skippedItems: [], aiCalls: 0 };
     const rows = new Map();
     const openModal = () => { const el = document.querySelector('#sv-modal'); return el && !el.closest('[hidden]') ? el : null; };
@@ -27,7 +29,7 @@
       if (all.length < 2) throw new Error('검증 가능한 아이템 목록 부족');
       // Rotate the starting item to avoid permanently ignoring the lower half of the visible catalogue.
       const offset = options.mode === 'test' ? 0 : (options.cursor || 0) % all.length;
-      const queue = [...all.slice(offset), ...all.slice(0, offset)].slice(0, options.mode === 'test' ? 2 : 60);
+      const queue = [...all.slice(offset), ...all.slice(0, offset)].slice(0, options.mode === 'test' ? 2 : 12);
       for (const item of queue) {
         guard(); report.queue.push(item);
         await progress({ shops: report.shops, rows: rows.size, item: item.name });
@@ -57,7 +59,7 @@
             const modal = openModal(), step = modal?.querySelector('.sv-count')?.textContent;
             return step?.startsWith(`Shop ${n} of `) && step.endsWith(`selling ${item.name}`) && modal.querySelector('.sv-tag');
           }, `${item.name} 상점 ${n}`);
-          await pause(400); guard();
+          await pause(options.mode === 'test' ? 400 : 1000); guard();
           const shop = GmsBatchReader.readShop(document), checked = GmsBatchReader.validate(shop, GmsBatchCatalog);
           report.shops++;
           if (checked.ok) {
@@ -66,11 +68,11 @@
           } else report.rejected[checked.reason] = (report.rejected[checked.reason] || 0) + 1;
           if (n % 5 === 0) await progress({ shops: report.shops, rows: rows.size, item: item.name });
           const step = /^Shop (\d+) of (\d+)/.exec(shop.step);
-          if (rows.size >= 500 || report.shops >= 800 || !step || +step[1] >= +step[2] || n === 20) break;
+          if (rows.size >= maxRows || report.shops >= maxShops || !step || +step[1] >= +step[2] || n === 20) break;
           const next = button('Next shop'); if (!next || next.disabled) break; next.click();
         }
         button('Close')?.click(); await until(() => !openModal(), '상점 상세 닫기');
-        if (rows.size >= 500 || report.shops >= 800) break;
+        if (rows.size >= maxRows || report.shops >= maxShops) break;
       }
       report.rows = [...rows.values()]; report.nextCursor = (offset + report.queue.length) % all.length;
       if (!report.rows.length) throw failure('NO_VALID_ROWS', '검증 통과 매물 없음');

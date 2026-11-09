@@ -2,10 +2,33 @@
 const reply = (body, status = 200, headers = {}) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store', ...headers } });
 const limits = env => ({
   dailyRows: Math.max(1, Math.min(2000, Number(env.MARKET_BATCH_DAILY_ROWS) || 2000)),
-  intervalSeconds: env.MARKET_BATCH_MIN_INTERVAL_SECONDS === undefined ? 21600 : Math.max(0, Number(env.MARKET_BATCH_MIN_INTERVAL_SECONDS) || 0)
+  intervalSeconds: env.MARKET_BATCH_MIN_INTERVAL_SECONDS === undefined ? 21600 : Math.max(0, Number(env.MARKET_BATCH_MIN_INTERVAL_SECONDS) || 0),
+  maxBatchRows: Math.max(1, Math.min(500, Number(env.MARKET_BATCH_MAX_ROWS) || 500))
 });
-const usageSql = `SELECT COALESCE(SUM(CASE WHEN received_at >= date('now') THEN accepted ELSE 0 END),0) AS rows,
-  MAX(received_at) AS lastAt FROM market_batch_runs`;
+const usageSql = `SELECT
+  (SELECT COALESCE(SUM(accepted),0) FROM market_batch_runs WHERE received_at >= date('now')) AS rows,
+  (SELECT MAX(received_at) FROM market_batch_runs) AS lastAt`;
+export function collectionPolicy(env, usage, now = Date.now(), requestedRows = 1) {
+  const policy = limits(env), remaining = Math.max(0, policy.dailyRows - usage.rows);
+  const last = usage.lastAt ? Date.parse(usage.lastAt.replace(' ', 'T') + 'Z') : 0;
+  const reset = new Date(now); reset.setUTCHours(24, 0, 0, 0);
+  const budgetAvailable = remaining >= requestedRows;
+  const next = Math.max(last + policy.intervalSeconds * 1000, budgetAvailable ? now : reset.getTime());
+  const paused = env.MARKET_BATCH_PAUSED === 'true';
+  return { policy, usage, ready: !paused && budgetAvailable && next <= now,
+    reason: paused ? 'paused' : !budgetAvailable ? 'daily_budget' : next > now ? 'cooldown' : 'ready',
+    nextEligibleAt: paused ? null : new Date(next).toISOString(), maxRows: Math.min(remaining, policy.maxBatchRows) };
+}
+export async function getCollectionStatus(env) {
+  const usage = await env.DB.prepare(usageSql).first();
+  const result = collectionPolicy(env, usage);
+  const lastSuccessAt = usage.lastAt ? usage.lastAt.replace(' ', 'T') + 'Z' : null;
+  const age = lastSuccessAt ? Date.now() - Date.parse(lastSuccessAt) : Infinity;
+  return { ...result, lastSuccessAt,
+    state: result.reason === 'paused' ? 'paused' : result.reason === 'daily_budget' ? 'budget_wait' :
+      !lastSuccessAt ? 'waiting' : age <= result.policy.intervalSeconds * 1500 ? 'recent' : 'delayed',
+    asOf: new Date().toISOString() };
+}
 const digest = async value => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)))].map(x => x.toString(16).padStart(2, '0')).join('');
 export function validBatch(body, known, now = Date.now()) {
   if (!body || !/^[a-f0-9-]{36}$/.test(body.runId || '') || body.world !== 'Windia' ||
@@ -32,8 +55,10 @@ export async function handleMarketBatch(req, env, knownItems) {
   const auth = req.headers.get('Authorization') || '';
   if (auth.length > 256 || await digest(auth) !== await digest(`Bearer ${env.MARKET_BATCH_TOKEN}`)) return reply({ error: 'unauthorized' }, 401);
   if (req.method === 'GET') {
+    const status = await getCollectionStatus(env);
+    if (new URL(req.url).searchParams.has('preflight')) return reply(status);
     const { results } = await env.DB.prepare('SELECT run_id, started_at, finished_at, received_at, shops, accepted FROM market_batch_runs ORDER BY received_at DESC, rowid DESC LIMIT 20').all();
-    return reply({ runs: results });
+    return reply({ runs: results, ...status });
   }
   if (req.method !== 'POST') return reply({ error: 'method not allowed' }, 405);
   if (Number(req.headers.get('Content-Length')) > 200000) return reply({ error: 'body too large' }, 413);
@@ -50,8 +75,14 @@ export async function handleMarketBatch(req, env, knownItems) {
   if (!known) return reply({ error: 'item index unavailable' }, 503);
   if (!validBatch(body, known)) return reply({ error: 'invalid batch' }, 400);
   const policy = limits(env);
+  if (body.rows.length > policy.maxBatchRows) return reply({ error: 'batch exceeds configured row limit', policy }, 400);
   const usage = await env.DB.prepare(usageSql).first();
-  const quotaReply = () => reply({ error: 'collector daily budget or interval reached', policy }, 429, { 'Retry-After': String(Math.max(3600, policy.intervalSeconds)) });
+  const quotaReply = async () => {
+    const latestUsage = await env.DB.prepare(usageSql).first();
+    const status = collectionPolicy(env, latestUsage, Date.now(), body.rows.length);
+    return reply({ error: 'collector daily budget or interval reached', ...status }, 429,
+      { 'Retry-After': String(Math.max(60, Math.ceil((Date.parse(status.nextEligibleAt) - Date.now()) / 1000))) });
+  };
   if (usage.rows + body.rows.length > policy.dailyRows || (usage.lastAt && Date.now() - Date.parse(usage.lastAt.replace(' ', 'T') + 'Z') < policy.intervalSeconds * 1000)) return quotaReply();
   // Recheck inside the transaction so concurrent clients cannot pass the same budget check.
   const receipt = env.DB.prepare(`INSERT INTO market_batch_runs (run_id, payload_hash, started_at, finished_at, shops, accepted)

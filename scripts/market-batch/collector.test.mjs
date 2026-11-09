@@ -59,12 +59,12 @@ test('waits for asynchronous shop controls after the item heading becomes visibl
  const r=await w.GmsCollector.collect({mode:'test',runId:crypto.randomUUID()});
  assert.equal(r.status,'completed',r.error);assert.equal(r.shops,40);assert.equal(r.rows.length,40);dom.window.close();
 });
-test('production collection stops at 500 unique rows and the next run rotates its starting item',async()=>{
+test('production collection stops at 50 unique rows and the next run rotates its starting item',async()=>{
  const {dom,w}=mock(30);
  const first=await w.GmsCollector.collect({mode:'production',runId:crypto.randomUUID(),cursor:0});
- assert.equal(first.status,'completed',first.error);assert.equal(first.rows.length,500);assert.equal(first.shops,500);assert.equal(first.nextCursor,25);
+ assert.equal(first.status,'completed',first.error);assert.equal(first.rows.length,50);assert.equal(first.shops,50);assert.equal(first.nextCursor,3);
  const next=await w.GmsCollector.collect({mode:'production',runId:crypto.randomUUID(),cursor:first.nextCursor});
- assert.equal(next.rows.length,500);assert.notEqual(next.queue[0].id,first.queue[0].id);assert.equal(next.nextCursor,20);dom.window.close();
+ assert.equal(next.rows.length,50);assert.notEqual(next.queue[0].id,first.queue[0].id);assert.equal(next.nextCursor,6);dom.window.close();
 });
 test('periodic reader accepts a recent previous-day observation around New Year',()=>{
  const shop=reader.readShop(new JSDOM(fixture.html).window.document,'2027-01-01T15:05:00Z');

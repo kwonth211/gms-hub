@@ -717,12 +717,17 @@ const LIVE = {
   }
 };
 
+function collectionStatus(lang) {
+  return `<div class="collection-status" data-collection-status data-api="${esc(config.voteApi)}" data-state="waiting" role="status" aria-live="polite"><strong>${lang === 'ko' ? '수집 상태 확인 중' : 'Checking collection status'}</strong><span>${lang === 'ko' ? '최근 수집 완료 시각을 확인하고 있어요.' : 'Checking the last completed collection.'}</span></div>`;
+}
+
 function liveMarket(lang) {
   const t = LIVE[lang];
   return `<section class="wrap market" id="live-market" aria-labelledby="live-title"
  data-api="${esc(config.voteApi)}" data-items="${esc(href('/assets/items.json'))}" data-price="${esc(href(langPath(lang, '/tools/market/')))}"
  data-text="${esc(JSON.stringify(t))}">
 <header class="market-head"><span class="live-dot" aria-hidden="true"></span><h2 id="live-title">${t.title}</h2><p>${t.sub}</p><small id="live-updated"></small><a class="btn small-btn market-scan" href="${href(langPath(lang, '/tools/scan/'))}">● ${t.scan}</a><strong class="market-preview" id="market-preview" hidden>${t.preview}</strong></header>
+${collectionStatus(lang)}
 <div class="market-grid">
 <div class="market-panel market-top" id="market-top">
 <h3>${t.top} <small>${t.topNote}</small></h3>
@@ -1456,6 +1461,7 @@ function marketBody(lang) {
   return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 확인하세요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p></section>
 <div class="wrap mk market-browser">
 <div class="mk-bar"><dl class="mk-stats">${stat('open',tr('최근 판매 매물','Recent asking listings'))}${stat('shops',tr('상점','Shops'))}${stat('items',tr('아이템 · 7일','Items · 7d'))}${stat('records',tr('매물 기록 · 7일','Listing records · 7d'))}</dl><a class="btn small-btn" href="${href(langPath(lang, '/tools/scan/'))}">${t.scan}</a></div>
+${collectionStatus(lang)}
 <div class="mb-status"><p id="mk-status" role="status">${t.loading}</p><button id="mk-retry" class="btn ghost small-btn" type="button">${tr('새로고침','Refresh')}</button></div>
 <div class="mb-tabs" role="tablist" aria-label="${tr('시장 탐색','Browse market')}"><button id="mb-tab-listings" role="tab" aria-selected="true" aria-controls="mb-browser" data-view="listings">${tr('전체 매물','All listings')}</button><button id="mb-tab-items" role="tab" aria-selected="false" tabindex="-1" aria-controls="mb-browser" data-view="items">${tr('아이템 목록','Items')}</button><button id="mb-tab-reports" role="tab" aria-selected="false" aria-controls="mb-browser" data-view="reports">${tr('가격 제보','Price reports')}</button></div>
 <div class="mb-workspace" id="mb-workspace"><section class="panel mb-browser" id="mb-browser" role="tabpanel" aria-labelledby="mb-tab-listings">

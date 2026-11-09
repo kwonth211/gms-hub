@@ -1,3 +1,4 @@
+import './collection-status.js';
 import { indexEntry, searchEntries } from './search-index.js';
 
 const input = document.getElementById('site-search');
