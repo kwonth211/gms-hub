@@ -48,7 +48,7 @@ export function catalogRows(
   const rows = items
     .filter(
       (it) =>
-        (ids ? ids.has(it.id) : byId.has(it.id)) &&
+        (ids ? ids.has(it.id) : favorites ? favorites.has(it.id) : byId.has(it.id)) &&
         (category === "all" || it.category === category) &&
         (!favorites || favorites.has(it.id)),
     )

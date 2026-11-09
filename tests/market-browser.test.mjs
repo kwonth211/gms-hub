@@ -228,6 +228,7 @@ test("catalog searching, categories, favorites and price sort retain all known m
     low: i ? 90 * i : null,
   }));
   assert.equal(catalogRows(items, summaries).length, 4);
+  assert.equal(catalogRows(items, [], { favorites: new Set([2070002]) })[0].open, 0);
   assert.equal(catalogRows(items, summaries, { query: "장공" })[0].id, 2040801);
   assert.equal(
     catalogRows(items, summaries, { category: "stars" })[0].id,

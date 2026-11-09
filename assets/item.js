@@ -23,11 +23,11 @@ const table = (rs) =>
   `<div class="mk-where"><table><thead><tr><th>${T.table.price}</th><th>${T.table.qty}</th><th>${T.table.seller}</th><th>${T.table.where}</th><th>${T.table.seen}</th></tr></thead><tbody>${rs.map(line).join('')}</tbody></table></div>`;
 
 Promise.all([
-  fetch(`${D.api}/market/listings?item=${D.id}&state=open&sort=price&limit=10`).then(r=>r.ok?r.json():null),
-  fetch(`${D.api}/market/history?id=${D.id}`).then(r=>r.ok?r.json():null)
-]).catch(()=>[null,null]).then(([listings, history])=>{
-  if (!listings) { box.innerHTML = `<p class="muted">${T.failed}</p>`; return; }
-  box.innerHTML = listings.rows.length ? `<p class="muted note">${D.lang==='ko'?`판매 매물 ${listings.total}건 중 낮은 가격순 ${listings.rows.length}건`:`${listings.rows.length} lowest asks of ${listings.total} listings`}</p>${table(listings.rows)}` : `<p class="muted">${T.noOpen}</p>`;
+  fetch(`${D.api}/market/listings?item=${D.id}&state=open&sort=price&limit=10`).then(r=>r.ok?r.json():null).catch(()=>null),
+  fetch(`${D.api}/market/history?id=${D.id}`).then(r=>r.ok?r.json():null).catch(()=>null)
+]).then(([listings, history])=>{
+  if (!listings) box.innerHTML = `<p class="muted">${T.failed}</p>`;
+  else box.innerHTML = listings.rows.length ? `<p class="muted note">${D.lang==='ko'?`판매 매물 ${listings.total}건 중 낮은 가격순 ${listings.rows.length}건`:`${listings.rows.length} lowest asks of ${listings.total} listings`}</p>${table(listings.rows)}` : `<p class="muted">${T.noOpen}</p>`;
   if(history){const normalize=rs=>rs.map(r=>({...r,sold:!!r.sold,t:parseUtc(r.seen)}));mountMarketCharts(charts,normalize(history.rows),{lang:D.lang,now:Date.parse(history.asOf),profileRows:normalize(history.profile),persistent:true,truncated:history.truncated,profileTruncated:history.profileTruncated,limit:history.limit});}
   else charts.innerHTML=`<p class="muted">${T.failed}</p>`;
 });
