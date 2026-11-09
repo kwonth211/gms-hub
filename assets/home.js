@@ -83,8 +83,8 @@ const retryItems = document.getElementById('search-retry');
 const clearSearch = document.getElementById('search-clear');
 const escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const labels = korean
-  ? { item: '아이템', site: '사이트', tool: '도구·가이드', market: '시세 보기', loading: '아이템을 불러오는 중…', error: '아이템을 불러오지 못했어요. 사이트와 도구는 계속 검색할 수 있어요.', partial: ' · 아이템 불러오는 중', failed: ' · 아이템 검색 일시 불가', external: '새 탭에서 열기' }
-  : { item: 'Items', site: 'Sites', tool: 'Tools & guides', market: 'View prices', loading: 'Loading items…', error: 'Items could not be loaded. Sites and tools are still searchable.', partial: ' · loading items', failed: ' · items unavailable', external: 'Opens in a new tab' };
+  ? { item: '아이템', mob: '몬스터', site: '사이트', tool: '도구·가이드', market: '시세 보기', mobAction: '몇 방 컷', mobInfo: (lv, hp) => `${lv}레벨 · HP ${hp.toLocaleString('ko')} · 몇 방에 잡히는지와 필요한 명중률`, loading: '아이템을 불러오는 중…', error: '아이템을 불러오지 못했어요. 사이트와 도구는 계속 검색할 수 있어요.', partial: ' · 아이템 불러오는 중', failed: ' · 아이템 검색 일시 불가', external: '새 탭에서 열기' }
+  : { item: 'Items', mob: 'Monsters', site: 'Sites', tool: 'Tools & guides', market: 'View prices', mobAction: 'Hits to kill', mobInfo: (lv, hp) => `Level ${lv} · ${hp.toLocaleString('en')} HP · hits to kill and accuracy needed`, loading: 'Loading items…', error: 'Items could not be loaded. Sites and tools are still searchable.', partial: ' · loading items', failed: ' · items unavailable', external: 'Opens in a new tab' };
 const siteAliases = { 'meso.watch': '메소워치 메소 와치', 'maplemarket.fyi': '메이플마켓', 'meowdb.com': '니아먀오 니아메오', 'henesys.gg': '헤네시스', 'discord.com': '디스코드 디코', 'discord.gg': '디스코드 디코', 'reddit.com': '레딧', 'metaroad.gg': '메타로드' };
 const toolKeywords = {
   training: '사냥터 레벨업 경험치 사냥 맵 training level exp map grind',
@@ -111,6 +111,19 @@ const staticEntries = [
 ];
 let items = null;
 let itemEntries = [];
+// Monster names are searched often (이블아이, 좀비버섯, 레이스) but only matched their drops; each monster now opens the
+// hits-to-kill calculator filtered to it, which also shows the accuracy it needs.
+let mobEntries = [];
+fetch(searchPanel.dataset.mobs)
+  .then((r) => (r.ok ? r.json() : []))
+  .then((rows) => {
+    mobEntries = rows.map(([id, ko, en, lv, hp]) => indexEntry({
+      type: 'mob', id: `mob-${id}`, title: korean ? ko || en : en, names: [ko, en],
+      description: labels.mobInfo(lv, hp), href: `${searchPanel.dataset.damage}?mob=${encodeURIComponent(en)}`,
+    }));
+    if (searchOpen) renderSearch();
+  })
+  .catch(() => {});
 let itemsPromise = null;
 let itemError = false;
 let searchType = 'all';
@@ -174,10 +187,12 @@ function priceTag(id) {
 
 function resultRow(entry) {
   const external = entry.type === 'site';
-  const icon = entry.type === 'item'
+  const icon = entry.type === 'mob'
+    ? `<span class="search-result-icon" aria-hidden="true">⚔</span>`
+    : entry.type === 'item'
     ? `<img src="https://maplestory.io/api/MCW/1/item/${entry.id}/icon" alt="" width="30" height="30" loading="lazy">`
     : `<span class="search-result-icon" aria-hidden="true">${external ? '↗' : '⌘'}</span>`;
-  return `<a class="search-result" href="${escHtml(entry.href)}" data-result-type="${entry.type}" data-result-id="${escHtml(entry.id)}"${external ? ` target="_blank" rel="noopener" aria-label="${escHtml(entry.title)} · ${labels.external}"` : ''}>${icon}<span class="search-result-copy"><strong>${escHtml(entry.title)}</strong><small>${escHtml(entry.description || '')}</small></span><span class="search-result-action${entry.type === 'item' && prices.get(entry.id)?.median ? ' priced' : ''}">${entry.type === 'item' ? priceTag(entry.id) : external ? '↗' : '→'}</span></a>`;
+  return `<a class="search-result" href="${escHtml(entry.href)}" data-result-type="${entry.type}" data-result-id="${escHtml(entry.id)}"${external ? ` target="_blank" rel="noopener" aria-label="${escHtml(entry.title)} · ${labels.external}"` : ''}>${icon}<span class="search-result-copy"><strong>${escHtml(entry.title)}</strong><small>${escHtml(entry.description || '')}</small></span><span class="search-result-action${entry.type === 'item' && prices.get(entry.id)?.median ? ' priced' : ''}">${entry.type === 'item' ? priceTag(entry.id) : entry.type === 'mob' ? `${labels.mobAction} →` : external ? '↗' : '→'}</span></a>`;
 }
 
 function sizeSearchPanel() {
@@ -200,8 +215,8 @@ function renderSearch() {
   searchSubmit.setAttribute('aria-expanded', String(active));
   if (!active) return;
   sizeSearchPanel();
-  searchMatches = searchEntries([...staticEntries, ...itemEntries], query);
-  const counts = { all: searchMatches.length, item: 0, site: 0, tool: 0 };
+  searchMatches = searchEntries([...staticEntries, ...mobEntries, ...itemEntries], query);
+  const counts = { all: searchMatches.length, item: 0, mob: 0, site: 0, tool: 0 };
   searchMatches.forEach((entry) => counts[entry.type]++);
   document.querySelectorAll('[data-count]').forEach((el) => {
     el.textContent = el.dataset.count === 'item' && !items ? (itemError ? '!' : '…') : counts[el.dataset.count].toLocaleString();
@@ -213,17 +228,19 @@ function renderSearch() {
   itemState.querySelector('span').textContent = itemError ? labels.error : labels.loading;
   retryItems.hidden = !itemError;
   let visible = 0;
-  searchGroups.innerHTML = ['item', 'site', 'tool'].map((type) => {
+  // The group holding the best match comes first, so "시세" or "사냥터" opens with our own tool and "레이스" with the monster.
+  const best = (type) => Math.max(0, ...searchMatches.filter((entry) => entry.type === type).map((entry) => entry.score));
+  const order = ['item', 'mob', 'tool', 'site'].sort((a, b) => best(b) - best(a));
+  searchGroups.innerHTML = order.map((type) => {
     if (searchType !== 'all' && searchType !== type) return '';
     let matches = searchMatches.filter((entry) => entry.type === type);
     if (!matches.length) return '';
     if (type === 'item') {
-      // Items with recent listings go first (after an exact name match), keeping search order within each half.
+      // Within equally good matches, items with recent listings go first; a priced item never jumps above a better match
+      // (typing "meba" once showed King Slime Balloon, which merely contains those letters, above the Meba claw).
       queuePrices(matches.slice(0, 60).map((entry) => entry.id));
-      const priced = (entry) => !!prices.get(entry.id)?.median;
-      const exact = matches[0].title.replace(/\s+/g, '').toLowerCase() === query.replace(/\s+/g, '').toLowerCase() ? [matches[0]] : [];
-      const rest = matches.slice(exact.length);
-      matches = [...exact, ...rest.filter(priced), ...rest.filter((entry) => !priced(entry))];
+      const priced = (entry) => (prices.get(entry.id)?.median ? 1 : 0);
+      matches = matches.map((entry, i) => ({ entry, i })).sort((a, b) => b.entry.score - a.entry.score || priced(b.entry) - priced(a.entry) || a.i - b.i).map(({ entry }) => entry);
     }
     visible += matches.length;
     const limit = expanded.get(type) || (searchType === 'all' ? INITIAL_ROWS : PAGE_ROWS);

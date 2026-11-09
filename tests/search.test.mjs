@@ -52,3 +52,26 @@ test('exact names outrank descriptions and aliases can find a named site', () =>
   assert.equal(searchEntries(entries, 'Meso Watch')[0].title, 'MesoWatch');
   assert.equal(searchEntries(entries, '메소 워치')[0].title, 'MesoWatch');
 });
+
+test('gear + stat abbreviations players type find the scroll (귀힘, 창공, 망럭, 신이속, 폴공 중급)', () => {
+  const en = (q) => sourceItems.find((it) => it.id === results(q)[0]?.id)?.en || '';
+  assert.match(en('귀힘'), /^Earring STR Scroll/);
+  assert.match(en('창공'), /^Spear Attack Scroll/);
+  assert.match(en('창 공'), /^Spear Attack Scroll/);
+  assert.match(en('망럭'), /^Cape LUK Scroll/);
+  assert.match(en('신이속'), /^Shoes Speed Scroll/);
+  assert.match(en('폴공 중급'), /^Polearm Attack Scroll: Intermediate/);
+  assert.match(en('귀회'), /^Earring Evasion Scroll/);
+  assert.ok(results('귀환').every((it) => !/Earring/.test(sourceItems.find((s) => s.id === it.id).en)), '귀환 is not rewritten');
+});
+
+test('Korean defence and evasion words match the DEF / Evasion tokens in scroll names', () => {
+  assert.ok(results('상의 방어력').length > 0);
+  assert.ok(results('귀고리 회피').length > 0);
+});
+
+test('results carry their score so callers never rank a weaker match above a better one', () => {
+  const hits = results('meba');
+  assert.equal(hits[0].title, '메바');
+  assert.ok(hits.every((hit, i) => i === 0 || hits[i - 1].score >= hit.score));
+});

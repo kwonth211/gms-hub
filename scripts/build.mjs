@@ -768,17 +768,17 @@ ${heroScene()}
 <button type="button" id="search-clear" aria-label="${lang === 'ko' ? '검색어 지우기' : 'Clear search'}" hidden>×</button>
 <button type="submit" class="search-submit" aria-controls="search-results" aria-expanded="false">${lang === 'ko' ? '검색' : 'Search'}</button>
 </form>
-<section class="unified-search" id="search-results" aria-label="${lang === 'ko' ? '통합 검색 결과' : 'Search results'}" data-items="${esc(href('/assets/items.json'))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" hidden>
+<section class="unified-search" id="search-results" aria-label="${lang === 'ko' ? '통합 검색 결과' : 'Search results'}" data-items="${esc(href('/assets/items.json'))}" data-mobs="${esc(href('/assets/mobs.json'))}" data-damage="${esc(href(langPath(lang, '/tools/damage/')))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" hidden>
 <div class="search-summary"><h2>${lang === 'ko' ? '검색 결과' : 'Search results'}</h2><span id="search-status" role="status" aria-live="polite" aria-atomic="true"></span></div>
 <div class="search-filters" role="group" aria-label="${lang === 'ko' ? '검색 결과 종류' : 'Result type'}">
-${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이템' : 'Items'], ['site', lang === 'ko' ? '사이트' : 'Sites'], ['tool', lang === 'ko' ? '도구·가이드' : 'Tools & guides']].map(([type, label]) => `<button type="button" data-search-type="${type}" aria-pressed="${type === 'all'}">${label} <span data-count="${type}">0</span></button>`).join('')}
+${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이템' : 'Items'], ['mob', lang === 'ko' ? '몬스터' : 'Monsters'], ['site', lang === 'ko' ? '사이트' : 'Sites'], ['tool', lang === 'ko' ? '도구·가이드' : 'Tools & guides']].map(([type, label]) => `<button type="button" data-search-type="${type}" aria-pressed="${type === 'all'}">${label} <span data-count="${type}">0</span></button>`).join('')}
 </div>
 <div id="search-item-state" class="search-item-state" hidden><span></span> <button type="button" id="search-retry" hidden>${lang === 'ko' ? '다시 불러오기' : 'Retry'}</button></div>
 <div id="search-groups"></div>
 <p id="search-empty" class="search-empty" hidden>${lang === 'ko' ? '일치하는 결과가 없어요. 더 짧은 이름이나 영문 이름으로 검색해 보세요.' : 'No matches. Try a shorter name or an English item name.'}</p>
 </section>
 </div>
-<p class="search-help" id="search-help">${lang === 'ko' ? '한글·영문·초성으로 검색하세요. 예: 장공, 미스릴, 디스코드' : 'Search by name or keyword. Try Gloves Attack, Mithril or Discord.'}</p>
+<p class="search-help" id="search-help">${lang === 'ko' ? '한글·영문·초성·줄임말로 검색하세요. 예: 귀힘, 미스릴, 좀비 루팡, 사냥터' : 'Search by name or keyword. Try Gloves Attack, Mithril, Zombie Lupin or training.'}</p>
 <dl class="hero-stats"><div><dt>${t.statSites}</dt><dd>${SITE_COUNT}</dd></div><div><dt>${t.statCats}</dt><dd>${cats.length}</dd></div><div><dt>${t.statChecked}</dt><dd>${esc(sites.checked)}</dd></div></dl>
 </div>
 </div>
