@@ -238,6 +238,245 @@
         "training",
         "scroll"
       ]
+    },
+    {
+      "slug": "getting-started",
+      "lang": "en",
+      "title": "Getting Started in MapleStory Classic World: Settings, Stats, Potions, Chat Shorthand",
+      "h1": "Getting Started in Classic World",
+      "desc": "What new Global MapleStory Classic World players should know on day one: settings, beginner stats, the cheapest early potions, party EXP rules and trade chat shorthand (C/O, A/W, LFP).",
+      "published": "2026-11-09",
+      "updated": "2026-11-09",
+      "sources": [
+        {
+          "title": "NiaMeowDB — Beginner's Guide: First Steps in Maple World",
+          "url": "https://meowdb.com/msclassic/guides/beginners-guide-first-steps-in-maple-world"
+        }
+      ],
+      "tools": [
+        "training",
+        "drop-rate",
+        "market"
+      ]
+    },
+    {
+      "slug": "choose-your-job",
+      "lang": "en",
+      "title": "MapleStory Classic World Classes: What Changed for All 10 Second Jobs",
+      "h1": "Choosing a Job in Classic World",
+      "desc": "How every first and second job plays in MapleStory Classic World and what changed from old MapleStory: Rage, no Hyper Body, Poison Breath, Bless, Arrow Bomb, Steal and more.",
+      "published": "2026-11-09",
+      "updated": "2026-11-09",
+      "sources": [],
+      "tools": [
+        "damage",
+        "training"
+      ]
+    },
+    {
+      "slug": "leveling-1-30",
+      "lang": "en",
+      "title": "MapleStory Classic World Leveling Guide 1-30: Best Training Spots",
+      "h1": "Leveling 1-30: Where to Train",
+      "desc": "Where to train from level 1 to 30 in MapleStory Classic World, with maps three guide sites agree on: Bubblings, Ant Tunnel III, Kerning party quest and more.",
+      "published": "2026-11-09",
+      "updated": "2026-11-09",
+      "sources": [
+        {
+          "title": "NiaMeowDB — Best grind maps for every level",
+          "url": "https://meowdb.com/msclassic/guides/best-grind-maps-every-level"
+        },
+        {
+          "title": "MS-Classic — Where to train level 10-30",
+          "url": "https://ms-classic.com/guides/where-to-train-level-10-30"
+        },
+        {
+          "title": "Henesys.GG",
+          "url": "https://henesys.gg/"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ]
+    },
+    {
+      "slug": "best-early-quests",
+      "lang": "en",
+      "title": "7 Early Quests Worth Doing in MapleStory Classic World (Levels 16-44)",
+      "h1": "Seven Early Quests Worth Doing",
+      "desc": "Seven MapleStory Classic World quests from level 16 to 44 whose rewards beat their EXP: weapon, earring and glove attack scrolls, items and requirements.",
+      "published": "2026-11-09",
+      "updated": "2026-11-09",
+      "sources": [
+        {
+          "title": "NiaMeowDB — Quest tracker",
+          "url": "https://meowdb.com/msclassic/ko/quest-tracker"
+        }
+      ],
+      "tools": [
+        "training",
+        "drop-rate"
+      ]
+    },
+    {
+      "slug": "kerning-party-quest",
+      "lang": "en",
+      "title": "Kerning Party Quest Guide (KPQ): Stages, Answers, Rush vs Bonus",
+      "h1": "Kerning Party Quest Guide",
+      "desc": "How to run the Kerning City party quest in MapleStory Classic World: requirements, rush vs bonus parties, stage 1 answers and a fast order for the rope, platform and barrel puzzles.",
+      "published": "2026-11-09",
+      "updated": "2026-11-09",
+      "sources": [],
+      "tools": [
+        "training",
+        "damage"
+      ]
+    },
+    {
+      "slug": "second-job",
+      "lang": "en",
+      "title": "MapleStory Classic World Second Job Guide: Which to Pick and Where to Train",
+      "h1": "Second Job: Which to Pick",
+      "desc": "Second job advancement in MapleStory Classic World: a default pick for each class, weapons, Final Attack and Rush changes, and training maps from level 30 to 70.",
+      "published": "2026-11-09",
+      "updated": "2026-11-09",
+      "sources": [],
+      "tools": [
+        "damage",
+        "training"
+      ]
+    },
+    {
+      "slug": "citizenship-and-housing",
+      "lang": "en",
+      "title": "MapleStory Classic World Citizenship and Housing: Ranks, Discounts, Rank 9 Scrolls",
+      "h1": "Citizenship and Housing",
+      "desc": "How citizenship works in MapleStory Classic World: Henesys or Kerning City, contribution, discounts by rank, citizen-only scrolls and buying a house.",
+      "published": "2026-11-09",
+      "updated": "2026-11-09",
+      "sources": [
+        {
+          "title": "NiaMeowDB — Citizenship",
+          "url": "https://meowdb.com/msclassic/citizenship"
+        }
+      ],
+      "tools": [
+        "market",
+        "price"
+      ]
+    },
+    {
+      "slug": "scroll-odds",
+      "lang": "en",
+      "title": "MapleStory Classic World Scroll Odds: Lesser, Intermediate, Greater, Chaos",
+      "h1": "Scroll Odds Explained",
+      "desc": "What Lesser, Intermediate, Greater and Chaos scrolls really give in MapleStory Classic World: outcome odds for 5-slot gloves and how to compare cost per attack point.",
+      "published": "2026-11-09",
+      "updated": "2026-11-09",
+      "sources": [
+        {
+          "title": "MS-Classic — Scroll tiers explained",
+          "url": "https://ms-classic.com/guides/scroll-tiers-lesser-intermediate-greater-explained"
+        },
+        {
+          "title": "MapleClassic Wiki — Scrolling",
+          "url": "https://mapleclassic.wiki/wiki/Scrolling"
+        }
+      ],
+      "tools": [
+        "scroll",
+        "market"
+      ]
+    },
+    {
+      "slug": "trading-and-mesos",
+      "lang": "en",
+      "title": "MapleStory Classic World Trading Guide: Trade Rules, Shorthand, Meso Debt",
+      "h1": "Trading and Mesos",
+      "desc": "Trading in MapleStory Classic World: when new accounts can trade, trade post shorthand (C/O, A/W, GFA), the meso debt system and realistic ways to earn early mesos.",
+      "published": "2026-11-09",
+      "updated": "2026-11-09",
+      "sources": [],
+      "tools": [
+        "market",
+        "price",
+        "scan"
+      ]
+    },
+    {
+      "slug": "leveling-30-70",
+      "lang": "en",
+      "title": "MapleStory Classic World Leveling Guide 30-70: Training Spots and Accuracy",
+      "h1": "Leveling 30-70: Where to Train",
+      "desc": "Training spots from level 30 to 70 in MapleStory Classic World with the standard map, a quieter alternative and the accuracy each needs: Lorangs, Wraiths, the Excavation Site camp.",
+      "published": "2026-11-09",
+      "updated": "2026-11-09",
+      "sources": [],
+      "tools": [
+        "training",
+        "damage"
+      ]
+    },
+    {
+      "slug": "warrior-build",
+      "lang": "en",
+      "title": "MapleStory Classic World Warrior Guide: SP Order, DEX, Weapons, Maps",
+      "h1": "Warrior Build Guide",
+      "desc": "Fighter, Page and Spearman in MapleStory Classic World: first and second job SP order, how much DEX to add, level 30-40 weapons and where to hunt.",
+      "published": "2026-11-09",
+      "updated": "2026-11-09",
+      "sources": [],
+      "tools": [
+        "damage",
+        "training",
+        "scroll"
+      ]
+    },
+    {
+      "slug": "archer-build",
+      "lang": "en",
+      "title": "MapleStory Classic World Bowman Guide: Hunter vs Crossbowman, SP, Bows, Maps",
+      "h1": "Bowman Build Guide",
+      "desc": "Hunter and Crossbowman in MapleStory Classic World: SP order, Final Attack or Arrow Bomb first, when to change bows and crossbows, and maps from level 30 to 50.",
+      "published": "2026-11-09",
+      "updated": "2026-11-09",
+      "sources": [],
+      "tools": [
+        "damage",
+        "training",
+        "scroll"
+      ]
+    },
+    {
+      "slug": "mage-build",
+      "lang": "en",
+      "title": "MapleStory Classic World Magician Guide: Stats, SP Order, Potions, Maps",
+      "h1": "Magician Build Guide",
+      "desc": "Ice/Lightning, Fire/Poison and Cleric in MapleStory Classic World: INT and LUK, SP order, mana potion maths, which monsters each element works on, and weapons.",
+      "published": "2026-11-09",
+      "updated": "2026-11-09",
+      "sources": [],
+      "tools": [
+        "damage",
+        "training",
+        "scroll"
+      ]
+    },
+    {
+      "slug": "thief-build",
+      "lang": "en",
+      "title": "MapleStory Classic World Thief Guide 1-40: Stats, Lucky Seven, Claws, Maps",
+      "h1": "Thief Build Guide (Levels 1-40)",
+      "desc": "Thief in MapleStory Classic World from level 1 to 40: LUK and DEX, Lucky Seven SP order, claws and stars by level, and where to train before and after second job.",
+      "published": "2026-11-09",
+      "updated": "2026-11-09",
+      "sources": [],
+      "tools": [
+        "damage",
+        "training",
+        "scroll"
+      ]
     }
   ]
 }

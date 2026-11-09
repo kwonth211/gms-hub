@@ -1787,10 +1787,22 @@ const guidePath = (g) => `/guides/${g.slug}/`;
 const fmtDate = (d) => d.replaceAll('-', '. ') + '.';
 
 // Every guide ends with links to the other guides, so a reader from search can keep going.
+const GUIDE_T = {
+  ko: { toolsChip: '같이 쓰는 도구', toolsHeading: '이 글과 같이 쓰는 도구', more: '다른 가이드', sources: '참고한 자료', byline: (g) => `GMS Hub 작성 · 처음 쓴 날 ${fmtDate(g.published)} · 마지막 확인 ${fmtDate(g.updated)}`,
+    note: '공개된 공략 자료와 팬 데이터베이스를 서로 맞춰 보고 정리했어요. 자료끼리 숫자가 다르면 확인된 쪽만 적거나 다르다고 밝혔어요. 게임이 업데이트되면 내용이 달라질 수 있어요. 틀린 부분은 {mail}이나 {issues}로 알려 주세요.', issues: 'GitHub 이슈',
+    indexH1: '글클메 가이드', indexLead: '글클메를 하다 보면 헷갈리는 것들을 한 주제씩 정리한 글이에요. 공개된 공략 자료와 팬 데이터베이스를 서로 맞춰 보고, 확인된 내용만 적어요.',
+    indexTitle: '글클메 가이드 모음 | GMS Hub', indexDesc: '글로벌 클래식 메이플 입문과 공략을 출처와 함께 정리한 GMS Hub 가이드 모음.' },
+  en: { toolsChip: 'Tools for this guide', toolsHeading: 'Tools to use with this guide', more: 'More guides', sources: 'Sources', byline: (g) => `By GMS Hub · Published ${g.published} · Last checked ${g.updated}`,
+    note: 'Written by cross-checking public guides and fan databases. Where sources disagree we say so or keep only what we could confirm. Game updates can change things; report mistakes to {mail} or on {issues}.', issues: 'GitHub issues',
+    indexH1: 'MapleStory Classic World Guides', indexLead: 'One topic per guide for the things that trip players up in Classic World, cross-checked against public guides and fan databases.',
+    indexTitle: 'MapleStory Classic World Guides: Leveling, Jobs, Party Quests, Scrolls | GMS Hub', indexDesc: 'Beginner and leveling guides for Global MapleStory Classic World: job builds, training spots, party quests, scrolling and trading.' }
+};
+// A guide written in both languages gets hreflang links and a language switch to its twin; a single-language guide has none.
+const guideBoth = (slug) => LANGS.every((l) => guides.some((g) => g.slug === slug && g.lang === l));
 const related = (g) => {
   const others = guides.filter((o) => o.lang === g.lang && o.slug !== g.slug);
   return others.length
-    ? `<h2>다른 가이드</h2>\n<ul class="sources">${others.map((o) => `<li><a href="${href(langPath(o.lang, guidePath(o)))}">${esc(o.h1)}</a></li>`).join('')}</ul>`
+    ? `<h2>${GUIDE_T[g.lang].more}</h2>\n<ul class="sources">${others.map((o) => `<li><a href="${href(langPath(o.lang, guidePath(o)))}">${esc(o.h1)}</a></li>`).join('')}</ul>`
     : '';
 };
 
@@ -1810,14 +1822,14 @@ const guideTool = (lang, key) => {
 };
 const guideToolChips = (g) =>
   (g.tools || []).length
-    ? `<p class="guide-tools">같이 쓰는 도구 ${g.tools
+    ? `<p class="guide-tools">${GUIDE_T[g.lang].toolsChip} ${g.tools
         .map((k) => guideTool(g.lang, k))
         .map(([p, icon, label]) => `<a href="${href(langPath(g.lang, p))}">${spriteSvg(icon, 18)}${esc(label)}</a>`)
         .join('')}</p>`
     : '';
 const guideToolCards = (g) =>
   (g.tools || []).length
-    ? `<h2>이 글과 같이 쓰는 도구</h2>\n<div class="tool-cards">${g.tools
+    ? `<h2>${GUIDE_T[g.lang].toolsHeading}</h2>\n<div class="tool-cards">${g.tools
         .map((k) => guideTool(g.lang, k))
         .map(
           ([p, icon, label, desc]) =>
@@ -1864,14 +1876,14 @@ function guideBody(g) {
   return `<article class="wrap prose guide-article">
 <p class="crumbs"><a href="${href(langPath(g.lang, '/guides/'))}">${T[g.lang].navGuides}</a></p>
 <h1>${esc(g.h1)}</h1>
-<p class="byline">GMS Hub 작성 · 처음 쓴 날 ${fmtDate(g.published)} · 마지막 확인 ${fmtDate(g.updated)}</p>
+<p class="byline">${GUIDE_T[g.lang].byline(g)}</p>
 ${guideToolChips(g)}
 ${body}
 ${guideToolCards(g)}
 ${adfitSlot()}
-${sources ? `<h2>참고한 자료</h2>\n<ul class="sources">${sources}</ul>` : ''}
+${sources ? `<h2>${GUIDE_T[g.lang].sources}</h2>\n<ul class="sources">${sources}</ul>` : ''}
 ${related(g)}
-<p class="muted">공개된 공략 자료와 팬 데이터베이스를 서로 맞춰 보고 정리했어요. 자료끼리 숫자가 다르면 확인된 쪽만 적거나 다르다고 밝혔어요. 게임이 업데이트되면 내용이 달라질 수 있어요. 틀린 부분은 <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>이나 <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub 이슈</a>로 알려 주세요.</p>
+<p class="muted">${GUIDE_T[g.lang].note.replace('{mail}', `<a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>`).replace('{issues}', `<a href="${issuesUrl}" target="_blank" rel="noopener">${GUIDE_T[g.lang].issues}</a>`)}</p>
 </article>`;
 }
 
@@ -1883,8 +1895,8 @@ function guidesIndexBody(lang) {
         `<li><a href="${href(langPath(lang, guidePath(g)))}"><strong>${esc(g.h1)}</strong></a><p>${esc(g.desc)}</p><small class="muted">${fmtDate(g.updated)}</small></li>`
     )
     .join('');
-  return `<article class="wrap prose"><h1>글클메 가이드</h1>
-<p>글클메를 하다 보면 헷갈리는 것들을 한 주제씩 정리한 글이에요. 공개된 공략 자료와 팬 데이터베이스를 서로 맞춰 보고, 확인된 내용만 적어요.</p>
+  return `<article class="wrap prose"><h1>${GUIDE_T[lang].indexH1}</h1>
+<p>${GUIDE_T[lang].indexLead}</p>
 <ul class="guide-list">${items}</ul></article>`;
 }
 
@@ -2212,9 +2224,9 @@ for (const lang of LANGS) {
         lang,
         pageKey: 'guides',
         pagePath: '/guides/',
-        only: lang,
-        title: '글클메 가이드 모음 | GMS Hub',
-        desc: '글로벌 클래식 메이플 입문과 공략을 출처와 함께 정리한 GMS Hub 가이드 모음.',
+        only: LANGS.every((l) => guides.some((g) => g.lang === l)) ? undefined : lang,
+        title: GUIDE_T[lang].indexTitle,
+        desc: GUIDE_T[lang].indexDesc,
         body: guidesIndexBody(lang),
         ld: [breadcrumbLd(lang, t.navGuides, '/guides/')]
       })
@@ -2239,7 +2251,7 @@ for (const lang of LANGS) {
         lang,
         pageKey: 'guide',
         pagePath: guidePath(g),
-        only: lang,
+        only: guideBoth(g.slug) ? undefined : lang,
         title: `${g.title} | GMS Hub`,
         desc: g.desc,
         body: guideBody(g),
