@@ -1,21 +1,22 @@
 (() => {
   const localPause = ms => new Promise(resolve => setTimeout(resolve, ms));
   const key = r => JSON.stringify([r.item, r.price, r.seller, r.channel, r.room]);
+  const failure = (code, message) => Object.assign(new Error(message), { code });
   async function collect(options, progress = async () => {}, cancelled = () => false, pause = localPause) {
-    const report = { version: '0.2.2', runId: options.runId, world: 'Windia', startedAt: new Date().toISOString(),
-      status: 'running', rows: [], shops: 0, rejected: {}, queue: [], aiCalls: 0 };
+    const report = { version: '0.2.3', runId: options.runId, world: 'Windia', startedAt: new Date().toISOString(),
+      status: 'running', rows: [], shops: 0, rejected: {}, queue: [], skippedItems: [], aiCalls: 0 };
     const rows = new Map();
     const openModal = () => { const el = document.querySelector('#sv-modal'); return el && !el.closest('[hidden]') ? el : null; };
     const button = name => openModal()?.querySelector(`button[aria-label="${name}"]`);
     function guard() {
-      if (cancelled()) throw new Error('사용자 중지');
-      if (/just a moment|verify you are human|access denied/i.test(document.title)) throw new Error('접근 확인 필요');
-      if (Date.now() - Date.parse(report.startedAt) > 12 * 60000) throw new Error('12분 수집 제한 초과');
+      if (cancelled()) throw failure('CANCELLED', '사용자 중지');
+      if (/just a moment|verify you are human|access denied/i.test(document.title)) throw failure('ACCESS_REQUIRED', '접근 확인 필요');
+      if (Date.now() - Date.parse(report.startedAt) > 12 * 60000) throw failure('RUN_TIMEOUT', '12분 수집 제한 초과');
     }
     async function until(read, phase) {
       const deadline = Date.now() + 20000;
       while (Date.now() < deadline) { guard(); const value = read(); if (value) return value; await pause(250); }
-      throw new Error(`화면 구조 또는 로딩 확인 필요: ${phase}`);
+      guard(); throw failure('LOAD_TIMEOUT', `화면 구조 또는 로딩 확인 필요: ${phase}`);
     }
     try {
       guard();
@@ -32,10 +33,21 @@
         await progress({ shops: report.shops, rows: rows.size, item: item.name });
         const tr = [...document.querySelectorAll('tr[data-id]')].find(tr => tr.getAttribute('data-id') === item.id);
         if (!tr) throw new Error('아이템 목록 변경');
-        tr.querySelector('.item-select').click();
-        // Heading renders before the asynchronous shop controls on a fresh page.
-        const newest = await until(() => document.querySelector('#detail-body h2')?.textContent.trim() === item.name &&
-          [...document.querySelectorAll('#detail button')].find(b => b.textContent.trim() === 'Newest'), `${item.name} 상점 목록`);
+        let newest;
+        for (let attempt = 0; attempt < 2; attempt++) {
+          tr.querySelector('.item-select').click();
+          try {
+            // The heading can appear before asynchronous shop controls.
+            newest = await until(() => document.querySelector('#detail-body h2')?.textContent.trim() === item.name &&
+              [...document.querySelectorAll('#detail button')].find(b => b.textContent.trim() === 'Newest'), `${item.name} 상점 목록`);
+            break;
+          } catch (e) {
+            if (e.code !== 'LOAD_TIMEOUT') throw e;
+            if (attempt === 1) report.skippedItems.push({ ...item, reason: e.code });
+          }
+        }
+        // Only skip before opening a shop; every accepted row still passes full validation.
+        if (!newest) continue;
         newest.click(); await pause(500);
         const first = document.querySelector('#detail-body .buy-row[data-sv] [data-sv-btn]');
         if (!first) { report.rejected.no_shops = (report.rejected.no_shops || 0) + 1; continue; }
@@ -61,10 +73,11 @@
         if (rows.size >= 500 || report.shops >= 800) break;
       }
       report.rows = [...rows.values()]; report.nextCursor = (offset + report.queue.length) % all.length;
-      if (!report.rows.length) throw new Error('검증 통과 매물 없음');
+      if (!report.rows.length) throw failure('NO_VALID_ROWS', '검증 통과 매물 없음');
       report.status = 'completed';
     } catch (e) {
-      report.status = cancelled() ? 'cancelled' : 'failed'; report.error = e.message;
+      report.status = cancelled() ? 'cancelled' : 'failed'; report.error = e.message; report.errorCode = e.code || 'UNEXPECTED';
+      report.rows = [];
       button('Close')?.click(); // Failed/partial runs are never uploaded.
     }
     report.finishedAt = new Date().toISOString(); return report;

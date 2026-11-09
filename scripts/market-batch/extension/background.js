@@ -1,5 +1,6 @@
 importScripts('config.private.js');
 const SCHEDULE = 'gms-market-15m', WATCHDOG = 'gms-market-watchdog', RETRY = 'gms-market-upload';
+const COLLECT_RETRY = 'gms-market-collect-retry';
 const PAGE = 'https://meso.watch/?gms-batch=1';
 const ENDPOINT = 'https://gms-hub-votes.kwonth211.workers.dev/internal/market-batch';
 let serial = Promise.resolve();
@@ -10,26 +11,43 @@ const owned = tab => tab?.url?.startsWith(PAGE) || tab?.pendingUrl?.startsWith(P
 async function broadcast() {
   const s = await get();
   // No secret is ever included in content-script messages or the public DOM.
-  return { ...s, nextAt: (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
+  return { ...s, nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
 }
 async function ensureAlarms() {
   const s = await get();
   if (s.enabled && !await chrome.alarms.get(SCHEDULE)) await chrome.alarms.create(SCHEDULE, { delayInMinutes: 1, periodInMinutes: 15 });
+  if (s.enabled && s.retryAt && !await chrome.alarms.get(COLLECT_RETRY)) await chrome.alarms.create(COLLECT_RETRY, { when: Math.max(Date.now() + 1000, s.retryAt) });
   if (!await chrome.alarms.get(WATCHDOG)) await chrome.alarms.create(WATCHDOG, { periodInMinutes: 1 });
 }
 async function stop(error, report = null) {
-  const s = await get(); s.enabled = false; s.testRemaining = 0; s.error = error;
+  const s = await get(); s.enabled = false; s.testRemaining = 0; s.error = error; s.retryAt = null;
   if (s.pending) s.pending.paused = true;
   if (report) s.lastReport = report;
-  if (s.run) s.history = [{ runId: s.run.runId, status: 'failed', at: new Date().toISOString(), error }, ...(s.history || [])].slice(0, 20);
+  if (s.run) s.history = [{ runId: s.run.runId, mode: s.run.mode, trigger: s.run.trigger, status: 'failed', at: new Date().toISOString(), error }, ...(s.history || [])].slice(0, 20);
   if (s.run?.tabId) await chrome.tabs.sendMessage(s.run.tabId, { type: 'cancel' }).catch(() => {});
   s.run = null; await put(s); await chrome.alarms.clear(SCHEDULE);
+  await chrome.alarms.clear(COLLECT_RETRY);
+}
+async function recover(error, report = null) {
+  const s = await get();
+  // A failed test/manual-only run must never opt the user into automatic collection.
+  if (!s.enabled || s.run?.mode === 'test') return stop(error, report);
+  if (s.run?.tabId) await chrome.tabs.sendMessage(s.run.tabId, { type: 'cancel' }).catch(() => {});
+  if (report) s.lastReport = report;
+  s.collectionFailures = (s.collectionFailures || 0) + 1;
+  const minutes = Math.min(60, 5 * 2 ** Math.min(4, s.collectionFailures - 1));
+  s.retryAt = Date.now() + minutes * 60000;
+  s.error = `${error} · ${minutes}분 뒤 자동 재시도`;
+  if (s.run) s.history = [{ runId: s.run.runId, mode: s.run.mode, trigger: s.run.trigger, status: 'retrying', at: new Date().toISOString(), error }, ...(s.history || [])].slice(0, 20);
+  s.run = null; s.testRemaining = 0; await put(s);
+  await chrome.alarms.create(COLLECT_RETRY, { when: s.retryAt });
 }
 async function launch(mode, trigger) {
   const s = await get();
   if (s.run || s.pending) return { busy: true };
+  if (['alarm', 'retry'].includes(trigger) && s.retryAt > Date.now()) return { waiting: true };
   if (mode !== 'test' && !GMS_BATCH_CONFIG.token) throw new Error('DB 수집 키가 설정되지 않았습니다.');
-  s.error = null;
+  s.error = null; s.retryAt = null; await chrome.alarms.clear(COLLECT_RETRY);
   s.run = { runId: crypto.randomUUID(), mode, trigger, startedAt: Date.now(), cursor: s.cursor || 0, phase: 'loading', tabId: null };
   await put(s);
   const tab = s.workerTabId ? await chrome.tabs.get(s.workerTabId).catch(() => null) : null;
@@ -77,6 +95,7 @@ async function upload() {
   const current = await get();
   current.pending = null; current.run = null; current.error = null; current.lastReceipt = receipt;
   current.lastSuccessAt = new Date().toISOString(); current.cursor = current.lastReport.nextCursor || 0;
+  current.collectionFailures = 0; current.retryAt = null;
   current.history = [{ runId: current.lastReport.runId, mode: 'production', trigger: pending.trigger, status: 'stored',
     at: current.lastSuccessAt, shops: current.lastReport.shops, rows: receipt.accepted, receipt }, ...(current.history || [])].slice(0, 20);
   await put(current); await chrome.alarms.clear(RETRY);
@@ -85,7 +104,10 @@ async function finish(report, sender) {
   const s = await get();
   if (!s.run || s.run.runId !== report?.runId || s.run.tabId !== sender.tab?.id) throw new Error('현재 실행과 일치하지 않습니다.');
   s.lastReport = report;
-  if (report.status !== 'completed' || !report.rows.length) { await stop(report.error || '유효 매물 없음', report); return; }
+  if (report.status !== 'completed' || !report.rows.length) {
+    const retryable = report.status !== 'cancelled' && ['LOAD_TIMEOUT', 'RUN_TIMEOUT', 'NO_VALID_ROWS'].includes(report.errorCode);
+    await (retryable ? recover : stop)(report.error || '유효 매물 없음', report); return;
+  }
   if (s.run.mode === 'test') {
     s.history = [{ runId: report.runId, mode: 'test', status: 'verified', at: report.finishedAt, shops: report.shops, rows: report.rows.length, rejected: report.rejected }, ...(s.history || [])].slice(0, 20);
     s.run = null; s.testRemaining = Math.max(0, (s.testRemaining || 1) - 1); await put(s);
@@ -124,9 +146,10 @@ async function message(m, sender) {
   if (m.type === 'run') return launch('production', 'manual');
   if (m.type === 'enable') {
     const s = await get(); if (s.pending) throw new Error('보관된 결과를 먼저 저장하세요.');
-    s.enabled = true; s.error = null; await put(s); await ensureAlarms(); return broadcast();
+    s.enabled = true; s.error = null; s.retryAt = null; s.collectionFailures = 0;
+    await chrome.alarms.clear(COLLECT_RETRY); await put(s); await ensureAlarms(); return broadcast();
   }
-  if (m.type === 'disable') { const s = await get(); s.enabled = false; await put(s); await chrome.alarms.clear(SCHEDULE); return broadcast(); }
+  if (m.type === 'disable') { const s = await get(); s.enabled = false; if (s.retryAt) s.error = '자동 재시도를 사용자가 껐습니다.'; s.retryAt = null; await put(s); await chrome.alarms.clear(SCHEDULE); await chrome.alarms.clear(COLLECT_RETRY); return broadcast(); }
   if (m.type === 'cancel') { await stop('사용자가 실행과 예약을 중지했습니다.'); return broadcast(); }
   if (m.type === 'retry') {
     const s = await get(); if (!s.pending) return { ok: true };
@@ -139,15 +162,19 @@ chrome.runtime.onMessage.addListener((m, sender, respond) => {
 });
 chrome.alarms.onAlarm.addListener(alarm => enqueue(async () => {
   if (alarm.name === RETRY) return upload();
+  if (alarm.name === COLLECT_RETRY) {
+    const s = await get(); if (s.enabled && s.retryAt && s.retryAt <= Date.now()) return launch('production', 'retry');
+    return;
+  }
   if (alarm.name === WATCHDOG) {
     const s = await get();
-    if (s.run && !s.pending && ((s.run.phase === 'loading' && Date.now() - s.run.startedAt > 90000) || Date.now() - (s.run.readyAt || s.run.startedAt) > 14 * 60000)) await stop('수집 창 응답 시간 초과. 창을 복원한 뒤 다시 실행하세요. 예약을 중지했습니다.');
+    if (s.run && !s.pending && ((s.run.phase === 'loading' && Date.now() - s.run.startedAt > 90000) || Date.now() - (s.run.readyAt || s.run.startedAt) > 14 * 60000)) await recover('수집 창 응답 시간 초과');
     // Resume a durable outbox after a browser/service-worker restart.
     if (s.pending && !s.pending.paused && !await chrome.alarms.get(RETRY)) await chrome.alarms.create(RETRY, { delayInMinutes: 1 });
     return;
   }
   const s = await get(); if (alarm.name === SCHEDULE && s.enabled) await launch('production', 'alarm');
-}).catch(async () => stop('배치 실행 오류. 예약을 중지했습니다.')));
+}).catch(async e => stop(e.message || '배치 실행 오류. 예약을 중지했습니다.')));
 chrome.runtime.onStartup.addListener(() => enqueue(ensureAlarms));
 chrome.runtime.onInstalled.addListener(() => enqueue(ensureAlarms));
 enqueue(ensureAlarms);

@@ -72,3 +72,24 @@ test('periodic reader accepts a recent previous-day observation around New Year'
  shop.capturedAt='2026-12-31T15:05:00Z';target.title='seen 12월 31일 오후 11:59';
  const result=reader.validate(shop,catalog);assert.equal(result.ok,true);assert.equal(result.row.seen,'2026-12-31 14:59:00');
 });
+
+test('an item whose shop controls never load is retried once and skipped without losing other valid shops',async()=>{
+ const {dom,w,d}=mock(3);let now=Date.parse(fixture.capturedAt),clicks=0;
+ w.Date=class extends Date{constructor(...a){super(...(a.length?a:[now]));}static now(){return now;}};
+ const broken=d.querySelectorAll('.item-select')[1];
+ broken.onclick=()=>{clicks++;d.querySelector('#detail').innerHTML='<div id="detail-body"><h2>'+broken.textContent+'</h2></div>';};
+ const r=await w.GmsCollector.collect({mode:'production',runId:crypto.randomUUID()},async()=>{},()=>false,async ms=>{now+=ms;});
+ assert.equal(r.status,'completed',r.error);assert.equal(clicks,2);assert.equal(r.rows.length,40);assert.equal(r.skippedItems.length,1);assert.equal(r.skippedItems[0].name,broken.textContent);
+ dom.window.close();
+});
+test('a first-attempt item timeout recovers on retry; total loading failure is classified for automatic recovery',async()=>{
+ for(const alwaysFail of [false,true]){
+  const {dom,w,d}=mock();let now=Date.parse(fixture.capturedAt),clicks=0;
+  w.Date=class extends Date{constructor(...a){super(...(a.length?a:[now]));}static now(){return now;}};
+  for(const b of d.querySelectorAll('.item-select')){const original=b.onclick;let attempts=0;b.onclick=()=>{clicks++;if(!alwaysFail && ++attempts>1)original();else d.querySelector('#detail').replaceChildren();};}
+  const r=await w.GmsCollector.collect({mode:'test',runId:crypto.randomUUID()},async()=>{},()=>false,async ms=>{now+=ms;});
+  assert.equal(clicks,4);assert.equal(r.status,alwaysFail?'failed':'completed');
+  if(alwaysFail){assert.equal(r.errorCode,'NO_VALID_ROWS');assert.equal(r.rows.length,0);}else assert.equal(r.rows.length,40);
+  dom.window.close();
+ }
+});

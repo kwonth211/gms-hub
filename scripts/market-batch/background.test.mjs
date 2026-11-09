@@ -7,7 +7,7 @@ function harness(shared={state:undefined,alarms:new Map(),tabs:new Map(),windows
  const handlers={}; const event=name=>({addListener:fn=>handlers[name]=fn});
  const chrome={runtime:{id:'unit-extension',onMessage:event('message'),onStartup:event('startup'),onInstalled:event('installed')},
   storage:{local:{get:async()=>({state:structuredClone(shared.state)}),set:async({state})=>{shared.state=structuredClone(state);}}},
-  alarms:{get:async name=>shared.alarms.get(name),create:async(name,info)=>shared.alarms.set(name,{...info,scheduledTime:shared.now+(info.delayInMinutes||info.periodInMinutes)*60000}),clear:async name=>shared.alarms.delete(name),onAlarm:event('alarm')},
+  alarms:{get:async name=>shared.alarms.get(name),create:async(name,info)=>shared.alarms.set(name,{...info,scheduledTime:info.when || shared.now+(info.delayInMinutes||info.periodInMinutes)*60000}),clear:async name=>shared.alarms.delete(name),onAlarm:event('alarm')},
   windows:{get:async id=>{if(!shared.windows.has(id))throw Error('no window');return shared.windows.get(id);},create:async info=>{const id=shared.windows.size+1,t={id:shared.tabs.size+1,url:info.url,windowId:id,active:true};shared.tabs.set(t.id,t);const win={...info,id,state:'normal',tabs:[t]};shared.windows.set(id,win);return win;}},
   tabs:{get:async id=>{if(!shared.tabs.has(id))throw Error('no tab');return shared.tabs.get(id);},update:async(id,info)=>{shared.updates.push({id,...info});Object.assign(shared.tabs.get(id),info);},reload:async()=>{},sendMessage:async()=>{}}};
  const context=vm.createContext({chrome,GMS_BATCH_CONFIG:{token:'unit-token-never-exposed'},importScripts:()=>{},crypto,Response,AbortSignal,
@@ -58,11 +58,53 @@ test('missing collector tab times out, and restored schedule is recreated withou
  let h=harness();await h.drain();await h.send({type:'enable'});h.shared.alarms.delete('gms-market-15m');
  h=harness(h.shared);await h.drain();assert.ok(h.shared.alarms.has('gms-market-15m'));
  await h.alarm('gms-market-15m');const id=h.shared.state.run.runId;await h.alarm('gms-market-15m');assert.equal(h.shared.state.run.runId,id);
- h.shared.now+=15*60000;await h.alarm('gms-market-watchdog');assert.equal(h.shared.state.run,null);assert.equal(h.shared.state.enabled,false);
+ h.shared.now+=15*60000;await h.alarm('gms-market-watchdog');assert.equal(h.shared.state.run,null);assert.equal(h.shared.state.enabled,true);assert.ok(h.shared.state.retryAt>h.shared.now);
 });
 test('a minimized collector window pauses scheduling rather than taking over another window',async()=>{
  const h=harness();await h.drain();await h.send({type:'run'});const run=h.shared.state.run;
  await h.send({type:'ready'},run.tabId);await h.send({type:'finish',report:report(run)},run.tabId);
  h.shared.windows.get(h.shared.state.workerWindowId).state='minimized';await h.send({type:'enable'});await h.alarm('gms-market-15m');
  assert.equal(h.shared.state.enabled,false);assert.equal(h.shared.state.run,null);assert.equal(h.shared.windows.size,1);
+});
+
+test('collection timeout preserves schedule, backs off across worker restart and resets after a stored run',async()=>{
+ let h=harness();await h.drain();await h.send({type:'enable'});await h.alarm('gms-market-15m');
+ const fail=async()=>{const run=h.shared.state.run;await h.send({type:'finish',report:{...report(run),status:'failed',rows:[],errorCode:'LOAD_TIMEOUT',error:'Hat Accuracy Scroll: Intermediate 상점 목록'}},run.tabId);};
+ await fail();assert.equal(h.shared.state.enabled,true);assert.equal(h.shared.state.retryAt,h.shared.now+5*60000);assert.equal(h.shared.fetches.length,0);
+ assert.equal(h.shared.state.history[0].trigger,'alarm');assert.equal(h.shared.state.history[0].status,'retrying');
+ await h.alarm('gms-market-15m');assert.equal(h.shared.state.run,null);
+ h.shared.alarms.delete('gms-market-collect-retry');h=harness(h.shared);await h.drain();
+ assert.equal(h.shared.alarms.get('gms-market-collect-retry').scheduledTime,h.shared.state.retryAt);
+ h.shared.now=h.shared.state.retryAt;await h.alarm('gms-market-collect-retry');assert.equal(h.shared.state.run.trigger,'retry');
+ await fail();assert.equal(h.shared.state.retryAt,h.shared.now+10*60000);
+ h.shared.now=h.shared.state.retryAt;await h.alarm('gms-market-collect-retry');const run=h.shared.state.run;
+ await h.send({type:'finish',report:report(run)},run.tabId);
+ assert.equal(h.shared.state.collectionFailures,0);assert.equal(h.shared.state.retryAt,null);assert.equal(h.shared.state.enabled,true);assert.equal(h.shared.fetches.length,1);
+});
+test('access checks and explicit cancellation stop retries; disabling while waiting cannot resume collection',async()=>{
+ for(const errorCode of ['ACCESS_REQUIRED','CANCELLED']){
+  const h=harness();await h.drain();await h.send({type:'enable'});await h.alarm('gms-market-15m');const run=h.shared.state.run;
+  await h.send({type:'finish',report:{...report(run),status:'failed',rows:[],errorCode,error:'stop'}},run.tabId);
+  assert.equal(h.shared.state.enabled,false);assert.equal(h.shared.state.retryAt,null);
+ }
+ const h=harness();await h.drain();await h.send({type:'enable'});await h.alarm('gms-market-15m');h.shared.now+=100000;await h.alarm('gms-market-watchdog');
+ await h.send({type:'disable'});h.shared.now+=3600000;await h.alarm('gms-market-collect-retry');await h.alarm('gms-market-15m');
+ assert.equal(h.shared.state.run,null);assert.equal(h.shared.state.enabled,false);assert.ok(!h.shared.alarms.has('gms-market-collect-retry'));
+});
+
+test('repeated transient failures are capped at one retry per hour; a stale completion cannot upload',async()=>{
+ const h=harness();await h.drain();await h.send({type:'enable'});await h.alarm('gms-market-15m');let old;
+ for(let i=0;i<7;i++){
+  const run=h.shared.state.run;old=run;
+  await h.send({type:'finish',report:{...report(run),status:'failed',rows:[],errorCode:'NO_VALID_ROWS'}},run.tabId);
+  const delay=(h.shared.state.retryAt-h.shared.now)/60000;assert.equal(delay,Math.min(60,5*2**i));
+  h.shared.now=h.shared.state.retryAt;await h.alarm('gms-market-collect-retry');
+ }
+ assert.equal((await h.send({type:'finish',report:report(old)},old.tabId)).ok,false);assert.equal(h.shared.fetches.length,0);
+ await h.send({type:'cancel'});assert.equal(h.shared.state.enabled,false);assert.equal(h.shared.state.retryAt,null);
+});
+test('a manual-only collection failure does not enable an unrequested schedule',async()=>{
+ const h=harness();await h.drain();await h.send({type:'run'});const run=h.shared.state.run;
+ await h.send({type:'finish',report:{...report(run),status:'failed',rows:[],errorCode:'LOAD_TIMEOUT'}},run.tabId);
+ assert.equal(h.shared.state.enabled,false);assert.ok(!h.shared.alarms.has('gms-market-collect-retry'));
 });
