@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-28",
+ "updated": "2026-11-10",
  "sources": [
   {
    "name": "MS-Classic",
@@ -10,6 +10,11 @@
    "name": "MapleClassic Wiki",
    "url": "https://mapleclassic.wiki/wiki/Scrolling",
    "date": null
+  },
+  {
+   "name": "Game client item data (via maplestory.io)",
+   "url": "https://maplestory.io/api/MCW/1/item/2043002",
+   "date": "2026-11-10"
   }
  ],
  "tiers": [
@@ -17,25 +22,29 @@
    "id": "lesser",
    "name": "Lesser",
    "success": 100,
-   "destroyOnFail": 0
+   "destroyOnFail": 0,
+   "ko": "하급"
   },
   {
    "id": "intermediate",
    "name": "Intermediate",
    "success": 60,
-   "destroyOnFail": 0
+   "destroyOnFail": 0,
+   "ko": "중급"
   },
   {
    "id": "greater",
    "name": "Greater",
    "success": 10,
-   "destroyOnFail": 0
+   "destroyOnFail": 0,
+   "ko": "상급"
   },
   {
    "id": "chaos",
    "name": "Chaos",
    "success": 10,
-   "destroyOnFail": 50
+   "destroyOnFail": 50,
+   "ko": "혼돈"
   }
  ],
  "ladders": [
@@ -50,6 +59,32 @@
     "intermediate": 2,
     "greater": 3,
     "chaos": 4
+   }
+  },
+  {
+   "id": "weapon",
+   "name": {
+    "ko": "무기 공격력 (한손·두손 무기, 창, 폴암, 활, 석궁, 아대, 단검)",
+    "en": "Weapon ATT (all swords, axes, blunts, spears, polearms, bows, crossbows, claws, daggers)"
+   },
+   "gains": {
+    "lesser": 1,
+    "intermediate": 2,
+    "greater": 4,
+    "chaos": 5
+   }
+  },
+  {
+   "id": "magic-weapon",
+   "name": {
+    "ko": "완드·스태프 마력",
+    "en": "Wand / staff Magic ATT"
+   },
+   "gains": {
+    "lesser": 2,
+    "intermediate": 4,
+    "greater": 8,
+    "chaos": 10
    }
   },
   {
@@ -80,8 +115,8 @@
   }
  ],
  "disputed": {
-  "ko": "무기 공격력과 완드·스태프 마력 상승치는 출처마다 달라요. MS-Classic은 무기 +1/+2/+4/+5, 완드·스태프 +2/+4/+8/+10, MapleClassic Wiki는 무기 +1/+2/+3/+4, 완드·스태프 +2/+4/+6/+8로 적고 있어요. 이 경우엔 '직접 입력'을 쓰세요.",
-  "en": "Weapon ATT and wand/staff Magic ATT gains differ by source: MS-Classic lists weapons +1/+2/+4/+5 and wands/staves +2/+4/+8/+10, while MapleClassic Wiki lists weapons +1/+2/+3/+4 and wands/staves +2/+4/+6/+8. Use custom gains for these."
+  "ko": "무기 공격력(+1/+2/+4/+5)과 완드·스태프 마력(+2/+4/+8/+10) 상승치는 게임 클라이언트의 주문서 데이터로 확인했어요. 예전에 자료마다 달랐던 값이에요.",
+  "en": "Weapon ATT (+1/+2/+4/+5) and wand/staff Magic ATT (+2/+4/+8/+10) gains are taken from the scrolls' own data in the game client; sources used to disagree on them."
  },
  "unknown": {
   "ko": "실패한 주문서가 업그레이드 가능 횟수를 차감하는지는 클라이언트 데이터에 기록이 없어 확인되지 않았어요. 그래서 이 계산기는 '바를 주문서 개수' 기준으로 계산해요.",

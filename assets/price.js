@@ -1,3 +1,5 @@
+import { indexEntry, searchEntries } from './search-index.js';
+
 const i18n = JSON.parse(document.getElementById('i18n').textContent);
 const input = document.getElementById('pr-q');
 const result = document.getElementById('pr-result');
@@ -60,21 +62,10 @@ function twinNote(it) {
   return fill(i18n.twin.other, { id: it.id });
 }
 
-function terms(q) {
-  return q
-    .toLowerCase()
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((w) => i18n.aliases[w] || w);
-}
-
+// The shared search (also on the home page and live market): shorthand, Korean words for English-only cash items, ranking.
+let entries = [];
 function search(q) {
-  const words = terms(q);
-  const whole = squash(q);
-  const hits = items.filter((it) => it.flat.includes(whole) || words.every((w) => it.hay.includes(w) || it.flat.includes(squash(w))));
-  // Exact names first, then names that start with the query, then shorter names.
-  const rank = (it) => (squash(it.name) === whole || squash(it.en) === whole ? 0 : squash(it.name).startsWith(whole) || squash(it.en).startsWith(whole) ? 1 : 2);
-  return hits.sort((a, b) => rank(a) - rank(b) || (i18n.lang === 'ko' ? !!b.ko - !!a.ko : 0) || a.name.length - b.name.length || a.id - b.id);
+  return searchEntries(entries, q).map((e) => e.it);
 }
 
 function siteLink(site, it) {
@@ -248,6 +239,7 @@ fetch(i18n.itemsUrl)
   .then((rows) => {
     items = prepare(rows);
     byId = new Map(items.map((it) => [it.id, it]));
+    entries = items.map((it) => indexEntry({ type: 'item', id: it.id, title: it.name, names: [it.ko, it.en, String(it.id)], it }));
     items.forEach((it) => twins.set(it.en.toLowerCase(), (twins.get(it.en.toLowerCase()) || 0) + 1));
     render();
   })

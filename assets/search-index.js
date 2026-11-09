@@ -9,7 +9,7 @@ const synonyms = [
   ['점프', 'jump'], ['힘', 'str'], ['민첩', 'dex'], ['덱스', 'dex'], ['지력', 'int'],
   ['인트', 'int'], ['행운', 'luk'], ['럭', 'luk'], ['체력', 'hp'], ['투구', '모자'],
   ['크리티컬데미지', 'critdamage'], ['크리데미지', 'critdamage'], ['크뎀', 'critdamage'], ['크리티컬', 'crit'],
-  ['장공', '장갑attack'], ['장마', '장갑magicattack'],
+  ['장공', '장갑attack'], ['장마', '장갑magicattack'], ['마공', 'magicattack'], ['귀작', '귀고리'], ['카오스', '혼돈'],
 ].sort((a, b) => b[0].length - a[0].length);
 
 // Players type scrolls as gear + stat in two or three syllables (귀힘, 창공, 폴공, 망럭, 신이속). A query made only of such a

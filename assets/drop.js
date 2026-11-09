@@ -53,7 +53,7 @@ document.querySelectorAll('[data-box]').forEach((tab) =>
 );
 
 const search = document.getElementById('db-search');
-search.addEventListener('input', () => {
+search?.addEventListener('input', () => {
   const q = search.value.trim().toLowerCase();
   table.querySelectorAll('tr[data-search]').forEach((r) => (r.hidden = q !== '' && !r.dataset.search.includes(q)));
 });

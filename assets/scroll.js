@@ -46,6 +46,7 @@ function render() {
   set('used', nf.format(used));
   set('cost', new Intl.NumberFormat(i18n.lang).format(Math.round(used * price)));
 
+  renderCompare(count, ladder);
   const rows = alive.map((prob, k) => ({ label: i18n.distSucc.replace('{k}', k), prob, cls: '' })).reverse();
   if (boom > 0) rows.push({ label: i18n.distBoom, prob: boom, cls: 'boom' });
   const max = Math.max(...rows.map((r) => r.prob));
@@ -57,6 +58,33 @@ function render() {
     )
     .join('');
 }
+
+// Same type and count, every tier side by side: players asking "Lesser or Intermediate?" otherwise had to switch the tier
+// one at a time. A destroyed item counts as no gain, and as worse than the guaranteed Lesser result.
+const compareBody = document.querySelector('#sc-compare tbody');
+const prices = {};
+function renderCompare(count, ladder) {
+  const gainOf = (tier) => (ladder ? ladder.gains[tier.id] : parseFloat(form.gain.value) || 0);
+  const lesser = data.tiers.find((t) => t.id === 'lesser');
+  const floor = count * gainOf(lesser);
+  compareBody.innerHTML = data.tiers
+    .map((tier) => {
+      const g = gainOf(tier);
+      const { alive, boom, used } = compute(count, tier);
+      const mean = alive.reduce((sum, prob, k) => sum + prob * k * g, 0);
+      const worse = boom + alive.reduce((sum, prob, k) => sum + (k * g < floor ? prob : 0), 0);
+      const price = prices[tier.id] || 0;
+      const perPoint = price && mean ? new Intl.NumberFormat(i18n.lang).format(Math.round((used * price) / mean)) : '—';
+      return `<tr><td>${i18n.tierNames[tier.id]} (${tier.success}%)</td><td>+${nf.format(mean)}</td><td>${tier.id === 'lesser' ? '—' : pct(worse)}</td><td>${boom ? pct(boom) : '—'}</td><td><input type="number" min="0" step="1000" inputmode="numeric" data-tier="${tier.id}" value="${price || ''}" aria-label="${i18n.tierNames[tier.id]}"></td><td>${perPoint}</td></tr>`;
+    })
+    .join('');
+}
+compareBody.addEventListener('change', (e) => {
+  const input = e.target.closest('input[data-tier]');
+  if (!input) return;
+  prices[input.dataset.tier] = parseFloat(input.value) || 0;
+  render();
+});
 
 form.addEventListener('submit', (e) => {
   e.preventDefault();

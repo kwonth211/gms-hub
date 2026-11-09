@@ -1,4 +1,5 @@
 import { DAY, parseUtc, marketRows } from './market-data.js';
+import { indexEntry, searchEntries } from './search-index.js';
 import { mountMarketCharts } from './market-charts.js';
 // Item search, observed-price analytics and shop locations, with a live ranking and listing feed.
 const D = JSON.parse(document.getElementById('mk-data').textContent);
@@ -125,13 +126,11 @@ $('mk-detail').addEventListener('click', (e) => {
   if (e.target.closest('[data-refresh-item]') && selectedItem) loadItem(selectedItem, false);
 });
 
+// Same search as the home page and price search (shorthand like 장공/귀힘, Korean words for English-only cash items).
+let entries = [];
 function matches(q) {
-  const f = squash(q);
-  if (f.length < 1) return [];
-  return items
-    .filter((it) => it.flat.includes(f))
-    .sort((a, b) => !a.flat.startsWith(f) - !b.flat.startsWith(f) || nameOf(a).length - nameOf(b).length)
-    .slice(0, 8);
+  if (!q.trim()) return [];
+  return searchEntries(entries, q).slice(0, 8).map((e) => e.it);
 }
 
 function renderSuggest() {
@@ -260,6 +259,7 @@ fetch(D.itemsUrl)
   .then((r) => { if (!r.ok) throw new Error('items'); return r.json(); })
   .then((rows) => {
     items = rows.map(([id, ko, en]) => ({ id, ko, en, flat: squash(`${ko}${en}`) }));
+    entries = items.map((it) => indexEntry({ type: 'item', id: it.id, title: nameOf(it), names: [it.ko, it.en, String(it.id)], it }));
     byId = new Map(items.map((it) => [it.id, it]));
     const params = new URLSearchParams(location.search);
     const id = Number(params.get('item'));

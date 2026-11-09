@@ -9,6 +9,10 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 const ko = i18n.lang === 'ko';
 const spotName = (s) => (ko && s.ko ? `${esc(s.ko)} <small class="en-name">${esc(s.map)}</small>` : esc(s.map));
 const mobName = (m) => esc(ko && m.ko ? m.ko : m.name);
+// Weaknesses (client code 3) and undead decide which maps suit a mage's element or a cleric's Heal.
+const mobTags = (m) =>
+  [...(m.el || '').matchAll(/([FILSH])3/g)].map(([, e]) => `<i class="mob-tag weak">${i18n.weak[e]} ${i18n.weakWord}</i>`).join('') +
+  (m.undead ? `<i class="mob-tag undead">${i18n.undead}</i>` : '');
 // Players click the source and monster chips on a spot, so they lead somewhere: the source's own article (MS-Classic splits
 // its guide by level band) and the hits-to-kill calculator for that monster.
 const sourceUrl = (r) => {
@@ -37,7 +41,7 @@ function show(lv) {
       const mobs = s.monsters
         .map((m) => {
           const d = m.level - lv;
-          return `<a class="mob${d >= 5 ? ' hi' : ''}" href="${i18n.damageUrl}?mob=${encodeURIComponent(m.name)}" title="${esc(i18n.mobTitle)}">${mobName(m)} Lv.${m.level}${d >= 5 ? `<em>${fill(i18n.higher, { d })}</em>` : ''}</a>`;
+          return `<a class="mob${d >= 5 ? ' hi' : ''}" href="${i18n.damageUrl}?mob=${encodeURIComponent(m.name)}" title="${esc(i18n.mobTitle)}">${mobName(m)} Lv.${m.level}${mobTags(m)}${d >= 5 ? `<em>${fill(i18n.higher, { d })}</em>` : ''}</a>`;
         })
         .join('');
       return `<article class="spot${recs.length === top && top > 1 ? ' top' : ''}">

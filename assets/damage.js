@@ -107,6 +107,7 @@ function renderSkills() {
     skillId = list[0].id;
     powerTouched = false;
   }
+  $('dm-heal-note').hidden = s.second !== 'cleric';
   $('dm-skills').replaceChildren(
     ...list.map((k) => {
       const b = document.createElement('button');

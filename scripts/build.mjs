@@ -15,6 +15,8 @@ const sites = readJson('data/sites.json');
 const training = readJson('data/training.json');
 const itemsData = readJson('data/items.json');
 const scrolls = readJson('data/scrolls.json');
+// Korean pages use the client's own tier names (하급·중급·상급·혼돈); English keeps Lesser/Intermediate/Greater/Chaos.
+const tierName = (lang, s) => (lang === 'ko' ? s.ko : s.name);
 const drops = readJson('data/drops.json');
 const boxes = readJson('data/boxes.json');
 // Long-form articles; each body lives in data/guides/<slug>.<lang>.html and exists in one language only.
@@ -481,6 +483,16 @@ const MOBS = readJson('data/mobs.json').mobs.map((m) => {
   const o = MOB_OVERRIDES[m.en] || {};
   return { ...m, ...(o.ko ? { ko: o.ko } : {}), ...(o.hp ? { hp: o.hp } : {}), aka: o.aka || [], status: o.status };
 });
+// Training spots carry the same corrected names, plus each monster's elements and undead flag so the finder can show
+// mages which maps suit their element and clerics where Heal works.
+for (const spot of training.spots) {
+  for (const m of spot.monsters) {
+    const mob = MOBS.find((x) => x.en === m.name && x.lv === m.level) || MOBS.find((x) => x.en === m.name);
+    if (MOB_OVERRIDES[m.name]?.ko) m.ko = MOB_OVERRIDES[m.name].ko;
+    if (mob?.el) m.el = mob.el;
+    if (mob?.undead) m.undead = 1;
+  }
+}
 
 // One page per 10-level band, so "level 30 training" searches land on a focused list.
 const TR_MAX = Math.max(...training.spots.flatMap((s) => s.recs.map((r) => r.max)));
@@ -901,7 +913,7 @@ ${trainingSources(lang)}
 </section>
 </div>
 ${jsonScript('training-data', training)}
-${jsonScript('i18n', { lang, trResultTitle: t.trResultTitle, trNone: t.trNone, agree: t.agree, higher: t.higher, expHr: t.expHr, caution: t.caution, damageUrl: href(langPath(lang, '/tools/damage/')), mobTitle: lang === 'ko' ? '이 몬스터를 몇 방에 잡는지 계산' : 'Hits to kill this monster', srcTitle: lang === 'ko' ? '이 출처의 사냥터 글 열기' : 'Open this source' })}`;
+${jsonScript('i18n', { lang, trResultTitle: t.trResultTitle, trNone: t.trNone, agree: t.agree, higher: t.higher, expHr: t.expHr, caution: t.caution, damageUrl: href(langPath(lang, '/tools/damage/')), weak: lang === 'ko' ? { F: '불', I: '얼음', L: '번개', S: '독', H: '성' } : { F: 'Fire', I: 'Ice', L: 'Lightning', S: 'Poison', H: 'Holy' }, weakWord: lang === 'ko' ? '약점' : 'weak', undead: lang === 'ko' ? '언데드' : 'Undead', mobTitle: lang === 'ko' ? '이 몬스터를 몇 방에 잡는지 계산' : 'Hits to kill this monster', srcTitle: lang === 'ko' ? '이 출처의 사냥터 글 열기' : 'Open this source' })}`;
 }
 
 // Spots any source recommends inside the band; more agreeing sources first.
@@ -929,15 +941,15 @@ ${trainingSources(lang)}
 
 function scrollBody(lang) {
   const t = T[lang];
-  const tierOpts = scrolls.tiers.map((s) => `<option value="${s.id}"${s.id === 'intermediate' ? ' selected' : ''}>${esc(s.name)} (${s.success}%)</option>`).join('');
+  const tierOpts = scrolls.tiers.map((s) => `<option value="${s.id}"${s.id === 'intermediate' ? ' selected' : ''}>${esc(tierName(lang, s))} (${s.success}%)</option>`).join('');
   const ladderOpts =
     scrolls.ladders.map((l) => `<option value="${l.id}">${esc(l.name[lang])}</option>`).join('') + `<option value="custom">${t.scCustom}</option>`;
-  const tierRows = scrolls.tiers.map((s) => `<tr><td>${esc(s.name)}</td><td>${s.success}%</td><td>${s.destroyOnFail ? `${s.destroyOnFail}%` : '—'}</td></tr>`).join('');
+  const tierRows = scrolls.tiers.map((s) => `<tr><td>${esc(tierName(lang, s))}</td><td>${s.success}%</td><td>${s.destroyOnFail ? `${s.destroyOnFail}%` : '—'}</td></tr>`).join('');
   const ladderRows = scrolls.ladders
     .map(
       (l) =>
         `<tr><td>${esc(l.name[lang])}</td>${scrolls.tiers.map((s) => `<td>+${l.gains[s.id]}</td>`).join('')}<td>${scrolls.tiers
-          .map((s) => `${s.name[0]} ${Math.round(l.gains[s.id] * s.success) / 100}`)
+          .map((s) => `${tierName(lang, s)[0]} ${Math.round(l.gains[s.id] * s.success) / 100}`)
           .join(' · ')}</td></tr>`
     )
     .join('');
@@ -965,18 +977,23 @@ function scrollBody(lang) {
 <div id="sc-dist" class="dist"></div>
 </div>
 </div>
+<section class="panel sc-compare">
+<h2>${lang === 'ko' ? '같은 칸 수로 등급끼리 비교' : 'Compare tiers for the same slots'}</h2>
+<p class="muted small">${lang === 'ko' ? '위에서 고른 종류와 개수 그대로, 등급만 바꿨을 때예요. 장당 가격을 넣으면 공격력 1당 평균 비용도 보여 줘요.' : 'Same scroll type and count as above, one row per tier. Add a price per scroll to see the average cost per point.'}</p>
+<div class="table-wrap"><table class="data" id="sc-compare"><thead><tr><th>${t.colTier}</th><th>${lang === 'ko' ? '평균 상승' : 'Average gain'}</th><th>${lang === 'ko' ? '하급보다 못할 확률' : 'Worse than Lesser'}</th><th>${lang === 'ko' ? '파괴 확률' : 'Destroyed'}</th><th>${lang === 'ko' ? '장당 가격 (메소)' : 'Price each (mesos)'}</th><th>${lang === 'ko' ? '1당 평균 비용' : 'Avg cost per point'}</th></tr></thead><tbody></tbody></table></div>
+</section>
 <section>
 <h2>${t.tierTable}</h2>
 <div class="table-wrap"><table class="data"><thead><tr><th>${t.colTier}</th><th>${t.colSuccess}</th><th>${t.colBoom}</th></tr></thead><tbody>${tierRows}</tbody></table></div>
 <h2>${t.ladderTable}</h2>
-<div class="table-wrap"><table class="data"><thead><tr><th>${t.colLadder}</th>${scrolls.tiers.map((s) => `<th>${esc(s.name)}</th>`).join('')}<th>${t.colExpected}</th></tr></thead><tbody>${ladderRows}</tbody></table></div>
+<div class="table-wrap"><table class="data"><thead><tr><th>${t.colLadder}</th>${scrolls.tiers.map((s) => `<th>${esc(tierName(lang, s))}</th>`).join('')}<th>${t.colExpected}</th></tr></thead><tbody>${ladderRows}</tbody></table></div>
 <ul class="notes"><li>${esc(scrolls.disputed[lang])}</li><li>${esc(scrolls.unknown[lang])}</li></ul>
 <p class="src">${t.sourcesLabel}: ${scrolls.sources.map((s) => `${srcLink(s.url, s.name)}${s.date ? ` (${s.date})` : ''}`).join(' · ')}</p>
 </section>
 ${scrollGuide(lang)}
 </div>
 ${jsonScript('scroll-data', scrolls)}
-${jsonScript('i18n', { lang, distSucc: t.distSucc, distBoom: t.distBoom })}`;
+${jsonScript('i18n', { lang, distSucc: t.distSucc, distBoom: t.distBoom, tierNames: Object.fromEntries(scrolls.tiers.map((x) => [x.id, tierName(lang, x)])) })}`;
 }
 
 // ---------- drops ----------
@@ -1108,8 +1125,6 @@ const PR = {
   }
 };
 
-// Typed stat names in Korean, matched against the English words the Korean client keeps in scroll names.
-const STAT_ALIASES = { 투구: '모자', 장공: '장갑 attack', 장마: '장갑 magic attack', 귀작: '귀고리', 공격력: 'attack', 공: 'attack', 마력: 'magic attack', 마공: 'magic attack', 힘: 'str', 민첩: 'dex', 덱: 'dex', 지력: 'int', 인트: 'int', 행운: 'luk', 럭: 'luk', 명중: 'accuracy', 명중률: 'accuracy', 회피: 'avoid', 회피율: 'avoid', 방어력: 'defense', 방어: 'defense', 이동속도: 'speed', 이속: 'speed', 점프: 'jump', 체력: 'hp' };
 const POPULAR = { ko: ['장갑 공격력', '일비', '메탈 완드', '주황 포션', '마나 엘릭서', '청동의 원석'], en: ['Gloves Attack', 'Ilbi', 'Metal Wand', 'Orange Potion', 'Mana Elixir', 'Bronze Ore'] };
 
 function priceBody(lang) {
@@ -1132,7 +1147,7 @@ ${config.priceReports ? `<p class="muted">${esc(t.reportNote)}</p>` : ''}
 ${t.tradingLink && guides.some((g) => g.slug === 'trading-and-mesos') ? `<p>${fill(t.tradingLink, { href: href(langPath('ko', '/guides/trading-and-mesos/')) })}</p>` : ''}
 </section>
 </div>
-${jsonScript('i18n', { lang, ...Object.fromEntries(Object.entries(t).filter(([k]) => ['none', 'more', 'level', 'copy', 'copied', 'paid', 'direct', 'copyNote', 'twin', 'cats', 'subs', 'hubLabel', 'hubNone', 'hubSummary', 'report', 'pricePh', 'submit', 'thanks', 'badPrice', 'failed', 'kinds', 'recent', 'recentNone'].includes(k))), sites: PRICE_SITES, aliases: lang === 'ko' ? STAT_ALIASES : {}, itemsUrl: href('/assets/items.json'), api: config.priceReports ? config.voteApi : '' })}`;
+${jsonScript('i18n', { lang, ...Object.fromEntries(Object.entries(t).filter(([k]) => ['none', 'more', 'level', 'copy', 'copied', 'paid', 'direct', 'copyNote', 'twin', 'cats', 'subs', 'hubLabel', 'hubNone', 'hubSummary', 'report', 'pricePh', 'submit', 'thanks', 'badPrice', 'failed', 'kinds', 'recent', 'recentNone'].includes(k))), sites: PRICE_SITES, itemsUrl: href('/assets/items.json'), api: config.priceReports ? config.voteApi : '' })}`;
 }
 
 // ---------- shop scanner (sample collection) ----------
@@ -1395,6 +1410,7 @@ ${num('dm-mastery', t.mastery, 'max="20"')}
 <section class="panel dm-skill" aria-labelledby="dm-skill-h">
 <h2 id="dm-skill-h">${t.skill}</h2>
 <div class="dm-skills" id="dm-skills" role="radiogroup" aria-labelledby="dm-skill-h"></div>
+<p class="muted small" id="dm-heal-note" hidden>${lang === 'ko' ? '힐로 언데드를 때리는 데미지는 공식이 공개되지 않아 계산하지 않아요(NiaMeowDB·Henesys.GG 모두 공식 미공개). 아래 표에서 <b>언데드</b> 표시가 붙은 몬스터가 힐로 잡을 수 있는 대상이에요.' : 'Heal damage against undead is not calculated: its formula is not public (NiaMeowDB and Henesys.GG do not publish it either). Monsters tagged <b>Undead</b> below are the ones Heal can hit.'}</p>
 <label class="dm-field dm-power"><span>${t.power}</span><input id="dm-power" type="number" inputmode="numeric" min="1"><small>${esc(t.powerHint)}</small></label>
 </section>
 <section class="panel dm-out" aria-labelledby="dm-out-h">
@@ -1572,10 +1588,13 @@ ${tb.phase === 'upcoming' && bx.effective ? `<p class="muted small">${esc(bx.eff
 <section>
 <h2>${t.monsterHeading}</h2>
 <p class="muted">${esc(t.monsterNote)}</p>
-<p class="muted">${esc(t.dbLead)}</p>
+${drops.entries.length
+  ? `<p class="muted">${esc(t.dbLead)}</p>
 <input id="db-search" class="search-small" type="search" placeholder="${esc(t.dbSearch)}" aria-label="${esc(t.dbSearch)}">
 <div class="table-wrap"><table class="data clickable" id="drop-db"><thead><tr><th>${t.colMob}</th><th>${t.colItem}</th><th>${t.colRate}</th><th>${t.colSource}</th><th>${t.colNote}</th></tr></thead><tbody>${rows}</tbody></table></div>
-<p class="muted small">${t.dataUpdated}: ${esc(drops.updated)}</p>
+<p class="muted small">${t.dataUpdated}: ${esc(drops.updated)}</p>`
+  : // An empty table read as a broken feature; until a sourced rate exists, point to where drop lists live and to the calculator.
+    `<p>${lang === 'ko' ? `아직 출처가 확인된 몬스터 드롭률이 없어요. 몬스터별 드롭 목록은 <a href="${href(langPath(lang, '/#database'))}">종합 DB · 위키</a> 사이트에서 보고, 거기 나온 확률을 위 계산기에 넣으면 몇 마리를 잡아야 하는지 바로 볼 수 있어요.` : `No sourced monster drop rates yet. Look up a monster's drops on the <a href="${href(langPath(lang, '/#database'))}">database and wiki</a> sites, then put the rate into the calculator above to see how many kills it takes.`}</p>`}
 </section>
 <section>
 <h2>${t.formulaHeading}</h2>
@@ -1747,17 +1766,17 @@ function scrollGuide(lang) {
   const nf = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 });
   const v = {
     n,
-    mid: mid.name,
+    mid: tierName(lang, mid),
     midRate: mid.success,
     gain: std.gains.intermediate,
     expPass: nf.format(n * pm),
     expGain: nf.format(n * pm * std.gains.intermediate),
     all: pct(pm ** n, lang),
     five: pct(atLeast(n, pm, 5), lang),
-    great: great.name,
+    great: tierName(lang, great),
     greatRate: great.success,
     greatOne: pct(1 - (1 - pg) ** n, lang),
-    chaos: chaos.name,
+    chaos: tierName(lang, chaos),
     boom: pct(boom, lang),
     survive3: pct((1 - boom) ** 3, lang)
   };
@@ -2198,7 +2217,7 @@ for (const lang of LANGS) {
       title: PR[lang].title,
       desc: PR[lang].desc,
       body: priceBody(lang),
-      scripts: ['price.js'],
+      modules: ['price.js'],
       ld: [appLd(PR[lang].h1, PR[lang].desc, '/tools/price/'), breadcrumbLd(lang, PR[lang].h1, '/tools/price/')]
     },
     about: { title: t.aboutTitle, desc: t.aboutDesc, body: prose(t.aboutH1, t.aboutBody), ld: [breadcrumbLd(lang, t.aboutH1, '/about/')] },
