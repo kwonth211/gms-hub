@@ -1,4 +1,4 @@
-// Refreshes data/items.json: every tradeable (non-cash) MapleStory Classic World item with its official Korean and English
+// Refreshes data/items.json: every tradeable MapleStory Classic World item (cash items included) with its official Korean and English
 // names, read from the Classic World client data that maplestory.io serves. Item ids differ from old GMS versions, so only
 // the MCW region is used. Run by hand after a game patch: node scripts/fetch-items.mjs
 import { writeFileSync } from 'node:fs';
@@ -8,10 +8,11 @@ const res = await fetch(`https://maplestory.io/api/MCW/${VERSION}/item?count=500
 if (!res.ok) throw new Error(`maplestory.io ${res.status}`);
 const raw = await res.json();
 
-// Character looks, quest items and cash-category entries never reach the Free Market.
+// Hair and face looks and quest items never reach the Free Market. Cash items do (players trade NX cosmetics, coupons and
+// pet items in shops and search for them), so they are included.
 const SKIP_SUB = new Set(['Hair', 'Face', 'Head', 'Quest Item']);
 const items = raw
-  .filter((x) => !x.isCash && x.names?.en && x.typeInfo.overallCategory !== 'Cash' && !SKIP_SUB.has(x.typeInfo.subCategory))
+  .filter((x) => x.names?.en && !SKIP_SUB.has(x.typeInfo.subCategory))
   .map((x) => {
     const translated = !(x.untranslated || []).includes('ko') && x.names.ko;
     return {

@@ -475,6 +475,13 @@ const PAGES = [
   { key: 'terms', path: '/terms/' }
 ];
 
+// Monster data with the live-client corrections from data/mob-overrides.json (names, HP, areas not open yet).
+const MOB_OVERRIDES = readJson('data/mob-overrides.json');
+const MOBS = readJson('data/mobs.json').mobs.map((m) => {
+  const o = MOB_OVERRIDES[m.en] || {};
+  return { ...m, ...(o.ko ? { ko: o.ko } : {}), ...(o.hp ? { hp: o.hp } : {}), aka: o.aka || [], status: o.status };
+});
+
 // One page per 10-level band, so "level 30 training" searches land on a focused list.
 const TR_MAX = Math.max(...training.spots.flatMap((s) => s.recs.map((r) => r.max)));
 const TR_BANDS = Array.from({ length: Math.ceil(TR_MAX / 10) }, (_, i) => [i * 10 + 1, i * 10 + 10]);
@@ -833,7 +840,7 @@ const minRec = (s) => Math.min(...s.recs.map((r) => r.min));
 
 // Korean pages lead with the client's Korean name and keep the English one beside it, since guides and players use both.
 const spotName = (lang, s) => (lang === 'ko' && s.ko ? `${esc(s.ko)} <small class="en-name">${esc(s.map)}</small>` : esc(s.map));
-const mobName = (lang, m) => esc(lang === 'ko' && m.ko ? m.ko : m.name);
+const mobName = (lang, m) => esc(lang === 'ko' && (MOB_OVERRIDES[m.name]?.ko || m.ko) ? MOB_OVERRIDES[m.name]?.ko || m.ko : m.name);
 
 function trainingRows(lang, spots) {
   const nf = new Intl.NumberFormat(lang);
@@ -1403,7 +1410,7 @@ ${num('dm-mastery', t.mastery, 'max="20"')}
 </section>
 </div>
 ${damageGuide(lang)}
-${jsonScript('dm-data', { lang, t: { ...t.i, hits: t.hits, never: t.never, lines: t.lines, mobsHit: t.mobsHit, accNeed: t.accNeed, emptyMobs: t.emptyMobs, needStats: t.needStats, estimated: t.estimated, none: t.none }, mobsUrl: href('/assets/mobs.json'), weaponsUrl: href('/assets/weapons.json') })}`;
+${jsonScript('dm-data', { lang, t: { ...t.i, hits: t.hits, never: t.never, lines: t.lines, mobsHit: t.mobsHit, accNeed: t.accNeed, emptyMobs: t.emptyMobs, needStats: t.needStats, estimated: t.estimated, none: t.none, status: lang === 'ko' ? { upcoming: '11/18 개방 지역', unplaced: '맵에 없음' } : { upcoming: 'Opens Nov 18', unplaced: 'Not on a map' } }, mobsUrl: href('/assets/mobs.json'), weaponsUrl: href('/assets/weapons.json') })}`;
 }
 
 // ---------- live market page ----------
@@ -2408,8 +2415,7 @@ for (const name of moduleFiles) {
 // Compact item index for the price search: [id, korean, english, category, subcategory, level].
 write('assets/shop-glyphs.json', fs.readFileSync(path.join(root, 'data/shop-glyphs.json')));
 // Hits-to-kill calculator data: [id, ko, en, level, hp, wdef, mdef, eva, elements, undead, boss, mp] and weapons [id, ko, en, type, level, watk, matk].
-const MOB_ALIASES = readJson('data/mob-aliases.json');
-write('assets/mobs.json', JSON.stringify(readJson('data/mobs.json').mobs.map((m) => [m.id, m.ko || '', m.en, m.lv, m.hp, m.wdef, m.mdef, m.eva, m.el || '', m.undead ? 1 : 0, m.boss ? 1 : 0, m.mp, (MOB_ALIASES[m.en] || []).join(' ')])));
+write('assets/mobs.json', JSON.stringify(MOBS.map((m) => [m.id, m.ko || '', m.en, m.lv, m.hp, m.wdef, m.mdef, m.eva, m.el || '', m.undead ? 1 : 0, m.boss ? 1 : 0, m.mp, m.aka.join(' '), m.status || ''])));
 write('assets/weapons.json', JSON.stringify(readJson('data/weapons.json').weapons.map((w) => [w.id, w.ko || '', w.en, w.type, w.lv, w.watk || 0, w.matk || 0])));
 write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko || '', i.en, i.cat, i.sub, i.lv || 0])));
 

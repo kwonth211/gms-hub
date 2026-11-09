@@ -188,7 +188,8 @@ function update() {
   const q = $('dm-mob-q').value.trim().toLowerCase();
   const list = mobs.filter((m) => {
     if (q) return m.name.toLowerCase().includes(q) || m.en.toLowerCase().includes(q) || m.aliases.includes(q);
-    return showAll || (m.lv >= s.level - 20 && m.lv <= s.level + 15 && !m.boss);
+    // Monsters from areas that aren't open (or aren't on any map) only show under "all" or when searched.
+    return showAll || (m.lv >= s.level - 20 && m.lv <= s.level + 15 && !m.boss && !m.status);
   });
   if (!list.length) {
     $('dm-rows').innerHTML = `<tr class="empty"><td colspan="7">${esc(t.emptyMobs)}</td></tr>`;
@@ -205,7 +206,7 @@ function update() {
       const cls = n.sure === 1 ? 'one' : n.sure === 2 ? 'two' : '';
       const accCls = p >= 1 ? 'ok' : p >= 0.8 ? 'warn' : 'bad';
       const dmg = r.max ? `${fmt(r.min)} ~ ${fmt(r.max)}${skill.lines > 1 ? ` ×${skill.lines}` : ''}` : t.never;
-      return `<tr class="${cls}"><th scope="row">${esc(m.name)}<span class="dm-tags">${elementTags(m)}</span></th><td>${m.lv}</td><td>${fmt(m.hp)}</td><td>${dmg}</td><td class="dm-sure">${cut(n.sure)}</td><td>${cut(n.avg)}</td><td class="dm-acc ${accCls}" title="${esc(fill(t.accNeed, { n: need }))}">${Math.floor(p * 100)}%<small>${esc(fill(t.accNeed, { n: need }))}</small></td></tr>`;
+      return `<tr class="${cls}"><th scope="row">${esc(m.name)}<span class="dm-tags">${m.status ? `<span class="tag">${esc(t.status?.[m.status] || '')}</span>` : ''}${elementTags(m)}</span></th><td>${m.lv}</td><td>${fmt(m.hp)}</td><td>${dmg}</td><td class="dm-sure">${cut(n.sure)}</td><td>${cut(n.avg)}</td><td class="dm-acc ${accCls}" title="${esc(fill(t.accNeed, { n: need }))}">${Math.floor(p * 100)}%<small>${esc(fill(t.accNeed, { n: need }))}</small></td></tr>`;
     })
     .join('');
 }
@@ -402,7 +403,7 @@ if (!navigator.mediaDevices?.getDisplayMedia) $('dm-read').disabled = true;
 
 Promise.all([fetch(data.mobsUrl).then((r) => r.json()), fetch(data.weaponsUrl).then((r) => r.json())])
   .then(([m, w]) => {
-    mobs = m.map(([id, ko, en, lv, hp, wdef, mdef, eva, el, undead, boss, mp, aliases]) => ({ id, name: (lang === 'ko' && ko) || en, en, lv, hp, wdef, mdef, eva, el, undead, boss, mp, aliases: String(aliases || '').toLowerCase() }));
+    mobs = m.map(([id, ko, en, lv, hp, wdef, mdef, eva, el, undead, boss, mp, aliases, status]) => ({ id, name: (lang === 'ko' && ko) || en, en, lv, hp, wdef, mdef, eva, el, undead, boss, mp, aliases: String(aliases || '').toLowerCase(), status }));
     weapons = w.map(([id, ko, en, type, lv, watk, matk]) => ({ id, name: (lang === 'ko' && ko) || en, en, type, lv, watk, matk }));
     // The training finder links each monster here as ?mob=<English name>.
     const mob = new URLSearchParams(location.search).get('mob');

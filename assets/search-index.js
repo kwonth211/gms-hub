@@ -34,6 +34,15 @@ const initials = (s) => [...s].map((ch) => {
   return code >= 0 && code <= 11171 ? String.fromCharCode(0x1100 + Math.floor(code / 588)) : ch;
 }).join('');
 
+// Cash items have English names only, even in the Korean client, so Korean descriptive words also try their English
+// counterparts ("토끼 모자" finds Bunny Hat). These rank below any name match but above a word that only appears in a description.
+const KO_EN = { 토끼: ['bunny', 'rabbit'], 고양이: ['cat'], 강아지: ['puppy', 'dog'], 곰: ['bear'], 악마: ['devil'], 천사: ['angel'],
+  잠옷: ['pajama'], 날개: ['wing'], 왕관: ['crown'], 하트: ['heart'], 안경: ['glasses'], 고블린: ['goblin'], 펭귄: ['penguin'],
+  판다: ['panda'], 여우: ['fox'], 늑대: ['wolf'], 공룡: ['dino'], 마녀: ['witch'], 해적: ['pirate'], 산타: ['santa'], 눈사람: ['snowman'],
+  우산: ['umbrella'], 풍선: ['balloon'], 의자: ['chair'], 반지: ['ring'], 귀: ['ears'], 모자: ['hat'], 망토: ['cape'], 신발: ['shoes'],
+  가방: ['bag'], 날개옷: ['wing'], 검은: ['black'], 검정: ['black'], 하얀: ['white'], 흰: ['white'], 빨간: ['red'], 파란: ['blue'],
+  분홍: ['pink'], 노란: ['yellow'], 초록: ['green'], 보라: ['purple'], 쿠폰: ['coupon'], 시그니처: ['signature'], 펫: ['pet'] };
+
 export function indexEntry(entry) {
   const names = (entry.names || [entry.title]).filter(Boolean);
   const keywords = String(entry.keywords || '');
@@ -57,6 +66,13 @@ export function searchEntries(entries, query) {
   const aliasWords = String(expanded).trim().split(/\s+/u).map(canonical).filter(Boolean);
   const initialQuery = /^[\u1100-\u1112]+$/.test(flat);
   const latin = /^[a-z0-9]+$/.test(flat);
+  // Every word with an English counterpart, swapped in turn, gives the query a set of English variants.
+  const typed = String(query).trim().split(/\s+/u);
+  let variants = typed.some((word) => KO_EN[word]) ? [typed] : [];
+  typed.forEach((word, i) => {
+    if (KO_EN[word]) variants = variants.flatMap((v) => KO_EN[word].map((w) => v.map((x, j) => (j === i ? w : x))));
+  });
+  variants = variants.map((v) => v.map(normalize).filter(Boolean));
   return entries.map((entry, order) => {
     const { searchNames: names, searchText: text, aliasNames, aliasText } = entry;
     let score = 0;
@@ -70,6 +86,7 @@ export function searchEntries(entries, query) {
     else if (initialQuery && entry.initials.some((name) => name.includes(flat))) score = 60;
     else if (text.includes(flat) || words.every((word) => text.includes(word))) score = 40;
     else if (aliasText.includes(alias) || aliasWords.every((word) => aliasText.includes(word))) score = 30;
+    if (score < 42 && variants.some((v) => names.some((name) => v.every((word) => name.includes(word))))) score = 42;
     return { entry, score, order };
   }).filter(({ score }) => score > 0)
     .sort((a, b) => b.score - a.score || a.order - b.order)

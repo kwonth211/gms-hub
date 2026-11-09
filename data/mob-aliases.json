@@ -1,7 +1,0 @@
-{
-  "_note": "Names players use for a monster that differ from the official Classic World name (mostly older Korean MapleStory names). Keyed by the English name in data/mobs.json; searched on the home page and the hits-to-kill calculator.",
-  "Tortie": ["엄티"],
-  "Skeledog": ["스켈레독"],
-  "Skeleton Soldier": ["스켈레톤 병사"],
-  "Copper Drake": ["커퍼 드레이크"]
-}

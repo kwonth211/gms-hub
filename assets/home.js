@@ -83,8 +83,8 @@ const retryItems = document.getElementById('search-retry');
 const clearSearch = document.getElementById('search-clear');
 const escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const labels = korean
-  ? { item: '아이템', mob: '몬스터', site: '사이트', tool: '도구·가이드', market: '시세 보기', mobAction: '몇 방 컷', mobInfo: (lv, hp) => `${lv}레벨 · HP ${hp.toLocaleString('ko')} · 몇 방에 잡히는지와 필요한 명중률`, loading: '아이템을 불러오는 중…', error: '아이템을 불러오지 못했어요. 사이트와 도구는 계속 검색할 수 있어요.', partial: ' · 아이템 불러오는 중', failed: ' · 아이템 검색 일시 불가', external: '새 탭에서 열기' }
-  : { item: 'Items', mob: 'Monsters', site: 'Sites', tool: 'Tools & guides', market: 'View prices', mobAction: 'Hits to kill', mobInfo: (lv, hp) => `Level ${lv} · ${hp.toLocaleString('en')} HP · hits to kill and accuracy needed`, loading: 'Loading items…', error: 'Items could not be loaded. Sites and tools are still searchable.', partial: ' · loading items', failed: ' · items unavailable', external: 'Opens in a new tab' };
+  ? { item: '아이템', mob: '몬스터', site: '사이트', tool: '도구·가이드', market: '시세 보기', mobAction: '몇 방 컷', mobStatus: { upcoming: '11/18 열리는 포가튼 할로우 몬스터', unplaced: '아직 맵에 없음' }, mobInfo: (lv, hp) => `${lv}레벨 · HP ${hp.toLocaleString('ko')} · 몇 방에 잡히는지와 필요한 명중률`, loading: '아이템을 불러오는 중…', error: '아이템을 불러오지 못했어요. 사이트와 도구는 계속 검색할 수 있어요.', partial: ' · 아이템 불러오는 중', failed: ' · 아이템 검색 일시 불가', external: '새 탭에서 열기' }
+  : { item: 'Items', mob: 'Monsters', site: 'Sites', tool: 'Tools & guides', market: 'View prices', mobAction: 'Hits to kill', mobStatus: { upcoming: 'Forgotten Hollow, opens Nov 18', unplaced: 'Not on any map yet' }, mobInfo: (lv, hp) => `Level ${lv} · ${hp.toLocaleString('en')} HP · hits to kill and accuracy needed`, loading: 'Loading items…', error: 'Items could not be loaded. Sites and tools are still searchable.', partial: ' · loading items', failed: ' · items unavailable', external: 'Opens in a new tab' };
 const siteAliases = { 'meso.watch': '메소워치 메소 와치', 'maplemarket.fyi': '메이플마켓', 'meowdb.com': '니아먀오 니아메오', 'henesys.gg': '헤네시스', 'discord.com': '디스코드 디코', 'discord.gg': '디스코드 디코', 'reddit.com': '레딧', 'metaroad.gg': '메타로드', 'dcinside.com': '디시 디씨 갤러리 갤' };
 const toolKeywords = {
   training: '사냥터 레벨업 경험치 사냥 맵 training level exp map grind',
@@ -117,9 +117,9 @@ let mobEntries = [];
 fetch(searchPanel.dataset.mobs)
   .then((r) => (r.ok ? r.json() : []))
   .then((rows) => {
-    mobEntries = rows.map(([id, ko, en, lv, hp, , , , , , , , aliases]) => indexEntry({
+    mobEntries = rows.map(([id, ko, en, lv, hp, , , , , , , , aliases, status]) => indexEntry({
       type: 'mob', id: `mob-${id}`, title: korean ? ko || en : en, names: [ko, en, ...String(aliases || '').split(' ')],
-      description: labels.mobInfo(lv, hp), href: `${searchPanel.dataset.damage}?mob=${encodeURIComponent(en)}`,
+      description: labels.mobInfo(lv, hp) + (status ? ` · ${labels.mobStatus[status]}` : ''), href: `${searchPanel.dataset.damage}?mob=${encodeURIComponent(en)}`,
     }));
     if (searchOpen) renderSearch();
   })
