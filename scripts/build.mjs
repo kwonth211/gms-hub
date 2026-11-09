@@ -4,6 +4,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { spriteSvg, heroScene } from './sprites.mjs';
+import { monsterIndex, monsterDetail, monsterPath, monsterName } from './monster-pages.mjs';
 import { selectRoutes, routeCards, publicTrainingData, jobNames, validateTraining } from '../assets/training-evidence.js';
 import { SKILLS as DMG_SKILLS, windowRange as dmgWindow, hitRange as dmgHit, hitsToKill as dmgKill, accuracyNeeded as dmgAccNeed } from '../assets/damage-calc.js';
 
@@ -58,8 +59,8 @@ const T = {
     homeDesc: `글로벌 메이플스토리 클래식 월드(글클메) 공식 채널, 디스코드·레딧·디시 커뮤니티, DB·위키, 자유시장 시세, 보스 타이머, 빌드 플래너 ${SITE_COUNT}곳을 용도별로 정리했어요. 직업별 조건을 정리한 사냥터 추천와 주문서 계산기도 있어요.`,
     heroKicker: '글클메 유저를 위한 길잡이',
     heroTitle: '아이템·시세·유용한 사이트, <br>한 번에 찾아보세요',
-    heroSub: '아이템부터 공략과 도구까지 한곳에서 검색하고, 필요한 사이트로 바로 이동하세요.',
-    searchPlaceholder: '아이템, 사이트, 도구 검색',
+    heroSub: '아이템·몬스터부터 공략과 도구까지 한곳에서 검색하고, 필요한 사이트로 바로 이동하세요.',
+    searchPlaceholder: '아이템, 몬스터, 사이트 검색',
     statSites: '수록 사이트',
     statCats: '카테고리',
     statChecked: '접속 확인',
@@ -273,8 +274,8 @@ const T = {
     homeDesc: `Every Global MapleStory Classic World site in one place: official channels, Discord, Reddit and Korean communities, databases and wikis, Free Market price trackers, boss timers and build planners. ${SITE_COUNT} links, with unverified references labeled separately.`,
     heroKicker: 'Your guide to Classic World on the web',
     heroTitle: 'Items, prices and useful sites, <br>all in one search',
-    heroSub: 'Find items, guides and tools together, then go straight to the prices or sites you need.',
-    searchPlaceholder: 'Search items, sites and tools',
+    heroSub: 'Find items, monsters, guides and tools together, then go straight to the prices or sites you need.',
+    searchPlaceholder: 'Search items, monsters and sites',
     statSites: 'Sites',
     statCats: 'Categories',
     statChecked: 'Checked live',
@@ -487,12 +488,9 @@ const PAGES = [
   { key: 'terms', path: '/terms/' }
 ];
 
-// Monster data with the live-client corrections from data/mob-overrides.json (names, HP, areas not open yet).
-const MOB_OVERRIDES = readJson('data/mob-overrides.json');
-const MOBS = readJson('data/mobs.json').mobs.map((m) => {
-  const o = MOB_OVERRIDES[m.en] || {};
-  return { ...m, ...(o.ko ? { ko: o.ko } : {}), ...(o.hp ? { hp: o.hp } : {}), aka: o.aka || [], status: o.status };
-});
+// Shared reviewed snapshot keeps home search, calculator and detail pages consistent.
+const MONSTERS = readJson('data/monsters.json');
+const MOBS = MONSTERS.monsters.map(m => ({ ...m, status: m.status === 'active' ? undefined : m.status }));
 // Retain level-band URLs with conditional routes and detailed entry requirements.
 const TR_BANDS = [[1, 10], [11, 20], [21, 30], [31, 40], [41, 50], [51, 60], [61, 80]];
 const TR_MAX = TR_BANDS.at(-1)[1];
@@ -594,6 +592,7 @@ function header(lang, pagePath, only) {
   const other = lang === 'ko' ? 'en' : 'ko';
   const tabs = [
     ['/', 'book', t.navLinks],
+    ['/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monsters'],
     ['/tools/training/', 'sword', t.navTraining],
     ['/tools/scroll/', 'scroll', t.navScroll],
     ['/tools/drop-rate/', 'bag', t.navDrop],
@@ -602,7 +601,7 @@ function header(lang, pagePath, only) {
   ]
     .map(
       ([p, icon, label]) =>
-        `<a class="tab" href="${href(langPath(lang, p))}"${p === pagePath ? ' aria-current="page"' : ''}>${spriteSvg(icon, 20)}<span>${label}</span></a>`
+        `<a class="tab" href="${href(langPath(lang, p))}"${(p === pagePath || (p === '/monsters/' && pagePath?.startsWith('/monsters/'))) ? ' aria-current="page"' : ''}>${spriteSvg(icon, 20)}<span>${label}</span></a>`
     )
     .join('');
   return `<div class="topbar"><div class="wrap">✔ ${esc(t.notice)}</div></div>
@@ -782,7 +781,7 @@ ${heroScene()}
 <button type="button" id="search-clear" aria-label="${lang === 'ko' ? '검색어 지우기' : 'Clear search'}" hidden>×</button>
 <button type="submit" class="search-submit" aria-controls="search-results" aria-expanded="false">${lang === 'ko' ? '검색' : 'Search'}</button>
 </form>
-<section class="unified-search" id="search-results" aria-label="${lang === 'ko' ? '통합 검색 결과' : 'Search results'}" data-items="${esc(href('/assets/items.json'))}" data-mobs="${esc(href('/assets/mobs.json'))}" data-damage="${esc(href(langPath(lang, '/tools/damage/')))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" hidden>
+<section class="unified-search" id="search-results" aria-label="${lang === 'ko' ? '통합 검색 결과' : 'Search results'}" data-items="${esc(href('/assets/items.json'))}" data-mobs="${esc(href('/assets/mobs.json'))}" data-monsters="${esc(href(langPath(lang, '/monsters/')))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" hidden>
 <div class="search-summary"><h2>${lang === 'ko' ? '검색 결과' : 'Search results'}</h2><span id="search-status" role="status" aria-live="polite" aria-atomic="true"></span></div>
 <div class="search-filters" role="group" aria-label="${lang === 'ko' ? '검색 결과 종류' : 'Result type'}">
 ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이템' : 'Items'], ['mob', lang === 'ko' ? '몬스터' : 'Monsters'], ['site', lang === 'ko' ? '사이트' : 'Sites'], ['tool', lang === 'ko' ? '도구·가이드' : 'Tools & guides']].map(([type, label]) => `<button type="button" data-search-type="${type}" aria-pressed="${type === 'all'}">${label} <span data-count="${type}">0</span></button>`).join('')}
@@ -817,6 +816,7 @@ ${sections}
 <section class="wrap">
 <h2>${t.toolsHeading}</h2>
 <div class="tool-cards">
+${tool('/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monster database', lang === 'ko' ? '몬스터 78종의 능력치, 드롭 아이템, 출현 위치를 검색하세요.' : 'Explore stats, reported drops and map locations for 78 monsters.')}
 ${tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc)}
 ${tool('/tools/scroll/', 'scroll', t.navScroll, t.scCardDesc)}
 ${tool('/tools/drop-rate/', 'bag', t.navDrop, t.dropCardDesc)}
@@ -1373,7 +1373,7 @@ ${num('dm-mastery', t.mastery, 'max="20"')}
 </section>
 </div>
 ${damageGuide(lang)}
-${jsonScript('dm-data', { lang, t: { ...t.i, hits: t.hits, never: t.never, lines: t.lines, mobsHit: t.mobsHit, accNeed: t.accNeed, emptyMobs: t.emptyMobs, needStats: t.needStats, estimated: t.estimated, none: t.none, status: lang === 'ko' ? { upcoming: '11/18 개방 지역', unplaced: '맵에 없음' } : { upcoming: 'Opens Nov 18', unplaced: 'Not on a map' } }, mobsUrl: href('/assets/mobs.json'), weaponsUrl: href('/assets/weapons.json') })}`;
+${jsonScript('dm-data', { lang, t: { ...t.i, hits: t.hits, never: t.never, lines: t.lines, mobsHit: t.mobsHit, accNeed: t.accNeed, emptyMobs: t.emptyMobs, needStats: t.needStats, estimated: t.estimated, none: t.none, status: lang === 'ko' ? { upcoming: '11/18 개방 지역', unavailable: '미개방 지역', unplaced: '맵에 없음' } : { upcoming: 'Opens Nov 18', unavailable: 'Unreleased area', unplaced: 'Not on a map' } }, monstersUrl: href(langPath(lang, '/monsters/')), mobsUrl: href('/assets/mobs.json'), weaponsUrl: href('/assets/weapons.json') })}`;
 }
 
 // ---------- live market page ----------
@@ -2193,6 +2193,28 @@ for (const lang of LANGS) {
     );
   }
 
+  const monsterTitle = lang === 'ko' ? '몬스터 도감' : 'Monster database';
+  const monsterItemUrl = (d, l) => {
+    const priced = PRICED.find(i => i.id === d.itemId);
+    return href(langPath(l, priced ? itemPath(priced) : `/tools/market/?item=${d.itemId}`));
+  };
+  write(path.join(lang, 'monsters', 'index.html'), page({
+    lang, pageKey: 'monsters', pagePath: '/monsters/', title: `${monsterTitle} · ${lang === 'ko' ? '클래식 월드' : 'Classic World'} | GMS Hub`,
+    desc: lang === 'ko' ? '몬스터의 체력, 경험치, 드롭 아이템, 출현 위치를 검색하는 클래식 월드 몬스터 도감.' : 'Classic World monster stats, reported drops and map locations.',
+    body: monsterIndex({lang, data: MONSTERS, url: href}), modules: ['monsters.js'],
+    ld: [breadcrumbLd(lang, monsterTitle, '/monsters/')]
+  }));
+  for (const m of MONSTERS.monsters) {
+    const name = monsterName(m, lang);
+    write(path.join(lang, 'monsters', String(m.id), 'index.html'), page({
+      lang, pageKey: 'monster', pagePath: monsterPath(m),
+      title: `${name} · ${lang === 'ko' ? '드롭·체력·출현 위치' : 'Stats, drops & locations'} | GMS Hub`,
+      desc: lang === 'ko' ? `${name} Lv. ${m.lv}, HP ${m.hp}, EXP ${m.exp}. 드롭 제보 ${m.drops.length}종과 출현 위치·속성 저항을 확인하세요.` : `${name}, level ${m.lv}, HP ${m.hp}, EXP ${m.exp}. Explore ${m.drops.length} reported drops, map locations and elemental responses.`,
+      body: monsterDetail({lang, m, data: MONSTERS, url: href, itemUrl: monsterItemUrl}), modules: ['monsters.js'],
+      noindex: m.status === 'unplaced', ld: [breadcrumbLd(lang, name, monsterPath(m))]
+    }));
+  }
+
   const it = IT[lang];
   write(
     path.join(lang, 'items', 'index.html'),
@@ -2298,6 +2320,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
     ).join('')}<xhtml:link rel="alternate" hreflang="x-default" href="${absUrl(langPath(config.defaultLang, p.path))}"/></url>`
   )
 ).concat(
+  [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [...new Set(guides.map((g) => g.lang))].map((l) => `<url><loc>${absUrl(langPath(l, '/guides/'))}</loc><lastmod>${guides.filter((g) => g.lang === l).map((g) => g.updated).sort().at(-1)}</lastmod></url>`),
   publishedGuides.map((g) => `<url><loc>${absUrl(langPath(g.lang, guidePath(g)))}</loc><lastmod>${g.updated}</lastmod></url>`),
   // Only indexable items (enough recent listings) go in the sitemap.
@@ -2345,4 +2368,4 @@ write('assets/mobs.json', JSON.stringify(MOBS.map((m) => [m.id, m.ko || '', m.en
 write('assets/weapons.json', JSON.stringify(readJson('data/weapons.json').weapons.map((w) => [w.id, w.ko || '', w.en, w.type, w.lv, w.watk || 0, w.matk || 0])));
 write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko || '', i.en, i.cat, i.sub, i.lv || 0])));
 
-console.log(`Built ${PAGES.length * LANGS.length} pages + ${PRICED.length * LANGS.length} item pages, ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);
+console.log(`Built ${PAGES.length * LANGS.length} pages + ${MONSTERS.monsters.length * LANGS.length} monster pages + ${PRICED.length * LANGS.length} item pages, ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);

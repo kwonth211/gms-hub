@@ -207,7 +207,7 @@ function update() {
       const cls = n.sure === 1 ? 'one' : n.sure === 2 ? 'two' : '';
       const accCls = p >= 1 ? 'ok' : p >= 0.8 ? 'warn' : 'bad';
       const dmg = r.max ? `${fmt(r.min)} ~ ${fmt(r.max)}${skill.lines > 1 ? ` ×${skill.lines}` : ''}` : t.never;
-      return `<tr class="${cls}"><th scope="row">${esc(m.name)}<span class="dm-tags">${m.status ? `<span class="tag">${esc(t.status?.[m.status] || '')}</span>` : ''}${elementTags(m)}</span></th><td>${m.lv}</td><td>${fmt(m.hp)}</td><td>${dmg}</td><td class="dm-sure">${cut(n.sure)}</td><td>${cut(n.avg)}</td><td class="dm-acc ${accCls}" title="${esc(fill(t.accNeed, { n: need }))}">${Math.floor(p * 100)}%<small>${esc(fill(t.accNeed, { n: need }))}</small></td></tr>`;
+      return `<tr class="${cls}"><th scope="row"><a href="${esc(data.monstersUrl)}${m.id}/">${esc(m.name)}</a><span class="dm-tags">${m.status ? `<span class="tag">${esc(t.status?.[m.status] || '')}</span>` : ''}${elementTags(m)}</span></th><td>${m.lv}</td><td>${fmt(m.hp)}</td><td>${dmg}</td><td class="dm-sure">${cut(n.sure)}</td><td>${cut(n.avg)}</td><td class="dm-acc ${accCls}" title="${esc(fill(t.accNeed, { n: need }))}">${Math.floor(p * 100)}%<small>${esc(fill(t.accNeed, { n: need }))}</small></td></tr>`;
     })
     .join('');
 }

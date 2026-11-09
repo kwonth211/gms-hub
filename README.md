@@ -96,3 +96,14 @@ DB에 `worker/migrations/0001_market_batch.sql`, `0002_listing_history.sql`을 �
 20레벨 기본 결과에는 개미굴을 넣지 않습니다. 장비를 갖춘 표도만 고급 옵션에서 조건부 후보를 볼 수 있습니다. 솔로 필터는 파티 필수 경로를 제외하고, 물약 절약 필터는 고비용 후보를 제외합니다. 기본 데이터가 없는 세부 스킬 수치·고정 시급·흑자 보장·미출시 지역 성능을 만들어 넣지 않습니다.
 
 `node --test tests/content.test.mjs`는 빌드와 함께 조건 필터, 초기 레벨 커버리지, 내부 근거 연결, 출처 정보의 공개 방지, 가이드 본문·검색·사이트맵을 검사합니다. 콘텐츠 테스트는 게임 효율의 재현 실험을 대신하지 않습니다.
+
+### Monster detail pages (2026-11-10)
+
+`/ko/monsters/` and `/en/monsters/` provide a searchable static bestiary; `/monsters/<id>/` pages include client stats, elemental responses, reported drops and map spawn points. Home search and the hits-to-kill calculator link to these pages. Monster pages make no D1 requests or writes.
+
+- `data/monsters.json` is the reviewed publication snapshot, shared with compact calculator/search data. `data/editorial/monsters.json` records field scope, original URLs and weighted drop votes; it is not copied into the deployed site.
+- Drop lists use net-positive Classic World player reports. Repeated reports require positive weight ≥ 10 and ≥ 3× negative weight; other net-positive records are labeled limited. These scores are not player counts or probabilities. Historic GMS/MSEA rate tables are excluded. Quest drops do not link to trading.
+- Map counts represent spawn points, not concurrent monsters or hourly spawns. Closed areas are labeled and hidden by default. Availability is dated evidence, not inferred from level or automatically changed when an announced opening date arrives.
+- The initial browser/API snapshots are retained locally at `/Users/taehoonmacmini/gms-hub-imports/2026-11-10-monsters/`. `node scripts/import-monsters.mjs <snapshot-directory>` reproduces this import; review the capture date, names and availability before importing a newer snapshot. The script is intentionally offline and is not a periodic crawler.
+- Game sprites are stored under `assets/monsters/`; provenance is the MCW `/mob/<id>/render/<pose>` API. No other MapleStory region/version is used.
+- `node --test tests/content.test.mjs tests/monsters.test.mjs` builds and checks publication integrity. Search and damage calculation regressions are covered by their existing tests.

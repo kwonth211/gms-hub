@@ -86,3 +86,22 @@ test('training form exposes costs and party setup without navigation or research
   }
   const client=read('assets/training.js');assert.ok(client.includes('history.replaceState'));assert.ok(!/location\.(?:href\s*=|assign)/.test(client));
 });
+
+test('monster details, search destinations and calculator links share the same snapshot',()=>{
+  const monsters=JSON.parse(read('data/monsters.json')).monsters;
+  const compact=JSON.parse(read('dist/assets/mobs.json'));
+  for(const m of monsters){
+    const row=compact.find(r=>r[0]===m.id);assert.equal(row[4],m.hp);assert.equal(row[1],m.ko);
+    for(const lang of ['ko','en']){
+      const html=read(`dist/${lang}/monsters/${m.id}/index.html`);
+      assert.ok(html.includes(`hreflang="${lang==='ko'?'en':'ko'}"`));
+      assert.ok(html.includes(`/tools/damage/?mob=${encodeURIComponent(m.en)}`));
+      assert.equal(html.includes('content="noindex"'),m.status==='unplaced');
+    }
+  }
+  const home=read('dist/ko/index.html');assert.ok(home.includes('data-monsters="/ko/monsters/"'));
+  assert.ok(read('assets/home.js').includes('${searchPanel.dataset.monsters}${id}/'));
+  assert.ok(read('dist/ko/tools/damage/index.html').includes('"monstersUrl":"/ko/monsters/"'));
+  assert.ok(read('dist/sitemap.xml').includes('/ko/monsters/31/'));
+  assert.ok(!fs.existsSync(new URL('dist/data/editorial/monsters.json',root)));
+});
