@@ -10,6 +10,8 @@
 // GET  /market/top -> { at, stats, items: [{ item, rank, move, avg, n, sold, change, spark: [7 daily medians] }] }  (stored every 5 min)
 // GET  /market/item?id= -> { item, listings: [...last 7 days], trend }
 // The shop scanner runs from the local dev server for now, so its origin may post scans too.
+import { handleMarketBatch } from './market-batch.js';
+import { marketCatalog, browseListings, browseReports, marketHistory } from './market-browser.js';
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
 
 function corsHeaders(origin) {
@@ -187,6 +189,8 @@ export default {
     const url = new URL(req.url);
     const origin = req.headers.get('Origin') || '';
     const cors = corsHeaders(origin);
+    // Private extension service worker uses a narrowly scoped ingestion token, never public CORS.
+    if (url.pathname === '/internal/market-batch') return handleMarketBatch(req, env, knownItems);
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
 
     if (url.pathname === '/votes' && req.method === 'GET') {
@@ -257,6 +261,23 @@ export default {
       for (const k in mids) mids[k] = mids[k].length >= 3 ? median(mids[k]) : null;
       const shown = results.filter((r) => !mids[r.item] || (r.price <= mids[r.item] * 5 && r.price >= mids[r.item] / 5)).slice(0, 20);
       return json(shown, cors, 200, 'public, max-age=30');
+    }
+
+    if (req.method === 'GET' && ['/market/catalog', '/market/listings', '/market/reports', '/market/history'].includes(url.pathname)) {
+      try {
+        let data;
+        if (url.pathname === '/market/catalog') {
+          const cached = await env.DB.prepare("SELECT json FROM snapshots WHERE key='market-catalog' AND at>=datetime('now','-1 minute')").first();
+          data = cached ? JSON.parse(cached.json) : await marketCatalog(env);
+          if (!cached) await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('market-catalog',?,datetime('now'))").bind(JSON.stringify(data)).run();
+        } else if (url.pathname === '/market/listings') data = await browseListings(env, url.searchParams);
+        else if (url.pathname === '/market/reports') data = await browseReports(env, url.searchParams);
+        else data = await marketHistory(env, url.searchParams);
+        return json(data, cors, 200, 'public, max-age=20');
+      } catch (e) {
+        const invalid = e.message?.startsWith('bad ');
+        return json({error: invalid ? e.message : 'market unavailable'}, cors, invalid ? 400 : 503);
+      }
     }
 
     if (url.pathname === '/market/top' && req.method === 'GET') {

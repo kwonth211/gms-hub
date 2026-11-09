@@ -29,11 +29,11 @@ export function priceProfile(rows, maxBins = 8) {
   return { bins, levels, peak: { ...peak, share: peak.count / rows.length }, total: rows.length };
 }
 
-export function analyzeMarket(rows, { now = Date.now(), hours = 24 } = {}) {
+export function analyzeMarket(rows, { now = Date.now(), hours = 24, profileRows = rows } = {}) {
   if (!PERIODS.includes(hours)) hours = 24;
   const observed = rows.filter((r) => Number.isInteger(r.price) && r.price > 0 && Number.isFinite(r.t) && r.t > now - hours * HOUR && r.t <= now);
   const profileHours = Math.min(hours, 24);
-  const profile = priceProfile(observed.filter((r) => !r.sold && r.t > now - profileHours * HOUR));
+  const profile = priceProfile(profileRows.filter((r) => !r.sold && Number.isInteger(r.price) && r.price > 0 && r.t > now - profileHours * HOUR && r.t <= now));
   if (!observed.length) return { rows: [], buckets: [], profile, hours, profileHours, from: null, to: null,
     asking: null, sold: null, changes: { asking: null, sold: null } };
   const first = Math.min(...observed.map((r) => r.t));

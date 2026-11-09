@@ -1504,33 +1504,26 @@ const MK = {
 };
 
 function marketBody(lang) {
-  const t = MK[lang];
-  const stat = (k) => `<div><dd id="mk-stat-${k}">–</dd><dt>${t.stats[k]}</dt></div>`;
-  return `${pageHead(lang, 'coin', t.h1, t.lead)}
-<div class="wrap mk">
-<div class="mk-bar">
-<dl class="mk-stats"><span class="live-dot" aria-hidden="true"></span>${['listings', 'shops', 'items', 'sold'].map(stat).join('')}</dl>
-<a class="btn small-btn" href="${href(langPath(lang, '/tools/scan/'))}">● ${t.scan}</a>
-<a class="btn ghost small-btn" href="${href(langPath(lang, '/items/'))}">${IT[lang].indexLink}</a>
-</div>
-<p id="mk-status" class="muted" role="status">${t.loading}</p>
-<button type="button" id="mk-retry" class="btn ghost small-btn" hidden>${t.retry}</button>
-<div class="mk-search panel">
-<input type="search" id="mk-q" placeholder="${esc(t.placeholder)}" autocomplete="off" aria-label="${esc(t.placeholder)}" aria-controls="mk-suggest" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-describedby="mk-search-status">
-<p id="mk-search-status" class="muted" role="status" hidden></p>
-<ul id="mk-suggest" class="mk-suggest" role="listbox" hidden></ul>
-</div>
-<div class="mk-grid">
-<section class="mk-detail panel" id="mk-detail"><p class="muted">${t.pick}</p></section>
-<aside class="mk-side">
-<section class="panel"><h2>${t.top}</h2><ol class="rank-list mk-rank" id="rank-list"></ol></section>
-<section class="panel"><h2>${t.recent}</h2><ol class="recent-list mk-feed" id="live-rows"></ol></section>
-</aside>
-</div>
-<div class="spark-tip" id="spark-tip" role="tooltip" hidden></div>
+  const t = MK[lang], tr = (ko,en) => lang === 'ko' ? ko : en;
+  const stat = (key,label) => `<div><dd id="mk-stat-${key}">–</dd><dt>${label}</dt></div>`;
+  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 확인하세요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p></section>
+<div class="wrap mk market-browser">
+<div class="mk-bar"><dl class="mk-stats">${stat('open',tr('최근 판매 매물','Recent asking listings'))}${stat('shops',tr('상점','Shops'))}${stat('items',tr('아이템 · 7일','Items · 7d'))}${stat('records',tr('매물 기록 · 7일','Listing records · 7d'))}</dl><a class="btn small-btn" href="${href(langPath(lang, '/tools/scan/'))}">${t.scan}</a></div>
+<div class="mb-status"><p id="mk-status" role="status">${t.loading}</p><button id="mk-retry" class="btn ghost small-btn" type="button">${tr('새로고침','Refresh')}</button></div>
+<div class="mb-tabs" role="tablist" aria-label="${tr('시장 탐색','Browse market')}"><button id="mb-tab-items" role="tab" aria-selected="true" aria-controls="mb-browser" data-view="items">${tr('아이템 목록','Items')}</button><button id="mb-tab-listings" role="tab" aria-selected="false" aria-controls="mb-browser" data-view="listings">${tr('전체 매물','All listings')}</button><button id="mb-tab-reports" role="tab" aria-selected="false" aria-controls="mb-browser" data-view="reports">${tr('가격 제보','Price reports')}</button></div>
+<div class="mb-workspace" id="mb-workspace"><section class="panel mb-browser" id="mb-browser" role="tabpanel" aria-labelledby="mb-tab-items">
+<div class="mb-search"><label for="mk-q">${tr('아이템 검색','Search items')}</label><div><input type="search" id="mk-q" placeholder="${esc(t.placeholder)}" autocomplete="off"><button id="mb-clear-search" class="btn ghost small-btn" type="button">${tr('지우기','Clear')}</button></div></div>
+<div class="mb-categories" id="mb-categories" role="group" aria-label="${tr('아이템 분류','Item category')}">${[['all','전체','All'],['scroll','주문서','Scrolls'],['weapon','무기','Weapons'],['equip','장비','Equips'],['stars','표창','Stars'],['cash','캐시','Cash'],['other','소비·기타','Use & other']].map(([id,ko,en])=>`<button type="button" data-category="${id}" aria-pressed="${id==='all'}">${tr(ko,en)}</button>`).join('')}</div>
+<div class="mb-item-controls" id="mb-item-controls"><label><input type="checkbox" id="mb-favorites"> ${tr('관심 아이템만','Wishlist only')}</label><label>${tr('정렬','Sort')} <select id="mb-item-sort"><option value="active">${tr('판매 매물 많은 순','Most asking listings')}</option><option value="low">${tr('최저가 낮은 순','Lowest ask')}</option><option value="price">${tr('중앙값 낮은 순','Lowest median')}</option><option value="recent">${tr('최근 확인순','Recently seen')}</option><option value="name">${tr('이름순','Name')}</option></select></label></div>
+<div id="mb-list-controls" class="mb-list-controls" hidden><label>${tr('판매자','Seller')}<input type="search" id="mb-seller" maxlength="13" placeholder="${tr('닉네임 검색','Search nickname')}"></label><label>${tr('채널','Channel')}<select id="mb-channel"><option value="">${t.filterChannel}</option>${Array.from({length:40},(_,i)=>`<option value="${i+1}">CH ${i+1}</option>`).join('')}</select></label><label>${tr('자유시장 방','Free Market room')}<select id="mb-room"><option value="">${t.filterRoom}</option>${Array.from({length:40},(_,i)=>`<option value="${i+1}">FM ${i+1}</option>`).join('')}</select></label><label>${tr('상태','Status')}<select id="mb-state"><option value="open">${tr('판매 중 · 최근 24시간','Asking · last 24h')}</option><option value="all">${tr('전체 기록','All records')}</option><option value="sold">${tr('판매 완료 표시','Marked sold')}</option><option value="stale">${tr('24시간 경과','Over 24h old')}</option></select></label><label>${tr('정렬','Sort')}<select id="mb-list-sort"><option value="recent">${t.sortRecent}</option><option value="price">${t.sortPrice}</option><option value="high">${tr('높은 가격순','Highest price')}</option></select></label></div>
+<div id="mb-report-controls" hidden><label>${tr('제보 종류','Report type')} <select id="mb-report-kind"><option value="">${tr('전체','All')}</option><option value="selling">${tr('판매가','Asking')}</option><option value="sold">${tr('판매 완료','Sold')}</option><option value="buying">${tr('구매 희망','Buying')}</option></select></label></div>
+<div id="mb-range" hidden><label>${tr('조회 기간','Time range')} <select id="mb-days"><option value="7">${tr('최근 7일','Last 7 days')}</option><option value="1">${tr('최근 24시간','Last 24 hours')}</option><option value="30">${tr('최근 30일','Last 30 days')}</option></select></label></div>
+<p class="muted note" id="mb-list-note"></p><p id="mb-count" role="status" class="muted note"></p><div id="mb-results" aria-busy="true"><p>${t.loading}</p></div><div id="mb-pagination" class="mb-pagination"></div></section>
+<section id="mk-detail" class="panel mb-detail" hidden aria-label="${tr('선택한 아이템','Selected item')}"></section></div>
+<dialog id="mb-shop" class="mb-shop"><div id="mb-shop-body"></div></dialog>
 </div>
 ${marketGuide(lang)}
-${jsonScript('mk-data', { lang, api: config.voteApi, itemsUrl: href('/assets/items.json'), priceUrl: href(langPath(lang, '/tools/price/')), sites: PRICE_SITES, t, live: LIVE[lang], itemBase: href(langPath(lang, '/items/')), itemLink: IT[lang].pageLink, itemPages: PRICED.map((i) => i.id) })}`;
+${jsonScript('mk-data', { lang, api: config.voteApi, itemsUrl: href('/assets/items.json'), t, itemBase: href(langPath(lang, '/items/')), itemLink: IT[lang].pageLink, itemPages: PRICED.map((i) => i.id) })}`;
 }
 
 function dropBody(lang) {
@@ -1678,45 +1671,11 @@ function damageGuide(lang) {
 
 // How the live market numbers are made, matching the rules in worker/src/index.js.
 function marketGuide(lang) {
-  return lang === 'ko'
-    ? `<section class="wrap prose guide">
-<h2>실시간 시세는 이렇게 만들어요</h2>
-<h3>데이터는 어디서 오나요</h3>
-<p>유저가 <a href="${href(langPath(lang, '/tools/scan/'))}">상점 스캐너</a>로 자유시장 상점 화면을 읽으면, 아이템 이름·가격·채널·방이 매물로 올라와요. 아이템 시세 검색에서 직접 올린 가격도 함께 써요.</p>
-<h3>평균 대신 중앙값을 써요</h3>
-<p>자유시장에는 실수로 0을 하나 더 붙인 가격이나 일부러 높게 걸어 둔 매물이 섞여 있어요. 그래서 시세는 가격을 줄 세웠을 때 가운데 값(중앙값)으로 보여 주고, 매물이 3개 이상이면 중앙값의 5배를 넘거나 5분의 1보다 낮은 가격은 계산에서 빼요.</p>
-<h3>판매 완료 가격이 우선이에요</h3>
-<p>상점에서 팔린 기록이 있으면 그 가격을 기준으로 하고, 없을 때만 지금 걸려 있는 판매가를 써요. 판매가는 파는 사람이 부른 값이라 실제 거래가보다 높을 수 있어요.</p>
-<h3>인기 TOP 10과 변동률</h3>
-<ul>
-<li>최근 24시간 동안 많이 관측된 아이템 순이에요. 판매 완료 기록은 3배로 쳐요.</li>
-<li>순위 옆 화살표는 1시간 전 순위와 비교한 변화예요.</li>
-<li>변동률은 최근 24시간 중앙값을 그 전 24시간 중앙값과 비교한 값이에요.</li>
-<li>7일 그래프는 하루 단위 중앙값이고, 관측이 없는 날은 값을 지어내지 않고 비워 둬요.</li>
-<li>순위와 통계는 5분마다 새로 계산해요.</li>
-</ul>
-<h3>시세를 볼 때 확인할 것</h3>
-<p>매물 수가 3개보다 적으면 한두 상점 가격일 뿐이라 참고용으로만 보세요. 아이템별 시세 페이지는 최근 14일 매물로 계산하고, 지금 파는 곳 목록에는 채널과 방이 나와서 바로 찾아갈 수 있어요. 실제 거래 가격은 다를 수 있어요.</p>
-</section>`
-    : `<section class="wrap prose guide">
-<h2>How the live prices are made</h2>
-<h3>Where the data comes from</h3>
-<p>When players read Free Market shops with the <a href="${href(langPath(lang, '/tools/scan/'))}">shop scanner</a>, each item's name, price, channel and room is stored as a listing. Prices players report in the item price search are used too.</p>
-<h3>Medians, not averages</h3>
-<p>The Free Market always has a few typos with an extra zero and shops parked at silly prices. Prices are shown as the median (the middle value), and once an item has three or more listings, anything above five times or below a fifth of the median is left out.</p>
-<h3>Sold prices come first</h3>
-<p>If a shop recorded a sale, that price is the basis; asking prices are used only when there is no sale. Asking prices are what sellers hope for, so they can sit above what items actually trade at.</p>
-<h3>Top 10 and price change</h3>
-<ul>
-<li>Items are ranked by how often they were seen in the last 24 hours, with a recorded sale counting three times.</li>
-<li>The arrow beside a rank compares it with the ranking an hour earlier.</li>
-<li>Change compares the last 24 hours' median with the 24 hours before that.</li>
-<li>The 7-day line is one median per day; a day with no observations is left as a gap rather than invented.</li>
-<li>Rankings and stats are recalculated every 5 minutes.</li>
-</ul>
-<h3>Before you trust a number</h3>
-<p>With fewer than three listings a price is one or two shops, so treat it as a rough reference. Item price pages use the last 14 days, and the where-to-buy list shows channel and room so you can go straight there. Real trades can differ.</p>
-</section>`;
+  const tr = (ko,en) => lang === 'ko' ? ko : en;
+  return `<section class="wrap prose guide"><details><summary>${tr('시세와 매물은 어떻게 집계하나요?','How are listings and prices calculated?')}</summary>
+<h3>${tr('목록과 제보를 구분해요','Listings and reports are separate')}</h3><p>${tr('아이템 목록은 최근 7일간 확인한 상점 매물과 가격 제보를 모아요. 판매 중 매물은 24시간 안에 확인한 기록이며 실제 재고를 보장하지 않아요. 전체 매물에서 판매자·채널·방을 검색하고 이전 기록도 조회할 수 있어요. 판매자나 위치가 없는 가격 제보는 별도 탭에 표시해요.','The item directory covers shop listings and price reports recorded in the last 7 days. Asking listings were seen within 24 hours and may no longer be in stock. Browse sellers, channels and rooms in All listings, including older records. Reports without a seller or location have their own tab.')}</p>
+<h3>${tr('가격과 매물 수의 기준','Prices and listing counts')}</h3><p>${tr('목록의 중앙값과 최저가는 최근 판매 중 매물 기준이에요. 높은 가격도 실제 매물 목록에서 숨기지 않아요. 판매 완료 표시는 관측된 상태이며 실제 체결을 보증하지 않아요. 가격 제보를 판매 상점 수나 재고에 합산하지 않아요.','Directory medians and lowest asks use recent asking listings. High asking prices remain visible. Sold is an observed status, not a verified transaction. Anonymous reports are not counted as shop inventory.')}</p>
+<h3>${tr('가격 추이와 매물대','Price trends and depth')}</h3><p>${tr('가격 추이는 저장된 관측 이력을 사용해요. 동일 매물을 다시 관측한 것은 새로운 거래가 아니에요. 매물대는 현재 판매 중인 매물 행을 한 번씩 세며 묶음 수량이나 누적 관측 횟수로 부풀리지 않아요. 관측이 없는 구간은 비워 둡니다. 목록은 60초마다 확인하며 선택한 아이템과 필터는 유지해요.','Trends use retained observations. Seeing the same listing again is not a new trade. Depth counts each current asking listing once, rather than summing bundle quantities or repeat observations. Missing intervals remain empty. The directory checks for updates every 60 seconds while preserving your selection and filters.')}</p></details></section>`;
 }
 
 function dropGuide(lang) {

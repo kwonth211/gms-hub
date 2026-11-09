@@ -1,0 +1,6 @@
+{
+  "name": "gms-market-batch",
+  "private": true,
+  "scripts": { "test": "node --test *.test.mjs" },
+  "devDependencies": { "jsdom": "26.1.0" }
+}

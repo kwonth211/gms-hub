@@ -1,289 +1,631 @@
-import { DAY, parseUtc, marketRows } from './market-data.js';
-import { indexEntry, searchEntries } from './search-index.js';
-import { mountMarketCharts } from './market-charts.js';
-// Item search, observed-price analytics and shop locations, with a live ranking and listing feed.
-const D = JSON.parse(document.getElementById('mk-data').textContent);
-const T = D.t;
-const L = D.live;
-const korean = D.lang === 'ko';
-const $ = (id) => document.getElementById(id);
-const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-const squash = (s) => s.toLowerCase().replace(/\s+/g, '');
-const rtf = new Intl.RelativeTimeFormat(D.lang, { numeric: 'auto', style: 'short' });
-const nf = new Intl.NumberFormat(D.lang);
-const icon = (id, size = 28) => `<img src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="${size}" height="${size}" loading="lazy">`;
-
-let items = [];
-let byId = new Map();
-const nameOf = (it) => (korean ? it.ko || it.en : it.en);
-
-// Korean players think in 만/억; elsewhere k/m/b.
-function mesos(n) {
-  if (n == null) return '–';
-  if (korean) {
-    if (n >= 1e8) return `${+(n / 1e8).toFixed(2)}억`;
-    if (n >= 1e4) return `${+(n / 1e4).toFixed(n >= 1e6 ? 0 : 1)}만`;
-    return n.toLocaleString('ko');
+import { DAY, parseUtc } from "./market-data.js";
+import { makeMarketIndex, catalogRows, matchingIds } from "./market-catalog.js";
+import { mountMarketCharts } from "./market-charts.js";
+const D = JSON.parse(document.getElementById("mk-data").textContent),
+  T = D.t,
+  ko = D.lang === "ko";
+const $ = (id) => document.getElementById(id),
+  tr = (a, b) => (ko ? a : b),
+  nf = new Intl.NumberFormat(D.lang);
+const esc = (s) =>
+  String(s ?? "").replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ],
+  );
+const money = (n) => (n == null ? "—" : nf.format(n)),
+  icon = (id, size = 28) =>
+    `<img src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="${size}" height="${size}" loading="lazy">`;
+const date = (s) => new Date(parseUtc(s)).toLocaleString(D.lang);
+const ago = (s) => {
+  if (!s) return "—";
+  const m = Math.max(0, Math.floor((Date.now() - parseUtc(s)) / 60000));
+  return m < 1
+    ? tr("방금", "now")
+    : m < 60
+      ? tr(`${m}분 전`, `${m}m ago`)
+      : m < 1440
+        ? tr(`${Math.floor(m / 60)}시간 전`, `${Math.floor(m / 60)}h ago`)
+        : tr(`${Math.floor(m / 1440)}일 전`, `${Math.floor(m / 1440)}d ago`);
+};
+const when = (s) =>
+  s
+    ? `<time datetime="${esc(s.replace(" ", "T") + "Z")}" title="${esc(date(s))}">${ago(s)}</time>`
+    : "—";
+let items = [],
+  byId = new Map(),
+  catalog = null,
+  view = "items",
+  category = "all",
+  page = 1,
+  selected = null,
+  chart = null,
+  detailState = {
+    state: "open",
+    sort: "price",
+    channel: "",
+    room: "",
+    seller: "",
+    page: 1,
+  },
+  detailTab = "listings",
+  priceBand = null;
+let listSeq = 0,
+  detailSeq = 0,
+  shopSeq = 0,
+  listAbort,
+  detailAbort,
+  refreshing = false,
+  debounce,
+  shopContext;
+let favorites = new Set();
+try {
+  favorites = new Set(
+    JSON.parse(localStorage.getItem("gms-market-wishlist") || "[]"),
+  );
+} catch {}
+const categories = {
+  scroll: tr("주문서", "Scrolls"),
+  weapon: tr("무기", "Weapons"),
+  equip: tr("장비", "Equips"),
+  stars: tr("표창", "Stars"),
+  cash: tr("캐시", "Cash"),
+  other: tr("소비·기타", "Use & other"),
+};
+async function get(path, signal) {
+  const r = await fetch(D.api + path, { signal });
+  if (!r.ok) throw Error("HTTP " + r.status);
+  return r.json();
+}
+function itemName(id) {
+  return byId.get(id)?.name || `#${id}`;
+}
+function itemLink(id) {
+  return `<a class="mb-item-link" href="?item=${id}" data-item="${id}">${icon(id)}<span>${esc(itemName(id))}</span></a>`;
+}
+function pager(data, scope) {
+  if (data.pages <= 1) return "";
+  return `<button class="btn ghost small-btn" type="button" data-page="${data.page - 1}" data-scope="${scope}" ${data.page <= 1 ? "disabled" : ""}>${tr("이전", "Previous")}</button><span>${data.page} / ${data.pages}</span><button class="btn ghost small-btn" type="button" data-page="${data.page + 1}" data-scope="${scope}" ${data.page >= data.pages ? "disabled" : ""}>${tr("다음", "Next")}</button>`;
+}
+function listingTable(rows, { showItem = true, shopButtons = true } = {}) {
+  if (!rows.length)
+    return `<p class="market-empty">${tr("조건에 맞는 매물이 없어요. 검색어나 필터를 바꿔 보세요.", "No listings match. Try changing the search or filters.")}</p>`;
+  return `<div class="mb-table-wrap"><table class="mb-table mb-listings-table"><thead><tr>${showItem ? `<th>${tr("아이템", "Item")}</th>` : ""}<th>${tr("가격", "Price")}<small>${T.priceUnit}</small></th><th>${tr("수량", "Qty")}</th><th>${T.table.seller}</th><th>${T.table.where}</th><th>${tr("최근 확인", "Last seen")}</th></tr></thead><tbody>${rows.map((r) => `<tr>${showItem ? `<td class="mb-cell-item">${itemLink(r.item)}</td>` : ""}<td class="num mb-cell-price">${money(r.price)}${r.qty > 1 ? `<small>${T.total} ${money(r.price * r.qty)}</small>` : ""}</td><td class="mb-cell-qty"><span class="mb-mobile-label">${tr("수량", "Qty")} </span>${money(r.qty)}</td><td class="mb-cell-seller">${shopButtons ? `<button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)} ↗</button>` : esc(r.seller)}</td><td class="mb-cell-location"><span class="where">CH ${r.channel}</span> <span class="where">FM ${r.room}</span></td><td class="mb-cell-seen">${when(r.seen)}<small class="${r.sold ? "mb-sold" : ""}">${r.sold ? tr("판매 완료 표시", "Marked sold") : Date.now() - parseUtc(r.seen) >= DAY ? tr("24시간 경과", "Over 24h old") : tr("판매 중 관측", "Seen for sale")}</small></td></tr>`).join("")}</tbody></table></div>`;
+}
+function syncURL() {
+  const p = new URLSearchParams(location.search);
+  if (selected) p.set("item", selected);
+  else p.delete("item");
+  if (view === "items") p.delete("view");
+  else p.set("view", view);
+  history.replaceState(null, "", location.pathname + (p.size ? "?" + p : ""));
+}
+function closeItem() {
+  detailSeq++;
+  detailAbort?.abort();
+  selected = null;
+  chart?.destroy();
+  chart = null;
+  $("mk-detail").hidden = true;
+  $("mb-workspace").classList.remove("has-selection");
+  syncURL();
+  renderDirectory();
+}
+function renderDirectory() {
+  if (view !== "items" || !catalog) return;
+  const rows = catalogRows(items, catalog.items, {
+    query: $("mk-q").value,
+    category,
+    sort: $("mb-item-sort").value,
+    favorites: $("mb-favorites").checked ? favorites : null,
+  });
+  const pages = Math.ceil(rows.length / 40);
+  page = Math.max(1, Math.min(page, pages || 1));
+  $("mb-count").textContent = tr(
+    `아이템 ${nf.format(rows.length)}종 · ${catalog.windowDays}일 기록`,
+    `${nf.format(rows.length)} items · ${catalog.windowDays}d records`,
+  );
+  const start = (page - 1) * 40;
+  $("mb-results").innerHTML = rows.length
+    ? `<div class="mb-table-wrap"><table class="mb-table mb-catalog"><thead><tr><th><span class="sr-only">${tr("관심", "Wishlist")}</span>☆</th><th>${tr("아이템", "Item")}</th><th>${tr("판매가 중앙값 / 최저가", "Asking median / lowest")}<small>${T.priceUnit} · 24h</small></th><th>${tr("판매 매물", "Asking")}</th><th>${tr("최근 확인", "Last seen")}</th></tr></thead><tbody>${rows
+        .slice(start, start + 40)
+        .map(
+          (r) =>
+            `<tr class="${r.id === selected ? "selected" : ""}"><td><button class="mb-star" data-favorite="${r.id}" aria-pressed="${favorites.has(r.id)}" aria-label="${esc(itemName(r.id))} ${tr("관심 아이템", "wishlist")}">${favorites.has(r.id) ? "★" : "☆"}</button></td><td>${itemLink(r.id)}<small>${categories[r.category]}${r.reports ? ` · ${tr("가격 제보", "Reports")} ${r.reports}` : ""}</small></td><td class="num">${money(r.median)}<small>${tr("최저", "Low")} ${money(r.low)}</small></td><td><strong>${r.open}</strong><small>${tr("기록", "Records")} ${r.records}</small></td><td>${when(r.last)}</td></tr>`,
+        )
+        .join("")}</tbody></table></div>`
+    : `<div class="market-empty"><strong>${tr("표시할 아이템이 없어요.", "No matching items.")}</strong><p>${$("mb-favorites").checked ? tr("별표를 눌러 관심 아이템을 저장해 보세요.", "Use the star to save items to your wishlist.") : T.noMatches}</p></div>`;
+  $("mb-pagination").innerHTML = pager({ page, pages }, "main");
+  $("mb-results").setAttribute("aria-busy", "false");
+}
+function filteredIds() {
+  const matches = matchingIds(items, $("mk-q").value);
+  const recorded = new Set(
+    catalog?.recordedIds || catalog?.items.map((r) => r.item) || [],
+  );
+  return items
+    .filter(
+      (it) =>
+        recorded.has(it.id) &&
+        (!matches || matches.includes(it.id)) &&
+        (category === "all" || category === it.category),
+    )
+    .map((it) => it.id);
+}
+async function renderRecords() {
+  const seq = ++listSeq;
+  listAbort?.abort();
+  listAbort = new AbortController();
+  $("mb-results").setAttribute("aria-busy", "true");
+  $("mb-count").textContent = T.loading;
+  if (
+    view === "listings" &&
+    $("mb-seller").value &&
+    !/^[A-Za-z0-9]{1,13}$/.test($("mb-seller").value)
+  ) {
+    $("mb-results").innerHTML =
+      `<p role="alert">${tr("판매자 닉네임은 영문과 숫자로 검색해 주세요.", "Search seller nicknames with letters and numbers.")}</p>`;
+    $("mb-count").textContent = "";
+    $("mb-pagination").innerHTML = "";
+    $("mb-results").setAttribute("aria-busy", "false");
+    return;
   }
-  if (n >= 1e9) return `${+(n / 1e9).toFixed(2)}b`;
-  if (n >= 1e6) return `${+(n / 1e6).toFixed(2)}m`;
-  if (n >= 1e3) return `${+(n / 1e3).toFixed(1)}k`;
-  return String(n);
+  const p = new URLSearchParams({ page, limit: 50, days: $("mb-days").value });
+  const filtering = $("mk-q").value.trim() || category !== "all";
+  if (filtering) {
+    const ids = filteredIds();
+    if (!ids.length) {
+      $("mb-results").innerHTML = `<p class="market-empty">${T.noMatches}</p>`;
+      $("mb-count").textContent = "0";
+      $("mb-pagination").innerHTML = "";
+      $("mb-results").setAttribute("aria-busy", "false");
+      return;
+    }
+    if (ids.length > 200) {
+      $("mb-results").innerHTML =
+        `<p class="market-empty">${tr("아이템 이름을 조금 더 입력해 주세요.", "Narrow the item name to refine this search.")}</p>`;
+      $("mb-count").textContent = "";
+      $("mb-results").setAttribute("aria-busy", "false");
+      $("mb-pagination").innerHTML = "";
+      return;
+    }
+    p.set("ids", ids.join(","));
+  }
+  if (view === "reports") {
+    if ($("mb-report-kind").value) p.set("kind", $("mb-report-kind").value);
+  } else {
+    for (const [key, id] of [
+      ["state", "mb-state"],
+      ["sort", "mb-list-sort"],
+      ["seller", "mb-seller"],
+      ["channel", "mb-channel"],
+      ["room", "mb-room"],
+    ])
+      if ($(id).value) p.set(key, $(id).value);
+  }
+  const target = view;
+  try {
+    const data = await get(
+      `/market/${target === "reports" ? "reports" : "listings"}?${p}`,
+      listAbort.signal,
+    );
+    if (seq !== listSeq) return;
+    if (page > 1 && page > data.pages) {
+      page = Math.max(1, data.pages);
+      return renderRecords();
+    }
+    $("mb-count").textContent = tr(
+      `전체 ${nf.format(data.total)}건 · ${data.total ? (page - 1) * data.limit + 1 : 0}–${Math.min(page * data.limit, data.total)}건 표시`,
+      `${nf.format(data.total)} records · showing ${data.total ? (page - 1) * data.limit + 1 : 0}–${Math.min(page * data.limit, data.total)}`,
+    );
+    $("mb-results").innerHTML =
+      target === "reports"
+        ? data.rows.length
+          ? `<div class="mb-table-wrap"><table class="mb-table"><thead><tr><th>${tr("아이템", "Item")}</th><th>${T.table.price}</th><th>${tr("제보 종류", "Report type")}</th><th>${tr("제보 시각", "Reported")}</th></tr></thead><tbody>${data.rows.map((r) => `<tr><td>${itemLink(r.item)}</td><td class="num">${money(r.price)}</td><td>${{ selling: tr("판매가", "Asking"), sold: tr("판매 완료", "Sold"), buying: tr("구매 희망", "Buying") }[r.kind]}</td><td>${when(r.seen)}</td></tr>`).join("")}</tbody></table></div>`
+          : `<p class="market-empty">${tr("이 조건의 가격 제보가 없어요.", "No price reports match.")}</p>`
+        : listingTable(data.rows);
+    $("mb-pagination").innerHTML = pager(data, "main");
+  } catch (e) {
+    if (e.name !== "AbortError" && seq === listSeq) {
+      $("mb-results").innerHTML =
+        `<p role="alert">${T.failed}</p><button class="btn small-btn" data-retry-list>${T.retry}</button>`;
+      $("mb-count").textContent = "";
+      $("mb-pagination").innerHTML = "";
+    }
+  } finally {
+    if (seq === listSeq) $("mb-results").setAttribute("aria-busy", "false");
+  }
 }
-
-function ago(utc) {
-  const s = Math.max(0, (Date.now() - parseUtc(utc)) / 1000);
-  if (s < 60) return rtf.format(0, 'second');
-  if (s < 3600) return rtf.format(-Math.floor(s / 60), 'minute');
-  if (s < 86400) return rtf.format(-Math.floor(s / 3600), 'hour');
-  return rtf.format(-Math.floor(s / 86400), 'day');
+function renderMain() {
+  if (!items.length) return;
+  view === "items" ? renderDirectory() : renderRecords();
 }
-
-// ---------- item detail ----------
-const sites = (it) =>
-  D.sites
-    .map((s) => `<a href="${esc(s.url.replace('{id}', it.id).replace('{en}', encodeURIComponent(it.en)))}" target="_blank" rel="noopener">${s.name}</a>`)
-    .join(' · ');
-
-let selectedItem = null;
-let requestNumber = 0;
-let itemRequest = null;
-let charts = null;
-async function loadItem(id, push = true) {
+function setView(next) {
+  view = next;
+  page = 1;
+  listSeq++;
+  listAbort?.abort();
+  document.querySelectorAll("[data-view]").forEach((b) => {
+    const on = b.dataset.view === view;
+    b.setAttribute("aria-selected", on);
+    b.tabIndex = on ? 0 : -1;
+  });
+  $("mb-browser").setAttribute("aria-labelledby", "mb-tab-" + view);
+  $("mb-item-controls").hidden = view !== "items";
+  $("mb-list-controls").hidden = view !== "listings";
+  $("mb-report-controls").hidden = view !== "reports";
+  $("mb-range").hidden = view === "items";
+  $("mb-list-note").textContent =
+    view === "reports"
+      ? tr(
+          "판매자·위치가 없는 가격 제보예요. 방문 가능한 상점 매물과 구분해서 보여 줍니다.",
+          "Price reports without seller/location details are separate from visitable shop listings.",
+        )
+      : view === "items"
+        ? tr(
+            "최근 7일에 모인 아이템 목록이에요. 아이템을 누르면 판매자별 매물이 열립니다.",
+            "Items recorded in the last 7 days. Select one to see sellers and shop listings.",
+          )
+        : tr(
+            "최근 기록 전체를 페이지별로 조회해요. 판매 중은 최근 24시간 확인 기준이며 실제 재고와 다를 수 있어요.",
+            "Browse all records page by page. Asking listings were seen within 24h; actual stock may differ.",
+          );
+  syncURL();
+  renderMain();
+}
+const selectLocation = (type, value) =>
+  `<option value="">${type === "channel" ? T.filterChannel : T.filterRoom}</option>${Array.from({ length: 40 }, (_, i) => `<option value="${i + 1}" ${String(i + 1) === String(value) ? "selected" : ""}>${type === "channel" ? "CH" : "FM"} ${i + 1}</option>`).join("")}`;
+function detailPanels() {
+  for (const key of ["listings", "charts"]) {
+    $("mb-detail-" + key).hidden = detailTab !== key;
+    const button = document.querySelector(`[data-detail-tab="${key}"]`);
+    button?.setAttribute("aria-selected", detailTab === key);
+    if (button) button.tabIndex = detailTab === key ? 0 : -1;
+  }
+}
+async function loadItem(id, { reset = true } = {}) {
   const it = byId.get(id);
   if (!it) return;
-  selectedItem = id;
-  const request = ++requestNumber;
-  itemRequest?.abort();
-  itemRequest = new AbortController();
-  charts?.destroy();
-  charts = null;
-  if (push) history.replaceState(null, '', `?item=${id}`);
-  const box = $('mk-detail');
-  box.setAttribute('aria-busy', 'true');
-  const page = `${D.itemBase}${id}-${it.en.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}/`.replace(/-\/$/, '/');
-  const head = `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(nameOf(it))}</h2>${it.ko && korean ? `<small>${esc(it.en)}</small>` : ''}${D.itemPages.includes(Number(id)) ? `<a class="small" href="${esc(page)}">${D.itemLink} ›</a>` : ''}</div><button type="button" class="btn ghost small-btn" data-refresh-item>${korean ? '새로고침' : 'Refresh'}</button></header>`;
-  box.innerHTML = `${head}<p class="muted">${T.loading}</p>`;
-  let data = null;
-  try {
-    const r = await fetch(`${D.api}/market/item?id=${id}`, { signal: itemRequest.signal });
-    if (r.ok) data = await r.json();
-  } catch (e) {}
-  if (request !== requestNumber) return;
-  box.setAttribute('aria-busy', 'false');
-  if (!data || !Array.isArray(data.listings)) {
-    box.innerHTML = `${head}<p role="status">${T.failed}</p><button class="btn small-btn" data-retry>${T.retry}</button><p class="mk-ext">${T.external}: ${sites(it)}</p>`;
-    box.querySelector('[data-retry]').addEventListener('click', () => loadItem(id, false));
-    return;
+  const changed = selected !== id;
+  selected = id;
+  const seq = ++detailSeq;
+  detailAbort?.abort();
+  detailAbort = new AbortController();
+  chart?.destroy();
+  chart = null;
+  priceBand = null;
+  if (reset || changed) {
+    detailState = {
+      state: "open",
+      sort: "price",
+      channel: "",
+      room: "",
+      seller: "",
+      page: 1,
+    };
+    detailTab = "listings";
   }
-  const now = Date.now();
-  const summary = marketRows(data.listings, now);
-  const { rows, open, sold: soldRows, stale } = summary;
-  if (!rows.length) {
-    box.innerHTML = `${head}<p class="muted">${T.noData}</p><p class="mk-ext">${T.external}: ${sites(it)}</p>`;
-    return;
-  }
-  let priceBand = null;
-  const line = (r) =>
-    `<tr class="${r.sold ? 'sold' : ''}"><td class="num">${nf.format(r.price)}</td><td>${nf.format(r.qty)}<small>${T.total} ${nf.format(r.price * r.qty)}</small></td><td>${esc(r.seller)}</td><td><span class="where">CH ${r.channel}</span> <span class="where">FM ${r.room}</span></td><td class="muted">${ago(r.seen)}<small>${r.sold ? T.sold : Date.now() - r.t >= DAY ? T.stale : T.selling}</small></td></tr>`;
-  const table = (rs) => `<div class="mk-where"><table><thead><tr><th>${T.table.price}</th><th>${T.table.qty}</th><th>${T.table.seller}</th><th>${T.table.where}</th><th>${T.table.seen}</th></tr></thead><tbody>${rs.map(line).join('')}</tbody></table></div>`;
-  const options = (key) => [...new Set(open.map((r) => r[key]))].sort((a, b) => a - b).map((n) => `<option value="${n}">${key === 'channel' ? 'CH' : 'FM'} ${n}</option>`).join('');
-  box.innerHTML = `${head}
-<div class="mk-item-context"><span>${T.tiles.low} <strong>${open.length ? nf.format(open[0].price) : '–'}</strong> ${T.priceUnit}</span><span>${T.tiles.count} <strong>${nf.format(rows.length)}</strong></span></div>
-<p class="muted note">${korean ? '아이템 시세 확인' : 'Item data checked'} ${new Date(now).toLocaleTimeString(D.lang)}${summary.excluded ? ` · ${T.excluded.replace('{n}', summary.excluded)}` : ''}</p>
-<div id="mk-charts"></div>
-<section id="mk-listings"><h3>${T.where}</h3><p class="muted note">${T.whereNote}</p>
-<div class="mk-filters">
-<label>${T.table.where}<select id="mk-channel"><option value="">${T.filterChannel}</option>${options('channel')}</select></label>
-<label>${T.filterRoom}<select id="mk-room"><option value="">${T.filterRoom}</option>${options('room')}</select></label>
-<label>${korean ? '정렬' : 'Sort'}<select id="mk-sort"><option value="price">${T.sortPrice}</option><option value="recent">${T.sortRecent}</option></select></label>
-</div><div class="price-band-filter" id="mk-price-filter" hidden><span id="mk-price-label"></span><button type="button" class="btn ghost small-btn" id="mk-price-clear">${korean ? '가격대 해제' : 'Clear price band'}</button></div><p id="mk-filter-count" class="muted note" role="status"></p><div id="mk-open"></div></section>
-<details class="mk-history"><summary>${T.history} (${soldRows.length + stale.length})</summary>${table([...soldRows, ...stale])}</details>
-<p class="mk-ext">${T.external}: ${sites(it)}</p>`;
-  function renderOpen() {
-    let filtered = open.filter((r) => (!$('mk-channel').value || r.channel === Number($('mk-channel').value)) && (!$('mk-room').value || r.room === Number($('mk-room').value)));
-    if (priceBand) filtered = filtered.filter((r) => r.price >= priceBand.from && r.price <= priceBand.to && r.t > priceBand.fromTime);
-    $('mk-price-filter').hidden = !priceBand;
-    $('mk-price-label').textContent = priceBand?.label || '';
-    $('mk-filter-count').textContent = korean ? `조건에 맞는 매물 ${filtered.length}건 / 최근 판매 매물 ${open.length}건` : `${filtered.length} matching / ${open.length} recent asking listings`;
-    if ($('mk-sort').value === 'recent') filtered.sort((a, b) => b.t - a.t);
-    $('mk-open').innerHTML = filtered.length ? table(filtered) : `<p class="market-empty">${T.noOpen}</p>`;
-  }
-  ['mk-channel', 'mk-room', 'mk-sort'].forEach((key) => $(key).addEventListener('change', renderOpen));
-  renderOpen();
-  charts = mountMarketCharts($('mk-charts'), rows, { lang: D.lang, now, truncated: data.truncated, limit: data.limit,
-    onBand(band) { priceBand = band; renderOpen(); }
-  });
-  $('mk-price-clear').addEventListener('click', () => { charts.clearBand(); $('mk-channel').focus({ preventScroll: true }); });
-  track('market_item', { item_id: id, listings: rows.length });
-}
-
-// ---------- search ----------
-const input = $('mk-q');
-const suggest = $('mk-suggest');
-let active = -1;
-$('mk-detail').addEventListener('click', (e) => {
-  if (e.target.closest('[data-refresh-item]') && selectedItem) loadItem(selectedItem, false);
-});
-
-// Same search as the home page and price search (shorthand like 장공/귀힘, Korean words for English-only cash items).
-let entries = [];
-function matches(q) {
-  if (!q.trim()) return [];
-  return searchEntries(entries, q).slice(0, 8).map((e) => e.it);
-}
-
-function renderSuggest() {
-  const list = matches(input.value);
-  active = -1;
-  suggest.hidden = !list.length;
-  input.setAttribute('aria-expanded', String(list.length > 0));
-  input.removeAttribute('aria-activedescendant');
-  $('mk-search-status').hidden = !input.value.trim() || !!list.length;
-  $('mk-search-status').textContent = T.noMatches;
-  suggest.innerHTML = list
-    .map((it, i) => `<li role="option" aria-selected="false" id="mk-opt-${i}" data-id="${it.id}">${icon(it.id, 24)}<span>${esc(nameOf(it))}${korean && it.ko ? ` <small>${esc(it.en)}</small>` : ''}</span></li>`)
-    .join('');
-}
-
-function hideSuggest() {
-  suggest.hidden = true;
-  input.setAttribute('aria-expanded', 'false');
-  input.removeAttribute('aria-activedescendant');
-}
-
-function choose(id) {
-  hideSuggest();
-  input.value = nameOf(byId.get(id));
-  loadItem(id);
-}
-
-input.addEventListener('input', renderSuggest);
-input.addEventListener('keydown', (e) => {
-  const opts = [...suggest.querySelectorAll('li')];
-  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-    e.preventDefault();
-    if (!opts.length || suggest.hidden) return;
-    active = (active + (e.key === 'ArrowDown' ? 1 : -1) + opts.length) % opts.length;
-    opts.forEach((o, i) => { o.classList.toggle('on', i === active); o.setAttribute('aria-selected', String(i === active)); });
-    input.setAttribute('aria-activedescendant', opts[active]?.id || '');
-  } else if (e.key === 'Enter') {
-    const pick = opts[active] || opts[0];
-    if (pick && !suggest.hidden) choose(Number(pick.dataset.id));
-  } else if (e.key === 'Escape') hideSuggest();
-});
-suggest.addEventListener('click', (e) => {
-  const li = e.target.closest('li');
-  if (li) choose(Number(li.dataset.id));
-});
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.mk-search')) hideSuggest();
-});
-
-// ---------- ranking & feed ----------
-function sparkline(values) {
-  const pts = values.map((v, i) => ({ v, i })).filter((p) => p.v != null);
-  if (pts.length < 2) return `<span class="spark-empty" title="${esc(L.noTrend)}">–</span>`;
-  const W = 64;
-  const H = 24;
-  const lo = Math.min(...pts.map((p) => p.v));
-  const hi = Math.max(...pts.map((p) => p.v));
-  const x = (i) => (i / (values.length - 1)) * W;
-  const y = (v) => (hi === lo ? H / 2 : 2 + (1 - (v - lo) / (hi - lo)) * (H - 4));
-  let d = '';
-  values.forEach((v, i) => {
-    if (v != null) d += `${i > 0 && values[i - 1] != null ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`;
-  });
-  const last = pts[pts.length - 1];
-  return `<svg class="spark" viewBox="0 0 ${W} ${H}" aria-hidden="true"><path d="${d}"/><circle cx="${x(last.i).toFixed(1)}" cy="${y(last.v).toFixed(1)}" r="2.5"/></svg>`;
-}
-
-const moveCell = (m) =>
-  m == null ? `<span class="move new">${L.isNew}</span>` : m > 0 ? `<span class="move up">▲${m}</span>` : m < 0 ? `<span class="move down">▼${-m}</span>` : '<span class="move">–</span>';
-const changeCell = (c) =>
-  c == null ? '<span class="chg">–</span>' : `<span class="chg ${c > 0 ? 'up' : c < 0 ? 'down' : ''}">${c > 0 ? '▲' : c < 0 ? '▼' : ''}${Math.abs(c)}%</span>`;
-
-let refreshing = false;
-let hadMarketData = false;
-async function refresh() {
-  if (document.hidden || refreshing) return;
-  refreshing = true;
-  const get = (p) => fetch(`${D.api}${p}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
-  const [top, recent] = await Promise.all([get('/market/top'), get('/listings/recent?limit=60')]);
-  $('mk-retry').hidden = !!top && !!recent;
-  $('mk-status').textContent = top && recent ? `${korean ? '시장 목록' : 'Market feed'} ${T.refreshed} ${new Date().toLocaleTimeString(D.lang)} · ${korean ? '30초마다 확인' : 'Checked every 30s'}` : hadMarketData ? T.staleData : T.failed;
-  hadMarketData ||= !!top && !!recent;
-  if (top?.stats) for (const k of ['listings', 'shops', 'items', 'sold']) $(`mk-stat-${k}`).textContent = nf.format(top.stats[k] || 0);
-  if (top)
-    $('rank-list').innerHTML = top.items
-      .filter((r) => byId.has(r.item))
-      .map((r) => {
-        const it = byId.get(r.item);
-        return `<li><a href="?item=${it.id}" data-id="${it.id}"><span class="rank">${r.rank}</span>${moveCell(r.move)}${icon(it.id, 26)}<span class="name" title="${esc(nameOf(it))}">${esc(nameOf(it))}</span><span class="avg"><small>${r.median != null ? `${r.basis === 'sold' ? T.sold : T.selling} · ${T.median}` : L.avg}</small>${mesos(r.median ?? r.avg)}</span>${sparkline(r.spark)}${changeCell(r.change)}</a></li>`;
-      })
-      .join('') || `<li class="market-empty">${T.emptyRank}</li>`;
-  else if (!hadMarketData) $('rank-list').innerHTML = `<li class="market-empty">${T.failed}</li>`;
-  if (recent)
-    $('live-rows').innerHTML = recent
-      .filter((r) => byId.has(r.item))
-      .map((r) => {
-        const it = byId.get(r.item);
-        return `<li class="${r.sold ? 'sold' : ''}"><a href="?item=${it.id}" data-id="${it.id}">${icon(it.id, 26)}<span class="name">${esc(nameOf(it))}${r.sold ? `<span class="tag">${L.sold}</span>` : ''}</span><span class="price">${nf.format(r.price)}${r.qty > 1 ? ` <small>×${r.qty}</small>` : ''}</span><span class="meta">${esc(r.seller)} · CH ${r.channel} · FM${r.room}</span><span class="ago">${ago(r.seen)}</span></a></li>`;
-      })
-      .join('') || `<li class="market-empty">${T.emptyFeed}</li>`;
-  else if (!hadMarketData) $('live-rows').innerHTML = `<li class="market-empty">${T.failed}</li>`;
-  if (top?.items && selectedItem == null && !input.value.trim()) {
-    const available = top.items.filter((r) => byId.has(r.item));
-    const first = available.find((r) => r.n > r.sold) || available[0];
-    if (first) { input.value = nameOf(byId.get(first.item)); loadItem(first.item, false); }
-  }
-  refreshing = false;
-}
-
-// Ranking and feed rows open the item here instead of navigating away.
-document.querySelector('.mk-side').addEventListener('click', (e) => {
-  const a = e.target.closest('a[data-id]');
-  if (!a) return;
-  e.preventDefault();
-  const id = Number(a.dataset.id);
-  input.value = nameOf(byId.get(id));
-  loadItem(id);
-  $('mk-detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
-});
-
-// ---------- start ----------
-function initialize() {
-$('mk-retry').hidden = true;
-$('mk-status').textContent = T.loading;
-fetch(D.itemsUrl)
-  .then((r) => { if (!r.ok) throw new Error('items'); return r.json(); })
-  .then((rows) => {
-    items = rows.map(([id, ko, en]) => ({ id, ko, en, flat: squash(`${ko}${en}`) }));
-    entries = items.map((it) => indexEntry({ type: 'item', id: it.id, title: nameOf(it), names: [it.ko, it.en, String(it.id)], it }));
-    byId = new Map(items.map((it) => [it.id, it]));
-    const params = new URLSearchParams(location.search);
-    const id = Number(params.get('item'));
-    const q = params.get('q');
-    if (byId.has(id)) {
-      input.value = nameOf(byId.get(id));
-      loadItem(id, false);
-    } else if (q) {
-      const hit = matches(q)[0];
-      if (hit) {
-        input.value = nameOf(hit);
-        loadItem(hit.id);
+  syncURL();
+  $("mk-detail").hidden = false;
+  $("mb-workspace").classList.add("has-selection");
+  renderDirectory();
+  const s = catalog?.items.find((x) => x.item === id),
+    stats = s
+      ? `<dl class="mb-detail-stats"><div><dt>${tr("판매가 중앙값", "Asking median")}</dt><dd>${money(s.median)} <small>${T.priceUnit}</small></dd></div><div><dt>${tr("최저 판매가", "Lowest ask")}</dt><dd>${money(s.low)}</dd></div><div><dt>${tr("판매 매물 · 24h", "Asking · 24h")}</dt><dd>${s.open}</dd></div></dl>`
+      : "";
+  $("mk-detail").innerHTML =
+    `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(it.name)}</h2><small>${esc(it.en)}</small></div><button class="btn ghost small-btn" data-close-item aria-label="${tr("상세 닫기", "Close details")}">×</button></header>${stats}
+ <div class="mb-tabs" role="tablist" aria-label="${tr("아이템 상세", "Item details")}"><button data-detail-tab="listings" role="tab" aria-selected="${detailTab === "listings"}" aria-controls="mb-detail-listings">${tr("판매 매물", "Shop listings")}</button><button data-detail-tab="charts" role="tab" aria-selected="${detailTab === "charts"}" aria-controls="mb-detail-charts">${tr("가격 추이·매물대", "Trends & depth")}</button><button class="mb-detail-refresh" data-refresh-item>${tr("새로고침", "Refresh")}</button></div>
+ <div id="mb-detail-listings" role="tabpanel" aria-label="${tr("판매 매물", "Shop listings")}"><p class="muted note">${T.whereNote}</p><div class="mb-detail-filters"><label>${tr("채널", "Channel")}<select id="md-channel">${selectLocation("channel", detailState.channel)}</select></label><label>${tr("방", "Room")}<select id="md-room">${selectLocation("room", detailState.room)}</select></label><label>${tr("정렬", "Sort")}<select id="md-sort"><option value="price">${T.sortPrice}</option><option value="recent">${T.sortRecent}</option><option value="high">${tr("높은 가격순", "Highest price")}</option></select></label><label>${tr("상태", "Status")}<select id="md-state"><option value="open">${tr("판매 중 · 24h", "Asking · 24h")}</option><option value="all">${tr("전체 기록 · 7일", "All records · 7d")}</option><option value="sold">${tr("판매 완료 표시", "Marked sold")}</option><option value="stale">${tr("24시간 경과", "Over 24h old")}</option></select></label></div><div class="price-band-filter" id="md-price-band" hidden><span></span><button class="btn ghost small-btn" data-clear-band>${tr("가격대 해제", "Clear price band")}</button></div><p id="md-count" class="muted note" role="status"></p><div id="md-rows"></div><div id="md-pages" class="mb-pagination"></div></div>
+ <div id="mb-detail-charts" role="tabpanel" aria-label="${tr("가격 추이와 매물대", "Trends and depth")}"><div id="mk-charts"><p>${T.loading}</p></div></div>`;
+  $("md-sort").value = detailState.sort;
+  $("md-state").value = detailState.state;
+  detailPanels();
+  if (window.matchMedia("(max-width:1050px)").matches) $("mk-detail").scrollIntoView({behavior:"smooth",block:"start"});
+  loadDetailRows();
+  for (const key of ["channel", "room", "sort", "state"])
+    $("md-" + key).addEventListener("change", () => {
+      detailState[key] = $("md-" + key).value;
+      detailState.page = 1;
+      if (key === "state") {
+        priceBand = null;
+        chart?.clearBand();
       }
-    }
-    refresh();
-  }).catch(() => {
-    $('mk-status').textContent = T.failed;
-    $('mk-retry').hidden = false;
-  });
+      loadDetailRows();
+    });
+  try {
+    const data = await get(`/market/history?id=${id}`, detailAbort.signal);
+    if (seq !== detailSeq) return;
+    const normalize = (rs) =>
+      rs.map((r) => ({ ...r, sold: !!r.sold, t: parseUtc(r.seen) }));
+    chart = mountMarketCharts($("mk-charts"), normalize(data.rows), {
+      lang: D.lang,
+      now: Date.parse(data.asOf),
+      persistent: true,
+      profileRows: normalize(data.profile),
+      truncated: data.truncated,
+      profileTruncated: data.profileTruncated,
+      limit: data.limit,
+      onBand(band) {
+        priceBand = band;
+        if (band) {
+          detailState.state = "open";
+          detailState.channel = "";
+          detailState.room = "";
+          $("md-channel").value = "";
+          $("md-room").value = "";
+          $("md-state").value = "open";
+          detailTab = "listings";
+          detailPanels();
+        }
+        detailState.page = 1;
+        loadDetailRows();
+      },
+    });
+  } catch (e) {
+    if (e.name !== "AbortError" && seq === detailSeq)
+      $("mk-charts").innerHTML =
+        `<p>${T.failed}</p><button class="btn small-btn" data-refresh-item>${T.retry}</button>`;
+  }
 }
-$('mk-retry').addEventListener('click', () => {
-  if (!items.length) initialize();
-  else { refresh(); if (selectedItem) loadItem(selectedItem, false); }
+let detailListSeq = 0;
+async function loadDetailRows() {
+  if (!selected) return;
+  const id = selected,
+    seq = ++detailListSeq,
+    p = new URLSearchParams({ item: id, ...detailState, limit: 30, days: 7 });
+  if (priceBand) {
+    p.set("min", priceBand.from);
+    p.set("max", priceBand.to);
+    p.set("since", new Date(priceBand.fromTime).toISOString());
+  }
+  $("md-rows").setAttribute("aria-busy", "true");
+  $("md-count").textContent = T.loading;
+  $("md-price-band").hidden = !priceBand;
+  $("md-price-band").querySelector("span").textContent = priceBand?.label || "";
+  try {
+    const data = await get("/market/listings?" + p);
+    if (seq !== detailListSeq || id !== selected) return;
+    if (detailState.page > 1 && detailState.page > data.pages) {
+      detailState.page = Math.max(1, data.pages);
+      return loadDetailRows();
+    }
+    $("md-count").textContent = tr(
+      `조건에 맞는 매물 ${data.total}건 · ${ago(data.asOf)}`,
+      `${data.total} matching listings · ${ago(data.asOf)}`,
+    );
+    $("md-rows").innerHTML = listingTable(data.rows, { showItem: false });
+    $("md-pages").innerHTML = pager(data, "detail");
+  } catch {
+    if (seq === detailListSeq && id === selected) {
+      $("md-rows").innerHTML =
+        `<p>${T.failed}</p><button class="btn small-btn" data-retry-detail>${T.retry}</button>`;
+      $("md-count").textContent = "";
+    }
+  } finally {
+    if (seq === detailListSeq && id === selected)
+      $("md-rows").setAttribute("aria-busy", "false");
+  }
+}
+async function showShop(seller, channel, room, shopPage = 1) {
+  const seq = ++shopSeq;
+  shopContext = { seller, channel, room, page: shopPage };
+  const dialog = $("mb-shop");
+  $("mb-shop-body").innerHTML =
+    `<header class="mk-head"><div><h2 id="mb-shop-title">${esc(seller)}</h2><p>CH ${channel} · FM ${room}</p></div><button class="btn ghost small-btn" data-close-shop aria-label="${tr("상점 닫기", "Close shop")}">×</button></header><p class="muted note">${tr("이 위치의 상점에서 우리 DB에 확인된 판매 매물이에요. 전체 재고를 뜻하지는 않아요.", "Asking listings recorded in our database for this shop and location, not guaranteed complete inventory.")}</p><p id="mb-shop-count"></p><div id="mb-shop-rows">${T.loading}</div><div id="mb-shop-pages" class="mb-pagination"></div>`;
+  dialog.setAttribute("aria-labelledby", "mb-shop-title");
+  if (!dialog.open) dialog.showModal();
+  try {
+    const data = await get(
+      "/market/listings?" +
+        new URLSearchParams({
+          seller,
+          channel,
+          room,
+          exact: 1,
+          state: "open",
+          sort: "price",
+          limit: 50,
+          page: shopPage,
+        }),
+    );
+    if (seq !== shopSeq || !dialog.open) return;
+    $("mb-shop-count").textContent = tr(
+      `판매 매물 ${data.total}건`,
+      `${data.total} asking listings`,
+    );
+    $("mb-shop-rows").innerHTML = listingTable(data.rows, {
+      shopButtons: false,
+    });
+    $("mb-shop-pages").innerHTML = pager(data, "shop");
+  } catch {
+    if (seq === shopSeq && dialog.open)
+      $("mb-shop-rows").innerHTML =
+        `<p>${T.failed}</p><button class="btn small-btn" data-retry-shop>${T.retry}</button>`;
+  }
+}
+async function refresh() {
+  if (refreshing || document.hidden) return;
+  refreshing = true;
+  try {
+    catalog = await get("/market/catalog");
+    for (const k of ["open", "shops", "items", "records"])
+      $("mk-stat-" + k).textContent = money(catalog.stats[k]);
+    $("mk-status").textContent = tr(
+      `목록 기준 ${new Date(catalog.asOf).toLocaleTimeString(D.lang)} · 60초마다 확인`,
+      `Directory as of ${new Date(catalog.asOf).toLocaleTimeString(D.lang)} · checks every 60s`,
+    );
+    if (view === "items") renderDirectory();
+  } catch {
+    $("mk-status").textContent = catalog ? T.staleData : T.failed;
+    if (!catalog) {
+      $("mb-results").innerHTML = `<p>${T.failed}</p>`;
+      $("mb-results").setAttribute("aria-busy", "false");
+    }
+  } finally {
+    refreshing = false;
+  }
+}
+function changedSearch() {
+  page = 1;
+  clearTimeout(debounce);
+  if (view === "items") renderMain();
+  else debounce = setTimeout(renderMain, 250);
+}
+$("mk-q").addEventListener("input", changedSearch);
+$("mk-q").addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    $("mk-q").value = "";
+    changedSearch();
+  }
 });
-setInterval(refresh, 30000);
-document.addEventListener('visibilitychange', refresh);
+$("mb-clear-search").addEventListener("click", () => {
+  $("mk-q").value = "";
+  changedSearch();
+  $("mk-q").focus();
+});
+for (const id of [
+  "mb-item-sort",
+  "mb-favorites",
+  "mb-channel",
+  "mb-room",
+  "mb-state",
+  "mb-list-sort",
+  "mb-days",
+  "mb-report-kind",
+])
+  $(id).addEventListener("change", () => {
+    page = 1;
+    renderMain();
+  });
+$("mb-seller").addEventListener("input", changedSearch);
+$("mk-retry").addEventListener("click", async () => {
+  if (!items.length) return initialize();
+  await refresh();
+  if (view !== "items") renderMain();
+  if (selected) loadItem(selected, { reset: false });
+});
+document.querySelector(".market-browser").addEventListener("click", (e) => {
+  const el = e.target.closest("button,a");
+  if (!el) return;
+  if (el.dataset.item) {
+    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+    e.preventDefault();
+    $("mb-shop").close();
+    loadItem(Number(el.dataset.item));
+    return;
+  }
+  if (el.dataset.favorite) {
+    const id = Number(el.dataset.favorite);
+    favorites.has(id) ? favorites.delete(id) : favorites.add(id);
+    try {
+      localStorage.setItem(
+        "gms-market-wishlist",
+        JSON.stringify([...favorites]),
+      );
+    } catch {}
+    renderDirectory();
+    return;
+  }
+  if (el.dataset.view) {
+    setView(el.dataset.view);
+    return;
+  }
+  if (el.dataset.category) {
+    category = el.dataset.category;
+    page = 1;
+    document
+      .querySelectorAll("[data-category]")
+      .forEach((b) =>
+        b.setAttribute("aria-pressed", b.dataset.category === category),
+      );
+    renderMain();
+    return;
+  }
+  if (el.hasAttribute("data-close-item")) return closeItem();
+  if (el.dataset.detailTab) {
+    detailTab = el.dataset.detailTab;
+    detailPanels();
+    return;
+  }
+  if (el.hasAttribute("data-refresh-item"))
+    return loadItem(selected, { reset: false });
+  if (el.dataset.shop)
+    return showShop(el.dataset.shop, el.dataset.ch, el.dataset.room);
+  if (el.hasAttribute("data-close-shop")) return $("mb-shop").close();
+  if (el.hasAttribute("data-retry-shop"))
+    return showShop(
+      shopContext.seller,
+      shopContext.channel,
+      shopContext.room,
+      shopContext.page,
+    );
+  if (el.hasAttribute("data-retry-list")) return renderRecords();
+  if (el.hasAttribute("data-retry-detail")) return loadDetailRows();
+  if (el.hasAttribute("data-clear-band")) {
+    priceBand = null;
+    chart?.clearBand();
+    return loadDetailRows();
+  }
+  if (el.dataset.page) {
+    const n = Number(el.dataset.page);
+    if (el.dataset.scope === "detail") {
+      detailState.page = n;
+      loadDetailRows();
+      $("md-rows").scrollIntoView({ block: "start" });
+    } else if (el.dataset.scope === "shop")
+      showShop(shopContext.seller, shopContext.channel, shopContext.room, n);
+    else {
+      page = n;
+      renderMain();
+      $("mb-results").scrollIntoView({ block: "start" });
+    }
+  }
+});
+document.querySelector(".market-browser").addEventListener("keydown", (e) => {
+  const list = e.target.closest('[role="tablist"]');
+  if (!list) return;
+  if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+  const tabs = [...list.querySelectorAll('[role="tab"]')],
+    index = tabs.indexOf(document.activeElement);
+  if (index < 0) return;
+  e.preventDefault();
+  const next =
+    e.key === "Home"
+      ? 0
+      : e.key === "End"
+        ? tabs.length - 1
+        : (index + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) %
+          tabs.length;
+  tabs[next].click();
+  tabs[next].focus();
+});
+$("mb-shop").addEventListener("click", (e) => {
+  if (e.target === $("mb-shop")) $("mb-shop").close();
+});
+async function initialize() {
+  try {
+    const r = await fetch(D.itemsUrl);
+    if (!r.ok) throw Error("items");
+    items = makeMarketIndex(await r.json(), D.lang);
+    byId = new Map(items.map((it) => [it.id, it]));
+    const p = new URLSearchParams(location.search),
+      id = Number(p.get("item"));
+    if (p.get("q")) $("mk-q").value = p.get("q");
+    const initialView = ["listings", "reports"].includes(p.get("view"))
+      ? p.get("view")
+      : "items";
+    selected = byId.has(id) ? id : null;
+    await refresh();
+    setView(initialView);
+    if (selected) loadItem(selected);
+  } catch {
+    $("mk-status").textContent = T.failed;
+    $("mb-results").innerHTML = `<p>${T.failed}</p>`;
+  }
+}
+setInterval(refresh, 60000);
+document.addEventListener("visibilitychange", refresh);
 initialize();

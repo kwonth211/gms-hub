@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "GMS 시세 자동 수집",
+  "version": "0.2.2",
+  "description": "전용 Chrome 탭에서 15분마다 시세를 검증하고 GMS Hub에 저장합니다. AI 호출 없음.",
+  "permissions": ["storage", "alarms"],
+  "host_permissions": ["https://meso.watch/*", "https://gms-hub-votes.kwonth211.workers.dev/*"],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [{
+    "matches": ["https://meso.watch/*"],
+    "include_globs": ["https://meso.watch/", "https://meso.watch/?*"],
+    "js": ["catalog.js", "reader-core.js", "collector.js", "panel.js"],
+    "run_at": "document_idle"
+  }]
+}

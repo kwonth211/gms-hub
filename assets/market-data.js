@@ -19,6 +19,6 @@ export function marketRows(listings, now = Date.now()) {
   const open = rows.filter((r) => !r.sold && r.t > now - DAY).sort((a, b) => a.price - b.price || b.t - a.t);
   const sold = rows.filter((r) => r.sold).sort((a, b) => b.t - a.t);
   const stale = rows.filter((r) => !r.sold && r.t <= now - DAY).sort((a, b) => b.t - a.t);
-  return { rows, open, sold, stale, excluded: raw.length - rows.length,
+  return { rows, raw, allOpen: raw.filter((r) => !r.sold && r.t > now - DAY).sort((a,b) => a.price-b.price || b.t-a.t), open, sold, stale, excluded: raw.length - rows.length,
     askingMedian: median(open.map((r) => r.price)), soldMedian: median(sold.filter((r) => r.t > now - DAY).map((r) => r.price)) };
 }

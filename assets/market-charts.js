@@ -6,7 +6,7 @@ const COPY = {
     both: '함께 보기', asking: '판매 중', sold: '판매 완료', series: '가격 추이 표시',
     trend: '가격 변동 추이', trendNote: '시간 구간별 중앙값 · 세로선은 최저~최고 · 아래 막대는 관측 매물 수',
     basis: '각 매물의 마지막 확인 시각 기준이에요. 판매 완료도 확인한 가격이며, 실제 거래 시각·거래량은 아니에요.',
-    profile: '가격대별 매물', profileNote: '막대를 누르면 아래 상점 목록에서 해당 가격대만 볼 수 있어요.',
+    profile: '가격대별 매물', profileNote: '막대를 누르면 해당 가격대의 전체 채널 매물을 볼 수 있어요.',
     depth: '누적 판매 매물', depthNote: '해당 가격 이하에 관측된 판매 중 매물 수예요. 묶음 수량을 합산한 재고가 아니에요.',
     empty: '이 기간에 확인한 기록이 없어요. 더 긴 기간을 선택해 보세요.',
     noSeries: '선택한 상태의 가격 기록이 없어요.', noAsking: '이 기간에 확인한 판매 중 매물이 없어요.',
@@ -23,7 +23,7 @@ const COPY = {
     both: 'Compare', asking: 'Asking', sold: 'Sold', series: 'Price series',
     trend: 'Price trend', trendNote: 'Median per time interval · whiskers: low–high · lower bars: observed listings',
     basis: 'Based on each listing’s last observation. Sold prices are observed prices, not verified trade times or trading volume.',
-    profile: 'Listings by price', profileNote: 'Select a bar to filter the shop list below to that price band.',
+    profile: 'Listings by price', profileNote: 'Select a bar to view listings in that price band across all channels.',
     depth: 'Cumulative asking listings', depthNote: 'Observed asking listings at or below a price. Counts listings, not the quantity of items in stock.',
     empty: 'No observations in this period. Try a longer time range.',
     noSeries: 'No prices observed for this status.', noAsking: 'No asking listings observed in this period.',
@@ -39,8 +39,10 @@ const COPY = {
 const escape = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 // The UI owns one observer and one delegated listener set; clean up before switching items.
-export function mountMarketCharts(root, rows, { lang = 'ko', now = Date.now(), truncated = false, limit = 400, onBand = () => {} } = {}) {
-  const t = COPY[lang] || COPY.en;
+export function mountMarketCharts(root, rows, { lang = 'ko', now = Date.now(), truncated = false, limit = 400, profileRows = rows, persistent = false, profileTruncated = false, onBand = null } = {}) {
+  const t = { ...(COPY[lang] || COPY.en), ...(persistent ? (lang === 'ko'
+    ? { asking: '판매가 관측', sold: '판매 완료 관측', count: '관측 기록', amount: '관측 기록 수' }
+    : { asking: 'Observed asks', sold: 'Observed sold', count: 'Observations', amount: 'Observations' }) : {}) };
   const nf = new Intl.NumberFormat(lang);
   const date = new Intl.DateTimeFormat(lang, { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
   const time = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -54,8 +56,9 @@ export function mountMarketCharts(root, rows, { lang = 'ko', now = Date.now(), t
   let analysis, width = 0;
   root.innerHTML = `<section class="market-analysis" aria-labelledby="analysis-title">
     <div class="analysis-heading"><h3 id="analysis-title">${t.title}</h3><div class="chart-segments" role="group" aria-label="${t.period}">${PERIODS.map((h, i) => `<button type="button" data-period="${h}" aria-pressed="${h === hours}">${t.periods[i]}</button>`).join('')}</div></div>
-    <p class="analysis-basis">${t.basis}</p>
+    <p class="analysis-basis">${persistent ? (lang === 'ko' ? '추이는 저장된 관측 이력, 매물대는 최근 24시간에 확인한 판매 중 매물 기준이에요. 재관측은 거래 건수가 아니며 실제 재고와 다를 수 있어요.' : 'Trends use retained observations; depth uses distinct asking listings seen in the last 24h. Observations are not trades or guaranteed stock.') : t.basis}</p>
     ${truncated ? `<p class="analysis-warning">${t.cap.replace('{n}', limit)}</p>` : ''}
+    ${profileTruncated ? `<p class="analysis-warning">${lang === 'ko' ? '매물대는 낮은 가격순 10,000건까지 집계했어요. 전체 매물은 목록에서 확인하세요.' : 'Depth includes the 10,000 lowest-priced listings. Browse the list for all records.'}</p>` : ''}
     <div data-analysis-body></div>
   </section>`;
   const body = root.querySelector('[data-analysis-body]');
@@ -134,7 +137,7 @@ export function mountMarketCharts(root, rows, { lang = 'ko', now = Date.now(), t
   }
 
   function render() {
-    analysis = analyzeMarket(rows, { now, hours });
+    analysis = analyzeMarket(rows, { now, hours, profileRows });
     root.querySelectorAll('[data-period]').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.period) === hours)));
     if (!analysis.rows.length) { body.innerHTML = `<p class="chart-empty">${t.empty}</p>`; return; }
     const p = analysis.profile;
@@ -149,9 +152,9 @@ export function mountMarketCharts(root, rows, { lang = 'ko', now = Date.now(), t
       ${(series === 'both' ? analysis.rows.length < 3 || !analysis.changes.asking && !analysis.changes.sold : (analysis[series]?.n || 0) < 3 || !analysis.changes[series]) ? `<p class="analysis-warning">${t.sparse}</p>` : ''}
       <details class="chart-data"><summary>${t.table}</summary><div class="mk-where"><table><thead><tr><th>${t.time}</th><th>${t.asking} · ${t.median}</th><th>${t.sold} · ${t.median}</th><th>${t.count}</th></tr></thead><tbody>${analysis.buckets.map((b) => `<tr><td>${intervalName(b)}</td><td>${b.asking ? price(b.asking.median) : '—'}</td><td>${b.sold ? price(b.sold.median) : '—'}</td><td>${b.rows.length}</td></tr>`).join('')}</tbody></table></div></details></div>
       <p class="profile-scope">${scope}</p><div class="analysis-distributions">
-      <div class="chart-card"><h4>${t.profile}</h4><p class="chart-caption">${t.profileNote}</p>
+      <div class="chart-card"><h4>${t.profile}</h4><p class="chart-caption">${onBand ? t.profileNote : (lang === 'ko' ? '가격 구간별로 확인한 판매 매물 수예요.' : 'Observed asking listings in each price band.')}</p>
       ${peak ? `<p class="profile-peak"><span>${t.peak}</span><strong>${tied > 1 ? t.tied.replace('{n}', tied) : bandName(peak)}</strong><span>${count(peak.count)} · ${Math.round(peak.share * 100)}%</span></p>` : ''}
-      <div class="price-profile">${p.bins.map((b, i) => `<button type="button" class="profile-band" data-band="${i}" aria-pressed="${selectedBand === i}" ${b.count ? '' : 'disabled'}><span class="profile-label">${bandName(b)}<small>${count(b.count)} · ${Math.round(b.count / p.total * 100)}%</small></span><span class="profile-track"><span style="width:${b.count / biggest * 100}%"></span></span></button>`).join('') || `<p class="chart-empty">${t.noAsking}</p>`}</div><p class="chart-caption">${t.price}</p>
+      <div class="price-profile">${p.bins.map((b, i) => `<${onBand ? 'button type="button"' : 'div'} class="profile-band" ${onBand ? `data-band="${i}" aria-pressed="${selectedBand === i}" ${b.count ? '' : 'disabled'}` : ''}><span class="profile-label">${bandName(b)}<small>${count(b.count)} · ${Math.round(b.count / p.total * 100)}%</small></span><span class="profile-track"><span style="width:${b.count / biggest * 100}%"></span></span></${onBand ? 'button' : 'div'}>`).join('') || `<p class="chart-empty">${t.noAsking}</p>`}</div><p class="chart-caption">${t.price}</p>
       <button type="button" class="btn ghost small-btn" data-clear-band ${selectedBand == null ? 'hidden' : ''}>${t.clear}</button></div>
       <div class="chart-card"><h4>${t.depth}</h4><p class="chart-caption">${t.depthNote}</p><div data-depth-chart></div><p class="chart-inspector" data-depth-inspect aria-live="polite">${p.total ? `${price(p.levels.at(-1).price)} ${t.accumulated} ${count(p.total)}` : t.none}</p><p class="chart-caption">${t.price}</p></div></div>`;
     draw();
@@ -161,7 +164,7 @@ export function mountMarketCharts(root, rows, { lang = 'ko', now = Date.now(), t
     root.querySelectorAll('[data-band]').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.band) === index)));
     root.querySelector('[data-clear-band]').hidden = index == null;
     const band = index == null ? null : analysis.profile.bins[index];
-    onBand(band ? { ...band, fromTime: now - analysis.profileHours * HOUR, label: `${t.selected}: ${bandName(band)} · ${scopeLabel()}` } : null);
+    onBand?.(band ? { ...band, fromTime: now - analysis.profileHours * HOUR, label: `${t.selected}: ${bandName(band)} · ${scopeLabel()}` } : null);
   }
   const scopeLabel = () => t.profileScope.replace('{h}', analysis.profileHours).replace('{n}', analysis.profile.total);
   function inspect(target) {
@@ -174,7 +177,7 @@ export function mountMarketCharts(root, rows, { lang = 'ko', now = Date.now(), t
   function click(e) {
     const target = e.target.closest('button, [data-bucket], [data-depth]');
     if (!target) return;
-    if (target.hasAttribute('data-period')) { hours = Number(target.dataset.period); selectedBand = null; onBand(null); render(); }
+    if (target.hasAttribute('data-period')) { hours = Number(target.dataset.period); selectedBand = null; onBand?.(null); render(); }
     else if (target.hasAttribute('data-series')) { series = target.dataset.series; render(); root.querySelector(`[data-series="${series}"]`).focus({ preventScroll: true }); }
     else if (target.hasAttribute('data-band')) pickBand(selectedBand === Number(target.dataset.band) ? null : Number(target.dataset.band));
     else if (target.hasAttribute('data-clear-band')) { pickBand(null); root.querySelector('[data-band]')?.focus({ preventScroll: true }); }

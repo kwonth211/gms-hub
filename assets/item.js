@@ -1,4 +1,4 @@
-import { DAY, parseUtc, marketRows } from './market-data.js';
+import { DAY, parseUtc } from './market-data.js';
 import { mountMarketCharts } from './market-charts.js';
 // Item page: the price summary is baked into the HTML at build time; the trend charts and open shops load live here.
 const D = JSON.parse(document.getElementById('it-data').textContent);
@@ -22,20 +22,12 @@ const line = (r) =>
 const table = (rs) =>
   `<div class="mk-where"><table><thead><tr><th>${T.table.price}</th><th>${T.table.qty}</th><th>${T.table.seller}</th><th>${T.table.where}</th><th>${T.table.seen}</th></tr></thead><tbody>${rs.map(line).join('')}</tbody></table></div>`;
 
-fetch(`${D.api}/market/item?id=${D.id}`)
-  .then((r) => (r.ok ? r.json() : null))
-  .catch(() => null)
-  .then((data) => {
-    if (!data || !Array.isArray(data.listings)) {
-      box.innerHTML = `<p class="muted">${T.failed}</p>`;
-      return;
-    }
-    const now = Date.now();
-    const { rows, open } = marketRows(data.listings, now);
-    if (!rows.length) {
-      box.innerHTML = `<p class="muted">${T.noData}</p>`;
-      return;
-    }
-    mountMarketCharts(charts, rows, { lang: D.lang, now, truncated: data.truncated, limit: data.limit });
-    box.innerHTML = open.length ? table(open.slice(0, 10)) : `<p class="muted">${T.noOpen}</p>`;
-  });
+Promise.all([
+  fetch(`${D.api}/market/listings?item=${D.id}&state=open&sort=price&limit=10`).then(r=>r.ok?r.json():null),
+  fetch(`${D.api}/market/history?id=${D.id}`).then(r=>r.ok?r.json():null)
+]).catch(()=>[null,null]).then(([listings, history])=>{
+  if (!listings) { box.innerHTML = `<p class="muted">${T.failed}</p>`; return; }
+  box.innerHTML = listings.rows.length ? `<p class="muted note">${D.lang==='ko'?`판매 매물 ${listings.total}건 중 낮은 가격순 ${listings.rows.length}건`:`${listings.rows.length} lowest asks of ${listings.total} listings`}</p>${table(listings.rows)}` : `<p class="muted">${T.noOpen}</p>`;
+  if(history){const normalize=rs=>rs.map(r=>({...r,sold:!!r.sold,t:parseUtc(r.seen)}));mountMarketCharts(charts,normalize(history.rows),{lang:D.lang,now:Date.parse(history.asOf),profileRows:normalize(history.profile),persistent:true,truncated:history.truncated,profileTruncated:history.profileTruncated,limit:history.limit});}
+  else charts.innerHTML=`<p class="muted">${T.failed}</p>`;
+});
