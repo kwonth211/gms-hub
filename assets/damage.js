@@ -187,7 +187,7 @@ function update() {
   const acc = s.acc ?? baseAccuracy(s.job, s.level, s.stats);
   const q = $('dm-mob-q').value.trim().toLowerCase();
   const list = mobs.filter((m) => {
-    if (q) return m.name.toLowerCase().includes(q) || m.en.toLowerCase().includes(q);
+    if (q) return m.name.toLowerCase().includes(q) || m.en.toLowerCase().includes(q) || m.aliases.includes(q);
     return showAll || (m.lv >= s.level - 20 && m.lv <= s.level + 15 && !m.boss);
   });
   if (!list.length) {
@@ -402,7 +402,7 @@ if (!navigator.mediaDevices?.getDisplayMedia) $('dm-read').disabled = true;
 
 Promise.all([fetch(data.mobsUrl).then((r) => r.json()), fetch(data.weaponsUrl).then((r) => r.json())])
   .then(([m, w]) => {
-    mobs = m.map(([id, ko, en, lv, hp, wdef, mdef, eva, el, undead, boss, mp]) => ({ id, name: (lang === 'ko' && ko) || en, en, lv, hp, wdef, mdef, eva, el, undead, boss, mp }));
+    mobs = m.map(([id, ko, en, lv, hp, wdef, mdef, eva, el, undead, boss, mp, aliases]) => ({ id, name: (lang === 'ko' && ko) || en, en, lv, hp, wdef, mdef, eva, el, undead, boss, mp, aliases: String(aliases || '').toLowerCase() }));
     weapons = w.map(([id, ko, en, type, lv, watk, matk]) => ({ id, name: (lang === 'ko' && ko) || en, en, type, lv, watk, matk }));
     // The training finder links each monster here as ?mob=<English name>.
     const mob = new URLSearchParams(location.search).get('mob');

@@ -2408,7 +2408,8 @@ for (const name of moduleFiles) {
 // Compact item index for the price search: [id, korean, english, category, subcategory, level].
 write('assets/shop-glyphs.json', fs.readFileSync(path.join(root, 'data/shop-glyphs.json')));
 // Hits-to-kill calculator data: [id, ko, en, level, hp, wdef, mdef, eva, elements, undead, boss, mp] and weapons [id, ko, en, type, level, watk, matk].
-write('assets/mobs.json', JSON.stringify(readJson('data/mobs.json').mobs.map((m) => [m.id, m.ko || '', m.en, m.lv, m.hp, m.wdef, m.mdef, m.eva, m.el || '', m.undead ? 1 : 0, m.boss ? 1 : 0, m.mp])));
+const MOB_ALIASES = readJson('data/mob-aliases.json');
+write('assets/mobs.json', JSON.stringify(readJson('data/mobs.json').mobs.map((m) => [m.id, m.ko || '', m.en, m.lv, m.hp, m.wdef, m.mdef, m.eva, m.el || '', m.undead ? 1 : 0, m.boss ? 1 : 0, m.mp, (MOB_ALIASES[m.en] || []).join(' ')])));
 write('assets/weapons.json', JSON.stringify(readJson('data/weapons.json').weapons.map((w) => [w.id, w.ko || '', w.en, w.type, w.lv, w.watk || 0, w.matk || 0])));
 write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko || '', i.en, i.cat, i.sub, i.lv || 0])));
 

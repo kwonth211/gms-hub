@@ -3,7 +3,7 @@ export const normalize = (value) => String(value ?? '').normalize('NFKC').toLowe
 
 // Korean scroll names keep the English stat word ("귀고리 STR 주문서", "상의 DEF 주문서"), so Korean stat words map to those exact tokens.
 const synonyms = [
-  ['공격력', 'attack'], ['마법공격력', 'magicattack'], ['마력', 'magicattack'],
+  ['공격력', 'attack'], ['공격', 'attack'], ['마법공격력', 'magicattack'], ['마력', 'magicattack'], ['고급', '상급'],
   ['명중률', 'accuracy'], ['명중', 'accuracy'], ['회피율', 'evasion'], ['회피', 'evasion'],
   ['방어력', 'def'], ['이동속도', 'speed'], ['이속', 'speed'], ['점프력', 'jump'],
   ['점프', 'jump'], ['힘', 'str'], ['민첩', 'dex'], ['덱스', 'dex'], ['지력', 'int'],
@@ -40,6 +40,7 @@ export function indexEntry(entry) {
   return {
     ...entry,
     searchNames: names.map(normalize),
+    wordNames: names.map((name) => ` ${String(name).normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}%]+/gu, ' ')}`),
     searchText: normalize(`${names.join(' ')} ${keywords}`),
     aliasNames: names.map(canonical),
     aliasText: canonical(`${names.join(' ')} ${keywords}`),
@@ -55,12 +56,14 @@ export function searchEntries(entries, query) {
   const alias = canonical(expanded);
   const aliasWords = String(expanded).trim().split(/\s+/u).map(canonical).filter(Boolean);
   const initialQuery = /^[\u1100-\u1112]+$/.test(flat);
+  const latin = /^[a-z0-9]+$/.test(flat);
   return entries.map((entry, order) => {
     const { searchNames: names, searchText: text, aliasNames, aliasText } = entry;
     let score = 0;
     if (names.includes(flat)) score = 120;
     else if (names.some((name) => name.startsWith(flat))) score = 100;
-    else if (names.some((name) => name.includes(flat))) score = 85;
+    // A short Latin query inside another word ("mp" in Stump, "ore" in Sporewood) is a weak hit, not a name match.
+    else if (names.some((name) => name.includes(flat))) score = latin && !entry.wordNames.some((name) => name.includes(` ${words[0]}`)) ? 45 : 85;
     else if (names.some((name) => words.every((word) => name.includes(word)))) score = 75;
     else if (aliasNames.some((name) => name.includes(alias))) score = 70;
     else if (aliasNames.some((name) => aliasWords.every((word) => name.includes(word)))) score = 65;

@@ -75,3 +75,13 @@ test('results carry their score so callers never rank a weaker match above a bet
   assert.equal(hits[0].title, '메바');
   assert.ok(hits.every((hit, i) => i === 0 || hits[i - 1].score >= hit.score));
 });
+
+test('공격 and 고급 work like the words players use for attack and Greater', () => {
+  assert.ok(results('장갑 공격').some((it) => /Gloves Attack Scroll/.test(sourceItems.find((s) => s.id === it.id).en)));
+  assert.ok(results('고급 망토').every((it, i) => i > 2 || /Cape .* Scroll: Greater/.test(sourceItems.find((s) => s.id === it.id).en)));
+});
+
+test('a short Latin query inside another word ranks below real word matches', () => {
+  const top = sourceItems.find((s) => s.id === results('mp')[0].id).en;
+  assert.match(top, /\bMP\b/);
+});
