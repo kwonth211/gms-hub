@@ -1,1696 +1,400 @@
 {
- "updated": "2026-10-28",
- "sources": {
-  "meowdb": {
-   "name": "NiaMeowDB",
-   "url": "https://meowdb.com/msclassic/guides/best-grind-maps-every-level",
-   "date": "2026-10-23"
+  "version": 2,
+  "updated": "2026-11-10",
+  "method": {
+    "ko": "플레이를 직접 서술한 원문을 확인했어요. 작성자 신원이나 결과를 독립적으로 검증한 것은 아니며, 수익이나 효율 순위를 매기지 않아요.",
+    "en": "Original first-person accounts reviewed. Authors’ identities and outcomes are not independently verified; these are not profit or efficiency rankings."
   },
-  "msclassic": {
-   "name": "MS-Classic",
-   "url": "https://ms-classic.com/guides/where-to-train-level-10-30",
-   "urls": [
-    "https://ms-classic.com/guides/where-to-train-level-10-30",
-    "https://ms-classic.com/guides/where-to-train-level-30-50",
-    "https://ms-classic.com/guides/where-to-train-level-50-70"
-   ],
-   "date": "2026-10-22"
-  },
-  "henesys": {
-   "name": "Henesys.GG",
-   "url": "https://henesys.gg/guides/training",
-   "date": null
-  }
- },
- "spots": [
-  {
-   "map": "Snail Hunting Ground II",
-   "monsters": [
-    {
-     "name": "Snail",
-     "level": 1,
-     "ko": "달팽이"
-    },
-    {
-     "name": "Blue Snail",
-     "level": 2,
-     "ko": "파란 달팽이"
-    }
-   ],
-   "recs": [
-    {
-     "source": "henesys",
-     "min": 1,
-     "max": 7
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "달팽이 사냥터 II"
-  },
-  {
-   "map": "Mushroom Garden",
-   "monsters": [
-    {
-     "name": "Shroom",
-     "level": 3,
-     "ko": "쉬룸"
-    },
-    {
-     "name": "Snail",
-     "level": 1,
-     "ko": "달팽이"
-    },
-    {
-     "name": "Orange Mushroom",
-     "level": 8,
-     "ko": "주황 버섯"
-    }
-   ],
-   "recs": [
-    {
-     "source": "henesys",
-     "min": 5,
-     "max": 10
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "버섯 정원"
-  },
-  {
-   "map": "The Tree That Grew II",
-   "monsters": [
-    {
-     "name": "Slime",
-     "level": 6,
-     "ko": "슬라임"
-    },
-    {
-     "name": "Stump",
-     "level": 5,
-     "ko": "스텀프"
-    },
-    {
-     "name": "Dark Stump",
-     "level": 11,
-     "ko": "다크 스텀프"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 1,
-     "max": 10
-    },
-    {
-     "source": "henesys",
-     "min": 8,
-     "max": 15
-    }
-   ],
-   "meowdbExpHr": 318571,
-   "ko": "자라난 나무 II"
-  },
-  {
-   "map": "L Forest I",
-   "monsters": [
-    {
-     "name": "Ribbon Pig",
-     "level": 10,
-     "ko": "리본 돼지"
-    },
-    {
-     "name": "Pig",
-     "level": 7,
-     "ko": "돼지"
-    },
-    {
-     "name": "Shroom",
-     "level": 3,
-     "ko": "쉬룸"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 1,
-     "max": 10
-    },
-    {
-     "source": "henesys",
-     "min": 10,
-     "max": 16
-    }
-   ],
-   "meowdbExpHr": 333525,
-   "ko": "L 숲 I"
-  },
-  {
-   "map": "Construction Site North of Kerning City",
-   "monsters": [
-    {
-     "name": "Dark Stump",
-     "level": 11,
-     "ko": "다크 스텀프"
-    },
-    {
-     "name": "Red Snail",
-     "level": 4,
-     "ko": "빨간 달팽이"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 1,
-     "max": 10
-    }
-   ],
-   "meowdbExpHr": 297499,
-   "ko": "커닝시티 북쪽 공사장"
-  },
-  {
-   "map": "Kerning City Construction Site",
-   "monsters": [
-    {
-     "name": "Octopus",
-     "level": 12,
-     "ko": "옥토퍼스"
-    }
-   ],
-   "recs": [
-    {
-     "source": "msclassic",
-     "min": 10,
-     "max": 14
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "커닝시티 공사장"
-  },
-  {
-   "map": "The Rain-Forest East of Henesys",
-   "monsters": [
-    {
-     "name": "Ribbon Pig",
-     "level": 10,
-     "ko": "리본 돼지"
-    },
-    {
-     "name": "Pig",
-     "level": 7,
-     "ko": "돼지"
-    }
-   ],
-   "recs": [
-    {
-     "source": "msclassic",
-     "min": 10,
-     "max": 14
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "헤네시스 동쪽 레인 숲"
-  },
-  {
-   "map": "Henesys Hunting Ground III",
-   "monsters": [
-    {
-     "name": "Green Mushroom",
-     "level": 14,
-     "ko": "초록 버섯"
-    },
-    {
-     "name": "Orange Mushroom",
-     "level": 8,
-     "ko": "주황 버섯"
-    },
-    {
-     "name": "Slime",
-     "level": 6,
-     "ko": "슬라임"
-    }
-   ],
-   "recs": [
-    {
-     "source": "msclassic",
-     "min": 10,
-     "max": 14
-    },
-    {
-     "source": "henesys",
-     "min": 13,
-     "max": 20
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "헤네시스 사냥터 III"
-  },
-  {
-   "map": "West Rocky Mountain III",
-   "monsters": [
-    {
-     "name": "Green Mushroom",
-     "level": 14,
-     "ko": "초록 버섯"
-    },
-    {
-     "name": "Stump",
-     "level": 5,
-     "ko": "스텀프"
-    },
-    {
-     "name": "Red Snail",
-     "level": 4,
-     "ko": "빨간 달팽이"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 11,
-     "max": 15
-    },
-    {
-     "source": "henesys",
-     "min": 13,
-     "max": 20
-    }
-   ],
-   "meowdbExpHr": 572857,
-   "ko": "서쪽 바위산 III"
-  },
-  {
-   "map": "Tree Dungeon, Forest Up North IV",
-   "monsters": [
-    {
-     "name": "Green Mushroom",
-     "level": 14,
-     "ko": "초록 버섯"
-    },
-    {
-     "name": "Slime",
-     "level": 6,
-     "ko": "슬라임"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 11,
-     "max": 15
-    },
-    {
-     "source": "msclassic",
-     "min": 15,
-     "max": 19
-    }
-   ],
-   "meowdbExpHr": 343571,
-   "ko": "나무 던전, 북쪽 숲 IV"
-  },
-  {
-   "map": "Line 1 <Area 1>",
-   "monsters": [
-    {
-     "name": "Bubbling",
-     "level": 15,
-     "ko": "버블링"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 11,
-     "max": 15
-    },
-    {
-     "source": "msclassic",
-     "min": 15,
-     "max": 19
-    },
-    {
-     "source": "henesys",
-     "min": 15,
-     "max": 21
-    }
-   ],
-   "meowdbExpHr": 640000,
-   "ko": "1호선 <1구역>"
-  },
-  {
-   "map": "Dungeon, Southern Forest III",
-   "monsters": [
-    {
-     "name": "Green Mushroom",
-     "level": 14,
-     "ko": "초록 버섯"
-    },
-    {
-     "name": "Slime",
-     "level": 6,
-     "ko": "슬라임"
-    }
-   ],
-   "recs": [
-    {
-     "source": "msclassic",
-     "min": 15,
-     "max": 19
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "던전, 남쪽 숲 III"
-  },
-  {
-   "map": "Dangerous Steam",
-   "monsters": [
-    {
-     "name": "Stirge",
-     "level": 20,
-     "ko": "스티지"
-    },
-    {
-     "name": "Horny Mushroom",
-     "level": 22,
-     "ko": "뿔 버섯"
-    },
-    {
-     "name": "Zombie Mushroom",
-     "level": 24,
-     "ko": "좀비 버섯"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 16,
-     "max": 20
-    },
-    {
-     "source": "msclassic",
-     "min": 20,
-     "max": 24
-    }
-   ],
-   "meowdbExpHr": 671786,
-   "ko": "위험한 증기"
-  },
-  {
-   "map": "Transfer Area",
-   "monsters": [
-    {
-     "name": "Stirge",
-     "level": 20,
-     "ko": "스티지"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 16,
-     "max": 20
-    },
-    {
-     "source": "msclassic",
-     "min": 20,
-     "max": 24
-    }
-   ],
-   "meowdbExpHr": 502143,
-   "ko": "환승 구역"
-  },
-  {
-   "map": "Tree Dungeon, Forest Up North III",
-   "monsters": [
-    {
-     "name": "Horny Mushroom",
-     "level": 22,
-     "ko": "뿔 버섯"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 16,
-     "max": 20
-    }
-   ],
-   "meowdbExpHr": 434286,
-   "ko": "나무 던전, 북쪽 숲 III"
-  },
-  {
-   "map": "Dark Cave",
-   "monsters": [
-    {
-     "name": "Stirge",
-     "level": 20,
-     "ko": "스티지"
-    },
-    {
-     "name": "Horny Mushroom",
-     "level": 22,
-     "ko": "뿔 버섯"
-    },
-    {
-     "name": "Zombie Mushroom",
-     "level": 24,
-     "ko": "좀비 버섯"
-    }
-   ],
-   "recs": [
-    {
-     "source": "msclassic",
-     "min": 20,
-     "max": 24
-    },
-    {
-     "source": "henesys",
-     "min": 18,
-     "max": 23
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "다크 동굴"
-  },
-  {
-   "map": "Damp Forest",
-   "monsters": [
-    {
-     "name": "Jr. Necki",
-     "level": 21,
-     "ko": "주니어 네키"
-    },
-    {
-     "name": "Octopus",
-     "level": 12,
-     "ko": "옥토퍼스"
-    },
-    {
-     "name": "Slime",
-     "level": 6,
-     "ko": "슬라임"
-    }
-   ],
-   "recs": [
-    {
-     "source": "msclassic",
-     "min": 20,
-     "max": 24
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "축축한 숲"
-  },
-  {
-   "map": "Ant Tunnel III",
-   "monsters": [
-    {
-     "name": "Zombie Mushroom",
-     "level": 24,
-     "ko": "좀비 버섯"
-    },
-    {
-     "name": "Horny Mushroom",
-     "level": 22,
-     "ko": "뿔 버섯"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 21,
-     "max": 25
-    },
-    {
-     "source": "msclassic",
-     "min": 22,
-     "max": 30
-    },
-    {
-     "source": "henesys",
-     "min": 22,
-     "max": 27
-    }
-   ],
-   "meowdbExpHr": 1536786,
-   "ko": "개미 터널 III"
-  },
-  {
-   "map": "Deep Ant Tunnel I",
-   "monsters": [
-    {
-     "name": "Zombie Mushroom",
-     "level": 24,
-     "ko": "좀비 버섯"
-    },
-    {
-     "name": "Horny Mushroom",
-     "level": 22,
-     "ko": "뿔 버섯"
-    },
-    {
-     "name": "Evil Eye",
-     "level": 27,
-     "ko": "이블아이"
-    },
-    {
-     "name": "Jr. Boogie",
-     "level": 35,
-     "ko": "주니어 부기"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 21,
-     "max": 30
-    },
-    {
-     "source": "msclassic",
-     "min": 22,
-     "max": 30
-    }
-   ],
-   "meowdbExpHr": 1078060,
-   "ko": "깊은 개미 터널 I"
-  },
-  {
-   "map": "Ant Tunnel Park",
-   "monsters": [
-    {
-     "name": "Evil Eye",
-     "level": 27,
-     "ko": "이블아이"
-    },
-    {
-     "name": "Zombie Mushroom",
-     "level": 24,
-     "ko": "좀비 버섯"
-    },
-    {
-     "name": "Horny Mushroom",
-     "level": 22,
-     "ko": "뿔 버섯"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 21,
-     "max": 30
-    },
-    {
-     "source": "msclassic",
-     "min": 22,
-     "max": 30
-    },
-    {
-     "source": "henesys",
-     "min": 24,
-     "max": 30
-    }
-   ],
-   "meowdbExpHr": 981785,
-   "ko": "개미굴 광장"
-  },
-  {
-   "map": "1st Accompaniment <Last Stage>",
-   "monsters": [
-    {
-     "name": "King Slime",
-     "level": 32,
-     "ko": "킹 슬라임"
-    },
-    {
-     "name": "Curse Eye",
-     "level": 29,
-     "ko": "커즈 아이"
-    },
-    {
-     "name": "Jr. Necki",
-     "level": 25,
-     "ko": "주니어 네키"
-    }
-   ],
-   "recs": [
-    {
-     "source": "henesys",
-     "min": 21,
-     "max": 30
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "1번째 동행 <마지막 단계>"
-  },
-  {
-   "map": "The Land of Wild Boar II",
-   "monsters": [
-    {
-     "name": "Wild Boar",
-     "level": 25,
-     "ko": "와일드 보어"
-    },
-    {
-     "name": "Axe Stump",
-     "level": 17,
-     "ko": "엑스텀프"
-    },
-    {
-     "name": "Dark Stump",
-     "level": 11,
-     "ko": "다크 스텀프"
-    }
-   ],
-   "recs": [
-    {
-     "source": "henesys",
-     "min": 23,
-     "max": 30
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "와일드보어의 땅 II"
-  },
-  {
-   "map": "The Cave of Evil Eye III",
-   "monsters": [
-    {
-     "name": "Evil Eye",
-     "level": 27,
-     "ko": "이블아이"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 26,
-     "max": 30
-    }
-   ],
-   "meowdbExpHr": 680206,
-   "ko": "이블아이의 동굴 III"
-  },
-  {
-   "map": "Line 2 <Area 1>",
-   "monsters": [
-    {
-     "name": "Jr. Wraith",
-     "level": 34,
-     "ko": "주니어 레이스"
-    },
-    {
-     "name": "Jr. Necki",
-     "level": 21,
-     "ko": "주니어 네키"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 31,
-     "max": 35
-    },
-    {
-     "source": "msclassic",
-     "min": 30,
-     "max": 40
-    },
-    {
-     "source": "henesys",
-     "min": 32,
-     "max": 40
-    }
-   ],
-   "meowdbExpHr": 2151429,
-   "ko": "2호선 <1구역>"
-  },
-  {
-   "map": "Line 1 <Area 2>",
-   "monsters": [
-    {
-     "name": "Jr. Wraith",
-     "level": 34,
-     "ko": "주니어 레이스"
-    },
-    {
-     "name": "Stirge",
-     "level": 20,
-     "ko": "스티지"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 31,
-     "max": 35
-    },
-    {
-     "source": "msclassic",
-     "min": 30,
-     "max": 40
-    }
-   ],
-   "meowdbExpHr": 1903929,
-   "ko": "1호선 <2구역>"
-  },
-  {
-   "map": "The Burnt Land V",
-   "monsters": [
-    {
-     "name": "Fire Boar",
-     "level": 32,
-     "ko": "파이어보어"
-    },
-    {
-     "name": "Lupin",
-     "level": 37,
-     "ko": "루팡"
-    },
-    {
-     "name": "Dark Axe Stump",
-     "level": 23,
-     "ko": "다크 엑스텀프"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 31,
-     "max": 35
-    },
-    {
-     "source": "msclassic",
-     "min": 30,
-     "max": 35
-    }
-   ],
-   "meowdbExpHr": 1032143,
-   "ko": "불탄 땅 V"
-  },
-  {
-   "map": "Tree Dungeon, Forest Up North IX",
-   "monsters": [
-    {
-     "name": "Curse Eye",
-     "level": 33,
-     "ko": "커즈 아이"
-    }
-   ],
-   "recs": [
-    {
-     "source": "msclassic",
-     "min": 30,
-     "max": 35
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "나무 던전, 북쪽 숲 IX"
-  },
-  {
-   "map": "The Swamp of Despair II",
-   "monsters": [
-    {
-     "name": "Ligator",
-     "level": 31,
-     "ko": "리게이터"
-    },
-    {
-     "name": "Horny Mushroom",
-     "level": 22,
-     "ko": "뿔 버섯"
-    },
-    {
-     "name": "Jr. Necki",
-     "level": 21,
-     "ko": "주니어 네키"
-    }
-   ],
-   "recs": [
-    {
-     "source": "henesys",
-     "min": 30,
-     "max": 36
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "절망의 늪 II"
-  },
-  {
-   "map": "A Look-Out Shed Around the Beach",
-   "monsters": [
-    {
-     "name": "Lorang",
-     "level": 38,
-     "ko": "로랑"
-    },
-    {
-     "name": "Lupin",
-     "level": 37,
-     "ko": "루팡"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 36,
-     "max": 40
-    },
-    {
-     "source": "msclassic",
-     "min": 36,
-     "max": 40
-    },
-    {
-     "source": "henesys",
-     "min": 36,
-     "max": 42
-    }
-   ],
-   "meowdbExpHr": 1162261,
-   "ko": "해변 주변 전망 오두막"
-  },
-  {
-   "map": "Lorang Lorang",
-   "monsters": [
-    {
-     "name": "Lorang",
-     "level": 38,
-     "ko": "로랑"
-    },
-    {
-     "name": "Lupin",
-     "level": 37,
-     "ko": "루팡"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 36,
-     "max": 40
-    },
-    {
-     "source": "msclassic",
-     "min": 36,
-     "max": 40
-    }
-   ],
-   "meowdbExpHr": 1108929,
-   "ko": "로랑 로랑"
-  },
-  {
-   "map": "Monkey Forest II",
-   "monsters": [
-    {
-     "name": "Zombie Lupin",
-     "level": 41,
-     "ko": "좀비 루팡"
-    },
-    {
-     "name": "Lupin",
-     "level": 37,
-     "ko": "루팡"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 36,
-     "max": 40
-    },
-    {
-     "source": "msclassic",
-     "min": 36,
-     "max": 40
-    }
-   ],
-   "meowdbExpHr": 1062500,
-   "ko": "원숭이 숲 II"
-  },
-  {
-   "map": "Monkey Swamp III",
-   "monsters": [
-    {
-     "name": "Zombie Lupin",
-     "level": 41,
-     "ko": "좀비 루팡"
-    },
-    {
-     "name": "Jr. Necki",
-     "level": 21,
-     "ko": "주니어 네키"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 41,
-     "max": 45
-    },
-    {
-     "source": "msclassic",
-     "min": 41,
-     "max": 45
-    },
-    {
-     "source": "henesys",
-     "min": 38,
-     "max": 44
-    }
-   ],
-   "meowdbExpHr": 1138571,
-   "ko": "원숭이 늪 III"
-  },
-  {
-   "map": "Tree Dungeon, Monkey Forest II",
-   "monsters": [
-    {
-     "name": "Zombie Lupin",
-     "level": 41,
-     "ko": "좀비 루팡"
-    },
-    {
-     "name": "Curse Eye",
-     "level": 33,
-     "ko": "커즈 아이"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 41,
-     "max": 45
-    },
-    {
-     "source": "msclassic",
-     "min": 41,
-     "max": 45
-    }
-   ],
-   "meowdbExpHr": 916429,
-   "ko": "나무 던전, 원숭이 숲 II"
-  },
-  {
-   "map": "Tree Dungeon, Monkey Forest I",
-   "monsters": [
-    {
-     "name": "Zombie Lupin",
-     "level": 41,
-     "ko": "좀비 루팡"
-    },
-    {
-     "name": "Curse Eye",
-     "level": 33,
-     "ko": "커즈 아이"
-    }
-   ],
-   "recs": [
-    {
-     "source": "msclassic",
-     "min": 41,
-     "max": 45
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "나무 던전, 원숭이 숲 I"
-  },
-  {
-   "map": "Dangerous Valley",
-   "monsters": [
-    {
-     "name": "Copper Drake",
-     "level": 45,
-     "ko": "카파 드레이크"
-    },
-    {
-     "name": "Fire Boar",
-     "level": 32,
-     "ko": "파이어보어"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 41,
-     "max": 45
-    },
-    {
-     "source": "msclassic",
-     "min": 41,
-     "max": 45
-    }
-   ],
-   "meowdbExpHr": 946786,
-   "ko": "위험한 골짜기"
-  },
-  {
-   "map": "The Tunnel That Lost Light I",
-   "monsters": [
-    {
-     "name": "Drake",
-     "level": 50,
-     "ko": "드레이크"
-    },
-    {
-     "name": "Cold Eye",
-     "level": 40,
-     "ko": "콜드 아이"
-    }
-   ],
-   "recs": [
-    {
-     "source": "henesys",
-     "min": 40,
-     "max": 46
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "빛을 잃은 터널 I"
-  },
-  {
-   "map": "Line 2 <Area 2>",
-   "monsters": [
-    {
-     "name": "Wraith",
-     "level": 48,
-     "ko": "레이스"
-    },
-    {
-     "name": "Jr. Wraith",
-     "level": 34,
-     "ko": "주니어 레이스"
-    },
-    {
-     "name": "Jr. Necki",
-     "level": 21,
-     "ko": "주니어 네키"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 46,
-     "max": 50
-    },
-    {
-     "source": "msclassic",
-     "min": 46,
-     "max": 55
-    },
-    {
-     "source": "henesys",
-     "min": 44,
-     "max": 55
-    }
-   ],
-   "meowdbExpHr": 3488571,
-   "ko": "2호선 <2구역>"
-  },
-  {
-   "map": "Line 2 <Area 3>",
-   "monsters": [
-    {
-     "name": "Wraith",
-     "level": 48,
-     "ko": "레이스"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 46,
-     "max": 50
-    },
-    {
-     "source": "msclassic",
-     "min": 46,
-     "max": 55
-    }
-   ],
-   "meowdbExpHr": 2962857,
-   "ko": "2호선 <3구역>"
-  },
-  {
-   "map": "Line 1 <Area 4>",
-   "monsters": [
-    {
-     "name": "Wraith",
-     "level": 48,
-     "ko": "레이스"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 46,
-     "max": 50
-    },
-    {
-     "source": "msclassic",
-     "min": 46,
-     "max": 55
-    }
-   ],
-   "meowdbExpHr": 2570714,
-   "ko": "1호선 <4구역>"
-  },
-  {
-   "map": "Hot Sand",
-   "monsters": [
-    {
-     "name": "Clang",
-     "level": 49,
-     "ko": "클랑"
-    },
-    {
-     "name": "Tortie",
-     "level": 46,
-     "ko": "토티"
-    }
-   ],
-   "recs": [
-    {
-     "source": "msclassic",
-     "min": 46,
-     "max": 50
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "뜨거운 모래"
-  },
-  {
-   "map": "Lorang and Clang",
-   "monsters": [
-    {
-     "name": "Clang",
-     "level": 49,
-     "ko": "클랑"
-    },
-    {
-     "name": "Lorang",
-     "level": 38,
-     "ko": "로랑"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 51,
-     "max": 55
-    },
-    {
-     "source": "msclassic",
-     "min": 50,
-     "max": 55
-    },
-    {
-     "source": "henesys",
-     "min": 47,
-     "max": 55
-    }
-   ],
-   "meowdbExpHr": 1816786,
-   "ko": "로랑과 클랑"
-  },
-  {
-   "map": "Dangerous Croko II",
-   "monsters": [
-    {
-     "name": "Croco",
-     "level": 52,
-     "ko": "크로코"
-    },
-    {
-     "name": "Jr. Necki",
-     "level": 21,
-     "ko": "주니어 네키"
-    },
-    {
-     "name": "Slime",
-     "level": 6,
-     "ko": "슬라임"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 51,
-     "max": 55
-    },
-    {
-     "source": "msclassic",
-     "min": 50,
-     "max": 55
-    },
-    {
-     "source": "henesys",
-     "min": 52,
-     "max": 58
-    }
-   ],
-   "meowdbExpHr": 1582500,
-   "ko": "위험한 크로코 II"
-  },
-  {
-   "map": "Clang and Lorang",
-   "monsters": [
-    {
-     "name": "Clang",
-     "level": 49,
-     "ko": "클랑"
-    },
-    {
-     "name": "Tortie",
-     "level": 46,
-     "ko": "토티"
-    },
-    {
-     "name": "Lorang",
-     "level": 38,
-     "ko": "로랑"
-    }
-   ],
-   "recs": [
-    {
-     "source": "msclassic",
-     "min": 50,
-     "max": 55
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "클랑과 로랑"
-  },
-  {
-   "map": "The Forest of Evil II",
-   "monsters": [
-    {
-     "name": "Malady",
-     "level": 55,
-     "ko": "맬러디"
-    },
-    {
-     "name": "Zombie Lupin",
-     "level": 41,
-     "ko": "좀비 루팡"
-    }
-   ],
-   "recs": [
-    {
-     "source": "msclassic",
-     "min": 50,
-     "max": 55
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "악의 숲 II"
-  },
-  {
-   "map": "Camp 1",
-   "monsters": [
-    {
-     "name": "Officer Skeleton",
-     "level": 63,
-     "ko": "스켈레톤 장교"
-    },
-    {
-     "name": "Skeleton Soldier",
-     "level": 57,
-     "ko": "스켈레톤 사병"
-    }
-   ],
-   "recs": [
-    {
-     "source": "msclassic",
-     "min": 55,
-     "max": 62
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "캠프 1"
-  },
-  {
-   "map": "Camp 2",
-   "monsters": [
-    {
-     "name": "Officer Skeleton",
-     "level": 63,
-     "ko": "스켈레톤 장교"
-    },
-    {
-     "name": "Skeleton Soldier",
-     "level": 57,
-     "ko": "스켈레톤 사병"
-    }
-   ],
-   "recs": [
-    {
-     "source": "msclassic",
-     "min": 55,
-     "max": 62
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "캠프 2"
-  },
-  {
-   "map": "Sleepy Dungeon V",
-   "monsters": [
-    {
-     "name": "Dark Stone Golem",
-     "level": 58,
-     "ko": "다크 스톤 골렘"
-    },
-    {
-     "name": "Lupin",
-     "level": 37,
-     "ko": "루팡"
-    },
-    {
-     "name": "Jr. Boogie",
-     "level": 35,
-     "ko": "주니어 부기"
-    },
-    {
-     "name": "Curse Eye",
-     "level": 33,
-     "ko": "커즈 아이"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 56,
-     "max": 60
-    },
-    {
-     "source": "msclassic",
-     "min": 55,
-     "max": 62
-    },
-    {
-     "source": "henesys",
-     "min": 55,
-     "max": 70
-    }
-   ],
-   "meowdbExpHr": 2585073,
-   "ko": "슬리피 던전 V"
-  },
-  {
-   "map": "Sleepy Dungeon III",
-   "monsters": [
-    {
-     "name": "Dark Stone Golem",
-     "level": 58,
-     "ko": "다크 스톤 골렘"
-    },
-    {
-     "name": "Lupin",
-     "level": 37,
-     "ko": "루팡"
-    },
-    {
-     "name": "Curse Eye",
-     "level": 33,
-     "ko": "커즈 아이"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 56,
-     "max": 60
-    },
-    {
-     "source": "msclassic",
-     "min": 55,
-     "max": 62
-    }
-   ],
-   "meowdbExpHr": 1421809,
-   "ko": "슬리피 던전 III"
-  },
-  {
-   "map": "Golem's Temple III",
-   "monsters": [
-    {
-     "name": "Stone Golem",
-     "level": 56,
-     "ko": "스톤 골렘"
-    },
-    {
-     "name": "Lupin",
-     "level": 37,
-     "ko": "루팡"
-    },
-    {
-     "name": "Blue Mushroom",
-     "level": 19,
-     "ko": "파란 버섯"
-    }
-   ],
-   "recs": [
-    {
-     "source": "henesys",
-     "min": 55,
-     "max": 62
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "골렘의 사원 III"
-  },
-  {
-   "map": "Camp 3",
-   "monsters": [
-    {
-     "name": "Officer Skeleton",
-     "level": 63,
-     "ko": "스켈레톤 장교"
-    },
-    {
-     "name": "Skeleton Soldier",
-     "level": 57,
-     "ko": "스켈레톤 사병"
-    }
-   ],
-   "recs": [
-    {
-     "source": "msclassic",
-     "min": 60,
-     "max": 70
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "캠프 3"
-  },
-  {
-   "map": "Dangerous Valley II",
-   "monsters": [
-    {
-     "name": "Red Drake",
-     "level": 60,
-     "ko": "레드 드레이크"
-    },
-    {
-     "name": "Copper Drake",
-     "level": 45,
-     "ko": "카파 드레이크"
-    },
-    {
-     "name": "Fire Boar",
-     "level": 32,
-     "ko": "파이어보어"
-    }
-   ],
-   "recs": [
-    {
-     "source": "meowdb",
-     "min": 61,
-     "max": 70
-    },
-    {
-     "source": "msclassic",
-     "min": 60,
-     "max": 70
-    },
-    {
-     "source": "henesys",
-     "min": 60,
-     "max": 68
-    }
-   ],
-   "meowdbExpHr": 677269,
-   "ko": "위험한 골짜기 II"
-  },
-  {
-   "map": "Remains <Cliff>",
-   "monsters": [
-    {
-     "name": "Commander Skeleton",
-     "level": 73,
-     "ko": "스켈레톤 지휘관"
-    },
-    {
-     "name": "Officer Skeleton",
-     "level": 63,
-     "ko": "스켈레톤 장교"
-    }
-   ],
-   "recs": [
-    {
-     "source": "msclassic",
-     "min": 60,
-     "max": 70
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "유적의 낭떠러지"
-  },
-  {
-   "map": "Wild Kargo's Area",
-   "monsters": [
-    {
-     "name": "Wild Kargo",
-     "level": 62,
-     "ko": "와일드카고"
-    },
-    {
-     "name": "Cold Eye",
-     "level": 40,
-     "ko": "콜드 아이"
-    }
-   ],
-   "recs": [
-    {
-     "source": "msclassic",
-     "min": 60,
-     "max": 70
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "와일드카고의 구역"
-  },
-  {
-   "map": "Drake's Meal Table",
-   "monsters": [
-    {
-     "name": "Wild Kargo",
-     "level": 62,
-     "ko": "와일드카고"
-    },
-    {
-     "name": "Drake",
-     "level": 50,
-     "ko": "드레이크"
-    },
-    {
-     "name": "Cold Eye",
-     "level": 40,
-     "ko": "콜드 아이"
-    }
-   ],
-   "recs": [
-    {
-     "source": "msclassic",
-     "min": 60,
-     "max": 70
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "드레이크의 식탁"
-  },
-  {
-   "map": "Sanctuary Entrance I",
-   "monsters": [
-    {
-     "name": "Tauromacis",
-     "level": 70,
-     "ko": "타우로마시스"
-    },
-    {
-     "name": "Cold Eye",
-     "level": 40,
-     "ko": "콜드 아이"
-    }
-   ],
-   "recs": [
-    {
-     "source": "msclassic",
-     "min": 60,
-     "max": 70
-    },
-    {
-     "source": "henesys",
-     "min": 65,
-     "max": 75
-    }
-   ],
-   "meowdbExpHr": null,
-   "ko": "성역 입구 I"
-  },
-  {
-   "map": "Sanctuary Entrance IV",
-   "monsters": [
-    {
-     "name": "Taurospear",
-     "level": 75,
-     "ko": "타우로스피어"
-    },
-    {
-     "name": "Tauromacis",
-     "level": 70,
-     "ko": "타우로마시스"
-    },
-    {
-     "name": "Cold Eye",
-     "level": 40,
-     "ko": "콜드 아이"
-    }
-   ],
-   "recs": [
-    {
-     "source": "msclassic",
-     "min": 60,
-     "max": 70
-    },
-    {
-     "source": "henesys",
-     "min": 72,
-     "max": 80
+  "experiences": [
+    {
+      "id": "archer-20-cost",
+      "source": {
+        "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xf4k6g/new_player_money_problem/",
+        "author": "CarPresent5681",
+        "published": null,
+        "checked": "2026-11-10"
+      },
+      "level": {
+        "min": 20,
+        "max": 20
+      },
+      "job": "archer",
+      "kind": "cost",
+      "context": "launch",
+      "title": {
+        "ko": "20레벨 궁수 · 물약 비용 부담",
+        "en": "Level 20 archer · potion costs"
+      },
+      "observation": {
+        "ko": "초반에 받은 파란 활을 사용하며, 회복 아이템 지출 때문에 장비를 바꾸기 어렵다고 썼어요.",
+        "en": "The author reports using an early blue bow and being unable to afford upgrades because of recovery costs."
+      },
+      "conditions": {
+        "ko": "사냥한 맵·스킬·파티 구성 미기재",
+        "en": "Map, skills and party not stated"
+      },
+      "cost": {
+        "ko": "지출 부담 호소 · 순손익 측정 없음",
+        "en": "Cost pressure reported; net profit unmeasured"
+      },
+      "limits": {
+        "ko": "특정 맵의 적자를 증명하는 후기는 아니에요.",
+        "en": "This does not establish a loss at any particular map."
+      }
+    },
+    {
+      "id": "level-20-quest-supplies",
+      "source": {
+        "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xf4k6g/comment/19rmzlya37n2c/",
+        "author": "YetAnotherSegfault",
+        "published": null,
+        "checked": "2026-11-10"
+      },
+      "level": {
+        "min": 20,
+        "max": 20
+      },
+      "job": null,
+      "kind": "cost",
+      "context": "launch",
+      "title": {
+        "ko": "20레벨 · 퀘스트 보급품으로 버틴 사례",
+        "en": "Level 20 · quest supplies"
+      },
+      "observation": {
+        "ko": "초보 장비와 전직 무기를 쓰며 20레벨까지 음식·물약을 사지 않았다고 썼어요.",
+        "en": "Reports reaching level 20 with beginner gear and the job weapon without buying recovery items."
+      },
+      "conditions": {
+        "ko": "15레벨 미만 몬스터를 제안했지만 실제 사냥 맵과 직업은 명시하지 않았어요.",
+        "en": "Suggests monsters below level 15; own map and class are unspecified."
+      },
+      "cost": {
+        "ko": "구매하지 않았다는 뜻이며 소비 비용이 0이라는 뜻은 아니에요.",
+        "en": "No purchases does not mean zero consumption cost."
+      },
+      "limits": {
+        "ko": "궁수에 대한 조언만으로 작성자도 궁수라고 추정하지 않았어요.",
+        "en": "Advice for archers does not establish the author’s class."
+      }
+    },
+    {
+      "id": "mage-13-cost",
+      "source": {
+        "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xcu0dc/made_a_magician_and_ran_out_of_money_and_potions/",
+        "author": "TinyAdhesiveness5773",
+        "published": null,
+        "checked": "2026-11-10"
+      },
+      "level": {
+        "min": 13,
+        "max": 13
+      },
+      "job": "mage",
+      "kind": "cost",
+      "context": "launch",
+      "title": {
+        "ko": "13레벨 마법사 · 보급품 소진",
+        "en": "Level 13 magician · supplies exhausted"
+      },
+      "observation": {
+        "ko": "13레벨에 메소와 물약이 모두 떨어졌다고 썼어요.",
+        "en": "Reports running out of mesos and potions at level 13."
+      },
+      "conditions": {
+        "ko": "맵·장비·스킬·파티 미기재",
+        "en": "Map, gear, skills and party not stated"
+      },
+      "cost": {
+        "ko": "보급품 소진 · 시간당 손익 미기재",
+        "en": "Supplies exhausted; hourly profit not stated"
+      },
+      "limits": {
+        "ko": "댓글의 추천 동선을 작성자의 플레이 기록으로 사용하지 않았어요.",
+        "en": "Commenters’ suggested routes are not treated as the author’s experience."
+      }
+    },
+    {
+      "id": "cleric-37-jrwraith",
+      "source": {
+        "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xpep2n/comment/19s8d2wggrezl/",
+        "author": "HughJassLOL",
+        "published": null,
+        "checked": "2026-11-10"
+      },
+      "level": {
+        "min": 37,
+        "max": 37
+      },
+      "job": "mage",
+      "kind": "hunting",
+      "context": "launch",
+      "title": {
+        "ko": "37레벨 클레릭 · 주니어 레이스",
+        "en": "Level 37 cleric · Jr. Wraith"
+      },
+      "observation": {
+        "ko": "주니어 레이스를 3~4번 공격해 잡는다고 썼어요.",
+        "en": "Reports needing 3–4 attacks to kill Jr. Wraiths."
+      },
+      "conditions": {
+        "ko": "클레릭 · 장비는 보통 수준이라고 표현 · 정확한 맵·스킬 레벨 미기재",
+        "en": "Cleric; self-described average gear; exact map and skill level unspecified"
+      },
+      "cost": {
+        "ko": "물약 소비량·순수익 미기재",
+        "en": "Potion consumption and net profit not stated"
+      },
+      "limits": {
+        "ko": "작성자도 효율을 질문한 상황이에요. 추천이나 흑자 기록으로 해석하지 않아요.",
+        "en": "The author is asking about efficiency, not demonstrating profitability."
+      }
+    },
+    {
+      "id": "jrwraith-39-40",
+      "source": {
+        "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xq7hw3/comment/19sa3xy91brcy/",
+        "author": "kamikq",
+        "published": null,
+        "checked": "2026-11-10"
+      },
+      "level": {
+        "min": 39,
+        "max": 40
+      },
+      "job": null,
+      "kind": "hunting",
+      "context": "launch",
+      "title": {
+        "ko": "39→40레벨 · 주니어 레이스",
+        "en": "Levels 39→40 · Jr. Wraith"
+      },
+      "observation": {
+        "ko": "39에서 40레벨까지 약 4시간 30분, 그중 약 2/3는 파티였다고 썼어요.",
+        "en": "Reports about 4.5 hours from level 39 to 40, roughly two thirds in a party."
+      },
+      "conditions": {
+        "ko": "직업·장비·정확한 맵 미기재",
+        "en": "Class, gear and exact map not stated"
+      },
+      "cost": {
+        "ko": "보급 비용·순수익 미기재",
+        "en": "Supply cost and net profit not stated"
+      },
+      "limits": {
+        "ko": "이 시간은 해당 작성자의 기록이며 예상 레벨업 시간으로 쓰지 않아요.",
+        "en": "This is one reported session, not a predicted leveling time."
+      }
+    },
+    {
+      "id": "kpq-35-40",
+      "source": {
+        "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xq7hw3/comment/19sa6f4904qpv/",
+        "author": "Zionics",
+        "published": null,
+        "checked": "2026-11-10"
+      },
+      "level": {
+        "min": 35,
+        "max": 40
+      },
+      "job": null,
+      "kind": "hunting",
+      "context": "launch",
+      "title": {
+        "ko": "35~40레벨 · 커닝 파티 퀘스트",
+        "en": "Levels 35–40 · Kerning PQ"
+      },
+      "observation": {
+        "ko": "35~40레벨에 러시와 보너스를 섞어 진행했다고 썼어요.",
+        "en": "Reports mixing rush and bonus runs from level 35 to 40."
+      },
+      "conditions": {
+        "ko": "직업·장비·파티 구성·소요 시간 미기재",
+        "en": "Class, gear, party setup and duration not stated"
+      },
+      "cost": {
+        "ko": "보너스를 메소 수급용으로 설명했으나 순수익 수치는 없어요.",
+        "en": "Describes bonus runs as a meso source, without net profit figures."
+      },
+      "limits": {
+        "ko": "참여 조건이나 40레벨까지 최적이라는 근거로 사용하지 않아요.",
+        "en": "Does not establish entry requirements or an optimal route."
+      }
+    },
+    {
+      "id": "fireboar-32-46",
+      "source": {
+        "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xitkic/comment/19rufmspn7kn6/",
+        "author": "SuuuushiCat",
+        "published": null,
+        "checked": "2026-11-10"
+      },
+      "level": {
+        "min": 32,
+        "max": 46
+      },
+      "job": null,
+      "kind": "hunting",
+      "context": "launch",
+      "title": {
+        "ko": "32~46레벨 · 파이어보어",
+        "en": "Levels 32–46 · Fire Boars"
+      },
+      "observation": {
+        "ko": "32~46레벨 동안 주로 파이어보어를 잡고 가끔 다른 곳에도 갔다고 썼어요.",
+        "en": "Reports mostly hunting Fire Boars from level 32 to 46, with occasional alternatives."
+      },
+      "conditions": {
+        "ko": "직업·장비·맵 번호·파티 미기재",
+        "en": "Class, gear, map number and party not stated"
+      },
+      "cost": {
+        "ko": "물약값·순수익·경험치 속도 미기재",
+        "en": "Potion costs, net profit and EXP rate not stated"
+      },
+      "limits": {
+        "ko": "글 제목의 35레벨 어쌔신은 질문자이며 이 댓글 작성자의 조건이 아니에요.",
+        "en": "The level 35 assassin in the title is the questioner, not this commenter."
+      }
+    },
+    {
+      "id": "crossbow-40-deep-forest",
+      "source": {
+        "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xk83oz/pretty_comfy_grinding_spot_for_levels_4045ish/",
+        "author": "Expensive-Caramel-65",
+        "published": null,
+        "checked": "2026-11-10"
+      },
+      "level": {
+        "min": 40,
+        "max": 40
+      },
+      "job": "archer",
+      "kind": "hunting",
+      "context": "launch",
+      "title": {
+        "ko": "40레벨 사수 · Hunting Ground in the Deep Forest II",
+        "en": "Level 40 crossbowman · Hunting Ground in the Deep Forest II"
+      },
+      "observation": {
+        "ko": "40레벨 사수가 혼자서는 다 정리하기 어려웠고, 파티를 구하기도 쉽지 않았다고 썼어요.",
+        "en": "A level 40 crossbowman reports difficulty clearing the map alone and finding a party."
+      },
+      "conditions": {
+        "ko": "사수 · 장비·스킬·처치 타수 미기재",
+        "en": "Crossbowman; gear, skills and hit counts not stated"
+      },
+      "cost": {
+        "ko": "경험치·메소 최적 장소는 아닐 수 있다고 표현 · 순손익 미기재",
+        "en": "Does not claim optimal EXP or mesos; net profit unspecified"
+      },
+      "limits": {
+        "ko": "제목의 40~45 추천을 실제 플레이 구간으로 확대하지 않았어요. 한산했다는 상황도 작성 당시의 관찰이에요.",
+        "en": "The title’s 40–45 suggestion is not treated as a played interval. Low crowding was the author’s observation at the time."
+      }
+    },
+    {
+      "id": "cold-eye-46",
+      "source": {
+        "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xitkic/comment/19rufmspn7kn6/",
+        "author": "SuuuushiCat",
+        "published": null,
+        "checked": "2026-11-10"
+      },
+      "level": {
+        "min": 46,
+        "max": 46
+      },
+      "job": null,
+      "kind": "hunting",
+      "context": "launch",
+      "title": {
+        "ko": "46레벨 · Hollow Tree 6",
+        "en": "Level 46 · Hollow Tree 6"
+      },
+      "observation": {
+        "ko": "46레벨에 Hollow Tree 6에서 콜드 아이를 잡는다고 썼어요.",
+        "en": "Reports hunting Cold Eyes in Hollow Tree 6 at level 46."
+      },
+      "conditions": {
+        "ko": "직업·장비·파티 미기재",
+        "en": "Class, gear and party not stated"
+      },
+      "cost": {
+        "ko": "소요 시간·순수익 미기재",
+        "en": "Duration and net profit not stated"
+      },
+      "limits": {
+        "ko": "같은 작성자의 파이어보어 후기와 독립된 검증 표본이 아니에요.",
+        "en": "Not independent evidence from this author’s Fire Boar report."
+      }
+    },
+    {
+      "id": "sin-stirges",
+      "source": {
+        "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xf4k6g/comment/19ro30uowyqo5/",
+        "author": "Hazuchio",
+        "published": null,
+        "checked": "2026-11-10"
+      },
+      "level": null,
+      "job": "thief",
+      "kind": "hunting",
+      "context": "launch",
+      "title": {
+        "ko": "어쌔신 · 스티지와 보급품",
+        "en": "Assassin · Stirges and supplies"
+      },
+      "observation": {
+        "ko": "스티지를 잡으며 주황 포션은 늘었지만 레몬 200개와 표창 3,000개를 썼다고 썼어요.",
+        "en": "Reports gaining orange potions while consuming 200 lemons and 3,000 stars at Stirges."
+      },
+      "conditions": {
+        "ko": "레벨·정확한 맵·시간·장비 미기재",
+        "en": "Level, exact map, duration and gear not stated"
+      },
+      "cost": {
+        "ko": "HP 물약 증가만 확인 · 전체 순손익 미기재",
+        "en": "HP supplies increased; total net profit not stated"
+      },
+      "limits": {
+        "ko": "레벨 미기재라 특정 레벨의 사냥 후보에 넣지 않아요.",
+        "en": "No reported level, so excluded from level-specific results."
+      }
+    },
+    {
+      "id": "deep-ant-hits",
+      "source": {
+        "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xpep2n/comment/19s8d1ymqrele/",
+        "author": "JankBrew",
+        "published": null,
+        "checked": "2026-11-10"
+      },
+      "level": null,
+      "job": null,
+      "kind": "hunting",
+      "context": "launch",
+      "title": {
+        "ko": "Deep Ant Tunnel · 처치 타수 후기",
+        "en": "Deep Ant Tunnel · reported hit counts"
+      },
+      "observation": {
+        "ko": "뿔버섯은 1회, 이블아이·좀비버섯은 2회 공격으로 잡고 가끔 힐을 쓴다고 썼어요.",
+        "en": "Reports one attack for Horny Mushrooms and two for Evil Eyes and Zombie Mushrooms, with occasional Heal."
+      },
+      "conditions": {
+        "ko": "레벨·직업명·맵 번호·장비 미기재",
+        "en": "Level, class name, map number and gear not stated"
+      },
+      "cost": {
+        "ko": "메소 수급을 긍정적으로 표현 · 비용 측정 없음",
+        "en": "Positive account of mesos; no cost measurement"
+      },
+      "limits": {
+        "ko": "힐 사용이나 질문자의 레벨만으로 작성자의 직업·레벨을 채우지 않았어요.",
+        "en": "Neither Heal nor the questioner’s level is used to fill in the author’s missing class or level."
+      }
     }
-   ],
-   "meowdbExpHr": null,
-   "ko": "성역 입구 IV"
-  }
- ],
- "cautions": [
-  {
-   "map": "The Tunnel That Lost Light I",
-   "source": "msclassic",
-   "text": {
-    "ko": "MS-Classic은 이 맵을 더 높은 레벨 몬스터가 함께 나와 위험하다며 훈련용으로 추천하지 않아요.",
-    "en": "MS-Classic flags this map as risky because higher-level monsters share it, and does not recommend it."
-   }
-  },
-  {
-   "map": "Sleepy Dungeon V",
-   "source": "msclassic",
-   "text": {
-    "ko": "MS-Classic은 30~50레벨 구간에서는 이 맵을 위험하다고 표시해요.",
-    "en": "MS-Classic flags this map as risky for levels 30–50."
-   }
-  }
- ],
- "notes": {
-  "ko": [
-   "몬스터 레벨은 각 출처에 적힌 값이에요.",
-   "NiaMeowDB의 시간당 경험치는 몬스터가 나오자마자 잡는다고 가정한 솔로 이론 최대치예요.",
-   "Henesys.GG의 1st Accompaniment는 커닝시티 파티퀘스트 맵이에요."
-  ],
-  "en": [
-   "Monster levels are as listed by each source.",
-   "NiaMeowDB EXP/hr is a solo theoretical max assuming every monster dies as it spawns.",
-   "Henesys.GG's 1st Accompaniment is a Kerning City Party Quest map."
   ]
- }
 }

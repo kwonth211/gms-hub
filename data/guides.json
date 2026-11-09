@@ -3,72 +3,80 @@
     {
       "slug": "getting-started",
       "lang": "ko",
-      "title": "글클메 처음 시작할 때 알아둘 것: 한국어 설정, 스탯, 물약, 채팅 약어",
-      "h1": "글클메 처음 시작할 때 알아둘 것",
-      "desc": "글로벌 클래식 메이플 입문 정리. 한국어 설정, 1차 전직 전 스탯, 초반 물약 효율, 파티 경험치 규칙, 채팅·거래 약어(C/O, A/W, LFP)까지.",
+      "title": "글클메 입문: 공략을 고르기 전에 확인할 것",
+      "h1": "글클메 입문: 공략을 고르기 전에 확인할 것",
+      "desc": "게임 버전, 원문 작성자의 조건, 실제 물약 소비와 사이트 자료의 확인 범위를 구분하는 이용 안내.",
       "published": "2026-11-02",
-      "updated": "2026-11-02",
+      "updated": "2026-11-10",
       "sources": [
         {
-          "title": "NiaMeowDB — Beginner's Guide: First Steps in Maple World",
-          "url": "https://meowdb.com/msclassic/guides/beginners-guide-first-steps-in-maple-world"
+          "title": "CarPresent5681 — Level 20 archer potion costs",
+          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xf4k6g/new_player_money_problem/"
+        },
+        {
+          "title": "TinyAdhesiveness5773 — Level 13 magician supplies",
+          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xcu0dc/made_a_magician_and_ran_out_of_money_and_potions/"
         }
       ],
       "tools": [
         "training",
         "drop-rate",
         "market"
-      ]
+      ],
+      "reviewed": "2026-11-10",
+      "status": "published",
+      "evidenceKind": "player-accounts"
     },
     {
       "slug": "choose-your-job",
       "lang": "ko",
-      "title": "글클메 직업 고르기: 2차 직업 10개, 옛 메이플과 달라진 스킬 정리",
+      "title": "글클메 직업 고르기: 옛 메이플과 달라진 점 · 재검증 중",
       "h1": "글클메 직업 고르기: 옛 메이플과 달라진 점",
-      "desc": "글로벌 클래식 메이플 2차 직업 10개의 바뀐 스킬. 스피어맨 하이퍼바디 이동, 클레릭 블레스 변경, 불독 2차 광역, 시프 스틸 버프까지 직업 선택에 필요한 것만.",
+      "desc": "스킬 변경과 직업별 우열을 뒷받침하는 현재 버전의 원문이 연결돼 있지 않았어요.",
       "published": "2026-11-02",
-      "updated": "2026-11-02",
+      "updated": "2026-11-10",
       "sources": [],
       "tools": [
-        "damage",
         "training"
-      ]
+      ],
+      "reviewed": "2026-11-10",
+      "status": "withheld",
+      "reviewReason": "스킬 변경과 직업별 우열을 뒷받침하는 현재 버전의 원문이 연결돼 있지 않았어요."
     },
     {
       "slug": "leveling-1-30",
       "lang": "ko",
-      "title": "글클메 1~30레벨 사냥터 동선: 세 공략 사이트가 같이 추천한 곳",
-      "h1": "글클메 1~30레벨 사냥 동선",
-      "desc": "NiaMeowDB, MS-Classic, Henesys.GG의 레벨별 추천을 합쳐 여러 곳이 동시에 추천한 사냥터를 골랐어요. 지하철 1호선, 개미굴, 커닝 파티 퀘스트까지 구간별 정리.",
+      "title": "글클메 1~30레벨: 사냥터보다 먼저 확인할 물약 비용",
+      "h1": "글클메 1~30레벨: 사냥터보다 먼저 확인할 물약 비용",
+      "desc": "레벨만으로 개미굴을 추천하던 안내를 철회하고, 초반 플레이 원문과 비용 비교 방법을 정리했어요.",
       "published": "2026-11-02",
-      "updated": "2026-11-02",
+      "updated": "2026-11-10",
       "sources": [
         {
-          "title": "NiaMeowDB — Best grind maps for every level",
-          "url": "https://meowdb.com/msclassic/guides/best-grind-maps-every-level"
+          "title": "CarPresent5681 — Level 20 archer potion costs",
+          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xf4k6g/new_player_money_problem/"
         },
         {
-          "title": "MS-Classic — Where to train level 10-30",
-          "url": "https://ms-classic.com/guides/where-to-train-level-10-30"
-        },
-        {
-          "title": "Henesys.GG",
-          "url": "https://henesys.gg/"
+          "title": "TinyAdhesiveness5773 — Level 13 magician supplies",
+          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xcu0dc/made_a_magician_and_ran_out_of_money_and_potions/"
         }
       ],
       "tools": [
         "training",
         "damage"
-      ]
+      ],
+      "reviewed": "2026-11-10",
+      "status": "published",
+      "evidenceKind": "player-accounts"
     },
     {
       "slug": "best-early-quests",
       "lang": "ko",
-      "title": "글클메 꼭 챙길 퀘스트 7개: 주문서 보상, NPC 위치, 재료 정리",
+      "title": "글클메 꼭 챙길 퀘스트 7개 · 재검증 중",
       "h1": "글클메 꼭 챙길 퀘스트 7개",
-      "desc": "16~44레벨에 놓치면 아까운 퀘스트 7개. 피아, 제인, 동료의 증명, 아르웬의 유리구두, 슈미, 저주받은 인형, 제인의 도전의 NPC 위치와 재료, 보상.",
+      "desc": "개별 퀘스트의 필요 레벨·재료·보상과 판매 수익을 확인할 원문이 부족했어요.",
       "published": "2026-11-02",
-      "updated": "2026-11-02",
+      "updated": "2026-11-10",
       "sources": [
         {
           "title": "NiaMeowDB — Quest tracker",
@@ -76,46 +84,58 @@
         }
       ],
       "tools": [
-        "training",
-        "drop-rate"
-      ]
+        "training"
+      ],
+      "reviewed": "2026-11-10",
+      "status": "withheld",
+      "reviewReason": "개별 퀘스트의 필요 레벨·재료·보상과 판매 수익을 확인할 원문이 부족했어요."
     },
     {
       "slug": "kerning-party-quest",
       "lang": "ko",
-      "title": "글클메 커닝 파티퀘스트(커파) 공략: 러시·보너스, 스테이지별 진행, 발판 순서",
-      "h1": "글클메 커닝 파티 퀘스트 공략",
-      "desc": "21레벨부터 가는 커파의 러시·보너스 파티 차이, 파티 구하는 영어 표현, 1단계 문제 답, 밧줄·고양이·술통 발판을 한 번도 겹치지 않게 푸는 시도 순서, 킹 슬라임 공략.",
+      "title": "커닝 파티 퀘스트: 러시·보너스 후기 읽기",
+      "h1": "커닝 파티 퀘스트: 러시·보너스 후기 읽기",
+      "desc": "커파를 언제 그만둘지 레벨만으로 정하지 않고, 원문에 있는 참여 경험과 비용의 한계를 정리해요.",
       "published": "2026-11-02",
-      "updated": "2026-11-02",
-      "sources": [],
+      "updated": "2026-11-10",
+      "sources": [
+        {
+          "title": "Zionics — Levels 35–40, rush and bonus",
+          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xq7hw3/comment/19sa6f4904qpv/"
+        }
+      ],
       "tools": [
         "training",
         "damage"
-      ]
+      ],
+      "reviewed": "2026-11-10",
+      "status": "published",
+      "evidenceKind": "player-accounts"
     },
     {
       "slug": "second-job",
       "lang": "ko",
-      "title": "글클메 2차 전직 가이드: 직업별 기본 추천, 무기, 30~70레벨 사냥터",
+      "title": "글클메 2차 전직: 무엇을 고르고 어디로 갈까 · 재검증 중",
       "h1": "글클메 2차 전직: 무엇을 고르고 어디로 갈까",
-      "desc": "검 파이터·썬콜·어쌔신·헌터를 기본으로 추천하는 이유, 완드가 스태프보다 나은 이유, 불독과 썬콜의 사냥터가 다른 이유, 직업별 30~70레벨 사냥터.",
+      "desc": "기본 추천 직업, 무기 우열과 30~70레벨 동선에 직접 근거가 없었어요.",
       "published": "2026-11-02",
-      "updated": "2026-11-02",
+      "updated": "2026-11-10",
       "sources": [],
       "tools": [
-        "damage",
         "training"
-      ]
+      ],
+      "reviewed": "2026-11-10",
+      "status": "withheld",
+      "reviewReason": "기본 추천 직업, 무기 우열과 30~70레벨 동선에 직접 근거가 없었어요."
     },
     {
       "slug": "citizenship-and-housing",
       "lang": "ko",
-      "title": "글클메 시민권과 집 정리: 등급별 할인, 9등급 장갑 주문서, 집 가구",
+      "title": "글클메 시민권과 집 · 재검증 중",
       "h1": "글클메 시민권과 집",
-      "desc": "12레벨부터 시작하는 시민권의 등급별 필요 레벨과 할인율, 마을별 전용 주문서, 9등급 장갑 공격력 하급 4만 메소, 집 구매 조건과 쓸모 있는 가구.",
+      "desc": "등급별 할인, 전용 주문서 가격과 집 조건의 현재 버전을 확인하지 못했어요.",
       "published": "2026-11-02",
-      "updated": "2026-11-02",
+      "updated": "2026-11-10",
       "sources": [
         {
           "title": "NiaMeowDB — 시민권",
@@ -123,191 +143,232 @@
         }
       ],
       "tools": [
-        "market",
-        "price"
-      ]
+        "training"
+      ],
+      "reviewed": "2026-11-10",
+      "status": "withheld",
+      "reviewReason": "등급별 할인, 전용 주문서 가격과 집 조건의 현재 버전을 확인하지 못했어요."
     },
     {
       "slug": "scroll-odds",
       "lang": "ko",
-      "title": "글클메 주문서 확률 계산: 중급 5장이면 몇이 붙을까, 카오스는 얼마나 터질까",
-      "h1": "글클메 주문서, 바르기 전에 확률부터",
-      "desc": "하급·중급·고급·카오스 주문서를 장갑 5회에 발랐을 때의 결과 확률을 직접 계산했어요. 중급 평균 +6, 고급 5장 중 하나도 안 붙을 확률 59%, 카오스 5회 파괴 95%.",
+      "title": "주문서 확률: 입력값과 계산 가정 구분하기",
+      "h1": "주문서 확률: 입력값과 계산 가정 구분하기",
+      "desc": "5회 시도와 슬롯 수의 차이, 독립 성공 확률, 조건부 파괴 확률을 구분하는 계산 안내.",
       "published": "2026-11-02",
-      "updated": "2026-11-02",
+      "updated": "2026-11-10",
       "sources": [
         {
-          "title": "MS-Classic — Scroll tiers explained",
-          "url": "https://ms-classic.com/guides/scroll-tiers-lesser-intermediate-greater-explained"
+          "title": "MCW client item data — intermediate one-handed sword scroll",
+          "url": "https://maplestory.io/api/MCW/1/item/2043002"
         },
         {
-          "title": "MapleClassic Wiki — Scrolling",
-          "url": "https://mapleclassic.wiki/wiki/Scrolling"
+          "title": "MS-Classic — scroll tier model",
+          "url": "https://ms-classic.com/guides/scroll-tiers-lesser-intermediate-greater-explained"
         }
       ],
       "tools": [
         "scroll",
         "market"
-      ]
+      ],
+      "reviewed": "2026-11-10",
+      "status": "published",
+      "evidenceKind": "mathematical-model"
     },
     {
       "slug": "trading-and-mesos",
       "lang": "ko",
-      "title": "글클메 거래와 메소: 거래 열리는 조건, 거래글 약어, 메소 빚, 초반 메소 모으기",
-      "h1": "글클메 거래와 메소 가이드",
-      "desc": "새 계정 거래 조건(15레벨+24시간), WTS·C/O·A/W·neg 같은 거래글 약어, 현금 거래 메소에 걸리는 '메소 빚' 시스템, 초반에 메소를 모으는 현실적인 방법.",
+      "title": "GMS Hub 시세: 매물과 체결 가격 구분하기",
+      "h1": "GMS Hub 시세: 매물과 체결 가격 구분하기",
+      "desc": "판매자·위치·확인 시각, 판매 중 매물과 관측 이력, 시세 그래프의 해석 범위.",
       "published": "2026-11-02",
-      "updated": "2026-11-02",
-      "sources": [],
+      "updated": "2026-11-10",
+      "sources": [
+        {
+          "title": "GMS Hub — market implementation and observation history",
+          "url": "https://github.com/kwonth211/gms-hub/commit/393e54e7d375cd6287a38f33d8aa19ebbebd4282"
+        }
+      ],
       "tools": [
         "market",
         "price",
         "scan"
-      ]
+      ],
+      "reviewed": "2026-11-10",
+      "status": "published",
+      "evidenceKind": "site-behavior"
     },
     {
       "slug": "leveling-30-70",
       "lang": "ko",
-      "title": "글클메 30~70레벨 사냥터: 자리 없을 때 갈 대안까지 구간별 정리",
-      "h1": "글클메 30~70레벨 사냥터",
-      "desc": "로랑, 원숭이의 숲, 레이스, 유적의 무덤, 슬리피 던전 4, 발굴지 캠프까지. 구간별 정석과 덜 붐비는 대안, 같은 레벨 기준 필요 명중을 정리했어요.",
+      "title": "글클메 30레벨 이후: 플레이 후기와 확인 범위",
+      "h1": "글클메 30레벨 이후: 플레이 후기와 확인 범위",
+      "desc": "37레벨 클레릭, 39→40레벨 주니어 레이스, 32~46레벨 파이어보어 후기의 조건과 미확인 사항.",
       "published": "2026-11-03",
-      "updated": "2026-11-03",
-      "sources": [],
+      "updated": "2026-11-10",
+      "sources": [
+        {
+          "title": "HughJassLOL — Level 37 cleric, Jr. Wraith",
+          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xpep2n/comment/19s8d2wggrezl/"
+        },
+        {
+          "title": "kamikq — Level 39 to 40 account",
+          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xq7hw3/comment/19sa3xy91brcy/"
+        },
+        {
+          "title": "SuuuushiCat — Fire Boars and Hollow Tree 6",
+          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xitkic/comment/19rufmspn7kn6/"
+        }
+      ],
       "tools": [
         "training",
         "damage"
-      ]
+      ],
+      "reviewed": "2026-11-10",
+      "status": "published",
+      "evidenceKind": "player-accounts"
     },
     {
       "slug": "warrior-build",
       "lang": "ko",
-      "title": "글클메 전사 육성: SP 찍는 순서, 착용 DEX 계산, 레벨별 무기",
+      "title": "글클메 전사 육성 가이드 · 재검증 중",
       "h1": "글클메 전사 육성 가이드",
-      "desc": "파이터·페이지·스피어맨 2차 SP 순서(돌진 1 → 마스터리 5 → 부스터 1), 바뀐 1차 스킬, DEX는 얼마나 찍을지, 40레벨 제작 무기와 사냥터.",
+      "desc": "SP 순서와 특정 레벨의 처치 타수를 입증할 장비·스킬·실측 자료가 없었어요.",
       "published": "2026-11-03",
-      "updated": "2026-11-03",
+      "updated": "2026-11-10",
       "sources": [],
       "tools": [
-        "damage",
-        "training",
-        "scroll"
-      ]
+        "training"
+      ],
+      "reviewed": "2026-11-10",
+      "status": "withheld",
+      "reviewReason": "SP 순서와 특정 레벨의 처치 타수를 입증할 장비·스킬·실측 자료가 없었어요."
     },
     {
       "slug": "archer-build",
       "lang": "ko",
-      "title": "글클메 궁수 육성: 헌터·사수 SP 순서, 활 바꾸는 시점, 30~50 사냥터",
+      "title": "글클메 궁수 육성 가이드 · 재검증 중",
       "h1": "글클메 궁수 육성 가이드",
-      "desc": "마스터리 5 → 부스터 1, 파이널 어택 먼저냐 애로우 봄 먼저냐, 라이덴·레드 바이퍼·발터2000·헤클러 교체 시점, 로랑과 콜드 아이까지.",
+      "desc": "특정 레벨 무조건 원킬, 무기 교체 시점과 흑자 동선에 원문 근거가 없었어요.",
       "published": "2026-11-03",
-      "updated": "2026-11-03",
+      "updated": "2026-11-10",
       "sources": [],
       "tools": [
-        "damage",
-        "training",
-        "scroll"
-      ]
+        "training"
+      ],
+      "reviewed": "2026-11-10",
+      "status": "withheld",
+      "reviewReason": "특정 레벨 무조건 원킬, 무기 교체 시점과 흑자 동선에 원문 근거가 없었어요."
     },
     {
       "slug": "mage-build",
       "lang": "ko",
-      "title": "글클메 마법사 육성: 썬콜·불독·클레릭 SP 순서와 사냥터, 물약값",
+      "title": "글클메 마법사 육성 가이드 · 재검증 중",
       "h1": "글클메 마법사 육성 가이드",
-      "desc": "INT·LUK 스탯 맞추는 법, 1차 경제형 SP, 콜드 빔과 썬더볼트 중 뭘 먼저 찍을지, 독이 안 드는 몬스터, 힐이 안 드는 성 약점 몬스터까지.",
+      "desc": "경제형 SP와 물약 효율의 근거가 없고, 다른 글의 물약 가격과도 맞지 않았어요.",
       "published": "2026-11-03",
-      "updated": "2026-11-03",
+      "updated": "2026-11-10",
       "sources": [],
       "tools": [
-        "damage",
-        "training",
-        "scroll"
-      ]
+        "training"
+      ],
+      "reviewed": "2026-11-10",
+      "status": "withheld",
+      "reviewReason": "경제형 SP와 물약 효율의 근거가 없고, 다른 글의 물약 가격과도 맞지 않았어요."
     },
     {
       "slug": "thief-build",
       "lang": "ko",
-      "title": "글클메 도적 1~40레벨 육성: 스탯, 럭키 세븐 SP 순서, 아대, 사냥터",
+      "title": "글클메 도적 1~40레벨 육성 · 재검증 중",
       "h1": "글클메 도적 1~40레벨 육성",
-      "desc": "LUK 위주에 DEX는 아대만큼, 1차 SP는 30레벨 전에 다 쓰기, 레벨별 아대와 표창, 리본 돼지부터 개미굴까지 사냥터와 시프·어쌔신 30~40레벨.",
+      "desc": "정해진 명중률·SP 순서·레벨별 동선을 확인할 플레이 원문이 없었어요.",
       "published": "2026-11-03",
-      "updated": "2026-11-03",
+      "updated": "2026-11-10",
       "sources": [],
       "tools": [
-        "damage",
-        "training",
-        "scroll"
-      ]
+        "training"
+      ],
+      "reviewed": "2026-11-10",
+      "status": "withheld",
+      "reviewReason": "정해진 명중률·SP 순서·레벨별 동선을 확인할 플레이 원문이 없었어요."
     },
     {
       "slug": "getting-started",
       "lang": "en",
-      "title": "Getting Started in MapleStory Classic World: Settings, Stats, Potions, Chat Shorthand",
-      "h1": "Getting Started in Classic World",
-      "desc": "What new Global MapleStory Classic World players should know on day one: settings, beginner stats, the cheapest early potions, party EXP rules and trade chat shorthand (C/O, A/W, LFP).",
+      "title": "Starting Classic World: evaluating guides",
+      "h1": "Starting Classic World: evaluating guides",
+      "desc": "Check game version, original player conditions, supply costs and the limits of site data.",
       "published": "2026-11-09",
-      "updated": "2026-11-09",
+      "updated": "2026-11-10",
       "sources": [
         {
-          "title": "NiaMeowDB — Beginner's Guide: First Steps in Maple World",
-          "url": "https://meowdb.com/msclassic/guides/beginners-guide-first-steps-in-maple-world"
+          "title": "CarPresent5681 — Level 20 archer potion costs",
+          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xf4k6g/new_player_money_problem/"
+        },
+        {
+          "title": "TinyAdhesiveness5773 — Level 13 magician supplies",
+          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xcu0dc/made_a_magician_and_ran_out_of_money_and_potions/"
         }
       ],
       "tools": [
         "training",
         "drop-rate",
         "market"
-      ]
+      ],
+      "reviewed": "2026-11-10",
+      "status": "published",
+      "evidenceKind": "player-accounts"
     },
     {
       "slug": "choose-your-job",
       "lang": "en",
-      "title": "MapleStory Classic World Classes: What Changed for All 10 Second Jobs",
+      "title": "Choosing a Job in Classic World · Under review",
       "h1": "Choosing a Job in Classic World",
-      "desc": "How every first and second job plays in MapleStory Classic World and what changed from old MapleStory: Rage, no Hyper Body, Poison Breath, Bless, Arrow Bomb, Steal and more.",
+      "desc": "Current-version sources were missing for skill changes and class rankings.",
       "published": "2026-11-09",
-      "updated": "2026-11-09",
+      "updated": "2026-11-10",
       "sources": [],
       "tools": [
-        "damage",
         "training"
-      ]
+      ],
+      "reviewed": "2026-11-10",
+      "status": "withheld",
+      "reviewReason": "Current-version sources were missing for skill changes and class rankings."
     },
     {
       "slug": "leveling-1-30",
       "lang": "en",
-      "title": "MapleStory Classic World Leveling Guide 1-30: Best Training Spots",
-      "h1": "Leveling 1-30: Where to Train",
-      "desc": "Where to train from level 1 to 30 in MapleStory Classic World, with maps three guide sites agree on: Bubblings, Ant Tunnel III, Kerning party quest and more.",
+      "title": "Levels 1–30: check supply costs before choosing a map",
+      "h1": "Levels 1–30: check supply costs before choosing a map",
+      "desc": "Early player accounts and a cost comparison method, replacing level-only Ant Tunnel recommendations.",
       "published": "2026-11-09",
-      "updated": "2026-11-09",
+      "updated": "2026-11-10",
       "sources": [
         {
-          "title": "NiaMeowDB — Best grind maps for every level",
-          "url": "https://meowdb.com/msclassic/guides/best-grind-maps-every-level"
+          "title": "CarPresent5681 — Level 20 archer potion costs",
+          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xf4k6g/new_player_money_problem/"
         },
         {
-          "title": "MS-Classic — Where to train level 10-30",
-          "url": "https://ms-classic.com/guides/where-to-train-level-10-30"
-        },
-        {
-          "title": "Henesys.GG",
-          "url": "https://henesys.gg/"
+          "title": "TinyAdhesiveness5773 — Level 13 magician supplies",
+          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xcu0dc/made_a_magician_and_ran_out_of_money_and_potions/"
         }
       ],
       "tools": [
         "training",
         "damage"
-      ]
+      ],
+      "reviewed": "2026-11-10",
+      "status": "published",
+      "evidenceKind": "player-accounts"
     },
     {
       "slug": "best-early-quests",
       "lang": "en",
-      "title": "7 Early Quests Worth Doing in MapleStory Classic World (Levels 16-44)",
+      "title": "Seven Early Quests Worth Doing · Under review",
       "h1": "Seven Early Quests Worth Doing",
-      "desc": "Seven MapleStory Classic World quests from level 16 to 44 whose rewards beat their EXP: weapon, earring and glove attack scrolls, items and requirements.",
+      "desc": "Quest-specific level, material, reward and profit claims lacked sufficient sources.",
       "published": "2026-11-09",
-      "updated": "2026-11-09",
+      "updated": "2026-11-10",
       "sources": [
         {
           "title": "NiaMeowDB — Quest tracker",
@@ -315,46 +376,58 @@
         }
       ],
       "tools": [
-        "training",
-        "drop-rate"
-      ]
+        "training"
+      ],
+      "reviewed": "2026-11-10",
+      "status": "withheld",
+      "reviewReason": "Quest-specific level, material, reward and profit claims lacked sufficient sources."
     },
     {
       "slug": "kerning-party-quest",
       "lang": "en",
-      "title": "Kerning Party Quest Guide (KPQ): Stages, Answers, Rush vs Bonus",
-      "h1": "Kerning Party Quest Guide",
-      "desc": "How to run the Kerning City party quest in MapleStory Classic World: requirements, rush vs bonus parties, stage 1 answers and a fast order for the rope, platform and barrel puzzles.",
+      "title": "Kerning PQ: reading rush and bonus accounts",
+      "h1": "Kerning PQ: reading rush and bonus accounts",
+      "desc": "A reported KPQ experience, with limits on conclusions about levels, speed and profit.",
       "published": "2026-11-09",
-      "updated": "2026-11-09",
-      "sources": [],
+      "updated": "2026-11-10",
+      "sources": [
+        {
+          "title": "Zionics — Levels 35–40, rush and bonus",
+          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xq7hw3/comment/19sa6f4904qpv/"
+        }
+      ],
       "tools": [
         "training",
         "damage"
-      ]
+      ],
+      "reviewed": "2026-11-10",
+      "status": "published",
+      "evidenceKind": "player-accounts"
     },
     {
       "slug": "second-job",
       "lang": "en",
-      "title": "MapleStory Classic World Second Job Guide: Which to Pick and Where to Train",
+      "title": "Second Job: Which to Pick · Under review",
       "h1": "Second Job: Which to Pick",
-      "desc": "Second job advancement in MapleStory Classic World: a default pick for each class, weapons, Final Attack and Rush changes, and training maps from level 30 to 70.",
+      "desc": "Default class picks, weapon rankings and level 30–70 routes lacked direct evidence.",
       "published": "2026-11-09",
-      "updated": "2026-11-09",
+      "updated": "2026-11-10",
       "sources": [],
       "tools": [
-        "damage",
         "training"
-      ]
+      ],
+      "reviewed": "2026-11-10",
+      "status": "withheld",
+      "reviewReason": "Default class picks, weapon rankings and level 30–70 routes lacked direct evidence."
     },
     {
       "slug": "citizenship-and-housing",
       "lang": "en",
-      "title": "MapleStory Classic World Citizenship and Housing: Ranks, Discounts, Rank 9 Scrolls",
+      "title": "Citizenship and Housing · Under review",
       "h1": "Citizenship and Housing",
-      "desc": "How citizenship works in MapleStory Classic World: Henesys or Kerning City, contribution, discounts by rank, citizen-only scrolls and buying a house.",
+      "desc": "Current citizenship discounts, scroll prices and housing requirements were not established.",
       "published": "2026-11-09",
-      "updated": "2026-11-09",
+      "updated": "2026-11-10",
       "sources": [
         {
           "title": "NiaMeowDB — Citizenship",
@@ -362,121 +435,154 @@
         }
       ],
       "tools": [
-        "market",
-        "price"
-      ]
+        "training"
+      ],
+      "reviewed": "2026-11-10",
+      "status": "withheld",
+      "reviewReason": "Current citizenship discounts, scroll prices and housing requirements were not established."
     },
     {
       "slug": "scroll-odds",
       "lang": "en",
-      "title": "MapleStory Classic World Scroll Odds: Lesser, Intermediate, Greater, Chaos",
-      "h1": "Scroll Odds Explained",
-      "desc": "What Lesser, Intermediate, Greater and Chaos scrolls really give in MapleStory Classic World: outcome odds for 5-slot gloves and how to compare cost per attack point.",
+      "title": "Scroll odds: inputs and mathematical assumptions",
+      "h1": "Scroll odds: inputs and mathematical assumptions",
+      "desc": "Distinguish attempts from slots, independent success probabilities and conditional destruction.",
       "published": "2026-11-09",
-      "updated": "2026-11-09",
+      "updated": "2026-11-10",
       "sources": [
         {
-          "title": "MS-Classic — Scroll tiers explained",
-          "url": "https://ms-classic.com/guides/scroll-tiers-lesser-intermediate-greater-explained"
+          "title": "MCW client item data — intermediate one-handed sword scroll",
+          "url": "https://maplestory.io/api/MCW/1/item/2043002"
         },
         {
-          "title": "MapleClassic Wiki — Scrolling",
-          "url": "https://mapleclassic.wiki/wiki/Scrolling"
+          "title": "MS-Classic — scroll tier model",
+          "url": "https://ms-classic.com/guides/scroll-tiers-lesser-intermediate-greater-explained"
         }
       ],
       "tools": [
         "scroll",
         "market"
-      ]
+      ],
+      "reviewed": "2026-11-10",
+      "status": "published",
+      "evidenceKind": "mathematical-model"
     },
     {
       "slug": "trading-and-mesos",
       "lang": "en",
-      "title": "MapleStory Classic World Trading Guide: Trade Rules, Shorthand, Meso Debt",
-      "h1": "Trading and Mesos",
-      "desc": "Trading in MapleStory Classic World: when new accounts can trade, trade post shorthand (C/O, A/W, GFA), the meso debt system and realistic ways to earn early mesos.",
+      "title": "GMS Hub prices: listings versus transactions",
+      "h1": "GMS Hub prices: listings versus transactions",
+      "desc": "How to interpret sellers, locations, observation times, asking prices and historical charts.",
       "published": "2026-11-09",
-      "updated": "2026-11-09",
-      "sources": [],
+      "updated": "2026-11-10",
+      "sources": [
+        {
+          "title": "GMS Hub — market implementation and observation history",
+          "url": "https://github.com/kwonth211/gms-hub/commit/393e54e7d375cd6287a38f33d8aa19ebbebd4282"
+        }
+      ],
       "tools": [
         "market",
         "price",
         "scan"
-      ]
+      ],
+      "reviewed": "2026-11-10",
+      "status": "published",
+      "evidenceKind": "site-behavior"
     },
     {
       "slug": "leveling-30-70",
       "lang": "en",
-      "title": "MapleStory Classic World Leveling Guide 30-70: Training Spots and Accuracy",
-      "h1": "Leveling 30-70: Where to Train",
-      "desc": "Training spots from level 30 to 70 in MapleStory Classic World with the standard map, a quieter alternative and the accuracy each needs: Lorangs, Wraiths, the Excavation Site camp.",
+      "title": "Training after level 30: accounts and evidence limits",
+      "h1": "Training after level 30: accounts and evidence limits",
+      "desc": "Conditions and gaps in player accounts of Jr. Wraiths, Fire Boars and later training.",
       "published": "2026-11-09",
-      "updated": "2026-11-09",
-      "sources": [],
+      "updated": "2026-11-10",
+      "sources": [
+        {
+          "title": "HughJassLOL — Level 37 cleric, Jr. Wraith",
+          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xpep2n/comment/19s8d2wggrezl/"
+        },
+        {
+          "title": "kamikq — Level 39 to 40 account",
+          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xq7hw3/comment/19sa3xy91brcy/"
+        },
+        {
+          "title": "SuuuushiCat — Fire Boars and Hollow Tree 6",
+          "url": "https://www.reddit.com/r/MSClassicWorld/comments/1xitkic/comment/19rufmspn7kn6/"
+        }
+      ],
       "tools": [
         "training",
         "damage"
-      ]
+      ],
+      "reviewed": "2026-11-10",
+      "status": "published",
+      "evidenceKind": "player-accounts"
     },
     {
       "slug": "warrior-build",
       "lang": "en",
-      "title": "MapleStory Classic World Warrior Guide: SP Order, DEX, Weapons, Maps",
+      "title": "Warrior Build Guide · Under review",
       "h1": "Warrior Build Guide",
-      "desc": "Fighter, Page and Spearman in MapleStory Classic World: first and second job SP order, how much DEX to add, level 30-40 weapons and where to hunt.",
+      "desc": "SP order and fixed-level hit counts lacked equipment, skill and measured evidence.",
       "published": "2026-11-09",
-      "updated": "2026-11-09",
+      "updated": "2026-11-10",
       "sources": [],
       "tools": [
-        "damage",
-        "training",
-        "scroll"
-      ]
+        "training"
+      ],
+      "reviewed": "2026-11-10",
+      "status": "withheld",
+      "reviewReason": "SP order and fixed-level hit counts lacked equipment, skill and measured evidence."
     },
     {
       "slug": "archer-build",
       "lang": "en",
-      "title": "MapleStory Classic World Bowman Guide: Hunter vs Crossbowman, SP, Bows, Maps",
+      "title": "Bowman Build Guide · Under review",
       "h1": "Bowman Build Guide",
-      "desc": "Hunter and Crossbowman in MapleStory Classic World: SP order, Final Attack or Arrow Bomb first, when to change bows and crossbows, and maps from level 30 to 50.",
+      "desc": "Guaranteed one-hit claims, weapon upgrade timing and profitable routes lacked original evidence.",
       "published": "2026-11-09",
-      "updated": "2026-11-09",
+      "updated": "2026-11-10",
       "sources": [],
       "tools": [
-        "damage",
-        "training",
-        "scroll"
-      ]
+        "training"
+      ],
+      "reviewed": "2026-11-10",
+      "status": "withheld",
+      "reviewReason": "Guaranteed one-hit claims, weapon upgrade timing and profitable routes lacked original evidence."
     },
     {
       "slug": "mage-build",
       "lang": "en",
-      "title": "MapleStory Classic World Magician Guide: Stats, SP Order, Potions, Maps",
+      "title": "Magician Build Guide · Under review",
       "h1": "Magician Build Guide",
-      "desc": "Ice/Lightning, Fire/Poison and Cleric in MapleStory Classic World: INT and LUK, SP order, mana potion maths, which monsters each element works on, and weapons.",
+      "desc": "Economic SP and potion-efficiency claims were unsourced and inconsistent with another guide.",
       "published": "2026-11-09",
-      "updated": "2026-11-09",
+      "updated": "2026-11-10",
       "sources": [],
       "tools": [
-        "damage",
-        "training",
-        "scroll"
-      ]
+        "training"
+      ],
+      "reviewed": "2026-11-10",
+      "status": "withheld",
+      "reviewReason": "Economic SP and potion-efficiency claims were unsourced and inconsistent with another guide."
     },
     {
       "slug": "thief-build",
       "lang": "en",
-      "title": "MapleStory Classic World Thief Guide 1-40: Stats, Lucky Seven, Claws, Maps",
+      "title": "Thief Build Guide (Levels 1-40) · Under review",
       "h1": "Thief Build Guide (Levels 1-40)",
-      "desc": "Thief in MapleStory Classic World from level 1 to 40: LUK and DEX, Lucky Seven SP order, claws and stars by level, and where to train before and after second job.",
+      "desc": "Fixed accuracy, SP order and level routes lacked original gameplay evidence.",
       "published": "2026-11-09",
-      "updated": "2026-11-09",
+      "updated": "2026-11-10",
       "sources": [],
       "tools": [
-        "damage",
-        "training",
-        "scroll"
-      ]
+        "training"
+      ],
+      "reviewed": "2026-11-10",
+      "status": "withheld",
+      "reviewReason": "Fixed accuracy, SP order and level routes lacked original gameplay evidence."
     }
   ]
 }

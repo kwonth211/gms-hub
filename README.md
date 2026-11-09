@@ -5,7 +5,7 @@
 **원칙:** 출처가 확인된 정보만 싣는다. 사이트 설명은 각 사이트의 소개문·메뉴에서만 가져오고, 숫자에는 출처와 확인 날짜를 붙인다.
 
 - 사이트 모음: `data/sites.json`
-- 레벨별 사냥터 (NiaMeowDB·MS-Classic·Henesys.GG 교차): `data/training.json`
+- 원문·작성자·조건을 갖춘 개인 플레이 후기 (추정 레벨 추천 금지): `data/training.json`
 - 주문서 등급 확률: `data/scrolls.json`
 - 사이트 썸네일: `assets/shots/*.jpg`, 픽셀아트: `scripts/sprites.mjs`
 - 링크 미리보기 이미지: `node scripts/og.mjs` (Chrome + playwright-core 필요)
@@ -86,3 +86,13 @@ env -u CLOUDFLARE_API_TOKEN npx wrangler@3.114.0 d1 execute gms-hub-votes --remo
 DB에 `worker/migrations/0001_market_batch.sql`, `0002_listing_history.sql`을 순서대로 적용한 뒤 Worker를 배포합니다. 프런트엔드는 main 푸시 후 GitHub Pages로 배포합니다. 배치 확장의 운영 방법은 `scripts/market-batch/README.md`에 있습니다. 개인 인증 파일과 실제 수집 증빙은 Git에 포함하지 않습니다.
 
 `node --test tests/*.test.mjs`는 API·시세·검색·스캔 회귀를 확인합니다. `tests/market-browser.test.mjs`는 전체 목록/페이지 누락, 극단 가격의 가시성, 필터, 이력 보존/중복, 가격 제보 분리 등을 검증합니다. 로컬 게임 화면 샘플이 있으면 실제 인식 회귀도 확인합니다.
+
+## 콘텐츠 점검 (2026-11-10)
+
+14개 가이드 주제(한국어·영어 28페이지)를 검토했습니다. 6개 주제를 원문 후기·계산 가정·사이트 동작 안내로 다시 쓰고, 출처가 부족한 8개 주제는 기존 URL에 재검증 안내만 표시합니다. 기존 본문은 Git 기록과 소스에 보존되지만 배포 HTML, 홈 검색, 관련 가이드와 사이트맵에 공개하지 않습니다. 비공개 가이드 URL은 noindex입니다.
+
+`data/training.json`은 직접 플레이를 서술한 원문 11건의 요약입니다. 원문을 읽었다는 사실은 작성자 신원·성과·현재 패치를 독립 검증했다는 뜻이 아닙니다. 없는 직업·레벨·맵·비용은 추정하지 않습니다. 추천 사이트 수와 이론 최대 EXP로 매기던 56개 맵 순위는 제거했습니다. 원문 게시일을 확정하지 못한 경우 null로 보존하며, 확인일과 구별합니다.
+
+가이드 공개에는 `status`, `reviewed`, `evidenceKind`, 원문 출처가 필요합니다. 근거를 확보하지 못한 가이드는 `withheld`와 구체적인 `reviewReason`을 넣습니다. `tests/content.test.mjs`가 레벨·직업 혼동, 과거 자료 혼입, 미검증 본문 재노출과 출처 누락을 검사합니다. 게임 효율 자체를 검증하는 테스트는 아닙니다.
+
+계산기 수치는 가정에 따른 모델로 표시합니다. 몬스터·무기 자료는 2026-11-03 수집본, 상자 확률은 2026-10-28 공식 공지 수집본이며 이번에 현재 게임에서 재측정한 자료가 아닙니다. 링크 접속 확인은 외부 사이트의 내용 검증과 구분합니다.

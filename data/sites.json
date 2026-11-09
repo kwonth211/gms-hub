@@ -545,8 +545,8 @@
             "en"
           ],
           "desc": {
-            "ko": "윈디아 유저들이 쓰는 클래식 월드 공략. 직업, 보스, 사냥, 거래, 뉴스를 다루고 모든 사실에 출처를 달아요.",
-            "en": "Classic World guides by players on Windia: jobs, bosses, training, trading and news, with every fact sourced."
+            "ko": "윈디아 유저들이 쓰는 클래식 월드 공략. 직업, 보스, 사냥, 거래, 뉴스를 다뤄요. 개별 글의 원문 근거를 확인하세요.",
+            "en": "Classic World guides by players on Windia: jobs, bosses, training, trading and news."
           },
           "features": {
             "ko": [
@@ -1081,8 +1081,8 @@
         "en": "Can I use guides for old GMS or other MapleStory versions?"
       },
       "a": {
-        "ko": "조심해야 해요. MS-Classic은 \"클래식 월드는 옛 GMS의 1:1 복사본이 아니라서 돌아다니는 '클래식' 정보의 절반은 클래식 월드에 맞지 않는다\"고 적고 있어요. 예를 들어 Henesys.GG 기준으로 클래식 월드의 Golem's Temple III에는 56레벨 스톤골렘이 나와요.",
-        "en": "Be careful. MS-Classic writes that \"Classic World isn't a 1:1 copy of old GMS, so half the 'classic' info floating around is wrong for it.\" For example, Henesys.GG lists Lv. 56 Stone Golems in Classic World's Golem's Temple III."
+        "ko": "게임 버전과 작성 시점, 직접 플레이한 조건을 먼저 확인하세요. 원문이 없는 동선표와 이론상 최대 경험치를 현재 내 캐릭터의 사냥 효율로 해석하지 마세요.",
+        "en": "Check the game version, publication context and firsthand conditions. Unsourced routes and theoretical maximum EXP do not establish your current character's efficiency."
       },
       "sources": [
         "https://ms-classic.com/",
@@ -1095,8 +1095,8 @@
         "en": "How do scrolls work?"
       },
       "a": {
-        "ko": "Lesser 100%, Intermediate 60%, Greater 10%, Chaos 10% 네 등급이에요. Chaos만 실패 시 50% 확률로 아이템이 파괴돼요. 실패한 주문서가 업그레이드 횟수를 차감하는지는 클라이언트 데이터에 기록이 없어 확인되지 않았어요.",
-        "en": "Four tiers: Lesser 100%, Intermediate 60%, Greater 10% and Chaos 10%. Only Chaos can destroy the item, with a 50% chance on failure. Whether a failed scroll uses an upgrade slot is not recorded in the client data."
+        "ko": "계산기에는 자료에 기재된 등급별 성공률을 기본값으로 넣었어요. 현재 아이템 툴팁과 대조해 사용하세요. 실패 시 슬롯 처리처럼 검증하지 못한 규칙은 확정하지 않고, 시도 횟수를 직접 입력하는 모델로 계산해요.",
+        "en": "The calculator uses sourced preset rates; compare them with the current item tooltip. Unverified behavior such as slot use on failure is not assumed. The model uses a specified number of attempts."
       },
       "sources": [
         "https://ms-classic.com/guides/scroll-tiers-lesser-intermediate-greater-explained",

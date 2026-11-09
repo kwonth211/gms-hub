@@ -4,6 +4,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { spriteSvg, heroScene } from './sprites.mjs';
+import { selectExperiences, experienceCards, jobNames, validateTraining } from '../assets/training-evidence.js';
 import { SKILLS as DMG_SKILLS, windowRange as dmgWindow, hitRange as dmgHit, hitsToKill as dmgKill, accuracyNeeded as dmgAccNeed } from '../assets/damage-calc.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -13,6 +14,7 @@ const readJson = (p) => JSON.parse(fs.readFileSync(path.join(root, p), 'utf8'));
 const config = readJson('site.config.json');
 const sites = readJson('data/sites.json');
 const training = readJson('data/training.json');
+validateTraining(training);
 const itemsData = readJson('data/items.json');
 const scrolls = readJson('data/scrolls.json');
 // Korean pages use the client's own tier names (하급·중급·상급·혼돈); English keeps Lesser/Intermediate/Greater/Chaos.
@@ -25,6 +27,12 @@ const guides = readJson('data/guides.json').guides.map((g) => ({
   body: fs.readFileSync(path.join(root, 'data', 'guides', `${g.slug}.${g.lang}.html`), 'utf8')
 }));
 
+const publishedGuides = guides.filter((g) => g.status === 'published');
+for (const g of guides) {
+  if (!['published', 'withheld'].includes(g.status)) throw new Error(`Missing editorial review: ${g.slug}`);
+  if (g.status === 'published' && (!g.sources.length || !g.evidenceKind || !g.reviewed)) throw new Error(`Missing evidence: ${g.slug}`);
+  if (g.status === 'withheld' && !g.reviewReason) throw new Error(`Missing review reason: ${g.slug}`);
+}
 const LANGS = ['ko', 'en'];
 const BUILD_DATE = new Date().toISOString().slice(0, 10);
 const SITE_COUNT = sites.categories.reduce((n, c) => n + c.sites.length, 0);
@@ -34,9 +42,9 @@ const T = {
   ko: {
     gameName: '글로벌 메이플스토리 클래식 월드',
     gameBadge: '글로벌 메이플스토리 클래식 월드 전용',
-    notice: `수록 링크 ${SITE_COUNT}개 · ${CHECKED_SITE_COUNT}개 접속 확인 (${sites.checked}) · 미확인 링크는 별도 표시해요`,
+    notice: `수록 링크 ${SITE_COUNT}개 · ${CHECKED_SITE_COUNT}개 접속 확인 (${sites.checked}) · 접속 확인은 내용 검증을 뜻하지 않아요`,
     navLinks: '사이트 모음',
-    navTraining: '사냥터 찾기',
+    navTraining: "사냥터 후기",
     navScroll: '주문서 계산기',
     navDrop: '확률 계산기',
     navPrice: '시세 검색',
@@ -45,7 +53,7 @@ const T = {
     navGuides: '가이드',
     switchLang: 'English',
     homeTitle: '글로벌 메이플스토리 클래식 월드(글클메) 사이트 모음 · 시세 · 공략 · 계산기 | GMS Hub',
-    homeDesc: `글로벌 메이플스토리 클래식 월드(글클메) 공식 채널, 디스코드·레딧·디시 커뮤니티, DB·위키, 자유시장 시세, 보스 타이머, 빌드 플래너 ${SITE_COUNT}곳을 용도별로 정리했어요. 레벨별 사냥터 찾기와 주문서 계산기도 있어요.`,
+    homeDesc: `글로벌 메이플스토리 클래식 월드(글클메) 공식 채널, 디스코드·레딧·디시 커뮤니티, DB·위키, 자유시장 시세, 보스 타이머, 빌드 플래너 ${SITE_COUNT}곳을 용도별로 정리했어요. 플레이 원문을 모은 사냥터 후기와 주문서 계산기도 있어요.`,
     heroKicker: '글클메 유저를 위한 길잡이',
     heroTitle: '아이템·시세·유용한 사이트, <br>한 번에 찾아보세요',
     heroSub: '아이템부터 공략과 도구까지 한곳에서 검색하고, 필요한 사이트로 바로 이동하세요.',
@@ -79,17 +87,17 @@ const T = {
     statSource: '출처',
     langNames: { ko: '한국어', en: 'EN', zh: '中文', ja: '日本語', es: 'ES', pt: 'PT' },
     toolsHeading: 'GMS Hub 자체 도구',
-    trCardDesc: '레벨을 넣으면 NiaMeowDB · MS-Classic · Henesys.GG 세 곳의 추천 사냥터를 한 번에 비교해요.',
+    trCardDesc: "플레이 원문의 레벨·직업·장비 조건과 물약 비용을 비교해요.",
     scCardDesc: 'Lesser·Intermediate·Greater·Chaos 주문서로 몇 번 붙고 터질 확률이 얼마인지 계산해요.',
-    dropCardDesc: '드롭률과 사냥 횟수로 실제로 먹을 확률, 필요한 사냥 횟수를 계산해요.',
+    dropCardDesc: "입력한 드롭률이 일정하고 시도가 독립일 때의 획득 확률을 계산해요.",
     open: '열기',
     faqHeading: '자주 묻는 질문',
     sourcesLabel: '출처',
 
-    trTitle: '글클메 레벨별 사냥터 추천 (3개 사이트 비교) · 글로벌 메이플스토리 클래식 월드 | GMS Hub',
-    trDesc: '글로벌 메이플스토리 클래식 월드 1~80레벨 사냥터를 NiaMeowDB, MS-Classic, Henesys.GG 추천과 비교해요. 맵별 몬스터 레벨, 추천 레벨 구간, 시간당 경험치를 한눈에.',
-    trH1: '레벨별 사냥터 찾기',
-    trLead: '세 사이트의 추천을 맵마다 모았어요. 여러 곳이 같이 추천한 맵이 위에 나와요.',
+    trTitle: "글클메 사냥터 후기 · 플레이 조건과 물약 비용 | GMS Hub",
+    trDesc: "원문 작성자의 레벨과 직업, 장비, 물약 비용을 구분한 개인 사냥 후기. 조건이 없는 추천과 이론 경험치 순위를 제외했어요.",
+    trH1: "사냥터 · 플레이 후기",
+    trLead: "어디서, 어떤 조건으로 사냥했는지 원문과 함께 확인하세요. 내 조건과 맞는 기록이 없으면 확인되지 않았다고 표시해요.",
     level: '내 레벨',
     showSpots: '찾기',
     trResultTitle: '{lv}레벨 추천 사냥터',
@@ -104,18 +112,18 @@ const T = {
     colExp: '경험치/시간 (NiaMeowDB)',
     caution: '주의',
     trSourcesHeading: '출처',
-    trBandNav: '레벨 구간별 사냥터',
-    trBandTitle: '글클메 {a}~{b}레벨 사냥터 추천 ({n}곳 비교) · 글로벌 메이플스토리 클래식 월드 | GMS Hub',
-    trBandDesc: '글로벌 메이플스토리 클래식 월드 {a}~{b}레벨 사냥터 {n}곳을 NiaMeowDB, MS-Classic, Henesys.GG 추천과 비교했어요. {maps} 등 맵별 몬스터 레벨과 시간당 경험치.',
-    trBandH1: '{a}~{b}레벨 사냥터',
-    trBandLead: '{a}~{b}레벨을 추천 구간에 넣은 맵 {n}곳이에요. 여러 출처가 함께 추천한 맵이 위에 나와요.',
-    trBandFinder: '내 레벨로 바로 찾기 →',
+    trBandNav: "레벨 구간별 원문 후기",
+    trBandTitle: "글클메 {a}~{b}레벨 플레이 후기와 확인 범위 | GMS Hub",
+    trBandDesc: "{a}~{b}레벨을 직접 언급한 개인 플레이 기록 {n}건. 직업·장비·물약 비용의 확인 범위를 원문과 비교하세요.",
+    trBandH1: "{a}~{b}레벨 플레이 후기",
+    trBandLead: "이 구간을 직접 언급한 기록 {n}건이에요. 추천 레벨이나 효율 순위가 아니에요.",
+    trBandFinder: "레벨·직업으로 후기 찾기 →",
     noDate: '날짜 표기 없음',
 
     scTitle: '글클메 주문서 계산기 · 확률 (Lesser·Intermediate·Greater·Chaos) | GMS Hub',
     scDesc: '글로벌 메이플스토리 클래식 월드 주문서 성공률(Lesser 100%, Intermediate 60%, Greater 10%, Chaos 10%)로 성공 횟수 분포, 파괴 확률, 평균 상승치를 계산해요.',
     scH1: '주문서 계산기',
-    scLead: '클래식 월드 주문서 등급별 성공률로 결과를 확률로 보여줘요.',
+    scLead: '자료에 적힌 성공률을 입력값으로 사용한 확률 모델이에요. 현재 아이템 툴팁을 함께 확인하세요.',
     scTier: '주문서 등급',
     scLadder: '주문서 종류 (상승치)',
     scCustom: '직접 입력',
@@ -183,9 +191,9 @@ const T = {
     aboutH1: 'GMS Hub 소개',
     aboutBody: `<p>GMS Hub는 <strong>글로벌 메이플스토리 클래식 월드</strong>를 하는 한국어·영어 유저를 위한 <strong>비공식 팬 사이트</strong>예요. 처음에는 흩어져 있는 공략·시세·계산기 사이트를 한곳에 모으려고 시작했고, 지금은 직접 만든 도구와 가이드를 함께 운영해요.</p>
 <h2>무엇이 있나요</h2>
-<ul><li><strong>계산기:</strong> <a href="/ko/tools/scroll/">주문서 계산기</a>, <a href="/ko/tools/drop-rate/">확률 계산기</a>, <a href="/ko/tools/damage/">몇 방 컷 계산기</a>는 게임 데이터와 유저들이 검증한 공식으로 직접 계산해요. 공식과 예시는 각 페이지 아래에 적어 두었어요.</li><li><strong>사냥터 찾기:</strong> 여러 공략 사이트의 레벨별 추천을 맵·몬스터 정보와 합쳐 <a href="/ko/tools/training/">레벨 구간별로 비교</a>해요.</li><li><strong>실시간 시세:</strong> 유저가 상점 스캐너로 읽은 자유시장 매물을 모아 <a href="/ko/tools/market/">아이템별 시세</a>를 계산해요. 계산 방법은 시세 페이지 아래에 있어요.</li><li><strong>가이드:</strong> 육성, 전직, 파티 퀘스트, 주문서, 거래를 다룬 <a href="/ko/guides/">한국어 가이드</a>를 직접 써요.</li><li><strong>사이트 모음:</strong> 클래식 월드 관련 사이트를 용도별로 정리하고 접속 여부를 확인해요.</li></ul>
+<ul><li><strong>계산기:</strong> <a href="/ko/tools/scroll/">주문서 계산기</a>, <a href="/ko/tools/drop-rate/">확률 계산기</a>, <a href="/ko/tools/damage/">몇 방 컷 계산기</a>는 공개 데이터와 계산 모델을 사용해요. 결과는 입력값과 가정에 따른 추정치예요. 공식과 예시는 각 페이지 아래에 적어 두었어요.</li><li><strong>사냥터 후기:</strong> 플레이를 직접 서술한 <a href="/ko/tools/training/">원문과 조건</a>을 보여 줘요. 이론 경험치나 추천 사이트 수로 순위를 매기지 않아요.</li><li><strong>실시간 시세:</strong> 유저가 상점 스캐너로 읽은 자유시장 매물을 모아 <a href="/ko/tools/market/">아이템별 시세</a>를 계산해요. 계산 방법은 시세 페이지 아래에 있어요.</li><li><strong>가이드:</strong> 육성, 전직, 파티 퀘스트, 주문서, 거래를 다룬 <a href="/ko/guides/">한국어 가이드</a>를 직접 써요.</li><li><strong>사이트 모음:</strong> 클래식 월드 관련 사이트를 용도별로 정리하고 접속 여부를 확인해요.</li></ul>
 <h2>원칙</h2>
-<ul><li><strong>출처가 확인된 정보만 실어요.</strong> 사이트 설명은 각 사이트가 공개한 소개문과 메뉴에 있는 기능만 옮기고, 숫자에는 출처와 확인 날짜를 붙여요.</li><li>출처끼리 내용이 다르면 둘 다 보여주고, 확인되지 않은 내용은 확인되지 않았다고 적어요.</li><li>접속을 확인한 링크와 아직 확인하지 못한 참고 링크를 구분해 표시해요. 현금 거래 사이트는 올리지 않아요.</li></ul>
+<ul><li><strong>자료의 성격과 한계를 구분해요.</strong> 개인 후기는 원문을 읽고 요약하지만 결과를 재현한 실험은 아니에요. 근거가 부족한 기존 가이드는 재검증 표시와 함께 비공개로 전환했어요.</li><li>출처끼리 내용이 다르면 둘 다 보여주고, 확인되지 않은 내용은 확인되지 않았다고 적어요.</li><li>접속 확인은 해당 사이트 전체 내용의 검증을 뜻하지 않아요. 확인하지 못한 링크는 따로 표시해요. 현금 거래 사이트는 올리지 않아요.</li></ul>
 <h2>다루는 게임</h2>
 <p>클래식 월드 하나만 다뤄요. 다른 메이플스토리 버전과는 맵, 몬스터, 강화 시스템이 달라서 섞지 않아요.</p>
 <h2>사이트 추가·오류 제보·문의</h2>
@@ -249,9 +257,9 @@ const T = {
   en: {
     gameName: 'Global MapleStory Classic World',
     gameBadge: 'Global MapleStory Classic World only',
-    notice: `${SITE_COUNT} links · ${CHECKED_SITE_COUNT} checked live on ${sites.checked} · Unverified links are labeled`,
+    notice: `${SITE_COUNT} links · ${CHECKED_SITE_COUNT} checked live on ${sites.checked} · Access checks do not verify content`,
     navLinks: 'Site Directory',
-    navTraining: 'Training Spots',
+    navTraining: "Training accounts",
     navScroll: 'Scroll Calculator',
     navDrop: 'Odds Calculator',
     navPrice: 'Price Search',
@@ -294,17 +302,17 @@ const T = {
     statSource: 'Source',
     langNames: { ko: 'Korean', en: 'EN', zh: '中文', ja: '日本語', es: 'ES', pt: 'PT' },
     toolsHeading: 'GMS Hub Tools',
-    trCardDesc: 'Enter your level to compare training picks from NiaMeowDB, MS-Classic and Henesys.GG at once.',
+    trCardDesc: "Compare original player accounts, conditions and supply costs.",
     scCardDesc: 'See how many Lesser, Intermediate, Greater or Chaos scrolls pass and how likely a boom is.',
-    dropCardDesc: 'Turn a drop rate and kill count into real odds, and see how many kills you need.',
+    dropCardDesc: "Calculate odds assuming the supplied drop rate stays constant across independent attempts.",
     open: 'Open',
     faqHeading: 'FAQ',
     sourcesLabel: 'Sources',
 
-    trTitle: 'Global MapleStory Classic World Training Spots by Level (3 Sites Compared) | GMS Hub',
-    trDesc: 'Where to train in Global MapleStory Classic World from level 1 to 80, comparing picks from NiaMeowDB, MS-Classic and Henesys.GG: monster levels, recommended level ranges and EXP per hour.',
-    trH1: 'Training Spot Finder',
-    trLead: 'Picks from three sites, merged per map. Maps more sources agree on come first.',
+    trTitle: "Classic World Training Accounts: Conditions and Supply Costs | GMS Hub",
+    trDesc: "Original player accounts with reported levels, classes, equipment and supply costs. No inferred routes or theoretical EXP ranking.",
+    trH1: "Training · Player Accounts",
+    trLead: "Read where and under what conditions people played, with original sources and explicit gaps.",
     level: 'My level',
     showSpots: 'Find',
     trResultTitle: 'Training spots for level {lv}',
@@ -319,18 +327,18 @@ const T = {
     colExp: 'EXP/hr (NiaMeowDB)',
     caution: 'Caution',
     trSourcesHeading: 'Sources',
-    trBandNav: 'Training spots by level range',
-    trBandTitle: 'Level {a}-{b} Training Spots in Global MapleStory Classic World ({n} Maps Compared) | GMS Hub',
-    trBandDesc: 'Where to train at level {a}-{b} in Global MapleStory Classic World: {n} maps compared across NiaMeowDB, MS-Classic and Henesys.GG, including {maps}. Monster levels and EXP per hour.',
-    trBandH1: 'Level {a}-{b} Training Spots',
-    trBandLead: '{n} maps that at least one source recommends for level {a}-{b}. Maps more sources agree on come first.',
-    trBandFinder: 'Find spots for my exact level →',
+    trBandNav: "Accounts by reported level",
+    trBandTitle: "Classic World Level {a}–{b} Player Accounts and Evidence Limits | GMS Hub",
+    trBandDesc: "{n} personal accounts explicitly covering levels {a}–{b}, with class, equipment and supply-cost limits.",
+    trBandH1: "Level {a}–{b} Player Accounts",
+    trBandLead: "{n} accounts explicitly mention this interval. These are reported levels, not recommendations or efficiency rankings.",
+    trBandFinder: "Filter accounts by level and class →",
     noDate: 'undated',
 
     scTitle: 'Global MapleStory Classic World Scroll Calculator: Lesser, Intermediate, Greater & Chaos Odds | GMS Hub',
     scDesc: 'Classic World scroll odds (Lesser 100%, Intermediate 60%, Greater 10%, Chaos 10%): pass distribution, boom chance and expected stat gain.',
     scH1: 'Scroll Calculator',
-    scLead: 'Outcome odds using Classic World scroll tiers.',
+    scLead: 'A probability model using sourced preset rates. Compare inputs with the current item tooltip.',
     scTier: 'Scroll tier',
     scLadder: 'Scroll type (gain)',
     scCustom: 'Custom',
@@ -398,9 +406,9 @@ const T = {
     aboutH1: 'About GMS Hub',
     aboutBody: `<p>GMS Hub is an <strong>unofficial fan site</strong> for English- and Korean-speaking <strong>Global MapleStory Classic World</strong> players. It started as one place to find the scattered guide, price and calculator sites, and now also runs its own tools and guides.</p>
 <h2>What's here</h2>
-<ul><li><strong>Calculators:</strong> the <a href="/en/tools/scroll/">scroll calculator</a>, <a href="/en/tools/drop-rate/">odds calculator</a> and <a href="/en/tools/damage/">hits-to-kill calculator</a> work from game data and formulas players have tested. Each page explains its formulas with a worked example.</li><li><strong>Training spots:</strong> level recommendations from several guide sites, merged with map and monster data and <a href="/en/tools/training/">compared by level band</a>.</li><li><strong>Live prices:</strong> Free Market listings that players read with the shop scanner, turned into <a href="/en/tools/market/">per-item prices</a>. The method is described under the market page.</li><li><strong>Guides:</strong> leveling, job advancement, party quest, scrolling and trading guides we write ourselves (in Korean for now).</li><li><strong>Site directory:</strong> Classic World sites grouped by purpose, with each link checked.</li></ul>
+<ul><li><strong>Calculators:</strong> the <a href="/en/tools/scroll/">scroll calculator</a>, <a href="/en/tools/drop-rate/">odds calculator</a> and <a href="/en/tools/damage/">hits-to-kill calculator</a> use public data and mathematical models, with results conditional on their inputs and assumptions. Each page explains its formulas with a worked example.</li><li><strong>Training accounts:</strong> <a href="/en/tools/training/">original first-person reports and their conditions</a>, without theoretical EXP rankings.</li><li><strong>Live prices:</strong> Free Market listings that players read with the shop scanner, turned into <a href="/en/tools/market/">per-item prices</a>. The method is described under the market page.</li><li><strong>Guides:</strong> Korean and English accounts and tool guides; unsupported older advice is withheld pending review.</li><li><strong>Site directory:</strong> Classic World sites grouped by purpose, with each link checked.</li></ul>
 <h2>Principles</h2>
-<ul><li><strong>Only sourced information.</strong> Site descriptions come from each site's own blurb and menus, and every number carries its source and check date.</li><li>When sources disagree we show both, and anything unconfirmed is labeled as such.</li><li>Links checked live and unverified references are labeled separately. We never list real-money trading sites.</li></ul>
+<ul><li><strong>Evidence has limits.</strong> Reviewing a personal account does not independently reproduce its results. Unsupported older guides have been withheld with review notices.</li><li>When sources disagree we show both, and anything unconfirmed is labeled as such.</li><li>Link-access checks do not validate a site’s claims. Unchecked links are labeled separately. We never list real-money trading sites.</li></ul>
 <h2>Which game</h2>
 <p>Classic World only. Other MapleStory versions have different maps, monsters and upgrade systems, so we keep them out.</p>
 <h2>Suggest a site, report an error or contact us</h2>
@@ -483,25 +491,10 @@ const MOBS = readJson('data/mobs.json').mobs.map((m) => {
   const o = MOB_OVERRIDES[m.en] || {};
   return { ...m, ...(o.ko ? { ko: o.ko } : {}), ...(o.hp ? { hp: o.hp } : {}), aka: o.aka || [], status: o.status };
 });
-// Training spots carry the same corrected names, plus each monster's elements and undead flag so the finder can show
-// mages which maps suit their element and clerics where Heal works.
-for (const spot of training.spots) {
-  for (const m of spot.monsters) {
-    const mob = MOBS.find((x) => x.en === m.name && x.lv === m.level) || MOBS.find((x) => x.en === m.name);
-    if (MOB_OVERRIDES[m.name]?.ko) m.ko = MOB_OVERRIDES[m.name].ko;
-    if (mob?.el) m.el = mob.el;
-    if (mob?.undead) m.undead = 1;
-  }
-}
-
-// One page per 10-level band, so "level 30 training" searches land on a focused list.
-const TR_MAX = Math.max(...training.spots.flatMap((s) => s.recs.map((r) => r.max)));
-const TR_BANDS = Array.from({ length: Math.ceil(TR_MAX / 10) }, (_, i) => [i * 10 + 1, i * 10 + 10]);
+// Retain old band URLs while replacing their unsupported recommendations with sourced accounts.
+const TR_BANDS = [[1, 10], [11, 20], [21, 30], [31, 40], [41, 50], [51, 60], [61, 80]];
+const TR_MAX = TR_BANDS.at(-1)[1];
 const bandPath = ([a, b]) => `/tools/training/level-${a}-${b}/`;
-const inBand = (s, [a, b]) => s.recs.filter((r) => r.min <= b && r.max >= a);
-// A top band with only a couple of maps is too thin to stand alone; fold it into the band below.
-const countIn = (band) => training.spots.filter((s) => inBand(s, band).length).length;
-if (TR_BANDS.length > 1 && countIn(TR_BANDS.at(-1)) < 5) TR_BANDS.splice(-2, 2, [TR_BANDS.at(-2)[0], TR_BANDS.at(-1)[1]]);
 PAGES.push(...TR_BANDS.map((band) => ({ key: 'trBand', path: bandPath(band), band })));
 
 const issuesUrl = `https://github.com/${config.github.owner}/${config.github.repo}/issues`;
@@ -834,7 +827,7 @@ ${tool('/tools/scan/', 'megaphone', SCAN[lang].h1, SCAN[lang].cardDesc)}
 ${guides.some((g) => g.lang === lang)
   ? `<section class="wrap">
 <h2>${t.navGuides}</h2>
-<div class="tool-cards">${guides
+<div class="tool-cards">${publishedGuides
       .filter((g) => g.lang === lang)
       .map((g) => tool(guidePath(g), 'book', esc(g.h1), g.desc))
       .join('')}</div>
@@ -848,93 +841,46 @@ ${faq}
 
 // ---------- training ----------
 
-const minRec = (s) => Math.min(...s.recs.map((r) => r.min));
-
-// Korean pages lead with the client's Korean name and keep the English one beside it, since guides and players use both.
-const spotName = (lang, s) => (lang === 'ko' && s.ko ? `${esc(s.ko)} <small class="en-name">${esc(s.map)}</small>` : esc(s.map));
-const mobName = (lang, m) => esc(lang === 'ko' && (MOB_OVERRIDES[m.name]?.ko || m.ko) ? MOB_OVERRIDES[m.name]?.ko || m.ko : m.name);
-
-function trainingRows(lang, spots) {
-  const nf = new Intl.NumberFormat(lang);
-  const src = training.sources;
-  return spots
-    .map((s) => {
-      const caution = training.cautions.find((c) => c.map === s.map);
-      return `<tr><td><strong>${spotName(lang, s)}</strong>${caution ? `<div class="caution">⚠ ${esc(caution.text[lang])}</div>` : ''}</td><td>${
-        s.monsters.map((m) => `${mobName(lang, m)} <span class="lv">${m.level}</span>`).join('<br>') || '—'
-      }</td><td>${s.recs.map((r) => `<span class="rec ${r.source}">${esc(src[r.source].name)} ${r.min}–${r.max}</span>`).join(' ')}</td><td>${
-        s.meowdbExpHr ? nf.format(s.meowdbExpHr) : '—'
-      }</td></tr>`;
-    })
-    .join('');
-}
-
-function trainingSources(lang) {
-  const t = T[lang];
-  const sourceList = Object.entries(training.sources)
-    .map(([, s]) => `<li>${srcLink(s.url, s.name)}${s.urls ? ` (${s.urls.map((u, i) => srcLink(u, `${i + 1}`)).join(', ')})` : ''} · ${s.date || t.noDate}</li>`)
-    .join('');
-  return `<ul class="notes">${training.notes[lang].map((n) => `<li>${esc(n)}</li>`).join('')}</ul>
-<h3>${t.trSourcesHeading}</h3>
-<ul class="notes">${sourceList}</ul>`;
-}
-
-const trainingTable = (lang, rows) => {
-  const t = T[lang];
-  return `<div class="table-wrap"><table class="data"><thead><tr><th>${t.colMap}</th><th>${t.colMonsters}</th><th>${t.colRecs}</th><th>${t.colExp}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-};
-
+const bandSpots = (band) => selectExperiences(training.experiences, { band });
 function bandNav(lang, current) {
   const t = T[lang];
-  const links = TR_BANDS.map((band) => {
-    const label = lang === 'ko' ? `${band[0]}~${band[1]}레벨` : `Lv ${band[0]}-${band[1]}`;
-    return current && band[0] === current[0]
-      ? `<strong class="band-link current" aria-current="page">${label}</strong>`
-      : `<a class="band-link" href="${href(langPath(lang, bandPath(band)))}">${label}</a>`;
-  }).join('');
-  return `<nav class="band-nav" aria-label="${esc(t.trBandNav)}"><h2>${t.trBandNav}</h2><div>${links}</div></nav>`;
+  return `<nav class="band-nav" aria-label="${esc(t.trBandNav)}"><h2>${t.trBandNav}</h2><div>${TR_BANDS.map((band) => {
+    const label = lang === 'ko' ? `${band[0]}~${band[1]}레벨` : `Lv ${band[0]}–${band[1]}`;
+    return current && band[0] === current[0] ? `<strong class="band-link current" aria-current="page">${label}</strong>` : `<a class="band-link" href="${href(langPath(lang, bandPath(band)))}">${label}</a>`;
+  }).join('')}</div></nav>`;
 }
-
+function trainingMethod(lang) {
+  const tr = (ko, en) => lang === 'ko' ? ko : en;
+  return `<section class="panel tr-method"><h2>${tr('후기를 고르는 기준', 'How accounts are selected')}</h2>
+<p>${esc(training.method[lang])}</p><ul>
+<li>${tr('원문에 적힌 레벨·직업·처치 타수만 옮겨요. 모르는 조건은 미기재로 표시해요.', 'Only explicitly stated levels, classes and hit counts are included. Missing details stay unspecified.')}</li>
+<li>${tr('게시일을 확정하지 못한 글은 날짜 미확인으로 표시해요. 원문 확인일은 게임 내 측정일이나 최신 패치 검증일이 아니에요.', 'Unconfirmed publication dates are labeled. Review dates are not gameplay measurement dates or patch validation dates.')}</li>
+<li>${tr('과거 테스트 영상, 계산상 최대 경험치, 다른 글을 다시 요약한 표는 현재 레벨 추천의 근거로 쓰지 않아요.', 'Earlier-test footage, theoretical maximum EXP and aggregated guide tables do not establish current level recommendations.')}</li>
+<li>${tr('포션이 늘었다는 말과 순수익은 달라요. 물약·탄약·이동 비용과 실제 판매 수입을 같이 보세요.', 'More potions do not establish net profit. Compare consumable and travel costs with actual proceeds.')}</li></ul>
+<p><a href="${href(langPath(lang, '/guides/leveling-1-30/'))}">${tr('물약 비용과 사냥 결과 비교하기 →', 'Compare supplies and hunting results →')}</a></p></section>`;
+}
 function trainingBody(lang) {
-  const t = T[lang];
-  const sorted = [...training.spots].sort((a, b) => minRec(a) - minRec(b) || a.map.localeCompare(b.map));
-  return `${pageHead(lang, 'sword', t.trH1, t.trLead)}
-<div class="wrap">
-<form id="tr-form" class="panel inline-form">
-<label>${t.level}<input type="number" name="lv" min="1" max="100" value="21" inputmode="numeric"></label>
-<button class="btn" type="submit">${t.showSpots}</button>
-</form>
-<section id="tr-result" aria-live="polite"></section>
-${bandNav(lang)}
-<section>
-<h2>${t.trAll}</h2>
-${trainingTable(lang, trainingRows(lang, sorted))}
-${trainingSources(lang)}
-</section>
-</div>
-${jsonScript('training-data', training)}
-${jsonScript('i18n', { lang, trResultTitle: t.trResultTitle, trNone: t.trNone, agree: t.agree, higher: t.higher, expHr: t.expHr, caution: t.caution, damageUrl: href(langPath(lang, '/tools/damage/')), weak: lang === 'ko' ? { F: '불', I: '얼음', L: '번개', S: '독', H: '성' } : { F: 'Fire', I: 'Ice', L: 'Lightning', S: 'Poison', H: 'Holy' }, weakWord: lang === 'ko' ? '약점' : 'weak', undead: lang === 'ko' ? '언데드' : 'Undead', mobTitle: lang === 'ko' ? '이 몬스터를 몇 방에 잡는지 계산' : 'Hits to kill this monster', srcTitle: lang === 'ko' ? '이 출처의 사냥터 글 열기' : 'Open this source' })}`;
+  const t = T[lang]; const tr = (ko, en) => lang === 'ko' ? ko : en;
+  const initial = selectExperiences(training.experiences, { level: 20 });
+  return `${pageHead(lang, 'sword', t.trH1, t.trLead)}<div class="wrap tr-page">
+<div class="tr-review-note"><strong>${tr('레벨만으로 사냥터를 추천하던 안내를 수정했어요.', 'Level-only recommendations have been withdrawn.')}</strong><p>${tr('원문에서 플레이를 직접 서술한 기록 '+training.experiences.length+'건을 정리했어요. 적자·흑자를 보장하는 추천표가 아니며, 같은 레벨이어도 장비와 물약 소비가 다를 수 있어요.', 'We summarized '+training.experiences.length+' first-person accounts. These are not profit guarantees; gear and supply consumption can differ at the same level.')}</p></div>
+<form id="tr-form" class="panel tr-filters">
+<label>${t.level}<input type="number" name="lv" min="1" max="100" value="20" required inputmode="numeric"></label>
+<label>${tr('직업', 'Class')}<select name="job" aria-label="${tr('직업', 'Class')}"><option value="">${tr('모든 직업', 'All classes')}</option>${Object.entries(jobNames[lang]).map(([key,label]) => `<option value="${key}">${label}</option>`).join('')}</select></label>
+<label class="tr-check"><input name="all" type="checkbox">${tr('모든 레벨 보기', 'Show all levels')}</label>
+<label class="tr-check"><input name="unknown" type="checkbox" disabled>${tr('직업 미기재 후기 포함', 'Include unspecified classes')}</label>
+<button class="btn" type="submit">${tr('후기 찾기', 'Find accounts')}</button>
+<p class="tr-filter-help">${tr('레벨은 원문에 직접 적힌 구간만 일치시켜요. 직업을 고르면 그 직업이 명시된 후기만 보여요.', 'Levels match only explicitly reported intervals. Selecting a class shows accounts that name that class.')}</p>
+</form><h2 id="tr-status" role="status">${tr('20레벨을 직접 언급한 후기', 'Accounts explicitly covering level 20')} ${initial.length}</h2>
+<section id="tr-result">${experienceCards(initial, lang)}</section><noscript><p>${tr('조건 검색에는 JavaScript가 필요해요. 아래 레벨 구간 링크에서도 원문 후기를 볼 수 있어요.', 'Filters require JavaScript. The level-band links below also display original accounts.')}</p></noscript>
+${bandNav(lang)}${trainingMethod(lang)}</div>${jsonScript('training-data', training)}`;
 }
-
-// Spots any source recommends inside the band; more agreeing sources first.
-const bandSpots = (band) =>
-  training.spots
-    .filter((s) => inBand(s, band).length)
-    .sort((x, y) => inBand(y, band).length - inBand(x, band).length || minRec(x) - minRec(y) || x.map.localeCompare(y.map));
-
 function trainingBandBody(lang, band) {
-  const t = T[lang];
-  const spots = bandSpots(band);
-  const vars = { a: band[0], b: band[1], n: spots.length };
-  return `${pageHead(lang, 'sword', fill(t.trBandH1, vars), fill(t.trBandLead, vars))}
-<div class="wrap">
-${bandNav(lang, band)}
-<section>
-${trainingTable(lang, trainingRows(lang, spots))}
-<p><a class="btn" href="${href(langPath(lang, '/tools/training/'))}">${t.trBandFinder}</a></p>
-${trainingSources(lang)}
-</section>
-</div>`;
+  const t = T[lang]; const rows = bandSpots(band); const vars = { a: band[0], b: band[1], n: rows.length };
+  return `${pageHead(lang, 'sword', fill(t.trBandH1, vars), fill(t.trBandLead, vars))}<div class="wrap tr-page">
+<p class="tr-review-note">${esc(training.method[lang])}</p>${experienceCards(rows, lang)}
+<p><a class="btn" href="${href(langPath(lang, '/tools/training/'))}?lv=${band[0]}">${t.trBandFinder}</a></p>
+${bandNav(lang, band)}${trainingMethod(lang)}</div>`;
 }
 
 // ---------- scrolls ----------
@@ -1319,11 +1265,11 @@ const DMG = {
     estimated: '계산된 능력치 창 범위', rage: '분노 (공격력 +40)',
     skill: '스킬', power: '스킬 배율 (%)', powerHint: '마스터 기준이에요. 스킬 레벨이 낮으면 직접 고치세요.',
     mobs: '몬스터별 결과', search: '몬스터 이름 검색', near: '내 레벨 근처', all: '전체',
-    cols: { mob: '몬스터', lv: 'Lv', hp: 'HP', dmg: '한 번에 주는 피해', sure: '확정', avg: '평균', acc: '명중률' },
+    cols: { mob: '몬스터', lv: 'Lv', hp: 'HP', dmg: '한 번에 주는 피해', sure: '최저값 기준', avg: '평균', acc: '명중률' },
     hits: '{n}방', never: '불가', lines: '{n}타', mobsHit: '최대 {n}마리',
     accNeed: '100% 명중에 필요한 명중 {n}',
     emptyMobs: '조건에 맞는 몬스터가 없어요.', needStats: '레벨, 스탯, 공격 범위(또는 무기)를 넣으면 결과가 나와요.',
-    note: '확정은 매번 최저 데미지가 나와도 잡히는 횟수, 평균은 평균 데미지 기준이에요. 크리티컬, 지속 피해, 파이널 어택 추가타, 버프 시간은 넣지 않았어요. 공식은 커뮤니티가 검증한 클래식 월드 데미지 공식이고, 몬스터·무기 수치는 게임 클라이언트 데이터예요.',
+    note: '최저값 기준과 평균은 모델 안에서의 처치 횟수이며 실제 처치를 보장하지 않아요. 빗나감, 크리티컬, 지속 피해, 파이널 어택 추가타, 버프 시간은 처치 횟수에 반영하지 않아요. 몬스터·무기는 2026-11-03에 수집한 MCW 클라이언트 자료이며 현재 패치의 실측 검증은 아니에요.',
     i: {
       loadingOcr: '글자 인식 엔진을 불러오는 중이에요… (처음 한 번만 몇 초 걸려요)',
       sharing: '공유할 게임 창을 선택하세요.', denied: '화면 공유가 취소됐어요.', unsupported: '이 브라우저는 화면 공유를 지원하지 않아요. PC의 크롬이나 엣지를 써 주세요.',
@@ -1353,11 +1299,11 @@ const DMG = {
     estimated: 'Calculated stat window range', rage: 'Rage (+40 Attack Power)',
     skill: 'Skill', power: 'Skill damage (%)', powerHint: 'Max skill level. Change it if your skill is lower.',
     mobs: 'Results by monster', search: 'Search monster', near: 'Near my level', all: 'All',
-    cols: { mob: 'Monster', lv: 'Lv', hp: 'HP', dmg: 'Damage per use', sure: 'Sure', avg: 'Avg', acc: 'Hit' },
+    cols: { mob: 'Monster', lv: 'Lv', hp: 'HP', dmg: 'Damage per use', sure: 'Min rolls', avg: 'Avg', acc: 'Hit' },
     hits: '{n} hits', never: 'No', lines: '{n} lines', mobsHit: 'up to {n} mobs',
     accNeed: '{n} accuracy for 100%',
     emptyMobs: 'No monsters match.', needStats: 'Enter level, stats and the attack range (or a weapon) to see results.',
-    note: 'Sure = uses needed even if every hit rolls its minimum; Avg = with average rolls. Crits, damage over time, Final Attack follow-ups and buff uptime are left out. The formula is the community-tested Classic World damage formula; monster and weapon numbers come from the game client data.',
+    note: 'Min rolls and Avg are model estimates, not guaranteed kills. Misses, crits, damage over time, Final Attack follow-ups and buff uptime are not included in kill counts. Monster and weapon data were collected from the MCW client API on 2026-11-03, not measured against the current patch.',
     i: {
       loadingOcr: 'Loading the text reader… (a few seconds the first time)',
       sharing: 'Pick the game window to share.', denied: 'Screen sharing was cancelled.', unsupported: 'This browser can’t share the screen. Use Chrome or Edge on a PC.',
@@ -1632,40 +1578,38 @@ function damageGuide(lang) {
   const v = (n) => n.toLocaleString(lang);
   return lang === 'ko'
     ? `<section class="wrap prose guide">
-<h2>몇 방 컷 계산, 이렇게 해요</h2>
+<h2>몇 방 컷 모델 계산 예시</h2><p>아래 수치는 입력 조건에 따른 계산 예시예요. 현재 패치에서의 사냥 실측이나 추천 레벨이 아니에요.</p>
 <h3>스탯창 공격력 범위가 출발점이에요</h3>
 <p>스탯창에 보이는 공격력 범위(예: 137~172)에는 무기 공격력, 주문서, 장갑, 마스터리가 모두 들어 있어요. 계산기는 이 두 숫자와 주 스탯을 거꾸로 풀어 무기 공격력과 마스터리 레벨을 구하고, 그 값으로 모든 스킬의 데미지를 다시 계산해요. 그래서 장비를 하나하나 입력하지 않아도 돼요.</p>
 <h3>예시: 30레벨 전사, STR 132 · DEX 30, 글라디우스(공격력 47)</h3>
 <ul>
 <li>마스터리 0일 때 스탯창 범위는 <strong>${v(Math.trunc(r0.min))}~${v(Math.trunc(r0.max))}</strong>, 소드 마스터리 20(공식상 10레벨)을 찍으면 최소값이 올라가 <strong>${v(Math.trunc(r10.min))}~${v(Math.trunc(r10.max))}</strong>가 돼요.</li>
 <li>파워 스트라이크(260%)는 방어력이 없는 대상에게 한 방에 <strong>${v(ps.min)}~${v(ps.max)}</strong>예요.</li>
-<li>${boarName}(${boar.lv}레벨, HP ${v(boar.hp)}, 물리 방어 ${boar.wdef})에게는 방어력만큼 줄어 <strong>${v(psBoar.min)}~${v(psBoar.max)}</strong>, 최소 데미지만 나와도 <strong>${kill.sure}방</strong>이면 잡아요.</li>
+<li>${boarName}(${boar.lv}레벨, HP ${v(boar.hp)}, 물리 방어 ${boar.wdef})에게는 방어력만큼 줄어 <strong>${v(psBoar.min)}~${v(psBoar.max)}</strong>, 모든 공격이 명중하고 모델 가정이 맞을 때 최저값 기준 <strong>${kill.sure}방</strong>으로 계산돼요.</li>
 <li>30레벨 캐릭터가 ${boarName}를 100% 맞히려면 명중률이 <strong>${acc}</strong> 필요해요. 명중이 모자라면 계산된 횟수보다 더 때리게 돼요.</li>
 </ul>
 <h3>속성은 1.25배, 0.75배, 0배</h3>
 <p>${boarName}는 불에 강하고 얼음에 약해요. INT 200, 마력 150인 법사라면 콜드 빔은 <strong>${v(ice.min)}~${v(ice.max)}</strong>, 파이어 애로우는 <strong>${v(fire.min)}~${v(fire.max)}</strong>예요. 스킬 계수는 파이어 애로우가 더 높은데도 오히려 약해요. 사냥터를 고를 때 몬스터 속성을 꼭 같이 보세요.</p>
-<h3>"확정"과 "평균"의 차이</h3>
-<p><strong>확정</strong>은 모든 타격이 최소 데미지일 때의 횟수라 운이 나빠도 이 안에 잡혀요. <strong>평균</strong>은 최소와 최대의 중간값 기준이에요. 크리티컬, 지속 데미지, 파이널 어택 추가타는 넣지 않아서 실제로는 조금 더 빨리 잡힐 수 있어요.</p>
+<h3>최저값 기준과 평균</h3><p>각각 모델의 최소 데미지와 중간값으로 계산한 횟수예요. 빗나감과 이동, 크리티컬·추가타 등이 반영되지 않아 실제 처치 횟수·시간과 다를 수 있어요. 이 값으로 시간당 경험치나 흑자를 보장하지 않아요.</p>
 <h3>계산 공식</h3>
-<p>무기 공격은 최대 = 스킬 % × 공격력 × (1 + (주 스탯 × 무기 계수 + 보조 스탯) / 100), 최소는 같은 식에서 주 스탯에 마스터리 계수((마스터리 레벨 / 10 + 0.1) × 0.7)를 곱하고 기본값 0.8을 써요. 마법은 마력 × (1 + INT / 125)가 최대예요. 몬스터 방어력은 100 / (방어력 + 100)을 곱해요. 클래식 월드 유저들이 검증한 데미지 공식을 따랐고, 공개된 30레벨 전사 예시와 결과가 같은지 테스트로 확인해요.</p>
+<p>무기 공격은 최대 = 스킬 % × 공격력 × (1 + (주 스탯 × 무기 계수 + 보조 스탯) / 100), 최소는 같은 식에서 주 스탯에 마스터리 계수((마스터리 레벨 / 10 + 0.1) × 0.7)를 곱하고 기본값 0.8을 써요. 마법은 마력 × (1 + INT / 125)가 최대예요. 몬스터 방어력은 100 / (방어력 + 100)을 곱해요. 공개된 커뮤니티 계산 모델을 사용해요. 테스트는 모델과 예시의 계산 일치 여부를 확인하며, 실제 게임의 모든 스킬·상황을 검증하지는 않아요.</p>
 </section>`
     : `<section class="wrap prose guide">
-<h2>How the hits-to-kill numbers work</h2>
+<h2>Hits-to-kill model examples</h2><p>These are conditional calculations, not live-game measurements or recommended levels.</p>
 <h3>Your stat window range is the starting point</h3>
 <p>The attack range in your stat window (say 137-172) already includes weapon attack, scrolls, gloves and mastery. The calculator solves that range and your main stat backwards for weapon attack and mastery level, then recomputes every skill from them, so you never have to enter your gear piece by piece.</p>
 <h3>Example: level 30 warrior, 132 STR, 30 DEX, Gladius (47 attack)</h3>
 <ul>
 <li>With no mastery the stat window shows <strong>${v(Math.trunc(r0.min))}-${v(Math.trunc(r0.max))}</strong>; Sword Mastery 20 (mastery level 10 in the formula) raises the floor to <strong>${v(Math.trunc(r10.min))}-${v(Math.trunc(r10.max))}</strong>.</li>
 <li>Power Strike (260%) hits a target with no defence for <strong>${v(ps.min)}-${v(ps.max)}</strong>.</li>
-<li>Against ${boarName} (level ${boar.lv}, ${v(boar.hp)} HP, ${boar.wdef} weapon defence) that drops to <strong>${v(psBoar.min)}-${v(psBoar.max)}</strong>, so even minimum rolls kill it in <strong>${kill.sure} hits</strong>.</li>
+<li>Against ${boarName} (level ${boar.lv}, ${v(boar.hp)} HP, ${boar.wdef} weapon defence) that drops to <strong>${v(psBoar.min)}-${v(psBoar.max)}</strong>, giving a model estimate of <strong>${kill.sure} hits</strong> with minimum rolls and no misses.</li>
 <li>Hitting ${boarName} every time at level 30 takes <strong>${acc} accuracy</strong>. Below that you miss and need more swings than the table shows.</li>
 </ul>
 <h3>Elements: ×1.25, ×0.75 or ×0</h3>
 <p>${boarName} resists fire and is weak to ice. A mage with 200 INT and 150 magic hits it for <strong>${v(ice.min)}-${v(ice.max)}</strong> with Cold Beam but only <strong>${v(fire.min)}-${v(fire.max)}</strong> with Fire Arrow, even though Fire Arrow has the higher skill power. Check a map's monster elements before you pick it.</p>
-<h3>"Sure" versus "average"</h3>
-<p><strong>Sure</strong> assumes every line rolls its minimum, so you will kill within that many uses even when unlucky. <strong>Average</strong> uses the midpoint of the range. Crits, damage over time and Final Attack follow-ups are left out, so real kills can come a little sooner.</p>
+<h3>Minimum rolls and average</h3><p>These use the model’s minimum or midpoint damage. Misses, movement, crits and extra attacks can change actual kill counts and time. Neither establishes hourly EXP or profitability.</p>
 <h3>The formulas</h3>
-<p>Weapon attacks: max = skill % × attack × (1 + (main stat × weapon multiplier + secondary stat) / 100); the min uses 0.8 as the base and multiplies the main stat by the mastery factor ((mastery level / 10 + 0.1) × 0.7). Spells max out at magic × (1 + INT / 125). Monster defence multiplies by 100 / (defence + 100). These follow the damage model Classic World players have tested, and our tests check the calculator against the published level 30 warrior example.</p>
+<p>Weapon attacks: max = skill % × attack × (1 + (main stat × weapon multiplier + secondary stat) / 100); the min uses 0.8 as the base and multiplies the main stat by the mastery factor ((mastery level / 10 + 0.1) × 0.7). Spells max out at magic × (1 + INT / 125). Monster defence multiplies by 100 / (defence + 100). These use a published community model. Tests check calculations against an example; they do not validate every skill and live-game situation.</p>
 </section>`;
 }
 
@@ -1741,9 +1685,9 @@ function scrollGuide(lang) {
   };
   return lang === 'ko'
     ? `<section class="prose guide">
-<h2>주문서 확률, 이렇게 계산해요</h2>
+<h2>주문서 확률, 이렇게 계산해요</h2><p>아래는 자료의 기본값을 사용한 수학적 예시예요. 실제 아이템 효과와 슬롯 규칙을 검증한 결과는 아니에요.</p>
 <h3>성공 횟수는 이항분포를 따라요</h3>
-<p>주문서 한 장 한 장은 서로 독립이에요. 그래서 성공률 p인 주문서를 n장 바를 때 정확히 k번 성공할 확률은 C(n, k) × pᵏ × (1 − p)ⁿ⁻ᵏ예요. 위 계산기의 분포 그래프가 이 값을 그린 거예요.</p>
+<p>각 주문서 시도가 독립이고 성공률이 일정하다고 가정해요. 이때 성공률 p인 주문서를 n장 바를 때 정확히 k번 성공할 확률은 C(n, k) × pᵏ × (1 − p)ⁿ⁻ᵏ예요. 위 계산기의 분포 그래프가 이 값을 그린 거예요.</p>
 <h3>예시: ${v.mid} ${v.midRate}% 주문서 ${v.n}장</h3>
 <p>기본 상승치(+${v.gain})짜리 ${v.mid} 주문서 ${v.n}장을 바르면 평균 성공 횟수는 <strong>${v.expPass}번</strong>, 평균 상승치는 <strong>+${v.expGain}</strong>이에요. 하지만 ${v.n}장이 모두 붙을 확률은 <strong>${v.all}</strong>뿐이고, 5장 이상 붙을 확률은 ${v.five}예요. "평균"과 "내가 원하는 결과가 나올 확률"은 꽤 다르다는 걸 알 수 있어요.</p>
 <h3>${v.great} ${v.greatRate}%는 몇 장이면 붙을까?</h3>
@@ -1752,9 +1696,9 @@ function scrollGuide(lang) {
 <p>표에 따르면 ${v.chaos} 주문서는 실패하면 50% 확률로 아이템이 파괴돼요. 그래서 한 장을 바를 때 파괴될 확률은 (1 − 성공률) × 50% = <strong>${v.boom}</strong>이고, 3장을 연달아 발라도 아이템이 살아남을 확률은 ${v.survive3}예요. 소중한 아이템이라면 계산기의 파괴 확률을 꼭 확인하세요.</p>
 </section>`
     : `<section class="prose guide">
-<h2>How scroll odds are calculated</h2>
+<h2>How scroll odds are calculated</h2><p>These mathematical examples use the preset data; they do not validate current item effects or slot rules.</p>
 <h3>Passes follow a binomial distribution</h3>
-<p>Every scroll is an independent roll. For n scrolls with success rate p, the chance of exactly k passes is C(n, k) × pᵏ × (1 − p)ⁿ⁻ᵏ. The distribution chart in the calculator above plots exactly this.</p>
+<p>The model assumes independent rolls with a fixed success rate. For n scrolls with success rate p, the chance of exactly k passes is C(n, k) × pᵏ × (1 − p)ⁿ⁻ᵏ. The distribution chart in the calculator above plots exactly this.</p>
 <h3>Example: ${v.n} ${v.mid} ${v.midRate}% scrolls</h3>
 <p>Applying ${v.n} standard (+${v.gain}) ${v.mid} scrolls averages <strong>${v.expPass} passes</strong> and <strong>+${v.expGain}</strong>. Yet the chance all ${v.n} pass is only <strong>${v.all}</strong>, and 5 or more pass ${v.five} of the time. The average and the odds of the result you want are very different things.</p>
 <h3>How many ${v.great} ${v.greatRate}% scrolls until one passes?</h3>
@@ -1773,19 +1717,19 @@ const fmtDate = (d) => d.replaceAll('-', '. ') + '.';
 
 // Every guide ends with links to the other guides, so a reader from search can keep going.
 const GUIDE_T = {
-  ko: { toolsChip: '같이 쓰는 도구', toolsHeading: '이 글과 같이 쓰는 도구', more: '다른 가이드', sources: '참고한 자료', byline: (g) => `GMS Hub 작성 · 처음 쓴 날 ${fmtDate(g.published)} · 마지막 확인 ${fmtDate(g.updated)}`,
-    note: '공개된 공략 자료와 팬 데이터베이스를 서로 맞춰 보고 정리했어요. 자료끼리 숫자가 다르면 확인된 쪽만 적거나 다르다고 밝혔어요. 게임이 업데이트되면 내용이 달라질 수 있어요. 틀린 부분은 {mail}이나 {issues}로 알려 주세요.', issues: 'GitHub 이슈',
-    indexH1: '글클메 가이드', indexLead: '글클메를 하다 보면 헷갈리는 것들을 한 주제씩 정리한 글이에요. 공개된 공략 자료와 팬 데이터베이스를 서로 맞춰 보고, 확인된 내용만 적어요.',
+  ko: { toolsChip: '같이 쓰는 도구', toolsHeading: '이 글과 같이 쓰는 도구', more: '다른 가이드', sources: '참고한 자료', byline: (g) => `GMS Hub 작성 · 처음 쓴 날 ${fmtDate(g.published)} · 수정 ${fmtDate(g.updated)}`,
+    note: '개인 플레이 후기, 계산 가정, 사이트 기능을 구분해 적어요. 원문 확인은 결과의 재현이나 현재 게임 버전의 검증을 뜻하지 않아요. 틀린 부분은 {mail}이나 {issues}로 알려 주세요.', issues: 'GitHub 이슈',
+    indexH1: '글클메 가이드', indexLead: '원문을 확인한 플레이 사례와 계산·시세 이용 안내예요. 근거가 부족한 기존 육성 정보는 재검증 목록으로 분리했어요.',
     indexTitle: '글클메 가이드 모음 | GMS Hub', indexDesc: '글로벌 클래식 메이플 입문과 공략을 출처와 함께 정리한 GMS Hub 가이드 모음.' },
-  en: { toolsChip: 'Tools for this guide', toolsHeading: 'Tools to use with this guide', more: 'More guides', sources: 'Sources', byline: (g) => `By GMS Hub · Published ${g.published} · Last checked ${g.updated}`,
-    note: 'Written by cross-checking public guides and fan databases. Where sources disagree we say so or keep only what we could confirm. Game updates can change things; report mistakes to {mail} or on {issues}.', issues: 'GitHub issues',
-    indexH1: 'MapleStory Classic World Guides', indexLead: 'One topic per guide for the things that trip players up in Classic World, cross-checked against public guides and fan databases.',
-    indexTitle: 'MapleStory Classic World Guides: Leveling, Jobs, Party Quests, Scrolls | GMS Hub', indexDesc: 'Beginner and leveling guides for Global MapleStory Classic World: job builds, training spots, party quests, scrolling and trading.' }
+  en: { toolsChip: 'Tools for this guide', toolsHeading: 'Tools to use with this guide', more: 'More guides', sources: 'Sources', byline: (g) => `By GMS Hub · Published ${g.published} · Updated ${g.updated}`,
+    note: 'We distinguish personal accounts, mathematical assumptions and site behavior. Reviewing a source does not independently reproduce its results or validate the current patch; report mistakes to {mail} or on {issues}.', issues: 'GitHub issues',
+    indexH1: 'MapleStory Classic World Guides', indexLead: 'Original player accounts and guides to our calculations and prices. Unsupported older advice is listed separately as under review.',
+    indexTitle: 'Classic World Player Accounts and Tool Guides | GMS Hub', indexDesc: 'Original player accounts, supply costs, conditional probability models and market data interpretation. Unsupported older build guides are under review.' }
 };
 // A guide written in both languages gets hreflang links and a language switch to its twin; a single-language guide has none.
 const guideBoth = (slug) => LANGS.every((l) => guides.some((g) => g.slug === slug && g.lang === l));
 const related = (g) => {
-  const others = guides.filter((o) => o.lang === g.lang && o.slug !== g.slug);
+  const others = publishedGuides.filter((o) => o.lang === g.lang && o.slug !== g.slug);
   return others.length
     ? `<h2>${GUIDE_T[g.lang].more}</h2>\n<ul class="sources">${others.map((o) => `<li><a href="${href(langPath(o.lang, guidePath(o)))}">${esc(o.h1)}</a></li>`).join('')}</ul>`
     : '';
@@ -1852,6 +1796,8 @@ ${adfitLoader}</aside>`;
 }
 
 function guideBody(g) {
+  if (g.status === 'withheld') return `<article class="wrap prose guide-article"><p class="crumbs"><a href="${href(langPath(g.lang, '/guides/'))}">${T[g.lang].navGuides}</a></p><h1>${esc(g.h1)}</h1><section class="panel tr-review-note"><h2>${g.lang === 'ko' ? '자료 재검증 중 · 기존 안내 비공개' : 'Under review · previous advice withheld'}</h2><p>${esc(g.reviewReason)}</p><p>${g.lang === 'ko' ? '잘못된 추천을 계속 노출하지 않도록 기존 본문을 내렸어요. 현재 버전의 원문과 플레이 조건을 확보한 뒤 다시 공개할 예정이에요.' : 'The earlier body has been withheld to avoid presenting unsupported advice. It requires current-version original evidence before republication.'}</p><small>2026-11-10</small></section>${related(g)}</article>`;
+
   const body = g.body
     .replace(/<table>/g, '<div class="table-wrap"><table class="data">')
     .replace(/<\/table>/g, '</table></div>');
@@ -1863,6 +1809,7 @@ function guideBody(g) {
 <h1>${esc(g.h1)}</h1>
 <p class="byline">${GUIDE_T[g.lang].byline(g)}</p>
 ${guideToolChips(g)}
+<p class="tr-evidence-label">${g.lang === 'ko' ? ({ 'player-accounts': '개인 플레이 원문 검토 · 효율 재현 미검증', 'mathematical-model': '수학적 가정에 따른 계산 안내', 'site-behavior': '사이트 기능·데이터 해석 안내' }[g.evidenceKind]) : ({ 'player-accounts': 'Original accounts reviewed · outcomes not independently reproduced', 'mathematical-model': 'Conditional mathematical model', 'site-behavior': 'Site behavior and data interpretation' }[g.evidenceKind])} · ${g.reviewed}</p>
 ${body}
 ${guideToolCards(g)}
 ${adfitSlot()}
@@ -1873,7 +1820,7 @@ ${related(g)}
 }
 
 function guidesIndexBody(lang) {
-  const items = guides
+  const items = publishedGuides
     .filter((g) => g.lang === lang)
     .map(
       (g) =>
@@ -1882,7 +1829,7 @@ function guidesIndexBody(lang) {
     .join('');
   return `<article class="wrap prose"><h1>${GUIDE_T[lang].indexH1}</h1>
 <p>${GUIDE_T[lang].indexLead}</p>
-<ul class="guide-list">${items}</ul></article>`;
+<ul class="guide-list">${items}</ul><details class="panel"><summary>${lang === 'ko' ? '재검증 중인 기존 가이드 8개 주제' : '8 earlier topics under review'}</summary><p>${lang === 'ko' ? '근거 없는 수치와 육성 순서는 본문에서 내렸어요.' : 'Unsupported numbers and build orders have been withheld.'}</p><ul>${guides.filter((g) => g.lang === lang && g.status === 'withheld').map((g) => `<li><a href="${href(langPath(lang, guidePath(g)))}">${esc(g.h1)}</a> — ${esc(g.reviewReason)}</li>`).join('')}</ul></details></article>`;
 }
 
 // ---------- write ----------
@@ -2134,7 +2081,7 @@ for (const lang of LANGS) {
       title: t.trTitle,
       desc: t.trDesc,
       body: trainingBody(lang),
-      scripts: ['training.js'],
+      modules: ['training.js'],
       ld: [appLd(t.trH1, t.trDesc, '/tools/training/'), breadcrumbLd(lang, t.trH1, '/tools/training/')]
     },
     scroll: {
@@ -2192,6 +2139,7 @@ for (const lang of LANGS) {
       title: fill(t.trBandTitle, vars),
       desc: fill(t.trBandDesc, vars),
       body: trainingBandBody(lang, band),
+      noindex: !spots.length,
       ld: [breadcrumbLd(lang, h1, bandPath(band))]
     };
   };
@@ -2240,7 +2188,8 @@ for (const lang of LANGS) {
         title: `${g.title} | GMS Hub`,
         desc: g.desc,
         body: guideBody(g),
-        ld: [articleLd, breadcrumbLd(lang, g.h1, guidePath(g))]
+        noindex: g.status !== 'published',
+        ld: g.status === 'published' ? [articleLd, breadcrumbLd(lang, g.h1, guidePath(g))] : []
       })
     );
   }
@@ -2343,7 +2292,7 @@ ${jsonScript('admin-config', config.github)}
 
 // Tool and home pages get no <lastmod>: the site rebuilds every day, and a date that moves daily without the page
 // changing teaches Google to ignore our lastmod everywhere (guides and item prices keep their real dates).
-const sitemapUrls = PAGES.flatMap((p) =>
+const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).flatMap((p) =>
   LANGS.map(
     (lang) => `<url><loc>${absUrl(langPath(lang, p.path))}</loc>${LANGS.map(
       (l) => `<xhtml:link rel="alternate" hreflang="${l}" href="${absUrl(langPath(l, p.path))}"/>`
@@ -2351,7 +2300,7 @@ const sitemapUrls = PAGES.flatMap((p) =>
   )
 ).concat(
   [...new Set(guides.map((g) => g.lang))].map((l) => `<url><loc>${absUrl(langPath(l, '/guides/'))}</loc><lastmod>${guides.filter((g) => g.lang === l).map((g) => g.updated).sort().at(-1)}</lastmod></url>`),
-  guides.map((g) => `<url><loc>${absUrl(langPath(g.lang, guidePath(g)))}</loc><lastmod>${g.updated}</lastmod></url>`),
+  publishedGuides.map((g) => `<url><loc>${absUrl(langPath(g.lang, guidePath(g)))}</loc><lastmod>${g.updated}</lastmod></url>`),
   // Only indexable items (enough recent listings) go in the sitemap.
   [{ path: '/items/' }, ...INDEXABLE.map((i) => ({ path: itemPath(i) }))].flatMap((p) =>
     LANGS.map(

@@ -1,65 +1,7 @@
-<p>When a quest hands you a scroll or you're about to scroll gloves for attack, the question is "if I use five Intermediate 60% scrolls, what do I usually end up with?". Classic World's scrolls differ in names and numbers from the old 10%/60%/100% system, so scrolling by feel easily costs you. The odds in this guide were calculated by GMS Hub.</p>
-
-<h2>The four scroll tiers</h2>
-<table>
-<thead><tr><th>Tier</th><th>Success</th><th>On failure</th><th>Glove attack gain</th></tr></thead>
-<tbody>
-<tr><td>Lesser</td><td>100%</td><td>-</td><td>+1</td></tr>
-<tr><td>Intermediate</td><td>60%</td><td>Nothing happens</td><td>+2</td></tr>
-<tr><td>Greater</td><td>10%</td><td>Nothing happens</td><td>+3</td></tr>
-<tr><td>Chaos</td><td>10%</td><td>50% chance the item is destroyed</td><td>+4</td></tr>
-</tbody>
-</table>
-<p>Glove attack, main stats, accuracy, speed, jump, avoidability and crit rise +1/+2/+3/+4 as above. Defence and glove magic are doubled (+2/+4/+6/+8), and HP/MP on hats, tops and bottoms are +10/+15/+20/+25.</p>
-<p>Weapon attack and wand/staff magic rise more per tier. The scrolls' own data in the game client gives weapon attack +1/+2/+4/+5 and wand/staff magic +2/+4/+8/+10; sources used to disagree on these.</p>
-<p>Also, whether a failed scroll uses up an upgrade slot isn't recorded in the game data, so it's unconfirmed. The numbers below assume, as in the old game, that <strong>a failure still uses a slot</strong>. If it doesn't, your results are better than shown.</p>
-
-<h2>Five Intermediate scrolls on 5-slot gloves</h2>
-<p>Gloves with 5 upgrade slots, five glove attack Intermediate scrolls (60%, +2):</p>
-<table>
-<thead><tr><th>Final attack</th><th>Chance</th></tr></thead>
-<tbody>
-<tr><td>+10 (all succeed)</td><td>7.8%</td></tr>
-<tr><td>+8</td><td>25.9%</td></tr>
-<tr><td>+6</td><td>34.6%</td></tr>
-<tr><td>+4</td><td>23.0%</td></tr>
-<tr><td>+2</td><td>7.7%</td></tr>
-<tr><td>+0 (all fail)</td><td>1.0%</td></tr>
-</tbody>
-</table>
-<p>The average is +6, one more than five Lesser scrolls (a guaranteed +5), but <strong>about one time in three you end at +4 or less</strong>. That's a 31.7% chance of doing worse than Lesser.</p>
-
-<h2>Keep expectations low for Greater 10%</h2>
-<p>The same gloves with five Greater scrolls (10%, +3):</p>
-<table>
-<thead><tr><th>Final attack</th><th>Chance</th></tr></thead>
-<tbody>
-<tr><td>+0 (all fail)</td><td>59.0%</td></tr>
-<tr><td>+3</td><td>32.8%</td></tr>
-<tr><td>+6</td><td>7.3%</td></tr>
-<tr><td>+9 or more</td><td>0.9%</td></tr>
-</tbody>
-</table>
-<p>The average is +1.5, less than a third of five Lesser scrolls (+5). There's a 59% chance that all five fail. Treat Greater scrolls as a lottery ticket, nice if one hits, not as the backbone of your upgrades.</p>
-
-<h2>Chaos scrolls almost always break things</h2>
-<p>Chaos gives +4 at 10%, but half of the 90% that fail destroy the item. One scroll alone has a 45% chance to destroy it. Five in a row destroy the item <strong>95% of the time</strong>. Use Chaos only on gear you can afford to lose, or on the last slot after you've already reached the numbers you wanted.</p>
-
-<h2>Compare by cost per point of attack</h2>
-<p>When deciding whether to buy, compare "how much does one point of attack cost on average". The average gain per scroll is:</p>
-<ul>
-<li>Lesser: 100% × 1 = <strong>1 per scroll</strong></li>
-<li>Intermediate: 60% × 2 = <strong>1.2 per scroll</strong></li>
-<li>Greater: 10% × 3 = <strong>0.3 per scroll</strong></li>
-</ul>
-<p>So the cost per attack point is the price for Lesser, the price ÷ 1.2 for Intermediate and the price ÷ 0.3 for Greater. If an Intermediate costs 600k, one attack point costs 500k on average; a Greater at 300k costs 1m per point. At citizenship rank 9 the town shop sells glove attack Lesser scrolls for 40k, which is 40k per point and far cheaper than anything in the market. Requirements are in the <a href="/en/guides/citizenship-and-housing/">citizenship and housing guide</a>, and current scroll prices are on the <a href="/en/tools/market/">live market</a>.</p>
-<p>Upgrade slots are a cost too. Lesser is certain but adds only +1 per slot; Intermediate averages +1.2 per slot. For good gear with few slots, Intermediate's higher expected value per slot fits; when you need a guaranteed result regardless of slots, Lesser does.</p>
-
-<h2>Summary</h2>
-<ul>
-<li>Lesser if you want certainty, Intermediate if you're playing the average; Intermediate ends below Lesser about a third of the time.</li>
-<li>Five Greater 10% scrolls fail completely 59% of the time. Don't rely on them.</li>
-<li>Five Chaos scrolls destroy the item 95% of the time.</li>
-<li>Decide whether to buy by cost per attack point.</li>
-</ul>
-<p>The <a href="/en/tools/scroll/">scroll calculator</a> takes your item's slots and the scrolls you plan to use and shows the odds of every result.</p>
+<p>The calculator assumes a fixed success probability and independent attempts. Mathematical output does not validate every current game mechanic. Compare preset sources with the actual item tooltip.</p>
+<h2>Five attempts are not five slots</h2>
+<p>Exactly five independent attempts at 60% success have three expected successes and a 0.4⁵ = 1.024% chance of none. At 10%, the chance of none is 0.9⁵ = 59.049%. An expectation does not guarantee an individual result.</p>
+<p>Failure consuming an upgrade slot has not been verified here. Do not interpret these as final outcomes for five-slot equipment. The former “nothing happens on failure” description is withdrawn.</p>
+<h2>Conditional destruction</h2>
+<p>Assuming 10% success and 50% destruction conditional on failure, destruction per attempt is 45%. Trying up to five times, stopping on destruction, gives 1 − 0.55⁵ ≈ 94.97% chance of destruction. Check whether the actual scroll uses these inputs.</p>
+<p>Value depends on equipment cost, slot behavior, retry costs and your objective. No tier is universally recommended.</p>
