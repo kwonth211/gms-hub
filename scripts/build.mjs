@@ -4,6 +4,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { spriteSvg, heroScene } from './sprites.mjs';
+import { SKILLS as DMG_SKILLS, windowRange as dmgWindow, hitRange as dmgHit, hitsToKill as dmgKill, accuracyNeeded as dmgAccNeed } from '../assets/damage-calc.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const out = path.join(root, 'dist');
@@ -178,7 +179,9 @@ const T = {
     aboutTitle: 'GMS Hub 소개',
     aboutDesc: 'GMS Hub는 글로벌 메이플스토리 클래식 월드 유저를 위한 비공식 팬 사이트예요.',
     aboutH1: 'GMS Hub 소개',
-    aboutBody: `<p>GMS Hub는 <strong>글로벌 메이플스토리 클래식 월드</strong>를 하는 한국어·영어 유저가 필요한 사이트를 빨리 찾을 수 있게 만든 <strong>비공식 팬 사이트</strong>예요.</p>
+    aboutBody: `<p>GMS Hub는 <strong>글로벌 메이플스토리 클래식 월드</strong>를 하는 한국어·영어 유저를 위한 <strong>비공식 팬 사이트</strong>예요. 처음에는 흩어져 있는 공략·시세·계산기 사이트를 한곳에 모으려고 시작했고, 지금은 직접 만든 도구와 가이드를 함께 운영해요.</p>
+<h2>무엇이 있나요</h2>
+<ul><li><strong>계산기:</strong> <a href="/ko/tools/scroll/">주문서 계산기</a>, <a href="/ko/tools/drop-rate/">확률 계산기</a>, <a href="/ko/tools/damage/">몇 방 컷 계산기</a>는 게임 데이터와 유저들이 검증한 공식으로 직접 계산해요. 공식과 예시는 각 페이지 아래에 적어 두었어요.</li><li><strong>사냥터 찾기:</strong> 여러 공략 사이트의 레벨별 추천을 맵·몬스터 정보와 합쳐 <a href="/ko/tools/training/">레벨 구간별로 비교</a>해요.</li><li><strong>실시간 시세:</strong> 유저가 상점 스캐너로 읽은 자유시장 매물을 모아 <a href="/ko/tools/market/">아이템별 시세</a>를 계산해요. 계산 방법은 시세 페이지 아래에 있어요.</li><li><strong>가이드:</strong> 육성, 전직, 파티 퀘스트, 주문서, 거래를 다룬 <a href="/ko/guides/">한국어 가이드</a>를 직접 써요.</li><li><strong>사이트 모음:</strong> 클래식 월드 관련 사이트를 용도별로 정리하고 접속 여부를 확인해요.</li></ul>
 <h2>원칙</h2>
 <ul><li><strong>출처가 확인된 정보만 실어요.</strong> 사이트 설명은 각 사이트가 공개한 소개문과 메뉴에 있는 기능만 옮기고, 숫자에는 출처와 확인 날짜를 붙여요.</li><li>출처끼리 내용이 다르면 둘 다 보여주고, 확인되지 않은 내용은 확인되지 않았다고 적어요.</li><li>접속을 확인한 링크와 아직 확인하지 못한 참고 링크를 구분해 표시해요. 현금 거래 사이트는 올리지 않아요.</li></ul>
 <h2>다루는 게임</h2>
@@ -391,7 +394,9 @@ const T = {
     aboutTitle: 'About GMS Hub',
     aboutDesc: 'GMS Hub is an unofficial fan site for Global MapleStory Classic World players.',
     aboutH1: 'About GMS Hub',
-    aboutBody: `<p>GMS Hub is an <strong>unofficial fan site</strong> that helps English- and Korean-speaking <strong>Global MapleStory Classic World</strong> players find the right site fast.</p>
+    aboutBody: `<p>GMS Hub is an <strong>unofficial fan site</strong> for English- and Korean-speaking <strong>Global MapleStory Classic World</strong> players. It started as one place to find the scattered guide, price and calculator sites, and now also runs its own tools and guides.</p>
+<h2>What's here</h2>
+<ul><li><strong>Calculators:</strong> the <a href="/en/tools/scroll/">scroll calculator</a>, <a href="/en/tools/drop-rate/">odds calculator</a> and <a href="/en/tools/damage/">hits-to-kill calculator</a> work from game data and formulas players have tested. Each page explains its formulas with a worked example.</li><li><strong>Training spots:</strong> level recommendations from several guide sites, merged with map and monster data and <a href="/en/tools/training/">compared by level band</a>.</li><li><strong>Live prices:</strong> Free Market listings that players read with the shop scanner, turned into <a href="/en/tools/market/">per-item prices</a>. The method is described under the market page.</li><li><strong>Guides:</strong> leveling, job advancement, party quest, scrolling and trading guides we write ourselves (in Korean for now).</li><li><strong>Site directory:</strong> Classic World sites grouped by purpose, with each link checked.</li></ul>
 <h2>Principles</h2>
 <ul><li><strong>Only sourced information.</strong> Site descriptions come from each site's own blurb and menus, and every number carries its source and check date.</li><li>When sources disagree we show both, and anything unconfirmed is labeled as such.</li><li>Links checked live and unverified references are labeled separately. We never list real-money trading sites.</li></ul>
 <h2>Which game</h2>
@@ -1397,6 +1402,7 @@ ${num('dm-mastery', t.mastery, 'max="20"')}
 <p class="muted small">${lang === 'ko' ? `레벨별 사냥터는 <a href="${href(langPath(lang, '/tools/training/'))}">사냥터 찾기</a>와 <a href="${href(langPath(lang, '/guides/leveling-30-70/'))}">30~70레벨 사냥터 가이드</a>에서 볼 수 있어요.` : `For where to train, see the <a href="${href(langPath(lang, '/tools/training/'))}">training spot finder</a>.`}</p>
 </section>
 </div>
+${damageGuide(lang)}
 ${jsonScript('dm-data', { lang, t: { ...t.i, hits: t.hits, never: t.never, lines: t.lines, mobsHit: t.mobsHit, accNeed: t.accNeed, emptyMobs: t.emptyMobs, needStats: t.needStats, estimated: t.estimated, none: t.none }, mobsUrl: href('/assets/mobs.json'), weaponsUrl: href('/assets/weapons.json') })}`;
 }
 
@@ -1500,7 +1506,8 @@ function marketBody(lang) {
 </div>
 <div class="spark-tip" id="spark-tip" role="tooltip" hidden></div>
 </div>
-${jsonScript('mk-data', { lang, api: config.voteApi, itemsUrl: href('/assets/items.json'), priceUrl: href(langPath(lang, '/tools/price/')), sites: PRICE_SITES, t, live: LIVE[lang], itemBase: href(langPath(lang, '/items/')), itemLink: IT[lang].pageLink })}`;
+${marketGuide(lang)}
+${jsonScript('mk-data', { lang, api: config.voteApi, itemsUrl: href('/assets/items.json'), priceUrl: href(langPath(lang, '/tools/price/')), sites: PRICE_SITES, t, live: LIVE[lang], itemBase: href(langPath(lang, '/items/')), itemLink: IT[lang].pageLink, itemPages: PRICED.map((i) => i.id) })}`;
 }
 
 function dropBody(lang) {
@@ -1587,6 +1594,104 @@ const atLeast = (n, p, k) => {
   return sum;
 };
 const triesFor = (p, c) => Math.ceil(Math.log(1 - c) / Math.log(1 - p));
+
+// Worked example under the calculator, computed with the same functions the page runs, so the numbers can't drift from the tool.
+function damageGuide(lang) {
+  const w = { weapon: '1h_sword', stats: { str: 132, dex: 30, int: 4, luk: 4 }, watk: 47 };
+  const boar = readJson('data/mobs.json').mobs.find((m) => m.en === 'Fire Boar');
+  const skill = (id) => DMG_SKILLS.find((s) => s.id === id);
+  const r0 = dmgWindow({ ...w, mastery: 0 });
+  const r10 = dmgWindow({ ...w, mastery: 10 });
+  const ps = dmgHit({ ...w, mastery: 10, skill: skill('power_strike'), mob: { wdef: 0, mdef: 0 } });
+  const psBoar = dmgHit({ ...w, mastery: 10, skill: skill('power_strike'), mob: boar });
+  const kill = dmgKill(psBoar, 1, boar.hp);
+  const mage = { weapon: 'wand', stats: { str: 4, dex: 4, int: 200, luk: 40 }, magic: 150, mastery: 0 };
+  const ice = dmgHit({ ...mage, skill: skill('cold_beam'), mob: boar });
+  const fire = dmgHit({ ...mage, skill: skill('fire_arrow'), mob: boar });
+  const acc = dmgAccNeed(30, boar);
+  const boarName = lang === 'ko' ? boar.ko : boar.en;
+  const v = (n) => n.toLocaleString(lang);
+  return lang === 'ko'
+    ? `<section class="wrap prose guide">
+<h2>몇 방 컷 계산, 이렇게 해요</h2>
+<h3>스탯창 공격력 범위가 출발점이에요</h3>
+<p>스탯창에 보이는 공격력 범위(예: 137~172)에는 무기 공격력, 주문서, 장갑, 마스터리가 모두 들어 있어요. 계산기는 이 두 숫자와 주 스탯을 거꾸로 풀어 무기 공격력과 마스터리 레벨을 구하고, 그 값으로 모든 스킬의 데미지를 다시 계산해요. 그래서 장비를 하나하나 입력하지 않아도 돼요.</p>
+<h3>예시: 30레벨 전사, STR 132 · DEX 30, 글라디우스(공격력 47)</h3>
+<ul>
+<li>마스터리 0일 때 스탯창 범위는 <strong>${v(Math.trunc(r0.min))}~${v(Math.trunc(r0.max))}</strong>, 소드 마스터리 20(공식상 10레벨)을 찍으면 최소값이 올라가 <strong>${v(Math.trunc(r10.min))}~${v(Math.trunc(r10.max))}</strong>가 돼요.</li>
+<li>파워 스트라이크(260%)는 방어력이 없는 대상에게 한 방에 <strong>${v(ps.min)}~${v(ps.max)}</strong>예요.</li>
+<li>${boarName}(${boar.lv}레벨, HP ${v(boar.hp)}, 물리 방어 ${boar.wdef})에게는 방어력만큼 줄어 <strong>${v(psBoar.min)}~${v(psBoar.max)}</strong>, 최소 데미지만 나와도 <strong>${kill.sure}방</strong>이면 잡아요.</li>
+<li>30레벨 캐릭터가 ${boarName}를 100% 맞히려면 명중률이 <strong>${acc}</strong> 필요해요. 명중이 모자라면 계산된 횟수보다 더 때리게 돼요.</li>
+</ul>
+<h3>속성은 1.25배, 0.75배, 0배</h3>
+<p>${boarName}는 불에 강하고 얼음에 약해요. INT 200, 마력 150인 법사라면 콜드 빔은 <strong>${v(ice.min)}~${v(ice.max)}</strong>, 파이어 애로우는 <strong>${v(fire.min)}~${v(fire.max)}</strong>예요. 스킬 계수는 파이어 애로우가 더 높은데도 오히려 약해요. 사냥터를 고를 때 몬스터 속성을 꼭 같이 보세요.</p>
+<h3>"확정"과 "평균"의 차이</h3>
+<p><strong>확정</strong>은 모든 타격이 최소 데미지일 때의 횟수라 운이 나빠도 이 안에 잡혀요. <strong>평균</strong>은 최소와 최대의 중간값 기준이에요. 크리티컬, 지속 데미지, 파이널 어택 추가타는 넣지 않아서 실제로는 조금 더 빨리 잡힐 수 있어요.</p>
+<h3>계산 공식</h3>
+<p>무기 공격은 최대 = 스킬 % × 공격력 × (1 + (주 스탯 × 무기 계수 + 보조 스탯) / 100), 최소는 같은 식에서 주 스탯에 마스터리 계수((마스터리 레벨 / 10 + 0.1) × 0.7)를 곱하고 기본값 0.8을 써요. 마법은 마력 × (1 + INT / 125)가 최대예요. 몬스터 방어력은 100 / (방어력 + 100)을 곱해요. 클래식 월드 유저들이 검증한 데미지 공식을 따랐고, 공개된 30레벨 전사 예시와 결과가 같은지 테스트로 확인해요.</p>
+</section>`
+    : `<section class="wrap prose guide">
+<h2>How the hits-to-kill numbers work</h2>
+<h3>Your stat window range is the starting point</h3>
+<p>The attack range in your stat window (say 137-172) already includes weapon attack, scrolls, gloves and mastery. The calculator solves that range and your main stat backwards for weapon attack and mastery level, then recomputes every skill from them, so you never have to enter your gear piece by piece.</p>
+<h3>Example: level 30 warrior, 132 STR, 30 DEX, Gladius (47 attack)</h3>
+<ul>
+<li>With no mastery the stat window shows <strong>${v(Math.trunc(r0.min))}-${v(Math.trunc(r0.max))}</strong>; Sword Mastery 20 (mastery level 10 in the formula) raises the floor to <strong>${v(Math.trunc(r10.min))}-${v(Math.trunc(r10.max))}</strong>.</li>
+<li>Power Strike (260%) hits a target with no defence for <strong>${v(ps.min)}-${v(ps.max)}</strong>.</li>
+<li>Against ${boarName} (level ${boar.lv}, ${v(boar.hp)} HP, ${boar.wdef} weapon defence) that drops to <strong>${v(psBoar.min)}-${v(psBoar.max)}</strong>, so even minimum rolls kill it in <strong>${kill.sure} hits</strong>.</li>
+<li>Hitting ${boarName} every time at level 30 takes <strong>${acc} accuracy</strong>. Below that you miss and need more swings than the table shows.</li>
+</ul>
+<h3>Elements: ×1.25, ×0.75 or ×0</h3>
+<p>${boarName} resists fire and is weak to ice. A mage with 200 INT and 150 magic hits it for <strong>${v(ice.min)}-${v(ice.max)}</strong> with Cold Beam but only <strong>${v(fire.min)}-${v(fire.max)}</strong> with Fire Arrow, even though Fire Arrow has the higher skill power. Check a map's monster elements before you pick it.</p>
+<h3>"Sure" versus "average"</h3>
+<p><strong>Sure</strong> assumes every line rolls its minimum, so you will kill within that many uses even when unlucky. <strong>Average</strong> uses the midpoint of the range. Crits, damage over time and Final Attack follow-ups are left out, so real kills can come a little sooner.</p>
+<h3>The formulas</h3>
+<p>Weapon attacks: max = skill % × attack × (1 + (main stat × weapon multiplier + secondary stat) / 100); the min uses 0.8 as the base and multiplies the main stat by the mastery factor ((mastery level / 10 + 0.1) × 0.7). Spells max out at magic × (1 + INT / 125). Monster defence multiplies by 100 / (defence + 100). These follow the damage model Classic World players have tested, and our tests check the calculator against the published level 30 warrior example.</p>
+</section>`;
+}
+
+// How the live market numbers are made, matching the rules in worker/src/index.js.
+function marketGuide(lang) {
+  return lang === 'ko'
+    ? `<section class="wrap prose guide">
+<h2>실시간 시세는 이렇게 만들어요</h2>
+<h3>데이터는 어디서 오나요</h3>
+<p>유저가 <a href="${href(langPath(lang, '/tools/scan/'))}">상점 스캐너</a>로 자유시장 상점 화면을 읽으면, 아이템 이름·가격·채널·방이 매물로 올라와요. 아이템 시세 검색에서 직접 올린 가격도 함께 써요.</p>
+<h3>평균 대신 중앙값을 써요</h3>
+<p>자유시장에는 실수로 0을 하나 더 붙인 가격이나 일부러 높게 걸어 둔 매물이 섞여 있어요. 그래서 시세는 가격을 줄 세웠을 때 가운데 값(중앙값)으로 보여 주고, 매물이 3개 이상이면 중앙값의 5배를 넘거나 5분의 1보다 낮은 가격은 계산에서 빼요.</p>
+<h3>판매 완료 가격이 우선이에요</h3>
+<p>상점에서 팔린 기록이 있으면 그 가격을 기준으로 하고, 없을 때만 지금 걸려 있는 판매가를 써요. 판매가는 파는 사람이 부른 값이라 실제 거래가보다 높을 수 있어요.</p>
+<h3>인기 TOP 10과 변동률</h3>
+<ul>
+<li>최근 24시간 동안 많이 관측된 아이템 순이에요. 판매 완료 기록은 3배로 쳐요.</li>
+<li>순위 옆 화살표는 1시간 전 순위와 비교한 변화예요.</li>
+<li>변동률은 최근 24시간 중앙값을 그 전 24시간 중앙값과 비교한 값이에요.</li>
+<li>7일 그래프는 하루 단위 중앙값이고, 관측이 없는 날은 값을 지어내지 않고 비워 둬요.</li>
+<li>순위와 통계는 5분마다 새로 계산해요.</li>
+</ul>
+<h3>시세를 볼 때 확인할 것</h3>
+<p>매물 수가 3개보다 적으면 한두 상점 가격일 뿐이라 참고용으로만 보세요. 아이템별 시세 페이지는 최근 14일 매물로 계산하고, 지금 파는 곳 목록에는 채널과 방이 나와서 바로 찾아갈 수 있어요. 실제 거래 가격은 다를 수 있어요.</p>
+</section>`
+    : `<section class="wrap prose guide">
+<h2>How the live prices are made</h2>
+<h3>Where the data comes from</h3>
+<p>When players read Free Market shops with the <a href="${href(langPath(lang, '/tools/scan/'))}">shop scanner</a>, each item's name, price, channel and room is stored as a listing. Prices players report in the item price search are used too.</p>
+<h3>Medians, not averages</h3>
+<p>The Free Market always has a few typos with an extra zero and shops parked at silly prices. Prices are shown as the median (the middle value), and once an item has three or more listings, anything above five times or below a fifth of the median is left out.</p>
+<h3>Sold prices come first</h3>
+<p>If a shop recorded a sale, that price is the basis; asking prices are used only when there is no sale. Asking prices are what sellers hope for, so they can sit above what items actually trade at.</p>
+<h3>Top 10 and price change</h3>
+<ul>
+<li>Items are ranked by how often they were seen in the last 24 hours, with a recorded sale counting three times.</li>
+<li>The arrow beside a rank compares it with the ranking an hour earlier.</li>
+<li>Change compares the last 24 hours' median with the 24 hours before that.</li>
+<li>The 7-day line is one median per day; a day with no observations is left as a gap rather than invented.</li>
+<li>Rankings and stats are recalculated every 5 minutes.</li>
+</ul>
+<h3>Before you trust a number</h3>
+<p>With fewer than three listings a price is one or two shops, so treat it as a rough reference. Item price pages use the last 14 days, and the where-to-buy list shows channel and room so you can go straight there. Real trades can differ.</p>
+</section>`;
+}
 
 function dropGuide(lang) {
   const p = 0.01;
@@ -1904,11 +2009,11 @@ function itemDesc(lang, i) {
   return fill(t.desc, { name, basis: t.basis[p.basis], median: mesoText(lang, p.median), n: p.n, low: mesoText(lang, p.low), high: mesoText(lang, p.high) });
 }
 
-// Same type first, then nearest level; priced neighbours lead so the links go to pages with something on them.
+// Same type first, then nearest level; only priced items have pages, so only they are linked.
 function relatedItems(i) {
-  return itemsData.items
+  return PRICED
     .filter((x) => x.id !== i.id && x.cat === i.cat && (x.sub === i.sub || !i.sub))
-    .sort((a, b) => !!priceOf(b) - !!priceOf(a) || Math.abs((a.lv || 0) - (i.lv || 0)) - Math.abs((b.lv || 0) - (i.lv || 0)) || a.id - b.id)
+    .sort((a, b) => Math.abs((a.lv || 0) - (i.lv || 0)) - Math.abs((b.lv || 0) - (i.lv || 0)) || a.id - b.id)
     .slice(0, 8);
 }
 
@@ -2156,7 +2261,9 @@ for (const lang of LANGS) {
       ld: [breadcrumbLd(lang, it.indexH1, '/items/')]
     })
   );
-  for (const i of itemsData.items) {
+  // Only items with a recent price get a page. A page per item in the game (2,120 × 2 languages) was 99% of the site and
+  // mostly a name with no price: the kind of mass-generated thin page that AdSense rejects as low-value content.
+  for (const i of PRICED) {
     const name = itemName(lang, i);
     write(
       path.join(lang, itemPath(i), 'index.html'),
@@ -2293,4 +2400,4 @@ write('assets/mobs.json', JSON.stringify(readJson('data/mobs.json').mobs.map((m)
 write('assets/weapons.json', JSON.stringify(readJson('data/weapons.json').weapons.map((w) => [w.id, w.ko || '', w.en, w.type, w.lv, w.watk || 0, w.matk || 0])));
 write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko || '', i.en, i.cat, i.sub, i.lv || 0])));
 
-console.log(`Built ${PAGES.length * LANGS.length} pages + ${itemsData.items.length * LANGS.length} item pages (${PRICED.length} priced), ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);
+console.log(`Built ${PAGES.length * LANGS.length} pages + ${PRICED.length * LANGS.length} item pages, ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);

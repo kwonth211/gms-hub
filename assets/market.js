@@ -61,7 +61,7 @@ async function loadItem(id, push = true) {
   const box = $('mk-detail');
   box.setAttribute('aria-busy', 'true');
   const page = `${D.itemBase}${id}-${it.en.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}/`.replace(/-\/$/, '/');
-  const head = `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(nameOf(it))}</h2>${it.ko && korean ? `<small>${esc(it.en)}</small>` : ''}<a class="small" href="${esc(page)}">${D.itemLink} ›</a></div><button type="button" class="btn ghost small-btn" data-refresh-item>${korean ? '새로고침' : 'Refresh'}</button></header>`;
+  const head = `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(nameOf(it))}</h2>${it.ko && korean ? `<small>${esc(it.en)}</small>` : ''}${D.itemPages.includes(Number(id)) ? `<a class="small" href="${esc(page)}">${D.itemLink} ›</a>` : ''}</div><button type="button" class="btn ghost small-btn" data-refresh-item>${korean ? '새로고침' : 'Refresh'}</button></header>`;
   box.innerHTML = `${head}<p class="muted">${T.loading}</p>`;
   let data = null;
   try {
