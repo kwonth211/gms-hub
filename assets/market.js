@@ -37,7 +37,7 @@ const when = (s) =>
 let items = [],
   byId = new Map(),
   catalog = null,
-  view = "items",
+  view = "listings",
   category = "all",
   page = 1,
   selected = null,
@@ -98,7 +98,7 @@ function syncURL() {
   const p = new URLSearchParams(location.search);
   if (selected) p.set("item", selected);
   else p.delete("item");
-  if (view === "items") p.delete("view");
+  if (view === "listings" && !selected) p.delete("view");
   else p.set("view", view);
   history.replaceState(null, "", location.pathname + (p.size ? "?" + p : ""));
 }
@@ -615,9 +615,9 @@ async function initialize() {
     const p = new URLSearchParams(location.search),
       id = Number(p.get("item"));
     if (p.get("q")) $("mk-q").value = p.get("q");
-    const initialView = ["listings", "reports"].includes(p.get("view"))
+    const initialView = ["items", "listings", "reports"].includes(p.get("view"))
       ? p.get("view")
-      : "items";
+      : byId.has(id) ? "items" : "listings";
     selected = byId.has(id) ? id : null;
     await refresh();
     setView(initialView);

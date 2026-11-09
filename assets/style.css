@@ -784,7 +784,7 @@ input.dm-filled { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset
 .item-links small { color: var(--muted); font-size: .75rem; }
 @media (max-width: 760px) { .item-grid { grid-template-columns: 1fr; } }
 
-/* Market browser: browse the directory first; selecting an item never navigates away. */
+/* Market browser: browse all listings first; selecting an item never navigates away. */
 .market-browser .mb-status { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:10px 0 18px; font-size:.82rem; color:var(--muted); }
 .mb-tabs { display:flex; gap:4px; border-bottom:1px solid var(--line); margin-bottom:16px; flex-wrap:wrap; }
 .mb-tabs button { border:0; border-bottom:3px solid transparent; border-radius:8px 8px 0 0; background:transparent; padding:13px 17px; color:var(--muted); font:inherit; font-weight:700; cursor:pointer; }
