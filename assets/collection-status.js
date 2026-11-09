@@ -8,7 +8,7 @@ export function collectionStatusView(s, lang = 'ko', now = Date.now()) {
     : {paused:'Collection paused',budget_wait:'Waiting for daily reset',waiting:'Awaiting first collection',delayed:'Collection delayed',recent:'Recent collection received'}[state];
   const schedule = ko ? `${hours}시간 간격 수집` : `Collection every ${hours}h`;
   const completed = Number.isFinite(last) ? (ko ? `최근 수집 완료 ${stamp(last)}` : `Last collection ${stamp(last)}`) : (ko ? '아직 저장 기록 없음' : 'No completed collection yet');
-  const waiting = state==='budget_wait'&&Number.isFinite(next) ? (ko?` · ${stamp(next)} 이후 재개 예정`:` · resumes after ${stamp(next)}`) : '';
+  const waiting = state==='budget_wait'&&Number.isFinite(next) ? (ko?` · ${stamp(next)} 이후 수집 가능`:` · eligible after ${stamp(next)}`) : '';
   return {state,title,description:`${schedule} · ${completed}${waiting}`};
 }
 
@@ -28,6 +28,7 @@ if (typeof document !== 'undefined') for (const el of document.querySelectorAll(
     } catch {
       el.dataset.state='delayed';
       el.querySelector('strong').textContent=document.documentElement.lang==='ko'?'수집 상태 확인 지연':'Collection status unavailable';
+      const market=el.closest('#live-market');if(market)market.dataset.collectionState='delayed';
     } finally {busy=false;}
   }
   refresh();setInterval(refresh,180000);document.addEventListener('visibilitychange',refresh);

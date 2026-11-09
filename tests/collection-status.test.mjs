@@ -10,6 +10,6 @@ test('only an actual recent ingest is presented as received, never the page refr
 test('quota waiting and paused collection stay explicit even with a recent receipt',()=>{
   const s={lastSuccessAt:new Date(now-1000).toISOString(),nextEligibleAt:new Date(now+3600000).toISOString(),intervalSeconds:3600};
   const view=collectionStatusView({...s,state:'budget_wait'},'ko',now);
-  assert.equal(view.state,'budget_wait');assert.match(view.description,/이후 재개 예정/);
+  assert.equal(view.state,'budget_wait');assert.match(view.description,/이후 수집 가능/);
   assert.equal(collectionStatusView({...s,state:'paused'},'en',now).title,'Collection paused');
 });
