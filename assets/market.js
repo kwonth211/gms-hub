@@ -240,6 +240,7 @@ async function renderRecords() {
 }
 function renderMain() {
   if (!items.length) return;
+  $("mb-range").hidden = view === "items" || (view === "listings" && $("mb-state").value === "open");
   view === "items" ? renderDirectory() : renderRecords();
 }
 function setView(next) {
