@@ -17,7 +17,7 @@ export function selectRoutes(rows, { level = null, band = null, job = '', goal =
 }
 // Only editorial IDs live in source data. Never send research URLs/authors/transcripts to the browser.
 export function publicTrainingData(data) {
-  const keys = ['id','level','jobs','party','advanced','costTier','title','monsters','summary','entry','route','cost','exit','alternative'];
+  const keys = ['id','level','jobs','party','advanced','costTier','title','monsters','summary','entry','route','cost','exit','alternative','mobs'];
   return { version: data.version, updated: data.updated, routes: data.routes.map(r => Object.fromEntries(keys.map(k => [k,r[k]]))) };
 }
 export function routeCards(rows, lang = 'ko') {
@@ -25,14 +25,16 @@ export function routeCards(rows, lang = 'ko') {
   if (!rows.length) return `<div class="panel tr-empty"><h3>${tr('조건을 조금 넓혀 비교해 보세요', 'Broaden one filter to compare options')}</h3><p>${tr('솔로 조건을 해제하거나 장비 조건부 후보를 포함할 수 있어요. 지금 사냥터에서 처치 타수가 줄었다면, 레벨이 올라도 그곳을 유지하는 편이 나을 수 있어요.', 'Try allowing parties or equipped-character options. Staying on a lower-level map can still be effective when your kill count improves.')}</p><a href="/${lang}/guides/leveling-30-70/">${tr('직업별 다음 동선 보기 →', 'Class progression guide →')}</a></div>`;
   return `<div class="tr-route-list">${rows.map(r => {
     const item = (label,value) => `<div><dt>${label}</dt><dd>${esc(value[lang])}</dd></div>`;
-    return `<article class="panel tr-route" data-route="${esc(r.id)}">
+    // Monster chips: each links to the bestiary, with the accuracy needed for a sure hit at the route's starting level.
+    const mobs = r.mobs?.length ? `<div class="tr-mobs">${r.mobs.map(m => `<a href="/${lang}/monsters/${m.id}/"><b>${esc(lang === 'ko' ? m.ko : m.en)}</b><small>Lv. ${m.lv} · HP ${m.hp.toLocaleString('en-US')}</small></a>`).join('')}<span class="tr-acc">${tr(`Lv. ${r.level.min} 기준 필요 명중 ${Math.max(...r.mobs.map(m => m.acc))}`, `Accuracy ${Math.max(...r.mobs.map(m => m.acc))} needed at Lv. ${r.level.min}`)}</span></div>` : '';
+    return `<article class="panel tr-route" id="route-${esc(r.id)}" data-route="${esc(r.id)}">
 <div class="tr-meta"><span>Lv. ${r.level.min}–${r.level.max}</span><span>${r.jobs.length ? r.jobs.map(j=>esc(jobNames[lang][j])).join(' · ') : tr('공통','All classes')}</span><span>${r.party === 'required' ? tr('파티 필요','Party required') : r.party === 'preferred' ? tr('파티 권장','Party preferred') : tr('솔로 가능','Solo option')}</span>${r.advanced ? `<span class="tr-conditional">${tr('장비 조건부','Gear dependent')}</span>` : ''}</div>
-<h3>${esc(r.title[lang])}</h3><p class="tr-monsters">${esc(r.monsters[lang])}</p><p>${esc(r.summary[lang])}</p>
+<h3>${esc(r.title[lang])}</h3><p class="tr-monsters">${esc(r.monsters[lang])}</p>${mobs}<p>${esc(r.summary[lang])}</p>
 <dl>${item(tr('진입 기준','Before moving'),r.entry)}${item(tr('물약·비용','Supplies & costs'),r.cost)}</dl>
 <details><summary>${tr('가는 길 · 사냥 동선 · 이동 시점','Access, rotation & next step')}</summary><dl>${item(tr('위치·동선','Access & rotation'),r.route)}${item(tr('옮길 때','When to move'),r.exit)}${item(tr('자리 없을 때','Alternative'),r.alternative)}</dl></details></article>`;
   }).join('')}</div>`;
 }
-export function validateTraining(data, evidence) {
+export function validateTraining(data, evidence, monsters = null) {
   if (data.version !== 3 || !Array.isArray(data.routes) || !data.routes.length) throw new Error('Training route schema required');
   const ids = new Set();
   for (const r of data.routes) {
@@ -42,6 +44,8 @@ export function validateTraining(data, evidence) {
     if (!['solo','preferred','required'].includes(r.party) || !['low','medium','high'].includes(r.costTier) || typeof r.advanced !== 'boolean') throw new Error(`Invalid conditions: ${r.id}`);
     for (const k of ['title','monsters','summary','entry','route','cost','exit','alternative']) if (!r[k]?.ko?.trim() || !r[k]?.en?.trim()) throw new Error(`Missing ${k}: ${r.id}`);
     if (!r.evidence?.length || !r.editorialBasis) throw new Error(`Missing internal evidence: ${r.id}`);
+    if (!Array.isArray(r.mobIds) || !r.mobIds.length) throw new Error(`Missing mobIds: ${r.id}`);
+    if (monsters && r.mobIds.some(id => !monsters.some(m => m.id === id))) throw new Error(`Unknown monster in route: ${r.id}`);
     if (evidence && r.evidence.some(id => !evidence.sources.some(s => s.id === id && s.notes && /^https:\/\//.test(s.url)))) throw new Error(`Unresolved source: ${r.id}`);
   }
 }

@@ -1136,3 +1136,35 @@ input.dm-filled { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset
 .mine-chip b { font-variant-numeric:tabular-nums; }
 .mine-chip small { grid-column:2; color:var(--muted); font-size:.7rem; }
 .live-mine .small { margin:8px 0 0; font-size:.72rem; }
+
+/* Monster hunting notes: computed thresholds, player advice, linked routes. */
+.monster-hunt-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:0 0 18px; }
+.monster-hunt-stats > div { border:1px solid var(--line); background:var(--panel); border-radius:12px; padding:16px; }
+.monster-hunt-stats dt { color:var(--muted); font-size:.8rem; }
+.monster-hunt-stats dd { margin:6px 0 0; font-size:1.4rem; font-weight:800; font-variant-numeric:tabular-nums; }
+.monster-hunt-stats small { display:block; font-size:.72rem; color:var(--muted); font-weight:400; margin-top:4px; line-height:1.4; }
+.monster-acc { display:grid; grid-template-columns:minmax(0,320px) minmax(0,1fr); gap:10px 24px; align-items:start; margin:0 0 18px; }
+.monster-acc h3 { grid-column:1 / -1; margin:0; font-size:1rem; }
+.monster-acc-table { border-collapse:collapse; width:100%; font-size:.9rem; }
+.monster-acc-table th,.monster-acc-table td { padding:8px 10px; border-top:1px solid var(--line); text-align:left; }
+.monster-acc-table thead th { border-top:0; color:var(--muted); font-size:.78rem; font-weight:600; }
+.monster-acc-table td { font-variant-numeric:tabular-nums; font-weight:700; }
+.monster-acc-table th small { color:var(--muted); font-weight:400; }
+.monster-acc .muted { margin:0; }
+.monster-hunt-summary { font-size:1.02rem; font-weight:600; line-height:1.6; margin:0 0 10px; }
+.monster-tips { margin:0 0 18px; padding-left:20px; line-height:1.7; }
+.monster-tips li + li { margin-top:6px; }
+.monster-routes { list-style:none; margin:0 0 14px; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:10px; }
+.monster-routes a { display:flex; flex-direction:column; gap:3px; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:var(--panel); color:var(--text); text-decoration:none; }
+.monster-routes a:hover { border-color:var(--accent); }
+.monster-routes small { color:var(--muted); font-size:.76rem; }
+.monster-tag.notable { border-color:var(--accent); color:var(--accent-2); }
+.item-drop-mobs h2 small { font-size:.9rem; margin-left:6px; }
+.item-drop-mobs .monster-tag { margin-top:4px; }
+.tr-mobs { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:8px 0 10px; }
+.tr-mobs a { display:inline-flex; flex-direction:column; padding:6px 10px; border:1px solid var(--line); border-radius:8px; background:var(--panel-2); color:var(--text); text-decoration:none; line-height:1.3; }
+.tr-mobs a:hover { border-color:var(--accent); }
+.tr-mobs b { font-size:.85rem; }
+.tr-mobs small { font-size:.7rem; color:var(--muted); }
+.tr-acc { font-size:.78rem; color:var(--accent-2); font-weight:600; }
+@media (max-width: 760px) { .monster-hunt-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } .monster-acc { grid-template-columns:1fr; } }

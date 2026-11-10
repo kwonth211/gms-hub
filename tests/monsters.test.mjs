@@ -60,3 +60,28 @@ test('renderers escape source strings and expose filters without backend scripts
   const js=fs.readFileSync(new URL('../assets/monsters.js',import.meta.url),'utf8');
   assert.ok(!/\bfetch\s*\(|XMLHttpRequest|sendBeacon|location\.(href\s*=|assign|replace)/.test(js));
 });
+
+test('hunting notes resolve to real monsters, recorded sources and reported drops; accuracy table matches community figures',async()=>{
+  const notes=JSON.parse(fs.readFileSync(new URL('../data/monster-notes.json',import.meta.url))).notes;
+  const guides=JSON.parse(fs.readFileSync(new URL('../data/editorial/korean-guides.json',import.meta.url)));
+  const {accuracyNeeded}=await import('../assets/damage-calc.js');
+  assert.ok(Object.keys(notes).length>=30);
+  for(const [id,n] of Object.entries(notes)){
+    const m=data.monsters.find(m=>m.id===Number(id)); assert.ok(m,`note for unknown monster ${id}`);
+    assert.ok(n.summary?.ko&&n.summary?.en,`summary ${id}`);
+    for(const t of n.tips||[]) assert.ok(t.ko&&t.en,`tip ${id}`);
+    assert.ok(n.evidence?.length,`evidence ${id}`);
+    for(const e of n.evidence) assert.ok(guides.sources.some(s=>s.id===e&&/^https:\/\//.test(s.url)),`source ${e}`);
+    for(const d of n.drops||[]) assert.ok(m.drops.some(x=>x.itemId===d),`drop ${d} not reported for ${m.en}`);
+    if(n.band) assert.ok(n.band[0]>=1&&n.band[0]<=n.band[1]&&n.band[1]<=100,`band ${id}`);
+    const html=render(m); for(const k of ['summary','ko']) assert.ok(html.includes('monster-hunting'));
+    assert.ok(!html.includes('youtube.com'),'no source URLs in HTML');
+  }
+  // The community-quoted accuracy cut-offs (NiaDB figures read out in a video) must come out of our formula.
+  const mob=n=>data.monsters.find(m=>m.en===n);
+  assert.equal(accuracyNeeded(37,mob('Lupin')),89); assert.equal(accuracyNeeded(32,mob('Lupin')),106); assert.equal(accuracyNeeded(48,mob('Wraith')),104);
+  // Notable drops are rendered first and tagged.
+  const lupin=monsterDetail({lang:'ko',m:mob('Lupin'),data,url,itemUrl:d=>`/x/${d.itemId}`,notes:notes[35],routes:[],accuracy:l=>accuracyNeeded(l,mob('Lupin'))});
+  assert.ok(lupin.indexOf('파밍 목적 드롭')<lupin.indexOf('제보 적음'));
+  assert.ok(lupin.includes('Lv. 37 <small>동일 레벨</small></th><td>89'));
+});

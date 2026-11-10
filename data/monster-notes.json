@@ -1,0 +1,1267 @@
+{
+  "updated": "2026-11-11",
+  "basis": "Korean player videos (gameplay and guides) reviewed 2026-11-10/11, cross-checked against the client stats and community drop reports in data/monsters.json. Level bands are where players actually hunted the monster, not formulas. Hourly EXP or profit is never asserted; measured figures are quoted with their conditions. Source identities live only in data/editorial/korean-guides.json.",
+  "notes": {
+    "8": {
+      "band": [
+        10,
+        15
+      ],
+      "summary": {
+        "ko": "무자본 초반에 가장 무난한 흑자 사냥감이에요. 한 대 맞아도 피해가 작고 메소를 꾸준히 줘요.",
+        "en": "The safest early money target: light contact damage and steady meso drops."
+      },
+      "tips": [
+        {
+          "ko": "영상 기준 한 대에 20 안팎의 피해, 한 마리에 12메소 정도예요. 물약값 걱정 없이 10~15레벨을 넘길 수 있어요.",
+          "en": "Players report about 20 damage per hit taken and roughly 12 mesos per kill, so levels 10 to 15 cost almost nothing."
+        },
+        {
+          "ko": "헤네시스 동쪽 풀숲의 돼지·리본돼지 자리와 버섯동산의 주황버섯을 처치 타수 기준으로 비교하세요.",
+          "en": "Compare the Pig and Ribbon Pig fields east of Henesys with Orange Mushrooms by how many hits each takes."
+        }
+      ],
+      "evidence": [
+        "autohunt-f2p",
+        "voyage-warrior"
+      ]
+    },
+    "9": {
+      "band": [
+        10,
+        15
+      ],
+      "summary": {
+        "ko": "10대 초반 표준 사냥감이에요. 리본돼지보다 체력이 낮아 타수가 먼저 줄어요.",
+        "en": "The standard early-teens target; it drops to a lower hit count before Ribbon Pig does."
+      },
+      "tips": [
+        {
+          "ko": "체력 142·경험치 15. 리본돼지(172·19)와 함께 두고 어느 쪽이 먼저 한 방이 되는지 보세요.",
+          "en": "142 HP and 15 EXP; check it against Ribbon Pig (172 HP, 19 EXP) to see which becomes a one-hit kill first."
+        },
+        {
+          "ko": "커닝시티 공사장이 붐비면 북쪽 공사장이나 엘리니아 남쪽 들판으로 옮기는 흐름이 많아요.",
+          "en": "When the Kerning construction site is full, players move to the northern site or the field south of Ellinia."
+        }
+      ],
+      "evidence": [
+        "voyage-warrior",
+        "geun-30",
+        "clme-archer"
+      ]
+    },
+    "10": {
+      "band": [
+        10,
+        16
+      ],
+      "summary": {
+        "ko": "돼지보다 조금 단단하지만 경험치도 높아요. 돼지 자리에서 함께 잡는 몬스터예요.",
+        "en": "Slightly tougher than Pig with more EXP; hunted on the same maps."
+      },
+      "tips": [
+        {
+          "ko": "체력 172·경험치 19. 주황버섯과 처치 타수를 비교해서 더 빨리 한 방이 되는 쪽에 머무르세요.",
+          "en": "172 HP and 19 EXP; stay with whichever of Ribbon Pig and Orange Mushroom reaches a one-hit kill first."
+        }
+      ],
+      "evidence": [
+        "voyage-warrior",
+        "clme-archer"
+      ]
+    },
+    "12": {
+      "band": [
+        12,
+        20
+      ],
+      "summary": {
+        "ko": "커닝시티 공사장의 주력 몬스터예요. 3방이 나오는 레벨에선 효율이 떨어져요.",
+        "en": "The main target at the Kerning construction site; inefficient while it still takes three hits."
+      },
+      "tips": [
+        {
+          "ko": "10레벨 직후에는 3방컷이라 비추천, 15레벨 전후에 추락주의나 북쪽 공사장에서 2방이 나올 때 잡으세요.",
+          "en": "Right after level 10 it takes three hits; return around 15 when the Subway construction maps give two-hit kills."
+        },
+        {
+          "ko": "공사장은 떨어지면 바닥까지 추락하는 구조라 발판 복귀 시간을 동선에 넣어야 해요.",
+          "en": "Falling off the scaffolding drops you to the bottom, so budget climb-back time in your rotation."
+        }
+      ],
+      "evidence": [
+        "geun-30",
+        "mujin",
+        "thief-guide"
+      ]
+    },
+    "7": {
+      "band": [
+        15,
+        25
+      ],
+      "summary": {
+        "ko": "엘리니아 나무던전의 '한 방' 몬스터예요. 초록버섯과 섞인 맵에서 물약을 아끼며 잡아요.",
+        "en": "The one-hit target of Ellinia's tree dungeons, hunted alongside Green Mushrooms to save potions."
+      },
+      "tips": [
+        {
+          "ko": "체력 115라 슬라임 한 방·초록버섯 두 방이 안정적으로 나오는지 확인하고, 한 종류만 쫓느라 이동을 늘리지 마세요.",
+          "en": "At 115 HP, confirm Slime dies in one hit and Green Mushroom in two; do not chase one type and waste travel."
+        },
+        {
+          "ko": "북쪽 숲 나무던전 IV와 남쪽 숲 던전이 후보예요. 남쪽에는 파란버섯·뿔버섯도 있어 퀘스트 재료를 같이 모을 수 있어요.",
+          "en": "Forest Up North IV and the southern tree dungeons are the candidates; the south also spawns Blue and Horny Mushrooms for quest materials."
+        }
+      ],
+      "evidence": [
+        "voyage-warrior",
+        "autohunt-f2p",
+        "thief-guide"
+      ]
+    },
+    "13": {
+      "band": [
+        15,
+        25
+      ],
+      "summary": {
+        "ko": "15~25레벨 공통 사냥감이고 냄비 뚜껑이 나와요. 갓은 세 퀘스트에 50개가 들어가니 버리지 마세요.",
+        "en": "The shared 15 to 25 target that drops the Pan Lid; keep the caps, three quests use 50 of them."
+      },
+      "tips": [
+        {
+          "ko": "체력 233. 20레벨 헌터스 보우 기준으로 버블링보다 한 방 확률과 마나 효율이 높다는 계산이 있어요.",
+          "en": "233 HP; with a level-20 Hunter's Bow it has a better one-hit chance and MP efficiency than Bubbling."
+        },
+        {
+          "ko": "맨몸으로 맞으면 한 대에 60 넘게 들어와요. 발판 위에서 치거나 로프에 매달렸다 내려와 잡는 습관이 물약값을 줄여요.",
+          "en": "Unarmored it hits for over 60; attack from platforms or hang on a rope and drop down to save potion money."
+        },
+        {
+          "ko": "피아(16레벨)·알렉스(18)·제인(21) 퀘스트에 초록버섯·파란버섯 갓이 쓰여요. 한 번에 모아 두면 같은 사냥터를 세 번 가지 않아요.",
+          "en": "Pia (16), Alex (18) and Jane (21) all want mushroom caps; collecting them in one go saves three trips."
+        },
+        {
+          "ko": "냄비 뚜껑은 영상 시점 7만 메소 안팎에 팔렸다는 언급이 있어요. 방패가 없는 시프·법사의 첫 방패로도 쓰여요.",
+          "en": "Pan Lid was quoted around 70k mesos at the time of the videos and serves as a first shield for Bandits and Magicians."
+        }
+      ],
+      "drops": [
+        1092002
+      ],
+      "evidence": [
+        "autohunt-f2p",
+        "clme-archer",
+        "geun-30",
+        "thief-guide",
+        "voyage-mage"
+      ]
+    },
+    "16": {
+      "band": [
+        16,
+        25
+      ],
+      "summary": {
+        "ko": "퀘스트 재료용 몬스터예요. 파란버섯의 갓은 피아·알렉스·제인 퀘스트에 합쳐 50개가 들어가요.",
+        "en": "A quest-material monster: Pia, Alex and Jane together need 50 Blue Mushroom caps."
+      },
+      "tips": [
+        {
+          "ko": "헤네시스 던전 가는 길과 히든맵에 나와요. 갓 35개 이상을 한 번에 챙겨 두세요.",
+          "en": "Found on the way to the Henesys dungeon and in a hidden map; gather 35 or more caps in one visit."
+        },
+        {
+          "ko": "피아 보상은 투구 명중 주문서(100/60/10% 랜덤), 제인 보상은 무기 공격력 주문서 60% 랜덤이에요. 팔면 초반 물약값이 돼요.",
+          "en": "Pia rewards a random Helmet Accuracy scroll and Jane a random 60% weapon attack scroll; selling them funds early potions."
+        }
+      ],
+      "evidence": [
+        "quest",
+        "autohunt-f2p"
+      ]
+    },
+    "14": {
+      "band": [
+        18,
+        30
+      ],
+      "summary": {
+        "ko": "1호선 1구역의 20대 사냥감이에요. 사람이 많고 전사·원거리에게는 불편하다는 평이 많아요.",
+        "en": "The twenties target in Line 1 Area 1; crowded, and awkward for Warriors and ranged classes."
+      },
+      "tips": [
+        {
+          "ko": "법사는 스티지와 함께 가장 먼저 확인하는 자리예요. 자리가 없으면 북쪽 숲 나무던전으로 옮기세요.",
+          "en": "Magicians check it first alongside Stirge; if full, move to the Forest Up North tree dungeons."
+        },
+        {
+          "ko": "전사는 공격이 닿지 않아 고생하고, 표도 기준으로도 추천하지 않는다는 영상이 있어요. 초록버섯과 마나 효율을 비교하세요.",
+          "en": "Warriors struggle to reach it and one Assassin guide advises against it; compare MP efficiency with Green Mushroom."
+        },
+        {
+          "ko": "20레벨 전사 양손검 기준 리본돼지는 거의 한 방, 버블링은 주로 두 방이에요. 경험치가 조금 높아도 바로 옮길 이유는 크지 않아요.",
+          "en": "A level-20 Warrior with a two-handed sword nearly one-shots Ribbon Pig but needs two hits on Bubbling; the small EXP edge is no reason to switch."
+        }
+      ],
+      "evidence": [
+        "clme-1-70",
+        "clme-archer",
+        "clme-warrior",
+        "geun-30",
+        "voyage-mage",
+        "voyage-warrior"
+      ]
+    },
+    "17": {
+      "band": [
+        20,
+        33
+      ],
+      "summary": {
+        "ko": "표도의 20대 1티어 사냥감이에요. 날아다녀서 근접은 잡기 어렵지만 럭키세븐 한 방이고 레몬·철광석으로 흑자가 나요.",
+        "en": "The tier-one twenties target for Assassins: it flies, so melee struggles, but Lucky Seven one-shots it and Lemons and ore keep it profitable."
+      },
+      "tips": [
+        {
+          "ko": "환승구역이 기본 자리예요. 시프 랭커도 20부터 33레벨까지 여기 머물렀어요.",
+          "en": "The Subway transfer area is the usual spot; a Bandit ranker stayed here from 20 to 33."
+        },
+        {
+          "ko": "30레벨대에도 메소 수급용으로 쓰여요. 영상 측정으로 20레벨 표도가 5분에 약 3,500 경험치를 얻었어요.",
+          "en": "Still used for mesos in the thirties; one level-20 Assassin measured about 3,500 EXP per 5 minutes."
+        },
+        {
+          "ko": "석궁 25레벨 비교에서는 날아다니고 빨라 거리를 벌리느라 공격이 끊기면 버블링·버섯이 더 편할 수 있어요.",
+          "en": "For a level-25 Crossbowman, its flight and speed can break your firing rhythm; Bubbling or mushrooms may be easier."
+        },
+        {
+          "ko": "23레벨 니오라 병원 퀘스트(스티지 40마리·좀비버섯 50마리)로 허름한 망토와 파란 포션 20개를 받아요.",
+          "en": "The level-23 Nyora Hospital quest (40 Stirge, 50 Zombie Mushroom) gives a Tattered Cape and 20 Blue Potions."
+        }
+      ],
+      "drops": [
+        2010005
+      ],
+      "evidence": [
+        "thief-guide",
+        "geun-30",
+        "geun",
+        "clme-archer",
+        "autohunt-f2p"
+      ]
+    },
+    "18": {
+      "band": [
+        20,
+        30
+      ],
+      "summary": {
+        "ko": "슬리피우드 늪지의 20대 2티어 사냥감이에요. 자리가 많아 경쟁이 덜해요.",
+        "en": "A tier-two twenties target in the Sleepywood swamp with less competition."
+      },
+      "tips": [
+        {
+          "ko": "더 강한 몬스터와 섞여 나오는 맵이 있으니 레벨 추천 자리와 출현 위치를 구분해서 보세요.",
+          "en": "Some of its maps mix in stronger monsters, so separate 'where it spawns' from 'where to hunt at this level'."
+        }
+      ],
+      "evidence": [
+        "thief-guide",
+        "clme-archer"
+      ]
+    },
+    "19": {
+      "band": [
+        22,
+        43
+      ],
+      "summary": {
+        "ko": "개미굴 파티의 주력이에요. '뿔버섯 한 방'이 자리를 고르는 기준이에요.",
+        "en": "The Ant Tunnel party staple; 'one-hit Horny Mushroom' is the entry test."
+      },
+      "tips": [
+        {
+          "ko": "체력 403. 한 방이 나는 자리에서 5분에 약 7,500 경험치를 얻었다는 측정이 있어요(유적 발굴지 III과 비슷).",
+          "en": "403 HP; a one-hit setup measured about 7,500 EXP per 5 minutes, similar to Excavation Site III."
+        },
+        {
+          "ko": "표도는 34레벨부터 뿔버섯 한 방·좀비버섯 두 방이 나와 개미굴로 옮겨요. 어세신 랭커는 개미굴에만 이틀 반을 머물렀어요.",
+          "en": "Assassins move in at 34 when Horny dies in one and Zombie in two; one Assassin ranker spent two and a half days here."
+        },
+        {
+          "ko": "젠이 빨라 자리만 있으면 I·II·III 어디든 비슷해요. 상하 이동 때문에 공격이 비는지 확인하세요.",
+          "en": "Fast respawn makes I, II and III comparable; watch whether vertical travel leaves gaps in your attacks."
+        },
+        {
+          "ko": "한 마리에 40~50메소를 줘서 무자본 25레벨 이후 흑자 사냥터로 꼽혀요.",
+          "en": "Each kill gives 40 to 50 mesos, so it is a profitable spot for unfunded characters past 25."
+        },
+        {
+          "ko": "35레벨 전사 시미터 기준 뿔버섯은 한 방, 좀비버섯은 약 90%예요. 공격 마나당 경험치는 거의 같아서 겹사가 많으면 뿔버섯이 편해요.",
+          "en": "With a Scimitar at 35 a Warrior one-shots Horny Mushroom while Zombie Mushroom sits near 90%; EXP per MP is almost equal, so Horny is easier in crowds."
+        }
+      ],
+      "drops": [
+        2040810
+      ],
+      "evidence": [
+        "autohunt-f2p",
+        "clme-warrior",
+        "geun",
+        "mujin",
+        "thief-guide",
+        "voyage-warrior"
+      ]
+    },
+    "21": {
+      "band": [
+        24,
+        43
+      ],
+      "summary": {
+        "ko": "개미굴에서 뿔버섯과 함께 잡아요. 아대 공격력 주문서가 나와서 초반에 가장 '맛있는' 드롭으로 꼽혀요.",
+        "en": "Hunted with Horny Mushrooms in the Ant Tunnel; its Claw Attack scroll is the most prized early drop."
+      },
+      "tips": [
+        {
+          "ko": "체력 436이라 뿔버섯이 한 방일 때 좀비버섯은 두 방인 경우가 많아요. 두 방 비용을 따로 세세요.",
+          "en": "At 436 HP it usually takes two hits while Horny takes one; count that extra cast separately."
+        },
+        {
+          "ko": "언데드예요. 클레릭의 힐이 피해를 주고, 성 속성에 약해요.",
+          "en": "Undead: Cleric Heal damages it and it is weak to Holy."
+        },
+        {
+          "ko": "헌터는 깊은 개미굴 I 옥상에서 여러 발판에 닿는 자리를 추천하는 영상이 있어요.",
+          "en": "One Hunter recommends the rooftop of Deep Ant Tunnel I, where arrows reach several platforms."
+        }
+      ],
+      "drops": [
+        2044701
+      ],
+      "evidence": [
+        "hunter",
+        "autohunt-f2p",
+        "voyage-warrior",
+        "voyage-mage",
+        "thief-guide"
+      ]
+    },
+    "22": {
+      "band": [
+        25,
+        40
+      ],
+      "summary": {
+        "ko": "페리온 바위길·와일드보어의 땅의 보조 사냥감이에요. 사람이 없을 때 가는 2~3티어 자리예요.",
+        "en": "A secondary Perion target on the Rocky Road and Land of Wild Boar; a tier-two or three spot when empty."
+      },
+      "tips": [
+        {
+          "ko": "서쪽바위산 IV에서는 루팡·다크 엑스텀프와 섞여 나와 35레벨 이후 5분에 약 8,500 경험치를 얻은 측정이 있어요.",
+          "en": "On West Rocky Mountain IV it mixes with Lupin and Dark Axe Stump; one player measured about 8,500 EXP per 5 minutes after 35."
+        },
+        {
+          "ko": "스피어맨 40레벨 크리센트 폴암 7작 기준 와일드보어는 한 방이에요.",
+          "en": "A Spearman with a seven-scroll Crescent Polearm at 40 one-shots it."
+        }
+      ],
+      "evidence": [
+        "clme-warrior",
+        "geun",
+        "thief-guide"
+      ]
+    },
+    "20": {
+      "band": [
+        23,
+        43
+      ],
+      "summary": {
+        "ko": "불에 약해서 불독이 35~40레벨에 한 방으로 잡는 사냥감이에요. 나무 팽이가 비싸게 팔려요.",
+        "en": "Weak to fire: Fire/Poison mages one-shot it from 35 to 40, and its Wooden Top sells well."
+      },
+      "tips": [
+        {
+          "ko": "불타버린 땅 맨 윗층을 혼자 쓰며 35~40레벨을 올리고 메소도 남겼다는 사례가 있어요.",
+          "en": "One Fire/Poison player levelled 35 to 40 alone on the top floor of Burnt Land and still saved mesos."
+        },
+        {
+          "ko": "표도 40~43 1티어 자리인 불타버린 땅에서 파이어보어와 함께 잡아요. 시프 기준 한 방, 파이어보어는 두 방이에요.",
+          "en": "Assassins rank Burnt Land tier one at 40 to 43; for Bandits it dies in one hit while Fire Boar takes two."
+        },
+        {
+          "ko": "나무 팽이는 영상 시점 13만 메소가 넘게 팔렸다는 언급이 있어요. 드롭을 그냥 넘기지 마세요.",
+          "en": "Wooden Top was quoted above 130k mesos; do not ignore the drop."
+        }
+      ],
+      "drops": [
+        2070009
+      ],
+      "evidence": [
+        "fire-guide",
+        "thief-guide",
+        "autohunt-f2p"
+      ]
+    },
+    "23": {
+      "band": [
+        37,
+        45
+      ],
+      "summary": {
+        "ko": "체력 606의 한 방 기준 몬스터예요. 파이터는 37레벨 파워스트라이크, 시프는 떡작 35제 단검으로 한 방을 노려요.",
+        "en": "The 606-HP one-shot benchmark: Fighters reach it at 37 with Power Strike, Bandits with a scrolled level-35 dagger."
+      },
+      "tips": [
+        {
+          "ko": "최소 데미지가 606을 넘으면 칠 때마다 한 방이에요. 마스터리를 먼저 채우는 이유가 여기 있어요.",
+          "en": "Once your minimum damage passes 606 every hit kills; that is why mastery comes first."
+        },
+        {
+          "ko": "시프 40~45 꿀 루트: 이블아이의 굴 4층→1층 순서로 쓸며 내려온 뒤 캐시샵에 들어갔다 나오면 맨 위층에서 다시 시작해요.",
+          "en": "Bandit route for 40 to 45: sweep the Evil Eye cave from floor 4 down to 1, then enter and leave the Cash Shop to respawn at the top."
+        },
+        {
+          "ko": "37레벨 전사가 2인 파티로 분당 약 1,000 경험치를 측정했고, 커닝 파퀘가 더 낫다고 판단해 돌아간 사례도 있어요.",
+          "en": "A level-37 Warrior measured about 1,000 EXP per minute in a duo and went back to Kerning PQ instead."
+        },
+        {
+          "ko": "파이어보어(842)를 두 번 때리는 동안 이블아이 두 마리를 잡는다면 경험치 표의 순서가 뒤집혀요.",
+          "en": "If you kill two Evil Eyes in the time two hits on a Fire Boar (842 HP) take, the EXP table order flips."
+        },
+        {
+          "ko": "40레벨 자드는 강화 전에도 이블아이를 한 방에 잡아요. 계속 이블아이를 잡을 계획이면 원킬만을 위해 바로 강화할 필요는 없어요. 이블아이의 굴 1번에는 주니어 부기가 섞여 나와요.",
+          "en": "An unscrolled Zard at 40 already one-shots Evil Eye, so there is no need to scroll just for this map. Evil Eye Cave 1 also spawns Jr. Boogies."
+        }
+      ],
+      "evidence": [
+        "clme-1-70",
+        "clme-warrior",
+        "shumi-warrior",
+        "thief-guide",
+        "voyage-warrior",
+        "warrior-play"
+      ]
+    },
+    "29": {
+      "band": [
+        30,
+        38
+      ],
+      "summary": {
+        "ko": "느려서 거의 안 맞는 30대 초반 사냥감이에요. 게파트와 30·40제 단검이 나오고 불에 약해요.",
+        "en": "A slow early-thirties target you rarely get hit by; drops Gephart and level 30/40 daggers, and is weak to fire."
+      },
+      "tips": [
+        {
+          "ko": "헌터 사례: 30~35레벨을 방황의 늪 리게이터로 보냈어요. 속도가 느려 물약값이 적게 들어요.",
+          "en": "One Hunter spent 30 to 35 on Ligators in the swamp; their slowness keeps potion costs low."
+        },
+        {
+          "ko": "전사는 커닝 파퀘 1스테이지에서 리게이터만 계속 잡는 '악어팟'으로 30~38레벨을 보내기도 해요. 글클메 파퀘는 레벨 상한이 없어요.",
+          "en": "Warriors often run 'Ligator parties' that farm stage 1 of Kerning PQ from 30 to 38; Classic World PQ has no level cap."
+        },
+        {
+          "ko": "MP가 없어서 불독의 MP 이터가 안 통해요. MP 회복 아이템을 넉넉히 챙기세요.",
+          "en": "It has no MP, so MP Eater does nothing; bring MP recovery items."
+        },
+        {
+          "ko": "40레벨 중반쯤 되면 지겹다는 평이 나와요. 콜드아이로 넘어갈 시점을 미리 보세요.",
+          "en": "By the mid-forties players call it tedious; plan the move to Cold Eye."
+        }
+      ],
+      "drops": [
+        1332012
+      ],
+      "evidence": [
+        "hunter",
+        "shumi-warrior",
+        "fire-guide",
+        "voyage-mage"
+      ]
+    },
+    "30": {
+      "band": [
+        35,
+        50
+      ],
+      "summary": {
+        "ko": "35레벨 이상 두 방이 기준이에요. 불타버린 땅 I이 붐비면 II가 한산하고, 얼음에 약하고 불에 강해요.",
+        "en": "Two hits from level 35 is the benchmark; Burnt Land II is quieter than I, and it is weak to ice but resists fire."
+      },
+      "tips": [
+        {
+          "ko": "영상 측정으로 불타버린 땅 I·II 모두 5분에 7,000~8,000 경험치 수준이에요. 유저가 적은 II를 더 추천해요.",
+          "en": "Measured about 7,000 to 8,000 EXP per 5 minutes on both Burnt Land I and II; II has fewer players."
+        },
+        {
+          "ko": "썬콜의 콜드빔 약점 사냥감이에요. 위험한 골짜기는 카파 드레이크와 섞여 있어 두 몬스터의 타수와 피격 부담이 달라요.",
+          "en": "An ice-weak target for Cold Beam; Dangerous Valley mixes in Copper Drakes with different hit counts and contact damage."
+        },
+        {
+          "ko": "불독은 불 내성 때문에 50레벨에도 여러 방이 들어가요. 다크 엑스텀프만 노리세요.",
+          "en": "Fire/Poison mages need many casts even at 50 because of fire resistance; target Dark Axe Stumps instead."
+        },
+        {
+          "ko": "궁수는 40레벨 발터2000 떡작 기준 두 방이 나올 수 있고, 45레벨에 같은 무기로 한 방 확률이 크게 올라요.",
+          "en": "Archers with a scrolled Valter 2000 may need two shots at 40; at 45 the one-shot chance rises sharply with the same bow."
+        },
+        {
+          "ko": "전사 계산 예시: 40레벨 자드는 강화 전 한 방 확률이 약 26%지만 100% 주문서 7장 뒤엔 약 80%, 45레벨엔 같은 무기로 한 방이에요. 페이지는 분노가 없어 45레벨 약 91%예요.",
+          "en": "Warrior example: an unscrolled Zard at 40 one-shots it about 26% of the time, about 80% after seven 100% scrolls, and reliably at 45; a Page without Rage sits near 91% at 45."
+        }
+      ],
+      "drops": [
+        1452005
+      ],
+      "evidence": [
+        "clme-archer",
+        "clme-warrior",
+        "fire-guide",
+        "geun",
+        "thief-guide",
+        "voyage-mage"
+      ]
+    },
+    "31": {
+      "band": [
+        37,
+        55
+      ],
+      "summary": {
+        "ko": "근접 직업의 40대 대표 사냥감이에요. 커즈아이 두 방이 나오면 커즈굴 파티로 넘어가요. 원거리 공격이 있어요.",
+        "en": "The melee classes' forties staple: once it dies in two hits, join a Curse Eye cave party. It has a ranged attack."
+      },
+      "tips": [
+        {
+          "ko": "전사는 40레벨 자드 기준 두 방이 나오면 커즈굴 파티, 혼자면 이블아이가 편해요. 30대 후반 전사·시프와 40대 중반이 함께 사냥해요.",
+          "en": "Warriors with a Zard at 40 move to Curse Eye parties at two hits; solo, Evil Eye is easier. Late-thirties to mid-forties melee share the cave."
+        },
+        {
+          "ko": "북쪽 숲 나무던전 VIII·IX가 자리예요. 5분에 7,000~8,000 경험치 수준이라는 측정이 있어요.",
+          "en": "Forest Up North VIII and IX are the spots; players measured roughly 7,000 to 8,000 EXP per 5 minutes."
+        },
+        {
+          "ko": "불독은 마력 220~230이면 한 방이라는 언급이 있지만 독에 저항해요. 포이즌 브레스는 쓰지 마세요.",
+          "en": "Fire/Poison mages report one-shots around 220 to 230 magic attack, but it resists poison; skip Poison Breath."
+        },
+        {
+          "ko": "클레릭이 텔레포트 20 이후 커즈굴에서 계속 흑자가 났다는 사례가 있어요.",
+          "en": "One Cleric reported steady profit in the cave once Teleport was maxed."
+        },
+        {
+          "ko": "날아오는 공격까지 맞으며 추격하면 높은 경험치를 물약으로 사는 사냥이 돼요.",
+          "en": "Chasing it while taking its projectiles turns high EXP into potion spending."
+        }
+      ],
+      "drops": [
+        1040058
+      ],
+      "evidence": [
+        "shumi-warrior",
+        "geun",
+        "fire-guide",
+        "cleric-play",
+        "voyage-warrior",
+        "voyage-mage",
+        "thief-guide"
+      ]
+    },
+    "32": {
+      "band": [
+        34,
+        43
+      ],
+      "summary": {
+        "ko": "목비 표창이 나오는 30대 중반 사냥감이에요. 포커스 10 기준 35레벨부터 미스가 안 떠요.",
+        "en": "The mid-thirties target that drops Mokbi stars; with Focus 10 misses stop around level 35."
+      },
+      "tips": [
+        {
+          "ko": "30대 초반에는 명중이 모자라 적자예요. 같은 레벨 기준 필요 명중은 아래 표를 보세요.",
+          "en": "In the early thirties accuracy is short and you lose money; see the accuracy table below."
+        },
+        {
+          "ko": "불독의 대표 사냥터예요. 파이어 애로우 두 방, 마스터 후 한두 방이고 불·성에 약해요. 사람이 몰려 자리 잡기는 어려워요.",
+          "en": "The signature Fire/Poison map: two Fire Arrows, one or two after mastering, with fire and holy weakness. Expect crowds."
+        },
+        {
+          "ko": "언데드이고 MP가 있어 클레릭 힐 사냥과 MP 이터 모두 가능해요.",
+          "en": "Undead with an MP pool, so both Cleric Heal and MP Eater work."
+        },
+        {
+          "ko": "목비를 2~3레벨 올리는 동안 두 개 먹은 사람도 있다는 언급이 있지만, 드롭률은 확인된 적이 없어요.",
+          "en": "Players mention getting two Mokbi drops within a few levels, but no drop rate has ever been measured."
+        },
+        {
+          "ko": "2호선 1구역에는 주니어 네키가 함께 나와요. 주니어 레이스만 잘 잡히는지가 아니라 네키에 미스가 자주 뜨는지도 보세요.",
+          "en": "Line 2 Area 1 also spawns Jr. Neckis; check your miss rate on them, not just on Jr. Wraith."
+        }
+      ],
+      "drops": [
+        2070002
+      ],
+      "evidence": [
+        "clme-1-70",
+        "fire-guide",
+        "hunter",
+        "mujin",
+        "thief-guide",
+        "voyage-mage"
+      ]
+    },
+    "35": {
+      "band": [
+        43,
+        55
+      ],
+      "summary": {
+        "ko": "원숭이숲의 금비·베즐러드 파밍 몬스터예요. 시프는 45레벨 떡 베즐러드를 끼고 여기로 와요.",
+        "en": "The Monkey Forest farm for Kumbi stars and Bazlud; Bandits come here at 45 with a scrolled Bazlud."
+      },
+      "tips": [
+        {
+          "ko": "표도는 43~47레벨 원숭이숲·원숭이의 늪이 1티어예요. 좀비루팡이 한 방에 죽으면 그쪽으로 옮기세요.",
+          "en": "Assassins rate Monkey Forest and Swamp tier one from 43 to 47; move to Zombie Lupin once it dies in one hit."
+        },
+        {
+          "ko": "베즐러드(45제)는 힘 40이 필요해요. 시프 랭커도 50레벨에 이 단검을 들고 있었어요.",
+          "en": "Bazlud (level 45) needs 40 STR; a Bandit ranker was still using it at 50."
+        },
+        {
+          "ko": "슬리피 던전 II와 서쪽바위산 IV에도 섞여 나와요. 두 방이 나오면 사람이 적은 그쪽이 더 편할 수 있어요.",
+          "en": "Also found in Sleepy Dungeon II and West Rocky Mountain IV; at two hits those quieter maps can be easier."
+        },
+        {
+          "ko": "원숭이의 숲 II에서 55레벨 표도가 직접 재 본 결과 시간당 경험치 약 11만으로 낮았지만 메소는 7만으로 가장 많이 남았어요.",
+          "en": "A level-55 Assassin measured about 110k EXP per hour in Monkey Forest II, low, but 70k mesos kept, the best profit in that comparison."
+        }
+      ],
+      "drops": [
+        2070003,
+        1332014
+      ],
+      "evidence": [
+        "clme-36-70",
+        "geun",
+        "thief-guide",
+        "voyage-warrior"
+      ]
+    },
+    "36": {
+      "band": [
+        40,
+        55
+      ],
+      "summary": {
+        "ko": "플로리나 비치의 6인 파티 사냥터예요. 43레벨 발터 떡작 기준 딱 두 방이고, 태극부채·단검 공격력 주문서가 나와요.",
+        "en": "The six-person party map at Florina Beach: exactly two hits with a scrolled Valter at 43, dropping the Korean Fan and Dagger Attack scrolls."
+      },
+      "tips": [
+        {
+          "ko": "럭키세븐 한 방에 안 죽어요. 마스터리 없이 오면 적자예요.",
+          "en": "Lucky Seven does not one-shot it; without mastery you lose money."
+        },
+        {
+          "ko": "오른쪽은 떨어지면 바닥까지 추락해요. 발판이 있는 왼쪽이나 꼭대기가 낫지만 꼭대기는 로프를 많이 타야 해요.",
+          "en": "The right side drops you to the floor; the left or the very top is safer, though the top needs many rope climbs."
+        },
+        {
+          "ko": "1층이 경험치는 높지만 물약이 많이 들고, 2층이 물약 절약에 좋아요. 맵이 커서 두 파티가 함께 돌아도 괜찮아요.",
+          "en": "Floor 1 gives more EXP but burns potions; floor 2 saves them. The map is large enough for two parties."
+        },
+        {
+          "ko": "불독은 파이어 애로우가 지형에 열에 아홉은 막혀 콜드아이로 돌아왔다는 후기가 있어요. 번개 자리로도 위아래로 흩어져 있어 애매해요.",
+          "en": "One Fire/Poison mage found Fire Arrow blocked nine times out of ten and went back to Cold Eye; it is also a poor Thunderbolt spot because targets spread vertically."
+        },
+        {
+          "ko": "47~50레벨 표도에게는 로랑도 흑자가 난다는 평이에요. 태극부채 시세는 영상 시점에 계속 내려가고 있었어요.",
+          "en": "From 47 to 50 Assassins report profit here; the Korean Fan price was falling at the time of the videos."
+        },
+        {
+          "ko": "회피가 낮아 같은 레벨이면 명중 79로 충분해요(아래 표와 일치). 한 번에 36마리가 나와 여러 명이 있어도 몹이 남고, 번개에 약해 썬콜이 특히 편해요.",
+          "en": "Low avoidability: 79 accuracy suffices at the same level (matches the table below). 36 spawn at once, so monsters remain even in a crowd, and it is lightning-weak, which suits Ice/Lightning mages."
+        }
+      ],
+      "drops": [
+        1332013,
+        2043301
+      ],
+      "evidence": [
+        "clme-36-70",
+        "fire-guide",
+        "hunter",
+        "mujin",
+        "thief-guide",
+        "voyage-mage"
+      ]
+    },
+    "37": {
+      "band": [
+        43,
+        65
+      ],
+      "summary": {
+        "ko": "고드름과 블루 스타라이트로 흑자가 나는 40~60대 대표 사냥감이에요. 자리 경쟁이 심해요.",
+        "en": "The profitable forties-to-sixties staple thanks to Icicle and Blue Starlight drops; expect fierce competition for spots."
+      },
+      "tips": [
+        {
+          "ko": "옥상에서 쉽게 잡는 자리와 2층 낚시 자리가 있어요. 60레벨까지 여기서 올린 사람도 있었다는 언급이 있어요.",
+          "en": "There is an easy rooftop spot and a second-floor 'fishing' spot; some players stayed until 60."
+        },
+        {
+          "ko": "불독은 38레벨에 명중 100%가 되고 파이어 애로우 세 방이에요. 맵까지 10분 넘게 걸어갔는데 자리가 없던 후기도 있어요.",
+          "en": "Fire/Poison mages hit 100% accuracy at 38 and need three Fire Arrows; one walked ten minutes only to find every channel full."
+        },
+        {
+          "ko": "갑자기 달려들어 뒤로 밀려나면 서너 마리가 몰려요. 헌터는 애로우 봄 같은 다수기가 편하다는 의견이 있어요.",
+          "en": "It rushes and knocks you back, so three or four can pile up; Hunters find Arrow Bomb handy here."
+        },
+        {
+          "ko": "성역 입구에서도 나와요. 76레벨 시프가 스틸로 두 방에 잡는 모습이 기록돼 있어요.",
+          "en": "Also spawns at the Sanctuary Entrance, where a level-76 Bandit killed it in two hits with Steal."
+        }
+      ],
+      "drops": [
+        2070010,
+        1050025
+      ],
+      "evidence": [
+        "hunter",
+        "fire-guide",
+        "bandit-play",
+        "voyage-mage"
+      ]
+    },
+    "38": {
+      "band": [
+        43,
+        60
+      ],
+      "summary": {
+        "ko": "검은색 모험가의 망토와 36레벨 장공 퀘스트(저주받은 인형)의 주인공이에요. 언데드이고 원거리 공격을 해요.",
+        "en": "Source of the Black Napoleon cape and of the level-36 glove-attack quest (cursed dolls); undead with a ranged attack."
+      },
+      "tips": [
+        {
+          "ko": "엘리니아 요정 로엔의 저주받은 인형 퀘스트는 50·70·100·150개를 가져가며, 마지막 보상이 장갑 공격력 또는 장갑 마력 주문서 반반이에요. 사우나 로브 퀘스트를 먼저 끝내야 받아요.",
+          "en": "Roen's cursed-doll quest in Ellinia asks for 50, 70, 100 and 150 dolls; the final reward is a Gloves Attack or Gloves Magic Attack scroll at even odds. Finish the Sauna Robe quest first."
+        },
+        {
+          "ko": "시프는 템이 좋아져 한 방에 죽을 때 루팡에서 넘어와요. 50레벨 시프 랭커가 분당 2,700 경험치로 조사 중 가장 빨랐어요.",
+          "en": "Bandits move over from Lupin once it dies in one hit; a level-50 Bandit ranker measured 2,700 EXP per minute, the fastest in that survey."
+        },
+        {
+          "ko": "클레릭의 언데드 힐 사냥 후보예요. 원거리 공격도 하니 힐이 있다고 맞는 횟수를 무시하지 마세요.",
+          "en": "A Cleric Heal-hunting candidate; it also shoots, so do not ignore incoming hits just because you can heal."
+        },
+        {
+          "ko": "체력 1,774로 커즈아이(1,001)보다 훨씬 단단해요. 50대 전사는 둘을 비교해서 고르세요.",
+          "en": "At 1,774 HP it is far tougher than Curse Eye (1,001); Warriors in their fifties should compare the two."
+        },
+        {
+          "ko": "마법 공격을 해서 물약이 꽤 든다는 후기가 많아요. 명중이 모자라면 같은 레벨보다 회피가 낮은 몬스터를 고르는 게 핵심이에요.",
+          "en": "Many players note its magic attack burns potions; if accuracy is short, pick a lower-avoidability monster rather than a lower-level one."
+        }
+      ],
+      "drops": [
+        1102008
+      ],
+      "evidence": [
+        "autohunt-f2p",
+        "cleric-play",
+        "clme-36-70",
+        "geun",
+        "thief-guide",
+        "voyage-mage",
+        "voyage-warrior"
+      ]
+    },
+    "40": {
+      "band": [
+        45,
+        60
+      ],
+      "summary": {
+        "ko": "v1.1.0 패치로 체력이 2,379로 줄었어요. 넉백 기준 피해가 450이라 약한 한 줄은 밀어내지 못해요.",
+        "en": "HP was cut to 2,379 in v1.1.0; its knockback threshold is 450, so a weak hit line will not push it back."
+      },
+      "tips": [
+        {
+          "ko": "위험한 골짜기에서 파이어보어와 섞여 나와요. 약점(얼음)은 맞아도 타수와 몸박 부담이 파이어보어와 달라요.",
+          "en": "Mixed with Fire Boars in Dangerous Valley; even with the ice weakness, hit counts and contact damage differ from Fire Boar."
+        },
+        {
+          "ko": "예전 체력표로 계산하지 마세요. 체력이 줄었다고 내 명중과 넉백이 자동으로 충분해지는 건 아니에요.",
+          "en": "Do not use old HP tables; lower HP does not make your accuracy or knockback automatically sufficient."
+        },
+        {
+          "ko": "40제 바지(다크 쉐도우 바지)가 여기서 나와요.",
+          "en": "The level-40 Dark Shadow Pants drop here."
+        }
+      ],
+      "drops": [
+        1060059
+      ],
+      "evidence": [
+        "voyage-warrior",
+        "voyage-mage",
+        "thief-guide"
+      ]
+    },
+    "43": {
+      "band": [
+        46,
+        70
+      ],
+      "summary": {
+        "ko": "빅토리아에서 경험치가 가장 높은 축에 드는 40대 후반 이후 사냥감이에요. 48레벨 기준 명중 104가 필요하고 에메랄드 귀고리·붉은 채찍이 나와요.",
+        "en": "Among the highest-EXP targets on Victoria from the late forties; needs 104 accuracy at level 48 and drops Emerald Earrings and the Red Whip."
+      },
+      "tips": [
+        {
+          "ko": "움직임이 둔해서 맞을 일이 적어요. 1호선 4구역은 위로 올라가서 잡을 수 있고, 2호선 3구역과는 사다리·발판 동선이 달라요.",
+          "en": "Sluggish, so you rarely get hit. Line 1 Area 4 lets you attack from above; Line 2 Area 3 has a different ladder layout."
+        },
+        {
+          "ko": "49레벨 불독이 명중 104·마력 255로 혼자 한 시간 남짓 잡아 분당 2,149 경험치를 기록했어요. 모자·방패 명중 주문서와 명중 물약을 썼어요.",
+          "en": "A level-49 Fire/Poison mage with 104 accuracy and 255 magic attack logged 2,149 EXP per minute solo for about an hour, using accuracy scrolls on hat and shield plus accuracy potions."
+        },
+        {
+          "ko": "46레벨에 명중 물약을 먹고 억지로 잡아 봤는데 경험치와 체경비가 좋아 50레벨까지 버텼다는 표도 사례가 있어요.",
+          "en": "One Assassin forced it at 46 with accuracy potions and stayed to 50 because the EXP-to-HP ratio was worth it."
+        },
+        {
+          "ko": "언데드라 클레릭이 모여 사냥해요. 홀리 애로우가 주력이고 힐은 피 채우기용이라는 평이에요.",
+          "en": "Undead, so Clerics gather here; Holy Arrow is the main attack and Heal is for topping up HP."
+        },
+        {
+          "ko": "불 약점은 아니고 회피가 높아요. 레이스가 꽉 차면 군영 1~3이나 슬리피 던전 IV가 대안으로 거론돼요.",
+          "en": "Not fire-weak and high avoidability; when the Wraith maps are full, Camp 1 to 3 or Sleepy Dungeon IV come up as alternatives."
+        },
+        {
+          "ko": "피를 회복하는 몬스터라 오래 끌면 방 컷 계산보다 더 때리게 돼요. 48레벨 클레릭이 두 방에 잡고도 분당 200메소 적자였다는 실측 제보가 있어요.",
+          "en": "It regenerates HP, so dragging a fight out costs more hits than the kill-count math suggests; a level-48 Cleric reported losing 200 mesos a minute despite two-hit kills."
+        }
+      ],
+      "drops": [
+        1032007,
+        1302011
+      ],
+      "evidence": [
+        "cleric-play",
+        "clme-1-70",
+        "clme-36-70",
+        "fire-guide",
+        "hunter",
+        "mujin",
+        "voyage-mage"
+      ]
+    },
+    "45": {
+      "band": [
+        43,
+        60
+      ],
+      "summary": {
+        "ko": "43레벨부터 미스가 안 뜨기 시작해요. 위험한 골짜기 1층 낚시 자리에서 덜 맞고 잡을 수 있고 다크 필퍼가 나와요.",
+        "en": "Misses stop around level 43; the first-floor 'fishing' spot in Dangerous Valley keeps you out of reach, and it drops the Dark Pilfer."
+      },
+      "tips": [
+        {
+          "ko": "1층 낚시 자리에서 쏘면 범위가 다 닿아요. 사람이 늘 많아 파티에 들어가기 어려워요.",
+          "en": "From the first-floor fishing spot your attacks reach the whole area; it is always crowded, so parties are hard to join."
+        },
+        {
+          "ko": "한 마리씩 잡는 곳이라 헌터의 파이널 어택이 좋은 선택지예요.",
+          "en": "You kill one at a time here, so Hunter Final Attack is a good pick."
+        },
+        {
+          "ko": "불에 강해요. 50레벨 불독도 파이어 애로우 6~8발이 들어가요.",
+          "en": "Fire-resistant: even a level-50 Fire/Poison mage needs six to eight Fire Arrows."
+        },
+        {
+          "ko": "패치로 경험치가 142에서 133으로 줄었어요. 불과 얼음에 모두 내성이라 이 두 속성이 주력이면 레이스를 유지하는 편이 나아요.",
+          "en": "EXP dropped from 142 to 133 in a patch. Resists both fire and ice, so mages of either element should stay on Wraith."
+        }
+      ],
+      "drops": [
+        1002156,
+        2070003
+      ],
+      "evidence": [
+        "clme-1-70",
+        "clme-36-70",
+        "fire-guide",
+        "hunter",
+        "thief-guide"
+      ]
+    },
+    "44": {
+      "band": [
+        45,
+        60
+      ],
+      "summary": {
+        "ko": "플로리나 비치의 번개 사냥 후보예요. 요구 스탯이 없는 40제 노란색 우산이 나와요.",
+        "en": "A Thunderbolt candidate at Florina Beach that drops the stat-free level-40 Yellow Umbrella."
+      },
+      "tips": [
+        {
+          "ko": "로랑 앤 클랑·클랑 앤 로랑은 섞인 몬스터와 발판 배치가 달라요. 위아래로 흩어져 한 마리씩 맞으면 좋은 번개 자리가 아니에요.",
+          "en": "Lorang & Clang and Clang & Lorang differ in mix and platforms; if targets spread vertically and you hit one at a time, it is a poor Thunderbolt spot."
+        },
+        {
+          "ko": "노란색 우산은 요구 스탯이 없어 올인트 법사도 낄 수 있어요. v1.1.0 패치로 체력이 줄었어요.",
+          "en": "The Yellow Umbrella has no stat requirement, so all-INT mages can equip it. HP was reduced in v1.1.0."
+        }
+      ],
+      "drops": [
+        1302013
+      ],
+      "evidence": [
+        "voyage-mage",
+        "fire-guide"
+      ]
+    },
+    "46": {
+      "band": [
+        50,
+        62
+      ],
+      "summary": {
+        "ko": "50레벨 이후 불독의 불 약점 단일 사냥감이에요. 레이스보다 자리가 널널해요.",
+        "en": "A fire-weak single target for Fire/Poison mages past 50, with far less competition than Wraith."
+      },
+      "tips": [
+        {
+          "ko": "레이스에서 자리를 못 잡을 때 혼자 사냥하기 좋다는 평이에요.",
+          "en": "Recommended for solo play when the Wraith maps are taken."
+        }
+      ],
+      "evidence": [
+        "fire-guide",
+        "voyage-mage"
+      ]
+    },
+    "47": {
+      "band": [
+        58,
+        75
+      ],
+      "summary": {
+        "ko": "60대 전사가 사악한 숲 II에서 콜드아이·레이스와 비교하는 사냥감이에요. 체력 2,998에 경험치 167이에요.",
+        "en": "A sixties Warrior comparison target in the Forest of Evil II; 2,998 HP for 167 EXP."
+      },
+      "tips": [
+        {
+          "ko": "경험치만 보고 이동과 원거리 공격을 무시하지 말고, 안정적으로 묶을 자리부터 확인하세요.",
+          "en": "Do not chase the EXP figure; check travel and ranged attacks, and find a spot where you can group them."
+        }
+      ],
+      "evidence": [
+        "voyage-warrior"
+      ]
+    },
+    "48": {
+      "band": [
+        55,
+        70
+      ],
+      "summary": {
+        "ko": "스틸 슬레인이 나오는 50대 후반 사냥감이에요. 독에 저항해요.",
+        "en": "A late-fifties target that drops the Steel Slain; poison-resistant."
+      },
+      "tips": [
+        {
+          "ko": "성 속성에 약하지만 언데드가 아니라 힐로는 잡을 수 없어요. 홀리 애로우로 상대하세요.",
+          "en": "Weak to Holy but not undead, so Heal does nothing; use Holy Arrow."
+        },
+        {
+          "ko": "헤네시스 골렘의 사원 입구가 후보예요. 더 센 몹이라는 이유만으로 옮기지 말고 레이스와 같은 시간에 잡는 마릿수를 비교하세요.",
+          "en": "The Golem Temple entrance near Henesys is the spot; compare kills per minute against Wraith instead of moving just because it is stronger."
+        }
+      ],
+      "drops": [
+        1472018
+      ],
+      "evidence": [
+        "clme-1-70",
+        "voyage-mage"
+      ]
+    },
+    "49": {
+      "band": [
+        50,
+        65
+      ],
+      "summary": {
+        "ko": "토비 표창이 나오지만 적자가 나기 쉬운 사냥감이에요. 명중 작업 없이는 50대 초반에 미스가 떠요.",
+        "en": "Drops Tobi stars but easily runs a loss; without accuracy gear misses are common in the early fifties."
+      },
+      "tips": [
+        {
+          "ko": "50대 초반 헌터는 최상급 저격수 포션과 모자 명중 떡작으로 미스를 없앴지만 생각보다 많이 맞아 적자를 감당 못 하고 옮겼어요.",
+          "en": "An early-fifties Hunter removed misses with top sniper potions and an accuracy-scrolled hat, still took too many hits and left because of the losses."
+        },
+        {
+          "ko": "골렘 뒤에 루팡이 숨어 있을 때가 있어요. 애로우 봄으로 같이 터뜨리는 운영이 언급돼요.",
+          "en": "Lupins hide behind the golems; Arrow Bomb can catch both."
+        },
+        {
+          "ko": "성 속성에 약하지만 언데드가 아니라 힐로는 못 잡아요. 독에도 저항해요. 71레벨 파이터도 유적지에서는 적자라고 했어요.",
+          "en": "Weak to Holy but not undead, so Heal fails; also poison-resistant. Even a level-71 Fighter called the ruins a money-loser."
+        },
+        {
+          "ko": "자리가 많지 않고 사람이 많아요. 토비를 먹으면 한 번에 회수된다는 말은 득템 운이지 사냥 효율이 아니에요.",
+          "en": "Few spots, many players. 'One Tobi pays it all back' is drop luck, not efficiency."
+        },
+        {
+          "ko": "슬리피 던전 V는 패치로 한 번에 나오는 몹이 31→20마리로 줄고 리젠도 느려져 지금은 비추천이에요. 바로 앞 던전 IV는 맵이 작아 골렘과 커즈아이가 한 화면에 몰려요. 같은 레벨 기준 필요 명중은 101이에요.",
+          "en": "Sleepy Dungeon V now spawns 20 instead of 31 and respawns slower after the patch, so it is no longer recommended; Dungeon IV next door is compact, with golems and Curse Eyes on one screen. Needs 101 accuracy at the same level."
+        }
+      ],
+      "drops": [
+        2070004,
+        1402007
+      ],
+      "evidence": [
+        "clme-1-70",
+        "clme-36-70",
+        "fighter-play",
+        "hunter",
+        "thief-guide",
+        "voyage-mage"
+      ]
+    },
+    "50": {
+      "band": [
+        58,
+        80
+      ],
+      "summary": {
+        "ko": "얼음에 약한 60대 사냥감이에요. 50레벨 넘은 랭커와 65레벨 썬콜이 잡는 모습이 기록돼 있어요.",
+        "en": "An ice-weak sixties target; rankers past 50 and a level-65 Ice/Lightning mage were seen hunting it."
+      },
+      "tips": [
+        {
+          "ko": "썬콜은 레드 드레이크·타우로 계열을 무조건 목표로 삼기보다 낮은 몬스터를 묶는 번개 사냥과 비교하세요.",
+          "en": "Ice/Lightning mages should compare it with grouping weaker targets under Thunderbolt rather than treating it as the default goal."
+        },
+        {
+          "ko": "뇌전 수리검이 나오지만 영상 시점에는 매물이 거의 없었어요.",
+          "en": "Drops Steely Throwing Knives, though almost none were on the market at the time."
+        }
+      ],
+      "drops": [
+        2070005
+      ],
+      "evidence": [
+        "thief-guide",
+        "cleric-play",
+        "voyage-mage"
+      ]
+    },
+    "51": {
+      "band": [
+        70,
+        100
+      ],
+      "summary": {
+        "ko": "71레벨 파이터가 올림푸스와 고드름을 파밍하던 고레벨 사냥감이에요. 몸박을 계속 받아 적자가 나기 쉬워요.",
+        "en": "A high-level target where a level-71 Fighter farmed Olympus and Icicles; constant contact damage makes it costly."
+      },
+      "tips": [
+        {
+          "ko": "체력 5,057에 경험치 231. 커맨더 스켈레톤(11,915·390)과 비교하면 체력은 두 배 넘는데 경험치는 두 배가 안 돼요.",
+          "en": "5,057 HP for 231 EXP; Commander Skeleton has over twice the HP (11,915) for less than twice the EXP (390)."
+        },
+        {
+          "ko": "80레벨 이후에도 명중·방 컷·몸박 조건을 함께 만족할 때만 검토하라는 조언이 있어요.",
+          "en": "Even past 80, consider it only when accuracy, kill threshold and survivability all line up."
+        }
+      ],
+      "drops": [
+        1452007
+      ],
+      "evidence": [
+        "fighter-play",
+        "voyage-warrior"
+      ]
+    },
+    "52": {
+      "band": [
+        65,
+        100
+      ],
+      "summary": {
+        "ko": "번개를 버티는 70레벨 몬스터예요. 60레벨을 넘긴 뒤 목표로 거론돼요.",
+        "en": "A level-70 monster that shrugs off lightning; mentioned as a goal after 60."
+      },
+      "tips": [
+        {
+          "ko": "레벨이 높아졌다고 번개 하나로 해결되지 않아요. 얼음 약점은 있지만 번개에 저항해요.",
+          "en": "Higher level does not make Thunderbolt enough; it is ice-weak but lightning-resistant."
+        }
+      ],
+      "evidence": [
+        "voyage-mage",
+        "mujin"
+      ]
+    },
+    "65": {
+      "band": [
+        52,
+        62
+      ],
+      "summary": {
+        "ko": "유적의 무덤 III의 주력이에요. 1·2층뿐인 단순한 맵이라 표도뿐 아니라 전사·클레릭·법사도 많이 와요.",
+        "en": "The main target of Tomb III, a simple two-floor map used by Assassins, Warriors, Clerics and mages alike."
+      },
+      "tips": [
+        {
+          "ko": "언데드지만 MP가 없어요. 클레릭 힐 사냥은 되지만 MP 이터로 회수가 안 돼요.",
+          "en": "Undead but without MP: Cleric Heal works, MP Eater does not."
+        },
+        {
+          "ko": "50레벨에 레이스에서 넘어오는 흐름이 많아요. 담당 층 밖으로 쫓으면 이동 시간이 늘어요.",
+          "en": "Most arrive from Wraith around 50; chasing outside your floor wastes time."
+        },
+        {
+          "ko": "같은 레벨 기준 필요 명중 89로 레이스(104)보다 훨씬 덜 들어요. 성 속성 공격이 25% 더 들어가 클레릭에게 특히 좋아요.",
+          "en": "Needs 89 accuracy at the same level, far less than Wraith (104); Holy attacks deal 25% more, so Clerics benefit most."
+        }
+      ],
+      "drops": [
+        1092013
+      ],
+      "evidence": [
+        "clme-36-70",
+        "mujin",
+        "voyage-mage"
+      ]
+    },
+    "66": {
+      "band": [
+        52,
+        65
+      ],
+      "summary": {
+        "ko": "유적의 무덤에서 스켈독과 함께 나오는 언데드예요. 장팔사모가 나와요.",
+        "en": "The undead partner of Skeledog in the Tomb, dropping the Serpent's Tongue polearm."
+      },
+      "tips": [
+        {
+          "ko": "MP가 없어 MP 이터로 회수가 안 돼요. 힐 사냥이 된다는 장점과 함께 보세요.",
+          "en": "No MP, so MP Eater yields nothing; weigh that against Heal working on it."
+        },
+        {
+          "ko": "같은 레벨 기준 필요 명중 95예요. 무덤 III은 머미독 위주이고 몹 배율이 높아 많이 나와요.",
+          "en": "Needs 95 accuracy at the same level; Tomb III is mostly Mummydogs with a high spawn multiplier."
+        }
+      ],
+      "drops": [
+        1432006
+      ],
+      "evidence": [
+        "clme-36-70",
+        "mujin",
+        "voyage-mage"
+      ]
+    },
+    "67": {
+      "band": [
+        58,
+        80
+      ],
+      "summary": {
+        "ko": "군영 1의 층별 파티 사냥감이에요. 1~4층을 한 명씩 맡는 6인 파티가 정석이고 80레벨 이상도 여기서 사냥해요.",
+        "en": "The floor-by-floor party target of Camp 1: six-person parties take one floor each, and players above 80 still hunt here."
+      },
+      "tips": [
+        {
+          "ko": "컨트롤이 거의 필요 없이 자리에 앉아서 잡는 곳이라 랭커들도 머물러요.",
+          "en": "Little movement is needed; even rankers stay here for the steady pace."
+        },
+        {
+          "ko": "클레릭은 안쪽보다 바깥쪽 1·2층을 나눠 쓰는 경우가 많고, 불독도 함께 사냥해요.",
+          "en": "Clerics often split the outer floors 1 and 2 instead of the inner section, and Fire/Poison mages hunt alongside."
+        },
+        {
+          "ko": "군영 1은 25마리 중 20마리가 사병이고 같은 레벨 기준 필요 명중은 111이에요. 60레벨쯤 장교가 많은 군영 3(필요 명중 120)으로 넘어가요.",
+          "en": "Camp 1 spawns 20 Soldiers among 25 monsters and needs 111 accuracy at the same level; around 60 players move to Camp 3, where Officers dominate (120 accuracy)."
+        }
+      ],
+      "evidence": [
+        "cleric-play",
+        "clme-36-70",
+        "mujin"
+      ]
+    },
+    "68": {
+      "band": [
+        60,
+        85
+      ],
+      "summary": {
+        "ko": "군영 안쪽의 상위 스켈레톤이에요. 사병과 같은 파티 구조로 사냥해요.",
+        "en": "The senior skeleton deeper in the Camp, hunted with the same party structure as the Soldier."
+      },
+      "tips": [
+        {
+          "ko": "구룡도와 해골 방패 제보가 반복돼요. 레이스가 꽉 찼을 때 군영 1~3이 대안으로 거론돼요.",
+          "en": "Repeated reports of the Nine Dragons polearm and Skull Shield; Camp 1 to 3 are named as the fallback when Wraith is full."
+        },
+        {
+          "ko": "군영 3의 주력이에요. 같은 레벨 기준 필요 명중 120이고 언데드라 성 속성이 잘 들어가요.",
+          "en": "The main target of Camp 3: 120 accuracy at the same level, and undead, so Holy lands well."
+        }
+      ],
+      "evidence": [
+        "clme-36-70",
+        "fire-guide",
+        "mujin"
+      ]
+    },
+    "69": {
+      "band": [
+        70,
+        100
+      ],
+      "summary": {
+        "ko": "체력 11,915의 73레벨 언데드예요. 독에 면역이라 불독은 피하세요.",
+        "en": "A level-73 undead with 11,915 HP; immune to poison, so Fire/Poison mages should avoid it."
+      },
+      "tips": [
+        {
+          "ko": "언데드라는 이유만으로 더 빨리 잡히지 않아요. 상태 이상도 걸어요.",
+          "en": "Being undead does not make it quicker to kill, and it inflicts status effects."
+        }
+      ],
+      "evidence": [
+        "voyage-mage",
+        "voyage-warrior"
+      ]
+    },
+    "700004": {
+      "summary": {
+        "ko": "20레벨 필드 보스예요. 정식 오픈 후 마노 퀘스트가 생겼고, 파티 없이 잡으면 아이템이 안 떠요.",
+        "en": "The level-20 field boss; a Mano quest arrived with the launch, and drops require a party."
+      },
+      "tips": [
+        {
+          "ko": "젠 시간은 랜덤이라는 언급이 있어요. 30분 만에 나온 사례가 있지만 확실하지 않아요.",
+          "en": "Respawn is described as random; one player saw it after 30 minutes but could not confirm a pattern."
+        }
+      ],
+      "evidence": [
+        "quest"
+      ]
+    }
+  }
+}

@@ -105,3 +105,28 @@ test('monster details, search destinations and calculator links share the same s
   assert.ok(read('dist/sitemap.xml').includes('/ko/monsters/31/'));
   assert.ok(!fs.existsSync(new URL('dist/data/editorial/monsters.json',root)));
 });
+test('every training route names its monsters and new evidence-backed routes appear for their classes',()=>{
+  const monsters=JSON.parse(read('data/monsters.json')).monsters;
+  for(const r of training.routes){
+    assert.ok(r.mobIds.length,r.id);
+    for(const id of r.mobIds) assert.ok(monsters.some(m=>m.id===id),`${r.id} ${id}`);
+  }
+  const ids=(o)=>selectRoutes(training.routes,o).map(r=>r.id);
+  assert.ok(ids({level:36,job:'fire'}).includes('jr-wraith'));
+  assert.ok(ids({level:36,job:'fire'}).includes('burnt-stump-fp'));
+  assert.ok(!ids({level:36,job:'warrior'}).includes('burnt-stump-fp'));
+  assert.ok(ids({level:32,job:'warrior'}).includes('kpq-ligator'));
+  assert.ok(!ids({level:32,job:'warrior',party:'solo'}).includes('kpq-ligator'));
+  assert.ok(ids({level:20,job:'mage'}).includes('bubbling'));
+  assert.ok(ids({level:45,job:'assassin'}).includes('monkey-assassin'));
+  assert.ok(ids({level:55,job:'fire'}).includes('croco-fp'));
+  assert.ok(!ids({level:60,job:'ice'}).includes('red-drake'),'advanced route hidden by default');
+  assert.ok(ids({level:60,job:'ice',advanced:true}).includes('red-drake'));
+  assert.ok(ids({level:55,job:'cleric'}).includes('tomb3'),'Tomb III opened to all classes');
+  // Built training page carries monster chips with the sure-hit accuracy and anchors the bestiary links to.
+  const html=read('dist/ko/tools/training/level-41-50/index.html');
+  assert.ok(html.includes('id="route-wraith"')&&html.includes('필요 명중 104'));
+  assert.ok(read('dist/ko/tools/training/index.html').includes('"mobs":[{"id":43,'),'route monsters shipped in the page data');
+  assert.ok(read('dist/ko/monsters/43/index.html').includes('/ko/tools/training/?lv=48#route-wraith'));
+  assert.ok(read('dist/ko/items/1032007-emerald-earrings/index.html').includes('드롭하는 몬스터'));
+});

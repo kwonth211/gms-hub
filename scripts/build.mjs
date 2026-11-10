@@ -492,6 +492,26 @@ const PAGES = [
 // Shared reviewed snapshot keeps home search, calculator and detail pages consistent.
 const MONSTERS = readJson('data/monsters.json');
 const MOBS = MONSTERS.monsters.map(m => ({ ...m, status: m.status === 'active' ? undefined : m.status }));
+// Player-sourced hunting notes per monster; evidence ids resolve in data/editorial/korean-guides.json and never reach HTML.
+const MONSTER_NOTES = readJson('data/monster-notes.json');
+const MOB_BY_ID = new Map(MONSTERS.monsters.map((m) => [m.id, m]));
+for (const [id, n] of Object.entries(MONSTER_NOTES.notes)) {
+  const m = MOB_BY_ID.get(Number(id));
+  if (!m) throw new Error(`Hunting note for unknown monster ${id}`);
+  for (const e of n.evidence || []) if (!editorialEvidence.sources.some((s) => s.id === e)) throw new Error(`Unresolved note source ${e} (${id})`);
+  for (const d of n.drops || []) if (!m.drops.some((x) => x.itemId === d)) throw new Error(`Note names a drop ${d} not reported for ${m.en}`);
+}
+// Rank of EXP per HP among monsters that can be hunted now.
+const RATIO_RANK = (() => {
+  const live = MONSTERS.monsters.filter((m) => m.status === 'active' && !m.boss).sort((a, b) => b.exp / b.hp - a.exp / a.hp || a.id - b.id);
+  return new Map(live.map((m, i) => [m.id, { rank: i + 1, total: live.length }]));
+})();
+// Training routes carry their monsters (name, HP, accuracy for a sure hit at the route's first level) into the page data.
+validateTraining(training, editorialEvidence, MONSTERS.monsters);
+for (const r of training.routes) r.mobs = r.mobIds.map((id) => { const m = MOB_BY_ID.get(id); return { id, ko: m.ko || m.en, en: m.en, lv: m.lv, hp: m.hp, acc: dmgAccNeed(r.level.min, m) }; });
+// Which monsters drop an item, for the item pages.
+const DROP_INDEX = new Map();
+for (const m of MONSTERS.monsters) for (const d of m.drops) (DROP_INDEX.get(d.itemId) || DROP_INDEX.set(d.itemId, []).get(d.itemId)).push({ m, confidence: d.confidence });
 // Retain level-band URLs with conditional routes and detailed entry requirements.
 const TR_BANDS = [[1, 10], [11, 20], [21, 30], [31, 40], [41, 50], [51, 60], [61, 80]];
 const TR_MAX = TR_BANDS.at(-1)[1];
@@ -1961,6 +1981,17 @@ function itemDesc(lang, i) {
   return fill(t.desc, { name, basis: t.basis[p.basis], median: mesoText(lang, p.median), n: p.n, low: mesoText(lang, p.low), high: mesoText(lang, p.high) });
 }
 
+// Monsters reported to drop this item (community reports, see the bestiary), available maps first, then by level.
+function dropMonsters(lang, i) {
+  const ko = lang === 'ko';
+  const rows = (DROP_INDEX.get(i.id) || []).slice().sort((a, b) => (a.m.status === 'active' ? 0 : 1) - (b.m.status === 'active' ? 0 : 1) || a.m.lv - b.m.lv);
+  if (!rows.length) return '';
+  const status = (m) => m.status === 'active' ? '' : `<span class="monster-tag status-${m.status}">${m.status === 'upcoming' ? (ko ? '11/18 개방' : 'Opens Nov 18') : (ko ? '미개방' : 'Unreleased')}</span>`;
+  return `<section class="panel item-drop-mobs"><h2>${ko ? '드롭하는 몬스터' : 'Dropped by'} <small class="muted">${rows.length}</small></h2>
+<p class="muted note">${ko ? '유저 드롭 제보를 정리한 목록이에요. 반복 제보는 여러 사람이 확인한 항목이고, 드롭 확률은 확인되지 않았어요.' : 'From player drop reports. Repeated reports were confirmed by several people; drop rates are unknown.'}</p>
+<ul class="monster-related">${rows.map(({ m, confidence }) => `<li><a href="${href(langPath(lang, monsterPath(m)))}"><img class="monster-sprite" src="${href(`/assets/monsters/${m.id}.gif`)}" width="64" height="64" alt="" loading="lazy"><span><strong>${esc(monsterName(m, lang))}</strong><small>Lv. ${m.lv} · HP ${new Intl.NumberFormat('en-US').format(m.hp)} · ${confidence === 'repeated' ? (ko ? '반복 제보' : 'Repeated reports') : (ko ? '제보 적음' : 'Limited reports')}</small>${status(m)}</span></a></li>`).join('')}</ul></section>`;
+}
+
 // Same type first, then nearest level; only priced items have pages, so only they are linked.
 function relatedItems(i) {
   return PRICED
@@ -2014,6 +2045,7 @@ ${tools.length ? `<h3>${t.tools}</h3><p>${tools.join(' · ')}</p>` : ''}</sectio
 <div id="mk-charts"></div>
 <h3>${t.open}</h3><div id="it-open" aria-live="polite"><p class="muted">${t.loading}</p></div>
 <p><a class="btn small-btn" data-market-link href="${href(langPath(lang, `/tools/market/?item=${i.id}`))}">${t.market}</a></p></section>
+${dropMonsters(lang, i)}
 <section class="panel"><h2>${t.related}</h2><ul class="item-links">${relatedItems(i).map((x) => itemLink(lang, x)).join('')}</ul></section>
 <p class="muted small">${t.method}</p>
 <p class="muted small">${t.external}: ${external}</p>
@@ -2221,7 +2253,8 @@ for (const lang of LANGS) {
       lang, pageKey: 'monster', pagePath: monsterPath(m),
       title: `${name} · ${lang === 'ko' ? '드롭·체력·출현 위치' : 'Stats, drops & locations'} | GMS Hub`,
       desc: lang === 'ko' ? `${name} Lv. ${m.lv}, HP ${m.hp}, EXP ${m.exp}. 드롭 제보 ${m.drops.length}종과 출현 위치·속성 저항을 확인하세요.` : `${name}, level ${m.lv}, HP ${m.hp}, EXP ${m.exp}. Explore ${m.drops.length} reported drops, map locations and elemental responses.`,
-      body: monsterDetail({lang, m, data: MONSTERS, url: href, itemUrl: monsterItemUrl}), modules: ['monsters.js'],
+      body: monsterDetail({lang, m, data: MONSTERS, url: href, itemUrl: monsterItemUrl, notes: MONSTER_NOTES.notes[m.id] || null,
+        routes: training.routes.filter((r) => r.mobIds.includes(m.id)), accuracy: (lv) => dmgAccNeed(lv, m), rank: RATIO_RANK.get(m.id) || null}), modules: ['monsters.js'],
       noindex: m.status === 'unplaced', ld: [breadcrumbLd(lang, name, monsterPath(m))]
     }));
   }
