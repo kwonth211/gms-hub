@@ -39,13 +39,11 @@ for (const g of guides) {
 const LANGS = ['ko', 'en'];
 const BUILD_DATE = new Date().toISOString().slice(0, 10);
 const SITE_COUNT = sites.categories.reduce((n, c) => n + c.sites.length, 0);
-const CHECKED_SITE_COUNT = sites.categories.flatMap((c) => c.sites).filter((s) => s.checked !== false).length;
 
 const T = {
   ko: {
     gameName: '글로벌 메이플스토리 클래식 월드',
     gameBadge: '글로벌 메이플스토리 클래식 월드 전용',
-    notice: `수록 링크 ${SITE_COUNT}개 · ${CHECKED_SITE_COUNT}개 접속 확인 (${sites.checked}) · 접속 확인은 내용 검증을 뜻하지 않아요`,
     navLinks: '사이트 모음',
     navTraining: "사냥터 추천",
     navScroll: '주문서 계산기',
@@ -63,7 +61,6 @@ const T = {
     searchPlaceholder: '아이템, 몬스터, 사이트 검색',
     statSites: '수록 사이트',
     statCats: '카테고리',
-    statChecked: '접속 확인',
     purposeHeading: '무엇을 찾으세요?',
     purposes: {
       official: '공지·패치 확인',
@@ -194,9 +191,9 @@ const T = {
     aboutH1: 'GMS Hub 소개',
     aboutBody: `<p>GMS Hub는 <strong>글로벌 메이플스토리 클래식 월드</strong>를 하는 한국어·영어 유저를 위한 <strong>비공식 팬 사이트</strong>예요. 처음에는 흩어져 있는 공략·시세·계산기 사이트를 한곳에 모으려고 시작했고, 지금은 직접 만든 도구와 가이드를 함께 운영해요.</p>
 <h2>무엇이 있나요</h2>
-<ul><li><strong>계산기:</strong> <a href="/ko/tools/scroll/">주문서 계산기</a>, <a href="/ko/tools/drop-rate/">확률 계산기</a>, <a href="/ko/tools/damage/">몇 방 컷 계산기</a>는 공개 데이터와 계산 모델을 사용해요. 결과는 입력값과 가정에 따른 추정치예요. 공식과 예시는 각 페이지 아래에 적어 두었어요.</li><li><strong>사냥터 추천:</strong> <a href="/ko/tools/training/">직업별 조건과 동선</a>을 정리해요. 실제 플레이와 공략을 참고하며, 레벨만으로 효율을 보장하지 않아요.</li><li><strong>실시간 시세:</strong> 유저가 상점 스캐너로 읽은 자유시장 매물을 모아 <a href="/ko/tools/market/">아이템별 시세</a>를 계산해요. 계산 방법은 시세 페이지 아래에 있어요.</li><li><strong>가이드:</strong> 육성, 전직, 파티 퀘스트, 주문서, 거래를 다룬 <a href="/ko/guides/">한국어 가이드</a>를 직접 써요.</li><li><strong>사이트 모음:</strong> 클래식 월드 관련 사이트를 용도별로 정리하고 접속 여부를 확인해요.</li></ul>
+<ul><li><strong>계산기:</strong> <a href="/ko/tools/scroll/">주문서 계산기</a>, <a href="/ko/tools/drop-rate/">확률 계산기</a>, <a href="/ko/tools/damage/">몇 방 컷 계산기</a>는 공개 데이터와 계산 모델을 사용해요. 결과는 입력값과 가정에 따른 추정치예요. 공식과 예시는 각 페이지 아래에 적어 두었어요.</li><li><strong>사냥터 추천:</strong> <a href="/ko/tools/training/">직업별 조건과 동선</a>을 정리해요. 실제 플레이와 공략을 참고하며, 레벨만으로 효율을 보장하지 않아요.</li><li><strong>실시간 시세:</strong> 유저가 상점 스캐너로 읽은 자유시장 매물을 모아 <a href="/ko/tools/market/">아이템별 시세</a>를 계산해요. 계산 방법은 시세 페이지 아래에 있어요.</li><li><strong>가이드:</strong> 육성, 전직, 파티 퀘스트, 주문서, 거래를 다룬 <a href="/ko/guides/">한국어 가이드</a>를 직접 써요.</li><li><strong>사이트 모음:</strong> 클래식 월드 관련 사이트를 용도별로 정리해요.</li></ul>
 <h2>원칙</h2>
-<ul><li><strong>자료의 성격과 한계를 구분해요.</strong> 플레이 기록과 공략을 검토하고 장비·파티 조건을 붙여 재구성해요. 모든 조건에서 같은 결과를 재현한 실험은 아니에요.</li><li>자료가 충돌하면 조건과 정정 내용을 확인하고, 불확실한 수익과 고정 순위는 안내에서 제외해요.</li><li>접속 확인은 해당 사이트 전체 내용의 검증을 뜻하지 않아요. 확인하지 못한 링크는 따로 표시해요. 현금 거래 사이트는 올리지 않아요.</li></ul>
+<ul><li><strong>자료의 성격과 한계를 구분해요.</strong> 플레이 기록과 공략을 검토하고 장비·파티 조건을 붙여 재구성해요. 모든 조건에서 같은 결과를 재현한 실험은 아니에요.</li><li>자료가 충돌하면 조건과 정정 내용을 확인하고, 불확실한 수익과 고정 순위는 안내에서 제외해요.</li><li>현금 거래 사이트는 올리지 않아요.</li></ul>
 <h2>다루는 게임</h2>
 <p>클래식 월드 하나만 다뤄요. 다른 메이플스토리 버전과는 맵, 몬스터, 강화 시스템이 달라서 섞지 않아요.</p>
 <h2>사이트 추가·오류 제보·문의</h2>
@@ -260,7 +257,6 @@ const T = {
   en: {
     gameName: 'Global MapleStory Classic World',
     gameBadge: 'Global MapleStory Classic World only',
-    notice: `${SITE_COUNT} links · ${CHECKED_SITE_COUNT} checked live on ${sites.checked} · Access checks do not verify content`,
     navLinks: 'Site Directory',
     navTraining: "Training routes",
     navScroll: 'Scroll Calculator',
@@ -278,7 +274,6 @@ const T = {
     searchPlaceholder: 'Search items, monsters and sites',
     statSites: 'Sites',
     statCats: 'Categories',
-    statChecked: 'Checked live',
     purposeHeading: 'What do you need?',
     purposes: {
       official: 'Notices & patches',
@@ -409,9 +404,9 @@ const T = {
     aboutH1: 'About GMS Hub',
     aboutBody: `<p>GMS Hub is an <strong>unofficial fan site</strong> for English- and Korean-speaking <strong>Global MapleStory Classic World</strong> players. It started as one place to find the scattered guide, price and calculator sites, and now also runs its own tools and guides.</p>
 <h2>What's here</h2>
-<ul><li><strong>Calculators:</strong> the <a href="/en/tools/scroll/">scroll calculator</a>, <a href="/en/tools/drop-rate/">odds calculator</a> and <a href="/en/tools/damage/">hits-to-kill calculator</a> use public data and mathematical models, with results conditional on their inputs and assumptions. Each page explains its formulas with a worked example.</li><li><strong>Training routes:</strong> <a href="/en/tools/training/">class-specific entry conditions, rotations and costs</a>, without theoretical EXP rankings.</li><li><strong>Live prices:</strong> Free Market listings that players read with the shop scanner, turned into <a href="/en/tools/market/">per-item prices</a>. The method is described under the market page.</li><li><strong>Guides:</strong> Detailed Korean and English progression, quest and tool guides.</li><li><strong>Site directory:</strong> Classic World sites grouped by purpose, with each link checked.</li></ul>
+<ul><li><strong>Calculators:</strong> the <a href="/en/tools/scroll/">scroll calculator</a>, <a href="/en/tools/drop-rate/">odds calculator</a> and <a href="/en/tools/damage/">hits-to-kill calculator</a> use public data and mathematical models, with results conditional on their inputs and assumptions. Each page explains its formulas with a worked example.</li><li><strong>Training routes:</strong> <a href="/en/tools/training/">class-specific entry conditions, rotations and costs</a>, without theoretical EXP rankings.</li><li><strong>Live prices:</strong> Free Market listings that players read with the shop scanner, turned into <a href="/en/tools/market/">per-item prices</a>. The method is described under the market page.</li><li><strong>Guides:</strong> Detailed Korean and English progression, quest and tool guides.</li><li><strong>Site directory:</strong> Classic World sites grouped by purpose.</li></ul>
 <h2>Principles</h2>
-<ul><li><strong>Evidence has limits.</strong> We synthesize gameplay and guides with explicit gear and party conditions; these are not controlled benchmarks for every setup.</li><li>We check corrections and conflicting conditions instead of promising fixed profit or rankings.</li><li>Link-access checks do not validate a site’s claims. Unchecked links are labeled separately. We never list real-money trading sites.</li></ul>
+<ul><li><strong>Evidence has limits.</strong> We synthesize gameplay and guides with explicit gear and party conditions; these are not controlled benchmarks for every setup.</li><li>We check corrections and conflicting conditions instead of promising fixed profit or rankings.</li><li>We never list real-money trading sites.</li></ul>
 <h2>Which game</h2>
 <p>Classic World only. Other MapleStory versions have different maps, monsters and upgrade systems, so we keep them out.</p>
 <h2>Suggest a site, report an error or contact us</h2>
@@ -604,8 +599,7 @@ function header(lang, pagePath, only) {
         `<a class="tab" href="${href(langPath(lang, p))}"${(p === pagePath || (p === '/monsters/' && pagePath?.startsWith('/monsters/'))) ? ' aria-current="page"' : ''}>${spriteSvg(icon, 20)}<span>${label}</span></a>`
     )
     .join('');
-  return `<div class="topbar"><div class="wrap">✔ ${esc(t.notice)}</div></div>
-<header class="site-header"><div class="wrap header-inner">
+  return `<header class="site-header"><div class="wrap header-inner">
 <a class="brand" href="${href(langPath(lang, '/'))}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>${esc(t.gameName)}</small></span></a>
 <nav class="tabs" aria-label="${esc(t.navLinks)}">${tabs}</nav>
 <a class="lang-switch" href="${href(langPath(other, only ? '/' : pagePath || '/'))}" data-lang="${other}" hreflang="${other}">${t.switchLang}</a>
@@ -797,7 +791,7 @@ ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이�
 </section>
 </div>
 <p class="search-help" id="search-help">${lang === 'ko' ? '한글·영문·초성·줄임말로 검색하세요. 예: 귀힘, 미스릴, 좀비 루팡, 사냥터' : 'Search by name or keyword. Try Gloves Attack, Mithril, Zombie Lupin or training.'}</p>
-<dl class="hero-stats"><div><dt>${t.statSites}</dt><dd>${SITE_COUNT}</dd></div><div><dt>${t.statCats}</dt><dd>${cats.length}</dd></div><div><dt>${t.statChecked}</dt><dd>${esc(sites.checked)}</dd></div></dl>
+<dl class="hero-stats"><div><dt>${t.statSites}</dt><dd>${SITE_COUNT}</dd></div><div><dt>${t.statCats}</dt><dd>${cats.length}</dd></div></dl>
 </div>
 </div>
 </section>
