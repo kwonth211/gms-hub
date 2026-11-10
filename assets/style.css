@@ -643,8 +643,8 @@ a.band-link:hover { border-color: var(--accent); }
 .mk-history summary { padding: 12px 0; cursor: pointer; font-weight: 700; }
 select:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 @media (max-width: 480px) { .mk-filters label { min-width: 100px; } .scan-location { padding: 12px; } }
-.ad-slot { margin: 36px 0; text-align: center; min-height: 104px; }
-.ad-slot .ad-label { display: block; margin-bottom: 6px; color: #64748b; font-size: 10px; letter-spacing: 0.12em; }
+.ad-slot { margin: 36px auto; text-align: center; min-height: 122px; max-width: 1200px; }
+.ad-label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 10px; letter-spacing: 0.12em; text-align: center; }
 .ad-rails { position: relative; height: 0; }
 .ad-rail { position: absolute; top: 24px; width: 160px; }
 .ad-rail-left { right: calc(50% + 600px + 32px); }

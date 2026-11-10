@@ -615,13 +615,16 @@ function footer(lang) {
 </div></footer>`;
 }
 
+const ADFIT_PAGES = new Set(['home', 'training', 'trBand', 'scroll', 'drop', 'price', 'scan', 'market', 'damage', 'guides', 'guide', 'monsters', 'monster', 'items', 'item']);
 function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], modules = [], ld = [], only, noindex }) {
+  const ads = ADFIT_PAGES.has(pageKey) && !noindex && Object.values(config.adfit || {}).some(Boolean);
   return `${head({ lang, title, desc, pagePath, ld, only, noindex })}
 <body data-page="${pageKey}">
 ${header(lang, pagePath, only)}
-<main>${body}</main>
+<main>${ads && pageKey !== 'home' ? adfitRails() : ''}${body}${ads ? adfitSlot() : ''}</main>
 ${footer(lang)}
 <script src="${href('/assets/common.js')}" defer></script>
+${ads ? `<script src="${scriptSrc('adfit.js')}" defer></script>` : ''}
 ${scripts.map((s) => `<script src="${scriptSrc(s)}" defer></script>`).join('\n')}
 ${modules.map((s) => `<script type="module" src="${href(`/assets/${s}?v=${moduleVersion}`)}"></script>`).join('\n')}
 </body>
@@ -795,7 +798,7 @@ ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이�
 </div>
 </div>
 </section>
-${lang === 'ko' ? adfitRails() : '' /* Kakao AdFit only serves Korean ads, so English pages stay ad-free */}
+${adfitRails()}
 ${liveMarket(lang)}
 <section class="wrap purposes-wrap">
 <h2>${t.purposeHeading}</h2>
@@ -1768,21 +1771,17 @@ const guideToolCards = (g) =>
         .join('')}</div>`
     : '';
 
-// Kakao AdFit units are size-fixed, so each <ins> declares the viewport it fits and the inline script drops the rest before the
-// loader runs (a hidden unit would still count impressions). Renders nothing for units left blank in site.config.json.
+// AdFit sizes and unit IDs stay as issued. The shared loader removes ineligible units before loading the SDK once.
 const adfitIns = (unit, w, h, minWidth = 0, maxWidth = 99999) =>
   unit
     ? `<ins class="kakao_ad_area" style="display:none" data-ad-unit="${esc(unit)}" data-ad-width="${w}" data-ad-height="${h}" data-min="${minWidth}" data-max="${maxWidth}"></ins>`
     : '';
-const adfitLoader = `<script>(function(){var a=document.currentScript.parentNode;a.querySelectorAll('ins[data-min]').forEach(function(e){if(innerWidth<+e.dataset.min||innerWidth>+e.dataset.max)e.remove()});if(!a.querySelector('ins'))a.remove()})()</script>
-<script async src="//t1.kakaocdn.net/kas/static/ba.min.js"></script>`;
-
 function adfitSlot() {
-  const { mobile, pc } = config.adfit || {};
+  const { mobile, pc, railLeft, railRight } = config.adfit || {};
   if (!mobile && !pc) return '';
-  return `<aside class="ad-slot" aria-label="Advertisement"><span class="ad-label">ADVERTISEMENT</span>
-${adfitIns(mobile, 320, 100, 0, 759)}${adfitIns(pc, 728, 90, 760)}
-${adfitLoader}</aside>`;
+  const maxWidth = railLeft || railRight ? 1599 : 99999;
+  return `<aside class="ad-slot" data-ad-placement aria-label="Advertisement"><span class="ad-label">ADVERTISEMENT</span>
+${adfitIns(mobile, 320, 100, 320, pc ? 759 : maxWidth)}${adfitIns(pc, 728, 90, 760, maxWidth)}</aside>`;
 }
 
 // Skyscrapers in the empty gutters beside the 1200px layout, pinned next to the purpose section (not following the scroll);
@@ -1791,9 +1790,9 @@ function adfitRails() {
   const { railLeft, railRight } = config.adfit || {};
   if (!railLeft && !railRight) return '';
   const rail = (unit, side) =>
-    unit ? `<div class="ad-rail ad-rail-${side}">${adfitIns(unit, 160, 600, 1600)}</div>` : '';
+    unit ? `<div class="ad-rail ad-rail-${side}" data-ad-placement><span class="ad-label">ADVERTISEMENT</span>${adfitIns(unit, 160, 600, 1600)}</div>` : '';
   return `<aside class="ad-rails" aria-label="Advertisement">${rail(railLeft, 'left')}${rail(railRight, 'right')}
-${adfitLoader}</aside>`;
+</aside>`;
 }
 
 function guideBody(g) {
@@ -1811,8 +1810,6 @@ ${guideToolChips(g)}
 ${toc.length > 2 ? `<nav class="guide-toc" aria-label="${g.lang==='ko'?'이 글의 순서':'On this page'}"><strong>${g.lang==='ko'?'이 글에서':'On this page'}</strong><ol>${toc.map(t=>`<li><a href="#${t.id}">${t.title}</a></li>`).join('')}</ol></nav>` : ''}
 ${body}
 ${guideToolCards(g)}
-${adfitSlot()}
-
 ${related(g)}
 <p class="muted">${GUIDE_T[g.lang].note.replace('{mail}', `<a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>`).replace('{issues}', `<a href="${issuesUrl}" target="_blank" rel="noopener">${GUIDE_T[g.lang].issues}</a>`)}</p>
 </article>`;
