@@ -54,7 +54,7 @@ const T = {
     navTraining: "사냥터 추천",
     navScroll: '주문서 계산기',
     navDrop: '확률 계산기',
-    navPrice: '시세 검색',
+    navPrice: '시세 사이트 찾기',
     navMarket: '실시간 시세',
     navAbout: '소개',
     navGuides: '가이드',
@@ -267,7 +267,7 @@ const T = {
     navTraining: "Training routes",
     navScroll: 'Scroll Calculator',
     navDrop: 'Odds Calculator',
-    navPrice: 'Price Search',
+    navPrice: 'Find on price sites',
     navMarket: 'Live Market',
     navAbout: 'About',
     navGuides: 'Guides',
@@ -684,12 +684,12 @@ function siteCard(lang, s) {
   const stat = s.stat
     ? `<p class="stat-line"><strong>${esc(s.stat[lang])}</strong> <span>${t.statSource}: ${esc(s.stat.source)} · ${esc(s.stat.date)}</span></p>`
     : '';
-  const search = `${s.name} ${host(s.url)} ${s.desc.ko} ${s.desc.en} ${s.features.ko.join(' ')} ${s.features.en.join(' ')}`.toLowerCase();
+  const search = `${s.name} ${s.nameEn || ''} ${host(s.url)} ${s.desc.ko} ${s.desc.en} ${s.features.ko.join(' ')} ${s.features.en.join(' ')}`.toLowerCase();
   return `<article class="site-card" data-url="${esc(s.url)}" data-id="${siteId(s.url)}" data-search="${esc(search)}">
 <a class="media" href="${esc(s.url)}" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">${media}<span class="langs">${langs}</span></a>
 <button class="fav" type="button" data-url="${esc(s.url)}" aria-pressed="false" aria-label="${esc(t.favAdd)}: ${esc(s.name)}" title="${esc(t.favAdd)}">☆</button>
 <div class="body">
-<h4><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a></h4>
+<h4><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(lang === 'ko' ? s.name : s.nameEn || s.name)}</a></h4>
 <span class="host">${esc(host(s.url))}</span>
 <p>${esc(s.desc[lang])}</p>
 <ul class="feats">${feats}</ul>
@@ -830,7 +830,22 @@ ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이�
 </div>
 </section>
 ${adfitRails()}
+${jsonScript('home-routes', training.routes.map((r) => ({ id: r.id, title: r.title[lang], monsters: r.monsters[lang], min: r.level.min, max: r.level.max,
+  mobs: r.mobs.flatMap((m) => [m.ko, m.en]), href: href(langPath(lang, `/tools/training/?lv=${r.level.min}#route-${r.id}`)) })))}
 ${liveMarket(lang)}
+<section class="wrap home-tools">
+<h2>${t.toolsHeading}</h2>
+<div class="tool-cards">
+${tool('/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monster database', lang === 'ko' ? '몬스터 78종의 능력치, 드롭 아이템, 출현 위치를 검색하세요.' : 'Explore stats, reported drops and map locations for 78 monsters.')}
+${tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc)}
+${tool('/tools/scroll/', 'scroll', t.navScroll, t.scCardDesc)}
+${tool('/tools/drop-rate/', 'bag', t.navDrop, t.dropCardDesc)}
+${tool('/tools/market/', 'coin', t.navMarket, MK[lang].lead)}
+${tool('/tools/price/', 'coin', t.navPrice, PR[lang].cardDesc)}
+${tool('/tools/damage/', 'hammer', DMG[lang].h1, DMG[lang].cardDesc)}
+${tool('/tools/scan/', 'megaphone', SCAN[lang].h1, SCAN[lang].cardDesc)}
+</div>
+</section>
 <section class="wrap purposes-wrap">
 <h2>${t.purposeHeading}</h2>
 <div class="purposes">${purposes}</div>
@@ -846,19 +861,6 @@ ${liveMarket(lang)}
 ${sections}
 </div>
 </div>
-<section class="wrap">
-<h2>${t.toolsHeading}</h2>
-<div class="tool-cards">
-${tool('/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monster database', lang === 'ko' ? '몬스터 78종의 능력치, 드롭 아이템, 출현 위치를 검색하세요.' : 'Explore stats, reported drops and map locations for 78 monsters.')}
-${tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc)}
-${tool('/tools/scroll/', 'scroll', t.navScroll, t.scCardDesc)}
-${tool('/tools/drop-rate/', 'bag', t.navDrop, t.dropCardDesc)}
-${tool('/tools/market/', 'coin', t.navMarket, MK[lang].lead)}
-${tool('/tools/price/', 'coin', t.navPrice, PR[lang].cardDesc)}
-${tool('/tools/damage/', 'hammer', DMG[lang].h1, DMG[lang].cardDesc)}
-${tool('/tools/scan/', 'megaphone', SCAN[lang].h1, SCAN[lang].cardDesc)}
-</div>
-</section>
 ${guides.some((g) => g.lang === lang)
   ? `<section class="wrap">
 <h2>${t.navGuides}</h2>
@@ -993,9 +995,9 @@ const PR = {
   ko: {
     title: '글클메 아이템 시세 검색 (한글 이름으로 찾기) · 글로벌 메이플스토리 클래식 월드 | GMS Hub',
     desc: '글클메 아이템을 한글 이름으로 검색하고, 영어 이름과 함께 FreeMarketClassic·MapleMarket·MesoWatch·meowdb 시세로 바로 이동해요. 아이템 2천여 개 수록.',
-    h1: '아이템 시세 검색',
+    h1: '다른 시세 사이트에서 찾기',
     lead: '아이템을 한글로 검색하면 영어 이름을 찾아 시세 사이트로 바로 연결해 줘요.',
-    cardDesc: '한글 아이템 이름으로 검색해서 시세 사이트로 바로 이동해요.',
+    cardDesc: '한글 이름으로 영문 이름을 찾아 다른 시세 사이트로 바로 이동해요. 우리 시세는 실시간 시세에서 봐요.',
     placeholder: '아이템 이름 (예: 메탈 완드, 장갑 공격력, 일비)',
     popular: '많이 찾는 아이템',
     none: '"{q}"에 맞는 아이템이 없어요. 띄어쓰기를 바꾸거나 영어 이름으로도 찾아보세요.',
@@ -1054,9 +1056,9 @@ const PR = {
   en: {
     title: 'MapleStory Classic World Item Price Search: Jump to Every Price Tracker | GMS Hub',
     desc: 'Search MapleStory Classic World items by name (English or Korean) and open their prices on FreeMarketClassic, MapleMarket, MesoWatch and meowdb in one click.',
-    h1: 'Item Price Search',
+    h1: 'Find an item on other price sites',
     lead: 'Type an item name and jump straight to its price on the Free Market trackers.',
-    cardDesc: 'Find an item by name and open its price on each tracker.',
+    cardDesc: 'Look up an item and open it on other price trackers. Our own prices live in Live Market.',
     placeholder: 'Item name (e.g. Metal Wand, Gloves Attack, Ilbi)',
     popular: 'Popular items',
     none: 'No items match "{q}". Try a shorter or different spelling.',
@@ -1250,6 +1252,7 @@ function scanBody(lang) {
   const steps = t.steps.map(([h, d], n) => `<li><b>${n + 1}</b><strong>${esc(h)}</strong><span>${esc(d)}</span></li>`).join('');
   return `${pageHead(lang, 'megaphone', t.h1, t.lead)}
 <div class="wrap scan">
+<div class="panel scan-device-note" id="scan-device-note" hidden role="note"><strong>${lang === 'ko' ? '상점 스캔은 PC 크롬·엣지에서만 돼요.' : 'Shop scanning works only in Chrome or Edge on a computer.'}</strong><p>${lang === 'ko' ? '휴대폰·태블릿 브라우저는 게임 화면 공유를 지원하지 않아요. 이 페이지 주소를 PC에서 열어 주세요. 시세는 휴대폰에서도 실시간 시세 메뉴로 볼 수 있어요.' : 'Phone and tablet browsers cannot share a game window. Open this page on a computer; prices are still available on Live Market from any device.'}</p><p><button type="button" class="btn small-btn" id="scan-copy-link">${lang === 'ko' ? '이 페이지 링크 복사' : 'Copy this page link'}</button> <a class="btn ghost small-btn" href="${href(langPath(lang, '/tools/market/'))}">${lang === 'ko' ? '실시간 시세 보기' : 'Open Live Market'}</a> <span class="share-status" id="scan-copy-status" role="status"></span></p></div>
 <ol class="scan-steps">${steps}</ol>
 <div class="panel scan-panel">
 <fieldset class="scan-location"><legend>${lang === 'ko' ? '현재 상점 위치' : 'Current shop location'}</legend>
@@ -1870,7 +1873,13 @@ const itemPrices = fs.existsSync(path.join(root, 'data/item-prices.json')) ? rea
 const PRICES_DATE = (itemPrices.updated || BUILD_DATE).slice(0, 10);
 const itemSlug = (i) => `${i.id}-${i.en.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`.replace(/-$/, '');
 const itemPath = (i) => `/items/${itemSlug(i)}/`;
-const priceOf = (i) => itemPrices.prices[i.id] || null;
+// Same headline rule as the worker: sales lead only with three or more of them (older snapshots may still say otherwise).
+const headline = (p) => {
+  if (!p) return null;
+  const basis = p.sold?.n >= 3 ? 'sold' : p.selling ? 'selling' : p.sold ? 'sold' : 'buying';
+  return p[basis] ? { ...p, basis, median: p[basis].median } : p;
+};
+const priceOf = (i) => headline(itemPrices.prices[i.id]);
 const itemName = (lang, i) => (lang === 'ko' && i.ko ? i.ko : i.en);
 const PRICED = itemsData.items.filter(priceOf);
 // Google crawled the one- and two-listing pages and left them out ("crawled, not indexed"): a single shop price is too thin
@@ -2098,7 +2107,7 @@ for (const lang of LANGS) {
     numberOfItems: SITE_COUNT,
     itemListElement: sites.categories
       .flatMap((c) => c.sites)
-      .map((s, i) => ({ '@type': 'ListItem', position: i + 1, name: s.name, url: s.url, description: s.desc[lang] }))
+      .map((s, i) => ({ '@type': 'ListItem', position: i + 1, name: lang === 'ko' ? s.name : s.nameEn || s.name, url: s.url, description: s.desc[lang] }))
   };
   const faqLd = {
     '@context': 'https://schema.org',
@@ -2247,8 +2256,10 @@ for (const lang of LANGS) {
     body: monsterIndex({lang, data: MONSTERS, url: href}), modules: ['monsters.js'],
     ld: [breadcrumbLd(lang, monsterTitle, '/monsters/')]
   }));
+  // Several monsters share a Korean name (Fairy 1-4, Jr. Boogie 1-2); their pages get the English variant so titles stay unique.
+  const nameCount = MONSTERS.monsters.reduce((c, x) => c.set(monsterName(x, lang), (c.get(monsterName(x, lang)) || 0) + 1), new Map());
   for (const m of MONSTERS.monsters) {
-    const name = monsterName(m, lang);
+    const name = nameCount.get(monsterName(m, lang)) > 1 && lang === 'ko' ? `${monsterName(m, lang)} (${m.en})` : monsterName(m, lang);
     write(path.join(lang, 'monsters', String(m.id), 'index.html'), page({
       lang, pageKey: 'monster', pagePath: monsterPath(m),
       title: `${name} · ${lang === 'ko' ? '드롭·체력·출현 위치' : 'Stats, drops & locations'} | GMS Hub`,

@@ -11,15 +11,21 @@ if ($('monster-index')) {
   function render() {
     const matched = query.value.trim() ? new Set(searchEntries(entries,query.value).map(r=>r.id)) : null;
     const [min,max] = level.value ? level.value.split('-').map(Number) : [0,Infinity];
-    let shown=0;
+    let shown=0, hiddenByStatus=0;
     cards.forEach((el,id)=>{
-      el.hidden = (matched&&!matched.has(id)) || el.dataset.level<min || el.dataset.level>max || (type.value&&el.dataset[type.value]!=='true') || (!unavailable.checked&&el.dataset.status!=='active');
+      const fits = !(matched&&!matched.has(id)) && el.dataset.level>=min && el.dataset.level<=max && !(type.value&&el.dataset[type.value]!=='true');
+      el.hidden = !fits || (!unavailable.checked&&el.dataset.status!=='active');
       if (!el.hidden) shown++;
+      else if (fits) hiddenByStatus++;
     });
+    // Say when matches exist but sit behind the "unreleased" filter (e.g. Forgotten Hollow monsters before Nov 18).
+    const hint=$('monster-hidden-hint');
+    if (hint) { hint.hidden=!hiddenByStatus; hint.querySelector('span').textContent=ko?`개방 예정·미개방 몬스터 ${hiddenByStatus}마리가 숨겨져 있어요.`:tx('{n} upcoming or unreleased monsters are hidden.',{n:hiddenByStatus}); }
     [...cards].sort((a,b)=>sort.value==='name'?a.dataset.name.localeCompare(b.dataset.name,ko?'ko':'en'):(Number(a.dataset[sort.value])-Number(b.dataset[sort.value]))*(sort.value==='exp'?-1:1)).forEach(el=>$('monster-grid').append(el));
     $('monster-count').textContent=countText(shown,cards.length);
     $('monster-empty').hidden=shown>0;
   }
+  $('monster-hidden-hint')?.querySelector('button').addEventListener('click',()=>{unavailable.checked=true;render();});
   [query,level,type,sort,unavailable].forEach(el=>el.addEventListener(el===query?'input':'change',render));
   $('monster-reset').addEventListener('click',()=>{query.value='';level.value='';type.value='';sort.value='level';unavailable.checked=false;render();query.focus();});
   query.value=new URLSearchParams(location.search).get('q')||'';

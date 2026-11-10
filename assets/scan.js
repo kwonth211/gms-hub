@@ -667,6 +667,15 @@ $('scan-stop').addEventListener('click', stop);
 if (!navigator.mediaDevices?.getDisplayMedia) {
   $('scan-start').disabled = true;
   say(i18n.unsupported);
+  // Say it before the steps, where phone visitors actually look, and let them carry the link to a computer.
+  const note = $('scan-device-note');
+  if (note) {
+    note.hidden = false;
+    $('scan-copy-link').addEventListener('click', async () => {
+      const ok = await copyText(location.href.split('#')[0]);
+      $('scan-copy-status').textContent = ok ? (document.documentElement.lang === 'ko' ? '복사했어요' : tx('Copied')) : location.href;
+    });
+  }
 }
 
 loadData();

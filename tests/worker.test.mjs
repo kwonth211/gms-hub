@@ -114,3 +114,11 @@ test('identical scanner frames within 15 minutes cause no writes; stock and sold
  await send(e,'/listings',{items:[{...row,qty:2,sold:true}]});
  assert.ok(Date.now()-Date.parse(e.sqlite.prepare('SELECT last_seen FROM listings').get().last_seen.replace(' ','T')+'Z')<5000);
 });
+
+test('one stray sale never outranks many asking prices in the headline', async () => {
+  const env = environment();
+  for (const [price, kind] of [[50, 'sold'], [200, 'selling'], [210, 'selling'], [220, 'selling'], [230, 'selling']])
+    env.sqlite.prepare("INSERT INTO prices (item, price, kind, reporter) VALUES (4000000, ?, ?, 'test')").run(price, kind);
+  const summary = (await (await worker.fetch(new Request('https://test.invalid/prices?ids=4000000'), env)).json())['4000000'];
+  assert.equal(summary.basis, 'selling'); assert.equal(summary.median, 215); assert.equal(summary.sold.n, 1);
+});

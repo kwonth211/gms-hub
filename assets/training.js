@@ -17,7 +17,7 @@ function show(userAction = false) {
   const c = criteria();
   const rows = selectRoutes(data.routes, c);
   status.textContent = lang === 'ko' ? `${c.level}레벨 사냥 후보 ${rows.length}곳` : tx('{n} options for level {lv}', {n: rows.length, lv: c.level});
-  result.innerHTML = routeCards(rows,lang);
+  result.innerHTML = routeCards(rows, lang, `/${location.pathname.split('/')[1]}`);
   if (userAction) {
     const next = new URL(location.href);
     for (const key of ['lv','job','goal','party','advanced','all','unknown']) next.searchParams.delete(key);
@@ -31,6 +31,8 @@ function show(userAction = false) {
 form.addEventListener('submit',e=>{e.preventDefault();if(form.reportValidity())show(true);});
 form.addEventListener('change',()=>{if(form.checkValidity())show(true);});
 show();
+// Links from the bestiary or home search point at one route card; it exists only after the client render above.
+if (location.hash.startsWith('#route-')) document.getElementById(location.hash.slice(1))?.scrollIntoView({ block: 'start' });
 // Copy a link that restores these exact filters elsewhere; the URL holds only the filter values.
 const share = document.getElementById('tr-share'), shareStatus = document.getElementById('tr-share-status');
 share?.addEventListener('click', () => {

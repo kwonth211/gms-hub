@@ -96,8 +96,30 @@ const toolKeywords = {
   scan: '상점 스캔 이미지 인식 화면 공유 shop scan scanner ocr',
   monsters: '몬스터 도감 드롭 아이템 체력 경험치 출현 위치 monster bestiary drops hp exp locations',
   damage: '몇방 몇 방 컷 데미지 대미지 딜 명중률 몬스터 계산기 damage hits kill accuracy calculator',
+  // Guides, by slug: the words players use that the titles do not.
+  'kerning-party-quest': '파티퀘스트 파티 퀘스트 파퀘 커파 커닝 파티퀘 KPQ party quest 라케리스 보너스',
+  'best-early-quests': '퀘스트 피아 제인 알렉스 니오라 초반 퀘 quest',
+  'citizenship-and-housing': '시민권 시민 등급 집 하우징 기여도 citizenship housing',
+  'second-job': '2차 전직 이차 전직 시험 검은 구슬 second job advancement',
+  'getting-started': '시작 처음 뉴비 초보 가이드 beginner start',
+  'choose-your-job': '직업 추천 직업 선택 티어 job class tier',
+  'leveling-1-30': '레벨업 육성 동선 초반 leveling',
+  'leveling-30-70': '레벨업 육성 동선 중반 leveling',
+  'scroll-odds': '주문서 확률 작 성공률 scroll odds',
+  'trading-and-mesos': '거래 메소 시세 체결 trading mesos',
+  'warrior-build': '전사 파이터 페이지 스피어맨 warrior fighter page spearman',
+  'archer-build': '궁수 헌터 사수 archer bowman hunter crossbow',
+  'mage-build': '법사 마법사 불독 썬콜 클레릭 mage magician cleric',
+  'thief-build': '도적 표도 어쌔신 시프 단도 thief assassin bandit',
 };
+// Hunting routes: map and monster names lead straight to the matching route card on the training page.
+const routeData = JSON.parse(document.getElementById('home-routes')?.textContent || '[]');
 const staticEntries = [
+  ...routeData.map((r) => indexEntry({
+    type: 'tool', id: `route-${r.id}`, title: r.title, href: r.href,
+    description: `Lv. ${r.min}–${r.max} · ${r.monsters}`,
+    names: [r.title, ...r.mobs], keywords: `${r.monsters} ${r.mobs.join(' ')} 사냥터 사냥 training route`,
+  })),
   ...originals.map((card) => {
     const a = card.querySelector('h4 a');
     const host = new URL(a.href).hostname.replace(/^www\./, '');

@@ -39,6 +39,7 @@ async function visitorHash(ip, site, salt) {
 
 
 const KINDS = ['sold', 'selling', 'buying'];
+export const SOLD_HEADLINE_MIN = 3;
 const WINDOW = "datetime('now', '-14 days')";
 const ITEMS_URL = 'https://gms-hub.com/assets/items.json';
 
@@ -72,9 +73,11 @@ function summarize(rows) {
       return [k, ps.length ? { n: ps.length, median: median(ps) } : null];
     })
   );
-  // The headline uses observed sales first, then asks, then buy offers; unlike kinds are never averaged together.
-  const primary = byKind.sold || byKind.selling || byKind.buying;
-  return { n: kept.length, median: primary.median, basis: byKind.sold ? 'sold' : byKind.selling ? 'selling' : 'buying', low: Math.min(...prices), high: Math.max(...prices), last: kept[0].created_at, ...byKind };
+  // The headline uses observed sales when there are at least three of them, then asks, then buy offers; one stray sale
+  // must not outrank a hundred asking prices. Unlike kinds are never averaged together.
+  const basis = byKind.sold?.n >= SOLD_HEADLINE_MIN ? 'sold' : byKind.selling ? 'selling' : byKind.sold ? 'sold' : 'buying';
+  const primary = byKind[basis];
+  return { n: kept.length, median: primary.median, basis, low: Math.min(...prices), high: Math.max(...prices), last: kept[0].created_at, ...byKind };
 }
 
 // ---------- live ranking ----------

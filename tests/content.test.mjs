@@ -130,3 +130,20 @@ test('every training route names its monsters and new evidence-backed routes app
   assert.ok(read('dist/ko/monsters/43/index.html').includes('/ko/tools/training/?lv=48#route-wraith'));
   assert.ok(read('dist/ko/items/1032007-emerald-earrings/index.html').includes('드롭하는 몬스터'));
 });
+test('site review fixes: localized route links, unique monster titles, honest price headline, searchable routes',()=>{
+  const r=training.routes.find(r=>r.id==='wraith');
+  const mobs=[{id:43,ko:'레이스',en:'Wraith',lv:48,hp:2350,acc:104}];
+  assert.ok(routeCards([{...r,mobs}],'en','/zh').includes('href="/zh/monsters/43/"'));
+  assert.ok(routeCards([{...r,mobs}],'ko').includes('href="/ko/monsters/43/"'));
+  const titles=['25','26','27','28','33','34'].map(id=>read(`dist/ko/monsters/${id}/index.html`).match(/<title>(.*?)<\/title>/)[1]);
+  assert.equal(new Set(titles).size,titles.length);
+  // One sale among many asking prices must not set the headline.
+  const ear=read('dist/ko/items/1032007-emerald-earrings/index.html');
+  assert.ok(!/<p class="item-headline-label">[^<]*거래가/.test(ear));
+  const home=read('dist/ko/index.html');
+  assert.ok(home.includes('id="home-routes"')&&home.includes('route-sleepy2'));
+  assert.ok(home.indexOf('home-tools')<home.indexOf('purposes-wrap'),'tools come before the site directory');
+  assert.ok(read('dist/en/index.html').includes('DCInside: Global'));
+  assert.ok(/\.item-grid \{ display: grid; grid-template-columns: minmax\(0,1\.2fr\)/.test(read('assets/style.css')));
+  assert.ok(read('assets/style.css').includes('.item-page { display: grid; grid-template-columns: minmax(0, 1fr);'));
+});

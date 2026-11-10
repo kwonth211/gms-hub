@@ -190,7 +190,8 @@
               "Korean",
               "DCInside"
             ]
-          }
+          },
+          "nameEn": "DCInside: Global MapleStory Classic World gallery"
         },
         {
           "name": "메이플스토리 클래식 월드 마이너 갤러리",
@@ -212,7 +213,8 @@
               "Korean",
               "DCInside"
             ]
-          }
+          },
+          "nameEn": "DCInside: MapleStory Classic World gallery"
         },
         {
           "name": "NiaMeowDB Discord",
@@ -412,7 +414,8 @@
               "Training finder",
               "Scroll sim"
             ]
-          }
+          },
+          "nameEn": "GMS Classic Hub"
         },
         {
           "name": "MapleClassic Wiki",
@@ -521,7 +524,8 @@
               "Map & NPC DB",
               "EXP tracker"
             ]
-          }
+          },
+          "nameEn": "MSCW DB"
         }
       ]
     },

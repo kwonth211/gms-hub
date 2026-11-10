@@ -20,13 +20,14 @@ export function publicTrainingData(data) {
   const keys = ['id','level','jobs','party','advanced','costTier','title','monsters','summary','entry','route','cost','exit','alternative','mobs'];
   return { version: data.version, updated: data.updated, routes: data.routes.map(r => Object.fromEntries(keys.map(k => [k,r[k]]))) };
 }
-export function routeCards(rows, lang = 'ko') {
+// `prefix` is the page's own language path (/zh, /ja…); derived locales render with English text but must link to their own pages.
+export function routeCards(rows, lang = 'ko', prefix = `/${lang}`) {
   const tr = (ko,en) => lang === 'ko' ? ko : tx(en);
-  if (!rows.length) return `<div class="panel tr-empty"><h3>${tr('조건을 조금 넓혀 비교해 보세요', 'Broaden one filter to compare options')}</h3><p>${tr('솔로 조건을 해제하거나 장비 조건부 후보를 포함할 수 있어요. 지금 사냥터에서 처치 타수가 줄었다면, 레벨이 올라도 그곳을 유지하는 편이 나을 수 있어요.', 'Try allowing parties or equipped-character options. Staying on a lower-level map can still be effective when your kill count improves.')}</p><a href="/${lang}/guides/leveling-30-70/">${tr('직업별 다음 동선 보기 →', 'Class progression guide →')}</a></div>`;
+  if (!rows.length) return `<div class="panel tr-empty"><h3>${tr('조건을 조금 넓혀 비교해 보세요', 'Broaden one filter to compare options')}</h3><p>${tr('솔로 조건을 해제하거나 장비 조건부 후보를 포함할 수 있어요. 지금 사냥터에서 처치 타수가 줄었다면, 레벨이 올라도 그곳을 유지하는 편이 나을 수 있어요.', 'Try allowing parties or equipped-character options. Staying on a lower-level map can still be effective when your kill count improves.')}</p><a href="${prefix}/guides/leveling-30-70/">${tr('직업별 다음 동선 보기 →', 'Class progression guide →')}</a></div>`;
   return `<div class="tr-route-list">${rows.map(r => {
     const item = (label,value) => `<div><dt>${label}</dt><dd>${esc(value[lang])}</dd></div>`;
     // Monster chips: each links to the bestiary, with the accuracy needed for a sure hit at the route's starting level.
-    const mobs = r.mobs?.length ? `<div class="tr-mobs">${r.mobs.map(m => `<a href="/${lang}/monsters/${m.id}/"><b>${esc(lang === 'ko' ? m.ko : m.en)}</b><small>Lv. ${m.lv} · HP ${m.hp.toLocaleString('en-US')}</small></a>`).join('')}<span class="tr-acc">${tr(`Lv. ${r.level.min} 기준 필요 명중 ${Math.max(...r.mobs.map(m => m.acc))}`, `Accuracy ${Math.max(...r.mobs.map(m => m.acc))} needed at Lv. ${r.level.min}`)}</span></div>` : '';
+    const mobs = r.mobs?.length ? `<div class="tr-mobs">${r.mobs.map(m => `<a href="${prefix}/monsters/${m.id}/"><b>${esc(lang === 'ko' ? m.ko : m.en)}</b><small>Lv. ${m.lv} · HP ${m.hp.toLocaleString('en-US')}</small></a>`).join('')}<span class="tr-acc">${tr(`Lv. ${r.level.min} 기준 필요 명중 ${Math.max(...r.mobs.map(m => m.acc))}`, `Accuracy ${Math.max(...r.mobs.map(m => m.acc))} needed at Lv. ${r.level.min}`)}</span></div>` : '';
     return `<article class="panel tr-route" id="route-${esc(r.id)}" data-route="${esc(r.id)}">
 <div class="tr-meta"><span>Lv. ${r.level.min}–${r.level.max}</span><span>${r.jobs.length ? r.jobs.map(j=>esc(jobNames[lang][j])).join(' · ') : tr('공통','All classes')}</span><span>${r.party === 'required' ? tr('파티 필요','Party required') : r.party === 'preferred' ? tr('파티 권장','Party preferred') : tr('솔로 가능','Solo option')}</span>${r.advanced ? `<span class="tr-conditional">${tr('장비 조건부','Gear dependent')}</span>` : ''}</div>
 <h3>${esc(r.title[lang])}</h3><p class="tr-monsters">${esc(r.monsters[lang])}</p>${mobs}<p>${esc(r.summary[lang])}</p>

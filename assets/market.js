@@ -161,13 +161,40 @@ function listingTable(rows, { showItem = true, shopButtons = true } = {}) {
     return `<p class="market-empty">${tr("조건에 맞는 매물이 없어요. 검색어나 필터를 바꿔 보세요.", "No listings match. Try changing the search or filters.")}</p>`;
   return `<div class="mb-table-wrap"><table class="mb-table mb-listings-table"><thead><tr>${showItem ? `<th>${tr("아이템", "Item")}</th>` : ""}<th>${tr("가격", "Price")}<small>${T.priceUnit}</small></th><th>${tr("수량", "Qty")}</th><th>${T.table.seller}</th><th>${T.table.where}</th><th>${tr("최근 확인", "Last seen")}</th></tr></thead><tbody>${rows.map((r) => `<tr>${showItem ? `<td class="mb-cell-item">${itemLink(r.item)}</td>` : ""}<td class="num mb-cell-price">${money(r.price)}${r.qty > 1 ? `<small>${T.total} ${money(r.price * r.qty)}</small>` : ""}</td><td class="mb-cell-qty"><span class="mb-mobile-label">${tr("수량", "Qty")} </span>${money(r.qty)}</td><td class="mb-cell-seller">${shopButtons ? `<button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)} ↗</button>` : esc(r.seller)}</td><td class="mb-cell-location"><span class="where">CH ${r.channel}</span> <span class="where">FM ${r.room}</span></td><td class="mb-cell-seen">${when(r.seen)}<small class="${r.sold ? "mb-sold" : ""}">${r.sold ? tr("판매 완료 표시", "Marked sold") : Date.now() - parseUtc(r.seen) >= DAY ? tr("24시간 경과", "Over 24h old") : tr("판매 중 관측", "Seen for sale")}</small></td></tr>`).join("")}</tbody></table></div>`;
 }
+// Every browsing filter lives in the address, so refresh, back and a copied link reopen the same view.
+// Defaults are left out to keep plain visits on the canonical URL.
+const URL_FIELDS = [
+  ["state", "mb-state", "open"], ["sort", "mb-list-sort", "recent"], ["seller", "mb-seller", ""],
+  ["ch", "mb-channel", ""], ["room", "mb-room", ""], ["days", "mb-days", "7"],
+  ["kind", "mb-report-kind", ""], ["isort", "mb-item-sort", "active"],
+];
 function syncURL() {
   const p = new URLSearchParams(location.search);
+  for (const k of ["item", "view", "q", "cat", "page", "fav", ...URL_FIELDS.map((f) => f[0])]) p.delete(k);
   if (selected) p.set("item", selected);
-  else p.delete("item");
-  if (view === "listings" && !selected) p.delete("view");
-  else p.set("view", view);
+  if (view !== "listings" || selected) p.set("view", view);
+  const q = $("mk-q").value.trim();
+  if (q) p.set("q", q);
+  if (category !== "all") p.set("cat", category);
+  if (page > 1) p.set("page", page);
+  if ($("mb-favorites").checked) p.set("fav", "1");
+  for (const [key, id, def] of URL_FIELDS) if ($(id).value && $(id).value !== def) p.set(key, $(id).value);
   history.replaceState(null, "", location.pathname + (p.size ? "?" + p : ""));
+}
+function restoreFilters(p) {
+  for (const [key, id] of URL_FIELDS) {
+    const v = p.get(key);
+    if (v == null) continue;
+    const el = $(id);
+    if (el.tagName === "SELECT" ? [...el.options].some((o) => o.value === v) : /^[A-Za-z0-9]{0,13}$/.test(v)) el.value = v;
+  }
+  if (p.get("cat") && ["scroll", "weapon", "equip", "stars", "cash", "other"].includes(p.get("cat"))) {
+    category = p.get("cat");
+    document.querySelectorAll("[data-category]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.category === category));
+  }
+  if (p.get("fav") === "1") $("mb-favorites").checked = true;
+  const n = Number(p.get("page"));
+  if (Number.isInteger(n) && n > 1 && n < 100000) page = n;
 }
 function closeItem() {
   detailSeq++;
@@ -203,7 +230,7 @@ function renderDirectory() {
             `<tr class="${r.id === selected ? "selected" : ""}"><td>${starButton(r.id)}</td><td>${itemLink(r.id)}<small>${categories[r.category]}${r.reports ? ` · ${tr("가격 제보", "Reports")} ${r.reports}` : ""}</small></td><td class="num">${money(r.median)}<small>${tr("최저", "Low")} ${money(r.low)}</small></td><td><strong>${r.open}</strong><small>${tr("기록", "Records")} ${r.records}</small></td><td>${when(r.last)}</td></tr>`,
         )
         .join("")}</tbody></table></div>`
-    : `<div class="market-empty"><strong>${tr("표시할 아이템이 없어요.", "No matching items.")}</strong><p>${$("mb-favorites").checked ? tr("별표를 눌러 관심 아이템을 저장해 보세요.", "Use the star to save items to your wishlist.") : T.noMatches}</p>${$("mk-q").value.trim() ? `<p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="listings">${tr("매물 목록에서 찾기", "Search listings instead")}</button></p>` : ""}</div>`;
+    : categoryMiss() || `<div class="market-empty"><strong>${tr("표시할 아이템이 없어요.", "No matching items.")}</strong><p>${$("mb-favorites").checked ? tr("별표를 눌러 관심 아이템을 저장해 보세요.", "Use the star to save items to your wishlist.") : T.noMatches}</p>${$("mk-q").value.trim() ? `<p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="listings">${tr("매물 목록에서 찾기", "Search listings instead")}</button></p>` : ""}</div>`;
   if (!rows.length && !$("mb-favorites").checked) noResults($("mk-q").value.trim());
   $("mb-pagination").innerHTML = pager({ page, pages }, "main");
   $("mb-results").setAttribute("aria-busy", "false");
@@ -219,6 +246,16 @@ function scopeLabel() {
     sold: tr(`판매 완료 표시 · 최근 ${days}일`, `Marked sold · last ${days}d`),
     stale: tr(`24시간 경과 매물 · 최근 ${days}일`, `Over 24h old · last ${days}d`),
   }[state];
+}
+// When a category hides every match of the search, say so and offer the other categories instead of "no such item".
+function categoryMiss() {
+  if (category === "all" || !$("mk-q").value.trim()) return "";
+  const matches = matchingIds(items, $("mk-q").value) || [];
+  const counts = {};
+  for (const id of matches) { const c = byId.get(id)?.category; if (c) counts[c] = (counts[c] || 0) + 1; }
+  const others = Object.entries(counts).filter(([c]) => c !== category).sort((a, b) => b[1] - a[1]);
+  if (!others.length) return "";
+  return `<div class="market-empty"><strong>${(ko ? `'${categories[category]}' 분류에는 이 검색어와 맞는 아이템이 없어요.` : tx("No '{cat}' items match this search.", { cat: categories[category] }))}</strong><p>${tr("다른 분류에서 찾았어요:", "Found in other categories:")} ${others.map(([c, n]) => `<button type="button" class="btn ghost small-btn" data-category="${c}">${categories[c]} ${n}</button>`).join(" ")} <button type="button" class="btn ghost small-btn" data-category="all">${tr("전체 분류", "All categories")}</button></p></div>`;
 }
 function filteredIds() {
   const matches = matchingIds(items, $("mk-q").value);
@@ -257,7 +294,7 @@ async function renderRecords() {
   if (filtering) {
     const ids = filteredIds();
     if (!ids.length) {
-      $("mb-results").innerHTML = `<div class="market-empty"><strong>${T.noMatches}</strong><p>${tr("최근 30일에 기록된 아이템만 찾을 수 있어요. 한글·영문·초성·약어(장공, 귀힘)로도 검색돼요.", "Only items recorded in the last 30 days can be found. Korean, English, initials and common abbreviations all work.")}</p><p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="items">${tr("아이템 목록 보기", "Browse items")}</button></p></div>`;
+      $("mb-results").innerHTML = categoryMiss() || `<div class="market-empty"><strong>${T.noMatches}</strong><p>${tr("최근 30일에 기록된 아이템만 찾을 수 있어요. 한글·영문·초성·약어(장공, 귀힘)로도 검색돼요.", "Only items recorded in the last 30 days can be found. Korean, English, initials and common abbreviations all work.")}</p><p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="items">${tr("아이템 목록 보기", "Browse items")}</button></p></div>`;
       noResults($("mk-q").value.trim());
       $("mb-count").textContent = "0";
       $("mb-pagination").innerHTML = "";
@@ -302,15 +339,15 @@ async function renderRecords() {
     $("mb-count").textContent = [
       scopeLabel(),
       tr(`${nf.format(data.total)}건`, `${nf.format(data.total)} records`),
-      tr(`${first}–${last}건 표시`, `showing ${first}–${last}`),
+      data.total ? tr(`${first}–${last}건 표시`, `showing ${first}–${last}`) : "",
       ko ? `${ago(data.asOf)} 기준` : `${tx("as of")} ${ago(data.asOf)}`,
-    ].join(" · ");
+    ].filter(Boolean).join(" · ");
     if (!data.total && $("mk-q").value.trim()) noResults($("mk-q").value.trim());
     $("mb-results").innerHTML =
       target === "reports"
         ? data.rows.length
           ? `<div class="mb-table-wrap"><table class="mb-table"><thead><tr><th>${tr("아이템", "Item")}</th><th>${T.table.price}</th><th>${tr("제보 종류", "Report type")}</th><th>${tr("제보 시각", "Reported")}</th></tr></thead><tbody>${data.rows.map((r) => `<tr><td>${itemLink(r.item)}</td><td class="num">${money(r.price)}</td><td>${{ selling: tr("판매가", "Asking"), sold: tr("판매 완료", "Sold"), buying: tr("구매 희망", "Buying") }[r.kind]}</td><td>${when(r.seen)}</td></tr>`).join("")}</tbody></table></div>`
-          : `<p class="market-empty">${tr("이 조건의 가격 제보가 없어요.", "No price reports match.")}</p>`
+          : `<div class="market-empty"><strong>${tr("이 조건의 가격 제보가 없어요.", "No price reports match.")}</strong><p>${tr("가격 제보는 아이템 시세 페이지에서 직접 남긴 기록이에요. 상점에서 확인된 매물은 매물 목록 탭에 있어요.", "Price reports are prices players entered on item pages. Listings seen in shops are in the Listings tab.")} <button type="button" class="btn ghost small-btn" data-view="listings">${tr("매물 목록 보기", "Open listings")}</button></p></div>`
         : listingTable(data.rows);
     $("mb-pagination").innerHTML = pager(data, "main");
   } catch (e) {
@@ -326,12 +363,13 @@ async function renderRecords() {
 }
 function renderMain() {
   if (!items.length) return;
+  syncURL();
   $("mb-range").hidden = view === "items" || (view === "listings" && $("mb-state").value === "open");
   view === "items" ? renderDirectory() : renderRecords();
 }
-function setView(next) {
+function setView(next, keepPage = false) {
   view = next;
-  page = 1;
+  if (!keepPage) page = 1;
   listSeq++;
   listAbort?.abort();
   document.querySelectorAll("[data-view]").forEach((b) => {
@@ -555,10 +593,10 @@ async function refresh() {
     catalog = await get("/market/catalog");
     for (const k of ["open", "shops", "items", "records"])
       $("mk-stat-" + k).textContent = money(catalog.stats[k]);
-    $("mk-status").textContent = tr(
-      `목록 기준 ${clock(Date.parse(catalog.asOf))} · 60초마다 확인`,
-      `Directory as of ${clock(Date.parse(catalog.asOf))} · checks every 60s`,
-    );
+    // The time goes in as a variable so derived locales match their translation key.
+    $("mk-status").textContent = ko
+      ? `목록 기준 ${clock(Date.parse(catalog.asOf))} · 60초마다 확인`
+      : tx("Directory as of {at} · checks every 60s", { at: clock(Date.parse(catalog.asOf)) });
     if (view === "items") renderDirectory();
   } catch {
     $("mk-status").textContent = catalog ? T.staleData : T.failed;
@@ -765,8 +803,9 @@ async function initialize() {
       p.delete("src");
       history.replaceState(null, "", location.pathname + (p.size ? "?" + p : ""));
     }
+    restoreFilters(p);
     await refresh();
-    setView(initialView);
+    setView(initialView, true);
     if (byId.has(id)) loadItem(id, { source });
     renderMine();
   } catch {

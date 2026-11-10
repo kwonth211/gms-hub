@@ -767,10 +767,12 @@ input.dm-filled { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset
 /* Item price pages */
 .item-title img { image-rendering: pixelated; flex: none; }
 .item-title .en-name { font-size: .85rem; }
-.item-page { display: grid; gap: 16px; margin-top: 20px; }
+.item-page { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; margin-top: 20px; }
+.item-page > * { min-width: 0; }
 .item-page h2 { margin: 0 0 10px; font-size: 1.1rem; }
 .item-page h3 { margin: 16px 0 8px; font-size: .95rem; }
-.item-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; }
+.item-grid { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); gap: 16px; }
+.item-grid > * { min-width: 0; }
 .item-headline-label { margin: 0; color: var(--muted); font-size: .85rem; font-weight: 700; }
 .item-headline { margin: 4px 0; }
 .item-headline b { font-size: clamp(1.8rem, 5vw, 2.4rem); }
@@ -781,13 +783,13 @@ input.dm-filled { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset
 .item-info dl { margin: 0; display: grid; gap: 6px; }
 .item-info dl div { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
 .item-info dt { color: var(--muted); font-size: .85rem; }
-.item-info dd { margin: 0; font-weight: 700; text-align: right; }
+.item-info dd { margin: 0; font-weight: 700; text-align: right; min-width: 0; overflow-wrap: anywhere; }
 .item-links { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
 .item-links a { display: grid; grid-template-columns: 24px 1fr; column-gap: 8px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: inherit; }
 .item-links a:hover { border-color: var(--accent); }
 .item-links img { grid-row: span 2; image-rendering: pixelated; }
 .item-links small { color: var(--muted); font-size: .75rem; }
-@media (max-width: 760px) { .item-grid { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .item-grid { grid-template-columns: minmax(0,1fr); } }
 
 /* Market browser: browse all listings first; selecting an item never navigates away. */
 .market-browser .mb-status { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:10px 0 18px; font-size:.82rem; color:var(--muted); }
@@ -1168,3 +1170,12 @@ input.dm-filled { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset
 .tr-mobs small { font-size:.7rem; color:var(--muted); }
 .tr-acc { font-size:.78rem; color:var(--accent-2); font-weight:600; }
 @media (max-width: 760px) { .monster-hunt-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } .monster-acc { grid-template-columns:1fr; } }
+
+.scan-device-note { border-color: var(--accent); margin-bottom: 16px; }
+.scan-device-note p { margin: 6px 0 0; }
+
+/* Header menu on narrow screens: seven equal columns that may shrink, so long English labels wrap instead of overflowing. */
+@media (max-width: 1100px) {
+  .tabs { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .tabs .tab { min-width: 0; overflow-wrap: anywhere; hyphens: auto; }
+}
