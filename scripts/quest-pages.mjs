@@ -25,7 +25,8 @@ export function collectQuests(raw, { buildDate }) {
   const quests = raw.quests.map((q) => {
     const s = q.requirementToStart || {}, c = q.requirementToComplete || {}, r = q.rewardOnComplete || {};
     return {
-      id: q.id, name: q.name, area: q.areaName || 'Victoria Island',
+      // A few client names carry U+FFFD where a non-breaking space was lost in encoding.
+      id: q.id, name: q.name.replace(/\uFFFD/g, ' ').replace(/ {2,}/g, ' ').trim(), area: q.areaName || 'Victoria Island',
       lv: s.levelMinimum || 0, jobs: s.jobs || [], startNpc: s.npcId, endNpc: c.npcId,
       prereq: (s.quests || []).filter((x) => x.state === 2).map((x) => x.id),
       bring: (c.items || []).filter((i) => i.count > 0), hunt: c.mobs || [],
@@ -110,6 +111,7 @@ export function questIndex({ lang, quests, link }) {
   const live = quests.filter((q) => !q.expired);
   return `<section class="page-head wrap"><h1>${ko ? '퀘스트' : 'Quests'}</h1>
 <p class="lead">${ko ? `글클메 퀘스트 ${live.length}개의 시작 레벨, 필요한 아이템과 몬스터, 보상 EXP·메소를 지역별로 정리했어요.` : `${live.length} Classic World quests by area: start level, what to bring or hunt, and the EXP and mesos they pay.`}</p>
+<p class="char-links"><a href="${link('/quests/best-exp/')}">${ko ? '레벨별 경험치 퀘스트' : 'Best EXP quests by level'}</a><a href="${link('/equipment/')}">${ko ? '장비 찾기' : 'Equipment finder'}</a></p>
 <nav class="band-nav" aria-label="${ko ? '지역' : 'Areas'}"><div>${areas.map((a) => `<a class="band-link" href="#area-${encodeURIComponent(a)}">${esc(areaName(a, lang))}</a>`).join('')}</div></nav></section>
 <div class="wrap quest-page">
 ${areas
@@ -123,4 +125,35 @@ ${areas
   .join('\n')}
 <p class="muted small">${ko ? '퀘스트 이름은 게임 클라이언트의 영어 이름이에요.' : 'Quest names are the game client’s own.'}</p>
 </div>`;
+}
+
+// "Which quests are worth doing at my level": the biggest EXP payouts per 10-level band, from the same client data.
+// Forgotten Hollow quests wait until the area opens; repeatable and ended quests are left out.
+export const QUEST_BANDS = [[1, 10], [11, 20], [21, 30], [31, 40], [41, 50], [51, 200]];
+export function questBestBody({ lang, quests, link }) {
+  const ko = lang === 'ko';
+  const pool = quests.filter((q) => !q.expired && !q.repeat && q.exp > 0 && q.area !== 'Forgotten Hollow');
+  const task = (q) => {
+    const parts = [];
+    if (q.hunt.length) parts.push(ko ? `몬스터 ${q.hunt.length}종 처치` : `hunt ${q.hunt.length} monster type${q.hunt.length > 1 ? 's' : ''}`);
+    if (q.bring.length) parts.push(ko ? `아이템 ${q.bring.length}종 모으기` : `bring ${q.bring.length} item type${q.bring.length > 1 ? 's' : ''}`);
+    if (!parts.length) parts.push(ko ? '전달·대화' : 'talk or deliver');
+    if (q.prereq.length) parts.push(ko ? '선행 퀘스트 있음' : 'needs an earlier quest');
+    return `<ul class="quest-task">${parts.map((x) => `<li>${x}</li>`).join('')}</ul>`;
+  };
+  const sections = QUEST_BANDS.map(([a, b]) => {
+    const list = pool.filter((q) => Math.max(q.lv, 1) >= a && Math.max(q.lv, 1) <= b).sort((x, y) => y.exp - x.exp)
+      // Citizenship donations repeat one name across many variants; keep the best-paying one of each name.
+      .filter((q, i, all) => all.findIndex((x) => x.name === q.name) === i).slice(0, 10);
+    if (!list.length) return '';
+    const label = b >= 200 ? (ko ? `${a}레벨 이상` : `Level ${a}+`) : (ko ? `${a}~${b}레벨` : `Level ${a}–${b}`);
+    return `<section class="panel" id="lv-${a}"><h2>${label}</h2><div class="table-wrap"><table class="data quest-best"><thead><tr><th scope="col">${ko ? '퀘스트' : 'Quest'}</th><th scope="col">${ko ? '시작' : 'Starts'}</th><th scope="col">EXP</th><th scope="col">${ko ? '메소' : 'Mesos'}</th><th scope="col">${ko ? '할 일' : 'What you do'}</th></tr></thead><tbody>${list
+      .map((q) => `<tr><th scope="row"><a href="${link(questPath(q))}" translate="no">${esc(q.name)}</a><small>${esc(areaName(q.area, lang))}</small>${jobsLabel(q.jobs, lang) && jobsLabel(q.jobs, lang) !== areaName(q.area, lang) ? `<small>${esc(jobsLabel(q.jobs, lang))}</small>` : ''}</th><td class="num">Lv. ${q.lv || 1}</td><td class="num"><b>${nf(q.exp)}</b></td><td class="num">${q.meso ? nf(q.meso) : '—'}</td><td>${task(q)}</td></tr>`)
+      .join('')}</tbody></table></div></section>`;
+  }).join('');
+  return `<section class="page-head wrap"><h1>${ko ? '레벨별 경험치 많이 주는 퀘스트' : 'Best EXP quests by level'}</h1>
+<p class="lead">${ko ? '레벨 구간마다 보상 경험치가 큰 퀘스트를 10개씩 골랐어요. 사냥하다 지칠 때 끼워 넣기 좋아요.' : 'The ten biggest EXP rewards in each level band, from the game data. Good to slot in between grinding sessions.'}</p>
+<nav class="band-nav" aria-label="${ko ? '레벨' : 'Level'}"><div>${QUEST_BANDS.map(([a, b]) => `<a class="band-link" href="#lv-${a}">${b >= 200 ? `${a}+` : `${a}–${b}`}</a>`).join('')}</div></nav></section>
+<div class="wrap quest-page">${sections}
+<p class="muted small">${ko ? '보상은 게임 클라이언트 데이터 기준이에요. 반복 퀘스트, 끝난 이벤트, 아직 열리지 않은 포가튼 할로우 퀘스트는 뺐어요.' : 'Rewards are from the game client data. Repeatable quests, ended events and Forgotten Hollow quests (not open yet) are left out.'} <a href="${link('/quests/')}">${ko ? '전체 퀘스트' : 'All quests'}</a></p></div>`;
 }

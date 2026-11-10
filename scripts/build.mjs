@@ -6,7 +6,8 @@ import { fileURLToPath } from 'node:url';
 import { spriteSvg, heroScene, spritePng } from './sprites.mjs';
 import { monsterIndex, monsterDetail, monsterPath, monsterName, mapPath, bossIndex } from './monster-pages.mjs';
 import { collectMaps, mapDetail, mapIndex, mapName } from './map-pages.mjs';
-import { collectQuests, questDetail, questIndex, questPath, areaName as questArea } from './quest-pages.mjs';
+import { collectQuests, questDetail, questIndex, questBestBody, questPath, areaName as questArea } from './quest-pages.mjs';
+import { EQ_CLASSES, equipPath, collectEquipment, equipmentIndexBody, equipmentClassBody } from './equipment-pages.mjs';
 import { selectRoutes, routeCards, publicTrainingData, jobNames, validateTraining } from '../assets/training-evidence.js';
 import { loadLocales, loadMemory, entityMatcher, localizePage, clientKeys, TX_RUNTIME } from './i18n.mjs';
 import { SKILLS as DMG_SKILLS, windowRange as dmgWindow, hitRange as dmgHit, hitsToKill as dmgKill, accuracyNeeded as dmgAccNeed } from '../assets/damage-calc.js';
@@ -837,6 +838,8 @@ function homeBody(lang) {
 <div class="tool-cards">
 ${(lang === 'ko' ? [
 tool('/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monster database', lang === 'ko' ? '몬스터 78종의 능력치, 드롭 아이템, 출현 위치를 검색하세요.' : 'Explore stats, reported drops and map locations for 78 monsters.'),
+tool('/equipment/', 'hammer', lang === 'ko' ? '장비 찾기' : 'Equipment finder', lang === 'ko' ? `직업과 레벨로 지금 얻을 수 있는 장비 ${EQUIPMENT.length}개를 찾고, 떨어뜨리는 몬스터를 봐요.` : `${EQUIPMENT.length} pieces of gear by class and level, with the monsters that drop them and quests that give them.`),
+tool('/quests/best-exp/', 'star', lang === 'ko' ? '경험치 퀘스트' : 'Best EXP quests', lang === 'ko' ? '레벨 구간마다 보상 경험치가 큰 퀘스트 10개씩.' : 'The ten biggest EXP quest rewards for each level band.'),
 tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc),
 tool('/tools/scroll/', 'scroll', t.navScroll, t.scCardDesc),
 tool('/tools/drop-rate/', 'bag', t.navDrop, t.dropCardDesc),
@@ -849,6 +852,8 @@ tool('/bosses/', 'crown', lang === 'ko' ? '보스 몬스터' : 'Bosses', lang ==
 tool('/maps/', 'tree', lang === 'ko' ? '맵 도감' : 'Maps', lang === 'ko' ? `맵 ${MAPS.filter((l) => l.availability === 'open').length}곳의 몬스터, 출현 수, 드롭을 지역별로 봐요.` : `${MAPS.filter((l) => l.availability === 'open').length} maps: which monsters spawn there, how many, and what they drop.`)
 ] : [
 tool('/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monster database', lang === 'ko' ? '몬스터 78종의 능력치, 드롭 아이템, 출현 위치를 검색하세요.' : 'Explore stats, reported drops and map locations for 78 monsters.'),
+tool('/equipment/', 'hammer', lang === 'ko' ? '장비 찾기' : 'Equipment finder', lang === 'ko' ? `직업과 레벨로 지금 얻을 수 있는 장비 ${EQUIPMENT.length}개를 찾고, 떨어뜨리는 몬스터를 봐요.` : `${EQUIPMENT.length} pieces of gear by class and level, with the monsters that drop them and quests that give them.`),
+tool('/quests/best-exp/', 'star', lang === 'ko' ? '경험치 퀘스트' : 'Best EXP quests', lang === 'ko' ? '레벨 구간마다 보상 경험치가 큰 퀘스트 10개씩.' : 'The ten biggest EXP quest rewards for each level band.'),
 tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc),
 tool('/tools/market/', 'coin', t.navMarket, MK[lang].lead),
 tool('/quests/', 'scroll', lang === 'ko' ? '퀘스트' : 'Quests', lang === 'ko' ? `퀘스트 ${QUESTS.length}개의 시작 레벨, 모아 올 아이템과 드롭 몬스터, 보상을 봐요.` : `${QUESTS.length} quests: start level, items to bring and who drops them, rewards.`),
@@ -1981,6 +1986,7 @@ const MIN_INDEX_LISTINGS = 3;
 // Items a monster drops also get a page (who drops it, where those monsters live, base stats): "who drops X" is how
 // players, English-speaking ones above all, search for an item. Those count as indexable when a dropper is on a live map.
 const ITEM_DETAILS = readJson('data/item-details.json').items;
+const EQUIPMENT = collectEquipment({ items: itemsData.items, details: ITEM_DETAILS, dropIndex: DROP_INDEX, quests: QUESTS });
 const ITEM_PAGES = itemsData.items.filter((i) => priceOf(i) || DROP_INDEX.has(i.id));
 const ITEM_PAGE_IDS = new Set(ITEM_PAGES.map((i) => i.id));
 const liveDrop = (i) => (DROP_INDEX.get(i.id) || []).some(({ m }) => m.status === 'active');
@@ -2488,6 +2494,32 @@ for (const lang of LANGS) {
       body: questIndex({ lang, quests: QUESTS, link }),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '퀘스트' : 'Quests', '/quests/')]
     }));
+    write(path.join(lang, 'quests', 'best-exp', 'index.html'), page({
+      lang, pageKey: 'questBest', pagePath: '/quests/best-exp/',
+      title: lang === 'ko' ? '글클메 경험치 퀘스트 추천: 레벨별 보상 EXP 순위 | GMS Hub' : 'MapleStory Classic World Best EXP Quests by Level | GMS Hub',
+      desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드에서 레벨 구간마다 보상 경험치가 가장 큰 퀘스트 10개씩. 시작 레벨, 메소 보상, 할 일까지 정리했어요.' : 'The quests that pay the most EXP at each level in MapleStory Classic World (MSCW): start level, EXP and meso rewards and what each one asks you to do.',
+      body: questBestBody({ lang, quests: QUESTS, link }),
+      ld: [breadcrumbLd(lang, lang === 'ko' ? '경험치 퀘스트' : 'Best EXP quests', '/quests/best-exp/')]
+    }));
+    const eqCtx = { lang, link, mobHref, questHref: (q) => link(questPath(q)),
+      itemHref: (e) => (ITEM_PAGE_IDS.has(e.id) ? link(itemPath(ITEM_PAGES.find((i) => i.id === e.id))) : link(`/tools/market/?item=${e.id}`)) };
+    write(path.join(lang, 'equipment', 'index.html'), page({
+      lang, pageKey: 'equipment', pagePath: '/equipment/', modules: ['equipment.js'],
+      title: lang === 'ko' ? '글클메 장비 찾기: 직업·레벨별 장비와 드롭 몬스터 | GMS Hub' : 'MapleStory Classic World Equipment by Class & Level: Where to Get It | GMS Hub',
+      desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드에서 지금 얻을 수 있는 장비 ${EQUIPMENT.length}개를 직업·부위·레벨로 찾아요. 능력치, 업그레이드 횟수, 떨어뜨리는 몬스터와 주는 퀘스트까지.` : `${EQUIPMENT.length} pieces of MapleStory Classic World (MSCW) gear you can get right now, by class, slot and level: stats, upgrade slots, the monsters that drop them and the quests that give them.`,
+      body: equipmentIndexBody(eqCtx, EQUIPMENT),
+      ld: [breadcrumbLd(lang, lang === 'ko' ? '장비 찾기' : 'Equipment finder', '/equipment/')]
+    }));
+    for (const c of EQ_CLASSES) {
+      const name = lang === 'ko' ? c.ko : c.en;
+      write(path.join(lang, 'equipment', c.slug, 'index.html'), page({
+        lang, pageKey: 'equipmentClass', pagePath: equipPath(c), modules: ['equipment.js'],
+        title: lang === 'ko' ? `글클메 ${name} 장비: 레벨별 무기·방어구와 얻는 곳 | GMS Hub` : `MapleStory Classic World ${name} Equipment: Weapons & Armor by Level | GMS Hub`,
+        desc: lang === 'ko' ? `글클메 ${name} 무기와 방어구를 레벨순으로. 능력치, 착용 조건, 떨어뜨리는 몬스터, 주는 퀘스트를 한 표에서 봐요.` : `Every ${name} weapon and armor piece you can get in MapleStory Classic World, by level: stats, requirements, which monsters drop it and which quests give it.`,
+        body: equipmentClassBody(eqCtx, c, EQUIPMENT),
+        ld: [breadcrumbLd(lang, lang === 'ko' ? `${name} 장비` : `${name} equipment`, equipPath(c))]
+      }));
+    }
     for (const q of QUESTS) {
       write(path.join(lang, 'quests', String(q.id), 'index.html'), page({
         lang, pageKey: 'quest', pagePath: questPath(q),
@@ -2639,6 +2671,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
   )
 ).concat(
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/bosses/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/quests/'}, ...QUESTS.filter(q=>!q.expired).map(q=>({path:questPath(q)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
   [{path:'/maps/'}, ...MAPS.filter(l=>l.availability==='open').map(l=>({path:mapPath(l)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
@@ -2688,6 +2721,8 @@ Not affiliated with NEXON. Prices are medians of shops players scanned in the la
 - [Item database](${absUrl('/en/items/')}): every item a monster drops or a player priced, with droppers, farm maps, base stats and recent prices
 - [Monster database](${absUrl('/en/monsters/')}): ${MONSTERS.monsters.length} monsters with HP, EXP, drops, map locations and the accuracy needed to hit
 - [Bosses](${absUrl('/en/bosses/')}): spawn map, HP, EXP, accuracy needed and equipment drops for every field boss
+- [Equipment finder](${absUrl('/en/equipment/')}): obtainable gear by class and level with stats, upgrade slots, dropping monsters and quest sources
+- [Best EXP quests](${absUrl('/en/quests/best-exp/')}): the biggest EXP quest rewards in each level band
 - [Quests](${absUrl('/en/quests/')}): ${QUESTS.length} quests with start level, items to bring and who drops them, monsters to hunt and rewards
 - [Map database](${absUrl('/en/maps/')}): ${MAPS.length} maps with their monsters, spawn points, EXP per full clear and drops
 - [Training routes](${absUrl('/en/tools/training/')}): conditional routes by level, with entry requirements and supply costs

@@ -1,5 +1,5 @@
-// Refreshes data/item-details.json: requirements, upgrade slots and stat bonuses for every item a monster drops or a
-// player has priced, read from the client data maplestory.io serves (MCW region). Item pages show these as base stats.
+// Refreshes data/item-details.json: requirements, upgrade slots and stat bonuses for every item a monster drops, a
+// quest rewards or a player has priced, read from the client data maplestory.io serves (MCW region). Item pages show these as base stats.
 // Run by hand after a game patch or after new drops/prices: node scripts/fetch-item-details.mjs
 import { readFileSync, writeFileSync } from 'node:fs';
 
@@ -30,6 +30,8 @@ async function pool(list, n, fn) {
 const ids = new Set();
 for (const m of read('monsters.json').monsters) for (const d of m.drops) ids.add(d.itemId);
 for (const id of Object.keys(read('item-prices.json').prices || {})) ids.add(Number(id));
+// Quest rewards too, so the equipment finder can list gear you earn from a quest.
+for (const q of read('quests-raw.json').quests) for (const i of q.rewardOnComplete?.items || []) if (i.count > 0) ids.add(i.id);
 const known = new Set(read('items.json').items.map((i) => i.id));
 const list = [...ids].filter((id) => known.has(id)).sort((a, b) => a - b);
 

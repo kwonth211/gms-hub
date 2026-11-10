@@ -223,3 +223,17 @@ test('non-Korean homes lead with the database and keep the site directory last',
   assert.ok(ko.indexOf('id="live-market"')<ko.indexOf('home-tools'));
   assert.match(en,/<title>GMS Hub: MapleStory Classic World \(MSCW\) Drops/);
 });
+test('equipment finder lists obtainable gear per class with stats and where to get it',()=>{
+  const w=read('dist/en/equipment/warrior/index.html');
+  assert.match(w,/<title>MapleStory Classic World Warrior Equipment/);
+  assert.match(w,/data-lv="\d+" data-sub="One-Handed Sword"/);
+  assert.match(w,/class="eq-from"><a href="\/en\/monsters\/\d+\/"/);
+  assert.match(read('dist/ko/equipment/index.html'),/모든 직업 공용 장비/);
+  assert.match(read('dist/sitemap.xml'),/\/en\/equipment\/thief\//);
+});
+test('best EXP quests rank quest rewards per level band without repeatables or replacement characters',()=>{
+  const html=read('dist/en/quests/best-exp/index.html');
+  assert.match(html,/<h2>Level 11–20<\/h2>/);
+  assert.ok(!html.includes('�'));
+  assert.match(read('dist/en/quests/index.html'),/href="\/en\/quests\/best-exp\/"/);
+});

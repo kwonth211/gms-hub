@@ -1486,3 +1486,24 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .boss-drops { min-width: 220px; }
 .boss-row.status-upcoming, .boss-row.status-unplaced { color: var(--muted); }
 .drop-where { margin: 0 0 16px; }
+
+/* Equipment finder and best-EXP quests: dense reference tables; stats and sources wrap as short chips. */
+.eq-page, .quest-page { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.eq-filters { display: flex; flex-wrap: wrap; align-items: end; gap: 12px 16px; }
+.eq-filters label { display: grid; gap: 4px; }
+.eq-filters .eq-check { display: flex; align-items: center; gap: 6px; }
+.eq-count { margin: 0 0 0 auto; color: var(--muted); }
+.eq-group h3 { margin: 8px 0; }
+.eq-table th[scope='row'], .quest-best th[scope='row'] { background: none; color: var(--text); white-space: normal; font-size: 0.9rem; }
+.eq-table .num, .quest-best .num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.eq-name { display: flex; align-items: center; gap: 8px; }
+.eq-name img { image-rendering: pixelated; flex-shrink: 0; }
+.eq-req, .quest-best th small { display: flex; flex-wrap: wrap; gap: 2px 8px; color: var(--muted); font-size: 0.8rem; font-weight: 400; }
+.eq-stats, .eq-from { display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.eq-from small { color: var(--muted); }
+.quest-task { display: flex; flex-wrap: wrap; gap: 2px 10px; margin: 0; padding: 0; list-style: none; }
+.eq-table { table-layout: fixed; min-width: 640px; }
+.eq-table thead th:nth-child(1) { width: 56px; }
+.eq-table thead th:nth-child(2) { width: 32%; }
+.eq-table thead th:nth-child(3) { width: 26%; }
+.eq-table thead th:nth-child(4) { width: 64px; }
