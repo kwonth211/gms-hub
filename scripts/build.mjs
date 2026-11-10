@@ -59,7 +59,7 @@ const T = {
     navAbout: '소개',
     navGuides: '가이드',
     switchLang: 'English',
-    homeTitle: '글로벌 메이플스토리 클래식 월드(글클메) 사이트 모음 · 시세 · 공략 · 계산기 | GMS Hub',
+    homeTitle: '글클메 허브: 사이트 모음·실시간 시세·몬스터 DB·사냥터 추천 | GMS Hub',
     homeDesc: `글로벌 메이플스토리 클래식 월드(글클메) 공식 채널, 디스코드·레딧·디시 커뮤니티, DB·위키, 자유시장 시세, 보스 타이머, 빌드 플래너 ${SITE_COUNT}곳을 용도별로 정리했어요. 직업별 조건을 정리한 사냥터 추천와 주문서 계산기도 있어요.`,
     heroKicker: '글클메 유저를 위한 길잡이',
     heroTitle: '아이템·시세·유용한 사이트, <br>한 번에 찾아보세요',
@@ -154,7 +154,7 @@ const T = {
     colLadder: '종류',
     colExpected: '1장당 기대 상승치',
 
-    dropTitle: '글클메 확률 계산기 · 넥슨 공식 상자 확률 | GMS Hub',
+    dropTitle: '글클메 드롭률·확률 계산기와 넥슨 공식 상자 확률 | GMS Hub',
     dropDesc: '글로벌 메이플스토리 클래식 월드 확률 계산기. 넥슨 공식 랜덤박스(미스터리 패션 크레이트 등) 확률표와 함께 몇 번 열거나 잡아야 얻는지 계산해요.',
     dropH1: '확률 계산기',
     dropLead: '"1% 템, 100번이면 나오나?" 상자 열기와 몬스터 사냥 모두 계산할 수 있어요.',
@@ -272,7 +272,7 @@ const T = {
     navAbout: 'About',
     navGuides: 'Guides',
     switchLang: '한국어',
-    homeTitle: 'Global MapleStory Classic World Sites: Prices, Guides, Boss Timers & Tools | GMS Hub',
+    homeTitle: 'GMS Hub: MapleStory Classic World Sites, Live Prices, Monster Database & Tools',
     homeDesc: `Every Global MapleStory Classic World site in one place: official channels, Discord, Reddit and Korean communities, databases and wikis, Free Market price trackers, boss timers and build planners. ${SITE_COUNT} links, with unverified references labeled separately.`,
     heroKicker: 'Your guide to Classic World on the web',
     heroTitle: 'Items, prices and useful sites, <br>all in one search',
@@ -367,8 +367,8 @@ const T = {
     colLadder: 'Type',
     colExpected: 'Expected gain per scroll',
 
-    dropTitle: 'Global MapleStory Classic World Drop Rate Calculator & Official Box Rates | GMS Hub',
-    dropDesc: 'Global MapleStory Classic World probability calculator with Nexon\'s official random box rates (Mystery Fashion Crates and more): see how many opens or kills you need.',
+    dropTitle: 'MapleStory Classic World Drop Rates: Odds Calculator, Box Rates & Monster Drops | GMS Hub',
+    dropDesc: 'How many kills or opens does a 1% drop take in MapleStory Classic World? Odds calculator, Nexon\'s official box rates, and which monsters drop each item.',
     dropH1: 'Odds Calculator',
     dropLead: '"It\'s 1% — will 100 tries do it?" Works for box opens and monster kills alike.',
     rateInput: 'Drop rate (%)',
@@ -517,6 +517,23 @@ const TR_BANDS = [[1, 10], [11, 20], [21, 30], [31, 40], [41, 50], [51, 60], [61
 const TR_MAX = TR_BANDS.at(-1)[1];
 const bandPath = ([a, b]) => `/tools/training/level-${a}-${b}/`;
 PAGES.push(...TR_BANDS.map((band) => ({ key: 'trBand', path: bandPath(band), band })));
+// One page per class: players search "글클메 썬콜 사냥터", "글클메 궁수 사냥터" far more often than by level band.
+// Subclasses that share every route with their family (Fighter, Page, Spearman) point to the family page instead.
+const TR_CLASSES = [
+  { job: 'warrior', slug: 'warrior', ko: '전사', en: 'Warrior', guide: 'warrior-build' },
+  { job: 'archer', slug: 'bowman', ko: '궁수', en: 'Bowman', guide: 'archer-build' },
+  { job: 'hunter', slug: 'hunter', ko: '헌터', en: 'Hunter', guide: 'archer-build' },
+  { job: 'crossbow', slug: 'crossbowman', ko: '사수', en: 'Crossbowman', guide: 'archer-build' },
+  { job: 'mage', slug: 'magician', ko: '마법사', en: 'Magician', guide: 'mage-build' },
+  { job: 'fire', slug: 'fire-poison', ko: '불독', en: 'Fire/Poison Wizard', guide: 'mage-build' },
+  { job: 'ice', slug: 'ice-lightning', ko: '썬콜', en: 'Ice/Lightning Wizard', guide: 'mage-build' },
+  { job: 'cleric', slug: 'cleric', ko: '클레릭', en: 'Cleric', guide: 'mage-build' },
+  { job: 'thief', slug: 'thief', ko: '도적', en: 'Thief', guide: 'thief-build' },
+  { job: 'assassin', slug: 'assassin', ko: '어쌔신(표도)', en: 'Assassin', guide: 'thief-build' },
+  { job: 'bandit', slug: 'bandit', ko: '시프(단도)', en: 'Bandit', guide: 'thief-build' }
+];
+const classPath = (c) => `/tools/training/class/${c.slug}/`;
+PAGES.push(...TR_CLASSES.map((cls) => ({ key: 'trClass', path: classPath(cls), cls })));
 
 const issuesUrl = `https://github.com/${config.github.owner}/${config.github.repo}/issues`;
 const CONTACT_EMAIL = 'kwonth211@gmail.com';
@@ -629,7 +646,7 @@ function header(lang, pagePath, only) {
   ]
     .map(
       ([p, icon, label]) =>
-        `<a class="tab" href="${href(langPath(lang, p))}"${(p === pagePath || (p === '/monsters/' && pagePath?.startsWith('/monsters/'))) ? ' aria-current="page"' : ''}>${spriteSvg(icon, 20)}<span>${label}</span></a>`
+        `<a class="tab" href="${href(langPath(lang, p))}"${(p === pagePath || (p !== '/' && pagePath?.startsWith(p))) ? ' aria-current="page"' : ''}>${spriteSvg(icon, 20)}<span>${label}</span></a>`
     )
     .join('');
   return `<header class="site-header"><div class="wrap header-inner">
@@ -649,7 +666,7 @@ function footer(lang) {
 </div></footer>`;
 }
 
-const ADFIT_PAGES = new Set(['home', 'training', 'trBand', 'scroll', 'drop', 'price', 'scan', 'market', 'damage', 'guides', 'guide', 'monsters', 'monster', 'items', 'item']);
+const ADFIT_PAGES = new Set(['home', 'training', 'trBand', 'trClass', 'scroll', 'drop', 'price', 'scan', 'market', 'damage', 'guides', 'guide', 'monsters', 'monster', 'items', 'item']);
 function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], modules = [], ld = [], only, noindex }) {
   const ads = ADFIT_PAGES.has(pageKey) && !noindex && Object.values(config.adfit || {}).some(Boolean);
   return `${head({ lang, title, desc, pagePath, ld, only, noindex })}
@@ -838,6 +855,8 @@ ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이�
 ${adfitRails()}
 ${jsonScript('home-routes', training.routes.map((r) => ({ id: r.id, title: r.title[lang], monsters: r.monsters[lang], min: r.level.min, max: r.level.max,
   mobs: r.mobs.flatMap((m) => [m.ko, m.en]), href: href(langPath(lang, `/tools/training/?lv=${r.level.min}#route-${r.id}`)) })))}
+${jsonScript('home-classes', TR_CLASSES.map((c) => ({ slug: c.slug, title: lang === 'ko' ? `${c.ko} 사냥터` : `${c.en} training routes`, n: classRoutes(c).length,
+  href: href(langPath(lang, classPath(c))), keywords: `${c.ko} ${c.en} ${jobNames.ko[c.job]} ${jobNames.en[c.job]}` })))}
 ${liveMarket(lang)}
 <section class="wrap home-tools">
 <h2>${t.toolsHeading}</h2>
@@ -916,13 +935,41 @@ function trainingBody(lang) {
 <p class="tr-filter-help">${tr('표시 레벨은 이동 검토 구간이에요. 카드의 진입 기준을 먼저 확인하세요.','Levels are trial windows; read each card’s entry conditions first.')}</p>
 </form><div class="tr-result-head"><h2 id="tr-status" role="status">${tr('20레벨 사냥 후보','Options for level 20')} ${initial.length}${tr('곳','')}</h2><div class="tr-result-actions"><button type="button" class="btn ghost small-btn" id="tr-share" data-ok="${tr('조건 링크를 복사했어요','Link copied')}" data-fail="${tr('복사하지 못했어요. 주소창의 주소를 직접 복사해 주세요.','Could not copy. Copy the address from the address bar.')}">${tr('이 조건 링크 복사','Copy link to these filters')}</button><span id="tr-share-status" class="share-status" role="status" aria-live="polite"></span><a href="${href(langPath(lang,'/guides/choose-your-job/'))}">${tr('직업별 육성 가이드','Class guides')}</a></div></div>
 <section id="tr-result">${routeCards(initial,lang)}</section><noscript><p>${tr('조건 검색에는 JavaScript가 필요해요. 아래 레벨별 페이지에서 전체 경로를 볼 수 있어요.','Filters require JavaScript. Browse the level-band pages below for all routes.')}</p></noscript>
-${bandNav(lang)}${trainingMethod(lang)}</div>${jsonScript('training-data',publicTrainingData(training))}`;
+${classNav(lang)}${bandNav(lang)}${trainingMethod(lang)}</div>${jsonScript('training-data',publicTrainingData(training))}`;
 }
 function trainingBandBody(lang,band) {
   const t=T[lang]; const rows=bandSpots(band); const vars={a:band[0],b:band[1],n:rows.length};
   return `${pageHead(lang,'sword',fill(t.trBandH1,vars),fill(t.trBandLead,vars))}<div class="wrap tr-page">
 <p class="tr-review-note">${lang==='ko'?'이 구간과 겹치는 모든 직업의 경로예요. 장비 조건부 후보도 포함되니 진입 기준과 직업을 확인하세요.':'All class routes overlapping this band, including gear-dependent trials. Check class and entry conditions.'}</p>${routeCards(rows,lang)}
-<p><a class="btn" href="${href(langPath(lang,'/tools/training/'))}?lv=${band[0]}">${t.trBandFinder}</a></p>${bandNav(lang,band)}${trainingMethod(lang)}</div>`;
+<p><a class="btn" href="${href(langPath(lang,'/tools/training/'))}?lv=${band[0]}">${t.trBandFinder}</a></p>${bandNav(lang,band)}${classNav(lang)}${trainingMethod(lang)}</div>`;
+}
+
+const classRoutes = (cls) => selectRoutes(training.routes, { job: cls.job, advanced: true });
+function classNav(lang, current) {
+  const tr = (ko, en) => (lang === 'ko' ? ko : en);
+  return `<nav class="band-nav" aria-label="${tr('직업별 사냥터', 'Training by class')}"><h2>${tr('직업별 사냥터', 'Training by class')}</h2><div>${TR_CLASSES.map((c) => {
+    const label = lang === 'ko' ? c.ko : c.en;
+    return current && c.slug === current.slug ? `<strong class="band-link current" aria-current="page">${label}</strong>` : `<a class="band-link" href="${href(langPath(lang, classPath(c)))}">${label}</a>`;
+  }).join('')}</div></nav>`;
+}
+function trainingClassBody(lang, cls) {
+  const tr = (ko, en) => (lang === 'ko' ? ko : en);
+  const name = lang === 'ko' ? cls.ko : cls.en;
+  const rows = classRoutes(cls);
+  const own = rows.filter((r) => r.jobs.length).length;
+  // Each route sits under the band it starts in, so a route card (and its #route- anchor) appears once.
+  const groups = TR_BANDS.map((band) => ({ band, rows: rows.filter((r) => r.level.min >= band[0] && r.level.min <= band[1]) })).filter((g) => g.rows.length);
+  const bandLabel = (band) => (lang === 'ko' ? `${band[0]}~${band[1]}레벨` : `Level ${band[0]}–${band[1]}`);
+  const overview = `<div class="table-wrap tr-class-overview"><table class="data"><thead><tr><th>${tr('레벨', 'Level')}</th><th>${tr('사냥 경로', 'Route')}</th><th>${tr('대상', 'For')}</th></tr></thead><tbody>${rows
+    .map((r) => `<tr><td class="lv">Lv. ${r.level.min}–${r.level.max}</td><td><a href="#route-${r.id}">${esc(r.title[lang])}</a></td><td>${r.jobs.length ? `<ul class="tr-for">${r.jobs.map((j) => `<li>${esc(jobNames[lang][j])}</li>`).join('')}</ul>` : tr('공통', 'All classes')}</td></tr>`)
+    .join('')}</tbody></table></div>`;
+  const guide = guides.find((g) => g.slug === cls.guide && g.lang === lang && g.status === 'published');
+  return `${pageHead(lang, 'sword', tr(`${name} 사냥터`, `${name} training routes`), tr(`레벨 구간마다 ${name}에게 맞는 사냥 경로 ${rows.length}곳이에요. ${name} 전용 ${own}곳과 모든 직업 공통 경로를 함께 담았어요.`, `${rows.length} routes by level: ${own} for this class, the rest open to every class.`))}<div class="wrap tr-page">
+<p class="tr-review-note">${tr('레벨은 이동을 검토하는 구간이에요. 카드마다 진입 기준, 잡을 몬스터와 필요한 명중, 물약 비용, 자리가 없을 때 대안을 적어 두었어요.', 'Levels are trial windows. Each card lists entry conditions, the monsters and the accuracy they need, supply costs and a fallback when the map is busy.')}</p>
+<h2>${tr('레벨별 한눈에 보기', 'At a glance')}</h2>${overview}
+${groups.map((g) => `<h2>${bandLabel(g.band)}</h2>${routeCards(g.rows, lang)}`).join('\n')}
+<p class="tr-result-actions"><a class="btn" href="${href(langPath(lang, '/tools/training/'))}?job=${cls.job}">${tr(`내 레벨로 ${name} 사냥터 찾기`, 'Find routes for my level')}</a>${guide ? `<a href="${href(langPath(lang, guidePath(guide)))}">${esc(guide.h1 || guide.title)}</a>` : ''}</p>
+${classNav(lang, cls)}${bandNav(lang)}${trainingMethod(lang)}</div>`;
 }
 
 // ---------- scrolls ----------
@@ -1423,7 +1470,7 @@ ${jsonScript('dm-data', { lang, t: { ...t.i, hits: t.hits, never: t.never, lines
 // and where to buy it now; next to the live top 10 and the scrolling feed of scanned listings.
 const MK = {
   ko: {
-    title: '글클메 실시간 자유시장 시세: 가격 추이·가격대 분포·지금 파는 곳 | GMS Hub',
+    title: '글클메 시세: 실시간 자유시장 가격·추이·지금 파는 곳 | GMS Hub',
     desc: '글로벌 메이플스토리 클래식 월드 자유시장 실시간 시세. 유저들이 스캔한 상점 매물로 판매 중·판매 완료 중앙값, 7일 가격 추이, 최근 확인한 매물의 채널·방을 보여 줘요.',
     h1: '실시간 시세',
     lead: '유저들이 스캔한 자유시장 상점을 모아 아이템별 시세를 보여 줘요. 아이템을 검색해 보세요.',
@@ -1457,7 +1504,7 @@ const MK = {
     table: { price: '가격', qty: '묶음', seller: '판매자', where: '위치', seen: '본 시각' }
   },
   en: {
-    title: 'MapleStory Classic World Live Free Market Prices: Trends, Price Spread, Where to Buy | GMS Hub',
+    title: 'MapleStory Classic World Price Tracker: Live Free Market Prices & Trends | GMS Hub',
     desc: 'Live Free Market prices for MapleStory Classic World from shops players scanned: separate asking and sold medians, 7-day trends and recently observed shops (channel and room) for each item.',
     h1: 'Live Market',
     lead: 'Prices from Free Market shops players scanned. Search an item.',
@@ -1578,7 +1625,9 @@ ${drops.entries.length
 <div class="table-wrap"><table class="data clickable" id="drop-db"><thead><tr><th>${t.colMob}</th><th>${t.colItem}</th><th>${t.colRate}</th><th>${t.colSource}</th><th>${t.colNote}</th></tr></thead><tbody>${rows}</tbody></table></div>
 <p class="muted small">${t.dataUpdated}: ${esc(drops.updated)}</p>`
   : // An empty table read as a broken feature; until a sourced rate exists, point to where drop lists live and to the calculator.
-    `<p>${lang === 'ko' ? `아직 출처가 확인된 몬스터 드롭률이 없어요. 몬스터별 드롭 목록은 <a href="${href(langPath(lang, '/#database'))}">종합 DB · 위키</a> 사이트에서 보고, 거기 나온 확률을 위 계산기에 넣으면 몇 마리를 잡아야 하는지 바로 볼 수 있어요.` : `No sourced monster drop rates yet. Look up a monster's drops on the <a href="${href(langPath(lang, '/#database'))}">database and wiki</a> sites, then put the rate into the calculator above to see how many kills it takes.`}</p>`}
+    `<p>${lang === 'ko' ? `아직 출처가 확인된 몬스터 드롭률은 없어요. 대신 <a href="${href(langPath(lang, '/monsters/'))}">몬스터 도감</a>에서 몬스터 ${MONSTERS.monsters.length}종의 드롭 아이템 목록을 볼 수 있어요. 다른 곳에서 확인한 확률을 위 계산기에 넣으면 몇 마리를 잡아야 하는지 바로 나와요.` : `No sourced monster drop rates yet. The <a href="${href(langPath(lang, '/monsters/'))}">monster database</a> lists the reported drops of ${MONSTERS.monsters.length} monsters; put a rate you trust into the calculator above to see how many kills it takes.`}</p>
+<h3>${lang === 'ko' ? '파밍하러 많이 가는 몬스터의 드롭 목록' : 'Drop lists of monsters players farm'}</h3>
+<ul class="monster-routes">${MONSTERS.monsters.filter((m) => MONSTER_NOTES.notes[m.id]?.drops?.length).sort((a, b) => a.lv - b.lv).slice(0, 12).map((m) => `<li><a href="${href(langPath(lang, monsterPath(m)))}#monster-drops"><strong>${esc(monsterName(m, lang))}</strong><small>Lv. ${m.lv}</small></a></li>`).join('')}</ul>`}
 </section>
 <section>
 <h2>${t.formulaHeading}</h2>
@@ -2201,8 +2250,21 @@ for (const lang of LANGS) {
     };
   };
 
+  const classDef = (cls) => {
+    const rows = classRoutes(cls);
+    const name = lang === 'ko' ? cls.ko : cls.en;
+    const top = Math.max(...rows.map((r) => r.level.max));
+    const h1 = lang === 'ko' ? `${name} 사냥터` : `${name} training routes`;
+    return {
+      title: lang === 'ko' ? `글클메 ${name} 사냥터 추천: 레벨별 ${rows.length}곳 (1~${top}) | GMS Hub` : `MapleStory Classic World ${name} Training Routes by Level (1–${top}) | GMS Hub`,
+      desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드 ${name} 레벨별 사냥터 ${rows.length}곳. 진입 레벨, 잡을 몬스터와 필요 명중, 물약 비용, 다음 이동 시점을 정리했어요.` : `${name} training in MapleStory Classic World: ${rows.length} routes by level with entry conditions, monsters and the accuracy they need, supply costs and what to do next.`,
+      body: trainingClassBody(lang, cls),
+      ld: [breadcrumbLd(lang, h1, classPath(cls))]
+    };
+  };
+
   for (const p of PAGES) {
-    const def = p.band ? bandDef(p.band) : defs[p.key];
+    const def = p.band ? bandDef(p.band) : p.cls ? classDef(p.cls) : defs[p.key];
     write(path.join(lang, p.path, 'index.html'), page({ lang, pageKey: p.key, pagePath: p.path, ...def }));
   }
 
@@ -2257,8 +2319,8 @@ for (const lang of LANGS) {
     return href(langPath(l, priced ? itemPath(priced) : `/tools/market/?item=${d.itemId}`));
   };
   write(path.join(lang, 'monsters', 'index.html'), page({
-    lang, pageKey: 'monsters', pagePath: '/monsters/', title: `${monsterTitle} · ${lang === 'ko' ? '클래식 월드' : 'Classic World'} | GMS Hub`,
-    desc: lang === 'ko' ? '몬스터의 체력, 경험치, 드롭 아이템, 출현 위치를 검색하는 클래식 월드 몬스터 도감.' : 'Classic World monster stats, reported drops and map locations.',
+    lang, pageKey: 'monsters', pagePath: '/monsters/', title: lang === 'ko' ? '글클메 몬스터 DB: 드롭 아이템·체력·출현 위치 | GMS Hub' : 'MapleStory Classic World Monster Database: Drops, HP & Locations | GMS Hub',
+    desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드 몬스터 ${MONSTERS.monsters.length}종의 체력, 경험치, 드롭 아이템, 출현 위치, 필요 명중을 검색하는 몬스터 도감.` : `Search ${MONSTERS.monsters.length} MapleStory Classic World monsters: HP, EXP, reported drops, map locations and the accuracy you need.`,
     body: monsterIndex({lang, data: MONSTERS, url: href}), modules: ['monsters.js'],
     ld: [breadcrumbLd(lang, monsterTitle, '/monsters/')]
   }));
@@ -2268,7 +2330,7 @@ for (const lang of LANGS) {
     const name = nameCount.get(monsterName(m, lang)) > 1 && lang === 'ko' ? `${monsterName(m, lang)} (${m.en})` : monsterName(m, lang);
     write(path.join(lang, 'monsters', String(m.id), 'index.html'), page({
       lang, pageKey: 'monster', pagePath: monsterPath(m),
-      title: `${name} · ${lang === 'ko' ? '드롭·체력·출현 위치' : 'Stats, drops & locations'} | GMS Hub`,
+      title: lang === 'ko' ? `글클메 ${name}: 드롭·체력·출현 위치 | GMS Hub` : `${name}: MapleStory Classic World drops, stats & locations | GMS Hub`,
       desc: lang === 'ko' ? `${name} Lv. ${m.lv}, HP ${m.hp}, EXP ${m.exp}. 드롭 제보 ${m.drops.length}종과 출현 위치·속성 저항을 확인하세요.` : `${name}, level ${m.lv}, HP ${m.hp}, EXP ${m.exp}. Explore ${m.drops.length} reported drops, map locations and elemental responses.`,
       body: monsterDetail({lang, m, data: MONSTERS, url: href, itemUrl: monsterItemUrl, notes: MONSTER_NOTES.notes[m.id] || null,
         routes: training.routes.filter((r) => r.mobIds.includes(m.id)), accuracy: (lv) => dmgAccNeed(lv, m), rank: RATIO_RANK.get(m.id) || null}), modules: ['monsters.js'],
@@ -2432,6 +2494,51 @@ ${sitemapUrls}
 </urlset>
 `
 );
+// llms.txt: a plain map of the site for AI assistants (ChatGPT already sends engaged visitors to tool pages).
+write('llms.txt', `# GMS Hub
+
+> Fan-made hub for Global MapleStory Classic World (MapleStory Classic World, "글클메"): live Free Market prices from player-scanned shops, a monster database with drops and locations, training routes by level and class, and calculators. Korean and English, plus Traditional Chinese and Japanese.
+
+Not affiliated with NEXON. Prices are medians of shops players scanned in the last 24 hours to 14 days; drop lists are player reports, not official rates.
+
+## Tools
+- [Live Free Market prices](${absUrl('/en/tools/market/')}): asking and sold medians, 7-day trends, where an item is on sale now (channel and room)
+- [Item price pages](${absUrl('/en/items/')}): one page per item with recent prices
+- [Monster database](${absUrl('/en/monsters/')}): ${MONSTERS.monsters.length} monsters with HP, EXP, drops, map locations and the accuracy needed to hit
+- [Training routes](${absUrl('/en/tools/training/')}): conditional routes by level, with entry requirements and supply costs
+${TR_CLASSES.map((c) => `- [${c.en} training routes](${absUrl(langPath('en', classPath(c)))})`).join('\n')}
+- [Hits-to-kill calculator](${absUrl('/en/tools/damage/')}): hits to kill and accuracy per monster from your stats
+- [Scroll calculator](${absUrl('/en/tools/scroll/')}): Lesser, Intermediate, Greater and Chaos scroll odds
+- [Drop-rate calculator](${absUrl('/en/tools/drop-rate/')}): chance after N kills or box opens, with Nexon's official box rates
+
+## Guides
+${publishedGuides.filter((g) => g.lang === 'en').map((g) => `- [${g.h1 || g.title}](${absUrl(langPath('en', guidePath(g)))})`).join('\n')}
+
+## Korean (한국어)
+- [글클메 허브 홈](${absUrl('/ko/')}): 사이트 모음, 실시간 시세, 몬스터 DB, 사냥터
+- [실시간 시세](${absUrl('/ko/tools/market/')})
+- [몬스터 도감](${absUrl('/ko/monsters/')})
+${TR_CLASSES.map((c) => `- [${c.ko} 사냥터](${absUrl(langPath('ko', classPath(c)))})`).join('\n')}
+`);
+// Content hash per page, published with the site: CI compares it with the live copy and pings IndexNow only for pages
+// that really changed. Cache-busting query strings are dropped first so a JS release doesn't mark every page as changed.
+{
+  const hashes = {};
+  const walk = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const f = path.join(dir, e.name);
+      if (e.isDirectory()) walk(f);
+      else if (e.name === 'index.html') {
+        const html = fs.readFileSync(f, 'utf8');
+        if (/<meta name="robots" content="noindex/.test(html)) continue;
+        const rel = `/${path.relative(out, path.dirname(f)).split(path.sep).join('/')}/`.replace(/^\/\/$/, '/');
+        hashes[rel] = createHash('sha1').update(html.replace(/\?v=[\w.-]+/g, '')).digest('hex').slice(0, 16);
+      }
+    }
+  };
+  walk(out);
+  write('page-hashes.json', JSON.stringify(hashes));
+}
 // GitHub Pages project sites can't serve a root robots.txt; this one takes effect once a custom domain is set.
 write('robots.txt', `User-agent: *\nAllow: /\nDisallow: ${config.basePath}/admin/\n\nSitemap: ${absUrl('/sitemap.xml')}\n`);
 if (config.adsenseClient) {

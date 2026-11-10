@@ -114,7 +114,14 @@ const toolKeywords = {
 };
 // Hunting routes: map and monster names lead straight to the matching route card on the training page.
 const routeData = JSON.parse(document.getElementById('home-routes')?.textContent || '[]');
+// Class pages: "썬콜 사냥터", "bandit training" open the class's own route list.
+const classData = JSON.parse(document.getElementById('home-classes')?.textContent || '[]');
 const staticEntries = [
+  ...classData.map((c) => indexEntry({
+    type: 'tool', id: `class-${c.slug}`, title: c.title, href: c.href,
+    description: korean ? `레벨별 사냥 경로 ${c.n}곳` : tx('{n} training routes by level', { n: c.n }),
+    names: [c.title], keywords: `${c.keywords} 사냥터 사냥 직업별 training routes class`,
+  })),
   ...routeData.map((r) => indexEntry({
     type: 'tool', id: `route-${r.id}`, title: r.title, href: r.href,
     description: `Lv. ${r.min}–${r.max} · ${r.monsters}`,

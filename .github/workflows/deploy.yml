@@ -28,6 +28,16 @@ jobs:
       - run: node scripts/fetch-item-prices.mjs
       - name: Build and verify content publication rules
         run: node --test tests/content.test.mjs tests/monsters.test.mjs tests/collection-status.test.mjs
+      # Pages whose content differs from the live site, for IndexNow (Naver, Bing) once this deploy is live.
+      - name: List changed pages
+        run: |
+          curl -sf https://gms-hub.com/page-hashes.json -o live-hashes.json || echo '{}' > live-hashes.json
+          node scripts/changed-pages.mjs live-hashes.json > changed-urls.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: changed-urls
+          path: changed-urls.txt
+          retention-days: 3
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
@@ -42,3 +52,18 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  indexnow:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          name: changed-urls
+      # GitHub Pages can take a minute to serve the new build; IndexNow is best effort and never fails the deploy.
+      - run: sleep 60 && node scripts/indexnow.mjs changed-urls.txt
+        continue-on-error: true

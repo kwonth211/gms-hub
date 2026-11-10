@@ -1374,3 +1374,6 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
   .tabs .tab { flex: 1 1 0; min-width: 0; white-space: normal; line-height: 1.2; overflow-wrap: normal; padding: 8px 6px; }
   .brand small { display: none; }
 }
+.tr-for { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.tr-class-overview { margin-bottom: 24px; }
+.tr-class-overview td:first-child { white-space: nowrap; }

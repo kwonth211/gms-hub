@@ -147,3 +147,29 @@ test('site review fixes: localized route links, unique monster titles, honest pr
   assert.ok(/\.item-grid \{ display: grid; grid-template-columns: minmax\(0,1\.2fr\)/.test(read('assets/style.css')));
   assert.ok(read('assets/style.css').includes('.item-page { display: grid; grid-template-columns: minmax(0, 1fr);'));
 });
+
+test('class training pages are indexable, unique and list each route once',()=>{
+  const sitemap=read('dist/sitemap.xml');
+  const slugs=['warrior','bowman','hunter','crossbowman','magician','fire-poison','ice-lightning','cleric','thief','assassin','bandit'];
+  const titles=new Set();
+  for(const lang of ['ko','en','zh','ja']) for(const slug of slugs){
+    const html=read(`dist/${lang}/tools/training/class/${slug}/index.html`);
+    assert.ok(!html.includes('content="noindex'),`${lang} ${slug} noindex`);
+    assert.ok(sitemap.includes(`/${lang}/tools/training/class/${slug}/`),`${lang} ${slug} not in sitemap`);
+    const title=html.match(/<title>([^<]*)<\/title>/)[1]; assert.ok(!titles.has(title),title); titles.add(title);
+    const ids=[...html.matchAll(/id="route-([\w-]+)"/g)].map(m=>m[1]);
+    assert.ok(ids.length>=10,`${lang} ${slug} has ${ids.length} routes`);
+    assert.equal(new Set(ids).size,ids.length,`${lang} ${slug} repeats a route`);
+  }
+  assert.match(read('dist/ko/tools/training/class/ice-lightning/index.html'),/<title>글클메 썬콜 사냥터/);
+  assert.ok(read('dist/ko/tools/training/index.html').includes('/ko/tools/training/class/fire-poison/'));
+});
+
+test('llms.txt and page hashes are published for AI assistants and IndexNow',()=>{
+  const llms=read('dist/llms.txt');
+  assert.match(llms,/^# GMS Hub/);
+  assert.ok(llms.includes('/en/monsters/') && llms.includes('/ko/tools/training/class/'));
+  const hashes=JSON.parse(read('dist/page-hashes.json'));
+  assert.ok(hashes['/ko/'] && hashes['/en/tools/market/']);
+  assert.ok(!Object.keys(hashes).some(p=>p.startsWith('/admin')),'noindex pages stay out');
+});
