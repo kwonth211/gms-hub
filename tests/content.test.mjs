@@ -188,3 +188,14 @@ test('monster drops get item database pages with droppers, farm maps and stats',
   const ko=read('dist/ko/items/1002003-red-headband/index.html');
   assert.match(ko,/<title>글클메 빨간색 머리띠: 드롭 몬스터/);
 });
+
+test('map pages turn monster spawns around: monsters, spawn counts, full-clear EXP and drops',()=>{
+  const html=read('dist/en/maps/10001081/index.html');
+  assert.match(html,/<title>The Blue Mushroom Forest: MapleStory Classic World map/);
+  for(const m of ['Blue Mushroom','Slime','Blue Snail','Red Snail']) assert.ok(html.includes(`>${m}</span>`),m);
+  // 16×35 + 8×12 + 7×4 + 1×8 = 692
+  assert.ok(html.includes('<dd>692</dd>'));
+  assert.ok(read('dist/sitemap.xml').includes('/en/maps/10001081/'));
+  assert.ok(read('dist/ko/monsters/7/index.html').includes('/ko/maps/10001081/'),'monster locations link to map pages');
+  assert.match(read('dist/ko/maps/10001081/index.html'),/<title>글클메 파란버섯 숲/);
+});

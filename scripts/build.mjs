@@ -4,7 +4,8 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { spriteSvg, heroScene } from './sprites.mjs';
-import { monsterIndex, monsterDetail, monsterPath, monsterName } from './monster-pages.mjs';
+import { monsterIndex, monsterDetail, monsterPath, monsterName, mapPath } from './monster-pages.mjs';
+import { collectMaps, mapDetail, mapIndex, mapName } from './map-pages.mjs';
 import { selectRoutes, routeCards, publicTrainingData, jobNames, validateTraining } from '../assets/training-evidence.js';
 import { loadLocales, loadMemory, entityMatcher, localizePage, clientKeys, TX_RUNTIME } from './i18n.mjs';
 import { SKILLS as DMG_SKILLS, windowRange as dmgWindow, hitRange as dmgHit, hitsToKill as dmgKill, accuracyNeeded as dmgAccNeed } from '../assets/damage-calc.js';
@@ -510,6 +511,7 @@ const RATIO_RANK = (() => {
 validateTraining(training, editorialEvidence, MONSTERS.monsters);
 for (const r of training.routes) r.mobs = r.mobIds.map((id) => { const m = MOB_BY_ID.get(id); return { id, ko: m.ko || m.en, en: m.en, lv: m.lv, hp: m.hp, acc: dmgAccNeed(r.level.min, m) }; });
 // Which monsters drop an item, for the item pages.
+const MAPS = collectMaps(MONSTERS.monsters);
 const DROP_INDEX = new Map();
 for (const m of MONSTERS.monsters) for (const d of m.drops) (DROP_INDEX.get(d.itemId) || DROP_INDEX.set(d.itemId, []).get(d.itemId)).push({ m, confidence: d.confidence });
 // Retain level-band URLs with conditional routes and detailed entry requirements.
@@ -2053,7 +2055,7 @@ const IT = {
     leadDrop: 'Which monsters drop it, where to farm them, and its base stats.',
     stats: { req: 'Requirements', job: 'Class', slots: 'Upgrade slots', speed: 'Attack speed', sell: 'Sells to NPC for', base: 'Base stats come from the game client data; a real drop can roll different stats.' },
     jobs: { 0: 'All classes', 1: 'Warrior', 2: 'Magician', 4: 'Bowman', 8: 'Thief', 16: 'Pirate' },
-    speeds: { 2: 'Faster', 3: 'Faster', 4: 'Fast', 5: 'Fast', 6: 'Normal', 7: 'Slow', 8: 'Slow', 9: 'Slower' },
+    speeds: { 2: 'Very fast', 3: 'Very fast', 4: 'Fast', 5: 'Fast', 6: 'Normal', 7: 'Slow', 8: 'Slow', 9: 'Very slow' },
     incs: { STR: 'STR', DEX: 'DEX', INT: 'INT', LUK: 'LUK', MHP: 'HP', MMP: 'MP', PAD: 'Weapon attack', MAD: 'Magic attack', PDD: 'Weapon defense', MDD: 'Magic defense', ACC: 'Accuracy', EVA: 'Avoidability', Speed: 'Speed', Jump: 'Jump' },
     farm: 'Most common on',
     indexLink: 'Browse prices by item',
@@ -2399,6 +2401,26 @@ for (const lang of LANGS) {
     }));
   }
 
+  write(path.join(lang, 'maps', 'index.html'), page({
+    lang, pageKey: 'maps', pagePath: '/maps/',
+    title: lang === 'ko' ? '글클메 맵 도감: 사냥터별 몬스터·레벨·드롭 | GMS Hub' : 'MapleStory Classic World Maps: Monsters, Levels & Drops by Map | GMS Hub',
+    desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드 맵 ${MAPS.length}곳의 몬스터, 레벨, 출현 지점, 드롭을 지역별로 정리했어요.` : `${MAPS.length} MapleStory Classic World maps by region: which monsters spawn there, their levels, spawn points and drops.`,
+    body: mapIndex({ lang, maps: MAPS, url: href }),
+    ld: [breadcrumbLd(lang, lang === 'ko' ? '맵 도감' : 'Map database', '/maps/')]
+  }));
+  for (const l of MAPS) {
+    const name = mapName(l, lang);
+    write(path.join(lang, 'maps', String(l.id), 'index.html'), page({
+      lang, pageKey: 'map', pagePath: mapPath(l),
+      title: lang === 'ko' ? `글클메 ${name}: 몬스터·레벨·드롭 | GMS Hub` : `${name}: MapleStory Classic World map, monsters & drops | GMS Hub`,
+      desc: lang === 'ko' ? `${name} (Lv. ${l.minLv}~${l.maxLv}): 나오는 몬스터 ${l.mobs.length}종, 출현 지점 ${l.total}곳, 한 바퀴 EXP, 확정 명중과 드롭 아이템을 정리했어요.` : `${name} (levels ${l.minLv}–${l.maxLv}): ${l.mobs.length} monster types, ${l.total} spawn points, EXP per full clear, sure-hit accuracy and drops.`,
+      body: mapDetail({ lang, l, maps: MAPS, url: href, itemUrl: monsterItemUrl, notes: MONSTER_NOTES.notes, accuracy: (lv, m) => dmgAccNeed(lv, m),
+        routes: training.routes.filter((r) => r.mobIds.some((id) => l.mobs.some(({ m }) => m.id === id))) }),
+      noindex: l.availability !== 'open',
+      ld: [breadcrumbLd(lang, name, mapPath(l))]
+    }));
+  }
+
   const it = IT[lang];
   write(
     path.join(lang, 'items', 'index.html'),
@@ -2501,7 +2523,7 @@ ${jsonScript('admin-config', config.github)}
 // and are masked so one memory entry covers every item and monster page.
 const ENTITIES = entityMatcher([
   ...itemsData.items.map((i) => i.en),
-  ...MONSTERS.monsters.flatMap((m) => [m.en, ...m.locations.map((l) => l.en), ...m.locations.map((l) => l.region)]),
+  ...MONSTERS.monsters.flatMap((m) => [m.en, ...m.locations.map((l) => l.en.trim()), ...m.locations.map((l) => l.region)]),
   ...sites.categories.flatMap((c) => c.sites.map((x) => x.name))
 ]);
 const CLIENT_KEYS = clientKeys(root);
@@ -2537,6 +2559,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
   )
 ).concat(
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/maps/'}, ...MAPS.filter(l=>l.availability==='open').map(l=>({path:mapPath(l)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [...new Set(guides.map((g) => g.lang)), ...LOCALES.map((l) => l.code)].map((l) => `<url><loc>${absUrl(langPath(l, '/guides/'))}</loc><lastmod>${guides.filter((g) => g.lang === (LANGS.includes(l) ? l : 'en')).map((g) => g.updated).sort().at(-1)}</lastmod></url>`),
   publishedGuides.flatMap((g) => [g.lang, ...(g.lang === 'en' ? LOCALES.map((l) => l.code) : [])].map((l) => `<url><loc>${absUrl(langPath(l, guidePath(g)))}</loc><lastmod>${g.updated}</lastmod></url>`)),
   // Only indexable items (enough recent listings) go in the sitemap.
@@ -2567,6 +2590,7 @@ Not affiliated with NEXON. Prices are medians of shops players scanned in the la
 - [Live Free Market prices](${absUrl('/en/tools/market/')}): asking and sold medians, 7-day trends, where an item is on sale now (channel and room)
 - [Item database](${absUrl('/en/items/')}): every item a monster drops or a player priced, with droppers, farm maps, base stats and recent prices
 - [Monster database](${absUrl('/en/monsters/')}): ${MONSTERS.monsters.length} monsters with HP, EXP, drops, map locations and the accuracy needed to hit
+- [Map database](${absUrl('/en/maps/')}): ${MAPS.length} maps with their monsters, spawn points, EXP per full clear and drops
 - [Training routes](${absUrl('/en/tools/training/')}): conditional routes by level, with entry requirements and supply costs
 ${TR_CLASSES.map((c) => `- [${c.en} training routes](${absUrl(langPath('en', classPath(c)))})`).join('\n')}
 - [Hits-to-kill calculator](${absUrl('/en/tools/damage/')}): hits to kill and accuracy per monster from your stats
@@ -2629,4 +2653,4 @@ write('assets/mobs.json', JSON.stringify(MOBS.map((m) => [m.id, m.ko || '', m.en
 write('assets/weapons.json', JSON.stringify(readJson('data/weapons.json').weapons.map((w) => [w.id, w.ko || '', w.en, w.type, w.lv, w.watk || 0, w.matk || 0])));
 write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko || '', i.en, i.cat, i.sub, i.lv || 0])));
 
-console.log(`Built ${PAGES.length * LANGS.length} pages + ${MONSTERS.monsters.length * LANGS.length} monster pages + ${ITEM_PAGES.length * LANGS.length} item pages, ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);
+console.log(`Built ${PAGES.length * LANGS.length} pages + ${MONSTERS.monsters.length * LANGS.length} monster pages + ${MAPS.length * LANGS.length} map pages + ${ITEM_PAGES.length * LANGS.length} item pages, ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);

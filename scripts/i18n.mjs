@@ -26,7 +26,7 @@ export function loadMemory(root, code) {
 
 // Longest names first so "Zombie Mushroom" wins over "Mushroom".
 export function entityMatcher(names) {
-  const htmlName = (n) => n.replace(/&/g, '&amp;').replace(/'/g, '&#39;');
+  const htmlName = (n) => n.replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   names = names.flatMap((n) => (n ? [n, htmlName(n)] : []));
   const list = [...new Set(names.filter((n) => n && n.length >= 4 && /[A-Za-z]/.test(n)))].sort((a, b) => b.length - a.length);
   const escRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
