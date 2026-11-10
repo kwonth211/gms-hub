@@ -35,3 +35,5 @@
 - 재방문: 날짜가 다른 세션에서 `market_item`의 `source`가 `wishlist`·`recent`·`home`인 사용자. 조회수가 아니라 활동일로 봐요.
 - 공유: `share_copy`(기능 사용)와 세션 소스 `share / link` 또는 `share_open`(공유 링크 유입)을 따로 세요.
 - `search_term`, `site_id`는 2026-10-31부터 GA4 맞춤 측정기준으로 등록돼 있어요. `item_id`, `source`, `result`를 맞춤 측정기준으로 추가하면 보고서에서 나눠 볼 수 있어요 (사용자 확인 필요).
+
+`theme_toggle`(`to`: `light` 또는 `dark`): 헤더의 낮/밤 버튼을 누를 때 보내요. 처음 테마는 저장된 선택을 따르고, 저장된 게 없으면 시스템 설정을 따라요. 선택은 `localStorage`의 `gms-theme` 키에 저장돼요.

@@ -215,7 +215,7 @@ function resultRow(entry) {
     : entry.type === 'item'
     ? `<img src="https://maplestory.io/api/MCW/1/item/${entry.id}/icon" alt="" width="30" height="30" loading="lazy">`
     : `<span class="search-result-icon" aria-hidden="true">${external ? '↗' : '⌘'}</span>`;
-  return `<a class="search-result" href="${escHtml(entry.href)}" data-result-type="${entry.type}" data-result-id="${escHtml(entry.id)}"${external ? ` target="_blank" rel="noopener" aria-label="${escHtml(entry.title)} · ${labels.external}"` : ''}>${icon}<span class="search-result-copy"><strong>${escHtml(entry.title)}</strong><small>${escHtml(entry.description || '')}</small></span><span class="search-result-action${entry.type === 'item' && prices.get(entry.id)?.median ? ' priced' : ''}">${entry.type === 'item' ? priceTag(entry.id) : entry.type === 'mob' ? `${labels.mobAction} →` : external ? '↗' : '→'}</span></a>`;
+  return `<a class="search-result" href="${escHtml(entry.href)}" data-result-type="${entry.type}" data-result-id="${escHtml(entry.id)}"${external ? ` target="_blank" rel="noopener" aria-label="${escHtml(entry.title)} · ${labels.external}"` : ''}>${icon}<span class="search-result-copy"><strong>${escHtml(entry.title)}</strong><small>${escHtml(entry.description || '')}</small></span><span class="search-result-action${entry.type === 'item' && prices.get(entry.id)?.median ? ' priced' : ''}">${entry.type === 'item' ? priceTag(entry.id) : entry.type === 'mob' ? `${labels.mobAction}` : external ? '↗' : '→'}</span></a>`;
 }
 
 function sizeSearchPanel() {
@@ -269,7 +269,7 @@ function renderSearch() {
     const limit = expanded.get(type) || (searchType === 'all' ? INITIAL_ROWS : PAGE_ROWS);
     const shown = matches.slice(0, limit);
     const more = matches.length - shown.length;
-    return `<section class="search-group" aria-labelledby="search-heading-${type}"><header><h3 id="search-heading-${type}">${labels[type]} <span>${matches.length.toLocaleString()}</span></h3>${type === 'item' ? `<small>${labels.market} →</small>` : ''}</header><div class="search-result-list">${shown.map(resultRow).join('')}</div>${more ? `<button type="button" class="search-more" data-search-more="${type}">${korean ? `${labels[type]} ${Math.min(PAGE_ROWS, more)}개 더 보기 · ${more.toLocaleString()}개 남음` : tx('Show {n} more · {left} remaining', { n: Math.min(PAGE_ROWS, more), left: more.toLocaleString() })} ↓</button>` : ''}</section>`;
+    return `<section class="search-group" aria-labelledby="search-heading-${type}"><header><h3 id="search-heading-${type}">${labels[type]} <span>${matches.length.toLocaleString()}</span></h3>${type === 'item' ? `<small>${labels.market}</small>` : ''}</header><div class="search-result-list">${shown.map(resultRow).join('')}</div>${more ? `<button type="button" class="search-more" data-search-more="${type}">${korean ? `${labels[type]} ${Math.min(PAGE_ROWS, more)}개 더 보기 · ${more.toLocaleString()}개 남음` : tx('Show {n} more · {left} remaining', { n: Math.min(PAGE_ROWS, more), left: more.toLocaleString() })} ↓</button>` : ''}</section>`;
   }).join('');
   // Don't report an empty item result while its index is loading or unavailable.
   searchEmpty.hidden = !!visible || (!items && (searchType === 'all' || searchType === 'item'));

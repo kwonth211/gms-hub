@@ -123,7 +123,7 @@ const T = {
     trBandDesc: "{a}~{b}레벨에 비교할 사냥 경로 {n}개. 직업별 처치 타수, 물약 비용, 이동 동선과 대체 사냥터를 정리했어요.",
     trBandH1: "{a}~{b}레벨 사냥 동선",
     trBandLead: "이 구간에서 비교할 경로 {n}개예요. 같은 레벨이어도 직업과 장비에 따라 이동 시점이 달라져요.",
-    trBandFinder: "내 조건으로 사냥터 찾기 →",
+    trBandFinder: "내 조건으로 사냥터 찾기",
     noDate: '날짜 표기 없음',
 
     scTitle: '글클메 주문서 계산기 · 확률 (Lesser·Intermediate·Greater·Chaos) | GMS Hub',
@@ -336,7 +336,7 @@ const T = {
     trBandDesc: "Compare {n} conditional routes across levels {a}–{b}, with entry requirements and supply costs.",
     trBandH1: "Level {a}–{b} Training Routes",
     trBandLead: "Compare {n} routes in this band. Read class, gear and supply requirements before moving.",
-    trBandFinder: "Find routes for your setup →",
+    trBandFinder: "Find routes for your setup",
     noDate: 'undated',
 
     scTitle: 'Global MapleStory Classic World Scroll Calculator: Lesser, Intermediate, Greater & Chaos Odds | GMS Hub',
@@ -595,7 +595,8 @@ ${alternates}
 <meta property="og:locale" content="${lang === 'ko' ? 'ko_KR' : 'en_US'}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="${ogImage}">
-<meta name="theme-color" content="#0f1420">
+<meta name="theme-color" content="#f6f1e7">
+<script>${THEME_BOOT}</script>
 <script>${TX_RUNTIME}</script>
 ${verify}
 ${naverVerify}
@@ -610,6 +611,10 @@ ${cfBeacon}
 ${ld.map(ldScript).join('\n')}
 </head>`;
 }
+
+// Day or night before the first paint: a saved choice wins, otherwise the system setting. No script, no theme: day.
+const THEME_BOOT = `(function(){try{var t=localStorage.getItem('gms-theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;var m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='dark'?'#0f1420':'#f6f1e7';}catch(e){}})();`;
+const THEME_ICON = `<svg class="theme-icon" viewBox="0 0 16 16" width="18" height="18" shape-rendering="crispEdges" aria-hidden="true"><g class="sun"><rect x="6" y="6" width="4" height="4"/><rect x="7" y="1" width="2" height="3"/><rect x="7" y="12" width="2" height="3"/><rect x="1" y="7" width="3" height="2"/><rect x="12" y="7" width="3" height="2"/><rect x="3" y="3" width="2" height="2"/><rect x="11" y="3" width="2" height="2"/><rect x="3" y="11" width="2" height="2"/><rect x="11" y="11" width="2" height="2"/></g><g class="moon"><rect x="6" y="2" width="5" height="2"/><rect x="4" y="4" width="3" height="2"/><rect x="3" y="6" width="3" height="4"/><rect x="4" y="10" width="3" height="2"/><rect x="6" y="12" width="5" height="2"/><rect x="11" y="10" width="2" height="2"/></g></svg>`;
 
 function header(lang, pagePath, only) {
   const t = T[lang];
@@ -630,6 +635,7 @@ function header(lang, pagePath, only) {
   return `<header class="site-header"><div class="wrap header-inner">
 <a class="brand" href="${href(langPath(lang, '/'))}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>${esc(t.gameName)}</small></span></a>
 <nav class="tabs" aria-label="${esc(t.navLinks)}">${tabs}</nav>
+<button type="button" class="theme-toggle" data-theme-toggle>${THEME_ICON}<span class="sr-only">${lang === 'ko' ? '낮과 밤 화면 바꾸기' : 'Switch day or night theme'}</span></button>
 <details class="lang-menu"><summary class="lang-current" aria-label="Language">${LANG_NAMES[lang]}</summary><div class="lang-list">${(only ? [lang, ...ALL_LANGS.filter((l) => l !== lang)] : ALL_LANGS).map((l) => `<a class="lang-opt" href="${href(langPath(l, only && l !== lang ? '/' : pagePath || '/'))}" data-lang="${l}" hreflang="${HREFLANG[l]}" lang="${HREFLANG[l]}"${l === lang ? ' aria-current="true"' : ''}>${LANG_NAMES[l]}</a>`).join('')}</div></details>
 </div></header>`;
 }
@@ -713,14 +719,14 @@ const LIVE = {
     change: '전일 대비',
     sold: '팔림',
     isNew: 'NEW',
-    more: '실시간 시세 전체 보기 →',
+    more: '실시간 시세 전체 보기',
     updated: '{t} 갱신',
     sparkLabel: '{name} 7일 추이: {from}에서 {to}',
     noTrend: '추이 데이터 부족',
     preview: '미리보기 · 실제 시세가 아닌 예시 데이터예요',
     scan: '내 화면으로 상점 스캔',
     empty: '아직 올라온 매물이 없어요. PC 크롬에서 메이플 창을 공유하고 상점을 열면 여기에 바로 나와요.',
-    mine: '이어서 보기', mineWish: '관심 아이템', mineRecent: '최근 본 아이템', mineNote: '이 브라우저에 저장된 목록이에요 · 가격은 최근 14일 스캔·제보 기준', mineAll: '시세에서 전체 보기 →'
+    mine: '이어서 보기', mineWish: '관심 아이템', mineRecent: '최근 본 아이템', mineNote: '이 브라우저에 저장된 목록이에요 · 가격은 최근 14일 스캔·제보 기준', mineAll: '시세에서 전체 보기'
   },
   en: {
     title: 'Live Free Market',
@@ -733,14 +739,14 @@ const LIVE = {
     change: 'vs yesterday',
     sold: 'Sold',
     isNew: 'NEW',
-    more: 'Open the live market →',
+    more: 'Open the live market',
     updated: 'updated {t}',
     sparkLabel: '{name} 7-day trend: {from} to {to}',
     noTrend: 'not enough data for a trend',
     preview: 'Preview · sample data, not real prices',
     scan: 'Scan shops from my screen',
     empty: 'No listings yet. Share your MapleStory window in Chrome on a computer and open shops; they show up here right away.',
-    mine: 'Pick up where you left off', mineWish: 'Wishlist', mineRecent: 'Recently viewed', mineNote: 'Saved in this browser · prices from scans and reports in the last 14 days', mineAll: 'Open in the market →'
+    mine: 'Pick up where you left off', mineWish: 'Wishlist', mineRecent: 'Recently viewed', mineNote: 'Saved in this browser · prices from scans and reports in the last 14 days', mineAll: 'Open in the market'
   }
 };
 
@@ -800,7 +806,7 @@ function homeBody(lang) {
     )
     .join('');
   const tool = (p, icon, title, desc) =>
-    `<a class="tool-card" href="${href(langPath(lang, p))}">${spriteSvg(icon, 44)}<strong>${title}</strong><p>${esc(desc)}</p><span>${t.open} →</span></a>`;
+    `<a class="tool-card" href="${href(langPath(lang, p))}">${spriteSvg(icon, 44)}<strong>${title}</strong><p>${esc(desc)}</p><span>${t.open}</span></a>`;
   return `<section class="hero">
 ${heroScene()}
 <div class="wrap hero-inner">
@@ -908,7 +914,7 @@ function trainingBody(lang) {
 <button class="btn" type="submit">${tr('사냥터 찾기','Find routes')}</button>
 <label class="tr-check"><input name="advanced" type="checkbox">${tr('장비·명중 조건이 까다로운 후보도 보기','Include demanding gear / accuracy options')}</label>
 <p class="tr-filter-help">${tr('표시 레벨은 이동 검토 구간이에요. 카드의 진입 기준을 먼저 확인하세요.','Levels are trial windows; read each card’s entry conditions first.')}</p>
-</form><div class="tr-result-head"><h2 id="tr-status" role="status">${tr('20레벨 사냥 후보','Options for level 20')} ${initial.length}${tr('곳','')}</h2><div class="tr-result-actions"><button type="button" class="btn ghost small-btn" id="tr-share" data-ok="${tr('조건 링크를 복사했어요','Link copied')}" data-fail="${tr('복사하지 못했어요. 주소창의 주소를 직접 복사해 주세요.','Could not copy. Copy the address from the address bar.')}">${tr('이 조건 링크 복사','Copy link to these filters')}</button><span id="tr-share-status" class="share-status" role="status" aria-live="polite"></span><a href="${href(langPath(lang,'/guides/choose-your-job/'))}">${tr('직업별 육성 가이드 →','Class guides →')}</a></div></div>
+</form><div class="tr-result-head"><h2 id="tr-status" role="status">${tr('20레벨 사냥 후보','Options for level 20')} ${initial.length}${tr('곳','')}</h2><div class="tr-result-actions"><button type="button" class="btn ghost small-btn" id="tr-share" data-ok="${tr('조건 링크를 복사했어요','Link copied')}" data-fail="${tr('복사하지 못했어요. 주소창의 주소를 직접 복사해 주세요.','Could not copy. Copy the address from the address bar.')}">${tr('이 조건 링크 복사','Copy link to these filters')}</button><span id="tr-share-status" class="share-status" role="status" aria-live="polite"></span><a href="${href(langPath(lang,'/guides/choose-your-job/'))}">${tr('직업별 육성 가이드','Class guides')}</a></div></div>
 <section id="tr-result">${routeCards(initial,lang)}</section><noscript><p>${tr('조건 검색에는 JavaScript가 필요해요. 아래 레벨별 페이지에서 전체 경로를 볼 수 있어요.','Filters require JavaScript. Browse the level-band pages below for all routes.')}</p></noscript>
 ${bandNav(lang)}${trainingMethod(lang)}</div>${jsonScript('training-data',publicTrainingData(training))}`;
 }
@@ -1009,7 +1015,7 @@ const PR = {
     direct: '바로 열림',
     copyNote: '이름 복사 후 열림',
     twin: { male: '남성용', female: '여성용', other: '이름이 같은 아이템 있음 · ID {id}' },
-    moreItems: '{n}개 더 보기 →',
+    moreItems: '{n}개 더 보기',
     hubLabel: 'GMS Hub 유저 시세',
     hubNone: '아직 제보가 없어요. 첫 시세를 올려 주세요.',
     hubSummary: '최근 14일 {n}건 · {low}~{high}',
@@ -1070,7 +1076,7 @@ const PR = {
     direct: 'opens the item',
     copyNote: 'copies the name, then opens',
     twin: { male: 'Male', female: 'Female', other: 'Shares its name with another item · ID {id}' },
-    moreItems: '{n} more →',
+    moreItems: '{n} more',
     hubLabel: 'GMS Hub player prices',
     hubNone: 'No reports yet. Be the first to add a price.',
     hubSummary: '{n} reports in 14 days · {low}–{high}',
@@ -1801,7 +1807,7 @@ const guideToolCards = (g) =>
         .map((k) => guideTool(g.lang, k))
         .map(
           ([p, icon, label, desc]) =>
-            `<a class="tool-card" href="${href(langPath(g.lang, p))}">${spriteSvg(icon, 44)}<strong>${esc(label)}</strong><p>${esc(desc)}</p><span>${T[g.lang].open} →</span></a>`
+            `<a class="tool-card" href="${href(langPath(g.lang, p))}">${spriteSvg(icon, 44)}<strong>${esc(label)}</strong><p>${esc(desc)}</p><span>${T[g.lang].open}</span></a>`
         )
         .join('')}</div>`
     : '';

@@ -74,3 +74,17 @@ window.copyText = async (text) => {
 if (new URLSearchParams(location.search).get('utm_source') === 'share') {
   track('share_open', { page_type: document.body.dataset.page || location.pathname.split('/').filter(Boolean).slice(1, 3).join('/') || 'home', content: new URLSearchParams(location.search).get('utm_content') || '' });
 }
+
+// Day or night: the head script already applied the saved choice; the header button flips it and remembers it.
+document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
+  b.addEventListener('click', () => {
+    const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = next === 'dark' ? '#0f1420' : '#f6f1e7';
+    try {
+      localStorage.setItem('gms-theme', next);
+    } catch (e) {}
+    track('theme_toggle', { to: next });
+  });
+});

@@ -23,7 +23,7 @@ export function publicTrainingData(data) {
 // `prefix` is the page's own language path (/zh, /ja…); derived locales render with English text but must link to their own pages.
 export function routeCards(rows, lang = 'ko', prefix = `/${lang}`) {
   const tr = (ko,en) => lang === 'ko' ? ko : tx(en);
-  if (!rows.length) return `<div class="panel tr-empty"><h3>${tr('조건을 조금 넓혀 비교해 보세요', 'Broaden one filter to compare options')}</h3><p>${tr('솔로 조건을 해제하거나 장비 조건부 후보를 포함할 수 있어요. 지금 사냥터에서 처치 타수가 줄었다면, 레벨이 올라도 그곳을 유지하는 편이 나을 수 있어요.', 'Try allowing parties or equipped-character options. Staying on a lower-level map can still be effective when your kill count improves.')}</p><a href="${prefix}/guides/leveling-30-70/">${tr('직업별 다음 동선 보기 →', 'Class progression guide →')}</a></div>`;
+  if (!rows.length) return `<div class="panel tr-empty"><h3>${tr('조건을 조금 넓혀 비교해 보세요', 'Broaden one filter to compare options')}</h3><p>${tr('솔로 조건을 해제하거나 장비 조건부 후보를 포함할 수 있어요. 지금 사냥터에서 처치 타수가 줄었다면, 레벨이 올라도 그곳을 유지하는 편이 나을 수 있어요.', 'Try allowing parties or equipped-character options. Staying on a lower-level map can still be effective when your kill count improves.')}</p><a href="${prefix}/guides/leveling-30-70/">${tr('직업별 다음 동선 보기', 'Class progression guide')}</a></div>`;
   return `<div class="tr-route-list">${rows.map(r => {
     const item = (label,value) => `<div><dt>${label}</dt><dd>${esc(value[lang])}</dd></div>`;
     // Monster chips: each links to the bestiary, with the accuracy needed for a sure hit at the route's starting level.
