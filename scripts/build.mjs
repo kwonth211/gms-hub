@@ -538,7 +538,10 @@ function head({ lang, title, desc, pagePath, noindex, ld = [], only }) {
     : '';
   const ga = config.gaMeasurementId
     ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${esc(config.gaMeasurementId)}"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${esc(config.gaMeasurementId)}');</script>`
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());
+// Operator, local and automated visits are tagged internal (GA4 "Internal traffic" filter): localhost, or any browser that once opened ?internal=1.
+var gmsInternal=/^(localhost|127\\.0\\.0\\.1|\\[::1\\])$/.test(location.hostname);try{if(/[?&]internal=1(&|$)/.test(location.search))localStorage.setItem('gmshub_internal','1');gmsInternal=gmsInternal||localStorage.getItem('gmshub_internal')==='1'}catch(e){}
+gtag('config','${esc(config.gaMeasurementId)}',gmsInternal?{traffic_type:'internal'}:{});</script>`
     : '';
   const clarity = config.clarityProjectId
     ? `<script>(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","${esc(config.clarityProjectId)}");</script>`
@@ -696,7 +699,8 @@ const LIVE = {
     noTrend: '추이 데이터 부족',
     preview: '미리보기 · 실제 시세가 아닌 예시 데이터예요',
     scan: '내 화면으로 상점 스캔',
-    empty: '아직 올라온 매물이 없어요. PC 크롬에서 메이플 창을 공유하고 상점을 열면 여기에 바로 나와요.'
+    empty: '아직 올라온 매물이 없어요. PC 크롬에서 메이플 창을 공유하고 상점을 열면 여기에 바로 나와요.',
+    mine: '이어서 보기', mineWish: '관심 아이템', mineRecent: '최근 본 아이템', mineNote: '이 브라우저에 저장된 목록이에요 · 가격은 최근 14일 스캔·제보 기준', mineAll: '시세에서 전체 보기 →'
   },
   en: {
     title: 'Live Free Market',
@@ -715,7 +719,8 @@ const LIVE = {
     noTrend: 'not enough data for a trend',
     preview: 'Preview · sample data, not real prices',
     scan: 'Scan shops from my screen',
-    empty: 'No listings yet. Share your MapleStory window in Chrome on a computer and open shops; they show up here right away.'
+    empty: 'No listings yet. Share your MapleStory window in Chrome on a computer and open shops; they show up here right away.',
+    mine: 'Pick up where you left off', mineWish: 'Wishlist', mineRecent: 'Recently viewed', mineNote: 'Saved in this browser · prices from scans and reports in the last 14 days', mineAll: 'Open in the market →'
   }
 };
 
@@ -730,6 +735,7 @@ function liveMarket(lang) {
  data-text="${esc(JSON.stringify(t))}">
 <header class="market-head"><span class="live-dot" aria-hidden="true"></span><h2 id="live-title">${t.title}</h2><p>${t.sub}</p><small id="live-updated"></small><a class="btn small-btn market-scan" href="${href(langPath(lang, '/tools/scan/'))}">● ${t.scan}</a><strong class="market-preview" id="market-preview" hidden>${t.preview}</strong></header>
 ${collectionStatus(lang)}
+<div id="live-mine" class="live-mine" hidden aria-label="${esc(t.mine)}"></div>
 <div class="market-grid">
 <div class="market-panel market-top" id="market-top">
 <h3>${t.top} <small>${t.topNote}</small></h3>
@@ -880,7 +886,7 @@ function trainingBody(lang) {
 <button class="btn" type="submit">${tr('사냥터 찾기','Find routes')}</button>
 <label class="tr-check"><input name="advanced" type="checkbox">${tr('장비·명중 조건이 까다로운 후보도 보기','Include demanding gear / accuracy options')}</label>
 <p class="tr-filter-help">${tr('표시 레벨은 이동 검토 구간이에요. 카드의 진입 기준을 먼저 확인하세요.','Levels are trial windows; read each card’s entry conditions first.')}</p>
-</form><div class="tr-result-head"><h2 id="tr-status" role="status">${tr('20레벨 사냥 후보','Options for level 20')} ${initial.length}${tr('곳','')}</h2><a href="${href(langPath(lang,'/guides/choose-your-job/'))}">${tr('직업별 육성 가이드 →','Class guides →')}</a></div>
+</form><div class="tr-result-head"><h2 id="tr-status" role="status">${tr('20레벨 사냥 후보','Options for level 20')} ${initial.length}${tr('곳','')}</h2><div class="tr-result-actions"><button type="button" class="btn ghost small-btn" id="tr-share" data-ok="${tr('조건 링크를 복사했어요','Link copied')}" data-fail="${tr('복사하지 못했어요. 주소창의 주소를 직접 복사해 주세요.','Could not copy. Copy the address from the address bar.')}">${tr('이 조건 링크 복사','Copy link to these filters')}</button><span id="tr-share-status" class="share-status" role="status" aria-live="polite"></span><a href="${href(langPath(lang,'/guides/choose-your-job/'))}">${tr('직업별 육성 가이드 →','Class guides →')}</a></div></div>
 <section id="tr-result">${routeCards(initial,lang)}</section><noscript><p>${tr('조건 검색에는 JavaScript가 필요해요. 아래 레벨별 페이지에서 전체 경로를 볼 수 있어요.','Filters require JavaScript. Browse the level-band pages below for all routes.')}</p></noscript>
 ${bandNav(lang)}${trainingMethod(lang)}</div>${jsonScript('training-data',publicTrainingData(training))}`;
 }
@@ -1465,9 +1471,10 @@ function marketBody(lang) {
 <div class="mk-bar"><dl class="mk-stats">${stat('open',tr('최근 판매 매물','Recent asking listings'))}${stat('shops',tr('상점','Shops'))}${stat('items',tr('아이템 · 7일','Items · 7d'))}${stat('records',tr('매물 기록 · 7일','Listing records · 7d'))}</dl><a class="btn small-btn" href="${href(langPath(lang, '/tools/scan/'))}">${t.scan}</a></div>
 ${collectionStatus(lang)}
 <div class="mb-status"><p id="mk-status" role="status">${t.loading}</p><button id="mk-retry" class="btn ghost small-btn" type="button">${tr('새로고침','Refresh')}</button></div>
-<div class="mb-tabs" role="tablist" aria-label="${tr('시장 탐색','Browse market')}"><button id="mb-tab-listings" role="tab" aria-selected="true" aria-controls="mb-browser" data-view="listings">${tr('전체 매물','All listings')}</button><button id="mb-tab-items" role="tab" aria-selected="false" tabindex="-1" aria-controls="mb-browser" data-view="items">${tr('아이템 목록','Items')}</button><button id="mb-tab-reports" role="tab" aria-selected="false" aria-controls="mb-browser" data-view="reports">${tr('가격 제보','Price reports')}</button></div>
+<div class="mb-tabs" role="tablist" aria-label="${tr('시장 탐색','Browse market')}"><button id="mb-tab-listings" role="tab" aria-selected="true" aria-controls="mb-browser" data-view="listings">${tr('매물 목록','Listings')}</button><button id="mb-tab-items" role="tab" aria-selected="false" tabindex="-1" aria-controls="mb-browser" data-view="items">${tr('아이템 목록','Items')}</button><button id="mb-tab-reports" role="tab" aria-selected="false" aria-controls="mb-browser" data-view="reports">${tr('가격 제보','Price reports')}</button></div>
 <div class="mb-workspace" id="mb-workspace"><section class="panel mb-browser" id="mb-browser" role="tabpanel" aria-labelledby="mb-tab-listings">
 <div class="mb-search"><label for="mk-q">${tr('아이템 검색','Search items')}</label><div><input type="search" id="mk-q" placeholder="${esc(t.placeholder)}" autocomplete="off"><button id="mb-clear-search" class="btn ghost small-btn" type="button">${tr('지우기','Clear')}</button></div></div>
+<div id="mb-mine" class="mb-mine" hidden aria-label="${tr('관심 아이템과 최근 본 아이템','Wishlist and recently viewed items')}"></div>
 <div class="mb-categories" id="mb-categories" role="group" aria-label="${tr('아이템 분류','Item category')}">${[['all','전체','All'],['scroll','주문서','Scrolls'],['weapon','무기','Weapons'],['equip','장비','Equips'],['stars','표창','Stars'],['cash','캐시','Cash'],['other','소비·기타','Use & other']].map(([id,ko,en])=>`<button type="button" data-category="${id}" aria-pressed="${id==='all'}">${tr(ko,en)}</button>`).join('')}</div>
 <div class="mb-item-controls" id="mb-item-controls" hidden><label><input type="checkbox" id="mb-favorites"> ${tr('관심 아이템만','Wishlist only')}</label><label>${tr('정렬','Sort')} <select id="mb-item-sort"><option value="active">${tr('판매 매물 많은 순','Most asking listings')}</option><option value="low">${tr('최저가 낮은 순','Lowest ask')}</option><option value="price">${tr('중앙값 낮은 순','Lowest median')}</option><option value="recent">${tr('최근 확인순','Recently seen')}</option><option value="name">${tr('이름순','Name')}</option></select></label></div>
 <div id="mb-list-controls" class="mb-list-controls"><label>${tr('판매자','Seller')}<input type="search" id="mb-seller" maxlength="13" placeholder="${tr('닉네임 검색','Search nickname')}"></label><label>${tr('채널','Channel')}<select id="mb-channel"><option value="">${t.filterChannel}</option>${Array.from({length:40},(_,i)=>`<option value="${i+1}">CH ${i+1}</option>`).join('')}</select></label><label>${tr('자유시장 방','Free Market room')}<select id="mb-room"><option value="">${t.filterRoom}</option>${Array.from({length:40},(_,i)=>`<option value="${i+1}">FM ${i+1}</option>`).join('')}</select></label><label>${tr('상태','Status')}<select id="mb-state"><option value="open">${tr('판매 중 · 최근 24시간','Asking · last 24h')}</option><option value="all">${tr('전체 기록','All records')}</option><option value="sold">${tr('판매 완료 표시','Marked sold')}</option><option value="stale">${tr('24시간 경과','Over 24h old')}</option></select></label><label>${tr('정렬','Sort')}<select id="mb-list-sort"><option value="recent">${t.sortRecent}</option><option value="price">${t.sortPrice}</option><option value="high">${tr('높은 가격순','Highest price')}</option></select></label></div>
@@ -1478,7 +1485,7 @@ ${collectionStatus(lang)}
 <dialog id="mb-shop" class="mb-shop"><div id="mb-shop-body"></div></dialog>
 </div>
 ${marketGuide(lang)}
-${jsonScript('mk-data', { lang, api: config.voteApi, itemsUrl: href('/assets/items.json'), t, itemBase: href(langPath(lang, '/items/')), itemLink: IT[lang].pageLink, itemPages: PRICED.map((i) => i.id) })}`;
+${jsonScript('mk-data', { lang, api: config.voteApi, itemsUrl: href('/assets/items.json'), t, itemBase: href(langPath(lang, '/items/')), itemLink: IT[lang].pageLink, itemPages: PRICED.map((i) => i.id), itemPaths: Object.fromEntries(PRICED.map((i) => [i.id, href(langPath(lang, itemPath(i)))])) })}`;
 }
 
 function dropBody(lang) {
@@ -2006,7 +2013,7 @@ ${tools.length ? `<h3>${t.tools}</h3><p>${tools.join(' · ')}</p>` : ''}</sectio
 <section class="panel item-live"><h2>${t.liveH}</h2><p class="muted note">${t.liveNote}</p>
 <div id="mk-charts"></div>
 <h3>${t.open}</h3><div id="it-open" aria-live="polite"><p class="muted">${t.loading}</p></div>
-<p><a class="btn small-btn" href="${href(langPath(lang, `/tools/market/?item=${i.id}`))}">${t.market}</a></p></section>
+<p><a class="btn small-btn" data-market-link href="${href(langPath(lang, `/tools/market/?item=${i.id}`))}">${t.market}</a></p></section>
 <section class="panel"><h2>${t.related}</h2><ul class="item-links">${relatedItems(i).map((x) => itemLink(lang, x)).join('')}</ul></section>
 <p class="muted small">${t.method}</p>
 <p class="muted small">${t.external}: ${external}</p>

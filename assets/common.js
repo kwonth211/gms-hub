@@ -35,3 +35,42 @@ document.addEventListener('click', (e) => {
     link_type: a.classList.contains('visit') ? 'button' : 'card'
   });
 });
+
+// Share links: the same page state in a fresh tab, tagged so arrivals through a shared link are counted apart from
+// search or direct visits. Nothing personal goes into the URL; only the page's own state parameters are kept.
+window.shareUrl = (url, content) => {
+  const u = new URL(url, location.href);
+  for (const k of [...u.searchParams.keys()]) if (/^(utm_|src$|internal$)/.test(k)) u.searchParams.delete(k);
+  u.searchParams.set('utm_source', 'share');
+  u.searchParams.set('utm_medium', 'link');
+  if (content) u.searchParams.set('utm_content', content);
+  return u.toString();
+};
+// Resolves to true when the text reached the clipboard; the caller shows the success or failure message.
+window.copyText = async (text) => {
+  try {
+    // The async clipboard can hang when the document is not focused; fall back after a moment instead of waiting forever.
+    if (navigator.clipboard?.writeText) {
+      const ok = await Promise.race([navigator.clipboard.writeText(text).then(() => true), new Promise((r) => setTimeout(() => r(false), 1500))]);
+      if (ok) return true;
+    }
+  } catch (e) {}
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  } catch (e) {
+    return false;
+  }
+};
+// A visit that started from a shared link, recorded once per page load (the session source already carries utm_source).
+if (new URLSearchParams(location.search).get('utm_source') === 'share') {
+  track('share_open', { page_type: document.body.dataset.page || location.pathname.split('/').filter(Boolean).slice(1, 3).join('/') || 'home', content: new URLSearchParams(location.search).get('utm_content') || '' });
+}

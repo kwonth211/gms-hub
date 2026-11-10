@@ -26,6 +26,10 @@ node scripts/build.mjs   # dist/ 생성 (의존성 없음)
 
 `node --test tests/search.test.mjs`로 동시 검색 누락, 순위, 한글 동의어, 초성 검색을 검증할 수 있어요.
 
+## 분석 이벤트
+
+GA4·Clarity 이벤트의 발생 조건과 파라미터는 `docs/analytics-events.md`에 정리돼 있어요. 새 화면 동작을 추가할 때 `track()`을 붙이면 그 표도 같이 갱신해 주세요. 운영자 기기는 `/?internal=1`을 한 번 열어 내부 트래픽으로 표시해요.
+
 ## 데이터 관리 (관리자 페이지)
 
 `/admin/`에서 GitHub Fine-grained 토큰(이 저장소의 Contents: Read and write)으로 로그인하면

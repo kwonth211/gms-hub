@@ -31,3 +31,5 @@ Promise.all([
   if(history){const normalize=rs=>rs.map(r=>({...r,sold:!!r.sold,t:parseUtc(r.seen)}));mountMarketCharts(charts,normalize(history.rows),{lang:D.lang,now:Date.parse(history.asOf),profileRows:normalize(history.profile),persistent:true,truncated:history.truncated,profileTruncated:history.profileTruncated,limit:history.limit});}
   else charts.innerHTML=`<p class="muted">${T.failed}</p>`;
 });
+// From the static price page into the live market browser for the same item.
+document.querySelector('[data-market-link]')?.addEventListener('click', () => track('item_market_click', { item_id: D.id, page_type: 'item' }));

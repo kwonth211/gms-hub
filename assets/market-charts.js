@@ -46,8 +46,10 @@ export function mountMarketCharts(root, rows, { lang = 'ko', now = Date.now(), t
     ? { asking: '판매가 관측', sold: '판매 완료 관측', count: '관측 기록', amount: '관측 기록 수' }
     : { asking: tx('Observed asks'), sold: tx('Observed sold'), count: tx('Observations'), amount: tx('Observations') }) : {}) };
   const nf = new Intl.NumberFormat(lang);
-  const date = new Intl.DateTimeFormat(lang, { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
-  const time = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit', hour12: false });
+  // Korean readers get Korea Standard Time regardless of device clock; other languages use the viewer's zone.
+  const zone = lang === 'ko' ? { timeZone: 'Asia/Seoul' } : {};
+  const date = new Intl.DateTimeFormat(lang, { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false, ...zone });
+  const time = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit', hour12: false, ...zone });
   const compact = new Intl.NumberFormat(lang, { notation: 'compact', maximumFractionDigits: 1 });
   const price = (n) => nf.format(n);
   const bandName = (b) => b.from === b.to ? price(b.from) : `${price(b.from)}–${price(b.to)}`;
@@ -106,7 +108,7 @@ export function mountMarketCharts(root, rows, { lang = 'ko', now = Date.now(), t
       }).join('');
     }).join('');
     const indexes = [...new Set([0, ...(w > 480 ? [Math.floor((buckets.length - 1) / 2)] : []), buckets.length - 1])];
-    const labels = indexes.map((i) => `<text class="axis" x="${x(buckets[i].t)}" y="269" text-anchor="middle">${analysis.to - analysis.from > 24 * HOUR ? new Intl.DateTimeFormat(lang, { month: 'numeric', day: 'numeric' }).format(buckets[i].t) : time.format(buckets[i].t)}</text>`).join('');
+    const labels = indexes.map((i) => `<text class="axis" x="${x(buckets[i].t)}" y="269" text-anchor="middle">${analysis.to - analysis.from > 24 * HOUR ? new Intl.DateTimeFormat(lang, { month: 'numeric', day: 'numeric', ...zone }).format(buckets[i].t) : time.format(buckets[i].t)}</text>`).join('');
     const hits = buckets.map((b, i) => `<rect class="chart-hit" data-bucket="${i}" x="${x(b.from)}" y="${top}" width="${step}" height="230" tabindex="0" role="button" aria-label="${escape(pointText(b))}"/>`).join('');
     return `<svg class="chart analytics-svg" viewBox="0 0 ${w} ${h}" role="group" aria-label="${t.trend}">${grid}${paths}<text class="axis" x="${left}" y="203">${t.amount}</text><text class="axis" x="${left - 8}" y="221" text-anchor="end">${maxCount}</text>${bars}${labels}${hits}</svg>`;
   }

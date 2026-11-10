@@ -47,3 +47,11 @@ if ($('location-sort')) {
   }
   $('location-sort').addEventListener('change',render);$('location-unavailable')?.addEventListener('change',render);render();
 }
+// Links out of a monster page: a dropped item (to its price page) or the hits-to-kill calculator.
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('a.monster-item-action, a.monster-calc');
+  if (!a) return;
+  const mob = Number(a.closest('[data-mob-id]')?.dataset.mobId) || undefined;
+  if (a.classList.contains('monster-calc')) track('monster_calc_click', { mob_id: mob });
+  else track('monster_drop_click', { mob_id: mob, item_id: Number(a.dataset.itemId) || undefined });
+});

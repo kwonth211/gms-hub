@@ -2,6 +2,7 @@ import './collection-status.js';
 import { DAY, parseUtc } from "./market-data.js";
 import { makeMarketIndex, catalogRows, matchingIds } from "./market-catalog.js";
 import { mountMarketCharts } from "./market-charts.js";
+import { WISHLIST_KEY, RECENT_KEY, SEEN_KEY, WISHLIST_MAX, readList, addRecent, removeRecent, toggleWishlist, snapshot, visitDelta, pruneSeen } from "./market-memory.js";
 const D = JSON.parse(document.getElementById("mk-data").textContent),
   T = D.t,
   ko = D.lang === "ko";
@@ -19,7 +20,10 @@ const esc = (s) =>
 const money = (n) => (n == null ? "—" : nf.format(n)),
   icon = (id, size = 28) =>
     `<img src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="${size}" height="${size}" loading="lazy">`;
-const date = (s) => new Date(parseUtc(s)).toLocaleString(D.lang);
+// Korean pages show absolute times in Korea Standard Time whatever the device clock says; other languages use the viewer's zone.
+const TZ = ko ? { timeZone: "Asia/Seoul" } : {};
+const date = (s) => new Date(parseUtc(s)).toLocaleString(D.lang, TZ) + (ko ? " KST" : "");
+const clock = (ms) => new Date(ms).toLocaleTimeString(D.lang, TZ) + (ko ? " KST" : "");
 const ago = (s) => {
   if (!s) return "—";
   const m = Math.max(0, Math.floor((Date.now() - parseUtc(s)) / 60000));
@@ -61,12 +65,33 @@ let listSeq = 0,
   refreshing = false,
   debounce,
   shopContext;
-let favorites = new Set();
+// Browser memory: wishlist, recently opened items and the price snapshot from the last visit. Storage may be missing
+// or full (private mode, quota); every write reports whether it stuck so the UI can say so instead of pretending.
+const stored = (key) => {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+const persist = (key, value) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch {
+    return false;
+  }
+};
+let favorites = new Set(readList(stored(WISHLIST_KEY)));
+let recent = readList(stored(RECENT_KEY));
+let seen = {};
 try {
-  favorites = new Set(
-    JSON.parse(localStorage.getItem("gms-market-wishlist") || "[]"),
-  );
+  const v = JSON.parse(stored(SEEN_KEY) || "{}");
+  if (v && typeof v === "object" && !Array.isArray(v)) seen = v;
 } catch {}
+// The item whose first detail load should be reported, and where the visitor found it (search, wishlist, recent, link…).
+let pendingOpen = null;
+let noResultTimer, lastNoResult = "";
 const categories = {
   scroll: tr("주문서", "Scrolls"),
   weapon: tr("무기", "Weapons"),
@@ -85,6 +110,47 @@ function itemName(id) {
 }
 function itemLink(id) {
   return `<a class="mb-item-link" href="?item=${id}" data-item="${id}">${icon(id)}<span>${esc(itemName(id))}</span></a>`;
+}
+function starButton(id, extra = "") {
+  return `<button class="mb-star ${extra}" type="button" data-favorite="${id}" aria-pressed="${favorites.has(id)}" aria-label="${esc(itemName(id))} ${tr("관심 아이템", "wishlist")}" title="${favorites.has(id) ? tr("관심 아이템에서 빼기", "Remove from wishlist") : tr("관심 아이템에 넣기", "Add to wishlist")}">${favorites.has(id) ? "★" : "☆"}</button>`;
+}
+// Wishlist shortcut and recently opened items, shown under the search box so a returning visitor is one tap from the
+// item they were watching. Both lists live only in this browser.
+function renderMine() {
+  const box = $("mb-mine");
+  recent = recent.filter((id) => byId.has(id));
+  const wish = [...favorites].filter((id) => byId.has(id));
+  box.hidden = !wish.length && !recent.length;
+  if (box.hidden) {
+    box.innerHTML = "";
+    return;
+  }
+  box.innerHTML = `${wish.length ? `<button type="button" class="chip mb-mine-wish" data-show-wishlist aria-pressed="${view === "items" && $("mb-favorites").checked}">★ ${tr(`관심 아이템 ${wish.length}`, `Wishlist · ${wish.length}`)}</button>` : ""}${recent.length ? `<span class="mb-mine-label">${tr("최근 본", "Recent")}</span>${recent.map((id) => `<span class="chip mb-recent-chip ${id === selected ? "selected" : ""}"><a href="?item=${id}" data-item="${id}" data-source="recent">${icon(id, 18)}${esc(itemName(id))}</a><button type="button" data-forget="${id}" aria-label="${esc(itemName(id))} ${tr("최근 목록에서 삭제", "remove from recent")}">×</button></span>`).join("")}<button type="button" class="mb-mine-clear" data-forget="all">${tr("최근 목록 지우기", "Clear recent")}</button>` : ""}`;
+}
+function rememberOpen(id) {
+  recent = addRecent(recent, id);
+  persist(RECENT_KEY, recent);
+  renderMine();
+}
+// Honest "since your last visit": only when a comparable snapshot exists (see market-memory.js), then store today's.
+function visitNote(id) {
+  const cur = snapshot(catalog?.items.find((x) => x.item === id), catalog ? Date.parse(catalog.asOf) : Date.now());
+  const d = visitDelta(seen[id], cur);
+  seen = pruneSeen({ ...seen, [id]: cur }, [...favorites, ...recent, id]);
+  persist(SEEN_KEY, seen);
+  if (!d) return "";
+  const pct = d.pct > 0 ? `+${d.pct}%` : `${d.pct}%`, since = ago(new Date(d.since).toISOString());
+  return `<p class="mb-visit-note muted note">${ko
+    ? `지난 확인(${since}) 이후 판매가 중앙값 ${money(d.from)} → ${money(d.to)} (${pct}) · 24시간 판매 중 매물 기준`
+    : `${tx("Since your last look")} (${since}): ${tx("asking median {from} → {to} ({pct}) · 24h open listings", { from: money(d.from), to: money(d.to), pct })}`}</p>`;
+}
+function noResults(term) {
+  clearTimeout(noResultTimer);
+  if (!term || term === lastNoResult) return;
+  noResultTimer = setTimeout(() => {
+    lastNoResult = term;
+    track("market_no_results", { search_term: term.slice(0, 40), view, category, lang: D.lang });
+  }, 1200);
 }
 function pager(data, scope) {
   if (data.pages <= 1) return "";
@@ -134,12 +200,25 @@ function renderDirectory() {
         .slice(start, start + 40)
         .map(
           (r) =>
-            `<tr class="${r.id === selected ? "selected" : ""}"><td><button class="mb-star" data-favorite="${r.id}" aria-pressed="${favorites.has(r.id)}" aria-label="${esc(itemName(r.id))} ${tr("관심 아이템", "wishlist")}">${favorites.has(r.id) ? "★" : "☆"}</button></td><td>${itemLink(r.id)}<small>${categories[r.category]}${r.reports ? ` · ${tr("가격 제보", "Reports")} ${r.reports}` : ""}</small></td><td class="num">${money(r.median)}<small>${tr("최저", "Low")} ${money(r.low)}</small></td><td><strong>${r.open}</strong><small>${tr("기록", "Records")} ${r.records}</small></td><td>${when(r.last)}</td></tr>`,
+            `<tr class="${r.id === selected ? "selected" : ""}"><td>${starButton(r.id)}</td><td>${itemLink(r.id)}<small>${categories[r.category]}${r.reports ? ` · ${tr("가격 제보", "Reports")} ${r.reports}` : ""}</small></td><td class="num">${money(r.median)}<small>${tr("최저", "Low")} ${money(r.low)}</small></td><td><strong>${r.open}</strong><small>${tr("기록", "Records")} ${r.records}</small></td><td>${when(r.last)}</td></tr>`,
         )
         .join("")}</tbody></table></div>`
-    : `<div class="market-empty"><strong>${tr("표시할 아이템이 없어요.", "No matching items.")}</strong><p>${$("mb-favorites").checked ? tr("별표를 눌러 관심 아이템을 저장해 보세요.", "Use the star to save items to your wishlist.") : T.noMatches}</p></div>`;
+    : `<div class="market-empty"><strong>${tr("표시할 아이템이 없어요.", "No matching items.")}</strong><p>${$("mb-favorites").checked ? tr("별표를 눌러 관심 아이템을 저장해 보세요.", "Use the star to save items to your wishlist.") : T.noMatches}</p>${$("mk-q").value.trim() ? `<p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="listings">${tr("매물 목록에서 찾기", "Search listings instead")}</button></p>` : ""}</div>`;
+  if (!rows.length && !$("mb-favorites").checked) noResults($("mk-q").value.trim());
   $("mb-pagination").innerHTML = pager({ page, pages }, "main");
   $("mb-results").setAttribute("aria-busy", "false");
+  renderMine();
+}
+// What the count line is counting, so "listings" never reads as "every record" when a status filter is on.
+function scopeLabel() {
+  const state = view === "listings" ? $("mb-state").value : "all", days = $("mb-days").value;
+  if (view === "reports") return tr(`가격 제보 · 최근 ${days}일`, `Price reports · last ${days}d`);
+  return {
+    open: tr("판매 중 매물 · 최근 24시간", "Asking listings · last 24h"),
+    all: tr(`전체 기록 · 최근 ${days}일`, `All records · last ${days}d`),
+    sold: tr(`판매 완료 표시 · 최근 ${days}일`, `Marked sold · last ${days}d`),
+    stale: tr(`24시간 경과 매물 · 최근 ${days}일`, `Over 24h old · last ${days}d`),
+  }[state];
 }
 function filteredIds() {
   const matches = matchingIds(items, $("mk-q").value);
@@ -178,7 +257,8 @@ async function renderRecords() {
   if (filtering) {
     const ids = filteredIds();
     if (!ids.length) {
-      $("mb-results").innerHTML = `<p class="market-empty">${T.noMatches}</p>`;
+      $("mb-results").innerHTML = `<div class="market-empty"><strong>${T.noMatches}</strong><p>${tr("최근 30일에 기록된 아이템만 찾을 수 있어요. 한글·영문·초성·약어(장공, 귀힘)로도 검색돼요.", "Only items recorded in the last 30 days can be found. Korean, English, initials and common abbreviations all work.")}</p><p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="items">${tr("아이템 목록 보기", "Browse items")}</button></p></div>`;
+      noResults($("mk-q").value.trim());
       $("mb-count").textContent = "0";
       $("mb-pagination").innerHTML = "";
       $("mb-results").setAttribute("aria-busy", "false");
@@ -217,10 +297,15 @@ async function renderRecords() {
       page = Math.max(1, data.pages);
       return renderRecords();
     }
-    $("mb-count").textContent = tr(
-      `전체 ${nf.format(data.total)}건 · ${data.total ? (page - 1) * data.limit + 1 : 0}–${Math.min(page * data.limit, data.total)}건 표시`,
-      `${nf.format(data.total)} records · showing ${data.total ? (page - 1) * data.limit + 1 : 0}–${Math.min(page * data.limit, data.total)}`,
-    );
+    // Built from separately translated pieces so derived locales can translate each part.
+    const first = data.total ? (page - 1) * data.limit + 1 : 0, last = Math.min(page * data.limit, data.total);
+    $("mb-count").textContent = [
+      scopeLabel(),
+      tr(`${nf.format(data.total)}건`, `${nf.format(data.total)} records`),
+      tr(`${first}–${last}건 표시`, `showing ${first}–${last}`),
+      ko ? `${ago(data.asOf)} 기준` : `${tx("as of")} ${ago(data.asOf)}`,
+    ].join(" · ");
+    if (!data.total && $("mk-q").value.trim()) noResults($("mk-q").value.trim());
     $("mb-results").innerHTML =
       target === "reports"
         ? data.rows.length
@@ -271,10 +356,11 @@ function setView(next) {
             "Items recorded in the last 7 days. Select one to see sellers and shop listings.",
           )
         : tr(
-            "최근 기록 전체를 페이지별로 조회해요. 판매 중은 최근 24시간 확인 기준이며 실제 재고와 다를 수 있어요.",
-            "Browse all records page by page. Asking listings were seen within 24h; actual stock may differ.",
+            "기본은 최근 24시간에 판매 중으로 확인된 매물이에요. 상태를 ‘전체 기록’으로 바꾸면 7·30일 기록을 모두 페이지별로 볼 수 있어요. 표시 가격은 판매자가 부른 가격이며 실제 거래가가 아니에요.",
+            "By default: listings seen for sale in the last 24 hours. Switch Status to “All records” to page through 7 or 30 days. Prices are what sellers ask, not confirmed trades.",
           );
   syncURL();
+  renderMine();
   renderMain();
 }
 const selectLocation = (type, value) =>
@@ -287,11 +373,15 @@ function detailPanels() {
     if (button) button.tabIndex = detailTab === key ? 0 : -1;
   }
 }
-async function loadItem(id, { reset = true } = {}) {
+async function loadItem(id, { reset = true, source = "list" } = {}) {
   const it = byId.get(id);
   if (!it) return;
   const changed = selected !== id;
   selected = id;
+  if (changed) {
+    pendingOpen = { id, source };
+    rememberOpen(id);
+  }
   const seq = ++detailSeq;
   detailAbort?.abort();
   detailAbort = new AbortController();
@@ -317,8 +407,9 @@ async function loadItem(id, { reset = true } = {}) {
     stats = s
       ? `<dl class="mb-detail-stats"><div><dt>${tr("판매가 중앙값", "Asking median")}</dt><dd>${money(s.median)} <small>${T.priceUnit}</small></dd></div><div><dt>${tr("최저 판매가", "Lowest ask")}</dt><dd>${money(s.low)}</dd></div><div><dt>${tr("판매 매물 · 24h", "Asking · 24h")}</dt><dd>${s.open}</dd></div></dl>`
       : "";
+  const pageLink = D.itemPaths?.[id] ? `<a class="mb-item-page" href="${esc(D.itemPaths[id])}">${esc(D.itemLink)} →</a>` : "";
   $("mk-detail").innerHTML =
-    `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(it.name)}</h2><small>${esc(it.en)}</small></div><button class="btn ghost small-btn" data-close-item aria-label="${tr("상세 닫기", "Close details")}">×</button></header>${stats}
+    `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(it.name)}</h2><small>${esc(it.en)}</small></div>${starButton(id, "mb-star-detail")}<button class="btn ghost small-btn" data-share-item="${id}" title="${tr("이 아이템 링크 복사", "Copy a link to this item")}">${tr("링크 복사", "Copy link")}</button><button class="btn ghost small-btn" data-close-item aria-label="${tr("상세 닫기", "Close details")}">×</button></header><p class="share-status mb-share-status" id="mb-share-status" role="status" aria-live="polite"></p>${stats}${changed || reset ? visitNote(id) : ""}${pageLink}
  <div class="mb-tabs" role="tablist" aria-label="${tr("아이템 상세", "Item details")}"><button data-detail-tab="listings" role="tab" aria-selected="${detailTab === "listings"}" aria-controls="mb-detail-listings">${tr("판매 매물", "Shop listings")}</button><button data-detail-tab="charts" role="tab" aria-selected="${detailTab === "charts"}" aria-controls="mb-detail-charts">${tr("가격 추이·매물대", "Trends & depth")}</button><button class="mb-detail-refresh" data-refresh-item>${tr("새로고침", "Refresh")}</button></div>
  <div id="mb-detail-listings" role="tabpanel" aria-label="${tr("판매 매물", "Shop listings")}"><p class="muted note">${T.whereNote}</p><div class="mb-detail-filters"><label>${tr("채널", "Channel")}<select id="md-channel">${selectLocation("channel", detailState.channel)}</select></label><label>${tr("방", "Room")}<select id="md-room">${selectLocation("room", detailState.room)}</select></label><label>${tr("정렬", "Sort")}<select id="md-sort"><option value="price">${T.sortPrice}</option><option value="recent">${T.sortRecent}</option><option value="high">${tr("높은 가격순", "Highest price")}</option></select></label><label>${tr("상태", "Status")}<select id="md-state"><option value="open">${tr("판매 중 · 24h", "Asking · 24h")}</option><option value="all">${tr("전체 기록 · 7일", "All records · 7d")}</option><option value="sold">${tr("판매 완료 표시", "Marked sold")}</option><option value="stale">${tr("24시간 경과", "Over 24h old")}</option></select></label></div><div class="price-band-filter" id="md-price-band" hidden><span></span><button class="btn ghost small-btn" data-clear-band>${tr("가격대 해제", "Clear price band")}</button></div><p id="md-count" class="muted note" role="status"></p><div id="md-rows"></div><div id="md-pages" class="mb-pagination"></div></div>
  <div id="mb-detail-charts" role="tabpanel" aria-label="${tr("가격 추이와 매물대", "Trends and depth")}"><div id="mk-charts"><p>${T.loading}</p></div></div>`;
@@ -400,11 +491,20 @@ async function loadDetailRows() {
     );
     $("md-rows").innerHTML = listingTable(data.rows, { showItem: false });
     $("md-pages").innerHTML = pager(data, "detail");
+    // One event per item opened (not per filter change, page or refresh): the detail loaded and showed its listings.
+    if (pendingOpen?.id === id) {
+      track("market_item", { item_id: id, listings: data.total, result: data.total ? "ok" : "empty", source: pendingOpen.source, lang: D.lang });
+      pendingOpen = null;
+    }
   } catch {
     if (seq === detailListSeq && id === selected) {
       $("md-rows").innerHTML =
         `<p>${T.failed}</p><button class="btn small-btn" data-retry-detail>${T.retry}</button>`;
       $("md-count").textContent = "";
+      if (pendingOpen?.id === id) {
+        track("market_item", { item_id: id, result: "error", source: pendingOpen.source, lang: D.lang });
+        pendingOpen = null;
+      }
     }
   } finally {
     if (seq === detailListSeq && id === selected)
@@ -456,8 +556,8 @@ async function refresh() {
     for (const k of ["open", "shops", "items", "records"])
       $("mk-stat-" + k).textContent = money(catalog.stats[k]);
     $("mk-status").textContent = tr(
-      `목록 기준 ${new Date(catalog.asOf).toLocaleTimeString(D.lang)} · 60초마다 확인`,
-      `Directory as of ${new Date(catalog.asOf).toLocaleTimeString(D.lang)} · checks every 60s`,
+      `목록 기준 ${clock(Date.parse(catalog.asOf))} · 60초마다 확인`,
+      `Directory as of ${clock(Date.parse(catalog.asOf))} · checks every 60s`,
     );
     if (view === "items") renderDirectory();
   } catch {
@@ -516,19 +616,59 @@ document.querySelector(".market-browser").addEventListener("click", (e) => {
     if (e.ctrlKey || e.metaKey || e.shiftKey) return;
     e.preventDefault();
     $("mb-shop").close();
-    loadItem(Number(el.dataset.item));
+    // Where the visitor found the item: a saved list, a search result, or plain browsing.
+    const source = el.dataset.source || (view === "items" && $("mb-favorites").checked ? "wishlist" : $("mk-q").value.trim() ? "search" : el.closest("#mk-detail") ? "detail" : "list");
+    loadItem(Number(el.dataset.item), { source });
     return;
   }
   if (el.dataset.favorite) {
     const id = Number(el.dataset.favorite);
-    favorites.has(id) ? favorites.delete(id) : favorites.add(id);
-    try {
-      localStorage.setItem(
-        "gms-market-wishlist",
-        JSON.stringify([...favorites]),
-      );
-    } catch {}
-    renderDirectory();
+    const res = toggleWishlist(favorites, id);
+    const status = $("mb-share-status") || $("mb-count");
+    if (!res.ok) {
+      if (status && res.reason === "full") status.textContent = tr(`관심 아이템은 ${WISHLIST_MAX}개까지 저장할 수 있어요. 다른 아이템을 먼저 빼 주세요.`, `The wishlist holds up to ${WISHLIST_MAX} items. Remove one first.`);
+      return;
+    }
+    const saved = persist(WISHLIST_KEY, [...favorites]);
+    if (status) status.textContent = saved ? "" : tr("이 브라우저에 저장할 수 없어서 새로고침하면 사라져요.", "This browser cannot store the list; it will be lost on reload.");
+    track(res.added ? "wishlist_add" : "wishlist_remove", { item_id: id, page_type: "market", storage: saved ? "ok" : "unavailable" });
+    if (view === "items") renderDirectory();
+    document.querySelectorAll(`[data-favorite="${id}"]`).forEach((b) => {
+      b.setAttribute("aria-pressed", favorites.has(id));
+      b.textContent = favorites.has(id) ? "★" : "☆";
+    });
+    renderMine();
+    return;
+  }
+  if (el.hasAttribute("data-show-wishlist")) {
+    $("mb-favorites").checked = true;
+    page = 1;
+    view === "items" ? renderMain() : setView("items");
+    track("wishlist_open", { count: favorites.size, page_type: "market" });
+    return;
+  }
+  if (el.dataset.forget) {
+    const removed = el.dataset.forget === "all" ? recent.length : 1;
+    recent = el.dataset.forget === "all" ? [] : removeRecent(recent, Number(el.dataset.forget));
+    persist(RECENT_KEY, recent);
+    track("recent_remove", { count: removed, page_type: "market" });
+    renderMine();
+    return;
+  }
+  if (el.dataset.shareItem) {
+    const id = Number(el.dataset.shareItem);
+    const url = shareUrl(`${location.pathname}?item=${id}`, "market-item");
+    copyText(url).then((ok) => {
+      const status = $("mb-share-status");
+      if (status) status.textContent = ok ? tr("링크를 복사했어요. 새 탭이나 다른 기기에서 같은 아이템이 열려요.", "Link copied. It opens the same item on any device.") : `${tr("복사하지 못했어요. 이 주소를 직접 복사해 주세요:", "Could not copy. Copy this address:")} ${url}`;
+      track("share_copy", { page_type: "market", item_id: id, result: ok ? "ok" : "fail" });
+    });
+    return;
+  }
+  if (el.hasAttribute("data-clear-search")) {
+    $("mk-q").value = "";
+    changedSearch();
+    $("mk-q").focus();
     return;
   }
   if (el.dataset.view) {
@@ -619,10 +759,16 @@ async function initialize() {
     const initialView = ["items", "listings", "reports"].includes(p.get("view"))
       ? p.get("view")
       : byId.has(id) ? "items" : "listings";
-    selected = byId.has(id) ? id : null;
+    // How the page was reached with an item preselected: a shared link, the home "pick up" strip, or any other link.
+    const source = p.get("utm_source") === "share" ? "share" : p.get("src") === "home" ? "home" : "url";
+    if (p.has("src")) {
+      p.delete("src");
+      history.replaceState(null, "", location.pathname + (p.size ? "?" + p : ""));
+    }
     await refresh();
     setView(initialView);
-    if (selected) loadItem(selected);
+    if (byId.has(id)) loadItem(id, { source });
+    renderMine();
   } catch {
     $("mk-status").textContent = T.failed;
     $("mb-results").innerHTML = `<p>${T.failed}</p>`;

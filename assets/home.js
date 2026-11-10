@@ -612,3 +612,39 @@ if (live) {
   setInterval(refreshLive, LIVE_REFRESH_MS);
   document.addEventListener('visibilitychange', refreshLive);
 }
+
+// "Pick up where you left off": the market wishlist and recently opened items saved by this browser, with their current
+// price summary from one request, so a returning visitor goes straight back to the item they were watching.
+const mine = document.getElementById('live-mine');
+async function renderMine() {
+  if (!mine || !live?.dataset.api) return;
+  let wish = [], recentIds = [];
+  try {
+    const list = (k) => { const v = JSON.parse(localStorage.getItem(k) || '[]'); return Array.isArray(v) ? v.filter((id) => Number.isInteger(id)) : []; };
+    wish = list('gms-market-wishlist');
+    recentIds = list('gms-market-recent').filter((id) => !wish.includes(id));
+  } catch (e) {}
+  if (!wish.length && !recentIds.length) { mine.hidden = true; return; }
+  let index;
+  try { index = new Map((await loadItems()).map((it) => [it.id, it])); } catch (e) { return; }
+  wish = wish.filter((id) => index.has(id));
+  recentIds = recentIds.filter((id) => index.has(id)).slice(0, 5);
+  if (!wish.length && !recentIds.length) { mine.hidden = true; return; }
+  let summary = {};
+  try {
+    const r = await fetch(`${live.dataset.api}/prices?ids=${[...wish, ...recentIds].slice(0, 60).join(',')}`);
+    if (r.ok) summary = await r.json();
+  } catch (e) {}
+  const chip = (id, kind) => {
+    const it = index.get(id), p = summary[id];
+    return `<a class="mine-chip" href="${live.dataset.price}?item=${id}&src=home" data-kind="${kind}" data-item="${id}"><img src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="22" height="22" loading="lazy"><span class="mine-name">${escHtml(it.name)}</span>${p?.median ? `<b>${mesos(p.median)}</b><small>${priceBasis[p.basis]} · ${ago(p.last)}</small>` : `<small>${escHtml(liveText.noTrend)}</small>`}</a>`;
+  };
+  const group = (title, ids, kind) => ids.length ? `<div class="mine-group"><h4>${escHtml(title)} <span>${ids.length}</span></h4><div class="mine-row">${ids.map((id) => chip(id, kind)).join('')}</div></div>` : '';
+  mine.innerHTML = `<div class="mine-head"><h3>${escHtml(liveText.mine)}</h3><a href="${live.dataset.price}?view=items">${escHtml(liveText.mineAll)}</a></div>${group(liveText.mineWish, wish, 'wishlist')}${group(liveText.mineRecent, recentIds, 'recent')}<p class="muted small">${escHtml(liveText.mineNote)}</p>`;
+  mine.hidden = false;
+}
+mine?.addEventListener('click', (e) => {
+  const a = e.target.closest('a.mine-chip');
+  if (a) track('home_resume_click', { kind: a.dataset.kind, item_id: Number(a.dataset.item) });
+});
+renderMine();

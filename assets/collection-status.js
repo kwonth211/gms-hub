@@ -3,7 +3,7 @@ const tx = globalThis.tx || ((s) => s);
 export function collectionStatusView(s, lang = 'ko', now = Date.now()) {
   const ko = lang === 'ko', last = Date.parse(s.lastSuccessAt), next = Date.parse(s.nextEligibleAt);
   const hours = Math.max(1, Math.round((Number(s.intervalSeconds) || 3600) / 3600));
-  const stamp = n => new Date(n).toLocaleString(ko ? 'ko-KR' : 'en-US', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  const stamp = n => new Date(n).toLocaleString(ko ? 'ko-KR' : 'en-US', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit', ...(ko ? {timeZone:'Asia/Seoul'} : {})});
   const state = ['paused','budget_wait'].includes(s.state) ? s.state : !Number.isFinite(last) ? 'waiting' : now-last > hours*90*60000 ? 'delayed' : 'recent';
   const title = ko ? {paused:'정기 수집 일시 중지',budget_wait:'한도 초기화 대기',waiting:'첫 수집 대기',delayed:'시세 수집 지연',recent:'최근 수집 반영됨'}[state]
     : {paused:tx('Collection paused'),budget_wait:tx('Waiting for daily reset'),waiting:tx('Awaiting first collection'),delayed:tx('Collection delayed'),recent:tx('Recent collection received')}[state];
