@@ -1390,3 +1390,24 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .map-mob { display: flex; align-items: center; gap: 8px; }
 .map-mob img { flex: none; object-fit: contain; image-rendering: pixelated; }
 .map-page .monster-hunt-stats { margin: 0; }
+/* Home: my character (class + level saved in this browser) */
+.my-char { margin-top: 28px; padding: 18px 20px; border: 1px solid var(--accent-line); border-radius: var(--radius); background: var(--panel); box-shadow: 0 2px 0 var(--line-strong); }
+.my-char h2 { margin: 0; font-size: clamp(1.15rem, 2vw, 1.35rem); }
+.char-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 10px 14px; align-items: end; }
+.char-form h2, .char-form p { grid-column: 1 / -1; margin: 0; }
+.char-form label { display: grid; gap: 4px; font-size: 0.85rem; font-weight: 700; color: var(--text-2); }
+.char-form .btn { margin-bottom: var(--edge); }
+.char-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.char-actions { display: flex; gap: 10px; }
+.char-actions .btn { padding: 8px 14px; }
+.char-routes { list-style: none; padding: 0; margin: 14px 0 8px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.char-routes a { display: grid; gap: 2px; height: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-2); color: var(--text); text-decoration: none; }
+.char-routes a:hover { border-color: var(--accent-fill); }
+.char-routes small { color: var(--muted); }
+.char-routes span { color: var(--text-2); font-size: 0.85rem; }
+.char-links { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0; font-size: 0.9rem; }
+@media (max-width: 760px) {
+  .char-form { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .char-form .btn { grid-column: 1 / -1; }
+  .char-routes { grid-template-columns: minmax(0, 1fr); }
+}

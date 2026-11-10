@@ -1,5 +1,6 @@
 import './collection-status.js';
 import { indexEntry, searchEntries } from './search-index.js';
+import { mountCharPanel } from './my-char.js';
 
 const input = document.getElementById('site-search');
 const main = document.querySelector('.dir-main');
@@ -116,6 +117,8 @@ const toolKeywords = {
 const routeData = JSON.parse(document.getElementById('home-routes')?.textContent || '[]');
 // Class pages: "썬콜 사냥터", "bandit training" open the class's own route list.
 const classData = JSON.parse(document.getElementById('home-classes')?.textContent || '[]');
+const charPanel = document.getElementById('my-char');
+mountCharPanel(charPanel, { routes: routeData, classes: classData, finder: charPanel?.dataset.finder, korean });
 const staticEntries = [
   ...classData.map((c) => indexEntry({
     type: 'tool', id: `class-${c.slug}`, title: c.title, href: c.href,

@@ -267,3 +267,30 @@ ${place('mushroom', 150, 88, 1.15, 'bob')}${place('slime', 186, 92, 1, 'bob2')}$
 ${place('coin', 172, 70, 0.7, 'float')}${place('coin', 200, 66, 0.6, 'float2')}
 </svg>`;
 }
+
+// App icon as a PNG (home-screen install): the sprite scaled up on a square background, with a safe margin so
+// Android's round "maskable" crop never cuts into the art. Pure Node: raw RGBA rows, zlib, CRC32.
+import { deflateSync } from 'node:zlib';
+export function spritePng(name, size, bg = '#f6f1e7') {
+  const grid = GRIDS[name], pal = PALETTES[name];
+  const w = Math.max(...grid.map((r) => r.length)), h = grid.length;
+  const scale = Math.floor((size * 0.62) / Math.max(w, h));
+  const ox = Math.floor((size - w * scale) / 2), oy = Math.floor((size - h * scale) / 2);
+  const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const back = rgb(bg);
+  const raw = Buffer.alloc((size * 4 + 1) * size);
+  for (let y = 0; y < size; y++) {
+    raw[y * (size * 4 + 1)] = 0;
+    for (let x = 0; x < size; x++) {
+      const gx = Math.floor((x - ox) / scale), gy = Math.floor((y - oy) / scale);
+      const c = x >= ox && y >= oy && gy < h && gx < w ? grid[gy][gx] : '.';
+      const [r, g, b] = c && c !== '.' && pal[c] ? rgb(pal[c]) : back;
+      raw.set([r, g, b, 255], y * (size * 4 + 1) + 1 + x * 4);
+    }
+  }
+  const crcTable = Array.from({ length: 256 }, (_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
+  const crc = (buf) => { let c = 0xffffffff; for (const b of buf) c = crcTable[(c ^ b) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+  const chunk = (type, data) => { const len = Buffer.alloc(4); len.writeUInt32BE(data.length); const td = Buffer.concat([Buffer.from(type), data]); const c = Buffer.alloc(4); c.writeUInt32BE(crc(td)); return Buffer.concat([len, td, c]); };
+  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(size, 0); ihdr.writeUInt32BE(size, 4); ihdr.set([8, 6, 0, 0, 0], 8);
+  return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
+}

@@ -1,4 +1,5 @@
 import { selectRoutes, routeCards } from './training-evidence.js';
+import { loadChar } from './my-char.js';
 const data = JSON.parse(document.getElementById('training-data').textContent);
 // Derived locales (zh, ja…) read the English data, already translated on the page.
 const lang = document.documentElement.lang === 'ko' ? 'ko' : 'en';
@@ -11,6 +12,12 @@ const lv = Number(params.get('lv'));
 if (Number.isInteger(lv) && lv >= 1 && lv <= 100) fields.lv.value = lv;
 for (const key of ['job','goal','party']) if ([...fields[key].options].some(o => o.value === params.get(key))) fields[key].value = params.get(key);
 fields.advanced.checked = params.get('advanced') === '1';
+// No conditions in the link: open on the character saved on the home page, if any.
+const saved = loadChar();
+if (saved && !params.has('lv') && !params.has('job')) {
+  fields.lv.value = Math.min(100, saved.lv);
+  if ([...fields.job.options].some((o) => o.value === saved.job)) fields.job.value = saved.job;
+}
 const criteria = () => ({ level: Math.max(1, Math.min(100, Number(fields.lv.value) || 20)), job: fields.job.value, goal: fields.goal.value, party: fields.party.value, advanced: fields.advanced.checked });
 // `userAction` separates the automatic first render (and a shared link opening) from a visitor changing the conditions.
 function show(userAction = false) {

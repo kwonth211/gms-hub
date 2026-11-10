@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { spriteSvg, heroScene } from './sprites.mjs';
+import { spriteSvg, heroScene, spritePng } from './sprites.mjs';
 import { monsterIndex, monsterDetail, monsterPath, monsterName, mapPath } from './monster-pages.mjs';
 import { collectMaps, mapDetail, mapIndex, mapName } from './map-pages.mjs';
 import { selectRoutes, routeCards, publicTrainingData, jobNames, validateTraining } from '../assets/training-evidence.js';
@@ -620,6 +620,8 @@ ${alternates}
 ${verify}
 ${naverVerify}
 <link rel="icon" href="${href('/assets/favicon.svg')}" type="image/svg+xml">
+<link rel="manifest" href="${href('/manifest.webmanifest')}">
+<link rel="apple-touch-icon" href="${href('/assets/icon-180.png')}">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="${scriptSrc('style.css')}">
@@ -856,9 +858,11 @@ ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이�
 </section>
 ${adfitRails()}
 ${jsonScript('home-routes', training.routes.map((r) => ({ id: r.id, title: r.title[lang], monsters: r.monsters[lang], min: r.level.min, max: r.level.max,
+  level: r.level, jobs: r.jobs, party: r.party, costTier: r.costTier, advanced: r.advanced,
   mobs: r.mobs.flatMap((m) => [m.ko, m.en]), href: href(langPath(lang, `/tools/training/?lv=${r.level.min}#route-${r.id}`)) })))}
-${jsonScript('home-classes', TR_CLASSES.map((c) => ({ slug: c.slug, title: lang === 'ko' ? `${c.ko} 사냥터` : `${c.en} training routes`, n: classRoutes(c).length,
+${jsonScript('home-classes', TR_CLASSES.map((c) => ({ slug: c.slug, job: c.job, title: lang === 'ko' ? `${c.ko} 사냥터` : `${c.en} training routes`, n: classRoutes(c).length,
   href: href(langPath(lang, classPath(c))), keywords: `${c.ko} ${c.en} ${jobNames.ko[c.job]} ${jobNames.en[c.job]}` })))}
+<section class="wrap my-char" id="my-char" data-finder="${esc(href(langPath(lang, '/tools/training/')))}" hidden></section>
 ${liveMarket(lang)}
 <section class="wrap home-tools">
 <h2>${t.toolsHeading}</h2>
@@ -2579,6 +2583,21 @@ ${sitemapUrls}
 </urlset>
 `
 );
+// Installable on phones ("Add to home screen"): a returning player opens GMS Hub like an app. No service worker,
+// so nothing is ever served from a stale cache.
+for (const size of [180, 192, 512]) {
+  fs.mkdirSync(path.join(out, 'assets'), { recursive: true });
+  fs.writeFileSync(path.join(out, 'assets', `icon-${size}.png`), spritePng('mushroom', size));
+}
+write('manifest.webmanifest', JSON.stringify({
+  name: 'GMS Hub', short_name: 'GMS Hub',
+  description: 'MapleStory Classic World live prices, training routes, monster and item database',
+  start_url: href('/?src=app'), scope: href('/'), display: 'standalone', background_color: '#f6f1e7', theme_color: '#f6f1e7',
+  icons: [
+    { src: href('/assets/icon-192.png'), sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+    { src: href('/assets/icon-512.png'), sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+  ]
+}));
 // llms.txt: a plain map of the site for AI assistants (ChatGPT already sends engaged visitors to tool pages).
 write('llms.txt', `# GMS Hub
 
