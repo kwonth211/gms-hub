@@ -98,6 +98,13 @@ function translateMarkup(html, ctx) {
     if (!tag) { run.push(part); continue; }
     const name = tag[1].toLowerCase();
     const translated = translateAttrs(part, ctx);
+    // translate="no": proper names with no translation (map names) stay as they are.
+    if (/\stranslate="no"/.test(part) && !part.startsWith('</') && !part.endsWith('/>')) {
+      flush();
+      skip = name;
+      outParts.push(part);
+      continue;
+    }
     if (SKIP.has(name) && !part.startsWith('</')) {
       flush();
       if (name === 'script') {

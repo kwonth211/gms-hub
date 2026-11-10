@@ -1940,7 +1940,13 @@ const PRICED = itemsData.items.filter(priceOf);
 // Google crawled the one- and two-listing pages and left them out ("crawled, not indexed"): a single shop price is too thin
 // to stand as a page. Only items seen at least this often are indexable; the rest join automatically as scans pile up.
 const MIN_INDEX_LISTINGS = 3;
-const INDEXABLE = PRICED.filter((i) => priceOf(i).n >= MIN_INDEX_LISTINGS);
+// Items a monster drops also get a page (who drops it, where those monsters live, base stats): "who drops X" is how
+// players, English-speaking ones above all, search for an item. Those count as indexable when a dropper is on a live map.
+const ITEM_DETAILS = readJson('data/item-details.json').items;
+const ITEM_PAGES = itemsData.items.filter((i) => priceOf(i) || DROP_INDEX.has(i.id));
+const ITEM_PAGE_IDS = new Set(ITEM_PAGES.map((i) => i.id));
+const liveDrop = (i) => (DROP_INDEX.get(i.id) || []).some(({ m }) => m.status === 'active');
+const INDEXABLE = ITEM_PAGES.filter((i) => (priceOf(i)?.n || 0) >= MIN_INDEX_LISTINGS || liveDrop(i));
 const WEAPON_SUB = /Wand|Staff|Bow|Claw|Dagger|Spear|Pole ?Arm|Sword|Axe|Blunt|BW/;
 const itemIcon = (id, size) => `<img src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="${size}" height="${size}" loading="lazy">`;
 
@@ -1987,10 +1993,21 @@ const IT = {
     method: '시세는 유저가 직접 스캔하거나 올린 매물만 모아 계산해요. 중앙값에서 5배 넘게 벗어난 가격은 빼고, 판매 완료 기록이 있으면 그 가격을, 없으면 판매 중 가격을 기준으로 보여 줘요. 실제 거래 가격은 다를 수 있어요.',
     loading: '매물을 불러오는 중이에요…', failed: '실시간 매물을 불러오지 못했어요.', noData: '최근 7일 매물이 없어요.', noOpen: '최근 24시간 안에 확인한 판매 매물이 없어요.',
     table: { price: '가격', qty: '묶음', seller: '판매자', where: '위치', seen: '본 시각' },
-    indexTitle: '글클메 아이템 시세 모음: 자유시장 가격 {n}개 | GMS Hub',
-    indexDesc: '글로벌 메이플 클래식 월드 자유시장에서 최근 14일 동안 스캔된 아이템 {n}개의 시세를 분류별로 모았어요. 매일 갱신돼요.',
-    indexH1: '아이템별 시세',
-    indexLead: '최근 14일 동안 스캔된 아이템 {n}개예요. 매일 갱신돼요. 아이템을 누르면 추이와 파는 곳을 볼 수 있어요.',
+    indexTitle: '글클메 아이템 DB: 시세·드롭 몬스터·능력치 {n}개 | GMS Hub',
+    indexDesc: '글로벌 메이플 클래식 월드 아이템 {n}개의 자유시장 시세, 드롭하는 몬스터, 기본 능력치를 분류별로 모았어요. 시세는 매일 갱신돼요.',
+    indexH1: '아이템 DB',
+    indexLead: '시세가 있는 아이템 {p}개와 몬스터가 드롭하는 아이템을 합쳐 {n}개예요. 아이템을 누르면 시세 추이, 드롭 몬스터, 능력치를 볼 수 있어요.',
+    pricedH: '최근 시세가 있는 아이템',
+    dropH: '드롭 아이템',
+    titleDrop: '글클메 {name}: 드롭 몬스터·능력치·사냥 위치 | GMS Hub',
+    descDrop: '{name} ({info}) 드롭 몬스터 {n}종과 그 몬스터가 나오는 맵, 기본 능력치를 정리했어요. 최근 시세가 있으면 함께 보여 줘요.',
+    h1Drop: '{name}',
+    leadDrop: '어떤 몬스터가 떨어뜨리는지, 어디서 잡는지, 기본 능력치는 얼마인지 정리했어요.',
+    stats: { req: '착용 조건', job: '직업', slots: '업그레이드 가능 횟수', speed: '공격 속도', sell: '상점 판매가', base: '기본 능력치는 게임 클라이언트 데이터 기준이라 실제 아이템은 옵션이 다를 수 있어요.' },
+    jobs: { 0: '공용', 1: '전사', 2: '마법사', 4: '궁수', 8: '도적', 16: '해적' },
+    speeds: { 2: '매우 빠름', 3: '매우 빠름', 4: '빠름', 5: '빠름', 6: '보통', 7: '느림', 8: '느림', 9: '매우 느림' },
+    incs: { STR: 'STR', DEX: 'DEX', INT: 'INT', LUK: 'LUK', MHP: 'HP', MMP: 'MP', PAD: '공격력', MAD: '마력', PDD: '물리 방어력', MDD: '마법 방어력', ACC: '명중률', EVA: '회피율', Speed: '이동 속도', Jump: '점프력' },
+    farm: '주로 나오는 곳',
     indexLink: '아이템별 시세 모아 보기',
     pageLink: '이 아이템 시세 페이지',
     cats: { Equip: '장비', Use: '소비', Etc: '기타', Setup: '설치' }
@@ -2024,10 +2041,21 @@ const IT = {
     method: 'Only listings players scanned or reported count. Prices more than 5× away from the median are dropped; the headline uses sold prices when there are any, otherwise asking prices. Real trades can differ.',
     loading: 'Loading listings…', failed: 'Could not load live listings.', noData: 'No listings in the last 7 days.', noOpen: 'No open listings seen in the last 24 hours.',
     table: { price: 'Price', qty: 'Bundle', seller: 'Seller', where: 'Where', seen: 'Seen' },
-    indexTitle: 'MapleStory Classic World Item Prices: {n} Free Market Items | GMS Hub',
-    indexDesc: 'Free Market prices for {n} MapleStory Classic World items scanned in the last 14 days, grouped by type and refreshed daily.',
-    indexH1: 'Item prices',
-    indexLead: '{n} items scanned in the last 14 days, refreshed daily. Open one for its trend and where it is for sale.',
+    indexTitle: 'MapleStory Classic World Item Database: Prices, Drops & Stats ({n} items) | GMS Hub',
+    indexDesc: '{n} MapleStory Classic World items with Free Market prices, the monsters that drop them and base stats, grouped by type. Prices refresh daily.',
+    indexH1: 'Item database',
+    indexLead: '{n} items: {p} with recent Free Market prices, plus every item a monster drops. Open one for its price trend, droppers and stats.',
+    pricedH: 'Items with recent prices',
+    dropH: 'Monster drops',
+    titleDrop: '{name}: Who Drops It, Stats & Where to Farm – MapleStory Classic World | GMS Hub',
+    descDrop: 'Which monsters drop {name} in MapleStory Classic World: {n} droppers, the maps they spawn on, and the item\'s base stats.',
+    h1Drop: '{name}',
+    leadDrop: 'Which monsters drop it, where to farm them, and its base stats.',
+    stats: { req: 'Requirements', job: 'Class', slots: 'Upgrade slots', speed: 'Attack speed', sell: 'Sells to NPC for', base: 'Base stats come from the game client data; a real drop can roll different stats.' },
+    jobs: { 0: 'All classes', 1: 'Warrior', 2: 'Magician', 4: 'Bowman', 8: 'Thief', 16: 'Pirate' },
+    speeds: { 2: 'Faster', 3: 'Faster', 4: 'Fast', 5: 'Fast', 6: 'Normal', 7: 'Slow', 8: 'Slow', 9: 'Slower' },
+    incs: { STR: 'STR', DEX: 'DEX', INT: 'INT', LUK: 'LUK', MHP: 'HP', MMP: 'MP', PAD: 'Weapon attack', MAD: 'Magic attack', PDD: 'Weapon defense', MDD: 'Magic defense', ACC: 'Accuracy', EVA: 'Avoidability', Speed: 'Speed', Jump: 'Jump' },
+    farm: 'Most common on',
     indexLink: 'Browse prices by item',
     pageLink: 'Item price page',
     cats: { Equip: 'Equip', Use: 'Use', Etc: 'Etc', Setup: 'Setup' }
@@ -2036,12 +2064,13 @@ const IT = {
 
 const subLabel = (lang, i) => (lang === 'ko' ? PR.ko.subs[i.sub] : i.sub) || IT[lang].cats[i.cat] || i.cat;
 const itemInfoText = (lang, i) => [subLabel(lang, i), i.lv ? `Lv. ${i.lv}` : ''].filter(Boolean).join(' · ');
+const itemInfoHtml = (lang, i) => [subLabel(lang, i), i.lv ? `Lv. ${i.lv}` : ''].filter(Boolean).map((x) => `<span>${esc(x)}</span>`).join('');
 
 function itemDesc(lang, i) {
   const t = IT[lang];
   const p = priceOf(i);
   const name = itemName(lang, i);
-  if (!p) return fill(t.descNone, { name, info: itemInfoText(lang, i) });
+  if (!p) return DROP_INDEX.has(i.id) ? fill(t.descDrop, { name, info: itemInfoText(lang, i), n: DROP_INDEX.get(i.id).length }) : fill(t.descNone, { name, info: itemInfoText(lang, i) });
   return fill(t.desc, { name, basis: t.basis[p.basis], median: mesoText(lang, p.median), n: p.n, low: mesoText(lang, p.low), high: mesoText(lang, p.high) });
 }
 
@@ -2053,12 +2082,35 @@ function dropMonsters(lang, i) {
   const status = (m) => m.status === 'active' ? '' : `<span class="monster-tag status-${m.status}">${m.status === 'upcoming' ? (ko ? '11/18 개방' : 'Opens Nov 18') : (ko ? '미개방' : 'Unreleased')}</span>`;
   return `<section class="panel item-drop-mobs"><h2>${ko ? '드롭하는 몬스터' : 'Dropped by'} <small class="muted">${rows.length}</small></h2>
 <p class="muted note">${ko ? '유저 드롭 제보를 정리한 목록이에요. 반복 제보는 여러 사람이 확인한 항목이고, 드롭 확률은 확인되지 않았어요.' : 'From player drop reports. Repeated reports were confirmed by several people; drop rates are unknown.'}</p>
-<ul class="monster-related">${rows.map(({ m, confidence }) => `<li><a href="${href(langPath(lang, monsterPath(m)))}"><img class="monster-sprite" src="${href(`/assets/monsters/${m.id}.gif`)}" width="64" height="64" alt="" loading="lazy"><span><strong>${esc(monsterName(m, lang))}</strong><small>Lv. ${m.lv} · HP ${new Intl.NumberFormat('en-US').format(m.hp)} · ${confidence === 'repeated' ? (ko ? '반복 제보' : 'Repeated reports') : (ko ? '제보 적음' : 'Limited reports')}</small>${status(m)}</span></a></li>`).join('')}</ul></section>`;
+<ul class="monster-related">${rows.map(({ m, confidence }) => `<li><a href="${href(langPath(lang, monsterPath(m)))}"><img class="monster-sprite" src="${href(`/assets/monsters/${m.id}.gif`)}" width="64" height="64" alt="" loading="lazy"><span><strong>${esc(monsterName(m, lang))}</strong><small>Lv. ${m.lv} · HP ${new Intl.NumberFormat('en-US').format(m.hp)} · ${confidence === 'repeated' ? (ko ? '반복 제보' : 'Repeated reports') : (ko ? '제보 적음' : 'Limited reports')}</small>${status(m)}${farmMaps(lang, m)}</span></a></li>`).join('')}</ul></section>`;
 }
 
-// Same type first, then nearest level; only priced items have pages, so only they are linked.
+// The two open maps with the most of this monster: where a player would actually go to farm the drop.
+function farmMaps(lang, m) {
+  const maps = (m.locations || []).filter((l) => l.availability === 'open').sort((a, b) => b.count - a.count).slice(0, 2);
+  return maps.length ? `<small class="farm-maps">${IT[lang].farm}: ${maps.map((l) => `<span translate="no">${esc(lang === 'ko' ? l.ko || l.en : l.en)}</span>`).join('')}</small>` : '';
+}
+
+// Base stats from client data; only rows the item actually has.
+function itemStats(lang, i) {
+  const t = IT[lang];
+  const d = ITEM_DETAILS[i.id];
+  if (!d) return [];
+  const rows = [];
+  const req = d.req || {};
+  const reqParts = [req.lv ? `Lv. ${req.lv}` : '', ...['str', 'dex', 'int', 'luk'].filter((k) => req[k]).map((k) => `${k.toUpperCase()} ${req[k]}`)].filter(Boolean);
+  if (reqParts.length && i.cat === 'Equip') rows.push([t.stats.req, `<ul class="item-req">${reqParts.map((x) => `<li>${x}</li>`).join('')}</ul>`]);
+  if (i.cat === 'Equip') rows.push([t.stats.job, req.job ? `<ul class="item-req">${Object.entries(t.jobs).filter(([b]) => b > 0 && req.job & b).map(([, n]) => `<li>${n}</li>`).join('')}</ul>` : t.jobs[0]]);
+  for (const [k, v] of Object.entries(d.inc || {})) rows.push([t.incs[k] || k, `+${v}`]);
+  if (d.speed) rows.push([t.stats.speed, `<span>${t.speeds[d.speed] || ''}</span><span>(${d.speed})</span>`]);
+  if (d.slots) rows.push([t.stats.slots, `${d.slots}`]);
+  if (d.sell) rows.push([t.stats.sell, `${mesoText(lang, d.sell)} ${t.unit}`]);
+  return rows;
+}
+
+// Same type first, then nearest level; only items with a page are linked.
 function relatedItems(i) {
-  return PRICED
+  return ITEM_PAGES
     .filter((x) => x.id !== i.id && x.cat === i.cat && (x.sub === i.sub || !i.sub))
     .sort((a, b) => Math.abs((a.lv || 0) - (i.lv || 0)) - Math.abs((b.lv || 0) - (i.lv || 0)) || a.id - b.id)
     .slice(0, 8);
@@ -2066,7 +2118,7 @@ function relatedItems(i) {
 
 const itemLink = (lang, i) => {
   const p = priceOf(i);
-  return `<li><a href="${href(langPath(lang, itemPath(i)))}">${itemIcon(i.id, 24)}<span>${esc(itemName(lang, i))}</span><small>${p ? `${mesoText(lang, p.median)} · ${IT[lang].basis[p.basis]}` : esc(itemInfoText(lang, i))}</small></a></li>`;
+  return `<li><a href="${href(langPath(lang, itemPath(i)))}">${itemIcon(i.id, 24)}<span>${esc(itemName(lang, i))}</span><small>${p ? `${mesoText(lang, p.median)} · ${IT[lang].basis[p.basis]}` : itemInfoHtml(lang, i)}</small></a></li>`;
 };
 
 function itemBody(lang, i) {
@@ -2083,33 +2135,37 @@ function itemBody(lang, i) {
 <p class="muted note">${fill(t.asOf, { date: PRICES_DATE, last: p.last.slice(0, 10) })}</p>`
     : `<p>${t.none}</p><p><a class="btn small-btn" href="${href(langPath(lang, '/tools/scan/'))}">● ${t.scan}</a></p>`;
   const rows = [
-    [t.info.cat, `${esc(IT[lang].cats[i.cat] || i.cat)}${i.sub ? ` · ${esc(subLabel(lang, i))}` : ''}`],
+    [t.info.cat, `<span>${esc(IT[lang].cats[i.cat] || i.cat)}</span>${i.sub ? `<span>${esc(subLabel(lang, i))}</span>` : ''}`],
     i.lv ? [t.info.lv, `${i.lv}`] : null,
     lang === 'ko' ? [t.info.en, esc(i.en)] : i.ko ? [t.info.ko, esc(i.ko)] : null,
-    [t.info.id, `${i.id}`]
+    [t.info.id, `${i.id}`],
+    ...itemStats(lang, i)
   ].filter(Boolean);
+  const dropOnly = !p && DROP_INDEX.has(i.id);
   const tools = [
     i.cat === 'Use' && /\bScroll\b/.test(i.en) ? `<a href="${href(langPath(lang, '/tools/scroll/'))}">${t.scrollTool}</a>` : '',
     i.cat === 'Equip' && WEAPON_SUB.test(i.sub || '') ? `<a href="${href(langPath(lang, '/tools/damage/'))}">${t.damageTool}</a>` : ''
   ].filter(Boolean);
   const external = PRICE_SITES.map((s) => `<a href="${esc(s.url.replace('{id}', i.id).replace('{en}', encodeURIComponent(i.en)))}" target="_blank" rel="noopener">${esc(s.name)}</a>`).join(' · ');
   return `<section class="page-head wrap">
-<p class="crumbs"><a href="${href(langPath(lang, '/tools/market/'))}">${T[lang].navMarket}</a> › <a href="${href(langPath(lang, '/items/'))}">${t.indexH1}</a></p>
+<p class="crumbs"><a href="${href(langPath(lang, '/tools/market/'))}">${T[lang].navMarket}</a><span aria-hidden="true"> › </span><a href="${href(langPath(lang, '/items/'))}">${t.indexH1}</a></p>
 <span class="badge-game">${esc(T[lang].gameBadge)}</span>
-<h1 class="item-title">${itemIcon(i.id, 40)}<span>${esc(fill(t.h1, { name }))}${lang === 'ko' && i.ko ? `<small class="en-name">${esc(i.en)}</small>` : ''}</span></h1>
-<p class="lead">${esc(t.lead)}</p>
+<h1 class="item-title">${itemIcon(i.id, 40)}<span>${esc(fill(dropOnly ? t.h1Drop : t.h1, { name }))}${lang === 'ko' && i.ko ? `<small class="en-name">${esc(i.en)}</small>` : ''}</span></h1>
+<p class="lead">${esc(dropOnly ? t.leadDrop : t.lead)}</p>
 </section>
 <div class="wrap item-page">
+${dropOnly ? dropMonsters(lang, i) : ''}
 <div class="item-grid">
 <section class="panel item-price">${price}</section>
 <section class="panel item-info"><h2>${t.infoH}</h2><dl>${rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
+${ITEM_DETAILS[i.id] && i.cat === 'Equip' ? `<p class="muted note">${t.stats.base}</p>` : ''}
 ${tools.length ? `<h3>${t.tools}</h3><p>${tools.join(' · ')}</p>` : ''}</section>
 </div>
 <section class="panel item-live"><h2>${t.liveH}</h2><p class="muted note">${t.liveNote}</p>
 <div id="mk-charts"></div>
 <h3>${t.open}</h3><div id="it-open" aria-live="polite"><p class="muted">${t.loading}</p></div>
 <p><a class="btn small-btn" data-market-link href="${href(langPath(lang, `/tools/market/?item=${i.id}`))}">${t.market}</a></p></section>
-${dropMonsters(lang, i)}
+${dropOnly ? '' : dropMonsters(lang, i)}
 <section class="panel"><h2>${t.related}</h2><ul class="item-links">${relatedItems(i).map((x) => itemLink(lang, x)).join('')}</ul></section>
 <p class="muted small">${t.method}</p>
 <p class="muted small">${t.external}: ${external}</p>
@@ -2119,13 +2175,18 @@ ${jsonScript('it-data', { lang, id: i.id, api: config.voteApi, t: { loading: t.l
 
 function itemsIndexBody(lang) {
   const t = IT[lang];
-  const n = PRICED.length;
-  const groups = ['Equip', 'Use', 'Etc', 'Setup']
-    .map((cat) => [cat, PRICED.filter((i) => i.cat === cat).sort((a, b) => priceOf(b).n - priceOf(a).n || a.id - b.id)])
-    .filter(([, list]) => list.length);
-  return `${pageHead(lang, 'coin', t.indexH1, fill(t.indexLead, { n }))}
+  const n = ITEM_PAGES.length;
+  const group = (list, sort) => ['Equip', 'Use', 'Etc', 'Setup']
+    .map((cat) => [cat, list.filter((i) => i.cat === cat).sort(sort)])
+    .filter(([, l]) => l.length);
+  const section = (cat, list) => `<section class="panel"><h3>${t.cats[cat]} <small class="muted">${list.length}</small></h3><ul class="item-links">${list.map((i) => itemLink(lang, i)).join('')}</ul></section>`;
+  const dropOnly = ITEM_PAGES.filter((i) => !priceOf(i));
+  return `${pageHead(lang, 'coin', t.indexH1, fill(t.indexLead, { n, p: PRICED.length }))}
 <div class="wrap item-page">
-${groups.map(([cat, list]) => `<section class="panel"><h2>${t.cats[cat]} <small class="muted">${list.length}</small></h2><ul class="item-links">${list.map((i) => itemLink(lang, i)).join('')}</ul></section>`).join('\n')}
+<h2>${t.pricedH}</h2>
+${group(PRICED, (a, b) => priceOf(b).n - priceOf(a).n || a.id - b.id).map(([cat, list]) => section(cat, list)).join('\n')}
+<h2>${t.dropH}</h2>
+${group(dropOnly, (a, b) => (a.lv || 0) - (b.lv || 0) || a.id - b.id).map(([cat, list]) => section(cat, list)).join('\n')}
 <p class="muted small">${t.method}</p>
 </div>`;
 }
@@ -2315,8 +2376,8 @@ for (const lang of LANGS) {
 
   const monsterTitle = lang === 'ko' ? '몬스터 도감' : 'Monster database';
   const monsterItemUrl = (d, l) => {
-    const priced = PRICED.find(i => i.id === d.itemId);
-    return href(langPath(l, priced ? itemPath(priced) : `/tools/market/?item=${d.itemId}`));
+    const item = ITEM_PAGE_IDS.has(d.itemId) && ITEM_PAGES.find(i => i.id === d.itemId);
+    return href(langPath(l, item ? itemPath(item) : `/tools/market/?item=${d.itemId}`));
   };
   write(path.join(lang, 'monsters', 'index.html'), page({
     lang, pageKey: 'monsters', pagePath: '/monsters/', title: lang === 'ko' ? '글클메 몬스터 DB: 드롭 아이템·체력·출현 위치 | GMS Hub' : 'MapleStory Classic World Monster Database: Drops, HP & Locations | GMS Hub',
@@ -2345,28 +2406,29 @@ for (const lang of LANGS) {
       lang,
       pageKey: 'items',
       pagePath: '/items/',
-      title: fill(it.indexTitle, { n: PRICED.length }),
-      desc: fill(it.indexDesc, { n: PRICED.length }),
+      title: fill(it.indexTitle, { n: ITEM_PAGES.length }),
+      desc: fill(it.indexDesc, { n: ITEM_PAGES.length }),
       body: itemsIndexBody(lang),
       ld: [breadcrumbLd(lang, it.indexH1, '/items/')]
     })
   );
   // Only items with a recent price get a page. A page per item in the game (2,120 × 2 languages) was 99% of the site and
   // mostly a name with no price: the kind of mass-generated thin page that AdSense rejects as low-value content.
-  for (const i of PRICED) {
+  for (const i of ITEM_PAGES) {
     const name = itemName(lang, i);
+    const dropOnly = !priceOf(i);
     write(
       path.join(lang, itemPath(i), 'index.html'),
       page({
         lang,
         pageKey: 'item',
         pagePath: itemPath(i),
-        title: fill(it.title, { name }),
+        title: fill(dropOnly ? it.titleDrop : it.title, { name }),
         desc: itemDesc(lang, i),
         body: itemBody(lang, i),
         modules: ['item.js'],
         noindex: !INDEXABLE.includes(i),
-        ld: [breadcrumbLd(lang, fill(it.h1, { name }), itemPath(i))]
+        ld: [breadcrumbLd(lang, fill(dropOnly ? it.h1Drop : it.h1, { name }), itemPath(i))]
       })
     );
   }
@@ -2503,7 +2565,7 @@ Not affiliated with NEXON. Prices are medians of shops players scanned in the la
 
 ## Tools
 - [Live Free Market prices](${absUrl('/en/tools/market/')}): asking and sold medians, 7-day trends, where an item is on sale now (channel and room)
-- [Item price pages](${absUrl('/en/items/')}): one page per item with recent prices
+- [Item database](${absUrl('/en/items/')}): every item a monster drops or a player priced, with droppers, farm maps, base stats and recent prices
 - [Monster database](${absUrl('/en/monsters/')}): ${MONSTERS.monsters.length} monsters with HP, EXP, drops, map locations and the accuracy needed to hit
 - [Training routes](${absUrl('/en/tools/training/')}): conditional routes by level, with entry requirements and supply costs
 ${TR_CLASSES.map((c) => `- [${c.en} training routes](${absUrl(langPath('en', classPath(c)))})`).join('\n')}
@@ -2567,4 +2629,4 @@ write('assets/mobs.json', JSON.stringify(MOBS.map((m) => [m.id, m.ko || '', m.en
 write('assets/weapons.json', JSON.stringify(readJson('data/weapons.json').weapons.map((w) => [w.id, w.ko || '', w.en, w.type, w.lv, w.watk || 0, w.matk || 0])));
 write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko || '', i.en, i.cat, i.sub, i.lv || 0])));
 
-console.log(`Built ${PAGES.length * LANGS.length} pages + ${MONSTERS.monsters.length * LANGS.length} monster pages + ${PRICED.length * LANGS.length} item pages, ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);
+console.log(`Built ${PAGES.length * LANGS.length} pages + ${MONSTERS.monsters.length * LANGS.length} monster pages + ${ITEM_PAGES.length * LANGS.length} item pages, ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);

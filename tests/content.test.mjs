@@ -173,3 +173,18 @@ test('llms.txt and page hashes are published for AI assistants and IndexNow',()=
   assert.ok(hashes['/ko/'] && hashes['/en/tools/market/']);
   assert.ok(!Object.keys(hashes).some(p=>p.startsWith('/admin')),'noindex pages stay out');
 });
+
+test('monster drops get item database pages with droppers, farm maps and stats',()=>{
+  const dir=new URL('dist/en/items/',root);
+  const slugs=fs.readdirSync(dir).filter(n=>/^\d/.test(n));
+  assert.ok(slugs.length>600,`only ${slugs.length} item pages`);
+  const html=read('dist/en/items/1002003-red-headband/index.html');
+  assert.match(html,/<title>Red Headband: Who Drops It, Stats &amp; Where to Farm/);
+  assert.ok(html.includes('Dropped by')&&html.includes('farm-maps')&&html.includes('Weapon defense'));
+  assert.ok(!html.includes('content="noindex'),'live-map drop should be indexable');
+  assert.ok(read('dist/sitemap.xml').includes('/en/items/1002003-red-headband/'));
+  // Map names are proper names: derived locales keep them as written instead of minting a translation key per map.
+  assert.ok(read('dist/ja/items/1002003-red-headband/index.html').includes('translate="no"'));
+  const ko=read('dist/ko/items/1002003-red-headband/index.html');
+  assert.match(ko,/<title>글클메 빨간색 머리띠: 드롭 몬스터/);
+});
