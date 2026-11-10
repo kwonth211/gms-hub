@@ -1433,3 +1433,42 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .quest-page h2 small, .map-page h2 small { margin-left: 8px; }
 .monster-routes small > span + span { margin-left: 6px; }
 @media (max-width: 760px) { .quest-grid { grid-template-columns: minmax(0, 1fr); } }
+/* Training routes as a level-ordered guide table: one line per route, details open underneath. */
+.tr-route-list { display: block; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); box-shadow: 0 2px 0 var(--line-strong); overflow: hidden; }
+.tr-row-head, .tr-row > summary { display: grid; grid-template-columns: 150px minmax(0, 1.3fr) minmax(0, 1.4fr) 110px; gap: 16px; align-items: center; padding: 12px 18px; }
+.tr-row-head { background: var(--panel-2); color: var(--muted); font-size: 0.8rem; font-weight: 700; border-bottom: 1px solid var(--line); }
+.tr-row { border-bottom: 1px solid var(--line); }
+.tr-row:last-child { border-bottom: 0; }
+.tr-row > summary { list-style: none; cursor: pointer; }
+.tr-row > summary::-webkit-details-marker { display: none; }
+.tr-row > summary:hover { background: var(--veil); }
+.tr-row[open] > summary { background: var(--accent-soft); }
+.tr-row:target > summary { box-shadow: inset 4px 0 0 var(--accent-fill); }
+.tr-lv { display: grid; gap: 6px; font-variant-numeric: tabular-nums; }
+.tr-lv b { font-size: 0.95rem; }
+.tr-bar { position: relative; display: block; height: 6px; border-radius: 3px; background: var(--panel-2); }
+.tr-bar i { position: absolute; top: 0; bottom: 0; border-radius: 3px; background: var(--accent-fill); }
+.tr-route-list[style*='--you'] .tr-bar::after { content: ''; position: absolute; top: -3px; bottom: -3px; left: var(--you); width: 2px; background: var(--text); }
+.tr-name { display: grid; gap: 4px; min-width: 0; }
+.tr-name strong { font-size: 1rem; line-height: 1.35; }
+.tr-who { display: flex; flex-wrap: wrap; gap: 2px 10px; color: var(--muted); font-size: 0.8rem; }
+.tr-row .tr-mobs { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0; }
+.tr-row .tr-mobs a { display: inline; padding: 0; border: 0; background: none; color: var(--text); text-decoration: none; font-size: 0.9rem; }
+.tr-row .tr-mobs a:hover b { text-decoration: underline; }
+.tr-row .tr-mobs b { font-weight: 600; font-size: 0.9rem; }
+.tr-row .tr-mobs small { margin-left: 4px; color: var(--muted); font-size: 0.78rem; }
+.tr-row .tr-acc { display: grid; color: var(--text); font-size: 0.9rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.tr-row .tr-acc small { color: var(--muted); font-size: 0.75rem; font-weight: 400; }
+.tr-detail { padding: 4px 18px 18px calc(150px + 34px); }
+.tr-detail > p { margin: 8px 0 12px; font-weight: 600; }
+.tr-detail dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px 24px; margin: 0; }
+.tr-detail dt { font-size: 0.8rem; font-weight: 700; color: var(--muted); margin-bottom: 2px; }
+.tr-detail dd { margin: 0; line-height: 1.7; font-size: 0.94rem; }
+@media (max-width: 860px) {
+  .tr-row-head { display: none; }
+  .tr-row > summary { grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; padding: 12px 14px; }
+  .tr-lv { grid-column: 1 / -1; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 10px; }
+  .tr-row .tr-mobs { grid-column: 1; }
+  .tr-row .tr-acc { grid-column: 2; grid-row: 2 / span 2; text-align: right; }
+  .tr-detail { padding: 4px 14px 16px; }
+}

@@ -934,7 +934,6 @@ function trainingBody(lang) {
   const t=T[lang]; const tr=(ko,en)=>lang==='ko'?ko:en;
   const initial=selectRoutes(training.routes,{level:20});
   return `${pageHead(lang,'sword',t.trH1,t.trLead)}<div class="wrap tr-page">
-<div class="tr-intro"><div><strong>${tr('내 조건에 맞는 다음 사냥터','Find your next training route')}</strong><p>${tr('진입 기준부터 물약 비용, 자리 없을 때 대안까지 한 번에 비교하세요.','Compare entry conditions, supply costs and alternatives.')}</p></div><span>${training.routes.length}${tr('개 경로',' routes')}</span></div>
 <form id="tr-form" class="panel tr-filters">
 <label>${t.level}<input type="number" name="lv" min="1" max="100" value="20" required inputmode="numeric"></label>
 <label>${tr('직업','Class')}<select name="job"><option value="">${tr('모든 직업','All classes')}</option>${Object.entries(jobNames[lang]).map(([key,label])=>`<option value="${key}">${label}</option>`).join('')}</select></label>
@@ -976,7 +975,6 @@ function trainingClassBody(lang, cls) {
   const guide = guides.find((g) => g.slug === cls.guide && g.lang === lang && g.status === 'published');
   return `${pageHead(lang, 'sword', tr(`${name} 사냥터`, `${name} training routes`), tr(`레벨 구간마다 ${name}에게 맞는 사냥 경로 ${rows.length}곳이에요. ${name} 전용 ${own}곳과 모든 직업 공통 경로를 함께 담았어요.`, `${rows.length} routes by level: ${own} for this class, the rest open to every class.`))}<div class="wrap tr-page">
 <p class="tr-review-note">${tr('레벨은 이동을 검토하는 구간이에요. 카드마다 진입 기준, 잡을 몬스터와 필요한 명중, 물약 비용, 자리가 없을 때 대안을 적어 두었어요.', 'Levels are trial windows. Each card lists entry conditions, the monsters and the accuracy they need, supply costs and a fallback when the map is busy.')}</p>
-<h2>${tr('레벨별 한눈에 보기', 'At a glance')}</h2>${overview}
 ${groups.map((g) => `<h2>${bandLabel(g.band)}</h2>${routeCards(g.rows, lang)}`).join('\n')}
 <p class="tr-result-actions"><a class="btn" href="${href(langPath(lang, '/tools/training/'))}?job=${cls.job}">${tr(`내 레벨로 ${name} 사냥터 찾기`, 'Find routes for my level')}</a>${guide ? `<a href="${href(langPath(lang, guidePath(guide)))}">${esc(guide.h1 || guide.title)}</a>` : ''}</p>
 ${classNav(lang, cls)}${bandNav(lang)}${trainingMethod(lang)}</div>`;

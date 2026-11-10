@@ -24,15 +24,20 @@ export function publicTrainingData(data) {
 export function routeCards(rows, lang = 'ko', prefix = `/${lang}`) {
   const tr = (ko,en) => lang === 'ko' ? ko : tx(en);
   if (!rows.length) return `<div class="panel tr-empty"><h3>${tr('조건을 조금 넓혀 비교해 보세요', 'Broaden one filter to compare options')}</h3><p>${tr('솔로 조건을 해제하거나 장비 조건부 후보를 포함할 수 있어요. 지금 사냥터에서 처치 타수가 줄었다면, 레벨이 올라도 그곳을 유지하는 편이 나을 수 있어요.', 'Try allowing parties or equipped-character options. Staying on a lower-level map can still be effective when your kill count improves.')}</p><a href="${prefix}/guides/leveling-30-70/">${tr('직업별 다음 동선 보기', 'Class progression guide')}</a></div>`;
-  return `<div class="tr-route-list">${rows.map(r => {
+  // A level-ordered list read like a guide table: the level band as a bar, the map, its monsters and the accuracy they
+  // need in one line; the advice opens underneath. `--you` on the list (set by the finder) marks the reader's level.
+  const head = `<div class="tr-row-head" aria-hidden="true"><span>${tr('레벨','Level')}</span><span>${tr('사냥터','Route')}</span><span>${tr('몬스터','Monsters')}</span><span>${tr('필요 명중','Accuracy')}</span></div>`;
+  return `<div class="tr-route-list">${head}${rows.map(r => {
     const item = (label,value) => `<div><dt>${label}</dt><dd>${esc(value[lang])}</dd></div>`;
-    // Monster chips: each links to the bestiary, with the accuracy needed for a sure hit at the route's starting level.
-    const mobs = r.mobs?.length ? `<div class="tr-mobs">${r.mobs.map(m => `<a href="${prefix}/monsters/${m.id}/"><b>${esc(lang === 'ko' ? m.ko : m.en)}</b><small>Lv. ${m.lv} · HP ${m.hp.toLocaleString('en-US')}</small></a>`).join('')}<span class="tr-acc">${tr(`Lv. ${r.level.min} 기준 필요 명중 ${Math.max(...r.mobs.map(m => m.acc))}`, `Accuracy ${Math.max(...r.mobs.map(m => m.acc))} needed at Lv. ${r.level.min}`)}</span></div>` : '';
-    return `<article class="panel tr-route" id="route-${esc(r.id)}" data-route="${esc(r.id)}">
-<div class="tr-meta"><span>Lv. ${r.level.min}–${r.level.max}</span><span>${r.jobs.length ? r.jobs.map(j=>esc(jobNames[lang][j])).join(' · ') : tr('공통','All classes')}</span><span>${r.party === 'required' ? tr('파티 필요','Party required') : r.party === 'preferred' ? tr('파티 권장','Party preferred') : tr('솔로 가능','Solo option')}</span>${r.advanced ? `<span class="tr-conditional">${tr('장비 조건부','Gear dependent')}</span>` : ''}</div>
-<h3>${esc(r.title[lang])}</h3><p class="tr-monsters">${esc(r.monsters[lang])}</p>${mobs}<p>${esc(r.summary[lang])}</p>
-<dl>${item(tr('진입 기준','Before moving'),r.entry)}${item(tr('물약·비용','Supplies & costs'),r.cost)}</dl>
-<details><summary>${tr('가는 길 · 사냥 동선 · 이동 시점','Access, rotation & next step')}</summary><dl>${item(tr('위치·동선','Access & rotation'),r.route)}${item(tr('옮길 때','When to move'),r.exit)}${item(tr('자리 없을 때','Alternative'),r.alternative)}</dl></details></article>`;
+    // One scale for every row (levels 1–80) so bars compare at a glance; bands past 80 run to the end.
+    const left = Math.min(97, (r.level.min - 1) / 80 * 100);
+    const bar = `<span class="tr-bar"><i style="left:${left.toFixed(1)}%;width:${Math.max(3, Math.min(100 - left, (r.level.max - r.level.min + 1) / 80 * 100)).toFixed(1)}%"></i></span>`;
+    const who = [...(r.jobs.length ? r.jobs.map(j => esc(jobNames[lang][j])) : [tr('공통','All classes')]), r.party === 'required' ? tr('파티 필요','Party required') : r.party === 'preferred' ? tr('파티 권장','Party preferred') : tr('솔로 가능','Solo option'), r.advanced ? tr('장비 조건부','Gear dependent') : ''].filter(Boolean);
+    const mobs = r.mobs?.length ? r.mobs.map(m => `<a href="${prefix}/monsters/${m.id}/"><b>${esc(lang === 'ko' ? m.ko : m.en)}</b><small>Lv. ${m.lv}</small></a>`).join('') : `<span>${esc(r.monsters[lang])}</span>`;
+    const acc = r.mobs?.length ? Math.max(...r.mobs.map(m => m.acc)) : null;
+    return `<details class="tr-row" id="route-${esc(r.id)}" data-route="${esc(r.id)}">
+<summary><span class="tr-lv"><b>Lv. ${r.level.min}–${r.level.max}</b>${bar}</span><span class="tr-name"><strong>${esc(r.title[lang])}</strong><span class="tr-who">${who.map(w => `<span>${w}</span>`).join('')}</span></span><span class="tr-mobs">${mobs}</span><span class="tr-acc">${acc != null ? `<span><span class="sr-only">${tr('필요 명중','Accuracy')} </span>${acc}</span>` : '<span>–</span>'}<small>${acc != null ? tr(`Lv. ${r.level.min} 기준`, `at Lv. ${r.level.min}`) : ''}</small></span></summary>
+<div class="tr-detail"><p>${esc(r.summary[lang])}</p><dl>${item(tr('진입 기준','Before moving'),r.entry)}${item(tr('물약과 비용','Supplies and costs'),r.cost)}${item(tr('가는 길과 동선','Access and rotation'),r.route)}${item(tr('옮길 때','When to move'),r.exit)}${item(tr('자리 없을 때','Alternative'),r.alternative)}</dl></div></details>`;
   }).join('')}</div>`;
 }
 export function validateTraining(data, evidence, monsters = null) {

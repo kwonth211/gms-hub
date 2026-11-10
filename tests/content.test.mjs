@@ -125,7 +125,7 @@ test('every training route names its monsters and new evidence-backed routes app
   assert.ok(ids({level:55,job:'cleric'}).includes('tomb3'),'Tomb III opened to all classes');
   // Built training page carries monster chips with the sure-hit accuracy and anchors the bestiary links to.
   const html=read('dist/ko/tools/training/level-41-50/index.html');
-  assert.ok(html.includes('id="route-wraith"')&&html.includes('필요 명중 104'));
+  assert.ok(html.includes('id="route-wraith"')&&/필요 명중 <\/span>104/.test(html));
   assert.ok(read('dist/ko/tools/training/index.html').includes('"mobs":[{"id":43,'),'route monsters shipped in the page data');
   assert.ok(read('dist/ko/monsters/43/index.html').includes('/ko/tools/training/?lv=48#route-wraith'));
   assert.ok(read('dist/ko/items/1032007-emerald-earrings/index.html').includes('드롭하는 몬스터'));

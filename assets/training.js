@@ -25,6 +25,7 @@ function show(userAction = false) {
   const rows = selectRoutes(data.routes, c);
   status.textContent = lang === 'ko' ? `${c.level}레벨 사냥 후보 ${rows.length}곳` : tx('{n} options for level {lv}', {n: rows.length, lv: c.level});
   result.innerHTML = routeCards(rows, lang, `/${location.pathname.split('/')[1]}`);
+  result.querySelector('.tr-route-list')?.style.setProperty('--you', `${Math.min(100, (c.level - 1) / 80 * 100)}%`);
   if (userAction) {
     const next = new URL(location.href);
     for (const key of ['lv','job','goal','party','advanced','all','unknown']) next.searchParams.delete(key);
