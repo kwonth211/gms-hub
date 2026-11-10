@@ -166,7 +166,7 @@ function attackModel(s) {
 function elementTags(m) {
   const tags = [];
   for (const [, el, code] of m.el.matchAll(/([A-Z])(\d)/g)) {
-    const name = { F: lang === 'ko' ? '불' : 'Fire', I: lang === 'ko' ? '얼음' : 'Ice', L: lang === 'ko' ? '번개' : 'Lightning', S: lang === 'ko' ? '독' : 'Poison', H: lang === 'ko' ? '성' : 'Holy', P: lang === 'ko' ? '물리' : 'Physical' }[el];
+    const name = (lang === 'ko' ? { F: '불', I: '얼음', L: '번개', S: '독', H: '성', P: '물리' } : { F: tx('Fire'), I: tx('Ice'), L: tx('Lightning'), S: tx('Poison'), H: tx('Holy'), P: tx('Physical') })[el];
     const kind = { 1: 'immune', 2: 'strong', 3: 'weak' }[code];
     if (name && kind) tags.push(`<span class="tag ${kind}">${name} ${t[kind]}</span>`);
   }
@@ -414,4 +414,4 @@ Promise.all([fetch(data.mobsUrl).then((r) => r.json()), fetch(data.weaponsUrl).t
     pickWeapon();
     update();
   })
-  .catch(() => say(lang === 'ko' ? '몬스터 데이터를 불러오지 못했어요. 새로고침해 주세요.' : 'Could not load monster data. Please reload.'));
+  .catch(() => say(lang === 'ko' ? '몬스터 데이터를 불러오지 못했어요. 새로고침해 주세요.' : tx('Could not load monster data. Please reload.')));

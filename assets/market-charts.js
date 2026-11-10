@@ -1,4 +1,6 @@
 import { analyzeMarket, HOUR, PERIODS } from './market-analytics.js';
+// Pages in derived locales define window.tx (scripts/i18n.mjs); tests and English/Korean pages fall back to the text.
+const tx = globalThis.tx || ((s) => s);
 
 const COPY = {
   ko: {
@@ -19,21 +21,21 @@ const COPY = {
     selected: '선택한 가격대', clear: '가격대 해제', amount: '관측 매물 수'
   },
   en: {
-    title: 'Price trends & listing depth', period: 'Time range', periods: ['1h', '6h', '24h', '7d'],
-    both: 'Compare', asking: 'Asking', sold: 'Sold', series: 'Price series',
-    trend: 'Price trend', trendNote: 'Median per time interval · whiskers: low–high · lower bars: observed listings',
-    basis: 'Based on each listing’s last observation. Sold prices are observed prices, not verified trade times or trading volume.',
-    profile: 'Listings by price', profileNote: 'Select a bar to view listings in that price band across all channels.',
-    depth: 'Cumulative asking listings', depthNote: 'Observed asking listings at or below a price. Counts listings, not the quantity of items in stock.',
-    empty: 'No observations in this period. Try a longer time range.',
-    noSeries: 'No prices observed for this status.', noAsking: 'No asking listings observed in this period.',
-    sparse: 'Too few observations to establish a price trend. Check again as more records arrive.',
-    interval: 'Observed interval', change: 'Change across observed interval', notEnough: 'Not enough time intervals', peak: 'Largest price band', tied: '{n} price bands tied',
-    count: 'Observed listings', unit: 'listings', price: 'mesos', median: 'Median', range: 'Low–high',
-    inspect: 'Select the chart or use Tab to inspect each interval.',
-    profileScope: 'Asking · last {h}h · {n} listings', table: 'View interval data', time: 'Observed at',
-    accumulated: 'or less, cumulative', none: 'No observations', cap: 'Showing only the latest {n} records. This may not represent the entire market.',
-    selected: 'Selected price band', clear: 'Clear price band', amount: 'Observed listings'
+    title: tx('Price trends & listing depth'), period: tx('Time range'), periods: [tx('1h'), tx('6h'), tx('24h'), tx('7d')],
+    both: tx('Compare'), asking: tx('Asking'), sold: tx('Sold'), series: tx('Price series'),
+    trend: tx('Price trend'), trendNote: tx('Median per time interval · whiskers: low–high · lower bars: observed listings'),
+    basis: tx('Based on each listing’s last observation. Sold prices are observed prices, not verified trade times or trading volume.'),
+    profile: tx('Listings by price'), profileNote: tx('Select a bar to view listings in that price band across all channels.'),
+    depth: tx('Cumulative asking listings'), depthNote: tx('Observed asking listings at or below a price. Counts listings, not the quantity of items in stock.'),
+    empty: tx('No observations in this period. Try a longer time range.'),
+    noSeries: tx('No prices observed for this status.'), noAsking: tx('No asking listings observed in this period.'),
+    sparse: tx('Too few observations to establish a price trend. Check again as more records arrive.'),
+    interval: tx('Observed interval'), change: tx('Change across observed interval'), notEnough: tx('Not enough time intervals'), peak: tx('Largest price band'), tied: tx('{n} price bands tied'),
+    count: tx('Observed listings'), unit: tx('listings'), price: tx('mesos'), median: tx('Median'), range: tx('Low–high'),
+    inspect: tx('Select the chart or use Tab to inspect each interval.'),
+    profileScope: tx('Asking · last {h}h · {n} listings'), table: tx('View interval data'), time: tx('Observed at'),
+    accumulated: tx('or less, cumulative'), none: tx('No observations'), cap: tx('Showing only the latest {n} records. This may not represent the entire market.'),
+    selected: tx('Selected price band'), clear: tx('Clear price band'), amount: tx('Observed listings')
   }
 };
 const escape = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -42,7 +44,7 @@ const escape = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<':
 export function mountMarketCharts(root, rows, { lang = 'ko', now = Date.now(), truncated = false, limit = 400, profileRows = rows, persistent = false, profileTruncated = false, onBand = null } = {}) {
   const t = { ...(COPY[lang] || COPY.en), ...(persistent ? (lang === 'ko'
     ? { asking: '판매가 관측', sold: '판매 완료 관측', count: '관측 기록', amount: '관측 기록 수' }
-    : { asking: 'Observed asks', sold: 'Observed sold', count: 'Observations', amount: 'Observations' }) : {}) };
+    : { asking: tx('Observed asks'), sold: tx('Observed sold'), count: tx('Observations'), amount: tx('Observations') }) : {}) };
   const nf = new Intl.NumberFormat(lang);
   const date = new Intl.DateTimeFormat(lang, { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
   const time = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -56,9 +58,9 @@ export function mountMarketCharts(root, rows, { lang = 'ko', now = Date.now(), t
   let analysis, width = 0;
   root.innerHTML = `<section class="market-analysis" aria-labelledby="analysis-title">
     <div class="analysis-heading"><h3 id="analysis-title">${t.title}</h3><div class="chart-segments" role="group" aria-label="${t.period}">${PERIODS.map((h, i) => `<button type="button" data-period="${h}" aria-pressed="${h === hours}">${t.periods[i]}</button>`).join('')}</div></div>
-    <p class="analysis-basis">${persistent ? (lang === 'ko' ? '추이는 저장된 관측 이력, 매물대는 최근 24시간에 확인한 판매 중 매물 기준이에요. 재관측은 거래 건수가 아니며 실제 재고와 다를 수 있어요.' : 'Trends use retained observations; depth uses distinct asking listings seen in the last 24h. Observations are not trades or guaranteed stock.') : t.basis}</p>
+    <p class="analysis-basis">${persistent ? (lang === 'ko' ? '추이는 저장된 관측 이력, 매물대는 최근 24시간에 확인한 판매 중 매물 기준이에요. 재관측은 거래 건수가 아니며 실제 재고와 다를 수 있어요.' : tx('Trends use retained observations; depth uses distinct asking listings seen in the last 24h. Observations are not trades or guaranteed stock.')) : t.basis}</p>
     ${truncated ? `<p class="analysis-warning">${t.cap.replace('{n}', limit)}</p>` : ''}
-    ${profileTruncated ? `<p class="analysis-warning">${lang === 'ko' ? '매물대는 낮은 가격순 10,000건까지 집계했어요. 전체 매물은 목록에서 확인하세요.' : 'Depth includes the 10,000 lowest-priced listings. Browse the list for all records.'}</p>` : ''}
+    ${profileTruncated ? `<p class="analysis-warning">${lang === 'ko' ? '매물대는 낮은 가격순 10,000건까지 집계했어요. 전체 매물은 목록에서 확인하세요.' : tx('Depth includes the 10,000 lowest-priced listings. Browse the list for all records.')}</p>` : ''}
     <div data-analysis-body></div>
   </section>`;
   const body = root.querySelector('[data-analysis-body]');
@@ -152,7 +154,7 @@ export function mountMarketCharts(root, rows, { lang = 'ko', now = Date.now(), t
       ${(series === 'both' ? analysis.rows.length < 3 || !analysis.changes.asking && !analysis.changes.sold : (analysis[series]?.n || 0) < 3 || !analysis.changes[series]) ? `<p class="analysis-warning">${t.sparse}</p>` : ''}
       <details class="chart-data"><summary>${t.table}</summary><div class="mk-where"><table><thead><tr><th>${t.time}</th><th>${t.asking} · ${t.median}</th><th>${t.sold} · ${t.median}</th><th>${t.count}</th></tr></thead><tbody>${analysis.buckets.map((b) => `<tr><td>${intervalName(b)}</td><td>${b.asking ? price(b.asking.median) : '—'}</td><td>${b.sold ? price(b.sold.median) : '—'}</td><td>${b.rows.length}</td></tr>`).join('')}</tbody></table></div></details></div>
       <p class="profile-scope">${scope}</p><div class="analysis-distributions">
-      <div class="chart-card"><h4>${t.profile}</h4><p class="chart-caption">${onBand ? t.profileNote : (lang === 'ko' ? '가격 구간별로 확인한 판매 매물 수예요.' : 'Observed asking listings in each price band.')}</p>
+      <div class="chart-card"><h4>${t.profile}</h4><p class="chart-caption">${onBand ? t.profileNote : (lang === 'ko' ? '가격 구간별로 확인한 판매 매물 수예요.' : tx('Observed asking listings in each price band.'))}</p>
       ${peak ? `<p class="profile-peak"><span>${t.peak}</span><strong>${tied > 1 ? t.tied.replace('{n}', tied) : bandName(peak)}</strong><span>${count(peak.count)} · ${Math.round(peak.share * 100)}%</span></p>` : ''}
       <div class="price-profile">${p.bins.map((b, i) => `<${onBand ? 'button type="button"' : 'div'} class="profile-band" ${onBand ? `data-band="${i}" aria-pressed="${selectedBand === i}" ${b.count ? '' : 'disabled'}` : ''}><span class="profile-label">${bandName(b)}<small>${count(b.count)} · ${Math.round(b.count / p.total * 100)}%</small></span><span class="profile-track"><span style="width:${b.count / biggest * 100}%"></span></span></${onBand ? 'button' : 'div'}>`).join('') || `<p class="chart-empty">${t.noAsking}</p>`}</div><p class="chart-caption">${t.price}</p>
       <button type="button" class="btn ghost small-btn" data-clear-band ${selectedBand == null ? 'hidden' : ''}>${t.clear}</button></div>

@@ -1,3 +1,11 @@
+// The language menu is a <details>; close it on an outside click or Escape.
+document.addEventListener('click', (e) => {
+  document.querySelectorAll('.lang-menu[open]').forEach((d) => d.contains(e.target) || d.removeAttribute('open'));
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') document.querySelectorAll('.lang-menu[open]').forEach((d) => d.removeAttribute('open'));
+});
+
 // Remember the language a visitor picks so the root page sends them back to it.
 document.querySelectorAll('[data-lang]').forEach((a) => {
   a.addEventListener('click', () => {

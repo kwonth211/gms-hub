@@ -85,7 +85,7 @@ const clearSearch = document.getElementById('search-clear');
 const escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const labels = korean
   ? { item: '아이템', mob: '몬스터', site: '사이트', tool: '도구·가이드', market: '시세 보기', mobAction: '상세 정보', mobStatus: { upcoming: '11/18 열리는 포가튼 할로우 몬스터', unavailable: '미개방 지역', unplaced: '아직 맵에 없음' }, mobInfo: (lv, hp) => `${lv}레벨 · HP ${hp.toLocaleString('ko')} · 드롭 아이템·출현 위치·능력치`, loading: '아이템을 불러오는 중…', error: '아이템을 불러오지 못했어요. 사이트와 도구는 계속 검색할 수 있어요.', partial: ' · 아이템 불러오는 중', failed: ' · 아이템 검색 일시 불가', external: '새 탭에서 열기' }
-  : { item: 'Items', mob: 'Monsters', site: 'Sites', tool: 'Tools & guides', market: 'View prices', mobAction: 'View details', mobStatus: { upcoming: 'Forgotten Hollow, opens Nov 18', unavailable: 'Unreleased area', unplaced: 'Not on any map yet' }, mobInfo: (lv, hp) => `Level ${lv} · ${hp.toLocaleString('en')} HP · drops, locations and combat stats`, loading: 'Loading items…', error: 'Items could not be loaded. Sites and tools are still searchable.', partial: ' · loading items', failed: ' · items unavailable', external: 'Opens in a new tab' };
+  : { item: tx('Items'), mob: tx('Monsters'), site: tx('Sites'), tool: tx('Tools & guides'), market: tx('View prices'), mobAction: tx('View details'), mobStatus: { upcoming: tx('Forgotten Hollow, opens Nov 18'), unavailable: tx('Unreleased area'), unplaced: tx('Not on any map yet') }, mobInfo: (lv, hp) => tx('Level {lv} · {hp} HP · drops, locations and combat stats', { lv, hp: hp.toLocaleString('en') }), loading: tx('Loading items…'), error: tx('Items could not be loaded. Sites and tools are still searchable.'), partial: tx(' · loading items'), failed: tx(' · items unavailable'), external: tx('Opens in a new tab') };
 const siteAliases = { 'meso.watch': '메소워치 메소 와치', 'maplemarket.fyi': '메이플마켓', 'meowdb.com': '니아먀오 니아메오', 'henesys.gg': '헤네시스', 'discord.com': '디스코드 디코', 'discord.gg': '디스코드 디코', 'reddit.com': '레딧', 'metaroad.gg': '메타로드', 'dcinside.com': '디시 디씨 갤러리 갤' };
 const toolKeywords = {
   training: '사냥터 레벨업 경험치 사냥 맵 training level exp map grind',
@@ -179,11 +179,11 @@ function queuePrices(ids) {
     } catch (e) {}
   }, 250);
 }
-const priceBasis = korean ? { sold: '거래가', selling: '판매가', buying: '구매가' } : { sold: 'Sold', selling: 'Asking', buying: 'Buying' };
+const priceBasis = korean ? { sold: '거래가', selling: '판매가', buying: '구매가' } : { sold: tx('Sold'), selling: tx('Asking'), buying: tx('Buying') };
 function priceTag(id) {
   const p = prices.get(id);
   if (!p?.median) return labels.market;
-  return `<b>${mesos(p.median)}</b><small>${priceBasis[p.basis]} · ${korean ? `${p.n}건` : `${p.n} seen`}</small>`;
+  return `<b>${mesos(p.median)}</b><small>${priceBasis[p.basis]} · ${korean ? `${p.n}건` : tx('{n} seen', { n: p.n })}</small>`;
 }
 
 function resultRow(entry) {
@@ -224,7 +224,7 @@ function renderSearch() {
   });
   document.querySelectorAll('[data-search-type]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.searchType === searchType)));
   const suffix = !items ? itemError ? labels.failed : labels.partial : '';
-  searchStatus.textContent = `${korean ? `총 ${counts.all.toLocaleString()}개` : `${counts.all.toLocaleString()} results`}${suffix}`;
+  searchStatus.textContent = `${korean ? `총 ${counts.all.toLocaleString()}개` : tx('{n} results', { n: counts.all.toLocaleString() })}${suffix}`;
   itemState.hidden = !!items || (searchType !== 'all' && searchType !== 'item');
   itemState.querySelector('span').textContent = itemError ? labels.error : labels.loading;
   retryItems.hidden = !itemError;
@@ -247,7 +247,7 @@ function renderSearch() {
     const limit = expanded.get(type) || (searchType === 'all' ? INITIAL_ROWS : PAGE_ROWS);
     const shown = matches.slice(0, limit);
     const more = matches.length - shown.length;
-    return `<section class="search-group" aria-labelledby="search-heading-${type}"><header><h3 id="search-heading-${type}">${labels[type]} <span>${matches.length.toLocaleString()}</span></h3>${type === 'item' ? `<small>${labels.market} →</small>` : ''}</header><div class="search-result-list">${shown.map(resultRow).join('')}</div>${more ? `<button type="button" class="search-more" data-search-more="${type}">${korean ? `${labels[type]} ${Math.min(PAGE_ROWS, more)}개 더 보기 · ${more.toLocaleString()}개 남음` : `Show ${Math.min(PAGE_ROWS, more)} more · ${more.toLocaleString()} remaining`} ↓</button>` : ''}</section>`;
+    return `<section class="search-group" aria-labelledby="search-heading-${type}"><header><h3 id="search-heading-${type}">${labels[type]} <span>${matches.length.toLocaleString()}</span></h3>${type === 'item' ? `<small>${labels.market} →</small>` : ''}</header><div class="search-result-list">${shown.map(resultRow).join('')}</div>${more ? `<button type="button" class="search-more" data-search-more="${type}">${korean ? `${labels[type]} ${Math.min(PAGE_ROWS, more)}개 더 보기 · ${more.toLocaleString()}개 남음` : tx('Show {n} more · {left} remaining', { n: Math.min(PAGE_ROWS, more), left: more.toLocaleString() })} ↓</button>` : ''}</section>`;
   }).join('');
   // Don't report an empty item result while its index is loading or unavailable.
   searchEmpty.hidden = !!visible || (!items && (searchType === 'all' || searchType === 'item'));

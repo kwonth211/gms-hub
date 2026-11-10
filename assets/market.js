@@ -6,7 +6,7 @@ const D = JSON.parse(document.getElementById("mk-data").textContent),
   T = D.t,
   ko = D.lang === "ko";
 const $ = (id) => document.getElementById(id),
-  tr = (a, b) => (ko ? a : b),
+  tr = (a, b) => (ko ? a : tx(b)),
   nf = new Intl.NumberFormat(D.lang);
 const esc = (s) =>
   String(s ?? "").replace(

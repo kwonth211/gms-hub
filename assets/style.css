@@ -54,8 +54,15 @@ h2 { font-size: 1.35rem; margin: 48px 0 16px; }
 }
 .tab:hover { color: var(--text); background: var(--panel); }
 .tab[aria-current='page'] { color: var(--text); background: var(--panel-2); border-color: var(--line); box-shadow: inset 0 -2px 0 var(--accent); }
-.lang-switch { font-size: 0.85rem; font-weight: 700; padding: 7px 12px; border: 1px solid var(--line); border-radius: 10px; color: var(--text); text-decoration: none; white-space: nowrap; }
-.lang-switch:hover { border-color: var(--accent); }
+.lang-menu { position: relative; }
+.lang-current { list-style: none; cursor: pointer; font-size: 0.85rem; font-weight: 700; padding: 7px 12px; border: 1px solid var(--line); border-radius: 10px; color: var(--text); white-space: nowrap; }
+.lang-current::-webkit-details-marker { display: none; }
+.lang-current::after { content: ' ▾'; color: var(--muted); }
+.lang-current:hover, .lang-menu[open] .lang-current { border-color: var(--accent); }
+.lang-list { position: absolute; right: 0; top: calc(100% + 6px); z-index: 50; display: grid; min-width: 132px; padding: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35); }
+.lang-opt { padding: 8px 10px; border-radius: 8px; color: var(--text); text-decoration: none; font-size: 0.9rem; white-space: nowrap; }
+.lang-opt:hover { background: rgba(255, 255, 255, 0.06); }
+.lang-opt[aria-current] { color: var(--accent); font-weight: 700; }
 @media (max-width: 760px) {
   .header-inner { flex-wrap: wrap; gap: 8px; padding-top: 10px; }
   .brand { flex: 1; }

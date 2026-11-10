@@ -6,3 +6,4 @@ worker/node_modules/
 *.traineddata
 scripts/market-batch/extension/config.private.js
 scripts/market-batch/evidence/
+i18n/.missing/

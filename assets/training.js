@@ -1,6 +1,7 @@
 import { selectRoutes, routeCards } from './training-evidence.js';
 const data = JSON.parse(document.getElementById('training-data').textContent);
-const lang = document.documentElement.lang;
+// Derived locales (zh, ja…) read the English data, already translated on the page.
+const lang = document.documentElement.lang === 'ko' ? 'ko' : 'en';
 const form = document.getElementById('tr-form');
 const result = document.getElementById('tr-result');
 const status = document.getElementById('tr-status');
@@ -13,7 +14,7 @@ fields.advanced.checked = params.get('advanced') === '1';
 function show(updateUrl = false) {
   const level = Math.max(1,Math.min(100,Number(fields.lv.value)||20));
   const rows = selectRoutes(data.routes, {level,job:fields.job.value,goal:fields.goal.value,party:fields.party.value,advanced:fields.advanced.checked});
-  status.textContent = lang === 'ko' ? `${level}레벨 사냥 후보 ${rows.length}곳` : `${rows.length} options for level ${level}`;
+  status.textContent = lang === 'ko' ? `${level}레벨 사냥 후보 ${rows.length}곳` : tx('{n} options for level {lv}', {n: rows.length, lv: level});
   result.innerHTML = routeCards(rows,lang);
   if (updateUrl) {
     const next = new URL(location.href);

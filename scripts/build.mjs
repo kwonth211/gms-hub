@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { spriteSvg, heroScene } from './sprites.mjs';
 import { monsterIndex, monsterDetail, monsterPath, monsterName } from './monster-pages.mjs';
 import { selectRoutes, routeCards, publicTrainingData, jobNames, validateTraining } from '../assets/training-evidence.js';
+import { loadLocales, loadMemory, entityMatcher, localizePage, clientKeys, TX_RUNTIME } from './i18n.mjs';
 import { SKILLS as DMG_SKILLS, windowRange as dmgWindow, hitRange as dmgHit, hitsToKill as dmgKill, accuracyNeeded as dmgAccNeed } from '../assets/damage-calc.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -37,6 +38,11 @@ for (const g of guides) {
   if (g.status === 'withheld' && !g.reviewReason) throw new Error(`Missing review reason: ${g.slug}`);
 }
 const LANGS = ['ko', 'en'];
+// zh, ja… are not templated: each is the finished English page run through i18n/<code>.json (see scripts/i18n.mjs).
+const LOCALES = loadLocales(root);
+const ALL_LANGS = [...LANGS, ...LOCALES.map((l) => l.code)];
+const HREFLANG = { ko: 'ko', en: 'en', ...Object.fromEntries(LOCALES.map((l) => [l.code, l.hreflang])) };
+const LANG_NAMES = { ko: '한국어', en: 'English', ...Object.fromEntries(LOCALES.map((l) => [l.code, l.name])) };
 const BUILD_DATE = new Date().toISOString().slice(0, 10);
 const SITE_COUNT = sites.categories.reduce((n, c) => n + c.sites.length, 0);
 
@@ -521,7 +527,7 @@ function head({ lang, title, desc, pagePath, noindex, ld = [], only }) {
   const alternates = only
     ? ''
     : pagePath
-    ? LANGS.map((l) => `<link rel="alternate" hreflang="${l}" href="${absUrl(langPath(l, pagePath))}">`).join('\n') +
+    ? ALL_LANGS.map((l) => `<link rel="alternate" hreflang="${HREFLANG[l]}" href="${absUrl(langPath(l, pagePath))}">`).join('\n') +
       `\n<link rel="alternate" hreflang="x-default" href="${absUrl(langPath(config.defaultLang, pagePath))}">`
     : '';
   const canonical = pagePath ? absUrl(langPath(lang, pagePath)) : absUrl('/');
@@ -564,10 +570,10 @@ ${alternates}
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="${lang === 'ko' ? 'ko_KR' : 'en_US'}">
-<meta property="og:locale:alternate" content="${lang === 'ko' ? 'en_US' : 'ko_KR'}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="${ogImage}">
 <meta name="theme-color" content="#0f1420">
+<script>${TX_RUNTIME}</script>
 ${verify}
 ${naverVerify}
 <link rel="icon" href="${href('/assets/favicon.svg')}" type="image/svg+xml">
@@ -584,7 +590,6 @@ ${ld.map(ldScript).join('\n')}
 
 function header(lang, pagePath, only) {
   const t = T[lang];
-  const other = lang === 'ko' ? 'en' : 'ko';
   const tabs = [
     ['/', 'book', t.navLinks],
     ['/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monsters'],
@@ -602,7 +607,7 @@ function header(lang, pagePath, only) {
   return `<header class="site-header"><div class="wrap header-inner">
 <a class="brand" href="${href(langPath(lang, '/'))}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>${esc(t.gameName)}</small></span></a>
 <nav class="tabs" aria-label="${esc(t.navLinks)}">${tabs}</nav>
-<a class="lang-switch" href="${href(langPath(other, only ? '/' : pagePath || '/'))}" data-lang="${other}" hreflang="${other}">${t.switchLang}</a>
+<details class="lang-menu"><summary class="lang-current" aria-label="Language">${LANG_NAMES[lang]}</summary><div class="lang-list">${(only ? [lang, ...ALL_LANGS.filter((l) => l !== lang)] : ALL_LANGS).map((l) => `<a class="lang-opt" href="${href(langPath(l, only && l !== lang ? '/' : pagePath || '/'))}" data-lang="${l}" hreflang="${HREFLANG[l]}" lang="${HREFLANG[l]}"${l === lang ? ' aria-current="true"' : ''}>${LANG_NAMES[l]}</a>`).join('')}</div></details>
 </div></header>`;
 }
 
@@ -2022,7 +2027,9 @@ ${groups.map(([cat, list]) => `<section class="panel"><h2>${t.cats[cat]} <small 
 </div>`;
 }
 
+const EN_PAGES = [];
 const write = (rel, content) => {
+  if (rel.startsWith('en/') && rel.endsWith('.html')) EN_PAGES.push([rel, content]);
   const file = path.join(out, rel);
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, content);
@@ -2255,11 +2262,12 @@ write(
 ${spriteSvg('mushroom', 64)}
 <h1>GMS Hub</h1>
 <p class="muted">Global MapleStory Classic World · 글로벌 메이플스토리 클래식 월드</p>
-<p class="choice"><a class="btn" href="${href('/ko/')}" data-lang="ko">한국어</a> <a class="btn ghost" href="${href('/en/')}" data-lang="en">English</a></p>
+<p class="choice">${ALL_LANGS.map((l, i) => `<a class="btn${i ? ' ghost' : ''}" href="${href(`/${l}/`)}" data-lang="${l}" lang="${HREFLANG[l]}">${LANG_NAMES[l]}</a>`).join(' ')}</p>
 </main>
 <script>
 (function(){var saved;try{saved=localStorage.getItem('cb_lang')}catch(e){}
-var lang=saved||((navigator.language||'').toLowerCase().indexOf('ko')===0?'ko':'en');
+var langs=${JSON.stringify(ALL_LANGS)},nav=(navigator.language||'').toLowerCase().slice(0,2);
+var lang=langs.indexOf(saved)>=0?saved:langs.indexOf(nav)>=0?nav:'en';
 // Search engines link this root page; after the redirect the referrer reads as our own site, so carry the real source
 // over as UTM tags or every Naver/Google visit shows up as internal traffic in GA4 and Clarity.
 var q=location.search,from='';try{from=new URL(document.referrer).hostname}catch(e){}
@@ -2293,7 +2301,7 @@ write(
   '404.html',
   `${head({ lang: 'ko', title: '404 | GMS Hub', desc: T.ko.notFound, noindex: true })}
 <body><main class="wrap center">${spriteSvg('slime', 64)}<h1>404</h1><p>${T.ko.notFound}<br>${T.en.notFound}</p>
-<p class="choice"><a class="btn" href="${href('/ko/')}">${T.ko.backHome}</a> <a class="btn ghost" href="${href('/en/')}">${T.en.backHome}</a></p></main></body></html>`
+<p class="choice"><a class="btn" href="${href('/ko/')}">${T.ko.backHome}</a> <a class="btn ghost" href="${href('/en/')}">${T.en.backHome}</a>${LOCALES.map((l) => ` <a class="btn ghost" href="${href(`/${l.code}/`)}" lang="${l.hreflang}">${l.name}</a>`).join('')}</p></main></body></html>`
 );
 
 // Admin is a client-side editor that commits data files through the GitHub API.
@@ -2308,23 +2316,53 @@ ${jsonScript('admin-config', config.github)}
 </body></html>`
 );
 
+// Derived locales: translate every finished English page. Game names stay in English (the GMS client's own names)
+// and are masked so one memory entry covers every item and monster page.
+const ENTITIES = entityMatcher([
+  ...itemsData.items.map((i) => i.en),
+  ...MONSTERS.monsters.flatMap((m) => [m.en, ...m.locations.map((l) => l.en), ...m.locations.map((l) => l.region)]),
+  ...sites.categories.flatMap((c) => c.sites.map((x) => x.name))
+]);
+const CLIENT_KEYS = clientKeys(root);
+fs.rmSync(path.join(root, 'i18n', '.missing'), { recursive: true, force: true });
+for (const loc of LOCALES) {
+  const memory = loadMemory(root, loc.code);
+  const vars = (v) => (v.match(/\{\w+\}/g) || []).sort().join();
+  const client = Object.fromEntries(CLIENT_KEYS.filter((k) => typeof memory[k] === 'string' && vars(memory[k]) === vars(k)).map((k) => [k, memory[k]]));
+  write(`assets/i18n/${loc.code}.js`, `window.I18N=${JSON.stringify(client).replace(/</g, '\\u003c')};\n`);
+  const clientSrc = href(`/assets/i18n/${loc.code}.js?v=${createHash('sha256').update(JSON.stringify(client)).digest('hex').slice(0, 8)}`);
+  const ctx = { memory, missing: new Set(), keep: new Set(Object.values(LANG_NAMES)), entities: ENTITIES, baseUrl: config.baseUrl, basePath: config.basePath, clientSrc };
+  for (const [rel, html] of EN_PAGES) {
+    const target = rel.replace(/^en\//, `${loc.code}/`);
+    // Band redirect stubs only need their paths moved.
+    const content = html.includes('http-equiv="refresh"') ? html.replaceAll('/en/', `/${loc.code}/`).replace('lang="en"', `lang="${loc.hreflang}"`) : localizePage(html, loc, ctx);
+    write(target, content);
+  }
+  for (const k of CLIENT_KEYS) if (!client[k]) ctx.missing.add(k);
+  if (ctx.missing.size) {
+    // Fill the empty values (any AI or a person), then run: node scripts/i18n-merge.mjs ${loc.code}
+    write(`../i18n/.missing/${loc.code}.json`, `${JSON.stringify(Object.fromEntries([...ctx.missing].sort().map((k) => [k, ''])), null, 1)}\n`);
+    console.log(`${loc.code}: ${ctx.missing.size} strings still in English (i18n/.missing/${loc.code}.json)`);
+  }
+}
+
 // Tool and home pages get no <lastmod>: the site rebuilds every day, and a date that moves daily without the page
 // changing teaches Google to ignore our lastmod everywhere (guides and item prices keep their real dates).
 const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).flatMap((p) =>
-  LANGS.map(
-    (lang) => `<url><loc>${absUrl(langPath(lang, p.path))}</loc>${LANGS.map(
-      (l) => `<xhtml:link rel="alternate" hreflang="${l}" href="${absUrl(langPath(l, p.path))}"/>`
+  ALL_LANGS.map(
+    (lang) => `<url><loc>${absUrl(langPath(lang, p.path))}</loc>${ALL_LANGS.map(
+      (l) => `<xhtml:link rel="alternate" hreflang="${HREFLANG[l]}" href="${absUrl(langPath(l, p.path))}"/>`
     ).join('')}<xhtml:link rel="alternate" hreflang="x-default" href="${absUrl(langPath(config.defaultLang, p.path))}"/></url>`
   )
 ).concat(
-  [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
-  [...new Set(guides.map((g) => g.lang))].map((l) => `<url><loc>${absUrl(langPath(l, '/guides/'))}</loc><lastmod>${guides.filter((g) => g.lang === l).map((g) => g.updated).sort().at(-1)}</lastmod></url>`),
-  publishedGuides.map((g) => `<url><loc>${absUrl(langPath(g.lang, guidePath(g)))}</loc><lastmod>${g.updated}</lastmod></url>`),
+  [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [...new Set(guides.map((g) => g.lang)), ...LOCALES.map((l) => l.code)].map((l) => `<url><loc>${absUrl(langPath(l, '/guides/'))}</loc><lastmod>${guides.filter((g) => g.lang === (LANGS.includes(l) ? l : 'en')).map((g) => g.updated).sort().at(-1)}</lastmod></url>`),
+  publishedGuides.flatMap((g) => [g.lang, ...(g.lang === 'en' ? LOCALES.map((l) => l.code) : [])].map((l) => `<url><loc>${absUrl(langPath(l, guidePath(g)))}</loc><lastmod>${g.updated}</lastmod></url>`)),
   // Only indexable items (enough recent listings) go in the sitemap.
   [{ path: '/items/' }, ...INDEXABLE.map((i) => ({ path: itemPath(i) }))].flatMap((p) =>
-    LANGS.map(
-      (lang) => `<url><loc>${absUrl(langPath(lang, p.path))}</loc><lastmod>${PRICES_DATE}</lastmod>${LANGS.map(
-        (l) => `<xhtml:link rel="alternate" hreflang="${l}" href="${absUrl(langPath(l, p.path))}"/>`
+    ALL_LANGS.map(
+      (lang) => `<url><loc>${absUrl(langPath(lang, p.path))}</loc><lastmod>${PRICES_DATE}</lastmod>${ALL_LANGS.map(
+        (l) => `<xhtml:link rel="alternate" hreflang="${HREFLANG[l]}" href="${absUrl(langPath(l, p.path))}"/>`
       ).join('')}<xhtml:link rel="alternate" hreflang="x-default" href="${absUrl(langPath(config.defaultLang, p.path))}"/></url>`
     )
   )

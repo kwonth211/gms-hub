@@ -1,7 +1,7 @@
 import { indexEntry, searchEntries } from './search-index.js';
 const ko = document.documentElement.lang === 'ko';
 const $ = id => document.getElementById(id);
-const countText = (shown,total) => ko ? `${total}개 중 ${shown}개 표시` : `${shown} of ${total} shown`;
+const countText = (shown,total) => ko ? `${total}개 중 ${shown}개 표시` : tx('{shown} of {total} shown', {shown, total});
 document.querySelectorAll('.monster-page form').forEach(form => form.addEventListener('submit',e=>e.preventDefault()));
 
 if ($('monster-index')) {

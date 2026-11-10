@@ -1,0 +1,7 @@
+{
+  "note": "Locales derived from the English pages through the translation memory i18n/<code>.json. Add a locale here, run the build, then fill i18n/.missing/<code>.json with scripts/i18n-translate.mjs.",
+  "locales": [
+    { "code": "zh", "hreflang": "zh-Hant", "og": "zh_TW", "name": "繁體中文", "label": "Traditional Chinese (Taiwan / Hong Kong)" },
+    { "code": "ja", "hreflang": "ja", "og": "ja_JP", "name": "日本語", "label": "Japanese" }
+  ]
+}
