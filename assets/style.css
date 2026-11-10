@@ -1386,7 +1386,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .item-grid { align-items: start; }
 /* Map pages */
 .map-page { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
-.map-page .data tbody th { background: none; color: var(--text); font-size: 0.9rem; white-space: normal; }
+.map-page .data tbody th, .quest-page .data tbody th { background: none; color: var(--text); font-size: 0.9rem; white-space: normal; }
 .map-mob { display: flex; align-items: center; gap: 8px; }
 .map-mob img { flex: none; object-fit: contain; image-rendering: pixelated; }
 .map-page .monster-hunt-stats { margin: 0; }
@@ -1411,3 +1411,25 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
   .char-form .btn { grid-column: 1 / -1; }
   .char-routes { grid-template-columns: minmax(0, 1fr); }
 }
+/* Quest pages */
+.quest-page { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.quest-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.quest-facts { margin: 0; display: grid; gap: 6px; }
+.quest-facts div { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+.quest-facts dt { color: var(--muted); }
+.quest-facts dd { margin: 0; font-weight: 700; text-align: right; }
+.quest-reward { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.quest-reward li { display: grid; padding: 8px 14px; border: 1px solid var(--accent-line); border-radius: 10px; background: var(--accent-wash); min-width: 96px; }
+.quest-reward span { font-size: 0.8rem; color: var(--muted); }
+.quest-reward b { font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.quest-items { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.quest-items li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); }
+.quest-items img { image-rendering: pixelated; }
+.quest-items b { margin-left: auto; font-variant-numeric: tabular-nums; }
+.quest-items small { color: var(--muted); }
+.quest-drop { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.quest-chain { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.quest-chain h2, .quest-page h2 { margin-top: 0; }
+.quest-page h2 small, .map-page h2 small { margin-left: 8px; }
+.monster-routes small > span + span { margin-left: 6px; }
+@media (max-width: 760px) { .quest-grid { grid-template-columns: minmax(0, 1fr); } }

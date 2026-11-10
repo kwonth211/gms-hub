@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { spriteSvg, heroScene, spritePng } from './sprites.mjs';
 import { monsterIndex, monsterDetail, monsterPath, monsterName, mapPath } from './monster-pages.mjs';
 import { collectMaps, mapDetail, mapIndex, mapName } from './map-pages.mjs';
+import { collectQuests, questDetail, questIndex, questPath, areaName as questArea } from './quest-pages.mjs';
 import { selectRoutes, routeCards, publicTrainingData, jobNames, validateTraining } from '../assets/training-evidence.js';
 import { loadLocales, loadMemory, entityMatcher, localizePage, clientKeys, TX_RUNTIME } from './i18n.mjs';
 import { SKILLS as DMG_SKILLS, windowRange as dmgWindow, hitRange as dmgHit, hitsToKill as dmgKill, accuracyNeeded as dmgAccNeed } from '../assets/damage-calc.js';
@@ -512,6 +513,8 @@ validateTraining(training, editorialEvidence, MONSTERS.monsters);
 for (const r of training.routes) r.mobs = r.mobIds.map((id) => { const m = MOB_BY_ID.get(id); return { id, ko: m.ko || m.en, en: m.en, lv: m.lv, hp: m.hp, acc: dmgAccNeed(r.level.min, m) }; });
 // Which monsters drop an item, for the item pages.
 const MAPS = collectMaps(MONSTERS.monsters);
+const QUEST_RAW = readJson('data/quests-raw.json');
+const QUESTS = collectQuests(QUEST_RAW, { buildDate: BUILD_DATE });
 const DROP_INDEX = new Map();
 for (const m of MONSTERS.monsters) for (const d of m.drops) (DROP_INDEX.get(d.itemId) || DROP_INDEX.set(d.itemId, []).get(d.itemId)).push({ m, confidence: d.confidence });
 // Retain level-band URLs with conditional routes and detailed entry requirements.
@@ -875,6 +878,7 @@ ${tool('/tools/market/', 'coin', t.navMarket, MK[lang].lead)}
 ${tool('/tools/price/', 'coin', t.navPrice, PR[lang].cardDesc)}
 ${tool('/tools/damage/', 'hammer', DMG[lang].h1, DMG[lang].cardDesc)}
 ${tool('/tools/scan/', 'megaphone', SCAN[lang].h1, SCAN[lang].cardDesc)}
+${tool('/quests/', 'scroll', lang === 'ko' ? '퀘스트' : 'Quests', lang === 'ko' ? `퀘스트 ${QUESTS.length}개의 시작 레벨, 모아 올 아이템과 드롭 몬스터, 보상을 봐요.` : `${QUESTS.length} quests: start level, items to bring and who drops them, rewards.`)}
 </div>
 </section>
 <section class="wrap purposes-wrap">
@@ -2114,6 +2118,16 @@ function itemStats(lang, i) {
   return rows;
 }
 
+// Quests that ask for this item or hand it out: the main reason players look up etc. items.
+function itemQuests(lang, i) {
+  const ko = lang === 'ko';
+  const need = QUESTS.filter((q) => !q.expired && q.bring.some((x) => x.id === i.id));
+  const give = QUESTS.filter((q) => !q.expired && q.gets.some((x) => x.id === i.id));
+  if (!need.length && !give.length) return '';
+  const list = (qs) => `<ul class="monster-routes">${qs.slice(0, 12).map((q) => `<li><a href="${href(langPath(lang, questPath(q)))}"><strong>${esc(q.name)}</strong><small>${q.lv ? `<span>Lv. ${q.lv}</span>` : ''}<span>${esc(questArea(q.area, lang))}</span></small></a></li>`).join('')}</ul>`;
+  return `<section class="panel">${need.length ? `<h2>${ko ? '이 아이템이 필요한 퀘스트' : 'Quests that need it'} <small class="muted">${need.length}</small></h2>${list(need)}` : ''}${give.length ? `<h2>${ko ? '보상으로 주는 퀘스트' : 'Quest rewards'} <small class="muted">${give.length}</small></h2>${list(give)}` : ''}</section>`;
+}
+
 // Same type first, then nearest level; only items with a page are linked.
 function relatedItems(i) {
   return ITEM_PAGES
@@ -2172,6 +2186,7 @@ ${tools.length ? `<h3>${t.tools}</h3><p>${tools.join(' · ')}</p>` : ''}</sectio
 <h3>${t.open}</h3><div id="it-open" aria-live="polite"><p class="muted">${t.loading}</p></div>
 <p><a class="btn small-btn" data-market-link href="${href(langPath(lang, `/tools/market/?item=${i.id}`))}">${t.market}</a></p></section>
 ${dropOnly ? '' : dropMonsters(lang, i)}
+${itemQuests(lang, i)}
 <section class="panel"><h2>${t.related}</h2><ul class="item-links">${relatedItems(i).map((x) => itemLink(lang, x)).join('')}</ul></section>
 <p class="muted small">${t.method}</p>
 <p class="muted small">${t.external}: ${external}</p>
@@ -2425,6 +2440,31 @@ for (const lang of LANGS) {
     }));
   }
 
+  {
+    const items = new Map(itemsData.items.map((i) => [i.id, i]));
+    const mobs = new Map(MONSTERS.monsters.map((m) => [m.id, m]));
+    const link = (p) => href(langPath(lang, p));
+    const itemHref = (i) => (ITEM_PAGE_IDS.has(i.id) ? link(itemPath(i)) : null);
+    const mobHref = (m) => link(monsterPath(m));
+    write(path.join(lang, 'quests', 'index.html'), page({
+      lang, pageKey: 'quests', pagePath: '/quests/',
+      title: lang === 'ko' ? '글클메 퀘스트 목록: 레벨·보상·필요 아이템 | GMS Hub' : 'MapleStory Classic World Quests: Levels, Rewards & Requirements | GMS Hub',
+      desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드 퀘스트 ${QUESTS.length}개를 지역별로 정리했어요. 시작 레벨, 모아 올 아이템과 그 아이템을 떨어뜨리는 몬스터, 보상 EXP와 메소까지.` : `All ${QUESTS.length} MapleStory Classic World quests by area: start level, items to bring and who drops them, monsters to hunt, EXP and meso rewards.`,
+      body: questIndex({ lang, quests: QUESTS, link }),
+      ld: [breadcrumbLd(lang, lang === 'ko' ? '퀘스트' : 'Quests', '/quests/')]
+    }));
+    for (const q of QUESTS) {
+      write(path.join(lang, 'quests', String(q.id), 'index.html'), page({
+        lang, pageKey: 'quest', pagePath: questPath(q),
+        title: lang === 'ko' ? `글클메 퀘스트 ${q.name}: 조건·보상 | GMS Hub` : `${q.name}: MapleStory Classic World quest, requirements & rewards | GMS Hub`,
+        desc: lang === 'ko' ? `${q.name} (${questArea(q.area, lang)}${q.lv ? `, Lv. ${q.lv}` : ''}) 퀘스트의 시작 NPC, 모아 올 아이템과 잡을 몬스터, 보상${q.exp ? ` EXP ${q.exp}` : ''}${q.meso ? `, 메소 ${q.meso}` : ''}을 정리했어요.` : `${q.name}: who starts it, items to bring and who drops them, monsters to hunt, and the rewards, in MapleStory Classic World.`,
+        body: questDetail({ lang, q, quests: QUESTS, npcs: QUEST_RAW.npcs, items, mobs, drops: DROP_INDEX, link, itemHref, mobHref }),
+        noindex: q.expired,
+        ld: [breadcrumbLd(lang, q.name, questPath(q))]
+      }));
+    }
+  }
+
   const it = IT[lang];
   write(
     path.join(lang, 'items', 'index.html'),
@@ -2528,7 +2568,8 @@ ${jsonScript('admin-config', config.github)}
 const ENTITIES = entityMatcher([
   ...itemsData.items.map((i) => i.en),
   ...MONSTERS.monsters.flatMap((m) => [m.en, ...m.locations.map((l) => l.en.trim()), ...m.locations.map((l) => l.region)]),
-  ...sites.categories.flatMap((c) => c.sites.map((x) => x.name))
+  ...sites.categories.flatMap((c) => c.sites.map((x) => x.name)),
+  ...QUESTS.map((q) => q.name)
 ]);
 const CLIENT_KEYS = clientKeys(root);
 fs.rmSync(path.join(root, 'i18n', '.missing'), { recursive: true, force: true });
@@ -2563,6 +2604,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
   )
 ).concat(
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/quests/'}, ...QUESTS.filter(q=>!q.expired).map(q=>({path:questPath(q)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
   [{path:'/maps/'}, ...MAPS.filter(l=>l.availability==='open').map(l=>({path:mapPath(l)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [...new Set(guides.map((g) => g.lang)), ...LOCALES.map((l) => l.code)].map((l) => `<url><loc>${absUrl(langPath(l, '/guides/'))}</loc><lastmod>${guides.filter((g) => g.lang === (LANGS.includes(l) ? l : 'en')).map((g) => g.updated).sort().at(-1)}</lastmod></url>`),
   publishedGuides.flatMap((g) => [g.lang, ...(g.lang === 'en' ? LOCALES.map((l) => l.code) : [])].map((l) => `<url><loc>${absUrl(langPath(l, guidePath(g)))}</loc><lastmod>${g.updated}</lastmod></url>`)),
@@ -2609,6 +2651,7 @@ Not affiliated with NEXON. Prices are medians of shops players scanned in the la
 - [Live Free Market prices](${absUrl('/en/tools/market/')}): asking and sold medians, 7-day trends, where an item is on sale now (channel and room)
 - [Item database](${absUrl('/en/items/')}): every item a monster drops or a player priced, with droppers, farm maps, base stats and recent prices
 - [Monster database](${absUrl('/en/monsters/')}): ${MONSTERS.monsters.length} monsters with HP, EXP, drops, map locations and the accuracy needed to hit
+- [Quests](${absUrl('/en/quests/')}): ${QUESTS.length} quests with start level, items to bring and who drops them, monsters to hunt and rewards
 - [Map database](${absUrl('/en/maps/')}): ${MAPS.length} maps with their monsters, spawn points, EXP per full clear and drops
 - [Training routes](${absUrl('/en/tools/training/')}): conditional routes by level, with entry requirements and supply costs
 ${TR_CLASSES.map((c) => `- [${c.en} training routes](${absUrl(langPath('en', classPath(c)))})`).join('\n')}
@@ -2672,4 +2715,4 @@ write('assets/mobs.json', JSON.stringify(MOBS.map((m) => [m.id, m.ko || '', m.en
 write('assets/weapons.json', JSON.stringify(readJson('data/weapons.json').weapons.map((w) => [w.id, w.ko || '', w.en, w.type, w.lv, w.watk || 0, w.matk || 0])));
 write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko || '', i.en, i.cat, i.sub, i.lv || 0])));
 
-console.log(`Built ${PAGES.length * LANGS.length} pages + ${MONSTERS.monsters.length * LANGS.length} monster pages + ${MAPS.length * LANGS.length} map pages + ${ITEM_PAGES.length * LANGS.length} item pages, ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);
+console.log(`Built ${PAGES.length * LANGS.length} pages + ${MONSTERS.monsters.length * LANGS.length} monster pages + ${MAPS.length * LANGS.length} map pages + ${QUESTS.length * LANGS.length} quest pages + ${ITEM_PAGES.length * LANGS.length} item pages, ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);

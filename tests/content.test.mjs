@@ -199,3 +199,13 @@ test('map pages turn monster spawns around: monsters, spawn counts, full-clear E
   assert.ok(read('dist/ko/monsters/7/index.html').includes('/ko/maps/10001081/'),'monster locations link to map pages');
   assert.match(read('dist/ko/maps/10001081/index.html'),/<title>글클메 파란버섯 숲/);
 });
+
+test('quest pages show requirements, rewards and who drops the items to bring',()=>{
+  const html=read('dist/en/quests/10104/index.html');
+  assert.match(html,/<title>Pia and the Blue Mushroom: MapleStory Classic World quest/);
+  assert.ok(html.includes('Blue Mushroom Cap')||html.includes('Blue Mushroom'),'item to bring');
+  assert.ok(html.includes('quest-drop'),'drop hint for items to bring');
+  assert.ok(html.includes('<b>813</b>'),'EXP reward');
+  assert.ok(read('dist/sitemap.xml').includes('/en/quests/10104/'));
+  assert.ok(read('dist/en/quests/index.html').includes('/en/quests/10104/'));
+});
