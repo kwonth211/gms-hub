@@ -1472,3 +1472,17 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
   .tr-row .tr-acc { grid-column: 2; grid-row: 2 / span 2; text-align: right; }
   .tr-detail { padding: 4px 14px 16px; }
 }
+
+/* Bosses: one row per boss, the sprite as the row's anchor, places and drops stacked one per line. */
+.boss-page { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.boss-table th[scope='row'] { background: none; color: var(--text); font-size: 1rem; white-space: normal; }
+.boss-table thead small { display: block; font-weight: 400; }
+.boss-table .num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.boss-name { display: flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; }
+.boss-name .monster-sprite { width: 48px; height: 48px; }
+.boss-name span, .boss-where, .boss-drops { display: flex; flex-direction: column; gap: 2px; }
+.boss-name small, .boss-where small { color: var(--muted); font-size: 0.8rem; }
+.boss-name:hover strong, .boss-name:focus-visible strong { text-decoration: underline; }
+.boss-drops { min-width: 220px; }
+.boss-row.status-upcoming, .boss-row.status-unplaced { color: var(--muted); }
+.drop-where { margin: 0 0 16px; }

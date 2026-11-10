@@ -209,3 +209,17 @@ test('quest pages show requirements, rewards and who drops the items to bring',(
   assert.ok(read('dist/sitemap.xml').includes('/en/quests/10104/'));
   assert.ok(read('dist/en/quests/index.html').includes('/en/quests/10104/'));
 });
+test('bosses page lists every field boss with its spawn map and says respawn times are not in the data',()=>{
+  const en=read('dist/en/bosses/index.html'), ko=read('dist/ko/bosses/index.html');
+  for (const name of ['Mano','Stumpy','Mushmom','Jr. Balrog']) assert.match(en,new RegExp(`<strong>${name.replace('.','\\.')}</strong>`));
+  assert.match(en,/href="\/en\/maps\/10000013\/">Thicket Around the Beach III<\/a>/);
+  assert.match(en,/no respawn timer/);
+  assert.match(ko,/<strong>마노<\/strong><small>Mano<\/small>/);
+  assert.match(read('dist/sitemap.xml'),/\/en\/bosses\//);
+});
+test('non-Korean homes lead with the database and keep the site directory last',()=>{
+  const en=read('dist/en/index.html'), ko=read('dist/ko/index.html');
+  assert.ok(en.indexOf('home-tools')<en.indexOf('id="live-market"')&&en.indexOf('id="live-market"')<en.indexOf('purposes-wrap'));
+  assert.ok(ko.indexOf('id="live-market"')<ko.indexOf('home-tools'));
+  assert.match(en,/<title>GMS Hub: MapleStory Classic World \(MSCW\) Drops/);
+});

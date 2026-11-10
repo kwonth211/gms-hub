@@ -4,7 +4,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { spriteSvg, heroScene, spritePng } from './sprites.mjs';
-import { monsterIndex, monsterDetail, monsterPath, monsterName, mapPath } from './monster-pages.mjs';
+import { monsterIndex, monsterDetail, monsterPath, monsterName, mapPath, bossIndex } from './monster-pages.mjs';
 import { collectMaps, mapDetail, mapIndex, mapName } from './map-pages.mjs';
 import { collectQuests, questDetail, questIndex, questPath, areaName as questArea } from './quest-pages.mjs';
 import { selectRoutes, routeCards, publicTrainingData, jobNames, validateTraining } from '../assets/training-evidence.js';
@@ -265,7 +265,7 @@ const T = {
   en: {
     gameName: 'Global MapleStory Classic World',
     gameBadge: 'Global MapleStory Classic World only',
-    navLinks: 'Site Directory',
+    navLinks: 'Home',
     navTraining: "Training routes",
     navScroll: 'Scroll Calculator',
     navDrop: 'Odds Calculator',
@@ -274,11 +274,11 @@ const T = {
     navAbout: 'About',
     navGuides: 'Guides',
     switchLang: '한국어',
-    homeTitle: 'GMS Hub: MapleStory Classic World Sites, Live Prices, Monster Database & Tools',
-    homeDesc: `Every Global MapleStory Classic World site in one place: official channels, Discord, Reddit and Korean communities, databases and wikis, Free Market price trackers, boss timers and build planners. ${SITE_COUNT} links, with unverified references labeled separately.`,
-    heroKicker: 'Your guide to Classic World on the web',
-    heroTitle: 'Items, prices and useful sites, <br>all in one search',
-    heroSub: 'Find items, monsters, guides and tools together, then go straight to the prices or sites you need.',
+    homeTitle: 'GMS Hub: MapleStory Classic World (MSCW) Drops, Live Prices & Training Spots',
+    homeDesc: `MapleStory Classic World database and tools: who drops what, live Free Market prices, training spots for your class and level, quests, maps and bosses. Training routes come from Korean and English player guides. Plus ${SITE_COUNT} useful MSCW sites in one list.`,
+    heroKicker: 'MapleStory Classic World database',
+    heroTitle: 'Who drops it, what it sells for, <br>where to train',
+    heroSub: 'Search any item or monster for drops and live prices, or pick your class and level to see where to train.',
     searchPlaceholder: 'Search items, monsters and sites',
     statSites: 'Sites',
     statCats: 'Categories',
@@ -307,7 +307,7 @@ const T = {
     noResults: 'No matching sites.',
     statSource: 'Source',
     langNames: { ko: 'Korean', en: 'EN', zh: '中文', ja: '日本語', es: 'ES', pt: 'PT' },
-    toolsHeading: 'GMS Hub Tools',
+    toolsHeading: 'Database and tools',
     trCardDesc: "Compare class routes, entry conditions, rotations and supply costs.",
     scCardDesc: 'See how many Lesser, Intermediate, Greater or Chaos scrolls pass and how likely a boom is.',
     dropCardDesc: "Calculate odds assuming the supplied drop rate stays constant across independent attempts.",
@@ -831,6 +831,67 @@ function homeBody(lang) {
     .join('');
   const tool = (p, icon, title, desc) =>
     `<a class="tool-card" href="${href(langPath(lang, p))}">${spriteSvg(icon, 44)}<strong>${title}</strong><p>${esc(desc)}</p><span>${t.open}</span></a>`;
+  const marketBlock = liveMarket(lang);
+  const toolsBlock = `<section class="wrap home-tools">
+<h2>${t.toolsHeading}</h2>
+<div class="tool-cards">
+${(lang === 'ko' ? [
+tool('/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monster database', lang === 'ko' ? '몬스터 78종의 능력치, 드롭 아이템, 출현 위치를 검색하세요.' : 'Explore stats, reported drops and map locations for 78 monsters.'),
+tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc),
+tool('/tools/scroll/', 'scroll', t.navScroll, t.scCardDesc),
+tool('/tools/drop-rate/', 'bag', t.navDrop, t.dropCardDesc),
+tool('/tools/market/', 'coin', t.navMarket, MK[lang].lead),
+tool('/tools/price/', 'coin', t.navPrice, PR[lang].cardDesc),
+tool('/tools/damage/', 'hammer', DMG[lang].h1, DMG[lang].cardDesc),
+tool('/tools/scan/', 'megaphone', SCAN[lang].h1, SCAN[lang].cardDesc),
+tool('/quests/', 'scroll', lang === 'ko' ? '퀘스트' : 'Quests', lang === 'ko' ? `퀘스트 ${QUESTS.length}개의 시작 레벨, 모아 올 아이템과 드롭 몬스터, 보상을 봐요.` : `${QUESTS.length} quests: start level, items to bring and who drops them, rewards.`),
+tool('/bosses/', 'crown', lang === 'ko' ? '보스 몬스터' : 'Bosses', lang === 'ko' ? '마노부터 주니어 발록까지 보스의 출현 맵, 필요 명중, 드롭을 한 표로 봐요.' : 'Mano to Jr. Balrog: spawn maps, accuracy needed and equipment drops in one table.'),
+tool('/maps/', 'tree', lang === 'ko' ? '맵 도감' : 'Maps', lang === 'ko' ? `맵 ${MAPS.filter((l) => l.availability === 'open').length}곳의 몬스터, 출현 수, 드롭을 지역별로 봐요.` : `${MAPS.filter((l) => l.availability === 'open').length} maps: which monsters spawn there, how many, and what they drop.`)
+] : [
+tool('/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monster database', lang === 'ko' ? '몬스터 78종의 능력치, 드롭 아이템, 출현 위치를 검색하세요.' : 'Explore stats, reported drops and map locations for 78 monsters.'),
+tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc),
+tool('/tools/market/', 'coin', t.navMarket, MK[lang].lead),
+tool('/quests/', 'scroll', lang === 'ko' ? '퀘스트' : 'Quests', lang === 'ko' ? `퀘스트 ${QUESTS.length}개의 시작 레벨, 모아 올 아이템과 드롭 몬스터, 보상을 봐요.` : `${QUESTS.length} quests: start level, items to bring and who drops them, rewards.`),
+tool('/bosses/', 'crown', lang === 'ko' ? '보스 몬스터' : 'Bosses', lang === 'ko' ? '마노부터 주니어 발록까지 보스의 출현 맵, 필요 명중, 드롭을 한 표로 봐요.' : 'Mano to Jr. Balrog: spawn maps, accuracy needed and equipment drops in one table.'),
+tool('/maps/', 'tree', lang === 'ko' ? '맵 도감' : 'Maps', lang === 'ko' ? `맵 ${MAPS.filter((l) => l.availability === 'open').length}곳의 몬스터, 출현 수, 드롭을 지역별로 봐요.` : `${MAPS.filter((l) => l.availability === 'open').length} maps: which monsters spawn there, how many, and what they drop.`),
+tool('/tools/drop-rate/', 'bag', t.navDrop, t.dropCardDesc),
+tool('/tools/damage/', 'hammer', DMG[lang].h1, DMG[lang].cardDesc),
+tool('/tools/scroll/', 'scroll', t.navScroll, t.scCardDesc),
+tool('/tools/price/', 'coin', t.navPrice, PR[lang].cardDesc),
+tool('/tools/scan/', 'megaphone', SCAN[lang].h1, SCAN[lang].cardDesc)
+]).join('\n')}
+</div>
+</section>
+`;
+  const directoryBlock = `<section class="wrap purposes-wrap">
+<h2>${t.purposeHeading}</h2>
+<div class="purposes">${purposes}</div>
+</section>
+<div class="wrap directory">
+<aside class="toc"><nav><h2>${t.toc}</h2><a href="#favorites" id="fav-toc" hidden>${spriteSvg('star', 20)}<span>${t.favHeading}</span><b id="fav-count">0</b></a>${toc}</nav></aside>
+<div class="dir-main" data-vote-api="${esc(config.voteApi)}" data-fav-add="${esc(t.favAdd)}" data-fav-remove="${esc(t.favRemove)}" data-filtering="${esc(t.filtering)}">
+<p class="filter-bar" id="filter-bar" hidden><span id="filter-label"></span> <button type="button" class="btn ghost small-btn" id="filter-clear">${t.showAll}</button></p>
+<section class="cat favorites" id="favorites" hidden>
+<header class="cat-head">${spriteSvg('star', 40)}<div><h3>${t.favHeading} <span id="fav-count-2">0</span></h3><p>${esc(t.favDesc)}</p></div></header>
+<div class="cards" id="fav-cards"></div>
+</section>
+${sections}
+</div>
+</div>
+`;
+  const guidesBlock = guides.some((g) => g.lang === lang)
+  ? `<section class="wrap">
+<h2>${t.navGuides}</h2>
+<div class="tool-cards">${publishedGuides
+      .filter((g) => g.lang === lang)
+      .map((g) => tool(guidePath(g), 'book', esc(g.h1), g.desc))
+      .join('')}</div>
+</section>
+`
+  : '';
+  // English, Chinese and Japanese visitors land here from search for drops, prices and training, not for a list of Korean
+  // community sites: they left in about 11 seconds, so they get the database and guides first and the directory last.
+  const body = lang === 'ko' ? [marketBlock, toolsBlock, directoryBlock, guidesBlock] : [toolsBlock, guidesBlock, marketBlock, directoryBlock];
   return `<section class="hero">
 ${heroScene()}
 <div class="wrap hero-inner">
@@ -855,7 +916,9 @@ ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이�
 </section>
 </div>
 <p class="search-help" id="search-help">${lang === 'ko' ? '한글·영문·초성·줄임말로 검색하세요. 예: 귀힘, 미스릴, 좀비 루팡, 사냥터' : 'Search by name or keyword. Try Gloves Attack, Mithril, Zombie Lupin or training.'}</p>
-<dl class="hero-stats"><div><dt>${t.statSites}</dt><dd>${SITE_COUNT}</dd></div><div><dt>${t.statCats}</dt><dd>${cats.length}</dd></div></dl>
+<dl class="hero-stats">${lang === 'ko'
+  ? `<div><dt>${t.statSites}</dt><dd>${SITE_COUNT}</dd></div><div><dt>${t.statCats}</dt><dd>${cats.length}</dd></div>`
+  : `<div><dt>Monsters</dt><dd>${MONSTERS.monsters.filter((m) => m.status !== 'unplaced').length}</dd></div><div><dt>Quests</dt><dd>${QUESTS.length}</dd></div><div><dt>Maps</dt><dd>${MAPS.filter((l) => l.availability === 'open').length}</dd></div>`}</dl>
 </div>
 </div>
 </section>
@@ -866,46 +929,8 @@ ${jsonScript('home-routes', training.routes.map((r) => ({ id: r.id, title: r.tit
 ${jsonScript('home-classes', TR_CLASSES.map((c) => ({ slug: c.slug, job: c.job, title: lang === 'ko' ? `${c.ko} 사냥터` : `${c.en} training routes`, n: classRoutes(c).length,
   href: href(langPath(lang, classPath(c))), keywords: `${c.ko} ${c.en} ${jobNames.ko[c.job]} ${jobNames.en[c.job]}` })))}
 <section class="wrap my-char" id="my-char" data-finder="${esc(href(langPath(lang, '/tools/training/')))}" hidden></section>
-${liveMarket(lang)}
-<section class="wrap home-tools">
-<h2>${t.toolsHeading}</h2>
-<div class="tool-cards">
-${tool('/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monster database', lang === 'ko' ? '몬스터 78종의 능력치, 드롭 아이템, 출현 위치를 검색하세요.' : 'Explore stats, reported drops and map locations for 78 monsters.')}
-${tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc)}
-${tool('/tools/scroll/', 'scroll', t.navScroll, t.scCardDesc)}
-${tool('/tools/drop-rate/', 'bag', t.navDrop, t.dropCardDesc)}
-${tool('/tools/market/', 'coin', t.navMarket, MK[lang].lead)}
-${tool('/tools/price/', 'coin', t.navPrice, PR[lang].cardDesc)}
-${tool('/tools/damage/', 'hammer', DMG[lang].h1, DMG[lang].cardDesc)}
-${tool('/tools/scan/', 'megaphone', SCAN[lang].h1, SCAN[lang].cardDesc)}
-${tool('/quests/', 'scroll', lang === 'ko' ? '퀘스트' : 'Quests', lang === 'ko' ? `퀘스트 ${QUESTS.length}개의 시작 레벨, 모아 올 아이템과 드롭 몬스터, 보상을 봐요.` : `${QUESTS.length} quests: start level, items to bring and who drops them, rewards.`)}
-</div>
-</section>
-<section class="wrap purposes-wrap">
-<h2>${t.purposeHeading}</h2>
-<div class="purposes">${purposes}</div>
-</section>
-<div class="wrap directory">
-<aside class="toc"><nav><h2>${t.toc}</h2><a href="#favorites" id="fav-toc" hidden>${spriteSvg('star', 20)}<span>${t.favHeading}</span><b id="fav-count">0</b></a>${toc}</nav></aside>
-<div class="dir-main" data-vote-api="${esc(config.voteApi)}" data-fav-add="${esc(t.favAdd)}" data-fav-remove="${esc(t.favRemove)}" data-filtering="${esc(t.filtering)}">
-<p class="filter-bar" id="filter-bar" hidden><span id="filter-label"></span> <button type="button" class="btn ghost small-btn" id="filter-clear">${t.showAll}</button></p>
-<section class="cat favorites" id="favorites" hidden>
-<header class="cat-head">${spriteSvg('star', 40)}<div><h3>${t.favHeading} <span id="fav-count-2">0</span></h3><p>${esc(t.favDesc)}</p></div></header>
-<div class="cards" id="fav-cards"></div>
-</section>
-${sections}
-</div>
-</div>
-${guides.some((g) => g.lang === lang)
-  ? `<section class="wrap">
-<h2>${t.navGuides}</h2>
-<div class="tool-cards">${publishedGuides
-      .filter((g) => g.lang === lang)
-      .map((g) => tool(guidePath(g), 'book', esc(g.h1), g.desc))
-      .join('')}</div>
-</section>
-`
-  : ''}<section class="wrap faq">
+${body.join('\n')}
+<section class="wrap faq">
 <h2>${t.faqHeading}</h2>
 ${faq}
 </section>`;
@@ -1582,8 +1607,13 @@ function dropBody(lang) {
         )
         .join('')
     : `<tr><td colspan="5" class="muted">${t.dbEmpty}</td></tr>`;
+  // Searches for "drop rate" mostly want to know who drops an item; point them at the drop lists before the calculator.
+  const dl = (p, label) => `<a href="${href(langPath(lang, p))}">${label}</a>`;
   return `${pageHead(lang, 'bag', t.dropH1, t.dropLead)}
 <div class="wrap">
+<p class="panel drop-where">${lang === 'ko'
+  ? `몬스터 드롭 확률은 서버에만 있어서 공개되지 않아요. 어떤 몬스터가 무엇을 떨어뜨리는지는 플레이어 제보로 정리해 두었어요: ${dl('/monsters/', '몬스터 도감')}, ${dl('/bosses/', '보스 드롭')}, ${dl('/items/', '아이템별 드롭 몬스터')}.`
+  : `Monster drop rates live on the server and are not published. Who drops what is collected from player reports: ${dl('/monsters/', 'monster drop lists')}, ${dl('/bosses/', 'boss drops')}, ${dl('/items/', 'which monsters drop an item')}.`}</p>
 <div class="tool-layout">
 <form id="drop-form" class="panel form">
 <label>${t.rateInput}<input type="number" name="rate" value="1" min="0.0001" max="100" step="any" required><small>${esc(t.rateHint)}</small></label>
@@ -2404,6 +2434,13 @@ for (const lang of LANGS) {
     body: monsterIndex({lang, data: MONSTERS, url: href}), modules: ['monsters.js'],
     ld: [breadcrumbLd(lang, monsterTitle, '/monsters/')]
   }));
+  write(path.join(lang, 'bosses', 'index.html'), page({
+    lang, pageKey: 'bosses', pagePath: '/bosses/',
+    title: lang === 'ko' ? '글클메 보스 정리: 출현 위치·체력·필요 명중·드롭 | GMS Hub' : 'MapleStory Classic World Bosses: Spawn Locations, HP, Accuracy & Drops | GMS Hub',
+    desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드 필드 보스(마노, 스텀피, 머쉬맘, 주니어 발록 등)의 출현 맵, 체력, 경험치, 필요 명중, 주요 드롭을 한 표로 정리했어요.' : 'Every MapleStory Classic World field boss (Mano, Stumpy, Mushmom, Jr. Balrog and more) in one table: spawn map, HP, EXP, accuracy needed and equipment drops.',
+    body: bossIndex({ lang, data: MONSTERS, url: href, itemUrl: monsterItemUrl, accuracy: dmgAccNeed, timersHref: href(langPath(lang, '/')) + '#timers' }),
+    ld: [breadcrumbLd(lang, lang === 'ko' ? '보스 몬스터' : 'Bosses', '/bosses/')]
+  }));
   // Several monsters share a Korean name (Fairy 1-4, Jr. Boogie 1-2); their pages get the English variant so titles stay unique.
   const nameCount = MONSTERS.monsters.reduce((c, x) => c.set(monsterName(x, lang), (c.get(monsterName(x, lang)) || 0) + 1), new Map());
   for (const m of MONSTERS.monsters) {
@@ -2602,6 +2639,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
   )
 ).concat(
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/bosses/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/quests/'}, ...QUESTS.filter(q=>!q.expired).map(q=>({path:questPath(q)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
   [{path:'/maps/'}, ...MAPS.filter(l=>l.availability==='open').map(l=>({path:mapPath(l)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [...new Set(guides.map((g) => g.lang)), ...LOCALES.map((l) => l.code)].map((l) => `<url><loc>${absUrl(langPath(l, '/guides/'))}</loc><lastmod>${guides.filter((g) => g.lang === (LANGS.includes(l) ? l : 'en')).map((g) => g.updated).sort().at(-1)}</lastmod></url>`),
@@ -2649,6 +2687,7 @@ Not affiliated with NEXON. Prices are medians of shops players scanned in the la
 - [Live Free Market prices](${absUrl('/en/tools/market/')}): asking and sold medians, 7-day trends, where an item is on sale now (channel and room)
 - [Item database](${absUrl('/en/items/')}): every item a monster drops or a player priced, with droppers, farm maps, base stats and recent prices
 - [Monster database](${absUrl('/en/monsters/')}): ${MONSTERS.monsters.length} monsters with HP, EXP, drops, map locations and the accuracy needed to hit
+- [Bosses](${absUrl('/en/bosses/')}): spawn map, HP, EXP, accuracy needed and equipment drops for every field boss
 - [Quests](${absUrl('/en/quests/')}): ${QUESTS.length} quests with start level, items to bring and who drops them, monsters to hunt and rewards
 - [Map database](${absUrl('/en/maps/')}): ${MAPS.length} maps with their monsters, spawn points, EXP per full clear and drops
 - [Training routes](${absUrl('/en/tools/training/')}): conditional routes by level, with entry requirements and supply costs

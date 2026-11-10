@@ -20,7 +20,7 @@ export function monsterIndex({lang, data, url}) {
 <a class="monster-card-link" href="${link(monsterPath(m))}">${sprite(m,url)}<span><small>Lv. ${m.lv}</small><strong>${esc(monsterName(m,lang))}</strong><span class="muted small">${esc(ko?m.en:m.ko)}</span></span><span class="monster-arrow" aria-hidden="true">↗</span></a>
 <div class="monster-tags">${badge(m,ko)}${elements(m,ko)}</div><dl class="monster-card-stats"><div><dt>HP</dt><dd>${nf(m.hp)}</dd></div><div><dt>EXP</dt><dd>${nf(m.exp)}</dd></div><div><dt>${ko?'입장 가능 맵':'Available maps'}</dt><dd>${m.locations.filter(l=>l.availability==='open').length}</dd></div></dl>
 <p class="muted small">${ko?'드롭 제보':'Reported drops'} ${m.drops.length}${ko?'종':' items'}</p></li>`).join('');
-  return `<section class="page-head wrap"><h1>${ko?'몬스터 도감':'Monster database'}</h1><p class="lead">${ko?'이름부터 드롭 아이템까지. 찾는 몬스터의 능력치와 출현 위치를 한눈에 확인하세요.':'Search by monster, drop or map. Explore stats, elemental responses and spawn locations.'}</p><p class="char-links"><a href="${link('/maps/')}">${ko?'맵별로 보기':'Browse by map'}</a><a href="${link('/quests/')}">${ko?'퀘스트':'Quests'}</a></p><p class="muted small">${ko?'수록':'Entries'} ${data.monsters.length} · ${ko?'자료 확인':'Reviewed'} ${data.updated}</p></section>
+  return `<section class="page-head wrap"><h1>${ko?'몬스터 도감':'Monster database'}</h1><p class="lead">${ko?'이름부터 드롭 아이템까지. 찾는 몬스터의 능력치와 출현 위치를 한눈에 확인하세요.':'Search by monster, drop or map. Explore stats, elemental responses and spawn locations.'}</p><p class="char-links"><a href="${link('/maps/')}">${ko?'맵별로 보기':'Browse by map'}</a><a href="${link('/quests/')}">${ko?'퀘스트':'Quests'}</a><a href="${link('/bosses/')}">${ko?'보스 정리':'Bosses'}</a></p><p class="muted small">${ko?'수록':'Entries'} ${data.monsters.length} · ${ko?'자료 확인':'Reviewed'} ${data.updated}</p></section>
 <div class="wrap monster-page" id="monster-index"><form class="panel monster-filters" role="search"><label class="monster-search">${ko?'몬스터·드롭 아이템·맵 검색':'Monster, drop item or map'}<input id="monster-query" type="search" placeholder="${ko?'커즈아이, 냄비뚜껑, 슬리피 던전…':'Curse Eye, Pan Lid, Sleepy Dungeon…'}" autocomplete="off"></label>
 <label>${ko?'레벨':'Level'}<select id="monster-level"><option value="">${ko?'전체 레벨':'All levels'}</option>${[[1,10],[11,20],[21,30],[31,40],[41,50],[51,60],[61,80],[81,200]].map(([a,b])=>`<option value="${a}-${b}">Lv. ${a}–${b}</option>`).join('')}</select></label>
 <label>${ko?'종류':'Type'}<select id="monster-type"><option value="">${ko?'전체':'All'}</option><option value="boss">${ko?'보스':'Boss'}</option><option value="undead">${ko?'언데드':'Undead'}</option></select></label>
@@ -74,4 +74,31 @@ export function huntingSection({lang,m,link,notes,routes=[],accuracy=null,rank=n
   return `<section id="monster-hunting" class="monster-section"><div class="monster-section-heading"><h2>${ko?'사냥 메모':'Hunting notes'}</h2><span class="monster-tag">${ko?'플레이 영상·클라이언트 데이터 기준':'Player videos and client data'}</span></div>
 ${stats}${accTable}${tips}${routeList}
 <p class="muted small">${ko?'플레이 영상과 커뮤니티 기록을 교차 확인해 정리했어요. 분당 경험치나 시세 같은 숫자는 영상 시점의 장비·조건에서 나온 값이고, 드롭률은 확인된 적이 없어요.':'Compiled from player videos cross-checked with community records. Figures such as EXP per minute or prices reflect the gear and conditions at the time; drop rates have never been measured.'}</p></section>`;
+}
+// One page for the field bosses: where each one spawns, what it takes to hit it and what it drops. The client data has
+// no respawn timer for them, so the page says so and points to the community timers instead of guessing.
+export function bossIndex({lang, data, url, itemUrl, accuracy, timersHref}) {
+  const ko = lang === 'ko', link = p => url(`/${lang}${p}`);
+  const bosses = data.monsters.filter(m => m.boss).sort((a, b) => a.lv - b.lv);
+  const where = m => {
+    const open = m.locations.filter(l => l.availability === 'open');
+    if (open.length) return open.map(l => `<a href="${link(mapPath(l))}">${esc(ko ? l.ko || l.en : l.en)}</a><small>${esc(ko ? regionKo[l.region] || l.region : l.region)}</small>`).join('');
+    if (m.locations.length) return `<span>${esc(ko ? m.locations[0].ko || m.locations[0].en : m.locations[0].en)}</span><small>${statusText(m.status, ko)}</small>`;
+    return `<small>${statusText(m.status, ko)}</small>`;
+  };
+  // Equipment first, then scrolls; potions and etc. drops are on the boss's own page.
+  const drops = m => [...m.drops.filter(d => d.cat === 'Equip'), ...m.drops.filter(d => d.cat === 'Use' && /Scroll/.test(d.en))].slice(0, 5)
+    .map(d => `<a href="${itemUrl(d, lang)}">${esc(ko ? d.ko || d.en : d.en)}</a>`).join('');
+  const rows = bosses.map(m => `<tr class="boss-row status-${m.status}">
+<th scope="row"><a class="boss-name" href="${link(monsterPath(m))}">${sprite(m, url)}<span><strong>${esc(monsterName(m, lang))}</strong>${ko ? `<small>${esc(m.en)}</small>` : ''}</span></a></th>
+<td class="num">${m.lv}</td><td class="num">${nf(m.hp)}</td><td class="num">${nf(m.exp)}</td><td class="num">${m.eva ? nf(accuracy(m.lv, m)) : '—'}</td>
+<td><div class="boss-where">${where(m)}</div></td><td><div class="boss-drops">${drops(m) || '—'}</div></td></tr>`).join('');
+  const live = bosses.filter(m => m.status === 'active').length;
+  return `<section class="page-head wrap"><h1>${ko ? '보스 몬스터' : 'Bosses'}</h1><p class="lead">${ko ? `필드 보스 ${bosses.length}종의 출현 맵, 체력, 필요 명중, 주요 드롭이에요. 지금 잡을 수 있는 보스는 ${live}종이에요.` : `Where the ${bosses.length} field bosses spawn, how tough they are, the accuracy you need and what they drop. ${live} can be hunted right now.`}</p></section>
+<div class="wrap boss-page">
+<div class="table-wrap"><table class="data boss-table"><thead><tr><th scope="col">${ko ? '보스' : 'Boss'}</th><th scope="col">${ko ? '레벨' : 'Level'}</th><th scope="col">HP</th><th scope="col">EXP</th><th scope="col">${ko ? '필요 명중' : 'Accuracy'}<small>${ko ? '같은 레벨 기준' : 'at its level'}</small></th><th scope="col">${ko ? '출현 맵' : 'Spawns at'}</th><th scope="col">${ko ? '주요 드롭' : 'Equipment & scroll drops'}</th></tr></thead><tbody>${rows}</tbody></table></div>
+<section class="panel boss-notes"><h2>${ko ? '리젠 시간은요?' : 'What about respawn times?'}</h2>
+<p>${ko ? '게임 클라이언트 데이터에는 보스 리젠 시간이 들어 있지 않아요. 채널마다 따로 돌기 때문에, 플레이어들이 처치 시각을 기록하는 보스 타이머 사이트를 보는 게 가장 정확해요.' : 'The game client data has no respawn timer for these bosses, and each channel runs on its own clock. Community boss timers, where players log kill times per channel, are the most reliable source.'} <a href="${timersHref}">${ko ? '보스 타이머 사이트 보기' : 'See boss timer sites'}</a></p>
+<p>${ko ? '드롭은 플레이어 제보를 모은 목록이라 확률은 적지 않았어요. 보스 이름을 누르면 전체 드롭과 레벨별 필요 명중이 나와요.' : 'Drops are collected from player reports, so no rates are listed. Open a boss for its full drop list and the accuracy you need at each level.'}</p></section>
+<p class="char-links"><a href="${link('/monsters/')}">${ko ? '전체 몬스터 도감' : 'All monsters'}</a><a href="${link('/maps/')}">${ko ? '맵별로 보기' : 'Browse by map'}</a><a href="${link('/tools/training/')}">${ko ? '사냥터 추천' : 'Training routes'}</a></p></div>`;
 }
