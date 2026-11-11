@@ -1,6 +1,6 @@
 importScripts('config.private.js');
 const SCHEDULE = 'gms-market-hourly', WATCHDOG = 'gms-market-watchdog', RETRY = 'gms-market-upload';
-const INTERVAL = 60 * 60000;
+const INTERVAL = 15 * 60000;
 const COLLECT_RETRY = 'gms-market-collect-retry';
 const PAGE = 'https://meso.watch/?gms-batch=1';
 const ENDPOINT = 'https://gms-hub-votes.kwonth211.workers.dev/internal/market-batch';
@@ -12,15 +12,15 @@ const owned = tab => tab?.url?.startsWith(PAGE) || tab?.pendingUrl?.startsWith(P
 async function broadcast() {
   const s = await get();
   // No secret is ever included in content-script messages or the public DOM.
-  return { ...s, version: '0.3.0', nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
+  return { ...s, version: '0.4.0', nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
 }
 async function ensureAlarms() {
   const s = await get();
   await chrome.alarms.clear('gms-market-15m');
   const scheduled = await chrome.alarms.get(SCHEDULE);
   const gate = Math.max((s.lastAttemptAt || 0) + INTERVAL, s.lastSuccessAt ? Date.parse(s.lastSuccessAt) + INTERVAL : 0, s.retryAt || 0);
-  if (s.enabled && (!scheduled || scheduled.periodInMinutes !== 60 || scheduled.scheduledTime < gate))
-    await chrome.alarms.create(SCHEDULE, { when: Math.max(Date.now() + 60000, gate), periodInMinutes: 60 });
+  if (s.enabled && (!scheduled || scheduled.periodInMinutes !== 15 || scheduled.scheduledTime < gate))
+    await chrome.alarms.create(SCHEDULE, { when: Math.max(Date.now() + 60000, gate), periodInMinutes: 15 });
   if (s.enabled && s.retryAt && !await chrome.alarms.get(COLLECT_RETRY)) await chrome.alarms.create(COLLECT_RETRY, { when: Math.max(Date.now() + 1000, s.retryAt) });
   if (!await chrome.alarms.get(WATCHDOG)) await chrome.alarms.create(WATCHDOG, { periodInMinutes: 1 });
 }
@@ -80,7 +80,7 @@ async function launch(mode, trigger) {
       if (s.enabled) await chrome.alarms.create(COLLECT_RETRY, { when: s.retryAt });
       return { waiting: true, nextAt: s.retryAt };
     }
-    maxRows = Math.min(50, Number(policy.maxRows));
+    maxRows = Math.min(150, Number(policy.maxRows));
     if (!Number.isInteger(maxRows) || maxRows < 1) { await stop('수집 허용 건수를 확인할 수 없습니다.'); return { waiting: true }; }
     s.lastAttemptAt = Date.now();
   }

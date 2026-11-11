@@ -36,7 +36,7 @@ test('three runs finish independently; overlap is blocked and test mode never up
 });
 test('hourly alarm, durable outbox and retry survive a service-worker restart',async()=>{
  let h=harness();await h.drain();await h.send({type:'enable'});
- assert.equal(h.shared.alarms.get('gms-market-hourly').periodInMinutes,60);
+ assert.equal(h.shared.alarms.get('gms-market-hourly').periodInMinutes,15);
  await h.alarm('gms-market-hourly');const run=h.shared.state.run;
  await h.send({type:'ready'},run.tabId);h.shared.status=503;
  await h.send({type:'finish',report:report(run)},run.tabId);
@@ -118,14 +118,14 @@ test('daily-budget preflight defers to reset before opening any collection windo
  restored.shared.now=when;restored.shared.preflight={ready:true,reason:'ready',maxRows:50,policy:{dailyRows:1200,maxBatchRows:50,intervalSeconds:3600}};
  await restored.alarm('gms-market-collect-retry');assert.equal(restored.shared.state.run.maxRows,50);assert.equal(restored.shared.windows.size,1);
 });
-test('old 15-minute alarms are removed and manual runs cannot evade hourly source access',async()=>{
+test('the legacy alarm is removed and manual runs cannot evade the 15-minute source interval',async()=>{
  const h=harness();await h.drain();h.shared.alarms.set('gms-market-15m',{periodInMinutes:15,scheduledTime:h.shared.now+60000});
  await h.send({type:'enable'});assert.ok(!h.shared.alarms.has('gms-market-15m'));
  await h.send({type:'run'});const run=h.shared.state.run;
  await h.send({type:'finish',report:report(run)},run.tabId);
  const count=h.shared.updates.length;await h.send({type:'run'});
  assert.equal(h.shared.state.run,null);assert.equal(h.shared.updates.length,count);assert.equal(h.shared.fetches.length,1);
- assert.ok(h.shared.alarms.get('gms-market-hourly').scheduledTime>=h.shared.now+3600000);
+ assert.ok(h.shared.alarms.get('gms-market-hourly').scheduledTime>=h.shared.now+15*60000);
 });
 test('failed policy lookup never crawls the source and retry waits an hour',async()=>{
  const h=harness();await h.drain();h.shared.preflightStatus=503;await h.send({type:'enable'});await h.send({type:'run'});

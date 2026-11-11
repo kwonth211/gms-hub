@@ -3,9 +3,9 @@
   const key = r => JSON.stringify([r.item, r.price, r.seller, r.channel, r.room]);
   const failure = (code, message) => Object.assign(new Error(message), { code });
   async function collect(options, progress = async () => {}, cancelled = () => false, pause = localPause) {
-    const maxRows = options.mode === 'test' ? 40 : Math.min(50, Math.max(1, Number(options.maxRows) || 50));
-    const maxShops = options.mode === 'test' ? 40 : 120;
-    const report = { version: '0.3.0', runId: options.runId, world: 'Windia', startedAt: new Date().toISOString(),
+    const maxRows = options.mode === 'test' ? 40 : Math.min(150, Math.max(1, Number(options.maxRows) || 150));
+    const maxShops = options.mode === 'test' ? 40 : 360;
+    const report = { version: '0.4.0', runId: options.runId, world: 'Windia', startedAt: new Date().toISOString(),
       status: 'running', rows: [], shops: 0, rejected: {}, queue: [], skippedItems: [], aiCalls: 0 };
     const rows = new Map();
     const openModal = () => { const el = document.querySelector('#sv-modal'); return el && !el.closest('[hidden]') ? el : null; };
