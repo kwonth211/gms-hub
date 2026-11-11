@@ -2935,6 +2935,7 @@
  "{n0}–{n1}: choose manageable platforms": "{n0}–{n1}：選擇好控制的平台",
  "{n0}–{n1}: do not default to Ant Tunnel": "{n0}–{n1}：不要預設選 Ant Tunnel",
  "{name} {n0}-day trend: {from} to {to}": "{name} {n0} 天走勢：{from} 到 {to}",
+ "{name} {n0}-hour trend: {from} to {to}": "{name} {n0} 小时走势：{from} 到 {to}",
  "{n} accuracy for {n0}%": "{n0}% 需要命中 {n}",
  "{n} added": "已新增 {n} 筆",
  "{n} extreme prices excluded from statistics.": "已從統計中排除 {n} 筆極端價格。",

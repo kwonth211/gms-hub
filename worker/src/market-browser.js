@@ -242,14 +242,15 @@ export async function browseReports(env, p) {
 // A listing keeps one price for its whole life (a new price is a new listing), so first_seen..last_seen says it was on
 // sale every day in between. Charts get one point per listing per day from that span instead of a stored copy of every
 // rescan, which cost about half of all database writes. A sold listing is "sold" only on its last day.
-export function dailyPoints(rows, now, days) {
+// One point per listing per period (a day by default; the home sparkline also asks for hours) it was on sale.
+export function dailyPoints(rows, now, days, span = DAY) {
   const out = [];
   for (const r of rows) {
     const first = Date.parse(`${(r.first_seen || r.seen).replace(" ", "T")}Z`),
       last = Date.parse(`${r.seen.replace(" ", "T")}Z`);
     for (let d = 0; d < days; d++) {
-      const to = now - d * DAY,
-        from = to - DAY;
+      const to = now - d * span,
+        from = to - span;
       if (first > to || last <= from) continue;
       const t = Math.min(last, to);
       out.push({ ...r, sold: r.sold && last <= to && last > from ? 1 : 0, seen: stamp(t) });

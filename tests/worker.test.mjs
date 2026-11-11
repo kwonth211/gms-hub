@@ -136,6 +136,11 @@ test('the 7-day line counts a listing on every day between its first and last si
   const data = await (await worker.fetch(new Request('https://test.invalid/market/top'), env)).json();
   const spark = data.items[0].spark;
   assert.deepEqual(spark.slice(-3), [100, 100, 90]);
+  // Hour by hour the first shop fills the whole day; the second only the last hour.
+  const hours = data.items[0].hours;
+  assert.equal(hours.length, 24);
+  assert.equal(hours[0], 100);
+  assert.equal(hours.at(-1), 90);
   const hist = await (await worker.fetch(new Request('https://test.invalid/market/history?id=4000000'), env)).json();
   assert.equal(hist.rows.length, 4, 'three days of the first shop plus one of the second');
 });

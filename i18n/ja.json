@@ -2935,6 +2935,7 @@
  "{n0}–{n1}: choose manageable platforms": "{n0}–{n1}：扱いやすい足場を選ぶ",
  "{n0}–{n1}: do not default to Ant Tunnel": "{n0}–{n1}：Ant Tunnelを当然視しない",
  "{name} {n0}-day trend: {from} to {to}": "{name} {n0}日間の推移：{from}→{to}",
+ "{name} {n0}-hour trend: {from} to {to}": "{name} {n0}時間の推移：{from}から{to}",
  "{n} accuracy for {n0}%": "{n0}%に必要な命中 {n}",
  "{n} added": "{n}件追加",
  "{n} extreme prices excluded from statistics.": "極端な価格{n}件を統計から除外しました。",

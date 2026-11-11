@@ -100,6 +100,8 @@ function rankAt(obs, end) {
   return [...score.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0]).map(([item]) => item);
 }
 
+const HOUR = 3600000;
+
 async function marketTop(env, only = null) {
   // Reads stay proportional to one day of activity: the ranking needs the last 25 hours of everything, and the 8-day history
   // is fetched only for the ten items that made the list (or the one item asked for).
@@ -110,10 +112,14 @@ async function marketTop(env, only = null) {
      SELECT item, price, kind = 'sold', created_at FROM prices WHERE kind != 'buying' AND created_at >= datetime('now', '-${hours} hours') ${filter}`;
   // Day-by-day history: each listing counts once on every day between its first and last sighting (see dailyPoints),
   // so a shop seen on Monday and again on Wednesday at the same price shows on all three days.
+  // The same listings hour by hour for the last day feed the sparkline, which reads as a line long before a week fills in.
+  let hourly = [];
   const history = async (filter, ...ids) => {
     const listed = await recent(`SELECT item, price, sold, first_seen, last_seen AS seen FROM listings WHERE last_seen >= datetime('now', '-192 hours') ${filter}`, ...ids);
     const reports = await recent(`SELECT item, price, kind = 'sold' AS sold, created_at AS t FROM prices WHERE kind != 'buying' AND created_at >= datetime('now', '-192 hours') ${filter}`, ...ids);
-    return dailyPoints(listed, Date.now(), 8).map((r) => ({ item: r.item, price: r.price, sold: r.sold, t: r.seen })).concat(reports);
+    const point = (r) => ({ item: r.item, price: r.price, sold: r.sold, t: r.seen });
+    hourly = dailyPoints(listed, Date.now(), 24, HOUR).map(point).concat(reports);
+    return dailyPoints(listed, Date.now(), 8).map(point).concat(reports);
   };
   let results;
   if (only) results = await history('AND item = ?', only);
@@ -134,6 +140,8 @@ async function marketTop(env, only = null) {
   const before = rankAt(obs, now - 3600000);
   const byItem = new Map();
   for (const o of obs) (byItem.get(o.item) || byItem.set(o.item, []).get(o.item)).push(o);
+  const hourlyBy = new Map();
+  for (const r of hourly) (hourlyBy.get(r.item) || hourlyBy.set(r.item, []).get(r.item)).push({ ...r, t: parseUtc(r.t) });
   const items = ranked.map((item, i) => {
     const mine = byItem.get(item);
     const useSold = mine.some((o) => o.sold && o.t > now - DAY && o.t <= now);
@@ -155,6 +163,11 @@ async function marketTop(env, only = null) {
       // Oldest first; a day with no observations is null so the line shows a gap instead of inventing a value.
       spark: Array.from({ length: 7 }, (_, k) => {
         const ps = window(now - (7 - k) * DAY, now - (6 - k) * DAY);
+        return ps.length ? median(ps) : null;
+      }),
+      // 24 hourly medians, oldest first, from the same kind of price (sold or asking) as the daily line.
+      hours: Array.from({ length: 24 }, (_, k) => {
+        const ps = trimmed(hourlyBy.get(item)?.filter((o) => !!o.sold === useSold && o.t > now - (24 - k) * HOUR && o.t <= now - (23 - k) * HOUR).map((o) => o.price) || []);
         return ps.length ? median(ps) : null;
       })
     };

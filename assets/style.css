@@ -553,6 +553,14 @@ a.band-link:hover { border-color: var(--accent); }
 .rank-list li a { display: grid; grid-template-columns: 22px 30px 26px minmax(0, 1fr) auto 112px 56px; align-items: center; gap: 10px; min-height: 46px; padding: 5px 4px; border-bottom: 1px solid var(--line); color: var(--text); text-decoration: none; }
 .rank-list li a:hover { background: var(--panel-2); }
 .rank-list .rank { font-weight: 800; font-size: 1rem; text-align: center; }
+.rank-list li { position: relative; }
+.rank-list li.went-up a { animation: rank-up 1.6s ease-out 0.3s both; }
+.rank-list li.went-down a { animation: rank-down 1.6s ease-out 0.3s both; }
+.rank-list li.went-up .rank, .rank-list li.went-down .rank { animation: rank-flip 0.6s var(--ease-snap) 0.3s both; }
+@keyframes rank-up { 0%, 35% { background: color-mix(in srgb, var(--up) 14%, transparent); } 100% { background: transparent; } }
+@keyframes rank-down { 0%, 35% { background: color-mix(in srgb, var(--down) 12%, transparent); } 100% { background: transparent; } }
+@keyframes rank-flip { from { transform: rotateX(90deg); } to { transform: rotateX(0); } }
+@media (prefers-reduced-motion: reduce) { .rank-list li.went-up a, .rank-list li.went-down a, .rank-list li .rank { animation: none; } }
 .rank-list li:nth-child(-n + 3) .rank { color: var(--accent); }
 .rank-list .move { font-size: 0.75rem; font-weight: 800; white-space: nowrap; color: var(--muted); }
 .rank-list .move.new { color: var(--accent-2); }
@@ -567,11 +575,14 @@ a.band-link:hover { border-color: var(--accent); }
 .spark { display: block; width: 112px; height: 30px; overflow: visible; }
 .spark .base { stroke: var(--line); stroke-width: 1; }
 .spark .tick { stroke: var(--line); stroke-width: 1; }
-.spark .area { fill: var(--accent-fill); opacity: 0.14; stroke: none; }
-.spark .seg, .spark .gap { stroke: var(--accent-fill); stroke-width: 2; stroke-linecap: round; }
+.spark { --spark: var(--accent-fill); }
+.spark.up { --spark: var(--up); }
+.spark.down { --spark: var(--down); }
+.spark .area { fill: var(--spark); opacity: 0.14; stroke: none; }
+.spark .seg, .spark .gap { stroke: var(--spark); stroke-width: 2; stroke-linecap: round; }
 .spark .gap { stroke-dasharray: 2 3; opacity: 0.7; }
-.spark .dot { fill: var(--accent-fill); }
-.spark .last { fill: var(--accent-fill); stroke: var(--panel); stroke-width: 1.5; }
+.spark .dot { fill: var(--spark); }
+.spark .last { fill: var(--spark); stroke: var(--panel); stroke-width: 1.5; }
 .spark rect { fill: transparent; }
 .spark-tip { position: fixed; z-index: 50; pointer-events: none; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; font-size: 0.78rem; box-shadow: 0 8px 24px var(--shadow-c); white-space: nowrap; }
 .spark-tip b { display: block; }
@@ -1369,7 +1380,7 @@ h2 { font-size: clamp(1.35rem, 2.4vw, 1.7rem); font-weight: 800; letter-spacing:
 .dist-bar i, .profile-track > span, .chart .bar, .chart .dot, .legend .dot-key, .legend .line-key, .legend-mark,
 .price-point, .observation-bar, .depth-point, .scan-steps b, .market-preview { background: var(--accent-fill); fill: var(--accent-fill); }
 .chart .median, .chart .median-tick, .analytics-svg .price-line, .price-whisker { stroke: var(--accent-fill); }
-.spark circle { fill: var(--accent-fill); }
+.spark circle { fill: var(--spark); }
 .scan-steps b, .market-preview { color: var(--accent-ink); }
 .price-point.sold, .observation-bar.sold, .legend-mark.sold { background: var(--sold-color); fill: var(--sold-color); }
 .analytics-svg .price-line.sold, .price-whisker.sold { stroke: var(--sold-color); }

@@ -484,6 +484,7 @@ const LIVE_REFRESH_MS = 60000;
 const lang = document.documentElement.lang;
 const liveRtf = new Intl.RelativeTimeFormat(lang, { numeric: 'auto', style: 'short' });
 const dayFmt = new Intl.DateTimeFormat(lang, { month: 'numeric', day: 'numeric' });
+const hourFmt = new Intl.DateTimeFormat(lang, { month: 'numeric', day: 'numeric', hour: 'numeric' });
 const liveText = live ? JSON.parse(live.dataset.text) : {};
 
 // Korean players think in 만/억; elsewhere k/m/b.
@@ -508,17 +509,20 @@ function ago(utc) {
   return liveRtf.format(-Math.floor(s / 86400), 'day');
 }
 
-// 7 daily medians, oldest first, drawn on a fixed 7-day frame: a baseline tick for every day, an area under the line,
-// a dot on each day with data and a dashed bridge across days without one. With most items seen on only a day or two,
-// the frame keeps a lone point or a two-point line readable as a week, where a bare stroke looked like a stray slash.
-function sparkline(values, name) {
+// The 24 hourly medians when the last day has at least two points, otherwise the 7 daily ones: oldest first on a fixed
+// frame with a tick per day (or every six hours), an area under the line, and a dashed bridge across empty stretches.
+// The line is red when the price went up over the period and blue when it went down, as in Korean price boards.
+function sparkline(r, name) {
+  const filled = (vs) => (vs || []).filter((v) => v != null).length;
+  const unit = filled(r.hours) >= 2 ? 'hour' : 'day';
+  const values = unit === 'hour' ? r.hours : r.spark;
   const W = 112;
   const H = 30;
   const n = values.length;
   const pts = values.map((v, i) => ({ v, i })).filter((p) => p.v != null);
   const x = (i) => 4 + (i / (n - 1)) * (W - 8);
   const base = H - 3;
-  const ticks = values.map((_, i) => `<line class="tick" x1="${x(i).toFixed(1)}" x2="${x(i).toFixed(1)}" y1="${base}" y2="${base + 3}"/>`).join('');
+  const ticks = values.map((_, i) => (unit === 'day' || i % 6 === 5 ? `<line class="tick" x1="${x(i).toFixed(1)}" x2="${x(i).toFixed(1)}" y1="${base}" y2="${base + 3}"/>` : '')).join('');
   const frame = `<line class="base" x1="0" x2="${W}" y1="${base}" y2="${base}"/>${ticks}`;
   if (!pts.length) return `<svg class="spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escHtml(liveText.noTrend)}">${frame}</svg>`;
   const lo = Math.min(...pts.map((p) => p.v));
@@ -526,20 +530,24 @@ function sparkline(values, name) {
   const y = (v) => (hi === lo ? H / 2 : 3 + (1 - (v - lo) / (hi - lo)) * (base - 7));
   const line = pts.map((p, k) => `${k ? 'L' : 'M'}${x(p.i).toFixed(1)},${y(p.v).toFixed(1)}`).join('');
   const area = pts.length > 1 ? `<path class="area" d="${line}L${x(pts.at(-1).i).toFixed(1)},${base}L${x(pts[0].i).toFixed(1)},${base}Z"/>` : '';
-  // Solid between consecutive days, dashed where days are missing.
   const segs = pts.slice(1).map((p, k) => {
     const a = pts[k];
     return `<line class="${p.i - a.i > 1 ? 'gap' : 'seg'}" x1="${x(a.i).toFixed(1)}" y1="${y(a.v).toFixed(1)}" x2="${x(p.i).toFixed(1)}" y2="${y(p.v).toFixed(1)}"/>`;
   }).join('');
   const last = pts.at(-1);
-  const dots = pts.map((p) => `<circle class="${p === last ? 'last' : 'dot'}" cx="${x(p.i).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="${p === last ? 3 : 2}"/>`).join('');
+  // Every point is a dot on the 7-day frame; on 24 hours only points with no neighbour, and the latest.
+  const lone = (p) => values[p.i - 1] == null && values[p.i + 1] == null;
+  const dots = pts.filter((p) => p === last || unit === 'day' || lone(p))
+    .map((p) => `<circle class="${p === last ? 'last' : 'dot'}" cx="${x(p.i).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="${p === last ? 3 : 2}"/>`).join('');
+  const slot = W / n;
   const hits = values
-    .map((v, i) => (v == null ? '' : `<rect x="${(x(i) - W / 14).toFixed(1)}" y="0" width="${(W / 7).toFixed(1)}" height="${H}" data-i="${i}" data-v="${v}"/>`))
+    .map((v, i) => (v == null ? '' : `<rect x="${(x(i) - slot / 2).toFixed(1)}" y="0" width="${slot.toFixed(1)}" height="${H}" data-i="${i}" data-v="${v}"/>`))
     .join('');
+  const trend = pts.length > 1 && last.v !== pts[0].v ? (last.v > pts[0].v ? ' up' : ' down') : '';
   const label = pts.length > 1
-    ? liveText.sparkLabel.replace('{name}', name).replace('{from}', mesos(pts[0].v)).replace('{to}', mesos(last.v))
+    ? liveText[unit === 'hour' ? 'sparkHours' : 'sparkLabel'].replace('{name}', name).replace('{from}', mesos(pts[0].v)).replace('{to}', mesos(last.v))
     : liveText.noTrend;
-  return `<svg class="spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escHtml(label)}">${frame}${area}${segs}${dots}${hits}</svg>`;
+  return `<svg class="spark${trend}" data-unit="${unit}" data-n="${n}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escHtml(label)}">${frame}${area}${segs}${dots}${hits}</svg>`;
 }
 
 function moveCell(move) {
@@ -555,21 +563,55 @@ function changeCell(change) {
   return `<span class="chg ${cls}">${change > 0 ? '▲' : change < 0 ? '▼' : ''}${Math.abs(change)}%</span>`;
 }
 
-function renderTop(top, byId) {
-  const rows = top.items.filter((r) => byId.has(r.item));
-  document.getElementById('market-top').hidden = !rows.length;
-  document.getElementById('rank-list').innerHTML = rows
-    .map((r) => {
-      const it = byId.get(r.item);
-      return `<li><a href="${live.dataset.price}?q=${encodeURIComponent(it.name)}">
+function rankRow(r, it) {
+  return `<li data-item="${it.id}" data-rank="${r.rank}"><a href="${live.dataset.price}?q=${encodeURIComponent(it.name)}">
 <span class="rank">${r.rank}</span>${moveCell(r.move)}
 <img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="26" height="26" loading="lazy">
 <span class="name" title="${escHtml(it.name)}">${escHtml(it.name)}</span>
 <span class="avg"><small>${r.median != null ? escHtml(r.basis === 'sold' ? liveText.soldMedian : liveText.askMedian) : escHtml(liveText.avg)}</small>${mesos(r.median ?? r.avg)}</span>
-${sparkline(r.spark, it.name)}
+${sparkline(r, it.name)}
 ${changeCell(r.change)}</a></li>`;
-    })
-    .join('');
+}
+
+// Redraw the list and slide every row from where it was to where it is now (FLIP). Rows whose rank changed flip their
+// number and flash red (up) or blue (down), like a live search ranking.
+function flipRanks(list, html) {
+  const before = new Map([...list.children].map((li) => [li.dataset.item, { top: li.getBoundingClientRect().top, rank: li.dataset.rank }]));
+  list.innerHTML = html;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  [...list.children].forEach((li, i) => {
+    const old = before.get(li.dataset.item);
+    const dy = old ? old.top - li.getBoundingClientRect().top : 24;
+    if (!old) li.style.opacity = '0';
+    if (dy) {
+      li.style.transform = `translateY(${dy}px)`;
+      li.style.transition = 'none';
+    }
+    if (!old || old.rank !== li.dataset.rank) li.classList.add(old && Number(old.rank) < Number(li.dataset.rank) ? 'went-down' : 'went-up');
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      li.style.transition = `transform 0.7s var(--ease-snap) ${i * 40}ms, opacity 0.4s ${i * 40}ms`;
+      li.style.transform = '';
+      li.style.opacity = '';
+    }));
+  });
+}
+
+// On the first draw the list starts in the order of an hour ago and then settles into the current ranks, so a visitor
+// sees which items climbed. Later refreshes animate only real changes.
+let ranksDrawn = false;
+function renderTop(top, byId) {
+  const rows = top.items.filter((r) => byId.has(r.item));
+  document.getElementById('market-top').hidden = !rows.length;
+  const list = document.getElementById('rank-list');
+  const html = (rs) => rs.map((r) => rankRow(r, byId.get(r.item))).join('');
+  if (!ranksDrawn && rows.some((r) => r.move)) {
+    const prev = (r) => (r.move == null ? Infinity : r.rank + r.move);
+    const hourAgo = rows.filter((r) => r.move != null).sort((a, b) => prev(a) - prev(b)).map((r, i) => ({ ...r, rank: i + 1, move: 0 }));
+    list.innerHTML = html(hourAgo);
+    setTimeout(() => flipRanks(list, html(rows)), 900);
+  } else if (ranksDrawn) flipRanks(list, html(rows));
+  else list.innerHTML = html(rows);
+  ranksDrawn = true;
   return rows.length;
 }
 
@@ -668,8 +710,10 @@ if (live) {
       tip.hidden = true;
       return;
     }
-    const daysAgo = 6 - Number(rect.dataset.i);
-    tip.innerHTML = `<b>${mesos(Number(rect.dataset.v))}</b>${dayFmt.format(new Date(Date.now() - daysAgo * 86400000))}`;
+    const svg = rect.closest('svg');
+    const back = Number(svg.dataset.n) - 1 - Number(rect.dataset.i);
+    const when = svg.dataset.unit === 'hour' ? hourFmt.format(new Date(Date.now() - back * 3600000)) : dayFmt.format(new Date(Date.now() - back * 86400000));
+    tip.innerHTML = `<b>${mesos(Number(rect.dataset.v))}</b>${when}`;
     tip.style.left = `${e.clientX + 12}px`;
     tip.style.top = `${e.clientY - 40}px`;
     tip.hidden = false;
