@@ -647,6 +647,11 @@ async function refreshLive() {
     document.getElementById('market-preview').hidden = !PREVIEW;
     const byId = new Map(items.map((it) => [it.id, it]));
     const ranked = top ? renderTop(top, byId) : 0;
+    if (top?.stats && !PREVIEW) document.querySelectorAll('[data-market-stat]').forEach((el) => {
+      const n = top.stats[el.dataset.marketStat];
+      el.querySelector('dd').textContent = Number(n || 0).toLocaleString(lang);
+      el.hidden = !n;
+    });
     const listed = recent ? renderRecent(recent, byId) : 0;
     if (!listed) document.getElementById('live-rows').innerHTML = `<li class="market-empty">${escHtml(liveText.empty)}</li>`;
     if (recent?.length) document.getElementById('live-updated').textContent = liveText.updated.replace('{t}', ago(recent[0].seen));

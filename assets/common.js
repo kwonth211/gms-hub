@@ -90,31 +90,28 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
 });
 
 // Live viewer count: each open tab holds one WebSocket to the worker's presence room, which sends back how many pages are
-// open on the site and on this page. Shown only when someone else is here too. A tab hidden for 30 seconds lets go, so
-// background tabs are not counted.
+// open on the site. Every .presence element (the header pill, the home hero stat) shows it once someone else is here too.
+// A tab hidden for 30 seconds lets go, so background tabs are not counted.
 (() => {
-  const pill = document.querySelector('.presence');
+  const spots = document.querySelectorAll('.presence');
   const api = document.body.dataset.priceApi;
-  if (!pill || !api || !('WebSocket' in window)) return;
-  const siteEl = pill.querySelector('[data-site]'), hereEl = pill.querySelector('[data-here]');
+  if (!spots.length || !api || !('WebSocket' in window)) return;
   let ws = null, ping = 0, idle = 0, retry = 0;
-  const show = ({ site, here }) => {
-    siteEl.textContent = site;
-    hereEl.textContent = here;
-    pill.classList.toggle('with-here', here >= 2);
-    pill.hidden = !(site >= 2);
-  };
+  const show = (site) => spots.forEach((el) => {
+    el.querySelector('[data-site]').textContent = site;
+    el.hidden = !(site >= 2);
+  });
   const open = () => {
     if (ws || document.hidden) return;
     ws = new WebSocket(`${api.replace(/^http/, 'ws')}/presence?p=${encodeURIComponent(location.pathname)}`);
     ws.onmessage = (e) => {
       retry = 0;
-      try { show(JSON.parse(e.data)); } catch (x) {}
+      try { show(JSON.parse(e.data).site); } catch (x) {}
     };
     ws.onclose = () => {
       clearInterval(ping);
       ws = null;
-      pill.hidden = true;
+      show(0);
       if (!document.hidden && retry < 5) setTimeout(open, 3000 * 2 ** retry++);
     };
     ping = setInterval(() => ws?.readyState === 1 && ws.send('ping'), 45000);
