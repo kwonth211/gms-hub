@@ -507,28 +507,38 @@ function ago(utc) {
   return liveRtf.format(-Math.floor(s / 86400), 'day');
 }
 
-// 7 daily medians, oldest first. Days without data break the line rather than being bridged; the latest point is marked.
+// 7 daily medians, oldest first, drawn on a fixed 7-day frame: a baseline tick for every day, an area under the line,
+// a dot on each day with data and a dashed bridge across days without one. With most items seen on only a day or two,
+// the frame keeps a lone point or a two-point line readable as a week, where a bare stroke looked like a stray slash.
 function sparkline(values, name) {
+  const W = 112;
+  const H = 30;
+  const n = values.length;
   const pts = values.map((v, i) => ({ v, i })).filter((p) => p.v != null);
-  // Fewer than two days of data: a quiet dash in the trend slot, with the reason for screen readers and on hover.
-  if (pts.length < 2) return `<span class="spark-empty" title="${escHtml(liveText.noTrend)}" aria-label="${escHtml(liveText.noTrend)}">–</span>`;
-  const W = 64;
-  const H = 24;
+  const x = (i) => 4 + (i / (n - 1)) * (W - 8);
+  const base = H - 3;
+  const ticks = values.map((_, i) => `<line class="tick" x1="${x(i).toFixed(1)}" x2="${x(i).toFixed(1)}" y1="${base}" y2="${base + 3}"/>`).join('');
+  const frame = `<line class="base" x1="0" x2="${W}" y1="${base}" y2="${base}"/>${ticks}`;
+  if (!pts.length) return `<svg class="spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escHtml(liveText.noTrend)}">${frame}</svg>`;
   const lo = Math.min(...pts.map((p) => p.v));
   const hi = Math.max(...pts.map((p) => p.v));
-  const x = (i) => (i / (values.length - 1)) * W;
-  const y = (v) => (hi === lo ? H / 2 : 2 + (1 - (v - lo) / (hi - lo)) * (H - 4));
-  let d = '';
-  values.forEach((v, i) => {
-    if (v == null) return;
-    d += `${i > 0 && values[i - 1] != null ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`;
-  });
-  const last = pts[pts.length - 1];
+  const y = (v) => (hi === lo ? H / 2 : 3 + (1 - (v - lo) / (hi - lo)) * (base - 7));
+  const line = pts.map((p, k) => `${k ? 'L' : 'M'}${x(p.i).toFixed(1)},${y(p.v).toFixed(1)}`).join('');
+  const area = pts.length > 1 ? `<path class="area" d="${line}L${x(pts.at(-1).i).toFixed(1)},${base}L${x(pts[0].i).toFixed(1)},${base}Z"/>` : '';
+  // Solid between consecutive days, dashed where days are missing.
+  const segs = pts.slice(1).map((p, k) => {
+    const a = pts[k];
+    return `<line class="${p.i - a.i > 1 ? 'gap' : 'seg'}" x1="${x(a.i).toFixed(1)}" y1="${y(a.v).toFixed(1)}" x2="${x(p.i).toFixed(1)}" y2="${y(p.v).toFixed(1)}"/>`;
+  }).join('');
+  const last = pts.at(-1);
+  const dots = pts.map((p) => `<circle class="${p === last ? 'last' : 'dot'}" cx="${x(p.i).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="${p === last ? 3 : 2}"/>`).join('');
   const hits = values
-    .map((v, i) => (v == null ? '' : `<rect x="${(x(i) - W / 12).toFixed(1)}" y="-4" width="${(W / 6).toFixed(1)}" height="${H + 8}" data-i="${i}" data-v="${v}"/>`))
+    .map((v, i) => (v == null ? '' : `<rect x="${(x(i) - W / 14).toFixed(1)}" y="0" width="${(W / 7).toFixed(1)}" height="${H}" data-i="${i}" data-v="${v}"/>`))
     .join('');
-  const label = liveText.sparkLabel.replace('{name}', name).replace('{from}', mesos(pts[0].v)).replace('{to}', mesos(last.v));
-  return `<svg class="spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escHtml(label)}"><path d="${d}"/><circle cx="${x(last.i).toFixed(1)}" cy="${y(last.v).toFixed(1)}" r="2.5"/>${hits}</svg>`;
+  const label = pts.length > 1
+    ? liveText.sparkLabel.replace('{name}', name).replace('{from}', mesos(pts[0].v)).replace('{to}', mesos(last.v))
+    : liveText.noTrend;
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escHtml(label)}">${frame}${area}${segs}${dots}${hits}</svg>`;
 }
 
 function moveCell(move) {

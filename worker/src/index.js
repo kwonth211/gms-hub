@@ -105,15 +105,21 @@ async function marketTop(env, only = null) {
     `SELECT item, price, sold, last_seen AS t FROM listings WHERE last_seen >= datetime('now', '-${hours} hours') ${filter}
      UNION ALL
      SELECT item, price, kind = 'sold', created_at FROM prices WHERE kind != 'buying' AND created_at >= datetime('now', '-${hours} hours') ${filter}`;
+  // Day-by-day history comes from listing_history (every confirmed sighting); listings keeps only each shop's last sighting,
+  // which left the sparkline with one point even for items seen on several days.
+  const history = (hours, filter) =>
+    `SELECT item, price, sold, seen AS t FROM listing_history WHERE seen >= datetime('now', '-${hours} hours') ${filter}
+     UNION ALL
+     SELECT item, price, kind = 'sold', created_at FROM prices WHERE kind != 'buying' AND created_at >= datetime('now', '-${hours} hours') ${filter}`;
   let results;
-  if (only) results = await recent(window(192, 'AND item = ?'), only, only);
+  if (only) results = await recent(history(192, 'AND item = ?'), only, only);
   else {
     const day = await recent(window(26, ''));
     const now0 = Date.now();
     const dayObs = day.map((r) => ({ item: r.item, sold: !!r.sold, t: parseUtc(r.t) }));
     const ids = [...new Set([...rankAt(dayObs, now0).slice(0, TOP_N), ...rankAt(dayObs, now0 - 3600000).slice(0, TOP_N)])];
     const marks = ids.map(() => '?').join(',') || 'NULL';
-    results = ids.length ? await recent(window(192, `AND item IN (${marks})`), ...ids, ...ids) : [];
+    results = ids.length ? await recent(history(192, `AND item IN (${marks})`), ...ids, ...ids) : [];
     // Items outside the top ten still count for the ranking itself.
     const seen = new Set(ids);
     results = results.concat(day.filter((r) => !seen.has(r.item)));

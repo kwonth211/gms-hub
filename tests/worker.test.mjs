@@ -8,6 +8,9 @@ import worker from '../worker/src/index.js';
 function environment() {
   const sqlite = new DatabaseSync(':memory:');
   sqlite.exec(fs.readFileSync(new URL('../worker/schema.sql', import.meta.url), 'utf8'));
+  // listing_history comes from migration 0002; its triggers are left out because every test write lands in the same second,
+  // which the production scan interval never does. histories() copies listings in, as the migration's backfill does.
+  sqlite.exec(fs.readFileSync(new URL('../worker/migrations/0002_listing_history.sql', import.meta.url), 'utf8').split('CREATE TRIGGER')[0]);
   const DB = { failUpdates: false, prepare(sql, args = []) {
     return { bind(...values) { return DB.prepare(sql, values); }, async first() { return sqlite.prepare(sql).get(...args) || null; },
       async all() { return { results: sqlite.prepare(sql).all(...args) }; }, async run() {
@@ -77,6 +80,7 @@ test('price summaries do not discard sold prices merely because asking prices ar
 test('rankings publish a median with an explicit sold/asking basis and matching history', async () => {
   const env = environment();
   await send(env, '/listings', { items: [row, { ...row, price: 10, sold: true }, { ...row, price: 14, sold: true }] });
+  env.sqlite.exec('INSERT OR IGNORE INTO listing_history SELECT id,item,price,qty,sold,seller,channel,room,last_seen FROM listings');
   const res = await worker.fetch(new Request('https://test.invalid/market/top'), env);
   const data = await res.json();
   assert.equal(data.items[0].median, 12);
@@ -121,4 +125,16 @@ test('one stray sale never outranks many asking prices in the headline', async (
     env.sqlite.prepare("INSERT INTO prices (item, price, kind, reporter) VALUES (4000000, ?, ?, 'test')").run(price, kind);
   const summary = (await (await worker.fetch(new Request('https://test.invalid/prices?ids=4000000'), env)).json())['4000000'];
   assert.equal(summary.basis, 'selling'); assert.equal(summary.median, 215); assert.equal(summary.sold.n, 1);
+});
+
+test('the 7-day line uses every recorded sighting, not just each shop\'s last one', async () => {
+  const env = environment();
+  await send(env, '/listings', { items: [row] });
+  // The same shop seen two days ago at a different price: listings keeps only today, listing_history keeps both.
+  env.sqlite.exec("INSERT INTO listing_history SELECT id,item,80,qty,sold,seller,channel,room,datetime('now','-2 days') FROM listings");
+  env.sqlite.exec('INSERT OR IGNORE INTO listing_history SELECT id,item,price,qty,sold,seller,channel,room,last_seen FROM listings');
+  const data = await (await worker.fetch(new Request('https://test.invalid/market/top'), env)).json();
+  const spark = data.items[0].spark;
+  assert.equal(spark.filter((v) => v != null).length, 2);
+  assert.equal(spark.at(-1), 100);
 });
