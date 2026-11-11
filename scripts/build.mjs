@@ -655,15 +655,18 @@ function header(lang, pagePath, only) {
     ['/tools/drop-rate/', 'bag', t.navDrop],
     ['/tools/damage/', 'hammer', DMG[lang].h1],
     ['/tools/market/', 'coin', t.navMarket]
-  ]
+  ];
+  // Seven tabs share a phone's width, so English labels that would break mid-word ("Calcul/ator") get a one-word form there.
+  const SHORT_EN = { '/': 'Home', '/monsters/': 'Mobs', '/tools/training/': 'Spots', '/tools/scroll/': 'Scrolls', '/tools/drop-rate/': 'Odds', '/tools/damage/': 'Hits', '/tools/market/': 'Market' };
+  const tabHtml = tabs
     .map(
       ([p, icon, label]) =>
-        `<a class="tab" href="${href(langPath(lang, p))}"${(p === pagePath || (p !== '/' && pagePath?.startsWith(p))) ? ' aria-current="page"' : ''}>${spriteSvg(icon, 20)}<span>${label}</span></a>`
+        `<a class="tab" href="${href(langPath(lang, p))}"${(p === pagePath || (p !== '/' && pagePath?.startsWith(p))) ? ' aria-current="page"' : ''}${lang === 'ko' ? '' : ` title="${esc(label)}"`}>${spriteSvg(icon, 20)}${lang === 'ko' ? `<span>${label}</span>` : `<span class="tab-full">${label}</span><span class="tab-short" aria-hidden="true">${SHORT_EN[p]}</span>`}</a>`
     )
     .join('');
   return `<header class="site-header"><div class="wrap header-inner">
 <a class="brand" href="${href(langPath(lang, '/'))}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>${esc(t.gameName)}</small></span></a>
-<nav class="tabs" aria-label="${esc(t.navLinks)}">${tabs}</nav>
+<nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}</nav>
 ${presencePill(lang)}
 <button type="button" class="theme-toggle" data-theme-toggle>${THEME_ICON}<span class="sr-only">${lang === 'ko' ? '낮과 밤 화면 바꾸기' : 'Switch day or night theme'}</span></button>
 <details class="lang-menu"><summary class="lang-current" aria-label="Language">${LANG_NAMES[lang]}</summary><div class="lang-list">${(only ? [lang, ...ALL_LANGS.filter((l) => l !== lang)] : ALL_LANGS).map((l) => `<a class="lang-opt" href="${href(langPath(l, only && l !== lang ? '/' : pagePath || '/'))}" data-lang="${l}" hreflang="${HREFLANG[l]}" lang="${HREFLANG[l]}"${l === lang ? ' aria-current="true"' : ''}>${LANG_NAMES[l]}</a>`).join('')}</div></details>
@@ -674,8 +677,8 @@ ${presencePill(lang)}
 // and it only ever shows the real number of open pages.
 function presencePill(lang) {
   return lang === 'ko'
-    ? '<p class="presence" hidden><i class="pr-dot" aria-hidden="true"></i><span class="pr-live" translate="no">LIVE</span><b data-site>0</b>명 접속 중</p>'
-    : '<p class="presence" hidden><i class="pr-dot" aria-hidden="true"></i><span class="pr-live" translate="no">LIVE</span><b data-site>0</b> <span>online</span></p>';
+    ? '<p class="presence" hidden><i class="pr-dot" aria-hidden="true"></i><span class="pr-live" translate="no">LIVE</span><b data-site>0</b>명<span class="pr-label"> 접속 중</span></p>'
+    : '<p class="presence" hidden><i class="pr-dot" aria-hidden="true"></i><span class="pr-live" translate="no">LIVE</span><b data-site>0</b> <span class="pr-label">online</span></p>';
 }
 
 function footer(lang) {
