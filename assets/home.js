@@ -1,6 +1,7 @@
 import './collection-status.js';
 import { indexEntry, searchEntries } from './search-index.js';
 import { mountCharPanel } from './my-char.js';
+import { newMark } from './market-data.js';
 
 const input = document.getElementById('site-search');
 const main = document.querySelector('.dir-main');
@@ -587,7 +588,7 @@ function renderRecent(rows, byId) {
       const isNew = before && !before.has(rowKey(r));
       return `<li class="${r.sold ? 'sold' : ''}${isNew ? ' fresh' : ''}"><a href="${live.dataset.price}?q=${encodeURIComponent(it.name)}">
 <img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="26" height="26" loading="lazy">
-<span class="name">${escHtml(it.name)}${r.sold ? `<span class="tag">${escHtml(liveText.sold)}</span>` : ''}</span>
+<span class="name">${newMark(r.seen)}${escHtml(it.name)}${r.sold ? `<span class="tag">${escHtml(liveText.sold)}</span>` : ''}</span>
 <span class="price">${mesos(r.price)}${r.qty > 1 ? ` <small>×${r.qty}</small>` : ''}</span>
 <span class="meta">${escHtml(r.seller)} · CH ${r.channel} · FM${r.room}</span>
 <span class="ago" data-seen="${escHtml(r.seen)}">${ago(r.seen)}</span></a></li>`;

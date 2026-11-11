@@ -542,6 +542,7 @@ a.band-link:hover { border-color: var(--accent); }
 .hero-stats .hs-live dd { color: var(--danger); }
 .hero-stats [data-market-stat][hidden] { display: none; }
 @media (max-width: 760px) { .presence { order: 1; margin-left: 0; font-size: 0.75rem; } }
+.new-mark { display: inline-grid; place-items: center; width: 15px; height: 15px; margin-right: 5px; border-radius: 3px; background: var(--danger); color: var(--panel); font-size: 0.62rem; font-weight: 800; line-height: 1; vertical-align: 0.1em; flex: none; }
 @keyframes live-pulse { 70% { box-shadow: 0 0 0 8px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
 @media (prefers-reduced-motion: reduce) { .live-dot { animation: none; } }
 .market-preview { flex-basis: 100%; font-size: 0.8rem; color: var(--accent-ink); background: var(--accent); padding: 4px 10px; border-radius: 8px; }

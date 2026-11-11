@@ -1,5 +1,11 @@
 export const DAY = 86400000;
 export const parseUtc = (s) => Date.parse(/[zZ]$|[+-]\d\d:\d\d$/.test(s) ? s : `${s.replace(' ', 'T')}Z`);
+// Listings seen in the last 30 minutes get an "N" mark, like a new post on a board.
+export const FRESH_MS = 30 * 60000;
+export const newMark = (seen, now = Date.now()) =>
+  now - parseUtc(seen) < FRESH_MS
+    ? `<span class="new-mark" title="${document.documentElement.lang === 'ko' ? '30분 안에 확인한 매물' : 'Seen in the last 30 minutes'}">N</span>`
+    : '';
 export function median(xs) {
   if (!xs.length) return null;
   const s = [...xs].sort((a, b) => a - b);
