@@ -25,7 +25,7 @@
     const maxShops = options.mode === 'test' ? 40 : Math.min(600, Number(options.maxShops) || 360);
     const maxItems = options.mode === 'test' ? 2 : Math.min(60, Number(options.maxItems) || 12);
     const perItem = Math.min(50, Number(options.shopsPerItem) || 20);
-    const report = { version: '0.5.0', runId: options.runId, world: 'Windia', startedAt: new Date().toISOString(),
+    const report = { version: '0.5.1', runId: options.runId, world: 'Windia', startedAt: new Date().toISOString(),
       status: 'running', rows: [], shops: 0, rejected: {}, queue: [], skippedItems: [], aiCalls: 0 };
     const rows = new Map();
     const openModal = () => { const el = document.querySelector('#sv-modal'); return el && !el.closest('[hidden]') ? el : null; };
@@ -52,17 +52,23 @@
       if (cls && cls.value !== 'All') { cls.value = 'All'; cls.dispatchEvent(new Event('change', { bubbles: true })); await pause(800); }
       const allTab = [...document.querySelectorAll('#market button.tab')].find(b => /^ALL/i.test(b.textContent.trim()));
       if (allTab && allTab.getAttribute('aria-pressed') === 'false') { allTab.click(); await pause(800); }
-      // The list renders 300 rows and adds more as its own box scrolls; scroll it to the end so the summary and the item
-      // rotation both see every item.
-      const wrap = document.querySelector('#rows')?.closest('.table-wrap');
-      for (let i = 0, before = -1; wrap && i < 80; i++) {
-        const now = document.querySelectorAll('#rows tr[data-id]').length;
-        if (now === before) break;
-        before = now; wrap.scrollTop = wrap.scrollHeight; await pause(700); guard();
+      // The list draws 60 rows and adds 60 more each time its own box is scrolled to the end, but only while the window is
+      // actually painted: a collector window hidden behind others never loads more. So, when the server is due a summary
+      // (every few hours), the extension brings this window forward for the scroll and hands focus back right after.
+      if (options.summaryDue && options.focus) {
+        const wrap = document.querySelector('#rows')?.closest('.table-wrap');
+        await options.focus(true);
+        try {
+          for (let i = 0, idle = 0, before = 0; wrap && i < 120 && idle < 6; i++) {
+            wrap.scrollTop = wrap.scrollHeight; await pause(400); guard();
+            const now = document.querySelectorAll('#rows tr[data-id]').length;
+            idle = now === before ? idle + 1 : 0; before = now;
+          }
+        } finally { await options.focus(false); }
+        if (wrap) wrap.scrollTop = 0;
+        report.summary = readSummary('#rows tr[data-id]');
       }
-      if (wrap) wrap.scrollTop = 0;
       const listRows = document.querySelectorAll('#rows tr[data-id]').length ? '#rows tr[data-id]' : 'tr[data-id]';
-      report.summary = readSummary(listRows);
       const all = [...document.querySelectorAll(listRows)].map(tr => ({ id: tr.getAttribute('data-id'), name: tr.querySelector('.item-select')?.getAttribute('title') || tr.querySelector('.item-select')?.textContent.trim() }))
         .filter(x => GmsBatchCatalog[Number(x.id.split(':')[1])] === x.name);
       if (all.length < 2) throw new Error('검증 가능한 아이템 목록 부족');

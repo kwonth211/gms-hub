@@ -1,6 +1,7 @@
 importScripts('config.private.js');
 const SCHEDULE = 'gms-market-hourly', WATCHDOG = 'gms-market-watchdog', RETRY = 'gms-market-upload';
 const INTERVAL = 15 * 60000;
+const SUMMARY_EVERY = 3 * 3600000;
 const COLLECT_RETRY = 'gms-market-collect-retry';
 const PAGE = 'https://meso.watch/?gms-batch=1';
 const ENDPOINT = 'https://gms-hub-votes.kwonth211.workers.dev/internal/market-batch';
@@ -12,7 +13,7 @@ const owned = tab => tab?.url?.startsWith(PAGE) || tab?.pendingUrl?.startsWith(P
 async function broadcast() {
   const s = await get();
   // No secret is ever included in content-script messages or the public DOM.
-  return { ...s, version: '0.5.0', nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
+  return { ...s, version: '0.5.1', nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
 }
 async function ensureAlarms() {
   const s = await get();
@@ -89,7 +90,9 @@ async function launch(mode, trigger) {
   }
   s.error = null; s.retryAt = null; await chrome.alarms.clear(COLLECT_RETRY);
   s.waitReason = null;
-  s.run = { runId: crypto.randomUUID(), mode, trigger, maxRows, ...scope, startedAt: Date.now(), cursor: s.cursor || 0, phase: 'loading', tabId: null };
+  // The item-list summary needs the collector window in front for a few seconds, so it runs at most every 3 hours.
+  const summaryDue = mode !== 'test' && Date.now() - (s.lastSummaryAt || 0) >= SUMMARY_EVERY;
+  s.run = { runId: crypto.randomUUID(), mode, trigger, maxRows, ...scope, summaryDue, startedAt: Date.now(), cursor: s.cursor || 0, phase: 'loading', tabId: null };
   await put(s);
   const tab = s.workerTabId ? await chrome.tabs.get(s.workerTabId).catch(() => null) : null;
   try {
@@ -137,6 +140,7 @@ async function upload() {
   current.pending = null; current.run = null; current.error = null; current.lastReceipt = receipt;
   current.lastSuccessAt = new Date().toISOString(); current.cursor = current.lastReport.nextCursor || 0;
   current.collectionFailures = 0; current.retryAt = null;
+  if (JSON.parse(pending.body).summary?.length) current.lastSummaryAt = Date.now();
   current.history = [{ runId: current.lastReport.runId, mode: 'production', trigger: pending.trigger, status: 'stored',
     at: current.lastSuccessAt, shops: current.lastReport.shops, rows: receipt.accepted, receipt }, ...(current.history || [])].slice(0, 20);
   await put(current); await chrome.alarms.clear(RETRY);
@@ -174,6 +178,17 @@ async function message(m, sender) {
     const s = await get();
     if (s.run?.tabId !== sender.tab.id || s.run.phase !== 'loading') return null;
     s.run.phase = 'collecting'; s.run.readyAt = Date.now(); await put(s); return s.run;
+  }
+  if (m.type === 'focus') {
+    const s = await get();
+    if (s.run?.runId !== m.runId || s.run.tabId !== sender.tab.id || !s.run.summaryDue) throw new Error('실행 불일치');
+    // Bring the collector window forward only for the list scroll, then give focus back to the window the user had.
+    if (m.on) {
+      const last = await chrome.windows.getLastFocused().catch(() => null);
+      s.run.returnWindowId = last && last.id !== sender.tab.windowId ? last.id : null; await put(s);
+      await chrome.windows.update(sender.tab.windowId, { focused: true });
+    } else if (s.run.returnWindowId) await chrome.windows.update(s.run.returnWindowId, { focused: true }).catch(() => {});
+    return { ok: true };
   }
   if (m.type === 'progress') {
     const s = await get();
