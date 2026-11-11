@@ -1023,6 +1023,24 @@ ${classNav(lang, cls)}${bandNav(lang)}${trainingMethod(lang)}</div>`;
 
 // ---------- scrolls ----------
 
+// Real scrolls for the picker: each family (e.g. Gloves Attack) with its tiers' item ids, mapped to the gain ladder in
+// scrolls.json. Pet equipment scrolls have no confirmed ladder and are left out.
+function scrollFamilies(lang) {
+  const ladderOf = (name) =>
+    /^(Wand|Staff) Magic Attack$/.test(name) ? 'magic-weapon'
+    : /(Sword|Axe|Blunt Weapon|Dagger|Spear|Polearm|Bow|Crossbow|Claw) Attack$/.test(name) ? 'weapon'
+    : /(DEF|Def\.|Gloves Magic Attack)$/.test(name) ? 'defense'
+    : /(HP|MP)$/.test(name) ? 'hpmp'
+    : 'standard';
+  const fam = new Map();
+  for (const i of itemsData.items) {
+    const m = i.en.match(/^(.*) Scroll: (Lesser|Intermediate|Greater|Chaos)$/);
+    if (!m || /^Pet Equip/.test(m[1])) continue;
+    const f = fam.get(m[1]) || fam.set(m[1], { en: m[1], ko: (i.ko || i.en).replace(/ 주문서: .*$/, ''), ladder: ladderOf(m[1]), tiers: {} }).get(m[1]);
+    f.tiers[m[2].toLowerCase()] = i.id;
+  }
+  return [...fam.values()].sort((a, b) => a.en.localeCompare(b.en)).map((f) => [lang === 'ko' ? f.ko : f.en, f.ladder, f.tiers]);
+}
 function scrollBody(lang) {
   const t = T[lang];
   const tierOpts = scrolls.tiers.map((s) => `<option value="${s.id}"${s.id === 'intermediate' ? ' selected' : ''}>${esc(tierName(lang, s))} (${s.success}%)</option>`).join('');
@@ -1040,7 +1058,8 @@ function scrollBody(lang) {
   return `${pageHead(lang, 'scroll', t.scH1, t.scLead)}
 <div class="wrap">
 <div class="tool-layout">
-<form id="sc-form" class="panel form">
+<form id="sc-form" class="panel form" data-api="${esc(config.voteApi)}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-drops="${esc(href(langPath(lang, '/tools/drop-rate/')))}">
+<label class="sc-pick">${lang === 'ko' ? '주문서 고르기' : 'Pick a scroll'}<select name="family"><option value="">${lang === 'ko' ? '직접 입력' : 'Enter values myself'}</option>${scrollFamilies(lang).map(([name], i) => `<option value="${i}" translate="no">${esc(name)}</option>`).join('')}</select><small id="sc-price-note" class="sc-price-note"></small></label>
 <label>${t.scTier}<select name="tier">${tierOpts}</select></label>
 <label>${t.scLadder}<select name="ladder">${ladderOpts}</select></label>
 <label id="custom-gain" hidden>${t.scCustomGain}<input type="number" name="gain" value="2" min="0" step="any"></label>
@@ -1076,7 +1095,7 @@ function scrollBody(lang) {
 </section>
 ${scrollGuide(lang)}
 </div>
-${jsonScript('scroll-data', scrolls)}
+${jsonScript('scroll-data', { ...scrolls, families: scrollFamilies(lang) })}
 ${jsonScript('i18n', { lang, distSucc: t.distSucc, distBoom: t.distBoom, tierNames: Object.fromEntries(scrolls.tiers.map((x) => [x.id, tierName(lang, x)])) })}`;
 }
 
@@ -1613,6 +1632,29 @@ ${marketGuide(lang)}
 ${jsonScript('mk-data', { lang, api: config.voteApi, itemsUrl: href('/assets/items.json'), t, itemBase: href(langPath(lang, '/items/')), itemLink: IT[lang].pageLink, itemPages: PRICED.map((i) => i.id), itemPaths: Object.fromEntries(PRICED.map((i) => [i.id, href(langPath(lang, itemPath(i)))])) })}`;
 }
 
+// "Drop rate" visitors mostly want to know which monster drops an item (Clarity: half of them went straight back), so the
+// page opens with a drop finder over the player-reported drop lists; the odds calculator follows.
+function dropFinder(lang) {
+  const ko = lang === 'ko';
+  const mobs = MONSTERS.monsters.filter((m) => m.status === 'active').sort((a, b) => a.lv - b.lv);
+  const mobIdx = new Map(mobs.map((m, i) => [m.id, i]));
+  const byId = new Map(itemsData.items.map((i) => [i.id, i]));
+  const items = [...DROP_INDEX.entries()]
+    .map(([id, rows]) => [byId.get(id), rows.filter(({ m }) => mobIdx.has(m.id))])
+    .filter(([i, rows]) => i && rows.length)
+    .map(([i, rows]) => [i.ko || i.en, i.en, ITEM_PAGE_IDS.has(i.id) ? href(langPath(lang, itemPath(i))) : href(langPath(lang, `/tools/market/?item=${i.id}`)),
+      rows.sort((a, b) => a.m.lv - b.m.lv).map(({ m, confidence }) => [mobIdx.get(m.id), confidence === 'repeated' ? 1 : 0])]);
+  const examples = itemsData.items.filter((i) => DROP_INDEX.has(i.id) && priceOf(i)).sort((a, b) => (priceOf(b).n || 0) - (priceOf(a).n || 0)).slice(0, 4);
+  return `<section class="panel drop-finder" id="drop-finder" aria-labelledby="df-title">
+<h2 id="df-title">${ko ? '이 아이템, 어떤 몬스터가 떨어뜨려요?' : 'Which monster drops it?'}</h2>
+<label class="df-search">${ko ? '아이템 이름' : 'Item name'}<input type="search" id="df-q" autocomplete="off" placeholder="${ko ? '예: 장갑 공격력 주문서, 미스릴 원석' : 'e.g. Gloves Attack Scroll, Mithril Ore'}"></label>
+<p class="df-examples">${examples.map((i) => `<button type="button" class="chip" data-q="${esc(itemName(lang, i))}">${esc(itemName(lang, i))}</button>`).join('')}</p>
+<div id="df-results" aria-live="polite"></div>
+<p class="muted small">${ko ? '몬스터 목록은 플레이어 제보예요. 드롭 확률은 서버에만 있어 공개되지 않아요.' : 'Monster lists come from player reports. Drop rates live on the server and are not published.'} <a href="${href(langPath(lang, '/monsters/'))}">${ko ? '몬스터 도감' : 'Monster database'}</a> · <a href="${href(langPath(lang, '/bosses/'))}">${ko ? '보스 드롭' : 'Boss drops'}</a></p>
+${jsonScript('drop-index', { items, mobs: mobs.map((m) => [m.ko || m.en, m.en, m.lv, href(langPath(lang, monsterPath(m)))]),
+  t: ko ? { more: '외 {n}종', none: '그 이름으로 드롭 제보가 있는 아이템이 없어요. 더 짧게 검색해 보세요.', repeated: '반복 제보', found: '{n}개 아이템' } : { more: '+{n} more', none: 'No reported drops for that name. Try a shorter name.', repeated: 'Repeated reports', found: '{n} items' } })}
+</section>`;
+}
 function dropBody(lang) {
   const t = T[lang];
   const rows = drops.entries.length
@@ -1623,13 +1665,9 @@ function dropBody(lang) {
         )
         .join('')
     : `<tr><td colspan="5" class="muted">${t.dbEmpty}</td></tr>`;
-  // Searches for "drop rate" mostly want to know who drops an item; point them at the drop lists before the calculator.
-  const dl = (p, label) => `<a href="${href(langPath(lang, p))}">${label}</a>`;
   return `${pageHead(lang, 'bag', t.dropH1, t.dropLead)}
 <div class="wrap">
-<p class="panel drop-where">${lang === 'ko'
-  ? `몬스터 드롭 확률은 서버에만 있어서 공개되지 않아요. 어떤 몬스터가 무엇을 떨어뜨리는지는 플레이어 제보로 정리해 두었어요: ${dl('/monsters/', '몬스터 도감')}, ${dl('/bosses/', '보스 드롭')}, ${dl('/items/', '아이템별 드롭 몬스터')}.`
-  : `Monster drop rates live on the server and are not published. Who drops what is collected from player reports: ${dl('/monsters/', 'monster drop lists')}, ${dl('/bosses/', 'boss drops')}, ${dl('/items/', 'which monsters drop an item')}.`}</p>
+${dropFinder(lang)}
 <div class="tool-layout">
 <form id="drop-form" class="panel form">
 <label>${t.rateInput}<input type="number" name="rate" value="1" min="0.0001" max="100" step="any" required><small>${esc(t.rateHint)}</small></label>
@@ -2330,7 +2368,7 @@ for (const lang of LANGS) {
       title: t.dropTitle,
       desc: t.dropDesc,
       body: dropBody(lang),
-      scripts: ['drop.js'],
+      scripts: ['drop.js'], modules: ['drop-finder.js'],
       ld: [appLd(t.dropH1, t.dropDesc, '/tools/drop-rate/'), breadcrumbLd(lang, t.dropH1, '/tools/drop-rate/')]
     },
     market: {

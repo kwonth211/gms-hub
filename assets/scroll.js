@@ -86,6 +86,55 @@ compareBody.addEventListener('change', (e) => {
   render();
 });
 
+// Picking a real scroll sets its gain ladder and fills each tier's price from the live market (median of recent listings),
+// so the cost columns answer "is this worth it at today's prices?" without typing anything.
+const priceNote = document.getElementById('sc-price-note');
+const live = {};
+async function pickFamily() {
+  const fam = data.families[form.family.value];
+  if (!fam) { priceNote.textContent = ''; return; }
+  const [, ladder, tiers] = fam;
+  form.ladder.value = ladder;
+  if (!tiers[form.tier.value]) form.tier.value = Object.keys(tiers)[0];
+  const ids = Object.values(tiers).filter((id) => !(id in live));
+  if (ids.length && form.dataset.api) {
+    priceNote.textContent = i18n.lang === 'ko' ? '시세 불러오는 중…' : 'Loading prices…';
+    try {
+      const r = await fetch(`${form.dataset.api}/prices?ids=${ids.join(',')}`);
+      const got = r.ok ? await r.json() : {};
+      for (const id of ids) live[id] = got[id]?.median || 0;
+    } catch (e) { for (const id of ids) live[id] = 0; }
+  }
+  for (const [tier, id] of Object.entries(tiers)) prices[tier] = live[id] || 0;
+  fillPrice();
+  if (window.track) window.track('scroll_pick', { family: fam[0], ladder });
+}
+function fillPrice() {
+  const fam = data.families[form.family.value];
+  if (!fam) return;
+  const id = fam[2][form.tier.value];
+  const p = id ? live[id] : 0;
+  form.price.value = p || 0;
+  const link = id ? `${form.dataset.market}?item=${id}` : '';
+  const drops = `<a href="${form.dataset.drops}?q=${encodeURIComponent(fam[0])}#drop-finder">${i18n.lang === 'ko' ? '드롭 몬스터' : 'Who drops it'}</a>`;
+  priceNote.innerHTML = p
+    ? `${i18n.lang === 'ko' ? '시세 중앙값' : 'Market median'} ${new Intl.NumberFormat(i18n.lang).format(p)} · <a href="${link}">${i18n.lang === 'ko' ? '시세 보기' : 'See listings'}</a> · ${drops}`
+    : id ? `${i18n.lang === 'ko' ? '최근 시세가 없어요' : 'No recent price'} · <a href="${link}">${i18n.lang === 'ko' ? '시세 보기' : 'Market'}</a> · ${drops}` : (i18n.lang === 'ko' ? '이 등급은 없는 주문서예요' : 'This tier does not exist for this scroll');
+  render();
+}
+form.family.addEventListener('change', pickFamily);
+form.tier.addEventListener('change', fillPrice);
+const preset = new URLSearchParams(location.search).get('scroll');
+if (preset) {
+  const i = data.families.findIndex(([, , tiers]) => Object.values(tiers).includes(Number(preset)));
+  if (i >= 0) {
+    form.family.value = String(i);
+    const tier = Object.entries(data.families[i][2]).find(([, id]) => id === Number(preset))?.[0];
+    if (tier) form.tier.value = tier;
+    pickFamily();
+  }
+}
+
 form.addEventListener('submit', (e) => {
   e.preventDefault();
   render();

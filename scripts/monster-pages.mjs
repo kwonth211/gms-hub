@@ -26,8 +26,7 @@ export function monsterIndex({lang, data, url}) {
 <label>${ko?'종류':'Type'}<select id="monster-type"><option value="">${ko?'전체':'All'}</option><option value="boss">${ko?'보스':'Boss'}</option><option value="undead">${ko?'언데드':'Undead'}</option></select></label>
 <label>${ko?'정렬':'Sort'}<select id="monster-sort"><option value="level">${ko?'레벨 낮은 순':'Level ↑'}</option><option value="hp">${ko?'체력 낮은 순':'HP ↑'}</option><option value="exp">${ko?'경험치 높은 순':'EXP ↓'}</option><option value="name">${ko?'이름순':'Name'}</option></select></label>
 <label class="monster-check"><input id="monster-unavailable" type="checkbox">${ko?'미개방·위치 미확인 몬스터 포함':'Include unreleased and unmapped monsters'}</label></form>
-<p class="monster-hidden-hint" id="monster-hidden-hint" hidden><span></span> <button type="button" class="btn ghost small-btn">${ko?'포함해서 보기':'Show them'}</button></p>
-<div class="monster-result-line"><p id="monster-count" role="status" aria-live="polite"></p><button class="btn ghost small-btn" id="monster-reset" type="button">${ko?'필터 초기화':'Reset filters'}</button></div>
+<div class="monster-result-line"><p id="monster-count" role="status" aria-live="polite"></p><p class="monster-hidden-hint" id="monster-hidden-hint" hidden><span></span> <button type="button" class="btn ghost small-btn">${ko?'포함해서 보기':'Show them'}</button></p><button class="btn ghost small-btn" id="monster-reset" type="button">${ko?'필터 초기화':'Reset filters'}</button></div>
 <ul class="monster-grid" id="monster-grid">${cards}</ul><p class="panel" id="monster-empty" hidden>${ko?'조건에 맞는 몬스터가 없어요. 검색어를 줄이거나 필터를 초기화해 보세요.':'No matches. Try a shorter query or reset the filters.'}</p>
 <noscript><p>${ko?'검색 필터를 사용하려면 JavaScript를 켜 주세요. 아래 전체 목록의 상세 링크는 그대로 이용할 수 있습니다.':'Enable JavaScript for filters. All detail links remain available.'}</p></noscript></div>`;
 }

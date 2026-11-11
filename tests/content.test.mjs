@@ -237,3 +237,16 @@ test('best EXP quests rank quest rewards per level band without repeatables or r
   assert.ok(!html.includes('�'));
   assert.match(read('dist/en/quests/index.html'),/href="\/en\/quests\/best-exp\/"/);
 });
+test('odds page opens with a drop finder and the scroll calculator offers real scrolls with live prices',()=>{
+  const drop=read('dist/ko/tools/drop-rate/index.html');
+  assert.ok(drop.indexOf('id="drop-finder"')<drop.indexOf('id="drop-form"'));
+  const idx=JSON.parse(drop.match(/<script id="drop-index" type="application\/json">([\s\S]*?)<\/script>/)[1]);
+  assert.ok(idx.items.length>300&&idx.mobs.length>40);
+  const sc=read('dist/en/tools/scroll/index.html');
+  assert.match(sc,/<select name="family">/);
+  const data=JSON.parse(sc.match(/<script id="scroll-data" type="application\/json">([\s\S]*?)<\/script>/)[1]);
+  const gloves=data.families.find(([n])=>n==='Gloves Attack');
+  assert.equal(gloves[1],'standard');
+  assert.equal(data.families.find(([n])=>n==='Wand Magic Attack')[1],'magic-weapon');
+  assert.equal(data.families.find(([n])=>n==='Claw Attack')[1],'weapon');
+});

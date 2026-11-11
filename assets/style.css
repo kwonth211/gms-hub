@@ -1509,3 +1509,21 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .eq-table thead th:nth-child(4) { width: 64px; }
 .ad-slot-top { margin: 8px auto 28px; }
 .prose .ad-slot-top { margin: 24px auto; }
+
+/* Drop finder: the first thing on the odds page. */
+.drop-finder { margin: 0 0 20px; display: grid; gap: 10px; }
+.drop-finder h2 { margin: 0; }
+.df-search { display: grid; gap: 4px; }
+.df-search input { font-size: 1rem; padding: 10px 12px; }
+.df-examples { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+.df-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.df-list li { display: grid; gap: 4px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.df-item { font-weight: 700; }
+.df-mobs { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.df-mobs a { display: inline-flex; gap: 4px; align-items: baseline; }
+.df-mobs small, .df-more { color: var(--muted); }
+.sc-pick select { font-weight: 600; }
+.sc-price-note { color: var(--muted); font-size: 0.8rem; min-height: 1.2em; }
+.monster-result-line { flex-wrap: wrap; gap: 6px 12px; }
+.monster-result-line .monster-hidden-hint { margin: 0 auto 0 0; display: flex; align-items: center; gap: 8px; }
+.monster-result-line .monster-hidden-hint[hidden] { display: none; }
