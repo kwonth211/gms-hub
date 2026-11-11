@@ -32,16 +32,41 @@ if ($('monster-index')) {
   render();
 }
 if ($('drop-query')) {
-  const cards=[...document.querySelectorAll('[data-drop]')];
+  const cards=[...document.querySelectorAll('[data-drop]')], list=cards[0].parentElement;
   const entries=cards.map((el,id)=>indexEntry({id,title:el.dataset.search,names:[el.dataset.search]}));
+  const num=(el,k)=>Number(el.dataset[k])||0;
+  // Items without a market price sort after priced ones, by NPC sell price, so the list still reads high to low.
+  const byPrice=(a,b,dir)=>(num(b,'market')>0)-(num(a,'market')>0)||dir*(num(b,'market')-num(a,'market'))||num(b,'sell')-num(a,'sell');
+  const sorts={market:(a,b)=>byPrice(a,b,1),'market-asc':(a,b)=>byPrice(a,b,-1),sell:(a,b)=>num(b,'sell')-num(a,'sell'),lv:(a,b)=>num(b,'lv')-num(a,'lv'),
+    order:(a,b)=>num(a,'order')-num(b,'order'),name:(a,b)=>a.dataset.name.localeCompare(b.dataset.name,ko?'ko':'en')};
   function render() {
     const q=$('drop-query').value.trim(), category=$('drop-category').value;
     const matched=q?new Set(searchEntries(entries,q).map(r=>r.id)):null;
     let shown=0;
     cards.forEach((el,id)=>{el.hidden=(matched&&!matched.has(id))||(category&&category!==el.dataset.cat)||($('drop-repeated').checked&&el.dataset.confidence!=='repeated');if(!el.hidden)shown++;});
+    const sort=sorts[$('drop-sort').value]||sorts.order;
+    [...cards].sort((a,b)=>sort(a,b)||num(a,'order')-num(b,'order')).forEach(el=>list.append(el));
     $('drop-count').textContent=countText(shown,cards.length);$('drop-empty').hidden=shown>0;
   }
-  $('drop-query').addEventListener('input',render);$('drop-category').addEventListener('change',render);$('drop-repeated').addEventListener('change',render);render();
+  $('drop-query').addEventListener('input',render);$('drop-category').addEventListener('change',render);$('drop-repeated').addEventListener('change',render);
+  $('drop-sort').addEventListener('change',()=>{render();track('monster_drop_sort',{sort:$('drop-sort').value});});
+  render();
+  // Live market medians (last 14 days of shop scans and player reports), 60 items per request.
+  const api=document.body.dataset.priceApi, ids=cards.map(el=>el.dataset.item).filter(Boolean);
+  const mesos=n=>ko?(n>=1e8?`${+(n/1e8).toFixed(2)}억`:n>=1e4?`${+(n/1e4).toFixed(n>=1e6?0:1)}만`:n.toLocaleString('ko')):n.toLocaleString('en-US');
+  if (api&&ids.length) Promise.all(Array.from({length:Math.ceil(ids.length/60)},(_,i)=>fetch(`${api}/prices?ids=${ids.slice(i*60,i*60+60).join(',')}`).then(r=>r.ok?r.json():{}).catch(()=>({}))))
+    .then(parts=>{
+      const prices=Object.assign({},...parts);
+      cards.forEach(el=>{
+        const p=prices[el.dataset.item];
+        if(!p?.median)return;
+        el.dataset.market=p.median;
+        const slot=el.querySelector('[data-price]');
+        slot.textContent=ko?`시세 ${mesos(p.median)} 메소`:tx('Market {price} mesos',{price:mesos(p.median)});
+        slot.hidden=false;
+      });
+      render();
+    });
 }
 if ($('location-sort')) {
   const rows=[...document.querySelectorAll('[data-location]')], tbody=rows[0].parentElement;

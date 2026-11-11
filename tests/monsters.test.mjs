@@ -58,7 +58,10 @@ test('renderers escape source strings and expose filters without backend scripts
   assert.equal((html.match(/data-monster data-level=/g)||[]).length,78);
   for(const id of ['monster-query','monster-level','monster-type','monster-sort','monster-unavailable'])assert.ok(html.includes(`id="${id}"`));
   const js=fs.readFileSync(new URL('../assets/monsters.js',import.meta.url),'utf8');
-  assert.ok(!/\bfetch\s*\(|XMLHttpRequest|sendBeacon|location\.(href\s*=|assign|replace)/.test(js));
+  // The only network call is the read-only market price lookup for drop sorting.
+  const calls=js.match(/\bfetch\s*\([^)]*\)/g)||[];
+  assert.ok(calls.every(c=>c.includes('/prices?ids=')));
+  assert.ok(!/XMLHttpRequest|sendBeacon|method\s*:|location\.(href\s*=|assign|replace)/.test(js));
 });
 
 test('hunting notes resolve to real monsters, recorded sources and reported drops; accuracy table matches community figures',async()=>{

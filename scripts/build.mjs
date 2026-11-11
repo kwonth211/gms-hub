@@ -2554,7 +2554,7 @@ for (const lang of LANGS) {
       lang, pageKey: 'monster', pagePath: monsterPath(m),
       title: lang === 'ko' ? `글클메 ${name}: 드롭·체력·출현 위치 | GMS Hub` : `${name}: MapleStory Classic World drops, stats & locations | GMS Hub`,
       desc: lang === 'ko' ? `${name} Lv. ${m.lv}, HP ${m.hp}, EXP ${m.exp}. 드롭 제보 ${m.drops.length}종과 출현 위치·속성 저항을 확인하세요.` : `${name}, level ${m.lv}, HP ${m.hp}, EXP ${m.exp}. Explore ${m.drops.length} reported drops, map locations and elemental responses.`,
-      body: monsterDetail({lang, m, data: MONSTERS, url: href, itemUrl: monsterItemUrl, notes: MONSTER_NOTES.notes[m.id] || null,
+      body: monsterDetail({lang, m, data: MONSTERS, url: href, itemUrl: monsterItemUrl, sellPrice: (id) => ITEM_DETAILS[id]?.sell || 0, notes: MONSTER_NOTES.notes[m.id] || null,
         routes: training.routes.filter((r) => r.mobIds.includes(m.id)), accuracy: (lv) => dmgAccNeed(lv, m), rank: RATIO_RANK.get(m.id) || null}), modules: ['monsters.js'],
       noindex: m.status === 'unplaced', ld: [breadcrumbLd(lang, name, monsterPath(m))]
     }));

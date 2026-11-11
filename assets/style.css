@@ -1106,6 +1106,7 @@ input.dm-filled { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset
 .monster-drop > img { object-fit: contain; image-rendering: pixelated; flex-shrink: 0; margin-top: 3px; }
 .monster-drop-info { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; min-width: 0; }
 .monster-drop-info strong { font-size: .9rem; line-height: 1.45; overflow-wrap: anywhere; }
+.monster-drop-price { font-size: .85rem; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
 .monster-drop-info small { font-size: .72rem; line-height: 1.4; overflow-wrap: anywhere; }
 .monster-confidence { font-size: 0.75rem; border-radius: 4px; padding: 1px 5px; color: var(--ok); background: var(--ok-soft); }
 .monster-confidence.limited { color: var(--warn); background: var(--warn-soft); }
