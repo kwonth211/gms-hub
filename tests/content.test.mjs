@@ -250,3 +250,11 @@ test('odds page opens with a drop finder and the scroll calculator offers real s
   assert.equal(data.families.find(([n])=>n==='Wand Magic Attack')[1],'magic-weapon');
   assert.equal(data.families.find(([n])=>n==='Claw Attack')[1],'weapon');
 });
+test('every page loads the item hover card and its data covers equipment, scrolls and drops',()=>{
+  assert.match(read('dist/ko/monsters/30/index.html'),/assets\/item-tip\.js/);
+  const tips=JSON.parse(read('dist/assets/item-tips.json'));
+  const cutlass=tips.items['1302003']||Object.values(tips.items).find(t=>t[1]==='Cutlass');
+  assert.ok(cutlass&&cutlass[2]==='Equip'&&cutlass[7].PAD>0);
+  const gloves=tips.items['2040801'];
+  assert.deepEqual(gloves[10],[2,60,0]);
+});

@@ -1530,3 +1530,30 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .monster-result-line { flex-wrap: wrap; gap: 6px 12px; }
 .monster-result-line .monster-hidden-hint { margin: 0 auto 0 0; display: flex; align-items: center; gap: 8px; }
 .monster-result-line .monster-hidden-hint[hidden] { display: none; }
+
+/* Item hover card: one dark card in both themes so it reads as a game tooltip over any page. */
+:root { --tip-bg: #1b2236; --tip-line: #34405f; --tip-text: #eef2fa; --tip-muted: #a7b2c9; --tip-good: #7fd99a; --tip-bad: #ff8f8f; --tip-gold: #ffcf3f; }
+.item-tip { position: fixed; left: 0; top: 0; z-index: 80; width: 280px; pointer-events: none; background: var(--tip-bg); color: var(--tip-text);
+  border: 1px solid var(--tip-line); border-radius: 12px; box-shadow: 0 14px 34px var(--shadow-c); padding: 12px 14px; font-size: 0.82rem; line-height: 1.45; }
+.item-tip[hidden] { display: none; }
+.item-tip header { display: flex; gap: 10px; align-items: center; padding-bottom: 8px; border-bottom: 1px solid var(--tip-line); }
+.item-tip header img { image-rendering: pixelated; background: var(--tip-line); border-radius: 6px; padding: 2px; }
+.item-tip header strong { display: block; font-size: 0.95rem; line-height: 1.25; }
+.item-tip header small, .item-tip .tip-muted, .item-tip footer, .item-tip small { color: var(--tip-muted); }
+.item-tip p { margin: 6px 0 0; }
+.item-tip h4 { margin: 0 0 4px; font-size: 0.75rem; font-weight: 700; color: var(--tip-muted); }
+.item-tip section { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--tip-line); }
+.item-tip .tip-good { color: var(--tip-good); }
+.item-tip .tip-bad { color: var(--tip-bad); }
+.item-tip .tip-stats { list-style: none; margin: 6px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 10px; }
+.item-tip .tip-price { margin: 0; }
+.item-tip .tip-price b { font-size: 1.25rem; color: var(--tip-gold); font-variant-numeric: tabular-nums; }
+.item-tip .tip-range { position: relative; height: 4px; margin: 8px 0 2px; border-radius: 2px; background: var(--tip-line); }
+.item-tip .tip-range i { position: absolute; top: -3px; width: 4px; height: 10px; margin-left: -2px; border-radius: 2px; background: var(--tip-gold); }
+.item-tip .tip-range-ends { display: flex; justify-content: space-between; margin: 0; color: var(--tip-muted); font-size: 0.72rem; }
+.item-tip dl { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 10px; margin: 6px 0 0; }
+.item-tip dl div { display: flex; justify-content: space-between; gap: 6px; }
+.item-tip dt { color: var(--tip-muted); }
+.item-tip dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.item-tip footer { margin-top: 8px; font-size: 0.7rem; }
+@media (prefers-reduced-motion: no-preference) { .item-tip { transition: opacity 0.12s ease; } }

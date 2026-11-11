@@ -688,7 +688,7 @@ function withTopAd(body, ads) {
 function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], modules = [], ld = [], only, noindex }) {
   const ads = ADFIT_PAGES.has(pageKey) && !noindex && Object.values(config.adfit || {}).some(Boolean);
   return `${head({ lang, title, desc, pagePath, ld, only, noindex })}
-<body data-page="${pageKey}">
+<body data-page="${pageKey}" data-price-api="${esc(config.voteApi)}" data-tips="${esc(href('/assets/item-tips.json'))}">
 ${header(lang, pagePath, only)}
 <main>${ads && pageKey !== 'home' ? adfitRails() : ''}${withTopAd(body, ads)}${ads ? adfitSlot() : ''}</main>
 ${footer(lang)}
@@ -696,6 +696,7 @@ ${footer(lang)}
 ${ads ? `<script src="${scriptSrc('adfit.js')}" defer></script>` : ''}
 ${scripts.map((s) => `<script src="${scriptSrc(s)}" defer></script>`).join('\n')}
 ${modules.map((s) => `<script type="module" src="${href(`/assets/${s}?v=${moduleVersion}`)}"></script>`).join('\n')}
+<script type="module" src="${href(`/assets/item-tip.js?v=${moduleVersion}`)}"></script>
 </body>
 </html>`;
 }
@@ -2837,5 +2838,35 @@ write('assets/shop-glyphs.json', fs.readFileSync(path.join(root, 'data/shop-glyp
 write('assets/mobs.json', JSON.stringify(MOBS.map((m) => [m.id, m.ko || '', m.en, m.lv, m.hp, m.wdef, m.mdef, m.eva, m.el || '', m.undead ? 1 : 0, m.boss ? 1 : 0, m.mp, m.aka.join(' '), m.status || ''])));
 write('assets/weapons.json', JSON.stringify(readJson('data/weapons.json').weapons.map((w) => [w.id, w.ko || '', w.en, w.type, w.lv, w.watk || 0, w.matk || 0])));
 write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko || '', i.en, i.cat, i.sub, i.lv || 0])));
+// Hover cards (assets/item-tip.js): the static half of what a card shows for every item a page can link to. Live prices
+// come from the worker on hover. mobs: [ko, en, lv]; items: id -> [ko, en, cat, sub, reqLevel, jobBits, req, inc, slots,
+// sellPrice, scroll [gain, success, destroyOnFail] | 0, [mob indexes, lowest level first], dropper count, quest count].
+{
+  const tipMobs = MONSTERS.monsters.filter((m) => m.status === 'active');
+  const mobAt = new Map(tipMobs.map((m, i) => [m.id, i]));
+  const scrollOf = new Map();
+  for (const [, ladder, tiers] of scrollFamilies('en')) {
+    const gains = scrolls.ladders.find((l) => l.id === ladder)?.gains || {};
+    for (const [tier, id] of Object.entries(tiers)) {
+      const t = scrolls.tiers.find((x) => x.id === tier);
+      if (t && gains[tier] != null) scrollOf.set(id, [gains[tier], t.success, t.destroyOnFail || 0]);
+    }
+  }
+  const questGives = new Map();
+  for (const q of QUESTS) if (!q.expired) for (const g of q.gets) questGives.set(g.id, (questGives.get(g.id) || 0) + 1);
+  const ids = new Set([...Object.keys(ITEM_DETAILS).map(Number), ...DROP_INDEX.keys(), ...Object.keys(itemPrices.prices || {}).map(Number), ...scrollOf.keys()]);
+  const byId = new Map(itemsData.items.map((i) => [i.id, i]));
+  const tips = {};
+  for (const id of ids) {
+    const i = byId.get(id);
+    if (!i) continue;
+    const d = ITEM_DETAILS[id] || {};
+    const droppers = (DROP_INDEX.get(id) || []).filter(({ m }) => mobAt.has(m.id)).sort((a, b) => a.m.lv - b.m.lv);
+    tips[id] = [i.ko || '', i.en, i.cat, i.sub || '', d.req?.lv || i.lv || 0, d.req?.job || 0,
+      Object.fromEntries(['str', 'dex', 'int', 'luk'].filter((k) => d.req?.[k]).map((k) => [k, d.req[k]])), d.inc || {}, d.slots || 0, d.sell || 0,
+      scrollOf.get(id) || 0, droppers.slice(0, 3).map(({ m }) => mobAt.get(m.id)), droppers.length, questGives.get(id) || 0];
+  }
+  write('assets/item-tips.json', JSON.stringify({ mobs: tipMobs.map((m) => [m.ko || m.en, m.en, m.lv]), items: tips }));
+}
 
 console.log(`Built ${PAGES.length * LANGS.length} pages + ${MONSTERS.monsters.length * LANGS.length} monster pages + ${MAPS.length * LANGS.length} map pages + ${QUESTS.length * LANGS.length} quest pages + ${ITEM_PAGES.length * LANGS.length} item pages, ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);
