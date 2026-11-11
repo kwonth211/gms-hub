@@ -688,7 +688,7 @@ function withTopAd(body, ads) {
 function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], modules = [], ld = [], only, noindex }) {
   const ads = ADFIT_PAGES.has(pageKey) && !noindex && Object.values(config.adfit || {}).some(Boolean);
   return `${head({ lang, title, desc, pagePath, ld, only, noindex })}
-<body data-page="${pageKey}" data-price-api="${esc(config.voteApi)}" data-tips="${esc(href('/assets/item-tips.json'))}">
+<body data-page="${pageKey}" data-price-api="${esc(config.voteApi)}" data-tips="${esc(href('/assets/item-tips.json'))}" data-sprites="${esc(href('/assets/monsters/'))}">
 ${header(lang, pagePath, only)}
 <main>${ads && pageKey !== 'home' ? adfitRails() : ''}${withTopAd(body, ads)}${ads ? adfitSlot() : ''}</main>
 ${footer(lang)}
@@ -2838,12 +2838,15 @@ write('assets/shop-glyphs.json', fs.readFileSync(path.join(root, 'data/shop-glyp
 write('assets/mobs.json', JSON.stringify(MOBS.map((m) => [m.id, m.ko || '', m.en, m.lv, m.hp, m.wdef, m.mdef, m.eva, m.el || '', m.undead ? 1 : 0, m.boss ? 1 : 0, m.mp, m.aka.join(' '), m.status || ''])));
 write('assets/weapons.json', JSON.stringify(readJson('data/weapons.json').weapons.map((w) => [w.id, w.ko || '', w.en, w.type, w.lv, w.watk || 0, w.matk || 0])));
 write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko || '', i.en, i.cat, i.sub, i.lv || 0])));
-// Hover cards (assets/item-tip.js): the static half of what a card shows for every item a page can link to. Live prices
-// come from the worker on hover. mobs: [ko, en, lv]; items: id -> [ko, en, cat, sub, reqLevel, jobBits, req, inc, slots,
-// sellPrice, scroll [gain, success, destroyOnFail] | 0, [mob indexes, lowest level first], dropper count, quest count].
+// Hover cards (assets/item-tip.js): the static half of what a card shows for every item or monster a page can link to.
+// Live prices come from the worker on hover.
+// items: id -> [ko, en, cat, sub, reqLevel, jobBits, req, inc, slots, sellPrice, scroll [gain, success, destroyOnFail] | 0,
+//   [dropping monster ids, lowest level first, up to 4], dropper count, quest count]
+// mobs: id -> [ko, en, lv, hp, exp, elements, avoid, boss, accuracy needed at its level, [[map ko, map en] x2], open map
+//   count, [item ids it drops, equipment and scrolls first, up to 4], drop count, status]
 {
-  const tipMobs = MONSTERS.monsters.filter((m) => m.status === 'active');
-  const mobAt = new Map(tipMobs.map((m, i) => [m.id, i]));
+  const tipMobs = MONSTERS.monsters.filter((m) => m.status !== 'unplaced');
+  const live = new Set(MONSTERS.monsters.filter((m) => m.status === 'active').map((m) => m.id));
   const scrollOf = new Map();
   for (const [, ladder, tiers] of scrollFamilies('en')) {
     const gains = scrolls.ladders.find((l) => l.id === ladder)?.gains || {};
@@ -2861,12 +2864,21 @@ write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko
     const i = byId.get(id);
     if (!i) continue;
     const d = ITEM_DETAILS[id] || {};
-    const droppers = (DROP_INDEX.get(id) || []).filter(({ m }) => mobAt.has(m.id)).sort((a, b) => a.m.lv - b.m.lv);
+    const droppers = (DROP_INDEX.get(id) || []).filter(({ m }) => live.has(m.id)).sort((a, b) => a.m.lv - b.m.lv);
     tips[id] = [i.ko || '', i.en, i.cat, i.sub || '', d.req?.lv || i.lv || 0, d.req?.job || 0,
       Object.fromEntries(['str', 'dex', 'int', 'luk'].filter((k) => d.req?.[k]).map((k) => [k, d.req[k]])), d.inc || {}, d.slots || 0, d.sell || 0,
-      scrollOf.get(id) || 0, droppers.slice(0, 3).map(({ m }) => mobAt.get(m.id)), droppers.length, questGives.get(id) || 0];
+      scrollOf.get(id) || 0, droppers.slice(0, 4).map(({ m }) => m.id), droppers.length, questGives.get(id) || 0];
   }
-  write('assets/item-tips.json', JSON.stringify({ mobs: tipMobs.map((m) => [m.ko || m.en, m.en, m.lv]), items: tips }));
+  const rankDrop = (d) => (d.cat === 'Equip' ? 0 : /Scroll/.test(d.en) ? 1 : d.cat === 'Use' ? 3 : 2);
+  const mobs = {};
+  for (const m of tipMobs) {
+    const open = m.locations.filter((l) => l.availability === 'open');
+    const drops = [...m.drops].sort((a, b) => rankDrop(a) - rankDrop(b));
+    mobs[m.id] = [m.ko || m.en, m.en, m.lv, m.hp, m.exp, m.el || '', m.eva, m.boss ? 1 : 0, m.eva ? dmgAccNeed(m.lv, m) : 0,
+      open.slice(0, 2).map((l) => [l.ko || l.en, l.en]), open.length, drops.slice(0, 4).map((d) => d.itemId), m.drops.length, m.status];
+  }
+  write('assets/item-tips.json', JSON.stringify({ mobs, items: tips }));
 }
+
 
 console.log(`Built ${PAGES.length * LANGS.length} pages + ${MONSTERS.monsters.length * LANGS.length} monster pages + ${MAPS.length * LANGS.length} map pages + ${QUESTS.length * LANGS.length} quest pages + ${ITEM_PAGES.length * LANGS.length} item pages, ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);

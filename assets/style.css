@@ -1557,3 +1557,13 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .item-tip dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
 .item-tip footer { margin-top: 8px; font-size: 0.7rem; }
 @media (prefers-reduced-motion: no-preference) { .item-tip { transition: opacity 0.12s ease; } }
+.item-tip .tip-sprite { image-rendering: pixelated; object-fit: contain; }
+.item-tip .tip-mob-head .tip-sprite { background: var(--tip-line); border-radius: 8px; }
+.item-tip .tip-mobs { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 8px; }
+.item-tip .tip-mobs li { display: grid; grid-template-columns: 36px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 6px; align-items: center; }
+.item-tip .tip-mobs li img { grid-row: span 2; }
+.item-tip .tip-mobs span, .item-tip .tip-drops span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item-tip .tip-drops { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 3px; }
+.item-tip .tip-drops li { display: flex; gap: 6px; align-items: center; min-width: 0; }
+.item-tip .tip-drops img { image-rendering: pixelated; flex-shrink: 0; }
+.item-tip .tip-mob-stats { margin-top: 8px; }

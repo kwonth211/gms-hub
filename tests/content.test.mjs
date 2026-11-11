@@ -257,4 +257,7 @@ test('every page loads the item hover card and its data covers equipment, scroll
   assert.ok(weapon,'an equipment entry with attack, level and droppers');
   const gloves=tips.items['2040801'];
   assert.deepEqual(gloves[10],[2,60,0]);
+  assert.ok(gloves[11].every((id)=>tips.mobs[id]),'droppers are monster ids with their own card');
+  const boar=tips.mobs['30'];
+  assert.equal(boar[1],'Fire Boar'); assert.equal(boar[2],32); assert.match(boar[5],/I3/); assert.ok(boar[9].length>0);
 });
