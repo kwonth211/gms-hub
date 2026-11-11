@@ -1,9 +1,13 @@
 // Authenticated, idempotent ingestion for the private deterministic collector.
 const reply = (body, status = 200, headers = {}) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store', ...headers } });
 const limits = env => ({
-  dailyRows: Math.max(1, Math.min(2000, Number(env.MARKET_BATCH_DAILY_ROWS) || 2000)),
+  dailyRows: Math.max(1, Math.min(20000, Number(env.MARKET_BATCH_DAILY_ROWS) || 2000)),
   intervalSeconds: env.MARKET_BATCH_MIN_INTERVAL_SECONDS === undefined ? 21600 : Math.max(0, Number(env.MARKET_BATCH_MIN_INTERVAL_SECONDS) || 0),
-  maxBatchRows: Math.max(1, Math.min(500, Number(env.MARKET_BATCH_MAX_ROWS) || 500))
+  maxBatchRows: Math.max(1, Math.min(500, Number(env.MARKET_BATCH_MAX_ROWS) || 500)),
+  // How far one run looks on the source site. Served with the preflight so the extension follows changes without a reload.
+  maxItems: Math.max(1, Math.min(60, Number(env.MARKET_BATCH_MAX_ITEMS) || 12)),
+  shopsPerItem: Math.max(1, Math.min(50, Number(env.MARKET_BATCH_SHOPS_PER_ITEM) || 20)),
+  maxShops: Math.max(1, Math.min(600, Number(env.MARKET_BATCH_MAX_SHOPS) || 120))
 });
 const usageSql = `SELECT
   (SELECT COALESCE(SUM(accepted),0) FROM market_batch_runs WHERE received_at >= date('now')) AS rows,

@@ -52,7 +52,7 @@ async function launch(mode, trigger) {
   if (s.run || s.pending) return { busy: true };
   if (['alarm', 'retry'].includes(trigger) && s.retryAt > Date.now()) return { waiting: true };
   if (mode !== 'test' && !GMS_BATCH_CONFIG.token) throw new Error('DB 수집 키가 설정되지 않았습니다.');
-  let maxRows = 50;
+  let maxRows = 50, scope = {};
   if (mode !== 'test') {
     // Manual actions, retries and restored alarms all share the same crawl limit.
     const localNext = Math.max((s.lastAttemptAt || 0) + INTERVAL, s.lastSuccessAt ? Date.parse(s.lastSuccessAt) + INTERVAL : 0);
@@ -81,12 +81,15 @@ async function launch(mode, trigger) {
       return { waiting: true, nextAt: s.retryAt };
     }
     maxRows = Math.min(150, Number(policy.maxRows));
+    // Scope of one run comes from the server so it can change without reloading the extension; hard caps stay here.
+    scope = { maxItems: Math.min(60, Number(policy.policy.maxItems) || 12), shopsPerItem: Math.min(50, Number(policy.policy.shopsPerItem) || 20),
+      maxShops: Math.min(600, Number(policy.policy.maxShops) || 360) };
     if (!Number.isInteger(maxRows) || maxRows < 1) { await stop('수집 허용 건수를 확인할 수 없습니다.'); return { waiting: true }; }
     s.lastAttemptAt = Date.now();
   }
   s.error = null; s.retryAt = null; await chrome.alarms.clear(COLLECT_RETRY);
   s.waitReason = null;
-  s.run = { runId: crypto.randomUUID(), mode, trigger, maxRows, startedAt: Date.now(), cursor: s.cursor || 0, phase: 'loading', tabId: null };
+  s.run = { runId: crypto.randomUUID(), mode, trigger, maxRows, ...scope, startedAt: Date.now(), cursor: s.cursor || 0, phase: 'loading', tabId: null };
   await put(s);
   const tab = s.workerTabId ? await chrome.tabs.get(s.workerTabId).catch(() => null) : null;
   try {

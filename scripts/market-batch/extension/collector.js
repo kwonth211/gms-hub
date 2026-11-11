@@ -4,7 +4,9 @@
   const failure = (code, message) => Object.assign(new Error(message), { code });
   async function collect(options, progress = async () => {}, cancelled = () => false, pause = localPause) {
     const maxRows = options.mode === 'test' ? 40 : Math.min(150, Math.max(1, Number(options.maxRows) || 150));
-    const maxShops = options.mode === 'test' ? 40 : 360;
+    const maxShops = options.mode === 'test' ? 40 : Math.min(600, Number(options.maxShops) || 360);
+    const maxItems = options.mode === 'test' ? 2 : Math.min(60, Number(options.maxItems) || 12);
+    const perItem = Math.min(50, Number(options.shopsPerItem) || 20);
     const report = { version: '0.4.0', runId: options.runId, world: 'Windia', startedAt: new Date().toISOString(),
       status: 'running', rows: [], shops: 0, rejected: {}, queue: [], skippedItems: [], aiCalls: 0 };
     const rows = new Map();
@@ -29,7 +31,7 @@
       if (all.length < 2) throw new Error('검증 가능한 아이템 목록 부족');
       // Rotate the starting item to avoid permanently ignoring the lower half of the visible catalogue.
       const offset = options.mode === 'test' ? 0 : (options.cursor || 0) % all.length;
-      const queue = [...all.slice(offset), ...all.slice(0, offset)].slice(0, options.mode === 'test' ? 2 : 12);
+      const queue = [...all.slice(offset), ...all.slice(0, offset)].slice(0, maxItems);
       for (const item of queue) {
         guard(); report.queue.push(item);
         await progress({ shops: report.shops, rows: rows.size, item: item.name });
@@ -54,7 +56,7 @@
         const first = document.querySelector('#detail-body .buy-row[data-sv] [data-sv-btn]');
         if (!first) { report.rejected.no_shops = (report.rejected.no_shops || 0) + 1; continue; }
         first.click();
-        for (let n = 1; n <= 20; n++) {
+        for (let n = 1; n <= perItem; n++) {
           await until(() => {
             const modal = openModal(), step = modal?.querySelector('.sv-count')?.textContent;
             return step?.startsWith(`Shop ${n} of `) && step.endsWith(`selling ${item.name}`) && modal.querySelector('.sv-tag');
@@ -68,7 +70,7 @@
           } else report.rejected[checked.reason] = (report.rejected[checked.reason] || 0) + 1;
           if (n % 5 === 0) await progress({ shops: report.shops, rows: rows.size, item: item.name });
           const step = /^Shop (\d+) of (\d+)/.exec(shop.step);
-          if (rows.size >= maxRows || report.shops >= maxShops || !step || +step[1] >= +step[2] || n === 20) break;
+          if (rows.size >= maxRows || report.shops >= maxShops || !step || +step[1] >= +step[2] || n === perItem) break;
           const next = button('Next shop'); if (!next || next.disabled) break; next.click();
         }
         button('Close')?.click(); await until(() => !openModal(), '상점 상세 닫기');
