@@ -1176,6 +1176,106 @@
       ]
     },
     {
+      "slug": "cleric",
+      "lang": "ko",
+      "title": "글클메 클레릭 가이드: 힐 사냥 vs 홀리 애로우, 스킬트리 세 갈래, 언데드 사냥터 30~70",
+      "h1": "클레릭 30~70레벨: 홀리 애로우로 언데드 사냥터 잇기",
+      "desc": "힐 사냥이 어려운 이유, 홀리 애로우가 1차 공격기를 넘는 시점, 블레스·인빈서블, 스킬트리 세 갈래, 레벨별 언데드 사냥터까지 정리했어요.",
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "sources": [
+        {
+          "title": "자동사냥",
+          "url": "https://www.youtube.com/watch?v=gHzFPt9Y_bg"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ],
+      "reviewed": "2026-11-11",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "cleric-guide-30-70"
+      ]
+    },
+    {
+      "slug": "cleric",
+      "lang": "en",
+      "title": "Cleric Guide: Heal Hunting vs Holy Arrow, Three Skill Builds & Undead Training 30–70",
+      "h1": "Cleric, levels 30–70: Holy Arrow through the undead maps",
+      "desc": "Why Heal hunting is hard, when Holy Arrow overtakes first-job attacks, Bless and Invincible, three skill builds and undead training spots by level.",
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "sources": [
+        {
+          "title": "자동사냥",
+          "url": "https://www.youtube.com/watch?v=gHzFPt9Y_bg"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ],
+      "reviewed": "2026-11-11",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "cleric-guide-30-70"
+      ]
+    },
+    {
+      "slug": "fire-poison",
+      "lang": "ko",
+      "title": "글클메 불독 가이드: 파이어 애로우 vs 포이즌 브레스, 스킬트리, 불 약점 사냥터 30~70",
+      "h1": "불독 30~70레벨: 파이어 애로우로 불 약점 몬스터 따라가기",
+      "desc": "파이어 애로우와 포이즌 브레스 비교, 지형 판정과 화상, 올인트 노란색 우산, 스킬트리 세 갈래, 레벨별 사냥터까지 정리했어요.",
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "sources": [
+        {
+          "title": "자동사냥",
+          "url": "https://www.youtube.com/watch?v=VnfR4BlBdCY"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ],
+      "reviewed": "2026-11-11",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "fire-poison-guide-30-70"
+      ]
+    },
+    {
+      "slug": "fire-poison",
+      "lang": "en",
+      "title": "Fire/Poison Guide: Fire Arrow vs Poison Breath, Skill Build & Fire-Weak Training 30–70",
+      "h1": "Fire/Poison, levels 30–70: follow the fire-weak monsters",
+      "desc": "Fire Arrow against Poison Breath, terrain and burn quirks, pure INT with Yellow Umbrella, three skill builds and training spots by level.",
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "sources": [
+        {
+          "title": "자동사냥",
+          "url": "https://www.youtube.com/watch?v=VnfR4BlBdCY"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ],
+      "reviewed": "2026-11-11",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "fire-poison-guide-30-70"
+      ]
+    },
+    {
       "slug": "ice-lightning",
       "lang": "en",
       "title": "Ice/Lightning Wizard Guide: Cold Beam vs Thunder Bolt, Skill Build & Training 30–70",
