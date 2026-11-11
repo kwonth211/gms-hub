@@ -1740,3 +1740,56 @@ html[data-charm='off'] :is(.charm-walk, .charm-leaves) { display: none; }
   .walker, .walker svg { animation: none; }
   .charm-toggle { display: none; }
 }
+
+/* Admin megaphone collector */
+.mg-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 12px 0; }
+.mg-preview { display: block; width: 100%; max-width: 960px; height: auto; border: 1px solid var(--line); border-radius: 10px; background: #000; }
+.mg-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.mg-Y { background: #e8c35a; } .mg-P { background: #d79ad0; } .mg-C { background: #8fd3e8; }
+
+/* Live megaphones and site chat: game megaphones are coloured bands like the game's own; the site chat is plain
+   blue-grey bubbles under its own heading, so the two can't be confused. */
+.mg-page { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
+.mg-filters { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 6px; }
+.mg-filters input[type='search'] { flex: 1 1 180px; min-width: 0; }
+.mg-check { font-size: 0.85rem; display: inline-flex; gap: 6px; align-items: center; }
+.mg-feed { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.mg-msg { border-radius: 10px; padding: 9px 12px; border: 1px solid; }
+.mg-Y { background: #fbefc4; border-color: #e3bf55; }
+.mg-P { background: #f7e1f3; border-color: #d79ad0; }
+.mg-C { background: #def3f8; border-color: #8fd3e8; }
+[data-theme='dark'] .mg-Y { background: #3a3218; border-color: #8a7130; }
+[data-theme='dark'] .mg-P { background: #3a2337; border-color: #8a5383; }
+[data-theme='dark'] .mg-C { background: #1d3540; border-color: #4d8799; }
+.mg-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.82rem; }
+.mg-kind { font-weight: 800; font-size: 0.72rem; padding: 1px 7px; border-radius: 999px; background: var(--text); color: var(--panel); }
+.mg-k-super .mg-kind { background: #a3437f; color: #fff; }
+.mg-k-item .mg-kind { background: #a8790b; color: #fff; }
+.mg-k-double .mg-kind { background: #23808f; color: #fff; }
+.mg-nick { font-size: 0.92rem; }
+.mg-ch { font-size: 0.72rem; font-weight: 700; padding: 0 6px; border-radius: 4px; border: 1px solid currentColor; color: #c0392b; }
+.mg-intent { font-size: 0.72rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; }
+.mg-intent.sell { background: var(--up); color: #fff; }
+.mg-intent.buy { background: var(--down); color: #fff; }
+.mg-head time { color: var(--muted); margin-left: auto; font-size: 0.75rem; }
+.mg-copy { font: inherit; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; border: 1px solid var(--line-strong); background: var(--panel); color: var(--text); }
+.mg-text { margin: 5px 0 0; font-size: 0.95rem; overflow-wrap: anywhere; }
+.mg-item { font-weight: 700; color: var(--accent-2); }
+.mg-gloss { margin: 3px 0 0; font-size: 0.85rem; color: var(--text-2); }
+.mg-price { display: inline-block; margin-top: 6px; font-size: 0.8rem; padding: 2px 8px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); color: var(--text); text-decoration: none; }
+.mg-price .up { color: var(--up); } .mg-price .down { color: var(--down); }
+.mg-chat-panel { position: sticky; top: 90px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: grid; gap: 8px; }
+.mg-chat-panel h2 { margin: 0; font-size: 1.05rem; }
+.mg-chat-panel h2 small { font-size: 0.75rem; color: var(--muted); font-weight: 600; }
+.mg-chat { list-style: none; margin: 0; padding: 0; height: 420px; overflow-y: auto; display: grid; align-content: start; gap: 6px; }
+.mg-chat li { background: var(--panel-2); border-radius: 10px; padding: 6px 9px; font-size: 0.88rem; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0 8px; }
+.mg-chat li strong { color: var(--ko); }
+.mg-chat li span { overflow-wrap: anywhere; }
+.mg-chat li time { color: var(--muted); font-size: 0.72rem; }
+.mg-chat-form { display: grid; grid-template-columns: 90px minmax(0, 1fr) auto; gap: 6px; }
+.mg-chat-form input { min-width: 0; }
+@media (max-width: 900px) {
+  .mg-page { grid-template-columns: minmax(0, 1fr); }
+  .mg-chat-panel { position: static; order: -1; }
+  .mg-chat { height: 220px; }
+}

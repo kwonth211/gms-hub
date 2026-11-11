@@ -9,6 +9,8 @@
 // GET  /listings/recent -> [{ item, price, qty, sold, seller, channel, room, seen }]
 // GET  /market/top -> { at, stats, items: [{ item, rank, move, avg, n, sold, change, spark: [7 daily medians] }] }  (stored every 15 min)
 // GET  /market/item?id= -> { item, listings: [...last 7 days], trend }
+// GET  /megaphones?after=<id> -> { rows: [{ id, seen, kind, channel, nick, text }] }  (newest first)
+// POST /internal/megaphone {rows} (Bearer MEGAPHONE_TOKEN)  (admin collector)
 // GET  /rank -> { at, source, stats, rows: [top 1,000 by level] }  (ClassicRank, refreshed hourly by the schedule)
 // GET  /rank/lookup?name= -> { data: one character }  (ClassicRank, cached an hour)
 // GET  /presence?p=<path> (WebSocket) -> messages { site, here }: open pages on the whole site and on this page
@@ -18,6 +20,7 @@ import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoint
 import { cachedPublicResponse } from './public-cache.js';
 import { Presence, handlePresence } from './presence.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
+import { postMegaphones, listMegaphones, pruneMegaphones } from './megaphone.js';
 export { Presence };
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
 
@@ -232,6 +235,7 @@ const api = {
   async scheduled(event, env, ctx) {
     ctx.waitUntil(freshSnapshot(env, 'market', 0).then((data) => data || refreshSnapshot(env)));
     ctx.waitUntil(refreshRank(env).catch(() => null));
+    ctx.waitUntil(pruneMegaphones(env).catch(() => null));
   },
 
   async fetch(req, env) {
@@ -240,6 +244,15 @@ const api = {
     const cors = corsHeaders(origin);
     // Private extension service worker uses a narrowly scoped ingestion token, never public CORS.
     if (url.pathname === '/internal/market-batch') return handleMarketBatch(req, env, knownItems);
+    // The collector page runs on gms-hub.com (or localhost while testing) and sends the admin key, so it needs CORS.
+    if (url.pathname === '/internal/megaphone') {
+      const allow = { ...corsHeaders(req.headers.get('Origin') || ''), 'Access-Control-Allow-Headers': 'Content-Type, Authorization' };
+      if (req.method === 'OPTIONS') return new Response(null, { headers: allow });
+      if (req.method !== 'POST') return json({ error: 'method not allowed' }, allow, 405);
+      const r = await postMegaphones(req, env);
+      for (const [k, v] of Object.entries(allow)) r.headers.set(k, v);
+      return r;
+    }
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
 
     if (url.pathname === '/market/status' && req.method === 'GET') {
@@ -341,6 +354,10 @@ const api = {
         const invalid = e.message?.startsWith('bad ');
         return json({error: invalid ? e.message : 'market unavailable'}, cors, invalid ? 400 : 503);
       }
+    }
+
+    if (url.pathname === '/megaphones' && req.method === 'GET') {
+      return json(await listMegaphones(env, url.searchParams), cors, 200, 'public, max-age=5');
     }
 
     if (url.pathname === '/rank' && req.method === 'GET') {
@@ -493,5 +510,5 @@ const api = {
 export default {
   scheduled: api.scheduled,
   // The live viewer count is a WebSocket upgrade, so it skips the public response cache.
-  fetch: (req, env, ctx) => new URL(req.url).pathname === '/presence' ? handlePresence(req, env) : cachedPublicResponse(req, () => api.fetch(req, env), ctx)
+  fetch: (req, env, ctx) => ['/presence', '/chat'].includes(new URL(req.url).pathname) ? handlePresence(req, env) : cachedPublicResponse(req, () => api.fetch(req, env), ctx)
 };

@@ -1,0 +1,236 @@
+// Megaphone reader, shared by the admin collector (browser) and the sample checks (Node). Works on raw RGBA images
+// ({ width, height, data }) of the game's chat box. Megaphones sit on coloured bands one text line (16 px at 1x) high:
+// gold, pink or teal; plain chat and notices sit on the dark chat background and are skipped.
+
+// Background colour → band class. Pink bands are dithered between two tones, so the ranges are wide.
+export function bandClass(r, g, b) {
+  if (r > 170 && g > 120 && g < 200 && b < 90) return 'Y';
+  if (r > 160 && g > 120 && g < 175 && b > 140) return 'P';
+  if (b > 150 && g > 150 && r < 150) return 'C';
+  return null;
+}
+
+// The chat box anywhere in a whole game frame: rows where megaphone-band colour covers most of a wide span, confirmed
+// by red channel digits on them. Returns { x, y, w, h } in pixels with room for a few lines above and below, or null
+// when no megaphone is on screen (the caller keeps the last box it found).
+export function findChatBox(img) {
+  const { width: w, height: h, data } = img;
+  const rows = [];
+  // Per row, the longest stretch of band colour where text gaps are shorter than 24 px; stray band-coloured pixels
+  // elsewhere in the scene don't join it.
+  for (let y = 0; y < h; y += 2) {
+    let best = null, cur = null;
+    for (let x = 0; x < w; x += 2) {
+      const i = (y * w + x) * 4, r = data[i], g = data[i + 1], b = data[i + 2];
+      const band = bandClass(r, g, b), red = isRed(r, g, b);
+      if (band || red) {
+        if (!cur || x - cur.last > 24) cur = { first: x, last: x, band: 0, red: 0 };
+        cur.last = x; if (band) cur.band++; else cur.red++;
+        if (!best || cur.last - cur.first > best.last - best.first) best = cur;
+      }
+    }
+    if (best && best.last - best.first >= 160 && best.band * 2 >= (best.last - best.first) * 0.45) rows.push({ y, ...best });
+  }
+  // Megaphone lines carry red channel digits, so only band rows within a line's height of red pixels count; then the
+  // biggest vertical cluster of those rows is the chat box.
+  const reds = rows.filter((r) => r.red >= 2);
+  const near = rows.filter((r) => reds.some((q) => Math.abs(q.y - r.y) <= 12 && Math.min(q.last, r.last) > Math.max(q.first, r.first)));
+  const clusters = [];
+  for (const r of near) (clusters.length && r.y - clusters.at(-1).at(-1).y <= 24 ? clusters.at(-1) : clusters[clusters.push([]) - 1]).push(r);
+  const kept = clusters.sort((a, b) => b.length - a.length)[0] || [];
+  if (kept.length < 4) return null;
+  const lasts = kept.map((r) => r.last).sort((a, b) => a - b);
+  const x0 = Math.min(...kept.map((r) => r.first)), x1 = lasts[lasts.length >> 1];
+  const y0 = Math.max(0, kept[0].y - 48), y1 = Math.min(h, kept.at(-1).y + 48);
+  return { x: Math.max(0, x0 - 12), y: y0, w: Math.min(w, x1 + 24) - Math.max(0, x0 - 12), h: y1 - y0 };
+}
+
+// Each row's most common colour (5-bit buckets), skipping the scrollbar at the right edge.
+function rowBackground(img, y, right) {
+  const { width: w, data } = img;
+  const counts = new Map();
+  for (let x = 0; x < right; x++) {
+    const i = (y * w + x) * 4;
+    const k = ((data[i] >> 3) << 10) | ((data[i + 1] >> 3) << 5) | (data[i + 2] >> 3);
+    counts.set(k, (counts.get(k) || 0) + 1);
+  }
+  let best = 0, n = 0;
+  for (const [k, c] of counts) if (c > n) { best = k; n = c; }
+  return { rgb: [((best >> 10) & 31) * 8 + 4, ((best >> 5) & 31) * 8 + 4, (best & 31) * 8 + 4], share: n / right };
+}
+
+// Text lines on megaphone bands: rows grouped by band colour, then split where a row has (almost) no text pixels.
+export function findLines(img, { scrollbar = 20 } = {}) {
+  const right = Math.max(10, img.width - scrollbar);
+  const rows = [];
+  for (let y = 0; y < img.height; y++) {
+    const bg = rowBackground(img, y, right);
+    const cls = bg.share > 0.3 ? bandClass(...bg.rgb) : null;
+    let text = 0;
+    if (cls) for (let x = 0; x < right; x++) {
+      const i = (y * img.width + x) * 4;
+      if (Math.abs(img.data[i] - bg.rgb[0]) + Math.abs(img.data[i + 1] - bg.rgb[1]) + Math.abs(img.data[i + 2] - bg.rgb[2]) > 140 && !bandClass(img.data[i], img.data[i + 1], img.data[i + 2])) text++;
+    }
+    rows.push({ cls, bg: bg.rgb, text });
+  }
+  // The gap between two lines on the same colour still has a few stray ink pixels (descenders, the badge edge), so a
+  // row counts as text only above a share of a typical text row. A change of band colour always ends a line.
+  const inked = rows.map((r) => r.text).filter((n) => n > 0).sort((a, b) => a - b);
+  const min = Math.max(3, (inked[Math.floor(inked.length * 0.75)] || 0) * 0.15);
+  const isText = (r) => r.cls && r.text >= min;
+  const lines = [];
+  for (let y = 0; y < rows.length; y++) {
+    if (!isText(rows[y])) continue;
+    let end = y;
+    while (end + 1 < rows.length && isText(rows[end + 1]) && rows[end + 1].cls === rows[y].cls) end++;
+    // A line cut by the top or bottom edge of the box is not read; it is read whole in another frame.
+    if (end - y + 1 >= 6 && y > 0 && end < rows.length - 1) {
+      // The band ends where the scrollbar begins: the last band-coloured column on the line's middle row.
+      const mid = (y + end) >> 1;
+      let edge = right;
+      while (edge > 10) { const i = (mid * img.width + edge - 1) * 4; if (bandClass(img.data[i], img.data[i + 1], img.data[i + 2])) break; edge--; }
+      lines.push({ top: y, bottom: end, color: rows[y].cls, bg: rows[Math.min(end, y + 2)].bg, right: edge });
+    }
+    y = end;
+  }
+  return lines;
+}
+
+// The channel badge ("CHxx" in red inside a thin white frame, then the ear icon) is found by its red digits: the
+// first cluster of red columns on the line. The message is read from just after it; the ear icon and the ": " are
+// trimmed from the OCR text.
+const LEFT = 4;
+const isRed = (r, g, b) => r > 140 && g < 120 && b < 120 && r - g > 60;
+export function findBadge(img, line, { scrollbar = 20 } = {}) {
+  const right = Math.max(10, img.width - scrollbar);
+  let first = -1, last = -1;
+  for (let x = LEFT; x < right; x++) {
+    let red = 0;
+    for (let y = line.top; y <= line.bottom; y++) { const i = (y * img.width + x) * 4; if (isRed(img.data[i], img.data[i + 1], img.data[i + 2])) red++; }
+    if (red) { if (first < 0) first = x; else if (x - last > 4) break; last = x; }
+  }
+  if (first < 0 || last - first < 6) return null;
+  // The badge frame and the ear icon after it are drawn in near-white; the message begins after the last white column.
+  let message = last + 5;
+  for (let x = last + 1; x < Math.min(right, last + 32); x++) {
+    let n = 0;
+    for (let y = line.top; y <= line.bottom; y++) { const i = (y * img.width + x) * 4; if (Math.min(img.data[i], img.data[i + 1], img.data[i + 2]) > 200) n++; }
+    if (n >= 2) message = x + 1;
+  }
+  return { left: Math.max(LEFT, first - 4), right: last + 4, message };
+}
+
+// Part of a line drawn black-on-white, `scale` times larger with a margin. 'ink' is anything far from the band
+// colour (dark message text, bright yellow item names) but not the white badge fill; 'red' is the badge's channel digits.
+export function lineBitmap(img, line, { x0 = LEFT, x1, scale = 3, scrollbar = 20, pad = 2, mode = 'ink' } = {}) {
+  const right = Math.min(x1 ?? Infinity, line.right ?? Infinity, Math.max(10, img.width - scrollbar));
+  const top = Math.max(0, line.top - pad), bottom = Math.min(img.height - 1, line.bottom + pad);
+  const cols = Math.max(1, right - x0);
+  const w = cols * scale + 24, h = (bottom - top + 1) * scale + 24;
+  const out = new Uint8ClampedArray(w * h * 4).fill(255);
+  let sig = 2166136261, ink = 0;
+  for (let y = top; y <= bottom; y++) for (let x = x0; x < right; x++) {
+    const i = (y * img.width + x) * 4, r = img.data[i], g = img.data[i + 1], b = img.data[i + 2];
+    const on = mode === 'red' ? isRed(r, g, b)
+      : Math.abs(r - line.bg[0]) + Math.abs(g - line.bg[1]) + Math.abs(b - line.bg[2]) >= 110 && Math.min(r, g, b) <= 225 && !bandClass(r, g, b);
+    if (!on) continue;
+    ink++;
+    sig = Math.imul(sig ^ ((x - x0) * 131 + (y - top)), 16777619) >>> 0;
+    for (let dy = 0; dy < scale; dy++) for (let dx = 0; dx < scale; dx++) {
+      const o = ((12 + (y - top) * scale + dy) * w + 12 + (x - x0) * scale + dx) * 4;
+      out[o] = out[o + 1] = out[o + 2] = 0;
+    }
+  }
+  return { width: w, height: h, data: out, ink, sig: `${mode}:${line.color}:${x0}:${sig}` };
+}
+
+// The chat box's dark left border is inked on every row of the band; text starts at the first column that isn't.
+export function textLeft(img, line) {
+  const h = line.bottom - line.top + 1;
+  for (let x = 0; x < 40; x++) {
+    let n = 0;
+    for (let y = line.top; y <= line.bottom; y++) { const i = (y * img.width + x) * 4, r = img.data[i], g = img.data[i + 1], b = img.data[i + 2];
+      if (Math.abs(r - line.bg[0]) + Math.abs(g - line.bg[1]) + Math.abs(b - line.bg[2]) >= 110 && !bandClass(r, g, b)) n++; }
+    if (n < h * 0.7) return x + 1;
+  }
+  return LEFT;
+}
+
+// Channel digits are a fixed 4x5 pixel font (red on white): split the badge into glyphs by empty columns, skip "C"
+// and "H", and look each digit up by its exact column pattern. Any unknown glyph means no channel rather than a guess.
+const DIGITS = { '.###./#...#/#...#/.###.': 0, '#..../#####': 1, '#..##/#.#.#/#.#.#/.##.#': 2, '#...#/#.#.#/#.#.#/.###.': 3,
+  '###../..#../..#../#####': 4, '###.#/#.#.#/#.#.#/#..#.': 5, '.###./#.#.#/#.#.#/...#.': 6, '#..../#..##/###..': 7,
+  '.#.#./#.#.#/#.#.#/.#.#.': 8, '.#.../#.#.#/#.#.#/.###.': 9 };
+export function readChannel(img, line, badge) {
+  const red = (x, y) => { const i = (y * img.width + x) * 4; return isRed(img.data[i], img.data[i + 1], img.data[i + 2]); };
+  let y0 = Infinity, y1 = -1;
+  for (let y = line.top; y <= line.bottom; y++) for (let x = badge.left; x <= badge.right; x++) if (red(x, y)) { y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  // The digits are 5 px tall at 1x; a 2x (Retina) capture draws every font pixel as a 2x2 block, so sample every s-th pixel.
+  const s = Math.round((y1 - y0 + 1) / 5);
+  if (s < 1 || y1 - y0 + 1 !== 5 * s) return null;
+  const glyphs = [];
+  let cur = null;
+  for (let x = badge.left; x <= badge.right + s; x += s) {
+    let col = '';
+    for (let y = y0; y <= y1; y += s) col += red(x, y) ? '#' : '.';
+    if (col.includes('#')) (cur ||= []).push(col);
+    else if (cur) { glyphs.push(cur.join('/')); cur = null; }
+  }
+  const digits = glyphs.slice(2).map((g) => DIGITS[g]);
+  if (!digits.length || digits.some((d) => d == null)) return null;
+  const ch = Number(digits.join(''));
+  return ch >= 1 && ch <= 40 ? ch : null;
+}
+
+// Read one line with an OCR function (bitmap, kind → text). kind is 'nick' or 'text'.
+export async function readLine(img, line, ocr) {
+  const badge = findBadge(img, line);
+  const x0 = textLeft(img, line);
+  if (!badge) return { color: line.color, cont: true, text: cleanText(await ocr(lineBitmap(img, line, { x0 }), 'text')) };
+  const nick = (await ocr(lineBitmap(img, line, { x0, x1: badge.left - 1 }), 'nick')).replace(/[^A-Za-z0-9]/g, '');
+  const channel = readChannel(img, line, badge);
+  const text = cleanText((await ocr(lineBitmap(img, line, { x0: badge.message }), 'text')).replace(/^[^A-Za-z0-9[<>]*/, ''));
+  return { color: line.color, nick, channel, text };
+}
+
+// Common misreads of the trade shorthand at the start of a phrase: "S>" read as "5»", "S=", "5=" or "S<", "B>" as "B=",
+// "Bx" or "B»"; "Cal's"/"Cat's" style letter swaps are left alone.
+export function cleanText(t) {
+  return t.replace(/\s*\|\s*$/, '').replace(/(^|[\s\]])[S5]\s?(?:=+>*|»|>|<|«)\s?/g, '$1S> ').replace(/(^|[\s\]])B\s?(?:=+>*|»|>|x|«)\s?/g, '$1B> ').replace(/\s+/g, ' ').trim();
+}
+
+// Lines in reading order → megaphones. A line without a channel badge continues the megaphone above it (long
+// megaphones wrap onto an indented second line) when both are on the same band colour.
+export function assemble(lines) {
+  const out = [];
+  for (const l of lines) {
+    if (!l.cont && /^[A-Za-z0-9]{2,13}$/.test(l.nick || '') && l.text) out.push({ nick: l.nick, channel: l.channel, color: l.color, text: l.text });
+    else if (l.cont && out.length && out.at(-1).color === l.color && l.text) out.at(-1).text += ` ${l.text}`;
+  }
+  return out;
+}
+
+// The chat box is semi-transparent, so the same megaphone reads slightly differently from frame to frame. Letters and
+// digits only, compared by shared 3-letter pieces: a near match from the same nick (or the same channel) within 15
+// minutes is a repeat.
+export const shape = (t) => t.toLowerCase().replace(/[^a-z0-9]/g, '');
+export function similar(a, b) {
+  if (a === b) return true;
+  const grams = (t) => new Set(Array.from({ length: Math.max(0, t.length - 2) }, (_, i) => t.slice(i, i + 3)));
+  const A = grams(a), B = grams(b);
+  if (!A.size || !B.size) return false;
+  let both = 0;
+  for (const g of A) if (B.has(g)) both++;
+  return both / Math.min(A.size, B.size) > 0.7;
+}
+export function repeatFilter(windowMs = 15 * 60000) {
+  const recent = [];
+  return (m, now = Date.now()) => {
+    while (recent.length && now - recent[0].at > windowMs) recent.shift();
+    const key = shape(m.text);
+    // A nick read differently (Kuramei/Kuromei) is still the same megaphone when the channel matches too.
+    if (recent.some((r) => (r.nick.toLowerCase() === m.nick.toLowerCase() || r.channel === m.channel) && similar(r.key, key))) return true;
+    recent.push({ nick: m.nick, channel: m.channel, key, at: now });
+    return false;
+  };
+}

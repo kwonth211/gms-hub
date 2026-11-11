@@ -9,6 +9,7 @@ import { collectMaps, mapDetail, mapIndex, mapName } from './map-pages.mjs';
 import { collectQuests, questDetail, questIndex, questBestBody, questPath, areaName as questArea } from './quest-pages.mjs';
 import { EQ_CLASSES, equipPath, collectEquipment, equipmentIndexBody, equipmentClassBody } from './equipment-pages.mjs';
 import { rankBody } from './rank-page.mjs';
+import { megaphoneBody } from './megaphone-page.mjs';
 import { selectRoutes, routeCards, publicTrainingData, jobNames, validateTraining } from '../assets/training-evidence.js';
 import { loadLocales, loadMemory, entityMatcher, localizePage, clientKeys, TX_RUNTIME } from './i18n.mjs';
 import { SKILLS as DMG_SKILLS, windowRange as dmgWindow, hitRange as dmgHit, hitsToKill as dmgKill, accuracyNeeded as dmgAccNeed } from '../assets/damage-calc.js';
@@ -697,7 +698,7 @@ function footer(lang) {
 }
 
 const ADFIT_PAGES = new Set(['home', 'myShop', 'training', 'trBand', 'trClass', 'scroll', 'drop', 'price', 'scan', 'market', 'damage', 'guides', 'guide', 'monsters', 'monster', 'items', 'item',
-  'bosses', 'maps', 'map', 'quests', 'quest', 'questBest', 'equipment', 'equipmentClass', 'rank']);
+  'bosses', 'maps', 'map', 'quests', 'quest', 'questBest', 'equipment', 'equipmentClass', 'rank', 'megaphone']);
 // AdFit counted only 5-9% of the end-of-page banner as viewed (most visitors never scroll that far), so a second slot sits
 // just under the page title: after the page head, after the home hero, or after a guide's first paragraph. Never beside
 // a form control or a button row.
@@ -876,6 +877,7 @@ function homeBody(lang) {
 ${(lang === 'ko' ? [
 tool('/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monster database', lang === 'ko' ? '몬스터 78종의 능력치, 드롭 아이템, 출현 위치를 검색하세요.' : 'Explore stats, reported drops and map locations for 78 monsters.'),
 tool('/equipment/', 'hammer', lang === 'ko' ? '장비 찾기' : 'Equipment finder', lang === 'ko' ? `직업과 레벨로 지금 얻을 수 있는 장비 ${EQUIPMENT.length}개를 찾고, 떨어뜨리는 몬스터를 봐요.` : `${EQUIPMENT.length} pieces of gear by class and level, with the monsters that drop them and quests that give them.`),
+tool('/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Live megaphones', lang === 'ko' ? '게임 확성기를 실시간으로 모아 보고, 시세와 비교하고, 귓말을 바로 복사해요. 방문자 채팅도 있어요.' : 'Game megaphones live, compared with market prices, with one-tap whisper and a visitors chat.'),
 tool('/rank/', 'crown', lang === 'ko' ? '캐릭터 랭킹' : 'Character rankings', lang === 'ko' ? '레벨 순위 상위 1,000명과 직업 분포, 내 캐릭터 순위를 찾고 맞는 사냥터로 바로 가요.' : 'Top 1,000 by level, the class breakdown, and your own rank with training spots for your level.'),
 tool('/quests/best-exp/', 'star', lang === 'ko' ? '경험치 퀘스트' : 'Best EXP quests', lang === 'ko' ? '레벨 구간마다 보상 경험치가 큰 퀘스트 10개씩.' : 'The ten biggest EXP quest rewards for each level band.'),
 tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc),
@@ -892,6 +894,7 @@ tool('/maps/', 'tree', lang === 'ko' ? '맵 도감' : 'Maps', lang === 'ko' ? `�
 ] : [
 tool('/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monster database', lang === 'ko' ? '몬스터 78종의 능력치, 드롭 아이템, 출현 위치를 검색하세요.' : 'Explore stats, reported drops and map locations for 78 monsters.'),
 tool('/equipment/', 'hammer', lang === 'ko' ? '장비 찾기' : 'Equipment finder', lang === 'ko' ? `직업과 레벨로 지금 얻을 수 있는 장비 ${EQUIPMENT.length}개를 찾고, 떨어뜨리는 몬스터를 봐요.` : `${EQUIPMENT.length} pieces of gear by class and level, with the monsters that drop them and quests that give them.`),
+tool('/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Live megaphones', lang === 'ko' ? '게임 확성기를 실시간으로 모아 보고, 시세와 비교하고, 귓말을 바로 복사해요. 방문자 채팅도 있어요.' : 'Game megaphones live, compared with market prices, with one-tap whisper and a visitors chat.'),
 tool('/rank/', 'crown', lang === 'ko' ? '캐릭터 랭킹' : 'Character rankings', lang === 'ko' ? '레벨 순위 상위 1,000명과 직업 분포, 내 캐릭터 순위를 찾고 맞는 사냥터로 바로 가요.' : 'Top 1,000 by level, the class breakdown, and your own rank with training spots for your level.'),
 tool('/quests/best-exp/', 'star', lang === 'ko' ? '경험치 퀘스트' : 'Best EXP quests', lang === 'ko' ? '레벨 구간마다 보상 경험치가 큰 퀘스트 10개씩.' : 'The ten biggest EXP quest rewards for each level band.'),
 tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc),
@@ -2609,6 +2612,13 @@ for (const lang of LANGS) {
       body: questIndex({ lang, quests: QUESTS, link }),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '퀘스트' : 'Quests', '/quests/')]
     }));
+    write(path.join(lang, 'megaphone', 'index.html'), page({
+      lang, pageKey: 'megaphone', pagePath: '/megaphone/', modules: ['megaphone.js'],
+      title: lang === 'ko' ? '글클메 실시간 확성기: 고확·팝니다·삽니다 모아 보기 | GMS Hub' : 'MapleStory Classic World Live Megaphones: Super Megaphones, Buying & Selling | GMS Hub',
+      desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드 게임 확성기를 실시간으로 모아 보여 줘요. 고확과 일반 확성기 구분, 팝니다·삽니다·채널 필터, 시세 비교, 귓말 복사, 방문자 채팅까지.' : 'Live MapleStory Classic World megaphones: super and regular megaphones apart, buying and selling filters, market price comparison, one-tap whisper command and a visitors chat.',
+      body: megaphoneBody({ lang, itemsUrl: href('/assets/items.json'), marketUrl: href(langPath(lang, '/tools/market/')) }),
+      ld: [breadcrumbLd(lang, lang === 'ko' ? '실시간 확성기' : 'Live megaphones', '/megaphone/')]
+    }));
     write(path.join(lang, 'rank', 'index.html'), page({
       lang, pageKey: 'rank', pagePath: '/rank/', modules: ['rank.js'],
       title: lang === 'ko' ? '글클메 캐릭터 랭킹: 레벨 순위·직업 분포·내 캐릭터 찾기 | GMS Hub' : 'MapleStory Classic World Rankings: Top 1,000, Class Breakdown & Character Lookup | GMS Hub',
@@ -2752,6 +2762,31 @@ ${jsonScript('admin-config', config.github)}
 </body></html>`
 );
 
+// Megaphone collector: unlisted, noindex, under the robots-disallowed /admin/. Only the admin key can upload.
+write(
+  'admin/megaphone/index.html',
+  `${head({ lang: 'ko', title: '확성기 수집 | GMS Hub', desc: 'GMS Hub 확성기 수집', noindex: true })}
+<body data-page="admin">
+<header class="site-header"><div class="wrap header-inner"><a class="brand" href="${href('/ko/')}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>확성기 수집</small></span></a></div></header>
+<main class="wrap mg-admin">
+<h1>확성기 수집</h1>
+<p class="muted">게임 창을 공유하면 채팅창을 자동으로 찾아 고확(분홍)·아이템 고확(노랑)·더블 아이템 고확(청록)을 줄마다 읽어요. 검증이 끝난 뒤 "서버로 전송"을 켜세요.</p>
+<div class="mg-controls">
+<button class="btn" id="mg-start" type="button">게임 창 공유 시작</button>
+<button class="btn ghost small-btn" id="mg-reset" type="button">채팅창 다시 찾기</button>
+<label><input type="checkbox" id="mg-upload"> 서버로 전송</label>
+<label><input type="checkbox" id="mg-keep"> 띠 샘플 저장(로컬)</label>
+<input id="mg-token" type="password" placeholder="관리자 키 (한 번만 입력)" autocomplete="off">
+</div>
+<p id="mg-status" role="status"></p>
+<canvas id="mg-preview" class="mg-preview" width="960" height="540"></canvas>
+<div class="table-wrap"><table class="data mg-log"><thead><tr><th>띠</th><th>종류</th><th>CH</th><th>닉네임</th><th>내용</th><th>상태</th></tr></thead><tbody id="mg-log"></tbody></table></div>
+</main>
+${jsonScript('mega-config', { api: config.voteApi, kinds: { P: 'super', Y: 'item', C: 'double' } })}
+<script type="module" src="${scriptSrc('mega-admin.js')}"></script>
+</body></html>`
+);
+
 // Derived locales: translate every finished English page. Game names stay in English (the GMS client's own names)
 // and are masked so one memory entry covers every item and monster page.
 const ENTITIES = entityMatcher([
@@ -2793,7 +2828,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
   )
 ).concat(
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
-  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, {path:'/rank/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, {path:'/rank/'}, {path:'/megaphone/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/bosses/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/quests/'}, ...QUESTS.filter(q=>!q.expired).map(q=>({path:questPath(q)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
   [{path:'/maps/'}, ...MAPS.filter(l=>l.availability==='open').map(l=>({path:mapPath(l)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),

@@ -1,6 +1,6 @@
 // Public, anonymous GETs only. Mutations and collector credentials never enter this cache.
 const paths = new Set(['/votes','/prices','/prices/recent','/listings/recent','/market/top','/market/item',
-  '/market/catalog','/market/listings','/market/reports','/market/history','/market/status','/rank','/rank/lookup']);
+  '/market/catalog','/market/listings','/market/reports','/market/history','/market/status','/rank','/rank/lookup','/megaphones']);
 export async function cachedPublicResponse(req, load, ctx) {
   const url = new URL(req.url);
   if (req.method !== 'GET' || req.headers.has('Authorization') || !paths.has(url.pathname) || !globalThis.caches?.default) return load();

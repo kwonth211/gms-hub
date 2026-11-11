@@ -31,6 +31,21 @@ createServer((req, res) => {
     });
     return;
   }
+  // Megaphone collector on localhost: the admin key from ~/.config/gms-hub (never committed), and band crops kept for tuning.
+  if (url.pathname === '/__admin/token') {
+    const keyFile = path.join(homedir(), '.config', 'gms-hub', 'megaphone-token');
+    return existsSync(keyFile) ? res.writeHead(200, { 'Content-Type': 'text/plain' }).end(readFileSync(keyFile)) : res.writeHead(404).end();
+  }
+  if (req.method === 'POST' && url.pathname === '/__mega/sample') {
+    const parts = [];
+    req.on('data', (c) => parts.push(c));
+    req.on('end', () => {
+      mkdirSync(path.join(samples, 'mega'), { recursive: true });
+      writeFileSync(path.join(samples, 'mega', `${url.searchParams.get('kind') === 'raw' ? 'raw' : 'band'}-${Date.now()}.png`), Buffer.concat(parts));
+      res.writeHead(204).end();
+    });
+    return;
+  }
   let file = path.join(dist, decodeURIComponent(url.pathname));
   if (!file.startsWith(dist)) return res.writeHead(403).end();
   if (existsSync(file) && statSync(file).isDirectory()) file = path.join(file, 'index.html');

@@ -179,3 +179,16 @@ test('prices fall back to the reference price for items with no scans or reports
   assert.equal(out['4000001'].basis, 'typical'); assert.equal(out['4000001'].median, 7000); assert.equal(out['4000001'].n, 0);
   assert.equal(out['4000000'].basis, 'selling'); assert.equal(out['4000000'].median, 6500); assert.equal(out['4000000'].typical.price, 5000);
 });
+
+test('megaphones need the token, dedupe repeats within ten minutes and list newest first', async () => {
+  const env = { ...environment(), MEGAPHONE_TOKEN: 'mega-test' };
+  const post = (rows, token = 'mega-test') => worker.fetch(new Request('https://test.invalid/internal/megaphone', { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ rows }) }), env).then((r) => r.json().then((d) => ({ status: r.status, ...d })));
+  const now = new Date().toISOString();
+  const row = { seen: now, kind: 'super', color: 'Y', channel: 2, nick: 'Eugy', text: '[Shoes Speed Scroll: Intermediate] S > 132K NOW' };
+  assert.equal((await post([row], 'nope')).status, 401);
+  assert.equal((await post([row, { ...row, nick: 'suinosora', color: 'P', text: 'S > earring crit dmg 60% 380k ea' }])).accepted, 2);
+  assert.equal((await post([row])).accepted, 0);
+  assert.equal((await post([{ ...row, nick: 'bad nick!' }])).accepted, 0);
+  const list = await (await worker.fetch(new Request('https://test.invalid/megaphones'), env)).json();
+  assert.equal(list.rows.length, 2); assert.equal(list.rows[0].nick, 'suinosora'); assert.equal(list.rows[1].color, 'Y');
+});

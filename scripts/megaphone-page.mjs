@@ -1,0 +1,36 @@
+// Live megaphones (read from the game by the admin collector) beside a visitors' site chat. assets/megaphone.js fills
+// both; the two are styled apart so a game megaphone can never be mistaken for a site message.
+export function megaphoneBody({ lang, itemsUrl, marketUrl }) {
+  const ko = lang === 'ko';
+  return `<section class="page-head wrap"><h1>${ko ? '실시간 확성기' : 'Live megaphones'}</h1>
+<p class="lead">${ko ? '게임 안 고확을 실시간으로 모아 보여 드려요. 분홍은 고확, 노랑은 아이템 고확, 청록은 더블 아이템 고확이에요. 아이템이 나오면 지금 시세와 비교해 드리고, 귓말 명령어도 바로 복사돼요.' : 'Super megaphones from the game, live: pink for super megaphones, gold for item megaphones, teal for double item megaphones. Items are compared with the current market price, and the whisper command copies in one tap.'}</p></section>
+<div class="wrap mg-page" id="mg-page" data-items="${itemsUrl}" data-market="${marketUrl}">
+<section class="mg-feed-panel" aria-label="${ko ? '게임 확성기' : 'Game megaphones'}">
+<div class="mg-filters">
+<div class="chips" role="group" aria-label="${ko ? '종류' : 'Type'}">
+<button type="button" class="chip" data-intent="" aria-pressed="true">${ko ? '전체' : 'All'}</button>
+<button type="button" class="chip" data-intent="sell" aria-pressed="false">${ko ? '팝니다' : 'Selling'}</button>
+<button type="button" class="chip" data-intent="buy" aria-pressed="false">${ko ? '삽니다' : 'Buying'}</button>
+<button type="button" class="chip" data-intent="item" aria-pressed="false">${ko ? '아이템 고확만' : 'Item megaphones'}</button>
+</div>
+<select id="mg-channel" aria-label="${ko ? '채널' : 'Channel'}"><option value="">${ko ? '모든 채널' : 'All channels'}</option>${Array.from({ length: 40 }, (_, i) => `<option value="${i + 1}">CH ${i + 1}</option>`).join('')}</select>
+<input id="mg-search" type="search" placeholder="${ko ? '아이템·닉네임 검색' : 'Search items or names'}" autocomplete="off">
+<label class="mg-check"><input type="checkbox" id="mg-once" checked> ${ko ? '같은 글 한 번만' : 'Hide repeats'}</label>
+</div>
+<p class="muted small mg-note">${ko ? '화면 글자 인식으로 모아서 오타가 있을 수 있어요. 한국어 풀이는 거래 용어 기준 자동 풀이예요.' : 'Read from the game screen, so expect the odd typo.'}</p>
+<ol class="mg-feed" id="mg-feed" aria-live="polite"></ol>
+<p id="mg-empty" class="panel" hidden>${ko ? '아직 들어온 확성기가 없어요. 수집이 켜지면 여기에 바로 나와요.' : 'No megaphones yet. They appear here as soon as collection is running.'}</p>
+</section>
+<aside class="mg-chat-panel" aria-label="${ko ? '사이트 채팅' : 'Site chat'}">
+<h2>${ko ? '사이트 채팅' : 'Site chat'} <small id="mg-chat-count"></small></h2>
+<p class="muted small">${ko ? '이 사이트 방문자끼리 나누는 대화예요. 게임 확성기가 아니에요. 링크는 보낼 수 없어요.' : 'A chat between visitors of this site, not a game megaphone. Links are not allowed.'}</p>
+<ol class="mg-chat" id="mg-chat" aria-live="polite"></ol>
+<form class="mg-chat-form" id="mg-chat-form">
+<input id="mg-chat-name" maxlength="12" placeholder="${ko ? '닉네임' : 'Name'}" autocomplete="nickname" required>
+<input id="mg-chat-text" maxlength="140" placeholder="${ko ? '메시지 (140자)' : 'Message (140 characters)'}" autocomplete="off" required>
+<button class="btn small-btn" type="submit">${ko ? '보내기' : 'Send'}</button>
+</form>
+<p id="mg-chat-status" class="muted small" role="status"></p>
+</aside>
+</div>`;
+}

@@ -23,3 +23,15 @@ CREATE TABLE IF NOT EXISTS item_summary_daily (
   typical INTEGER NOT NULL,
   PRIMARY KEY (item, day)
 ) WITHOUT ROWID;
+
+CREATE TABLE IF NOT EXISTS megaphones (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  seen_at TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  color TEXT,
+  channel INTEGER,
+  nick TEXT NOT NULL,
+  text TEXT NOT NULL,
+  hash TEXT NOT NULL UNIQUE
+);
+CREATE INDEX IF NOT EXISTS megaphones_seen ON megaphones (seen_at);
