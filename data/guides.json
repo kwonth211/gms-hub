@@ -1137,6 +1137,106 @@
       ]
     },
     {
+      "slug": "crossbowman",
+      "lang": "ko",
+      "title": "글클메 사수 가이드: 아이언 애로우 관통, 스킬트리, 석궁 고르기, 30~70 사냥터",
+      "h1": "사수 30~70레벨: 한 줄로 세워 아이언 애로우로 관통하기",
+      "desc": "아이언 애로우 관통 규칙, 헌터와 다른 스킬 순서, 석궁 STR 요구치와 공격 속도, 긴 발판 위주 레벨별 사냥터까지 정리했어요.",
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "sources": [
+        {
+          "title": "클메CM",
+          "url": "https://www.youtube.com/watch?v=tXunA_vnBmg"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ],
+      "reviewed": "2026-11-11",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "crossbowman-guide-30-70"
+      ]
+    },
+    {
+      "slug": "crossbowman",
+      "lang": "en",
+      "title": "Crossbowman Guide: Iron Arrow Piercing, Skill Build, Choosing a Crossbow & Training 30–70",
+      "h1": "Crossbowman, levels 30–70: line them up and pierce",
+      "desc": "How Iron Arrow pierces, a skill order different from the Hunter's, crossbow STR and speed, and flat-platform training spots by level.",
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "sources": [
+        {
+          "title": "클메CM",
+          "url": "https://www.youtube.com/watch?v=tXunA_vnBmg"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ],
+      "reviewed": "2026-11-11",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "crossbowman-guide-30-70"
+      ]
+    },
+    {
+      "slug": "hunter",
+      "lang": "ko",
+      "title": "글클메 헌터 가이드: 애로우 봄 스킬트리, 활 고르기, 30~70 사냥터",
+      "h1": "헌터 30~70레벨: 애로우 봄으로 모아서 터뜨리기",
+      "desc": "부스터 1포인트가 100초인 이유, 애로우 봄과 파이널 어택 순서, STR을 활 요구치만 맞추는 법, 레벨별 사냥터까지 정리했어요.",
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "sources": [
+        {
+          "title": "클메CM",
+          "url": "https://www.youtube.com/watch?v=tXunA_vnBmg"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ],
+      "reviewed": "2026-11-11",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "hunter-guide-30-70"
+      ]
+    },
+    {
+      "slug": "hunter",
+      "lang": "en",
+      "title": "Hunter Guide: Arrow Bomb Skill Build, Choosing a Bow & Training 30–70",
+      "h1": "Hunter, levels 30–70: gather them and Arrow Bomb",
+      "desc": "Why one Booster point is enough early, Arrow Bomb versus Final Attack order, STR only for your bow, and training spots by level.",
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "sources": [
+        {
+          "title": "클메CM",
+          "url": "https://www.youtube.com/watch?v=tXunA_vnBmg"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ],
+      "reviewed": "2026-11-11",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "hunter-guide-30-70"
+      ]
+    },
+    {
       "slug": "mage-build",
       "lang": "en",
       "title": "Magician: Fire/Poison, Ice/Lightning and Cleric costs",
