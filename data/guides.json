@@ -953,6 +953,156 @@
       ]
     },
     {
+      "slug": "spearman",
+      "lang": "ko",
+      "title": "글클메 스피어맨 가이드: 창 vs 폴암, 흡수 파이널 어택, 스킬트리와 30~70 사냥터",
+      "h1": "스피어맨 30~70레벨: 포션 덜 쓰고 흑자 사냥",
+      "desc": "창과 폴암 비교, 50레벨 무기 선택, 체력을 채워 주는 파이널 어택 쓰는 법, 스킬트리와 사냥터 실측 기록까지.",
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "sources": [
+        {
+          "title": "자동사냥",
+          "url": "https://www.youtube.com/watch?v=U_yoBAFfVME"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ],
+      "reviewed": "2026-11-11",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "spearman-guide-30-70"
+      ]
+    },
+    {
+      "slug": "spearman",
+      "lang": "en",
+      "title": "Spearman Guide: Spear vs Polearm, Healing Final Attack, Skill Build & Training 30–70",
+      "h1": "Spearman, levels 30–70: fewer potions, profitable grinding",
+      "desc": "Spear vs polearm, the level 50 weapon choice, how to use the healing Final Attack, the skill order and measured training spots.",
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "sources": [
+        {
+          "title": "자동사냥",
+          "url": "https://www.youtube.com/watch?v=U_yoBAFfVME"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ],
+      "reviewed": "2026-11-11",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "spearman-guide-30-70"
+      ]
+    },
+    {
+      "slug": "page",
+      "lang": "ko",
+      "title": "글클메 페이지 가이드: 둔기 vs 검, 위협 쓰는 법, 스킬트리와 30~70 사냥터",
+      "h1": "페이지 30~70레벨: 위협을 제대로 쓰면 덜 맞아요",
+      "desc": "둔기와 검 비교, 50레벨 골든 모울로 넘어가는 길, 위협으로 몬스터 끌어오는 법, 스킬트리와 사냥터 기록까지.",
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "sources": [
+        {
+          "title": "자동사냥",
+          "url": "https://www.youtube.com/watch?v=EVO2-LEEK1g"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ],
+      "reviewed": "2026-11-11",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "page-guide-30-70"
+      ]
+    },
+    {
+      "slug": "page",
+      "lang": "en",
+      "title": "Page Guide: Blunt vs Sword, Using Threaten, Skill Build & Training 30–70",
+      "h1": "Page, levels 30–70: Threaten well and take fewer hits",
+      "desc": "Blunt vs sword, the switch to Golden Mole at 50, how to pull monsters with Threaten, the skill order and training records.",
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "sources": [
+        {
+          "title": "자동사냥",
+          "url": "https://www.youtube.com/watch?v=EVO2-LEEK1g"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ],
+      "reviewed": "2026-11-11",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "page-guide-30-70"
+      ]
+    },
+    {
+      "slug": "fighter",
+      "lang": "ko",
+      "title": "글클메 파이터 가이드: 도끼 vs 검, 분노, 스킬트리와 30~70 사냥터",
+      "h1": "파이터 30~70레벨: 도끼로 가면 무기 걱정이 없어요",
+      "desc": "도끼와 검 비교, 레벨별 양손 무기 구하는 곳, 분노·파이널 어택 쓰는 법, 스킬트리와 사냥터 실측 기록까지.",
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "sources": [
+        {
+          "title": "자동사냥",
+          "url": "https://www.youtube.com/watch?v=pYGRd4EFkqA"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ],
+      "reviewed": "2026-11-11",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "fighter-guide-30-70"
+      ]
+    },
+    {
+      "slug": "fighter",
+      "lang": "en",
+      "title": "Fighter Guide: Axe vs Sword, Rage, Skill Build & Training 30–70",
+      "h1": "Fighter, levels 30–70: go axe and never worry about weapons",
+      "desc": "Axe vs sword, where to get two-handed weapons, how to use Rage and Final Attack, the skill order and measured training spots.",
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "sources": [
+        {
+          "title": "자동사냥",
+          "url": "https://www.youtube.com/watch?v=pYGRd4EFkqA"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ],
+      "reviewed": "2026-11-11",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "fighter-guide-30-70"
+      ]
+    },
+    {
       "slug": "archer-build",
       "lang": "en",
       "title": "Bowman: Hunter routes and reliable two-hit kills",

@@ -528,6 +528,9 @@ PAGES.push(...TR_BANDS.map((band) => ({ key: 'trBand', path: bandPath(band), ban
 // Subclasses that share every route with their family (Fighter, Page, Spearman) point to the family page instead.
 const TR_CLASSES = [
   { job: 'warrior', slug: 'warrior', ko: '전사', en: 'Warrior', guide: 'warrior-build' },
+  { job: 'fighter', slug: 'fighter', ko: '파이터', en: 'Fighter', guide: 'fighter' },
+  { job: 'page', slug: 'page', ko: '페이지', en: 'Page', guide: 'page' },
+  { job: 'spear', slug: 'spearman', ko: '스피어맨', en: 'Spearman', guide: 'spearman' },
   { job: 'archer', slug: 'bowman', ko: '궁수', en: 'Bowman', guide: 'archer-build' },
   { job: 'hunter', slug: 'hunter', ko: '헌터', en: 'Hunter', guide: 'archer-build' },
   { job: 'crossbow', slug: 'crossbowman', ko: '사수', en: 'Crossbowman', guide: 'archer-build' },
