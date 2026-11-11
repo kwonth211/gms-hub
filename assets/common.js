@@ -97,8 +97,15 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   const api = document.body.dataset.priceApi;
   if (!spots.length || !api || !('WebSocket' in window)) return;
   let ws = null, ping = 0, idle = 0, retry = 0;
+  // A changed number pops briefly, like a broadcast viewer counter.
   const show = (site) => spots.forEach((el) => {
-    el.querySelector('[data-site]').textContent = site;
+    const num = el.querySelector('[data-site]');
+    if (num.textContent !== String(site) && !el.hidden) {
+      num.classList.remove('bump');
+      void num.offsetWidth;
+      num.classList.add('bump');
+    }
+    num.textContent = site;
     el.hidden = !(site >= 2);
   });
   const open = () => {

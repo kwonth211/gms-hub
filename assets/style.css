@@ -525,13 +525,21 @@ a.band-link:hover { border-color: var(--accent); }
 .presence { display: flex; align-items: center; gap: 7px; margin: 0 0 0 auto; padding: 5px 11px; border-radius: 999px; border: 1px solid var(--ok-line); background: var(--ok-soft); color: var(--ok); font-size: 0.8rem; white-space: nowrap; flex: none; }
 .presence[hidden] { display: none; }
 .presence b { font-variant-numeric: tabular-nums; }
-.pr-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); flex: none; animation: pr-blink 1.6s ease-in-out infinite; }
-@keyframes pr-blink { 0%, 100% { opacity: 1; box-shadow: 0 0 0 0 var(--ok-line); } 50% { opacity: 0.35; box-shadow: 0 0 0 4px transparent; } }
-@media (prefers-reduced-motion: reduce) { .pr-dot { animation: none; } }
-.hero-stats .hs-live { display: flex; margin: 0; padding: 0; border: 0; background: none; border-radius: 0; font-size: inherit; }
+.pr-dot { position: relative; display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--danger); flex: none; animation: pr-blink 1.2s steps(1, end) infinite; }
+.pr-dot::before, .pr-dot::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--danger); animation: pr-wave 1.8s ease-out infinite; }
+.pr-dot::after { animation-delay: 0.9s; }
+@keyframes pr-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+@keyframes pr-wave { from { transform: scale(1); opacity: 0.8; } to { transform: scale(3.2); opacity: 0; } }
+.pr-live { padding: 1px 6px; border-radius: 4px; background: var(--danger); color: var(--panel); font-size: 0.68rem; font-weight: 800; letter-spacing: 0.04em; line-height: 1.5; }
+.presence { border-color: color-mix(in srgb, var(--danger) 35%, transparent); background: color-mix(in srgb, var(--danger) 9%, var(--panel)); color: var(--text); }
+.presence [data-site].bump { animation: pr-bump 0.5s var(--ease-snap); }
+@keyframes pr-bump { 0% { transform: scale(1.5); color: var(--danger); } 100% { transform: scale(1); } }
+.presence [data-site] { display: inline-block; }
+@media (prefers-reduced-motion: reduce) { .pr-dot, .pr-dot::before, .pr-dot::after, .presence [data-site].bump { animation: none; } .pr-dot::before, .pr-dot::after { display: none; } }
+.hero-stats .hs-live { display: flex; margin: 0; padding: 0; border: 0; background: none; border-radius: 0; font-size: inherit; color: inherit; }
 .hero-stats .hs-live[hidden] { display: none; }
 .hero-stats .hs-live dt { display: flex; align-items: center; gap: 6px; }
-.hero-stats .hs-live dd { color: var(--ok); }
+.hero-stats .hs-live dd { color: var(--danger); }
 .hero-stats [data-market-stat][hidden] { display: none; }
 @media (max-width: 760px) { .presence { order: 1; margin-left: 0; font-size: 0.75rem; } }
 @keyframes live-pulse { 70% { box-shadow: 0 0 0 8px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
