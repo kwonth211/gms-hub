@@ -8,7 +8,7 @@ const N = Number(process.argv[2]) || 300;
 const log = fs.readFileSync(path.join(os.homedir(), 'gms-hub-samples', 'mega-collector.log'), 'utf8').split('\n');
 const rows = log.map((l) => /^(\d\d:\d\d:\d\d) (\w+)\s+CH\s?(\d+) (\S+): (.*)$/.exec(l)).filter(Boolean).slice(-N)
   .map(([, at, kind, ch, nick, text]) => ({ at, kind, ch: Number(ch), nick, text }));
-const items = new Set(JSON.parse(fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), '..', '..', 'assets', 'items-names.json'), 'utf8')));
+const items = new Set(JSON.parse(fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), '..', '..', 'assets', 'items-names.json'), 'utf8')).map((n) => n.toLowerCase()));
 
 // Signs of a misread: symbols the game font can't make, long runs of the same mark, a mostly-symbol message, a nick
 // that is only a few capitals, or a bracketed item name that matches nothing in the catalogue.

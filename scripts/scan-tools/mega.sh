@@ -25,7 +25,7 @@ case $1 in
     mkdir -p $DEST/scripts/scan-tools $DEST/assets
     cp $REPO/scripts/scan-tools/{mega-collector.mjs,mega-check.mjs,maple-window.swift,mega.sh,package.json} $DEST/scripts/scan-tools/
     cp $REPO/assets/mega-reader.js $DEST/assets/
-    node -e "const d=require('$REPO/data/items.json');console.log(JSON.stringify([...new Set(d.items.map(i=>i.en.toLowerCase()))]))" > $DEST/assets/items-names.json
+    node -e "const d=require('$REPO/data/items.json');console.log(JSON.stringify([...new Set(d.items.map(i=>i.en))]))" > $DEST/assets/items-names.json
     [[ -e $DEST/scripts/scan-tools/node_modules ]] || ln -s ~/gms-hub/scripts/scan-tools/node_modules $DEST/scripts/scan-tools/node_modules
     rm -f ${TMPDIR:-/tmp}/gms-maple-window
     $DEST/scripts/scan-tools/mega.sh stop; $DEST/scripts/scan-tools/mega.sh start ;;
