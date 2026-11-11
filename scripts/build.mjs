@@ -539,8 +539,8 @@ const TR_CLASSES = [
   { job: 'ice', slug: 'ice-lightning', ko: '썬콜', en: 'Ice/Lightning Wizard', guide: 'ice-lightning' },
   { job: 'cleric', slug: 'cleric', ko: '클레릭', en: 'Cleric', guide: 'mage-build' },
   { job: 'thief', slug: 'thief', ko: '도적', en: 'Thief', guide: 'thief-build' },
-  { job: 'assassin', slug: 'assassin', ko: '어쌔신(표도)', en: 'Assassin', guide: 'thief-build' },
-  { job: 'bandit', slug: 'bandit', ko: '시프(단도)', en: 'Bandit', guide: 'thief-build' }
+  { job: 'assassin', slug: 'assassin', ko: '어쌔신(표도)', en: 'Assassin', guide: 'assassin' },
+  { job: 'bandit', slug: 'bandit', ko: '시프(단도)', en: 'Bandit', guide: 'bandit' }
 ];
 const classPath = (c) => `/tools/training/class/${c.slug}/`;
 PAGES.push(...TR_CLASSES.map((cls) => ({ key: 'trClass', path: classPath(cls), cls })));

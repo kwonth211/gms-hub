@@ -1243,6 +1243,106 @@
         "cleric-play",
         "bandit-play"
       ]
+    },
+    {
+      "slug": "bandit",
+      "lang": "ko",
+      "title": "글클메 시프 가이드: 스틸 vs 새비지 블로우, 마스터리 먼저인 이유, 단검·사냥터",
+      "h1": "시프 30~70레벨: 스틸도 새비지도 아닌 마스터리 먼저",
+      "desc": "1,500번 시뮬레이션으로 비교한 스킬 순서, 스틸·더블 스탭 대안, 단검 공격 속도 라인, 레벨별 사냥터까지 정리했어요.",
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "sources": [
+        {
+          "title": "클메CM",
+          "url": "https://www.youtube.com/watch?v=4_gzV1WDz90"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ],
+      "reviewed": "2026-11-11",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "bandit-guide-30-70"
+      ]
+    },
+    {
+      "slug": "bandit",
+      "lang": "en",
+      "title": "Bandit Guide: Steal vs Savage Blow, Why Mastery First, Daggers & Training 30–70",
+      "h1": "Bandit, levels 30–70: Mastery first, not Steal or Savage",
+      "desc": "Skill orders compared over 1,500 simulated runs, the Steal and Double Stab alternative, dagger speed lines and training spots by level.",
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "sources": [
+        {
+          "title": "클메CM",
+          "url": "https://www.youtube.com/watch?v=4_gzV1WDz90"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ],
+      "reviewed": "2026-11-11",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "bandit-guide-30-70"
+      ]
+    },
+    {
+      "slug": "assassin",
+      "lang": "ko",
+      "title": "글클메 어쌔신 가이드: 럭키 세븐 중심 스킬트리, 아대·표창, 30~70 사냥터",
+      "h1": "어쌔신 30~70레벨: 럭키 세븐 하나로 70까지",
+      "desc": "클로 마스터리부터 드레인까지 스킬 순서, DEX와 명중, 아대·표창 고르기, 레벨별 사냥터까지 정리했어요.",
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "sources": [
+        {
+          "title": "자동사냥",
+          "url": "https://www.youtube.com/watch?v=VZzc1LLhE1M"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ],
+      "reviewed": "2026-11-11",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "assassin-guide-30-70"
+      ]
+    },
+    {
+      "slug": "assassin",
+      "lang": "en",
+      "title": "Assassin Guide: Lucky Seven Skill Build, Claws, Stars & Training 30–70",
+      "h1": "Assassin, levels 30–70: Lucky Seven all the way",
+      "desc": "Skill order from Claw Mastery to Drain, DEX and accuracy, choosing claws and stars, and training spots by level.",
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "sources": [
+        {
+          "title": "자동사냥",
+          "url": "https://www.youtube.com/watch?v=VZzc1LLhE1M"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ],
+      "reviewed": "2026-11-11",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "assassin-guide-30-70"
+      ]
     }
   ]
 }
