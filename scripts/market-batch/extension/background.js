@@ -13,7 +13,7 @@ const owned = tab => tab?.url?.startsWith(PAGE) || tab?.pendingUrl?.startsWith(P
 async function broadcast() {
   const s = await get();
   // No secret is ever included in content-script messages or the public DOM.
-  return { ...s, version: '0.6.0', nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
+  return { ...s, version: '0.6.1', nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
 }
 async function ensureAlarms() {
   const s = await get();
@@ -203,6 +203,16 @@ async function message(m, sender) {
     s.testRemaining = 3; await put(s); return launch('test', 'manual-test');
   }
   if (m.type === 'run') return launch('production', 'manual');
+  if (m.type === 'summaryNow') {
+    if (!Array.isArray(m.summary) || m.summary.length < 100) throw new Error('읽은 목록이 너무 적어요 (탭을 앞에 두고 다시)');
+    const r = await fetch(ENDPOINT, { method: 'POST', headers: { Authorization: `Bearer ${GMS_BATCH_CONFIG.token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ summaryOnly: true, world: 'Windia', summary: m.summary }), signal: AbortSignal.timeout(25000) });
+    const body = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(`저장 실패 (${r.status})`);
+    const s = await get(); s.lastSummaryAt = Date.now();
+    s.itemIds = [...m.summary].sort((a, b) => (b.sales || 0) - (a.sales || 0)).map(x => x.item); await put(s);
+    return body.summary || {};
+  }
   // Picks up new extension files from disk (an unpacked install), so an update needs no trip to chrome://extensions.
   if (m.type === 'reload') { const s = await get(); if (s.run || s.pending) return { busy: true }; setTimeout(() => chrome.runtime.reload(), 300); return { ok: true }; }
   if (m.type === 'enable') {

@@ -25,7 +25,7 @@
     const maxShops = options.mode === 'test' ? 40 : Math.min(600, Number(options.maxShops) || 360);
     const maxItems = options.mode === 'test' ? 2 : Math.min(60, Number(options.maxItems) || 12);
     const perItem = Math.min(50, Number(options.shopsPerItem) || 20);
-    const report = { version: '0.6.0', runId: options.runId, world: 'Windia', startedAt: new Date().toISOString(),
+    const report = { version: '0.6.1', runId: options.runId, world: 'Windia', startedAt: new Date().toISOString(),
       status: 'running', rows: [], shops: 0, rejected: {}, queue: [], skippedItems: [], aiCalls: 0 };
     const rows = new Map();
     const openModal = () => { const el = document.querySelector('#sv-modal'); return el && !el.closest('[hidden]') ? el : null; };
@@ -144,5 +144,18 @@
     }
     report.finishedAt = new Date().toISOString(); return report;
   }
-  globalThis.GmsCollector = { collect };
+  // "Read prices now" from the panel: in a tab the user is looking at, scroll the list to the end and read every row.
+  async function readAll(pause = localPause) {
+    const search = document.querySelector('#search');
+    if (search?.value) { search.value = ''; search.dispatchEvent(new Event('input', { bubbles: true })); await pause(800); }
+    const wrap = document.querySelector('#rows')?.closest('.table-wrap');
+    for (let i = 0, idle = 0, before = 0; wrap && i < 150 && idle < 8; i++) {
+      wrap.scrollTop = wrap.scrollHeight; await pause(250);
+      const now = document.querySelectorAll('#rows tr[data-id]').length;
+      idle = now === before ? idle + 1 : 0; before = now;
+    }
+    if (wrap) wrap.scrollTop = 0;
+    return readSummary('#rows tr[data-id]');
+  }
+  globalThis.GmsCollector = { collect, readAll };
 })();

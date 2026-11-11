@@ -120,3 +120,11 @@ test('the item list summary rides along, stores reference prices at most every t
  const bad=await post(e,{...batch(),summary:[{item:2040801,typical:'x'}]});
  assert.equal(bad.status,200); assert.equal(bad.data.summary,null);
 });
+test('a summary-only upload stores reference prices right away without a run',async()=>{
+ const e=environment();
+ const r=await post(e,{summaryOnly:true,world:'Windia',summary:[{item:2040801,typical:1490000,day:1,week:2,sales:10}]});
+ assert.equal(r.status,200); assert.equal(r.data.summary.stored,1); assert.equal(count(e,'market_batch_runs'),0);
+ const again=await post(e,{summaryOnly:true,world:'Windia',summary:[{item:2040801,typical:1500000,day:1,week:2,sales:10}]});
+ assert.equal(again.data.summary.stored,1);
+ assert.equal((await post(e,{summaryOnly:true,summary:[]})).status,400);
+});

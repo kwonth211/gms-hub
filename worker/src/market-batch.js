@@ -66,8 +66,8 @@ export function validSummary(summary, known) {
   return ok.length ? ok.map(({ item, typical, day, week, sales }) => ({ item, typical, day, week, sales })) : null;
 }
 // Writes only rows whose numbers changed, plus one row per item per day, and at most every three hours.
-export async function storeSummary(env, summary, now = Date.now()) {
-  const last = await env.DB.prepare("SELECT at FROM snapshots WHERE key = 'item-summary'").first().catch(() => null);
+export async function storeSummary(env, summary, now = Date.now(), force = false) {
+  const last = force ? null : await env.DB.prepare("SELECT at FROM snapshots WHERE key = 'item-summary'").first().catch(() => null);
   if (last && now - Date.parse(last.at.replace(' ', 'T') + 'Z') < SUMMARY_EVERY_MS) return { stored: 0, skipped: 'recent' };
   const at = new Date(now).toISOString().slice(0, 19).replace('T', ' ');
   const json = JSON.stringify(summary);
@@ -107,6 +107,12 @@ export async function handleMarketBatch(req, env, knownItems) {
   if (env.MARKET_BATCH_PAUSED === 'true') return reply({ error: 'collection paused to protect database quota' }, 423);
   const known = await knownItems().catch(() => null);
   if (!known) return reply({ error: 'item index unavailable' }, 503);
+  // A summary-only upload from the panel's "read prices now" button: no listings, no run budget, written right away.
+  if (body?.summaryOnly === true) {
+    const summary = validSummary(body.summary, known);
+    if (!summary) return reply({ error: 'invalid summary' }, 400);
+    return reply({ ok: true, summary: await storeSummary(env, summary, Date.now(), true) });
+  }
   if (!validBatch(body, known)) return reply({ error: 'invalid batch' }, 400);
   const policy = limits(env);
   if (body.rows.length > policy.maxBatchRows) return reply({ error: 'batch exceeds configured row limit', policy }, 400);
