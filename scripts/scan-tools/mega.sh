@@ -24,7 +24,7 @@ case $1 in
     REPO=${2:-~/gms-hub}; DEST=~/gms-hub-mega
     mkdir -p $DEST/scripts/scan-tools $DEST/assets
     cp $REPO/scripts/scan-tools/{mega-collector.mjs,mega-check.mjs,maple-window.swift,mega.sh,package.json} $DEST/scripts/scan-tools/
-    cp $REPO/assets/mega-reader.js $DEST/assets/
+    cp $REPO/assets/mega-reader.js $REPO/assets/mega-glyphs.json $DEST/assets/
     node -e "const d=require('$REPO/data/items.json');console.log(JSON.stringify([...new Set(d.items.map(i=>i.en))]))" > $DEST/assets/items-names.json
     [[ -e $DEST/scripts/scan-tools/node_modules ]] || ln -s ~/gms-hub/scripts/scan-tools/node_modules $DEST/scripts/scan-tools/node_modules
     rm -f ${TMPDIR:-/tmp}/gms-maple-window

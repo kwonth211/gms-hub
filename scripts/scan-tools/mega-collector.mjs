@@ -9,7 +9,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { PNG } from 'pngjs';
 import Tesseract from 'tesseract.js';
-import { findChatBox, findLines, readLine, assemble, repeatFilter, itemFixer } from '../../assets/mega-reader.js';
+import { findChatBox, findLines, readLine, assemble, repeatFilter, itemFixer, glyphReader, slotAnchor, windowTop } from '../../assets/mega-reader.js';
 
 const API = 'https://gms-hub-votes.kwonth211.workers.dev/internal/megaphone';
 const DRY = process.argv.includes('--dry');
@@ -29,6 +29,9 @@ const text = await Tesseract.createWorker('eng');
 // Symbols the game's chat font never draws are ruled out, so Tesseract picks the real letter instead ("£ard" → "Zard").
 await text.setParameters({ tessedit_pageseg_mode: '7', preserve_interword_spaces: '1', tessedit_char_blacklist: '£©®°¢¥§«»€¬±™¦' });
 const namesFile = path.join(path.dirname(new URL(import.meta.url).pathname), '..', '..', 'assets', 'items-names.json');
+// The learned chat-font table (assets/mega-glyphs.json) reads most lines exactly; OCR covers the rest.
+const glyphFile = path.join(path.dirname(new URL(import.meta.url).pathname), '..', '..', 'assets', 'mega-glyphs.json');
+const readGlyphs = fs.existsSync(glyphFile) ? glyphReader(JSON.parse(fs.readFileSync(glyphFile, 'utf8'))) : null;
 const fixItems = fs.existsSync(namesFile) ? itemFixer(JSON.parse(fs.readFileSync(namesFile, 'utf8'))) : (t) => t;
 const ALNUM = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const nickWord = await Tesseract.createWorker('eng');
@@ -78,7 +81,8 @@ async function tick() {
   const lines = findLines(part);
   empty = lines.length ? 0 : empty + 1;
   const read = [];
-  for (const l of lines) read.push(await readLine(part, l, ocr));
+  const anchor = readGlyphs ? slotAnchor(part, lines) : null;
+  for (const l of lines) read.push(await readLine(part, l, ocr, anchor ? { read: readGlyphs, wTop: windowTop(l, anchor) } : null));
   const now = Date.now();
   const all = assemble(read);
   if (ticks % 80 === 1 && lines.length) {

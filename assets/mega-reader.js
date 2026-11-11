@@ -184,20 +184,29 @@ export function readChannel(img, line, badge) {
 
 // Read one line with an OCR function (bitmap, kind → text). kind is 'nick' (one word, letters and digits), 'nickline'
 // (a line, letters and digits) or 'text'.
-export async function readLine(img, line, ocr) {
+// glyph (optional) is { read, wTop }: the learned font table reader and this line's glyph window. Text the table can
+// read in full is taken from it; anything else falls back to the OCR function.
+export async function readLine(img, line, ocr, glyph = null) {
   const badge = findBadge(img, line);
   const x0 = textLeft(img, line);
-  if (!badge) return { color: line.color, cont: true, text: cleanText(await ocr(lineBitmap(img, line, { x0 }), 'text')) };
-  // Nicks are short and have no dictionary words, so one OCR pass often slips a letter. Three readings (as one word at
-  // 4x, as a line at 2x and at 3x, letters and digits only) vote; without a majority the one-word reading wins.
-  const reads = [];
-  for (const [kind, scale] of [['nick', 4], ['nickline', 2], ['nickline', 3]]) reads.push((await ocr(lineBitmap(img, line, { x0, x1: badge.left - 1, scale }), kind)).replace(/[^A-Za-z0-9]/g, ''));
-  const votes = new Map();
-  for (const r of reads) if (r) votes.set(r, (votes.get(r) || 0) + 1);
-  const top = [...votes].sort((a, b) => b[1] - a[1])[0];
-  const nick = top && top[1] >= 2 ? top[0] : reads[0];
+  const byTable = (a, z) => (glyph ? glyph.read(glyphs(img, line, a, z, glyph.wTop)) : null);
+  if (!badge) {
+    const t = byTable(x0, img.width);
+    return { color: line.color, cont: true, text: cleanText(t ?? (await ocr(lineBitmap(img, line, { x0 }), 'text'))) };
+  }
+  // Without the font table, nicks (short, no dictionary words) get three OCR readings that vote: one word at 4x, a line
+  // at 2x and at 3x, letters and digits only; without a majority the one-word reading wins.
+  let nick = byTable(x0, badge.left - 1)?.replace(/[^A-Za-z0-9]/g, '');
+  if (!nick) {
+    const reads = [];
+    for (const [kind, scale] of [['nick', 4], ['nickline', 2], ['nickline', 3]]) reads.push((await ocr(lineBitmap(img, line, { x0, x1: badge.left - 1, scale }), kind)).replace(/[^A-Za-z0-9]/g, ''));
+    const votes = new Map();
+    for (const r of reads) if (r) votes.set(r, (votes.get(r) || 0) + 1);
+    const top = [...votes].sort((a, b) => b[1] - a[1])[0];
+    nick = top && top[1] >= 2 ? top[0] : reads[0];
+  }
   const channel = readChannel(img, line, badge);
-  const text = cleanText((await ocr(lineBitmap(img, line, { x0: badge.message }), 'text')).replace(/^[^A-Za-z0-9[<>]*/, ''));
+  const text = cleanText((byTable(badge.message, img.width) ?? (await ocr(lineBitmap(img, line, { x0: badge.message }), 'text'))).replace(/^[^A-Za-z0-9[<>]*/, ''));
   return { color: line.color, nick, channel, text };
 }
 
@@ -301,11 +310,18 @@ export function glyphs(img, line, x0, x1, wTop) {
   const out = [];
   let cur = null, gap = 0;
   const right = Math.min(x1, line.right ?? x1);
+  // Only rows that are on this line's band count: the dark seams between bands would otherwise join every letter.
+  const inBand = [];
+  for (let y = wTop; y < wTop + 16; y++) {
+    let n = 0, m = 0;
+    if (y >= 0 && y < img.height) for (let x = x0; x < right; x += 2) { const i = (y * img.width + x) * 4; m++; if (bandClass(img.data[i], img.data[i + 1], img.data[i + 2]) === line.color) n++; }
+    inBand.push(m > 0 && n / m > 0.3);
+  }
   for (let x = x0; x < right; x++) {
     let col = '', kinds = '';
     for (let y = wTop; y < wTop + 16; y++) {
       const i = (y * img.width + x) * 4;
-      const k = y >= 0 && y < img.height ? inkKind(img.data[i], img.data[i + 1], img.data[i + 2], bgLuma) : '';
+      const k = inBand[y - wTop] ? inkKind(img.data[i], img.data[i + 1], img.data[i + 2], bgLuma) : '';
       col += k ? '#' : '.';
       if (k) kinds += k;
     }
@@ -320,15 +336,74 @@ export function glyphs(img, line, x0, x1, wTop) {
     }
   }
   if (cur) out.push(cur);
-  return out.map((g, i) => ({ key: `${g.kind}:${g.cols.join('/')}`, space: i > 0 && g.gap >= (g.kind === 'Y' ? SPACE_Y : SPACE_D) }));
+  return out.map((g, i) => ({ key: `${g.kind}:${g.cols.join('/')}`, gap: i > 0 ? g.gap : 0, space: i > 0 && g.gap >= (g.kind === 'Y' ? SPACE_Y : SPACE_D) }));
 }
-// Glyphs → text with a learned table; null if any glyph is unknown (the caller falls back to Tesseract).
-export function readGlyphs(gs, table) {
-  let out = '';
-  for (const g of gs) {
-    const ch = table[g.key];
-    if (ch == null) return null;
-    out += (g.space ? ' ' : '') + ch;
+// Glyphs → text with a learned table (glyph key → one or more characters). Letters that touch with no empty column
+// between them come out as one run; such a run is split into known single letters when their columns line up
+// exactly end to end. Returns null if any run stays unknown (the caller falls back to Tesseract).
+export function glyphReader(table) {
+  const singles = new Map(); // kind → [{ cols, ch }]
+  for (const [key, ch] of Object.entries(table)) {
+    if (ch.length !== 1) continue;
+    const [kind, cols] = [key.slice(0, 1), key.slice(2).split('/')];
+    if (!singles.has(kind)) singles.set(kind, []);
+    singles.get(kind).push({ cols, ch });
   }
-  return out;
+  // A letter fits at column i when every pixel of it is lit there; extra lit pixels are allowed only in its first and
+  // last column (where a neighbour's stroke may touch or overlap by one column, like a bold "t" crossbar). The next
+  // letter starts right after it or one column back (overlap). Fewest stray pixels wins, then fewest letters.
+  const fits = (cols, i, g) => {
+    let extra = 0;
+    for (let k = 0; k < g.cols.length; k++) {
+      const b = cols[i + k], t = g.cols[k];
+      if (b == null) return -1;
+      for (let y = 0; y < t.length; y++) {
+        if (t[y] === '#' && b[y] !== '#') return -1;
+        if (b[y] === '#' && t[y] !== '#') { if (k > 0 && k < g.cols.length - 1) return -1; extra++; }
+      }
+    }
+    return extra;
+  };
+  const split = (key) => {
+    const kind = key.slice(0, 1), cols = key.slice(2).split('/'), list = singles.get(kind) || [];
+    const best = new Array(cols.length + 1).fill(null);
+    best[cols.length] = { str: '', cost: 0 };
+    for (let i = cols.length - 1; i >= 0; i--) {
+      for (const g of list) {
+        const extra = fits(cols, i, g);
+        if (extra < 0) continue;
+        for (const next of [i + g.cols.length, i + g.cols.length - 1]) {
+          if (next <= i || next > cols.length || !best[next]) continue;
+          const cand = { str: g.ch + best[next].str, cost: extra + best[next].cost + (next < i + g.cols.length ? 1 : 0) };
+          if (!best[i] || cand.cost < best[i].cost || (cand.cost === best[i].cost && cand.str.length < best[i].str.length)) best[i] = cand;
+        }
+      }
+    }
+    return best[0] && best[0].cost <= Math.max(2, cols.length / 2) ? best[0].str : null;
+  };
+  const memo = new Map();
+  const charOf = (key) => {
+    if (table[key] != null) return table[key];
+    if (!memo.has(key)) memo.set(key, split(key));
+    return memo.get(key);
+  };
+  // Digits and "." sit in wider cells, so a 4-column gap next to them is not a space; 5 or more always is.
+  const narrow = (c) => /^[0-9.,]$/.test(c);
+  const read = (gs) => {
+    let out = '', prev = '';
+    for (const g of gs) {
+      const ch = charOf(g.key);
+      if (ch == null) return null;
+      const space = g.gap >= 5 || (g.space && !(narrow(prev.slice(-1)) || narrow(ch[0])));
+      out += (space ? ' ' : '') + ch;
+      prev = ch;
+    }
+    // Capital I and small l are the same glyph in this font: inside a word of capitals it is I, otherwise l.
+    return out.replace(/[A-Za-z]*[Il][A-Za-z]*/g, (w) => {
+      const others = w.replace(/[Il]/g, '');
+      const upper = others.length ? others === others.toUpperCase() : w[0] === 'I';
+      return w.replace(/[Il]/g, (c, i) => (upper ? 'I' : i === 0 && others && others[0] === others[0].toLowerCase() ? 'l' : c === 'I' && i === 0 ? 'I' : 'l'));
+    });
+  };
+  return Object.assign(read, { charOf });
 }

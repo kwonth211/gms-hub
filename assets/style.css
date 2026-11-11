@@ -145,7 +145,7 @@ h2 { font-size: 1.35rem; margin: 48px 0 16px; }
   .header-inner { flex-wrap: wrap; gap: 8px; padding-top: 10px; }
   .brand { flex: 1; }
   /* Keep every destination visible on phones. */
-  .tabs { order: 3; flex-basis: 100%; padding-bottom: 8px; display: grid; grid-template-columns: repeat(7, 1fr); }
+  .tabs { order: 3; flex-basis: 100%; padding-bottom: 8px; display: grid; grid-template-columns: repeat(8, 1fr); }
   .tab { flex-direction: column; justify-content: center; gap: 2px; padding: 6px 2px; font-size: 0.75rem; text-align: center; white-space: normal; word-break: keep-all; line-height: 1.2; }
 }
 
@@ -1222,7 +1222,7 @@ input.dm-filled { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset
 @media (min-width: 761px) and (max-width: 1100px) {
   .header-inner { flex-wrap: wrap; padding-top: 10px; }
   .brand { flex: 1; }
-  .tabs { order: 3; flex-basis: 100%; display: grid; grid-template-columns: repeat(7,1fr); padding-bottom: 8px; }
+  .tabs { order: 3; flex-basis: 100%; display: grid; grid-template-columns: repeat(8,1fr); padding-bottom: 8px; }
   .tabs .tab { justify-content: center; }
 }
 
@@ -1308,7 +1308,7 @@ input.dm-filled { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset
 
 /* Header menu on narrow screens: seven equal columns that may shrink, so long English labels wrap instead of overflowing. */
 @media (max-width: 1100px) {
-  .tabs { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .tabs { grid-template-columns: repeat(8, minmax(0, 1fr)); }
   .tabs .tab { min-width: 0; overflow-wrap: anywhere; hyphens: auto; }
 }
 
@@ -1792,4 +1792,9 @@ html[data-charm='off'] :is(.charm-walk, .charm-leaves) { display: none; }
   .mg-chat-panel { position: static; order: -1; }
   .mg-chat { height: 220px; }
   .mg-feed { height: 65vh; }
+}
+/* Eight tabs on a phone: a slightly smaller label keeps one-word labels on one line. */
+@media (max-width: 480px) {
+  .tab { font-size: 0.68rem; padding-left: 0; padding-right: 0; letter-spacing: -0.02em; }
+  .tab .sprite { width: 18px; height: 18px; }
 }

@@ -660,10 +660,11 @@ function header(lang, pagePath, only) {
     ['/tools/scroll/', 'scroll', t.navScroll],
     ['/tools/drop-rate/', 'bag', t.navDrop],
     ['/tools/damage/', 'hammer', DMG[lang].h1],
-    ['/tools/market/', 'coin', t.navMarket]
+    ['/tools/market/', 'coin', t.navMarket],
+    ['/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Megaphones']
   ];
   // Seven tabs share a phone's width, so English labels that would break mid-word ("Calcul/ator") get a one-word form there.
-  const SHORT_EN = { '/': 'Home', '/monsters/': 'Mobs', '/tools/training/': 'Spots', '/tools/scroll/': 'Scrolls', '/tools/drop-rate/': 'Odds', '/tools/damage/': 'Hits', '/tools/market/': 'Market' };
+  const SHORT_EN = { '/': 'Home', '/monsters/': 'Mobs', '/tools/training/': 'Spots', '/tools/scroll/': 'Scrolls', '/tools/drop-rate/': 'Odds', '/tools/damage/': 'Hits', '/tools/market/': 'Market', '/megaphone/': 'Megas' };
   const tabHtml = tabs
     .map(
       ([p, icon, label]) =>
