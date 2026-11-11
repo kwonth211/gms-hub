@@ -458,7 +458,8 @@
         "clme-warrior",
         "geun",
         "thief-guide",
-        "voyage-warrior"
+        "voyage-warrior",
+        "il-guide-30-70"
       ],
       "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
       "title": {
@@ -736,7 +737,8 @@
         "clme-warrior",
         "geun",
         "thief-guide",
-        "voyage-mage"
+        "voyage-mage",
+        "il-guide-30-70"
       ],
       "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
       "title": {
@@ -1074,7 +1076,8 @@
         "assassin",
         "hunter",
         "cleric",
-        "fire"
+        "fire",
+        "ice"
       ],
       "party": "preferred",
       "costTier": "medium",
@@ -1086,7 +1089,8 @@
         "fire-guide",
         "hunter",
         "mujin",
-        "voyage-mage"
+        "voyage-mage",
+        "il-guide-30-70"
       ],
       "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
       "title": {
@@ -1808,7 +1812,8 @@
         "clme-36-70",
         "hunter",
         "thief-guide",
-        "voyage-mage"
+        "voyage-mage",
+        "il-guide-30-70"
       ],
       "title": {
         "ko": "위험한 골짜기 · 드레이크 낚시 자리",
@@ -1973,7 +1978,8 @@
       "evidence": [
         "thief-guide",
         "cleric-play",
-        "voyage-mage"
+        "voyage-mage",
+        "il-guide-30-70"
       ],
       "title": {
         "ko": "레드 드레이크 · 고레벨 얼음 약점",
@@ -2390,7 +2396,8 @@
       "advanced": false,
       "evidence": [
         "eleveny-1-70",
-        "patch-25-65"
+        "patch-25-65",
+        "il-guide-30-70"
       ],
       "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
       "title": {

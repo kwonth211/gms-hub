@@ -479,6 +479,31 @@
       ]
     },
     {
+      "slug": "ice-lightning",
+      "lang": "ko",
+      "title": "글클메 썬콜 가이드: 콜드 빔·썬더 볼트 스킬트리와 30~70 사냥터",
+      "h1": "썬콜 30~70레벨: 콜드 빔부터, 썬더 볼트는 나중에",
+      "desc": "콜드 빔과 썬더 볼트 비교, 완드별 LUK, 스킬트리 두 갈래, 레벨별 사냥터와 포가튼 할로우 이후까지 정리했어요.",
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "sources": [
+        {
+          "title": "자동사냥",
+          "url": "https://www.youtube.com/watch?v=0o-BLl3aNDQ"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ],
+      "reviewed": "2026-11-11",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "il-guide-30-70"
+      ]
+    },
+    {
       "slug": "thief-build",
       "lang": "ko",
       "title": "글클메 도적: 표도·시프 동선과 무기 전환",
@@ -998,6 +1023,31 @@
         "cleric-play",
         "quest",
         "hunter"
+      ]
+    },
+    {
+      "slug": "ice-lightning",
+      "lang": "en",
+      "title": "Ice/Lightning Wizard Guide: Cold Beam vs Thunder Bolt, Skill Build & Training 30–70",
+      "h1": "Ice/Lightning Wizard, levels 30–70: Cold Beam first, Thunder Bolt later",
+      "desc": "Cold Beam vs Thunder Bolt after the Oct 29 patch, wand LUK requirements, two skill build paths and where to train from 30 to 70.",
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "sources": [
+        {
+          "title": "자동사냥",
+          "url": "https://www.youtube.com/watch?v=0o-BLl3aNDQ"
+        }
+      ],
+      "tools": [
+        "training",
+        "damage"
+      ],
+      "reviewed": "2026-11-11",
+      "status": "published",
+      "evidenceKind": "conditional-guide",
+      "evidenceRefs": [
+        "il-guide-30-70"
       ]
     },
     {

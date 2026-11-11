@@ -532,7 +532,7 @@ const TR_CLASSES = [
   { job: 'crossbow', slug: 'crossbowman', ko: '사수', en: 'Crossbowman', guide: 'archer-build' },
   { job: 'mage', slug: 'magician', ko: '마법사', en: 'Magician', guide: 'mage-build' },
   { job: 'fire', slug: 'fire-poison', ko: '불독', en: 'Fire/Poison Wizard', guide: 'mage-build' },
-  { job: 'ice', slug: 'ice-lightning', ko: '썬콜', en: 'Ice/Lightning Wizard', guide: 'mage-build' },
+  { job: 'ice', slug: 'ice-lightning', ko: '썬콜', en: 'Ice/Lightning Wizard', guide: 'ice-lightning' },
   { job: 'cleric', slug: 'cleric', ko: '클레릭', en: 'Cleric', guide: 'mage-build' },
   { job: 'thief', slug: 'thief', ko: '도적', en: 'Thief', guide: 'thief-build' },
   { job: 'assassin', slug: 'assassin', ko: '어쌔신(표도)', en: 'Assassin', guide: 'thief-build' },
