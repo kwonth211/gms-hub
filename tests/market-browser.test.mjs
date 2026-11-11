@@ -19,6 +19,8 @@ function env() {
     "schema.sql",
     "migrations/0001_market_batch.sql",
     "migrations/0002_listing_history.sql",
+    "migrations/0004_trim_writes.sql",
+    "migrations/0005_stop_history_copies.sql",
   ])
     sqlite.exec(
       fs.readFileSync(new URL("../worker/" + file, import.meta.url), "utf8"),
@@ -163,20 +165,15 @@ test("seller, location, status and price-band time filters apply before paginati
   ])
     await assert.rejects(() => browseListings(e, p(q)), /bad /);
 });
-test("retained observations survive re-scans, overlaps deduplicate, corrections exclude wrong keys, depth counts one listing", async () => {
+test("a listing seen again the same day is one point, corrections show the corrected key, depth counts one listing", async () => {
   const e = env(),
     id = add(e, { age: 3600000 }),
-    before = stamp(Date.now() - 3600000),
     after = stamp(Date.now() - 1000);
   e.sqlite.prepare("UPDATE listings SET last_seen=? WHERE id=?").run(after, id);
   e.sqlite.prepare("UPDATE listings SET last_seen=? WHERE id=?").run(after, id);
-  e.sqlite
-    .prepare(
-      "INSERT INTO market_observations VALUES(2040801,100,'Seller',1,1,?,'batch')",
-    )
-    .run(before);
   let h = await marketHistory(e, p({ id: 2040801 }));
-  assert.equal(h.rows.length, 2);
+  assert.equal(h.rows.length, 1);
+  assert.equal(h.rows[0].seen, after);
   assert.equal(h.profile.length, 1);
   const normalize = (rs) =>
     rs.map((r) => ({ ...r, t: Date.parse(r.seen.replace(" ", "T") + "Z") }));
@@ -184,14 +181,14 @@ test("retained observations survive re-scans, overlaps deduplicate, corrections 
     profileRows: normalize(h.profile),
   });
   assert.equal(a.profile.total, 1);
-  assert.equal(a.rows.length, 2);
   e.sqlite.exec("UPDATE listings SET room=4");
   h = await marketHistory(e, p({ id: 2040801 }));
   assert.equal(h.rows.length, 1);
   assert.equal(h.rows[0].room, 4);
   assert.equal(
     e.sqlite.prepare("SELECT COUNT(*) n FROM listing_history").get().n,
-    3,
+    0,
+    "no copies are written any more",
   );
 });
 test("anonymous price reports expose no identity and never masquerade as shops", async () => {

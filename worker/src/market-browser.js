@@ -239,27 +239,39 @@ export async function browseReports(env, p) {
     asOf: new Date().toISOString(),
   };
 }
+// A listing keeps one price for its whole life (a new price is a new listing), so first_seen..last_seen says it was on
+// sale every day in between. Charts get one point per listing per day from that span instead of a stored copy of every
+// rescan, which cost about half of all database writes. A sold listing is "sold" only on its last day.
+export function dailyPoints(rows, now, days) {
+  const out = [];
+  for (const r of rows) {
+    const first = Date.parse(`${(r.first_seen || r.seen).replace(" ", "T")}Z`),
+      last = Date.parse(`${r.seen.replace(" ", "T")}Z`);
+    for (let d = 0; d < days; d++) {
+      const to = now - d * DAY,
+        from = to - DAY;
+      if (first > to || last <= from) continue;
+      const t = Math.min(last, to);
+      out.push({ ...r, sold: r.sold && last <= to && last > from ? 1 : 0, seen: stamp(t) });
+    }
+  }
+  return out;
+}
 export async function marketHistory(env, p) {
   const item = integer(p, "id", 1000000, 9999999, null);
   if (!item) throw Error("bad item");
   const since = stamp(Date.now() - 7 * DAY),
     end = stamp(Date.now()),
     limit = 5000;
-  // UNION removes the overlap between the old batch archive and the universal listing-history triggers.
-  // Corrected keys no longer join their old observations, so an OCR correction cannot pollute the chart.
-  const rows = await all(
+  const now = Date.now();
+  const listed = await all(
     env,
-    `SELECT price,qty,sold,seller,channel,room,seen FROM (
-    SELECT h.price,h.qty,h.sold,h.seller,h.channel,h.room,h.seen FROM listing_history h
-    JOIN listings l ON l.id=h.listing_id AND l.item=h.item AND l.price=h.price AND l.seller=h.seller AND l.channel=h.channel AND l.room=h.room
-    WHERE h.item=? AND h.seen>=? AND h.seen<=?
-    UNION
-    SELECT o.price,1,0,o.seller,o.channel,o.room,o.seen FROM market_observations o
-    JOIN listings l ON l.item=o.item AND l.price=o.price AND l.seller=o.seller AND l.channel=o.channel AND l.room=o.room
-    WHERE o.item=? AND o.seen>=? AND o.seen<=?
-  ) ORDER BY seen DESC, seller, price, channel, room LIMIT ?`,
-    [item, since, end, item, since, end, limit + 1],
+    "SELECT price,qty,sold,seller,channel,room,first_seen,last_seen AS seen FROM listings WHERE item=? AND last_seen>=? AND first_seen<=?",
+    [item, since, end],
   );
+  const rows = dailyPoints(listed, now, 7)
+    .map(({ first_seen, ...r }) => r)
+    .sort((a, b) => (a.seen < b.seen ? 1 : a.seen > b.seen ? -1 : a.seller < b.seller ? -1 : a.seller > b.seller ? 1 : a.price - b.price));
   const current = await all(
     env,
     "SELECT price,qty,sold,seller,channel,room,last_seen AS seen FROM listings WHERE item=? AND sold=0 AND last_seen>=? AND last_seen<=? ORDER BY price ASC,id ASC LIMIT 10001",

@@ -127,16 +127,17 @@ test('one stray sale never outranks many asking prices in the headline', async (
   assert.equal(summary.basis, 'selling'); assert.equal(summary.median, 215); assert.equal(summary.sold.n, 1);
 });
 
-test('the 7-day line uses every recorded sighting, not just each shop\'s last one', async () => {
+test('the 7-day line counts a listing on every day between its first and last sighting', async () => {
   const env = environment();
   await send(env, '/listings', { items: [row] });
-  // The same shop seen two days ago at a different price: listings keeps only today, listing_history keeps both.
-  env.sqlite.exec("INSERT INTO listing_history SELECT id,item,80,qty,sold,seller,channel,room,datetime('now','-2 days') FROM listings");
-  env.sqlite.exec('INSERT OR IGNORE INTO listing_history SELECT id,item,price,qty,sold,seller,channel,room,last_seen FROM listings');
+  // First seen two days ago, still listed now at the same price: on sale on all three days.
+  env.sqlite.exec("UPDATE listings SET first_seen = datetime('now','-2 days','-1 hour')");
+  await send(env, '/listings', { items: [{ ...row, seller: 'Other', price: 80 }] });
   const data = await (await worker.fetch(new Request('https://test.invalid/market/top'), env)).json();
   const spark = data.items[0].spark;
-  assert.equal(spark.filter((v) => v != null).length, 2);
-  assert.equal(spark.at(-1), 100);
+  assert.deepEqual(spark.slice(-3), [100, 100, 90]);
+  const hist = await (await worker.fetch(new Request('https://test.invalid/market/history?id=4000000'), env)).json();
+  assert.equal(hist.rows.length, 4, 'three days of the first shop plus one of the second');
 });
 
 test('a shop seen again unchanged adds history at most every 6 hours; changes always record', () => {
@@ -154,4 +155,13 @@ test('a shop seen again unchanged adds history at most every 6 hours; changes al
   db.exec("UPDATE listings SET last_seen='2026-11-11 07:00:00', sold=1");
   assert.equal(count(), 3, 'a sale is always recorded');
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE name='listings_seller_location'").get().n, 0);
+});
+
+test('after migration 0005 listing writes no longer copy into listing_history', () => {
+  const db = new DatabaseSync(':memory:');
+  db.exec(fs.readFileSync(new URL('../worker/schema.sql', import.meta.url), 'utf8'));
+  for (const f of fs.readdirSync(new URL('../worker/migrations/', import.meta.url)).sort()) db.exec(fs.readFileSync(new URL(`../worker/migrations/${f}`, import.meta.url), 'utf8'));
+  db.exec("INSERT INTO listings (item,price,seller,channel,room,reporter) VALUES (4000000,100,'Shop',1,1,'t')");
+  db.exec("UPDATE listings SET sold=1");
+  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM listing_history').get().n, 0);
 });

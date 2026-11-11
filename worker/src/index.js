@@ -11,7 +11,7 @@
 // GET  /market/item?id= -> { item, listings: [...last 7 days], trend }
 // The shop scanner runs from the local dev server for now, so its origin may post scans too.
 import { handleMarketBatch, getCollectionStatus } from './market-batch.js';
-import { marketCatalog, browseListings, browseReports, marketHistory } from './market-browser.js';
+import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoints } from './market-browser.js';
 import { cachedPublicResponse } from './public-cache.js';
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
 
@@ -105,21 +105,22 @@ async function marketTop(env, only = null) {
     `SELECT item, price, sold, last_seen AS t FROM listings WHERE last_seen >= datetime('now', '-${hours} hours') ${filter}
      UNION ALL
      SELECT item, price, kind = 'sold', created_at FROM prices WHERE kind != 'buying' AND created_at >= datetime('now', '-${hours} hours') ${filter}`;
-  // Day-by-day history comes from listing_history (every confirmed sighting); listings keeps only each shop's last sighting,
-  // which left the sparkline with one point even for items seen on several days.
-  const history = (hours, filter) =>
-    `SELECT item, price, sold, seen AS t FROM listing_history WHERE seen >= datetime('now', '-${hours} hours') ${filter}
-     UNION ALL
-     SELECT item, price, kind = 'sold', created_at FROM prices WHERE kind != 'buying' AND created_at >= datetime('now', '-${hours} hours') ${filter}`;
+  // Day-by-day history: each listing counts once on every day between its first and last sighting (see dailyPoints),
+  // so a shop seen on Monday and again on Wednesday at the same price shows on all three days.
+  const history = async (filter, ...ids) => {
+    const listed = await recent(`SELECT item, price, sold, first_seen, last_seen AS seen FROM listings WHERE last_seen >= datetime('now', '-192 hours') ${filter}`, ...ids);
+    const reports = await recent(`SELECT item, price, kind = 'sold' AS sold, created_at AS t FROM prices WHERE kind != 'buying' AND created_at >= datetime('now', '-192 hours') ${filter}`, ...ids);
+    return dailyPoints(listed, Date.now(), 8).map((r) => ({ item: r.item, price: r.price, sold: r.sold, t: r.seen })).concat(reports);
+  };
   let results;
-  if (only) results = await recent(history(192, 'AND item = ?'), only, only);
+  if (only) results = await history('AND item = ?', only);
   else {
     const day = await recent(window(26, ''));
     const now0 = Date.now();
     const dayObs = day.map((r) => ({ item: r.item, sold: !!r.sold, t: parseUtc(r.t) }));
     const ids = [...new Set([...rankAt(dayObs, now0).slice(0, TOP_N), ...rankAt(dayObs, now0 - 3600000).slice(0, TOP_N)])];
     const marks = ids.map(() => '?').join(',') || 'NULL';
-    results = ids.length ? await recent(history(192, `AND item IN (${marks})`), ...ids, ...ids) : [];
+    results = ids.length ? await history(`AND item IN (${marks})`, ...ids) : [];
     // Items outside the top ten still count for the ranking itself.
     const seen = new Set(ids);
     results = results.concat(day.filter((r) => !seen.has(r.item)));
