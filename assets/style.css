@@ -1567,3 +1567,26 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .item-tip .tip-drops li { display: flex; gap: 6px; align-items: center; min-width: 0; }
 .item-tip .tip-drops img { image-rendering: pixelated; flex-shrink: 0; }
 .item-tip .tip-mob-stats { margin-top: 8px; }
+
+/* My shop vs the market */
+.market-myshop { margin-left: auto; }
+.market-myshop + .market-scan { margin-left: 6px; }
+.my-shop { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.my-shop-form { display: flex; flex-wrap: wrap; align-items: end; gap: 10px 14px; }
+.my-shop-form label { display: grid; gap: 4px; min-width: 220px; }
+.my-shop-form p { flex-basis: 100%; margin: 0; }
+.my-shop-summary h2 { margin: 0; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
+.my-shop-summary h2 small { color: var(--muted); font-size: 0.85rem; font-weight: 400; }
+.my-shop-summary dl { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 10px 0 0; }
+.my-shop-summary dt { color: var(--muted); font-size: 0.8rem; }
+.my-shop-summary dd { margin: 0; font-size: 1.2rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.my-shop-table th[scope='row'] { background: none; color: var(--text); white-space: normal; }
+.my-shop-table th[scope='row'] a { display: flex; align-items: center; gap: 8px; }
+.my-shop-table th[scope='row'] img { image-rendering: pixelated; }
+.my-shop-table .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.my-shop-table .ms-verdict { font-weight: 700; }
+.my-shop-table .ms-good .ms-verdict { color: var(--down); }
+.my-shop-table .ms-bad .ms-verdict { color: var(--up); }
+.my-shop-table .ms-warn .ms-verdict { color: var(--accent); }
+.scan-myshop { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.scan-myshop[hidden] { display: none; }

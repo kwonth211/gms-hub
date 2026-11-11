@@ -261,3 +261,12 @@ test('every page loads the item hover card and its data covers equipment, scroll
   const boar=tips.mobs['30'];
   assert.equal(boar[1],'Fire Boar'); assert.equal(boar[2],32); assert.match(boar[5],/I3/); assert.ok(boar[9].length>0);
 });
+test('my-shop page exists in every language and the scan, market and home pages link to it',()=>{
+  const ko=read('dist/ko/tools/my-shop/index.html');
+  assert.match(ko,/id="my-shop-form"/); assert.match(ko,/assets\/my-shop\.js/);
+  assert.match(read('dist/en/tools/my-shop/index.html'),/<title>MapleStory Classic World Shop Price Check/);
+  assert.match(read('dist/ko/tools/scan/index.html'),/id="scan-myshop"/);
+  assert.match(read('dist/ko/tools/market/index.html'),/href="\/ko\/tools\/my-shop\/"/);
+  assert.match(read('dist/ko/index.html'),/market-myshop/);
+  assert.match(read('dist/sitemap.xml'),/\/en\/tools\/my-shop\//);
+});

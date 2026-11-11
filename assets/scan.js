@@ -394,6 +394,13 @@ async function upload() {
     }
     check('upload', 'ok', fill(i18n.uploadOk, { n: uploaded }));
     track('scan_upload', { items: fresh.length });
+    // After an upload, offer the shop's own price report.
+    const seller = fresh.map((e) => e.body.seller).find((x) => /^[A-Za-z0-9]{2,13}$/.test(x || ''));
+    const link = $('scan-myshop');
+    if (seller && link) {
+      link.querySelector('a').href = `${link.dataset.base}?seller=${encodeURIComponent(seller)}`;
+      link.hidden = false;
+    }
     failures = 0;
     succeeded = true;
   } catch {
