@@ -61,7 +61,9 @@ function ago(seen) {
 const KIND = { super: () => tr('고확', 'Super'), item: () => tr('아이템 고확', 'Item'), double: () => tr('더블 아이템 고확', 'Double item'), mega: () => tr('확성기', 'Megaphone') };
 function card(r) {
   const items = itemsOf(r.text), it = items[0], price = priceOf(r.text), market = it && prices.get(it.id);
-  const diff = price && market?.median ? Math.round(((price - market.median) / market.median) * 100) : null;
+  // Far-off differences usually mean a scrolled or bundled item, not a cheap or pricey one, so they are not shown.
+  const raw = price && market?.median ? Math.round(((price - market.median) / market.median) * 100) : null;
+  const diff = raw != null && Math.abs(raw) <= 300 ? raw : null;
   const text = esc(r.text).replace(/\[([^\]]+)\]/, (m, n) => (it ? `<a class="mg-item" href="${root.dataset.market}?item=${it.id}">[${esc(ko && it.ko ? it.ko : n)}]</a>` : m));
   const g = ko ? gloss(r.text, items) : '';
   const tag = r.intent ? `<span class="mg-intent ${r.intent}">${r.intent === 'sell' ? tr('팝니다', 'Selling') : tr('삽니다', 'Buying')}</span>` : '';
@@ -72,18 +74,42 @@ function card(r) {
 <p class="mg-text">${text}</p>${g ? `<p class="mg-gloss">${esc(g)}</p>` : ''}${cmp}</li>`;
 }
 
+const haystack = (r) => (r.hay ||= `${r.nick} ${r.text} ${itemsOf(r.text).map((i) => i.ko || '').join(' ')}`.toLowerCase());
+// Mark search words in the text (not inside links or buttons' attributes).
+function highlight(feed, words) {
+  const re = new RegExp(`(${words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+  for (const el of feed.querySelectorAll('.mg-text, .mg-gloss, .mg-nick')) {
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    for (const n of nodes) {
+      if (!re.test(n.data)) continue;
+      re.lastIndex = 0;
+      const span = document.createElement('span');
+      span.innerHTML = esc(n.data).replace(re, '<mark>$1</mark>');
+      n.replaceWith(...span.childNodes);
+    }
+  }
+}
+
 function render() {
   const ch = Number($('mg-channel').value) || 0, q = $('mg-search').value.trim().toLowerCase(), once = $('mg-once').checked;
   const seen = new Set();
   const list = rows.filter((r) => {
     if (intent === 'item' ? !['item', 'double'].includes(r.kind) : intent && r.intent !== intent) return false;
     if (ch && r.channel !== ch) return false;
-    if (q && !`${r.nick} ${r.text}`.toLowerCase().includes(q)) return false;
+    // Search covers the nick, the text, and the Korean names of the items it mentions, every word anywhere.
+    if (q && !q.split(/\s+/).every((w) => haystack(r).includes(w))) return false;
     if (once) { const k = `${r.nick}|${r.text.toLowerCase()}`; if (seen.has(k)) return false; seen.add(k); }
     return true;
   });
   const feed = $('mg-feed');
-  feed.innerHTML = list.slice(0, 150).map(card).join('');
+  // Keep the reader's place: if they have scrolled down into older megaphones, new ones arriving at the top don't move them.
+  const fromBottom = feed.scrollHeight - feed.scrollTop;
+  feed.innerHTML = list.slice(0, 300).map(card).join('');
+  if (feed.scrollTop > 0) feed.scrollTop = feed.scrollHeight - fromBottom;
+  if (q) highlight(feed, q.split(/\s+/));
+  $('mg-count').textContent = q || ch || intent ? tr('{n}개 찾음', '{n} found', { n: list.length }) : tr('최근 {n}개', 'Latest {n}', { n: list.length });
   $('mg-empty').hidden = rows.length > 0;
 }
 

@@ -14,11 +14,12 @@ export function megaphoneBody({ lang, itemsUrl, marketUrl }) {
 <button type="button" class="chip" data-intent="item" aria-pressed="false">${ko ? '아이템 고확만' : 'Item megaphones'}</button>
 </div>
 <select id="mg-channel" aria-label="${ko ? '채널' : 'Channel'}"><option value="">${ko ? '모든 채널' : 'All channels'}</option>${Array.from({ length: 40 }, (_, i) => `<option value="${i + 1}">CH ${i + 1}</option>`).join('')}</select>
-<input id="mg-search" type="search" placeholder="${ko ? '아이템·닉네임 검색' : 'Search items or names'}" autocomplete="off">
+<input id="mg-search" class="mg-search" type="search" placeholder="${ko ? '검색: 아이템(한글·영어), 닉네임, 가격…' : 'Search items, names, prices…'}" autocomplete="off">
 <label class="mg-check"><input type="checkbox" id="mg-once" checked> ${ko ? '같은 글 한 번만' : 'Hide repeats'}</label>
 </div>
 <p class="muted small mg-note">${ko ? '화면 글자 인식으로 모아서 오타가 있을 수 있어요. 한국어 풀이는 거래 용어 기준 자동 풀이예요.' : 'Read from the game screen, so expect the odd typo.'}</p>
-<ol class="mg-feed" id="mg-feed" aria-live="polite"></ol>
+<p class="muted small mg-count" id="mg-count" role="status"></p>
+<ol class="mg-feed" id="mg-feed" aria-live="polite" tabindex="0"></ol>
 <p id="mg-empty" class="panel" hidden>${ko ? '아직 들어온 확성기가 없어요. 수집이 켜지면 여기에 바로 나와요.' : 'No megaphones yet. They appear here as soon as collection is running.'}</p>
 </section>
 <aside class="mg-chat-panel" aria-label="${ko ? '사이트 채팅' : 'Site chat'}">

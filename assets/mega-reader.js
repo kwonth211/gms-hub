@@ -265,3 +265,70 @@ export function itemFixer(names) {
     return score >= 0.6 ? `[${exact.get(best)}]` : whole;
   });
 }
+
+// ---------- glyph reading ----------
+// The chat font is a fixed pixel font (1 px dark letters; item names in a 2 px bold yellow), so once a glyph's exact
+// pixel pattern is known it reads with certainty. Glyphs are the column runs of ink between empty columns; a gap of
+// SPACE_D (dark) or SPACE_Y (yellow) empty columns or more is a space. Each glyph's key is its columns over a 16-row
+// window anchored to the line slot (lines sit on a 16 px pitch, found from the channel digits), so "'" and "," differ.
+const SPACE_D = 4, SPACE_Y = 4;
+export function inkKind(r, g, b, bgLuma) {
+  if (r > 240 && g > 240 && b < 200) return 'Y';
+  return (r + g + b) / 3 < bgLuma - 60 ? 'D' : '';
+}
+// Row where the line's 16-row glyph window starts: the frame's slot phase (from any badge's digit top) applied to
+// this line. Returns null when the frame has no badge to anchor on.
+export function slotAnchor(img, lines) {
+  for (const l of lines) {
+    const b = findBadge(img, l);
+    if (!b) continue;
+    for (let y = l.top; y <= l.bottom; y++) for (let x = b.left; x <= b.right; x++) {
+      const i = (y * img.width + x) * 4;
+      if (isRed(img.data[i], img.data[i + 1], img.data[i + 2])) return { phase: ((y - 5) % 16 + 16) % 16, digitTop: y, top: l.top };
+    }
+  }
+  return null;
+}
+export function windowTop(line, anchor) {
+  // Where this line's window would start if it sat like the anchor line, snapped to the frame's 16-row slot phase.
+  const target = line.top + (anchor.digitTop - 5 - anchor.top);
+  let d = (((anchor.phase - target) % 16) + 16) % 16;
+  if (d >= 8) d -= 16;
+  return target + d;
+}
+export function glyphs(img, line, x0, x1, wTop) {
+  const bgLuma = (line.bg[0] + line.bg[1] + line.bg[2]) / 3;
+  const out = [];
+  let cur = null, gap = 0;
+  const right = Math.min(x1, line.right ?? x1);
+  for (let x = x0; x < right; x++) {
+    let col = '', kinds = '';
+    for (let y = wTop; y < wTop + 16; y++) {
+      const i = (y * img.width + x) * 4;
+      const k = y >= 0 && y < img.height ? inkKind(img.data[i], img.data[i + 1], img.data[i + 2], bgLuma) : '';
+      col += k ? '#' : '.';
+      if (k) kinds += k;
+    }
+    if (kinds) {
+      if (!cur) { cur = { cols: [], kind: kinds[0], gap }; }
+      cur.cols.push(col);
+      if (kinds.includes('Y')) cur.kind = 'Y';
+      gap = 0;
+    } else {
+      if (cur) { out.push(cur); cur = null; }
+      gap++;
+    }
+  }
+  if (cur) out.push(cur);
+  return out.map((g, i) => ({ key: `${g.kind}:${g.cols.join('/')}`, space: i > 0 && g.gap >= (g.kind === 'Y' ? SPACE_Y : SPACE_D) }));
+}
+// Glyphs → text with a learned table; null if any glyph is unknown (the caller falls back to Tesseract).
+export function readGlyphs(gs, table) {
+  let out = '';
+  for (const g of gs) {
+    const ch = table[g.key];
+    if (ch == null) return null;
+    out += (g.space ? ' ' : '') + ch;
+  }
+  return out;
+}

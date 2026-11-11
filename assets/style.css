@@ -1746,9 +1746,13 @@ html[data-charm='off'] :is(.charm-walk, .charm-leaves) { display: none; }
    blue-grey bubbles under its own heading, so the two can't be confused. */
 .mg-page { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
 .mg-filters { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 6px; }
-.mg-filters input[type='search'] { flex: 1 1 180px; min-width: 0; }
+.mg-filters input[type='search'] { min-width: 0; }
 .mg-check { font-size: 0.85rem; display: inline-flex; gap: 6px; align-items: center; }
-.mg-feed { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.mg-feed { list-style: none; margin: 0; padding: 4px 6px 4px 0; display: grid; gap: 8px; align-content: start; height: min(72vh, 760px); overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.mg-feed:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.mg-feed mark { background: var(--star); color: var(--star-ink); border-radius: 3px; padding: 0 1px; }
+.mg-search { flex: 2 1 240px; font-size: 1rem; }
+.mg-count { margin: 4px 0 6px; }
 .mg-msg { border-radius: 10px; padding: 9px 12px; border: 1px solid; }
 .mg-Y { background: #fbefc4; border-color: #e3bf55; }
 .mg-P { background: #f7e1f3; border-color: #d79ad0; }
@@ -1787,4 +1791,5 @@ html[data-charm='off'] :is(.charm-walk, .charm-leaves) { display: none; }
   .mg-page { grid-template-columns: minmax(0, 1fr); }
   .mg-chat-panel { position: static; order: -1; }
   .mg-chat { height: 220px; }
+  .mg-feed { height: 65vh; }
 }
