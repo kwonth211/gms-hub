@@ -9,12 +9,15 @@
 // GET  /listings/recent -> [{ item, price, qty, sold, seller, channel, room, seen }]
 // GET  /market/top -> { at, stats, items: [{ item, rank, move, avg, n, sold, change, spark: [7 daily medians] }] }  (stored every 15 min)
 // GET  /market/item?id= -> { item, listings: [...last 7 days], trend }
+// GET  /rank -> { at, source, stats, rows: [top 1,000 by level] }  (ClassicRank, refreshed hourly by the schedule)
+// GET  /rank/lookup?name= -> { data: one character }  (ClassicRank, cached an hour)
 // GET  /presence?p=<path> (WebSocket) -> messages { site, here }: open pages on the whole site and on this page
 // The shop scanner runs from the local dev server for now, so its origin may post scans too.
 import { handleMarketBatch, getCollectionStatus } from './market-batch.js';
 import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoints } from './market-browser.js';
 import { cachedPublicResponse } from './public-cache.js';
 import { Presence, handlePresence } from './presence.js';
+import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
 export { Presence };
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
 
@@ -228,6 +231,7 @@ async function itemDetail(env, item) {
 const api = {
   async scheduled(event, env, ctx) {
     ctx.waitUntil(freshSnapshot(env, 'market', 0).then((data) => data || refreshSnapshot(env)));
+    ctx.waitUntil(refreshRank(env).catch(() => null));
   },
 
   async fetch(req, env) {
@@ -337,6 +341,16 @@ const api = {
         const invalid = e.message?.startsWith('bad ');
         return json({error: invalid ? e.message : 'market unavailable'}, cors, invalid ? 400 : 503);
       }
+    }
+
+    if (url.pathname === '/rank' && req.method === 'GET') {
+      const data = await rankSnapshot(env);
+      return data ? json(data, cors, 200, 'public, max-age=300') : json({ error: 'ranking not ready' }, cors, 503);
+    }
+
+    if (url.pathname === '/rank/lookup' && req.method === 'GET') {
+      const r = await lookupCharacter(url.searchParams.get('name'));
+      return json(r.body, cors, r.status, r.status === 200 || r.status === 404 ? 'public, max-age=3600' : 'no-store');
     }
 
     if (url.pathname === '/market/top' && req.method === 'GET') {

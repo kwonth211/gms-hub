@@ -8,6 +8,7 @@ import { monsterIndex, monsterDetail, monsterPath, monsterName, mapPath, bossInd
 import { collectMaps, mapDetail, mapIndex, mapName } from './map-pages.mjs';
 import { collectQuests, questDetail, questIndex, questBestBody, questPath, areaName as questArea } from './quest-pages.mjs';
 import { EQ_CLASSES, equipPath, collectEquipment, equipmentIndexBody, equipmentClassBody } from './equipment-pages.mjs';
+import { rankBody } from './rank-page.mjs';
 import { selectRoutes, routeCards, publicTrainingData, jobNames, validateTraining } from '../assets/training-evidence.js';
 import { loadLocales, loadMemory, entityMatcher, localizePage, clientKeys, TX_RUNTIME } from './i18n.mjs';
 import { SKILLS as DMG_SKILLS, windowRange as dmgWindow, hitRange as dmgHit, hitsToKill as dmgKill, accuracyNeeded as dmgAccNeed } from '../assets/damage-calc.js';
@@ -691,7 +692,7 @@ function footer(lang) {
 }
 
 const ADFIT_PAGES = new Set(['home', 'myShop', 'training', 'trBand', 'trClass', 'scroll', 'drop', 'price', 'scan', 'market', 'damage', 'guides', 'guide', 'monsters', 'monster', 'items', 'item',
-  'bosses', 'maps', 'map', 'quests', 'quest', 'questBest', 'equipment', 'equipmentClass']);
+  'bosses', 'maps', 'map', 'quests', 'quest', 'questBest', 'equipment', 'equipmentClass', 'rank']);
 // AdFit counted only 5-9% of the end-of-page banner as viewed (most visitors never scroll that far), so a second slot sits
 // just under the page title: after the page head, after the home hero, or after a guide's first paragraph. Never beside
 // a form control or a button row.
@@ -870,6 +871,7 @@ function homeBody(lang) {
 ${(lang === 'ko' ? [
 tool('/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monster database', lang === 'ko' ? '몬스터 78종의 능력치, 드롭 아이템, 출현 위치를 검색하세요.' : 'Explore stats, reported drops and map locations for 78 monsters.'),
 tool('/equipment/', 'hammer', lang === 'ko' ? '장비 찾기' : 'Equipment finder', lang === 'ko' ? `직업과 레벨로 지금 얻을 수 있는 장비 ${EQUIPMENT.length}개를 찾고, 떨어뜨리는 몬스터를 봐요.` : `${EQUIPMENT.length} pieces of gear by class and level, with the monsters that drop them and quests that give them.`),
+tool('/rank/', 'crown', lang === 'ko' ? '캐릭터 랭킹' : 'Character rankings', lang === 'ko' ? '레벨 순위 상위 1,000명과 직업 분포, 내 캐릭터 순위를 찾고 맞는 사냥터로 바로 가요.' : 'Top 1,000 by level, the class breakdown, and your own rank with training spots for your level.'),
 tool('/quests/best-exp/', 'star', lang === 'ko' ? '경험치 퀘스트' : 'Best EXP quests', lang === 'ko' ? '레벨 구간마다 보상 경험치가 큰 퀘스트 10개씩.' : 'The ten biggest EXP quest rewards for each level band.'),
 tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc),
 tool('/tools/scroll/', 'scroll', t.navScroll, t.scCardDesc),
@@ -885,6 +887,7 @@ tool('/maps/', 'tree', lang === 'ko' ? '맵 도감' : 'Maps', lang === 'ko' ? `�
 ] : [
 tool('/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monster database', lang === 'ko' ? '몬스터 78종의 능력치, 드롭 아이템, 출현 위치를 검색하세요.' : 'Explore stats, reported drops and map locations for 78 monsters.'),
 tool('/equipment/', 'hammer', lang === 'ko' ? '장비 찾기' : 'Equipment finder', lang === 'ko' ? `직업과 레벨로 지금 얻을 수 있는 장비 ${EQUIPMENT.length}개를 찾고, 떨어뜨리는 몬스터를 봐요.` : `${EQUIPMENT.length} pieces of gear by class and level, with the monsters that drop them and quests that give them.`),
+tool('/rank/', 'crown', lang === 'ko' ? '캐릭터 랭킹' : 'Character rankings', lang === 'ko' ? '레벨 순위 상위 1,000명과 직업 분포, 내 캐릭터 순위를 찾고 맞는 사냥터로 바로 가요.' : 'Top 1,000 by level, the class breakdown, and your own rank with training spots for your level.'),
 tool('/quests/best-exp/', 'star', lang === 'ko' ? '경험치 퀘스트' : 'Best EXP quests', lang === 'ko' ? '레벨 구간마다 보상 경험치가 큰 퀘스트 10개씩.' : 'The ten biggest EXP quest rewards for each level band.'),
 tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc),
 tool('/tools/market/', 'coin', t.navMarket, MK[lang].lead),
@@ -2601,6 +2604,13 @@ for (const lang of LANGS) {
       body: questIndex({ lang, quests: QUESTS, link }),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '퀘스트' : 'Quests', '/quests/')]
     }));
+    write(path.join(lang, 'rank', 'index.html'), page({
+      lang, pageKey: 'rank', pagePath: '/rank/', modules: ['rank.js'],
+      title: lang === 'ko' ? '글클메 캐릭터 랭킹: 레벨 순위·직업 분포·내 캐릭터 찾기 | GMS Hub' : 'MapleStory Classic World Rankings: Top 1,000, Class Breakdown & Character Lookup | GMS Hub',
+      desc: lang === 'ko' ? '윈디아(클래식 월드) 레벨 순위 상위 1,000명, 상위권 직업·레벨 분포, 내 캐릭터 순위 찾기. 찾은 캐릭터의 레벨·직업에 맞는 사냥터와 가이드로 바로 이어져요.' : 'Top 1,000 Windia (MapleStory Classic World) characters by level, which classes they play, and a character lookup that links your rank to training spots and the guide for your class.',
+      body: rankBody({ lang, link, classes: TR_CLASSES }),
+      ld: [breadcrumbLd(lang, lang === 'ko' ? '캐릭터 랭킹' : 'Character rankings', '/rank/')]
+    }));
     write(path.join(lang, 'quests', 'best-exp', 'index.html'), page({
       lang, pageKey: 'questBest', pagePath: '/quests/best-exp/',
       title: lang === 'ko' ? '글클메 경험치 퀘스트 추천: 레벨별 보상 EXP 순위 | GMS Hub' : 'MapleStory Classic World Best EXP Quests by Level | GMS Hub',
@@ -2778,7 +2788,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
   )
 ).concat(
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
-  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, {path:'/rank/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/bosses/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/quests/'}, ...QUESTS.filter(q=>!q.expired).map(q=>({path:questPath(q)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
   [{path:'/maps/'}, ...MAPS.filter(l=>l.availability==='open').map(l=>({path:mapPath(l)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),

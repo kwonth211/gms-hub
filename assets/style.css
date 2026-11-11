@@ -1667,3 +1667,34 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
   .tab-full { display: none; }
   .tab-short { display: inline; }
 }
+
+/* Character rankings */
+.rank-stats { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 0 0 16px; }
+.rank-stats div { display: flex; flex-direction: column-reverse; }
+.rank-stats dt { font-size: 0.75rem; color: var(--muted); }
+.rank-stats dd { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
+.rank-find { display: grid; gap: 10px; margin-bottom: 16px; }
+.rank-find-row { display: flex; gap: 8px; }
+.rank-find-row input { flex: 1; min-width: 0; }
+.rank-me-card { display: flex; gap: 14px; align-items: flex-start; }
+.rank-me-card img { image-rendering: pixelated; border-radius: 10px; background: var(--panel-2); flex: none; }
+.rank-me-card p { margin: 6px 0 0; }
+.rank-me-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.rank-insights { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
+.rank-insights h2 { font-size: 1rem; margin: 0 0 10px; }
+.rank-bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.rank-bars li { display: grid; grid-template-columns: 7.5em minmax(0, 1fr) 3em 3.4em; align-items: center; gap: 8px; font-size: 0.85rem; }
+.rank-bar-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank-bar { height: 10px; border-radius: 999px; background: var(--panel-2); overflow: hidden; }
+.rank-bar i { display: block; height: 100%; background: var(--accent-fill); border-radius: 999px; }
+.rank-bars b, .rank-bars small { text-align: right; font-variant-numeric: tabular-nums; }
+.rank-bars small { color: var(--muted); }
+.rank-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.rank-controls input { min-width: 0; flex: 0 1 220px; }
+.rank-char { display: inline-flex; align-items: center; gap: 8px; color: var(--text); text-decoration: none; font-weight: 700; }
+.rank-char img { image-rendering: pixelated; border-radius: 6px; background: var(--panel-2); }
+.rank-ok { font-style: normal; color: var(--ok); font-size: 0.8rem; }
+@media (max-width: 760px) {
+  .rank-insights { grid-template-columns: minmax(0, 1fr); }
+  .rank-controls input { flex-basis: 100%; }
+}
