@@ -26,16 +26,26 @@
       guard();
       if (openModal()) throw new Error('전용 탭의 상점 상세가 이미 열려 있습니다.');
       await until(() => document.querySelector('tr[data-id] .item-select'), '아이템 목록');
-      const all = [...document.querySelectorAll('tr[data-id]')].map(tr => ({ id: tr.getAttribute('data-id'), name: tr.querySelector('.item-select')?.getAttribute('title') || tr.querySelector('.item-select')?.textContent.trim() }))
+      // The collector tab keeps meso.watch's own filters between runs (a search word, a class, a category tab), which once
+      // left it cycling through the same 8 of 1,500 items. Reset them so every run draws from the full list.
+      const search = document.querySelector('#search');
+      if (search && search.value) { search.value = ''; search.dispatchEvent(new Event('input', { bubbles: true })); await pause(800); }
+      const cls = document.querySelector('#class-filter');
+      if (cls && cls.value !== 'All') { cls.value = 'All'; cls.dispatchEvent(new Event('change', { bubbles: true })); await pause(800); }
+      const allTab = [...document.querySelectorAll('#market button.tab')].find(b => /^ALL/i.test(b.textContent.trim()));
+      if (allTab && allTab.getAttribute('aria-pressed') === 'false') { allTab.click(); await pause(800); }
+      const listRows = document.querySelectorAll('#rows tr[data-id]').length ? '#rows tr[data-id]' : 'tr[data-id]';
+      const all = [...document.querySelectorAll(listRows)].map(tr => ({ id: tr.getAttribute('data-id'), name: tr.querySelector('.item-select')?.getAttribute('title') || tr.querySelector('.item-select')?.textContent.trim() }))
         .filter(x => GmsBatchCatalog[Number(x.id.split(':')[1])] === x.name);
       if (all.length < 2) throw new Error('검증 가능한 아이템 목록 부족');
+      report.listSize = all.length;
       // Rotate the starting item to avoid permanently ignoring the lower half of the visible catalogue.
       const offset = options.mode === 'test' ? 0 : (options.cursor || 0) % all.length;
       const queue = [...all.slice(offset), ...all.slice(0, offset)].slice(0, maxItems);
       for (const item of queue) {
         guard(); report.queue.push(item);
         await progress({ shops: report.shops, rows: rows.size, item: item.name });
-        const tr = [...document.querySelectorAll('tr[data-id]')].find(tr => tr.getAttribute('data-id') === item.id);
+        const tr = [...document.querySelectorAll(listRows)].find(tr => tr.getAttribute('data-id') === item.id);
         if (!tr) throw new Error('아이템 목록 변경');
         let newest;
         for (let attempt = 0; attempt < 2; attempt++) {
