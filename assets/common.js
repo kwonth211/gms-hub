@@ -90,7 +90,7 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
 });
 
 // Live viewer count: each open tab holds one WebSocket to the worker's presence room, which sends back how many pages are
-// open on the site. Every .presence element (the header pill, the home hero stat) shows it once someone else is here too.
+// open on the site. The header pill shows it once someone else is here too.
 // A tab hidden for 30 seconds lets go, so background tabs are not counted.
 (() => {
   const spots = document.querySelectorAll('.presence');

@@ -536,10 +536,6 @@ a.band-link:hover { border-color: var(--accent); }
 @keyframes pr-bump { 0% { transform: scale(1.5); color: var(--danger); } 100% { transform: scale(1); } }
 .presence [data-site] { display: inline-block; }
 @media (prefers-reduced-motion: reduce) { .pr-dot, .pr-dot::before, .pr-dot::after, .presence [data-site].bump { animation: none; } .pr-dot::before, .pr-dot::after { display: none; } }
-.hero-stats .hs-live { display: flex; margin: 0; padding: 0; border: 0; background: none; border-radius: 0; font-size: inherit; color: inherit; }
-.hero-stats .hs-live[hidden] { display: none; }
-.hero-stats .hs-live dt { display: flex; align-items: center; gap: 6px; }
-.hero-stats .hs-live dd { color: var(--danger); }
 .hero-stats [data-market-stat][hidden] { display: none; }
 @media (max-width: 760px) { .presence { order: 1; margin-left: 0; font-size: 0.75rem; } }
 .new-mark { display: inline-grid; place-items: center; width: 15px; height: 15px; margin-right: 5px; border-radius: 3px; background: var(--danger); color: var(--panel); font-size: 0.62rem; font-weight: 800; line-height: 1; vertical-align: 0.1em; flex: none; }
