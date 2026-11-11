@@ -234,3 +234,26 @@ export function repeatFilter(windowMs = 15 * 60000) {
     return false;
   };
 }
+
+// Bracketed item names are the game's own item names, so a misread one ("Sapphire Earmings") is put back to the closest
+// catalogue name when it is clearly that name; anything less certain is left as read.
+export function itemFixer(names) {
+  const list = [...new Set(names.map((n) => n.toLowerCase()))];
+  const exact = new Map(names.map((n) => [n.toLowerCase(), n]));
+  const grams = (t) => { const g = new Set(); const s = ` ${t} `; for (let i = 0; i < s.length - 2; i++) g.add(s.slice(i, i + 3)); return g; };
+  const index = list.map((n) => [n, grams(n)]);
+  return (text) => text.replace(/\[([^\]]{3,60})\]/g, (whole, raw) => {
+    const low = raw.toLowerCase().trim();
+    if (exact.has(low)) return `[${exact.get(low)}]`;
+    const g = grams(low);
+    let best = null, score = 0;
+    for (const [n, ng] of index) {
+      if (Math.abs(n.length - low.length) > 4) continue;
+      let both = 0;
+      for (const x of g) if (ng.has(x)) both++;
+      const s = (2 * both) / (g.size + ng.size);
+      if (s > score) { score = s; best = n; }
+    }
+    return score >= 0.6 ? `[${exact.get(best)}]` : whole;
+  });
+}

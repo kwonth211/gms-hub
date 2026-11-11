@@ -1741,11 +1741,6 @@ html[data-charm='off'] :is(.charm-walk, .charm-leaves) { display: none; }
   .charm-toggle { display: none; }
 }
 
-/* Admin megaphone collector */
-.mg-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 12px 0; }
-.mg-preview { display: block; width: 100%; max-width: 960px; height: auto; border: 1px solid var(--line); border-radius: 10px; background: #000; }
-.mg-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
-.mg-Y { background: #e8c35a; } .mg-P { background: #d79ad0; } .mg-C { background: #8fd3e8; }
 
 /* Live megaphones and site chat: game megaphones are coloured bands like the game's own; the site chat is plain
    blue-grey bubbles under its own heading, so the two can't be confused. */

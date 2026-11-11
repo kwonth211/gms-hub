@@ -28,3 +28,12 @@ test('a wrapped second line joins the megaphone above it on the same colour only
   assert.equal(out[0].text, '[Gloves Attack Scroll: Intermediate] S> Glove ATT 60% Scroll 1.5 M (Firm Price)');
   assert.equal(out[1].nick, 'lord0');
 });
+
+test('misread bracketed item names snap to the catalogue only when clearly the same item', async () => {
+  const { itemFixer } = await import('../assets/mega-reader.js');
+  const fix = itemFixer(['Sapphire Earrings', 'White Choco Bunny', 'Zard', 'Work Gloves']);
+  assert.equal(fix('[Sapphire Earmings] S> 1m'), '[Sapphire Earrings] S> 1m');
+  assert.equal(fix('[white Choco Bunry] S> 850k'), '[White Choco Bunny] S> 850k');
+  assert.equal(fix('[work gloves] PMO'), '[Work Gloves] PMO');
+  assert.equal(fix('[Totally Unknown Thing] hi'), '[Totally Unknown Thing] hi');
+});

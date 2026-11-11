@@ -9,13 +9,16 @@ import os from 'node:os';
 import path from 'node:path';
 import { PNG } from 'pngjs';
 import Tesseract from 'tesseract.js';
-import { findChatBox, findLines, readLine, assemble, repeatFilter } from '../../assets/mega-reader.js';
+import { findChatBox, findLines, readLine, assemble, repeatFilter, itemFixer } from '../../assets/mega-reader.js';
 
 const API = 'https://gms-hub-votes.kwonth211.workers.dev/internal/megaphone';
 const DRY = process.argv.includes('--dry');
 const TICK_MS = 1500;
 const KINDS = { P: 'super', Y: 'item', C: 'double' };
 const shot = path.join(os.tmpdir(), 'gms-mega-shot.png');
+// Every 80 ticks (about 2 minutes) the chat crop and what was read from it are kept for `./mega.sh check`.
+const LIVE = path.join(os.homedir(), 'gms-hub-samples', 'mega-live');
+fs.mkdirSync(LIVE, { recursive: true });
 const here = path.dirname(new URL(import.meta.url).pathname);
 const helper = path.join(os.tmpdir(), 'gms-maple-window');
 if (!fs.existsSync(helper)) execFileSync('swiftc', ['-O', path.join(here, 'maple-window.swift'), '-o', helper]);
@@ -23,7 +26,10 @@ const windowId = () => { try { return execFileSync(helper, { encoding: 'utf8' })
 const token = DRY ? '' : fs.readFileSync(path.join(os.homedir(), '.config', 'gms-hub', 'megaphone-token'), 'utf8').trim();
 
 const text = await Tesseract.createWorker('eng');
-await text.setParameters({ tessedit_pageseg_mode: '7', preserve_interword_spaces: '1' });
+// Symbols the game's chat font never draws are ruled out, so Tesseract picks the real letter instead ("£ard" → "Zard").
+await text.setParameters({ tessedit_pageseg_mode: '7', preserve_interword_spaces: '1', tessedit_char_blacklist: '£©®°¢¥§«»€¬±™¦' });
+const namesFile = path.join(path.dirname(new URL(import.meta.url).pathname), '..', '..', 'assets', 'items-names.json');
+const fixItems = fs.existsSync(namesFile) ? itemFixer(JSON.parse(fs.readFileSync(namesFile, 'utf8'))) : (t) => t;
 const cache = new Map();
 const ocr = async (bm, kind) => {
   if (!bm.ink) return '';
@@ -68,7 +74,18 @@ async function tick() {
   const read = [];
   for (const l of lines) read.push(await readLine(part, l, ocr));
   const now = Date.now();
-  for (const m of assemble(read)) {
+  const all = assemble(read);
+  if (ticks % 80 === 1 && lines.length) {
+    const name = `${new Date(now).toISOString().replace(/[:.]/g, '-')}.png`;
+    const png = new PNG({ width: part.width, height: part.height });
+    png.data = Buffer.from(part.data.buffer);
+    fs.writeFileSync(path.join(LIVE, name), PNG.sync.write(png));
+    fs.appendFileSync(path.join(LIVE, 'reads.jsonl'), `${JSON.stringify({ file: name, megaphones: all })}\n`);
+    const kept = fs.readdirSync(LIVE).filter((f) => f.endsWith('.png')).sort();
+    for (const f of kept.slice(0, Math.max(0, kept.length - 300))) fs.unlinkSync(path.join(LIVE, f));
+  }
+  for (const m of all) m.text = fixItems(m.text);
+  for (const m of all) {
     if (!m.channel || isRepeat(m, now)) continue;
     const row = { seen: new Date(now).toISOString(), kind: KINDS[m.color] || 'super', color: m.color, channel: m.channel, nick: m.nick, text: m.text };
     queue.push(row);

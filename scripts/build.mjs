@@ -2762,31 +2762,6 @@ ${jsonScript('admin-config', config.github)}
 </body></html>`
 );
 
-// Megaphone collector: unlisted, noindex, under the robots-disallowed /admin/. Only the admin key can upload.
-write(
-  'admin/megaphone/index.html',
-  `${head({ lang: 'ko', title: '확성기 수집 | GMS Hub', desc: 'GMS Hub 확성기 수집', noindex: true })}
-<body data-page="admin">
-<header class="site-header"><div class="wrap header-inner"><a class="brand" href="${href('/ko/')}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>확성기 수집</small></span></a></div></header>
-<main class="wrap mg-admin">
-<h1>확성기 수집</h1>
-<p class="muted">게임 창을 공유하면 채팅창을 자동으로 찾아 고확(분홍)·아이템 고확(노랑)·더블 아이템 고확(청록)을 줄마다 읽어요. 검증이 끝난 뒤 "서버로 전송"을 켜세요.</p>
-<div class="mg-controls">
-<button class="btn" id="mg-start" type="button">게임 창 공유 시작</button>
-<button class="btn ghost small-btn" id="mg-reset" type="button">채팅창 다시 찾기</button>
-<label><input type="checkbox" id="mg-upload"> 서버로 전송</label>
-<label><input type="checkbox" id="mg-keep"> 띠 샘플 저장(로컬)</label>
-<input id="mg-token" type="password" placeholder="관리자 키 (한 번만 입력)" autocomplete="off">
-</div>
-<p id="mg-status" role="status"></p>
-<canvas id="mg-preview" class="mg-preview" width="960" height="540"></canvas>
-<div class="table-wrap"><table class="data mg-log"><thead><tr><th>띠</th><th>종류</th><th>CH</th><th>닉네임</th><th>내용</th><th>상태</th></tr></thead><tbody id="mg-log"></tbody></table></div>
-</main>
-${jsonScript('mega-config', { api: config.voteApi, kinds: { P: 'super', Y: 'item', C: 'double' } })}
-<script type="module" src="${scriptSrc('mega-admin.js')}"></script>
-</body></html>`
-);
-
 // Derived locales: translate every finished English page. Game names stay in English (the GMS client's own names)
 // and are masked so one memory entry covers every item and monster page.
 const ENTITIES = entityMatcher([
