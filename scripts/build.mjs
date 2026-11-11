@@ -664,9 +664,18 @@ function header(lang, pagePath, only) {
   return `<header class="site-header"><div class="wrap header-inner">
 <a class="brand" href="${href(langPath(lang, '/'))}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>${esc(t.gameName)}</small></span></a>
 <nav class="tabs" aria-label="${esc(t.navLinks)}">${tabs}</nav>
+${presencePill(lang)}
 <button type="button" class="theme-toggle" data-theme-toggle>${THEME_ICON}<span class="sr-only">${lang === 'ko' ? '낮과 밤 화면 바꾸기' : 'Switch day or night theme'}</span></button>
 <details class="lang-menu"><summary class="lang-current" aria-label="Language">${LANG_NAMES[lang]}</summary><div class="lang-list">${(only ? [lang, ...ALL_LANGS.filter((l) => l !== lang)] : ALL_LANGS).map((l) => `<a class="lang-opt" href="${href(langPath(l, only && l !== lang ? '/' : pagePath || '/'))}" data-lang="${l}" hreflang="${HREFLANG[l]}" lang="${HREFLANG[l]}"${l === lang ? ' aria-current="true"' : ''}>${LANG_NAMES[l]}</a>`).join('')}</div></details>
 </div></header>`;
+}
+
+// Live viewer count (assets/common.js fills it from the worker's presence room). Hidden until someone else is on the site,
+// and it only ever shows the real number of open pages.
+function presencePill(lang) {
+  return lang === 'ko'
+    ? '<p class="presence" hidden><span class="pr-site">지금 <b data-site>0</b>명 접속 중</span><span class="pr-here">이 페이지 <b data-here>0</b>명</span></p>'
+    : '<p class="presence" hidden><span class="pr-site"><b data-site>0</b> <span>online now</span></span><span class="pr-here"><b data-here>0</b> <span>on this page</span></span></p>';
 }
 
 function footer(lang) {
@@ -761,6 +770,7 @@ const LIVE = {
     isNew: 'NEW',
     more: '실시간 시세 전체 보기',
     updated: '{t} 갱신',
+    fresh: '방금 새 매물 {n}건',
     sparkLabel: '{name} 7일 추이: {from}에서 {to}',
     noTrend: '추이 데이터 부족',
     preview: '미리보기 · 실제 시세가 아닌 예시 데이터예요',
@@ -781,6 +791,7 @@ const LIVE = {
     isNew: 'NEW',
     more: 'Open the live market',
     updated: 'updated {t}',
+    fresh: '{n} new just now',
     sparkLabel: '{name} 7-day trend: {from} to {to}',
     noTrend: 'not enough data for a trend',
     preview: 'Preview · sample data, not real prices',
@@ -799,7 +810,7 @@ function liveMarket(lang) {
   return `<section class="wrap market" id="live-market" aria-labelledby="live-title"
  data-api="${esc(config.voteApi)}" data-items="${esc(href('/assets/items.json'))}" data-price="${esc(href(langPath(lang, '/tools/market/')))}"
  data-text="${esc(JSON.stringify(t))}">
-<header class="market-head"><span class="live-dot" aria-hidden="true"></span><h2 id="live-title">${t.title}</h2><p>${t.sub}</p><small id="live-updated"></small><a class="btn ghost small-btn market-myshop" href="${href(langPath(lang, '/tools/my-shop/'))}">${lang === 'ko' ? '내 상점 시세 비교' : 'Compare my shop'}</a><a class="btn small-btn market-scan" href="${href(langPath(lang, '/tools/scan/'))}">● ${t.scan}</a><strong class="market-preview" id="market-preview" hidden>${t.preview}</strong></header>
+<header class="market-head"><span class="live-dot" aria-hidden="true"></span><h2 id="live-title">${t.title}</h2><p>${t.sub}</p><small id="live-updated"></small><small class="live-fresh" id="live-fresh" role="status" hidden></small><a class="btn ghost small-btn market-myshop" href="${href(langPath(lang, '/tools/my-shop/'))}">${lang === 'ko' ? '내 상점 시세 비교' : 'Compare my shop'}</a><a class="btn small-btn market-scan" href="${href(langPath(lang, '/tools/scan/'))}">● ${t.scan}</a><strong class="market-preview" id="market-preview" hidden>${t.preview}</strong></header>
 ${collectionStatus(lang)}
 <div id="live-mine" class="live-mine" hidden aria-label="${esc(t.mine)}"></div>
 <div class="market-grid">

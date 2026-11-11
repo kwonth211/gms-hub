@@ -2929,6 +2929,7 @@
  "{n} items": "{n}件のアイテム",
  "{n} lines": "{n}ライン",
  "{n} lowest asks of {total} listings": "出品{total}件のうち安い順に{n}件",
+ "{n} new just now": "新着 {n} 件",
  "{n} options for level {lv}": "レベル{lv}の候補 {n}件",
  "{n} price bands tied": "{n}つの価格帯が同数",
  "{n} reports in {n0} days · {low}–{high}": "{n0}日間で報告{n}件 · {low}–{high}",
@@ -2949,5 +2950,7 @@
  "● Read stats from screen": "● 画面からステータスを読み取る",
  "● Scan shops from my screen": "● 自分の画面からショップをスキャン",
  "● Share your MapleStory window": "● MapleStoryのウィンドウを共有",
- "👍 {t0}Upvote": "👍 {t0}おすすめ"
+ "👍 {t0}Upvote": "👍 {t0}おすすめ",
+ "online now": "人が閲覧中",
+ "on this page": "人がこのページに"
 }

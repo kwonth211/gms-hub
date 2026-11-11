@@ -20,3 +20,12 @@ database_id = "5e551116-5641-480e-99f3-70fd856cc675"
 # Market ranking is recomputed every 15 minutes on this schedule and stored, so page views never recompute it.
 [triggers]
 crons = ["*/15 * * * *"]
+
+# Live viewer count (src/presence.js). SQLite-backed class so it runs on the free plan; it never writes storage.
+[[durable_objects.bindings]]
+name = "PRESENCE"
+class_name = "Presence"
+
+[[migrations]]
+tag = "presence-v1"
+new_sqlite_classes = ["Presence"]

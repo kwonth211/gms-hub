@@ -2929,6 +2929,7 @@
  "{n} items": "{n} 个物品",
  "{n} lines": "{n} 段",
  "{n} lowest asks of {total} listings": "共 {total} 筆掛賣中最便宜的 {n} 筆",
+ "{n} new just now": "刚刚新增 {n} 条",
  "{n} options for level {lv}": "{lv} 等可選 {n} 個地點",
  "{n} price bands tied": "{n} 個價格區間並列",
  "{n} reports in {n0} days · {low}–{high}": "{n0} 天內 {n} 筆回報 · {low}–{high}",
@@ -2949,5 +2950,7 @@
  "● Read stats from screen": "● 從畫面讀取能力值",
  "● Scan shops from my screen": "● 從我的畫面掃描商店",
  "● Share your MapleStory window": "● 分享你的 MapleStory 視窗",
- "👍 {t0}Upvote": "👍 {t0}推薦"
+ "👍 {t0}Upvote": "👍 {t0}推薦",
+ "online now": "人在线",
+ "on this page": "人在本页"
 }

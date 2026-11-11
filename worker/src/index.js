@@ -9,10 +9,13 @@
 // GET  /listings/recent -> [{ item, price, qty, sold, seller, channel, room, seen }]
 // GET  /market/top -> { at, stats, items: [{ item, rank, move, avg, n, sold, change, spark: [7 daily medians] }] }  (stored every 15 min)
 // GET  /market/item?id= -> { item, listings: [...last 7 days], trend }
+// GET  /presence?p=<path> (WebSocket) -> messages { site, here }: open pages on the whole site and on this page
 // The shop scanner runs from the local dev server for now, so its origin may post scans too.
 import { handleMarketBatch, getCollectionStatus } from './market-batch.js';
 import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoints } from './market-browser.js';
 import { cachedPublicResponse } from './public-cache.js';
+import { Presence, handlePresence } from './presence.js';
+export { Presence };
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
 
 function corsHeaders(origin) {
@@ -455,5 +458,6 @@ const api = {
 
 export default {
   scheduled: api.scheduled,
-  fetch: (req, env, ctx) => cachedPublicResponse(req, () => api.fetch(req, env), ctx)
+  // The live viewer count is a WebSocket upgrade, so it skips the public response cache.
+  fetch: (req, env, ctx) => new URL(req.url).pathname === '/presence' ? handlePresence(req, env) : cachedPublicResponse(req, () => api.fetch(req, env), ctx)
 };

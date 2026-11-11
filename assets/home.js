@@ -572,21 +572,44 @@ ${changeCell(r.change)}</a></li>`;
   return rows.length;
 }
 
+// Listings already on screen, so a refresh can light up only the ones that just arrived.
+let seenRows = null;
+const rowKey = (r) => `${r.item}|${r.seller}|${r.price}|${r.seen}`;
+
 function renderRecent(rows, byId) {
   const shown = rows.filter((r) => byId.has(r.item)).slice(0, LIVE_ROWS);
+  const fresh = seenRows ? shown.filter((r) => !seenRows.has(rowKey(r))).length : 0;
+  const before = seenRows;
+  seenRows = new Set(shown.map(rowKey));
   document.getElementById('live-rows').innerHTML = shown
     .map((r) => {
       const it = byId.get(r.item);
-      return `<li class="${r.sold ? 'sold' : ''}"><a href="${live.dataset.price}?q=${encodeURIComponent(it.name)}">
+      const isNew = before && !before.has(rowKey(r));
+      return `<li class="${r.sold ? 'sold' : ''}${isNew ? ' fresh' : ''}"><a href="${live.dataset.price}?q=${encodeURIComponent(it.name)}">
 <img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="26" height="26" loading="lazy">
 <span class="name">${escHtml(it.name)}${r.sold ? `<span class="tag">${escHtml(liveText.sold)}</span>` : ''}</span>
 <span class="price">${mesos(r.price)}${r.qty > 1 ? ` <small>×${r.qty}</small>` : ''}</span>
 <span class="meta">${escHtml(r.seller)} · CH ${r.channel} · FM${r.room}</span>
-<span class="ago">${ago(r.seen)}</span></a></li>`;
+<span class="ago" data-seen="${escHtml(r.seen)}">${ago(r.seen)}</span></a></li>`;
     })
     .join('');
+  const note = document.getElementById('live-fresh');
+  if (note && fresh) {
+    note.textContent = liveText.fresh.replace('{n}', fresh);
+    note.hidden = false;
+    clearTimeout(renderRecent.t);
+    renderRecent.t = setTimeout(() => (note.hidden = true), 8000);
+  }
   return shown.length;
 }
+
+// "3 minutes ago" keeps counting between refreshes instead of freezing at the time the list was drawn.
+setInterval(() => {
+  if (document.hidden) return;
+  document.querySelectorAll('#live-rows .ago[data-seen]').forEach((el) => (el.textContent = ago(el.dataset.seen)));
+  const first = document.querySelector('#live-rows .ago[data-seen]');
+  if (first) document.getElementById('live-updated').textContent = liveText.updated.replace('{t}', ago(first.dataset.seen));
+}, 20000);
 
 // ?preview=market shows the section with made-up numbers (clearly labelled) so it can be reviewed before real scans exist.
 const PREVIEW = new URLSearchParams(location.search).get('preview') === 'market';
