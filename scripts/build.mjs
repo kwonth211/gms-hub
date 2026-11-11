@@ -674,8 +674,8 @@ ${presencePill(lang)}
 // and it only ever shows the real number of open pages. The home hero repeats it next to the 24-hour market counts.
 function presencePill(lang) {
   return lang === 'ko'
-    ? '<p class="presence" hidden><i class="pr-dot" aria-hidden="true"></i><span class="pr-live" translate="no">LIVE</span>지금 <b data-site>0</b>명 접속 중</p>'
-    : '<p class="presence" hidden><i class="pr-dot" aria-hidden="true"></i><span class="pr-live" translate="no">LIVE</span><b data-site>0</b> <span>online now</span></p>';
+    ? '<p class="presence" hidden><i class="pr-dot" aria-hidden="true"></i><span class="pr-live" translate="no">LIVE</span><b data-site>0</b>명 접속 중</p>'
+    : '<p class="presence" hidden><i class="pr-dot" aria-hidden="true"></i><span class="pr-live" translate="no">LIVE</span><b data-site>0</b> <span>online</span></p>';
 }
 
 function footer(lang) {
@@ -949,7 +949,7 @@ ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이�
 </section>
 </div>
 <p class="search-help" id="search-help">${lang === 'ko' ? '한글·영문·초성·줄임말로 검색하세요. 예: 귀힘, 미스릴, 좀비 루팡, 사냥터' : 'Search by name or keyword. Try Gloves Attack, Mithril, Zombie Lupin or training.'}</p>
-<dl class="hero-stats"><div class="hs-live presence" hidden><dt><i class="pr-dot" aria-hidden="true"></i><span class="pr-live" translate="no">LIVE</span>${lang === 'ko' ? '지금 접속 중' : 'Online now'}</dt><dd data-site>0</dd></div><div data-market-stat="listings" hidden><dt>${lang === 'ko' ? '24시간 매물' : 'Listings, 24h'}</dt><dd>0</dd></div><div data-market-stat="shops" hidden><dt>${lang === 'ko' ? '24시간 확인한 상점' : 'Shops checked, 24h'}</dt><dd>0</dd></div>${lang === 'ko'
+<dl class="hero-stats"><div class="hs-live presence" hidden><dt><i class="pr-dot" aria-hidden="true"></i><span class="pr-live" translate="no">LIVE</span>${lang === 'ko' ? '접속 중' : 'Online'}</dt><dd data-site>0</dd></div><div data-market-stat="listings" hidden><dt>${lang === 'ko' ? '24시간 매물' : 'Listings, 24h'}</dt><dd>0</dd></div><div data-market-stat="shops" hidden><dt>${lang === 'ko' ? '24시간 확인한 상점' : 'Shops checked, 24h'}</dt><dd>0</dd></div>${lang === 'ko'
   ? `<div><dt>${t.statSites}</dt><dd>${SITE_COUNT}</dd></div><div><dt>${t.statCats}</dt><dd>${cats.length}</dd></div>`
   : `<div><dt>Monsters</dt><dd>${MONSTERS.monsters.filter((m) => m.status !== 'unplaced').length}</dd></div><div><dt>Quests</dt><dd>${QUESTS.length}</dd></div><div><dt>Maps</dt><dd>${MAPS.filter((l) => l.availability === 'open').length}</dd></div>`}</dl>
 </div>
