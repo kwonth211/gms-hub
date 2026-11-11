@@ -1,5 +1,5 @@
-// Megaphone collector for the admin's Mac (macOS only): every 1.5 s it screenshots the screen with `screencapture`,
-// finds the MapleStory chat box by its megaphone bands, reads new megaphones with assets/mega-reader.js and posts them
+// Megaphone collector for the admin's Mac (macOS only): every 1.5 s it captures the MapleStory window with
+// `screencapture -l` (works even when other windows cover it; maple-window.swift finds the window), finds the chat box by its megaphone bands, reads new megaphones with assets/mega-reader.js and posts them
 // to the worker with the admin key in ~/.config/gms-hub/megaphone-token. Only the recognised text leaves the Mac.
 // Run (from scripts/scan-tools after npm install):  node mega-collector.mjs          # read and post
 //                                                     node mega-collector.mjs --dry  # read and print only
@@ -16,6 +16,10 @@ const DRY = process.argv.includes('--dry');
 const TICK_MS = 1500;
 const KINDS = { P: 'super', Y: 'item', C: 'double' };
 const shot = path.join(os.tmpdir(), 'gms-mega-shot.png');
+const here = path.dirname(new URL(import.meta.url).pathname);
+const helper = path.join(os.tmpdir(), 'gms-maple-window');
+if (!fs.existsSync(helper)) execFileSync('swiftc', ['-O', path.join(here, 'maple-window.swift'), '-o', helper]);
+const windowId = () => { try { return execFileSync(helper, { encoding: 'utf8' }).trim(); } catch { return ''; } };
 const token = DRY ? '' : fs.readFileSync(path.join(os.homedir(), '.config', 'gms-hub', 'megaphone-token'), 'utf8').trim();
 
 const text = await Tesseract.createWorker('eng');
@@ -40,7 +44,7 @@ function crop(img, b) {
 }
 
 const isRepeat = repeatFilter();
-let box = null, ticks = 0, empty = 0, queue = [], sent = 0;
+let box = null, ticks = 0, empty = 0, queue = [], sent = 0, win = '';
 async function flush() {
   if (DRY || !queue.length) return;
   const rows = queue.splice(0, 50);
@@ -52,7 +56,9 @@ async function flush() {
 }
 
 async function tick() {
-  execFileSync('screencapture', ['-x', '-t', 'png', shot]);
+  if (!win || ticks % 40 === 0) win = windowId();
+  if (!win) { if (ticks++ % 40 === 0) console.error(new Date().toISOString(), 'MapleStory window not found'); return; }
+  try { execFileSync('screencapture', ['-x', '-o', '-t', 'png', `-l${win}`, shot]); } catch { win = ''; return; }
   const img = PNG.sync.read(fs.readFileSync(shot));
   if (!box || ticks++ % 40 === 0 || empty > 20) { const found = findChatBox(img); if (found) { box = found; empty = 0; } }
   if (!box) return;
