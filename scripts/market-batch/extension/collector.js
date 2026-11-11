@@ -25,7 +25,7 @@
     const maxShops = options.mode === 'test' ? 40 : Math.min(600, Number(options.maxShops) || 360);
     const maxItems = options.mode === 'test' ? 2 : Math.min(60, Number(options.maxItems) || 12);
     const perItem = Math.min(50, Number(options.shopsPerItem) || 20);
-    const report = { version: '0.5.1', runId: options.runId, world: 'Windia', startedAt: new Date().toISOString(),
+    const report = { version: '0.6.0', runId: options.runId, world: 'Windia', startedAt: new Date().toISOString(),
       status: 'running', rows: [], shops: 0, rejected: {}, queue: [], skippedItems: [], aiCalls: 0 };
     const rows = new Map();
     const openModal = () => { const el = document.querySelector('#sv-modal'); return el && !el.closest('[hidden]') ? el : null; };
@@ -69,18 +69,31 @@
         report.summary = readSummary('#rows tr[data-id]');
       }
       const listRows = document.querySelectorAll('#rows tr[data-id]').length ? '#rows tr[data-id]' : 'tr[data-id]';
-      const all = [...document.querySelectorAll(listRows)].map(tr => ({ id: tr.getAttribute('data-id'), name: tr.querySelector('.item-select')?.getAttribute('title') || tr.querySelector('.item-select')?.textContent.trim() }))
+      const shown = [...document.querySelectorAll(listRows)].map(tr => ({ id: tr.getAttribute('data-id'), name: tr.querySelector('.item-select')?.getAttribute('title') || tr.querySelector('.item-select')?.textContent.trim() }))
         .filter(x => GmsBatchCatalog[Number(x.id.split(':')[1])] === x.name);
+      // Rotate through every traded item from the last full list read (passed in by the extension), not just the rows on
+      // screen; an item off screen is brought up with the site's own search box.
+      const prefix = (shown[0]?.id || 'basil:').split(':')[0];
+      const all = (options.itemIds || []).filter(id => GmsBatchCatalog[id])
+        .map(id => ({ id: `${prefix}:${String(id).padStart(8, '0')}`, name: GmsBatchCatalog[id] }));
+      if (all.length < 2) all.splice(0, all.length, ...shown);
       if (all.length < 2) throw new Error('검증 가능한 아이템 목록 부족');
       report.listSize = all.length;
       // Rotate the starting item to avoid permanently ignoring the lower half of the visible catalogue.
       const offset = options.mode === 'test' ? 0 : (options.cursor || 0) % all.length;
       const queue = [...all.slice(offset), ...all.slice(0, offset)].slice(0, maxItems);
       for (const item of queue) {
+        // Stop opening new items well before the 12-minute limit, so a long run still uploads what it read.
+        if (Date.now() - Date.parse(report.startedAt) > 9.5 * 60000) break;
         guard(); report.queue.push(item);
         await progress({ shops: report.shops, rows: rows.size, item: item.name });
-        const tr = [...document.querySelectorAll(listRows)].find(tr => tr.getAttribute('data-id') === item.id);
-        if (!tr) throw new Error('아이템 목록 변경');
+        let tr = [...document.querySelectorAll('tr[data-id]')].find(tr => tr.getAttribute('data-id') === item.id);
+        if (!tr && search) {
+          search.value = item.name; search.dispatchEvent(new Event('input', { bubbles: true }));
+          try { tr = await until(() => [...document.querySelectorAll('tr[data-id]')].find(tr => tr.getAttribute('data-id') === item.id), `${item.name} 검색`); }
+          catch (e) { if (e.code !== 'LOAD_TIMEOUT') throw e; }
+        }
+        if (!tr) { report.skippedItems.push({ ...item, reason: 'NOT_LISTED' }); continue; }
         let newest;
         for (let attempt = 0; attempt < 2; attempt++) {
           tr.querySelector('.item-select').click();
@@ -120,6 +133,7 @@
         button('Close')?.click(); await until(() => !openModal(), '상점 상세 닫기');
         if (rows.size >= maxRows || report.shops >= maxShops) break;
       }
+      if (search?.value) { search.value = ''; search.dispatchEvent(new Event('input', { bubbles: true })); }
       report.rows = [...rows.values()]; report.nextCursor = (offset + report.queue.length) % all.length;
       if (!report.rows.length) throw failure('NO_VALID_ROWS', '검증 통과 매물 없음');
       report.status = 'completed';

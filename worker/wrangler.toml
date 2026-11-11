@@ -5,12 +5,12 @@ compatibility_date = "2026-10-01"
 [vars]
 # Small hourly batches; existing daily usage is retained across a policy change.
 MARKET_BATCH_PAUSED = "false"
-MARKET_BATCH_DAILY_ROWS = "10000"
+MARKET_BATCH_DAILY_ROWS = "14400"
 MARKET_BATCH_MIN_INTERVAL_SECONDS = "900"
 MARKET_BATCH_MAX_ROWS = "150"
-MARKET_BATCH_MAX_ITEMS = "30"
-MARKET_BATCH_SHOPS_PER_ITEM = "40"
-MARKET_BATCH_MAX_SHOPS = "360"
+MARKET_BATCH_MAX_ITEMS = "60"
+MARKET_BATCH_SHOPS_PER_ITEM = "10"
+MARKET_BATCH_MAX_SHOPS = "500"
 
 [[d1_databases]]
 binding = "DB"

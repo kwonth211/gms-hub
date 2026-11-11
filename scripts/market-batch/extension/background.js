@@ -13,7 +13,7 @@ const owned = tab => tab?.url?.startsWith(PAGE) || tab?.pendingUrl?.startsWith(P
 async function broadcast() {
   const s = await get();
   // No secret is ever included in content-script messages or the public DOM.
-  return { ...s, version: '0.5.1', nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
+  return { ...s, version: '0.6.0', nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
 }
 async function ensureAlarms() {
   const s = await get();
@@ -92,7 +92,7 @@ async function launch(mode, trigger) {
   s.waitReason = null;
   // The item-list summary needs the collector window in front for a few seconds, so it runs at most every 3 hours.
   const summaryDue = mode !== 'test' && Date.now() - (s.lastSummaryAt || 0) >= SUMMARY_EVERY;
-  s.run = { runId: crypto.randomUUID(), mode, trigger, maxRows, ...scope, summaryDue, startedAt: Date.now(), cursor: s.cursor || 0, phase: 'loading', tabId: null };
+  s.run = { runId: crypto.randomUUID(), mode, trigger, maxRows, ...scope, summaryDue, itemIds: s.itemIds || [], startedAt: Date.now(), cursor: s.cursor || 0, phase: 'loading', tabId: null };
   await put(s);
   const tab = s.workerTabId ? await chrome.tabs.get(s.workerTabId).catch(() => null) : null;
   try {
@@ -140,7 +140,9 @@ async function upload() {
   current.pending = null; current.run = null; current.error = null; current.lastReceipt = receipt;
   current.lastSuccessAt = new Date().toISOString(); current.cursor = current.lastReport.nextCursor || 0;
   current.collectionFailures = 0; current.retryAt = null;
-  if (JSON.parse(pending.body).summary?.length) current.lastSummaryAt = Date.now();
+  const sent = JSON.parse(pending.body).summary || [];
+  // Remember every traded item (busiest first) so later runs rotate through all of them, not only the rows on screen.
+  if (sent.length > 100) { current.lastSummaryAt = Date.now(); current.itemIds = [...sent].sort((a, b) => (b.sales || 0) - (a.sales || 0)).map(x => x.item); }
   current.history = [{ runId: current.lastReport.runId, mode: 'production', trigger: pending.trigger, status: 'stored',
     at: current.lastSuccessAt, shops: current.lastReport.shops, rows: receipt.accepted, receipt }, ...(current.history || [])].slice(0, 20);
   await put(current); await chrome.alarms.clear(RETRY);
@@ -201,6 +203,8 @@ async function message(m, sender) {
     s.testRemaining = 3; await put(s); return launch('test', 'manual-test');
   }
   if (m.type === 'run') return launch('production', 'manual');
+  // Picks up new extension files from disk (an unpacked install), so an update needs no trip to chrome://extensions.
+  if (m.type === 'reload') { const s = await get(); if (s.run || s.pending) return { busy: true }; setTimeout(() => chrome.runtime.reload(), 300); return { ok: true }; }
   if (m.type === 'enable') {
     const s = await get(); if (s.pending) throw new Error('보관된 결과를 먼저 저장하세요.');
     s.enabled = true; s.error = null; s.retryAt = null; s.waitReason = null; s.collectionFailures = 0;
