@@ -182,12 +182,20 @@ export function readChannel(img, line, badge) {
   return ch >= 1 && ch <= 40 ? ch : null;
 }
 
-// Read one line with an OCR function (bitmap, kind → text). kind is 'nick' or 'text'.
+// Read one line with an OCR function (bitmap, kind → text). kind is 'nick' (one word, letters and digits), 'nickline'
+// (a line, letters and digits) or 'text'.
 export async function readLine(img, line, ocr) {
   const badge = findBadge(img, line);
   const x0 = textLeft(img, line);
   if (!badge) return { color: line.color, cont: true, text: cleanText(await ocr(lineBitmap(img, line, { x0 }), 'text')) };
-  const nick = (await ocr(lineBitmap(img, line, { x0, x1: badge.left - 1 }), 'nick')).replace(/[^A-Za-z0-9]/g, '');
+  // Nicks are short and have no dictionary words, so one OCR pass often slips a letter. Three readings (as one word at
+  // 4x, as a line at 2x and at 3x, letters and digits only) vote; without a majority the one-word reading wins.
+  const reads = [];
+  for (const [kind, scale] of [['nick', 4], ['nickline', 2], ['nickline', 3]]) reads.push((await ocr(lineBitmap(img, line, { x0, x1: badge.left - 1, scale }), kind)).replace(/[^A-Za-z0-9]/g, ''));
+  const votes = new Map();
+  for (const r of reads) if (r) votes.set(r, (votes.get(r) || 0) + 1);
+  const top = [...votes].sort((a, b) => b[1] - a[1])[0];
+  const nick = top && top[1] >= 2 ? top[0] : reads[0];
   const channel = readChannel(img, line, badge);
   const text = cleanText((await ocr(lineBitmap(img, line, { x0: badge.message }), 'text')).replace(/^[^A-Za-z0-9[<>]*/, ''));
   return { color: line.color, nick, channel, text };
