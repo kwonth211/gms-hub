@@ -674,13 +674,23 @@ function footer(lang) {
 </div></footer>`;
 }
 
-const ADFIT_PAGES = new Set(['home', 'training', 'trBand', 'trClass', 'scroll', 'drop', 'price', 'scan', 'market', 'damage', 'guides', 'guide', 'monsters', 'monster', 'items', 'item']);
+const ADFIT_PAGES = new Set(['home', 'training', 'trBand', 'trClass', 'scroll', 'drop', 'price', 'scan', 'market', 'damage', 'guides', 'guide', 'monsters', 'monster', 'items', 'item',
+  'bosses', 'maps', 'map', 'quests', 'quest', 'questBest', 'equipment', 'equipmentClass']);
+// AdFit counted only 5-9% of the end-of-page banner as viewed (most visitors never scroll that far), so a second slot sits
+// just under the page title: after the page head, after the home hero, or after a guide's first paragraph. Never beside
+// a form control or a button row.
+const AD_TOP = '<!--ad-top-->';
+function withTopAd(body, ads) {
+  let out = body.includes(AD_TOP) ? body : body.replace(/(<section class="(?:wrap )?(?:mb-)?page-head[\s\S]*?<\/section>)/, `$1${AD_TOP}`);
+  out = out.replace(AD_TOP, ads ? adfitSlot('top') : '');
+  return out.split(AD_TOP).join('');
+}
 function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], modules = [], ld = [], only, noindex }) {
   const ads = ADFIT_PAGES.has(pageKey) && !noindex && Object.values(config.adfit || {}).some(Boolean);
   return `${head({ lang, title, desc, pagePath, ld, only, noindex })}
 <body data-page="${pageKey}">
 ${header(lang, pagePath, only)}
-<main>${ads && pageKey !== 'home' ? adfitRails() : ''}${body}${ads ? adfitSlot() : ''}</main>
+<main>${ads && pageKey !== 'home' ? adfitRails() : ''}${withTopAd(body, ads)}${ads ? adfitSlot() : ''}</main>
 ${footer(lang)}
 <script src="${href('/assets/common.js')}" defer></script>
 ${ads ? `<script src="${scriptSrc('adfit.js')}" defer></script>` : ''}
@@ -928,6 +938,7 @@ ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이�
 </div>
 </section>
 ${adfitRails()}
+${AD_TOP}
 ${jsonScript('home-routes', training.routes.map((r) => ({ id: r.id, title: r.title[lang], monsters: r.monsters[lang], min: r.level.min, max: r.level.max,
   level: r.level, jobs: r.jobs, party: r.party, costTier: r.costTier, advanced: r.advanced,
   mobs: r.mobs.flatMap((m) => [m.ko, m.en]), href: href(langPath(lang, `/tools/training/?lv=${r.level.min}#route-${r.id}`)) })))}
@@ -1909,11 +1920,13 @@ const adfitIns = (unit, w, h, minWidth = 0, maxWidth = 99999) =>
   unit
     ? `<ins class="kakao_ad_area" style="display:none" data-ad-unit="${esc(unit)}" data-ad-width="${w}" data-ad-height="${h}" data-min="${minWidth}" data-max="${maxWidth}"></ins>`
     : '';
-function adfitSlot() {
-  const { mobile, pc, railLeft, railRight } = config.adfit || {};
+function adfitSlot(where = 'end') {
+  const { railLeft, railRight } = config.adfit || {};
+  const { mobile, pc } = where === 'top' ? { mobile: config.adfit?.topMobile, pc: config.adfit?.topPc } : config.adfit || {};
   if (!mobile && !pc) return '';
-  const maxWidth = railLeft || railRight ? 1599 : 99999;
-  return `<aside class="ad-slot" data-ad-placement aria-label="Advertisement"><span class="ad-label">ADVERTISEMENT</span>
+  // The end slot leaves wide screens to the side rails; the top slot shows at every width.
+  const maxWidth = where === 'end' && (railLeft || railRight) ? 1599 : 99999;
+  return `<aside class="ad-slot${where === 'top' ? ' ad-slot-top' : ''}" data-ad-placement aria-label="Advertisement"><span class="ad-label">ADVERTISEMENT</span>
 ${adfitIns(mobile, 320, 100, 320, pc ? 759 : maxWidth)}${adfitIns(pc, 728, 90, 760, maxWidth)}</aside>`;
 }
 
@@ -1934,7 +1947,7 @@ function guideBody(g) {
   const toc = [];
   const body = g.body.replace(/<h2>(.*?)<\/h2>/g, (_,title) => { const id = `section-${toc.length+1}`; toc.push({id,title}); return `<h2 id="${id}">${title}</h2>`; })
     .replace(/<table>/g, '<div class="table-wrap"><table class="data">')
-    .replace(/<\/table>/g, '</table></div>');
+    .replace(/<\/table>/g, '</table></div>').replace('</p>', `</p>${AD_TOP}`);
   return `<article class="wrap prose guide-article">
 <p class="crumbs"><a href="${href(langPath(g.lang, '/guides/'))}">${T[g.lang].navGuides}</a></p>
 <h1>${esc(g.h1)}</h1>
