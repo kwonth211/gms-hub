@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { spriteSvg, heroScene, spritePng } from './sprites.mjs';
+import { spriteSvg, heroScene, spritePng, spriteDataPng } from './sprites.mjs';
 import { monsterIndex, monsterDetail, monsterPath, monsterName, mapPath, bossIndex } from './monster-pages.mjs';
 import { collectMaps, mapDetail, mapIndex, mapName } from './map-pages.mjs';
 import { collectQuests, questDetail, questIndex, questBestBody, questPath, areaName as questArea } from './quest-pages.mjs';
@@ -634,6 +634,7 @@ ${naverVerify}
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="${scriptSrc('style.css')}">
+<style>${CHARM_VARS}</style>
 ${adsense}
 ${ga}
 ${clarity}
@@ -643,8 +644,11 @@ ${ld.map(ldScript).join('\n')}
 }
 
 // Day or night before the first paint: a saved choice wins, otherwise the system setting. No script, no theme: day.
-const THEME_BOOT = `(function(){try{var t=localStorage.getItem('gms-theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;var m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='dark'?'#0f1420':'#f6f1e7';}catch(e){}})();`;
+const THEME_BOOT = `(function(){try{var t=localStorage.getItem('gms-theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;if(localStorage.getItem('gms-charm')==='off')document.documentElement.dataset.charm='off';var m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='dark'?'#0f1420':'#f6f1e7';}catch(e){}})();`;
 const THEME_ICON = `<svg class="theme-icon" viewBox="0 0 16 16" width="18" height="18" shape-rendering="crispEdges" aria-hidden="true"><g class="sun"><rect x="6" y="6" width="4" height="4"/><rect x="7" y="1" width="2" height="3"/><rect x="7" y="12" width="2" height="3"/><rect x="1" y="7" width="3" height="2"/><rect x="12" y="7" width="3" height="2"/><rect x="3" y="3" width="2" height="2"/><rect x="11" y="3" width="2" height="2"/><rect x="3" y="11" width="2" height="2"/><rect x="11" y="11" width="2" height="2"/></g><g class="moon"><rect x="6" y="2" width="5" height="2"/><rect x="4" y="4" width="3" height="2"/><rect x="3" y="6" width="3" height="4"/><rect x="4" y="10" width="3" height="2"/><rect x="6" y="12" width="5" height="2"/><rect x="11" y="10" width="2" height="2"/></g></svg>`;
+
+// Our own pixel art for the small touches (assets/common.js, style.css "Charm"): cursors and the maple leaf.
+const CHARM_VARS = `:root{--cur:url("${spriteDataPng('cursor', 2)}") 1 1,auto;--cur-on:url("${spriteDataPng('cursorOn', 2)}") 1 1,pointer;--leaf:url("${spriteDataPng('leaf', 2)}")}`;
 
 function header(lang, pagePath, only) {
   const t = T[lang];
@@ -684,9 +688,10 @@ function presencePill(lang) {
 
 function footer(lang) {
   const t = T[lang];
-  return `<footer class="site-footer"><div class="wrap">
+  return `<footer class="site-footer"><div class="charm-walk" aria-hidden="true"><span class="walker w1">${spriteSvg('mushroom', 30)}</span><span class="walker w2">${spriteSvg('slime', 26)}</span></div><div class="wrap">
 <div class="footer-brand">${spriteSvg('mushroom', 24)}<strong>GMS Hub</strong></div>
 <p>${esc(t.footerDisclaimer)}</p>
+<p><button type="button" class="charm-toggle" data-charm-toggle><span class="charm-on-label">${lang === 'ko' ? '움직이는 효과 끄기' : 'Turn off animations'}</span><span class="charm-off-label">${lang === 'ko' ? '움직이는 효과 켜기' : 'Turn on animations'}</span></button></p>
 <p>${guides.some((g) => g.lang === lang) ? `<a href="${href(langPath(lang, '/guides/'))}">${t.navGuides}</a> · ` : ''}<a href="${href(langPath(lang, '/about/'))}">${t.navAbout}</a> · <a href="${href(langPath(lang, '/privacy/'))}">${t.privacy}</a> · <a href="${href(langPath(lang, '/terms/'))}">${t.terms}</a> · <a href="mailto:${CONTACT_EMAIL}">${t.contact}</a> · <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub</a></p>
 </div></footer>`;
 }

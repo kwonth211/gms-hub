@@ -1698,3 +1698,45 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
   .rank-insights { grid-template-columns: minmax(0, 1fr); }
   .rank-controls input { flex-basis: 100%; }
 }
+
+/* Charm: our own pixel cursor, falling maple leaves on the home hero, click sparkles and a walking mushroom in the
+   footer. All of it stops for reduced motion and when the footer switch sets html[data-charm=off]. */
+@media (pointer: fine) {
+  html:not([data-charm='off']) body { cursor: var(--cur); }
+  html:not([data-charm='off']) :is(a, button, summary, select, label, [role='button'], [role='tab']) { cursor: var(--cur-on); }
+  html:not([data-charm='off']) :is(input, textarea) { cursor: text; }
+}
+.charm-leaves { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.charm-leaf { position: absolute; top: -26px; width: 22px; height: 24px; background: var(--leaf) center / contain no-repeat; image-rendering: pixelated; opacity: 0.9;
+  scale: var(--size); animation: leaf-fall var(--dur) linear var(--delay) infinite; }
+@keyframes leaf-fall {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50% { transform: translate3d(var(--sway), calc(var(--fall) * 0.5), 0) rotate(160deg); }
+  100% { transform: translate3d(0, var(--fall), 0) rotate(340deg); }
+}
+.charm-spark { position: fixed; z-index: 2147483646; width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--star); pointer-events: none;
+  animation: charm-spark 0.6s ease-out forwards; }
+.charm-spark.leafy { width: 12px; height: 12px; margin: -6px 0 0 -6px; background: var(--leaf) center / contain no-repeat; image-rendering: pixelated; }
+@keyframes charm-spark { to { transform: translate(var(--dx), var(--dy)) scale(0.4); opacity: 0; } }
+.charm-walk { position: relative; height: 34px; margin-top: -62px; margin-bottom: 28px; overflow: hidden; container-type: inline-size; pointer-events: none; }
+.walker { position: absolute; bottom: 0; left: 0; animation: charm-walk 38s linear infinite; }
+.walker.w2 { animation-duration: 29s; animation-delay: -11s; }
+.walker svg { display: block; animation: charm-hop 0.6s steps(2) infinite; }
+@keyframes charm-walk {
+  0% { transform: translateX(0) scaleX(1); }
+  49.99% { transform: translateX(calc(100cqw - 34px)) scaleX(1); }
+  50% { transform: translateX(calc(100cqw - 34px)) scaleX(-1); }
+  100% { transform: translateX(0) scaleX(-1); }
+}
+@keyframes charm-hop { 50% { transform: translateY(-2px); } }
+.charm-toggle { font: inherit; font-size: 0.8rem; color: var(--muted); background: none; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; }
+.charm-toggle:hover { color: var(--text); border-color: var(--line-strong); }
+.charm-toggle:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.charm-off-label, html[data-charm='off'] .charm-on-label { display: none; }
+html[data-charm='off'] .charm-off-label { display: inline; }
+html[data-charm='off'] :is(.charm-walk, .charm-leaves) { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .charm-leaves, .charm-spark { display: none; }
+  .walker, .walker svg { animation: none; }
+  .charm-toggle { display: none; }
+}

@@ -13,10 +13,47 @@ const PALETTES = {
   sword: { k: '#22303b', w: '#dfe9f1', Y: '#ffcf3f', b: '#8d6040' },
   bag: { k: '#3b2a1f', b: '#b0805a', Y: '#ffcf3f' },
   star: { k: '#7a4a00', Y: '#ffcf3f', h: '#fff1b3' },
-  tree: { k: '#123d22', G: '#2f9e4f', g: '#5cc46a', b: '#6d4c2f' }
+  tree: { k: '#123d22', G: '#2f9e4f', g: '#5cc46a', b: '#6d4c2f' },
+  leaf: { r: '#e0452b', R: '#a8321f', o: '#f7a23b', b: '#6d3b1f' },
+  cursor: { k: '#4a2208', w: '#fff3e0', o: '#ffb347' },
+  cursorOn: { k: '#4a2208', w: '#ff9a3c', o: '#ffd27a' }
 };
 
+const ARROW = [
+  'k...........',
+  'kk..........',
+  'kwk.........',
+  'kwwk........',
+  'kwwwk.......',
+  'kwwwwk......',
+  'kwwwwwk.....',
+  'kwwwwwwk....',
+  'kwwwwwwwk...',
+  'kwwwwwwwwk..',
+  'kwwwwwkkkkk.',
+  'kwwkowk.....',
+  'kwk.kowk....',
+  'kk..kowk....',
+  'k....kowk...',
+  '.....kkk....'
+];
 const GRIDS = {
+  leaf: [
+    '.....r.....',
+    '....rrr....',
+    '.r..rrr..r.',
+    '.rr.rrr.rr.',
+    '..rrrrrrr..',
+    'rrrrrorrrrr',
+    '.rrrrorrrr.',
+    '..rrrorrr..',
+    '...rrorr...',
+    '..R..o..R..',
+    '.....b.....',
+    '.....b.....'
+  ],
+  cursor: ARROW,
+  cursorOn: ARROW,
   mushroom: [
     '.....oooooo.....',
     '...oooooooooo...',
@@ -271,6 +308,23 @@ ${place('coin', 172, 70, 0.7, 'float')}${place('coin', 200, 66, 0.6, 'float2')}
 // App icon as a PNG (home-screen install): the sprite scaled up on a square background, with a safe margin so
 // Android's round "maskable" crop never cuts into the art. Pure Node: raw RGBA rows, zlib, CRC32.
 import { deflateSync } from 'node:zlib';
+// The sprite at a whole-number scale on a transparent background, as a data URI: the custom mouse cursors.
+export function spriteDataPng(name, scale) {
+  const grid = GRIDS[name], pal = PALETTES[name];
+  const w = Math.max(...grid.map((r) => r.length)), h = grid.length;
+  const W = w * scale, H = h * scale;
+  const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const raw = Buffer.alloc((W * 4 + 1) * H);
+  for (let y = 0; y < H; y++) {
+    raw[y * (W * 4 + 1)] = 0;
+    for (let x = 0; x < W; x++) {
+      const c = grid[Math.floor(y / scale)][Math.floor(x / scale)];
+      if (c && c !== '.' && pal[c]) raw.set([...rgb(pal[c]), 255], y * (W * 4 + 1) + 1 + x * 4);
+    }
+  }
+  return `data:image/png;base64,${pngFile(W, H, raw).toString('base64')}`;
+}
+
 export function spritePng(name, size, bg = '#f6f1e7') {
   const grid = GRIDS[name], pal = PALETTES[name];
   const w = Math.max(...grid.map((r) => r.length)), h = grid.length;
@@ -288,9 +342,14 @@ export function spritePng(name, size, bg = '#f6f1e7') {
       raw.set([r, g, b, 255], y * (size * 4 + 1) + 1 + x * 4);
     }
   }
+  return pngFile(size, size, raw);
+}
+
+// RGBA rows (each with a leading filter byte) → a PNG file. Pure Node: zlib and CRC32.
+function pngFile(w, h, raw) {
   const crcTable = Array.from({ length: 256 }, (_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
   const crc = (buf) => { let c = 0xffffffff; for (const b of buf) c = crcTable[(c ^ b) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
   const chunk = (type, data) => { const len = Buffer.alloc(4); len.writeUInt32BE(data.length); const td = Buffer.concat([Buffer.from(type), data]); const c = Buffer.alloc(4); c.writeUInt32BE(crc(td)); return Buffer.concat([len, td, c]); };
-  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(size, 0); ihdr.writeUInt32BE(size, 4); ihdr.set([8, 6, 0, 0, 0], 8);
+  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr.set([8, 6, 0, 0, 0], 8);
   return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
 }

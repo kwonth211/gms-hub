@@ -130,3 +130,50 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   });
   open();
 })();
+
+// Small touches: maple leaves drifting over the home hero and a sparkle where you click (mouse only). The footer
+// switch turns them, the custom cursor and the walking mushroom off for good; reduced-motion users never get them.
+(() => {
+  const html = document.documentElement;
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const off = () => html.dataset.charm === 'off';
+  function leaves() {
+    const hero = document.querySelector('.hero');
+    if (!hero || calm || off() || hero.querySelector('.charm-leaves')) return;
+    const box = document.createElement('div');
+    box.className = 'charm-leaves';
+    box.setAttribute('aria-hidden', 'true');
+    const fall = hero.offsetHeight + 40;
+    for (let i = 0; i < 9; i++) {
+      const leaf = document.createElement('i');
+      leaf.className = 'charm-leaf';
+      leaf.style.cssText = `left:${(Math.random() * 100).toFixed(1)}%;--fall:${fall}px;--sway:${(Math.random() * 80 - 40).toFixed(0)}px;` +
+        `--dur:${(9 + Math.random() * 7).toFixed(1)}s;--delay:${(-Math.random() * 14).toFixed(1)}s;--size:${(0.7 + Math.random() * 0.6).toFixed(2)}`;
+      box.append(leaf);
+    }
+    hero.querySelector('.hero-scene')?.after(box);
+  }
+  leaves();
+  if (!calm && matchMedia('(pointer: fine)').matches) {
+    document.addEventListener('pointerdown', (e) => {
+      if (off() || e.button !== 0) return;
+      for (let i = 0; i < 6; i++) {
+        const s = document.createElement('i');
+        const a = (Math.PI * 2 * i) / 6 + Math.random() * 0.5, d = 18 + Math.random() * 14;
+        s.className = i % 3 ? 'charm-spark' : 'charm-spark leafy';
+        s.style.cssText = `left:${e.clientX}px;top:${e.clientY}px;--dx:${(Math.cos(a) * d).toFixed(1)}px;--dy:${(Math.sin(a) * d).toFixed(1)}px`;
+        document.body.append(s);
+        setTimeout(() => s.remove(), 650);
+      }
+    }, { passive: true });
+  }
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('[data-charm-toggle]')) return;
+    const turnOff = !off();
+    if (turnOff) html.dataset.charm = 'off'; else delete html.dataset.charm;
+    try { localStorage.setItem('gms-charm', turnOff ? 'off' : 'on'); } catch (x) {}
+    document.querySelector('.charm-leaves')?.remove();
+    if (!turnOff) leaves();
+    track('charm_toggle', { on: turnOff ? 0 : 1 });
+  });
+})();
