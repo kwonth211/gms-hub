@@ -45,11 +45,11 @@ const subName = (sub, lang) => (lang === 'ko' ? SUB_KO[sub] || sub : sub);
 const statLine = (e, lang) => INC_ORDER.filter((k) => e.inc[k]).map((k) => `<span>${INC_LABEL[lang][k] || k} +${e.inc[k]}</span>`).join('');
 const reqLine = (e) => ['str', 'dex', 'int', 'luk'].filter((k) => e.req[k]).map((k) => `<span>${k.toUpperCase()} ${e.req[k]}</span>`).join('');
 
-function row(e, { lang, link, itemHref, mobHref, questHref }) {
+function row(e, { lang, link, itemHref, mobHref, questHref, mobSprite }) {
   const ko = lang === 'ko';
   const name = ko ? e.ko : e.en;
   const from = [
-    ...e.mobs.slice(0, 2).map((m) => `<a href="${mobHref(m)}" translate="no">${esc(ko ? m.ko || m.en : m.en)}</a>`),
+    ...e.mobs.slice(0, 2).map((m) => `<a class="eq-mob" href="${mobHref(m)}" translate="no"><img class="mob-sprite" src="${mobSprite(m)}" width="28" height="28" alt="" loading="lazy">${esc(ko ? m.ko || m.en : m.en)}</a>`),
     ...(e.mobs.length > 2 ? [`<small>+${e.mobs.length - 2}</small>`] : []),
     ...e.quests.slice(0, 1).map((q) => `<a class="eq-quest" href="${questHref(q)}" translate="no">${esc(q.name)}</a>`)
   ].join('');

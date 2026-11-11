@@ -227,7 +227,7 @@ test('equipment finder lists obtainable gear per class with stats and where to g
   const w=read('dist/en/equipment/warrior/index.html');
   assert.match(w,/<title>MapleStory Classic World Warrior Equipment/);
   assert.match(w,/data-lv="\d+" data-sub="One-Handed Sword"/);
-  assert.match(w,/class="eq-from"><a href="\/en\/monsters\/\d+\/"/);
+  assert.match(w,/class="eq-from"><a class="eq-mob" href="\/en\/monsters\/\d+\/"[^>]*><img class="mob-sprite"/);
   assert.match(read('dist/ko/equipment/index.html'),/모든 직업 공용 장비/);
   assert.match(read('dist/sitemap.xml'),/\/en\/equipment\/thief\//);
 });

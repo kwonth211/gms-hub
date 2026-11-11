@@ -221,7 +221,7 @@ function priceTag(id) {
 function resultRow(entry) {
   const external = entry.type === 'site';
   const icon = entry.type === 'mob'
-    ? `<span class="search-result-icon" aria-hidden="true">⚔</span>`
+    ? `<img class="mob-sprite" src="${document.body.dataset.sprites}${String(entry.id).replace('mob-', '')}.gif" alt="" width="30" height="30" loading="lazy">`
     : entry.type === 'item'
     ? `<img src="https://maplestory.io/api/MCW/1/item/${entry.id}/icon" alt="" width="30" height="30" loading="lazy">`
     : `<span class="search-result-icon" aria-hidden="true">${external ? '↗' : '⌘'}</span>`;

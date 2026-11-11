@@ -15,13 +15,13 @@ if (box && input && out) {
     if (!input.value.trim()) { out.innerHTML = ''; return; }
     const hits = searchEntries(entries, input.value).slice(0, 8).map((e) => ({ it: items[e.i] }));
     out.innerHTML = hits.length
-      ? `<ul class="df-list">${hits.map(({ it: [nameKo, nameEn, href, rows] }) => {
+      ? `<ul class="df-list">${hits.map(({ it: [nameKo, nameEn, href, rows, itemId] }) => {
           const shown = rows.slice(0, 6).map(([mi, rep]) => {
-            const [mk, me, lv, mh] = mobs[mi];
-            return `<a href="${mh}"${rep ? ` title="${esc(t.repeated)}"` : ''}><b>${esc(ko ? mk : me)}</b><small>Lv. ${lv}</small></a>`;
+            const [mk, me, lv, mh, id] = mobs[mi];
+            return `<a href="${mh}"${rep ? ` title="${esc(t.repeated)}"` : ''}><img class="mob-sprite" src="${document.body.dataset.sprites}${id}.gif" width="32" height="32" alt="" loading="lazy"><b>${esc(ko ? mk : me)}</b><small>Lv. ${lv}</small></a>`;
           }).join('');
           const more = rows.length > 6 ? `<a class="df-more" href="${href}">${t.more.replace('{n}', rows.length - 6)}</a>` : '';
-          return `<li><a class="df-item" href="${href}">${esc(ko ? nameKo : nameEn)}</a><div class="df-mobs">${shown}${more}</div></li>`;
+          return `<li><a class="df-item" href="${href}"><img src="https://maplestory.io/api/MCW/1/item/${itemId}/icon" width="28" height="28" alt="" loading="lazy">${esc(ko ? nameKo : nameEn)}</a><div class="df-mobs">${shown}${more}</div></li>`;
         }).join('')}</ul>`
       : `<p class="muted">${t.none}</p>`;
     if (user) {

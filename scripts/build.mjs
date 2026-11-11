@@ -1670,7 +1670,7 @@ function dropFinder(lang) {
     .map(([id, rows]) => [byId.get(id), rows.filter(({ m }) => mobIdx.has(m.id))])
     .filter(([i, rows]) => i && rows.length)
     .map(([i, rows]) => [i.ko || i.en, i.en, ITEM_PAGE_IDS.has(i.id) ? href(langPath(lang, itemPath(i))) : href(langPath(lang, `/tools/market/?item=${i.id}`)),
-      rows.sort((a, b) => a.m.lv - b.m.lv).map(({ m, confidence }) => [mobIdx.get(m.id), confidence === 'repeated' ? 1 : 0])]);
+      rows.sort((a, b) => a.m.lv - b.m.lv).map(({ m, confidence }) => [mobIdx.get(m.id), confidence === 'repeated' ? 1 : 0]), i.id]);
   const examples = itemsData.items.filter((i) => DROP_INDEX.has(i.id) && priceOf(i)).sort((a, b) => (priceOf(b).n || 0) - (priceOf(a).n || 0)).slice(0, 4);
   return `<section class="panel drop-finder" id="drop-finder" aria-labelledby="df-title">
 <h2 id="df-title">${ko ? '이 아이템, 어떤 몬스터가 떨어뜨려요?' : 'Which monster drops it?'}</h2>
@@ -1678,7 +1678,7 @@ function dropFinder(lang) {
 <p class="df-examples">${examples.map((i) => `<button type="button" class="chip" data-q="${esc(itemName(lang, i))}">${esc(itemName(lang, i))}</button>`).join('')}</p>
 <div id="df-results" aria-live="polite"></div>
 <p class="muted small">${ko ? '몬스터 목록은 플레이어 제보예요. 드롭 확률은 서버에만 있어 공개되지 않아요.' : 'Monster lists come from player reports. Drop rates live on the server and are not published.'} <a href="${href(langPath(lang, '/monsters/'))}">${ko ? '몬스터 도감' : 'Monster database'}</a> · <a href="${href(langPath(lang, '/bosses/'))}">${ko ? '보스 드롭' : 'Boss drops'}</a></p>
-${jsonScript('drop-index', { items, mobs: mobs.map((m) => [m.ko || m.en, m.en, m.lv, href(langPath(lang, monsterPath(m)))]),
+${jsonScript('drop-index', { items, mobs: mobs.map((m) => [m.ko || m.en, m.en, m.lv, href(langPath(lang, monsterPath(m))), m.id]),
   t: ko ? { more: '외 {n}종', none: '그 이름으로 드롭 제보가 있는 아이템이 없어요. 더 짧게 검색해 보세요.', repeated: '반복 제보', found: '{n}개 아이템' } : { more: '+{n} more', none: 'No reported drops for that name. Try a shorter name.', repeated: 'Repeated reports', found: '{n} items' } })}
 </section>`;
 }
@@ -1746,7 +1746,7 @@ ${drops.entries.length
   : // An empty table read as a broken feature; until a sourced rate exists, point to where drop lists live and to the calculator.
     `<p>${lang === 'ko' ? `아직 출처가 확인된 몬스터 드롭률은 없어요. 대신 <a href="${href(langPath(lang, '/monsters/'))}">몬스터 도감</a>에서 몬스터 ${MONSTERS.monsters.length}종의 드롭 아이템 목록을 볼 수 있어요. 다른 곳에서 확인한 확률을 위 계산기에 넣으면 몇 마리를 잡아야 하는지 바로 나와요.` : `No sourced monster drop rates yet. The <a href="${href(langPath(lang, '/monsters/'))}">monster database</a> lists the reported drops of ${MONSTERS.monsters.length} monsters; put a rate you trust into the calculator above to see how many kills it takes.`}</p>
 <h3>${lang === 'ko' ? '파밍하러 많이 가는 몬스터의 드롭 목록' : 'Drop lists of monsters players farm'}</h3>
-<ul class="monster-routes">${MONSTERS.monsters.filter((m) => MONSTER_NOTES.notes[m.id]?.drops?.length).sort((a, b) => a.lv - b.lv).slice(0, 12).map((m) => `<li><a href="${href(langPath(lang, monsterPath(m)))}#monster-drops"><strong>${esc(monsterName(m, lang))}</strong><small>Lv. ${m.lv}</small></a></li>`).join('')}</ul>`}
+<ul class="monster-routes">${MONSTERS.monsters.filter((m) => MONSTER_NOTES.notes[m.id]?.drops?.length).sort((a, b) => a.lv - b.lv).slice(0, 12).map((m) => `<li><a href="${href(langPath(lang, monsterPath(m)))}#monster-drops"><img class="mob-sprite" src="${href(`/assets/monsters/${m.id}.gif`)}" width="32" height="32" alt="" loading="lazy"><strong>${esc(monsterName(m, lang))}</strong><small>Lv. ${m.lv}</small></a></li>`).join('')}</ul>`}
 </section>
 <section>
 <h2>${t.formulaHeading}</h2>
@@ -2572,6 +2572,7 @@ for (const lang of LANGS) {
     const link = (p) => href(langPath(lang, p));
     const itemHref = (i) => (ITEM_PAGE_IDS.has(i.id) ? link(itemPath(i)) : null);
     const mobHref = (m) => link(monsterPath(m));
+    const mobSprite = (m) => href(`/assets/monsters/${m.id}.gif`);
     write(path.join(lang, 'quests', 'index.html'), page({
       lang, pageKey: 'quests', pagePath: '/quests/',
       title: lang === 'ko' ? '글클메 퀘스트 목록: 레벨·보상·필요 아이템 | GMS Hub' : 'MapleStory Classic World Quests: Levels, Rewards & Requirements | GMS Hub',
@@ -2586,7 +2587,7 @@ for (const lang of LANGS) {
       body: questBestBody({ lang, quests: QUESTS, link }),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '경험치 퀘스트' : 'Best EXP quests', '/quests/best-exp/')]
     }));
-    const eqCtx = { lang, link, mobHref, questHref: (q) => link(questPath(q)),
+    const eqCtx = { lang, link, mobHref, mobSprite, questHref: (q) => link(questPath(q)),
       itemHref: (e) => (ITEM_PAGE_IDS.has(e.id) ? link(itemPath(ITEM_PAGES.find((i) => i.id === e.id))) : link(`/tools/market/?item=${e.id}`)) };
     write(path.join(lang, 'equipment', 'index.html'), page({
       lang, pageKey: 'equipment', pagePath: '/equipment/', modules: ['equipment.js'],
@@ -2610,7 +2611,7 @@ for (const lang of LANGS) {
         lang, pageKey: 'quest', pagePath: questPath(q),
         title: lang === 'ko' ? `글클메 퀘스트 ${q.name}: 조건·보상 | GMS Hub` : `${q.name}: MapleStory Classic World quest, requirements & rewards | GMS Hub`,
         desc: lang === 'ko' ? `${q.name} (${questArea(q.area, lang)}${q.lv ? `, Lv. ${q.lv}` : ''}) 퀘스트의 시작 NPC, 모아 올 아이템과 잡을 몬스터, 보상${q.exp ? ` EXP ${q.exp}` : ''}${q.meso ? `, 메소 ${q.meso}` : ''}을 정리했어요.` : `${q.name}: who starts it, items to bring and who drops them, monsters to hunt, and the rewards, in MapleStory Classic World.`,
-        body: questDetail({ lang, q, quests: QUESTS, npcs: QUEST_RAW.npcs, items, mobs, drops: DROP_INDEX, link, itemHref, mobHref }),
+        body: questDetail({ lang, q, quests: QUESTS, npcs: QUEST_RAW.npcs, items, mobs, drops: DROP_INDEX, link, itemHref, mobHref, mobSprite }),
         noindex: q.expired,
         ld: [breadcrumbLd(lang, q.name, questPath(q))]
       }));

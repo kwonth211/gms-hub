@@ -1590,3 +1590,18 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .my-shop-table .ms-warn .ms-verdict { color: var(--accent); }
 .scan-myshop { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .scan-myshop[hidden] { display: none; }
+
+/* Monster sprites next to monster names across the site (training table, calculators, quests, equipment, drop finder). */
+.mob-sprite { image-rendering: pixelated; object-fit: contain; flex-shrink: 0; vertical-align: middle; }
+.tr-row .tr-mobs { gap: 6px 14px; }
+.tr-row .tr-mobs a { display: inline-flex; align-items: center; gap: 6px; }
+.tr-row .tr-mobs a > span { display: inline-flex; flex-direction: column; line-height: 1.2; }
+.tr-row .tr-mobs small { margin-left: 0; }
+.tr-mobs a { flex-direction: row; align-items: center; gap: 6px; }
+.dm-mob, .quest-mob, .eq-mob { display: inline-flex; align-items: center; gap: 6px; }
+.quest-drop a { display: inline-flex; align-items: center; gap: 4px; }
+.df-mobs a { align-items: center; gap: 6px; }
+.df-item { display: inline-flex; align-items: center; gap: 8px; }
+.df-item img { image-rendering: pixelated; }
+.monster-routes a { display: inline-flex; align-items: center; gap: 6px; }
+.search-result .mob-sprite { width: 30px; height: 30px; }

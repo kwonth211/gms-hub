@@ -45,7 +45,7 @@ export function collectQuests(raw, { buildDate }) {
   return quests.sort((a, b) => a.lv - b.lv || a.id - b.id);
 }
 
-export function questDetail({ lang, q, quests, npcs, items, mobs, drops, link, itemHref, mobHref }) {
+export function questDetail({ lang, q, quests, npcs, items, mobs, drops, link, itemHref, mobHref, mobSprite }) {
   const ko = lang === 'ko';
   const byId = new Map(quests.map((x) => [x.id, x]));
   const npc = (id) => (id && npcs[id] ? `<span translate="no">${esc(ko ? npcs[id].ko || npcs[id].en : npcs[id].en)}</span>` : null);
@@ -58,11 +58,11 @@ export function questDetail({ lang, q, quests, npcs, items, mobs, drops, link, i
   };
   const dropHint = (id) => {
     const rows = (drops.get(id) || []).filter(({ m }) => m.status === 'active').sort((a, b) => a.m.lv - b.m.lv).slice(0, 3);
-    return rows.length ? `<small class="quest-drop"><span>${ko ? '드롭' : 'Dropped by'}</span>${rows.map(({ m }) => `<a href="${mobHref(m)}" translate="no">${esc(ko ? m.ko || m.en : m.en)}</a>`).join('')}</small>` : '';
+    return rows.length ? `<small class="quest-drop"><span>${ko ? '드롭' : 'Dropped by'}</span>${rows.map(({ m }) => `<a href="${mobHref(m)}" translate="no"><img class="mob-sprite" src="${mobSprite(m)}" width="22" height="22" alt="" loading="lazy">${esc(ko ? m.ko || m.en : m.en)}</a>`).join('')}</small>` : '';
   };
   const mob = ({ id, count }) => {
     const m = mobs.get(id);
-    return `<li>${m ? `<a href="${mobHref(m)}">${esc(ko ? m.ko || m.en : m.en)}</a><small>Lv. ${m.lv}</small>` : `<span>#${id}</span>`}<b>× ${nf(count)}</b></li>`;
+    return `<li>${m ? `<a class="quest-mob" href="${mobHref(m)}"><img class="mob-sprite" src="${mobSprite(m)}" width="36" height="36" alt="" loading="lazy">${esc(ko ? m.ko || m.en : m.en)}</a><small>Lv. ${m.lv}</small>` : `<span>#${id}</span>`}<b>× ${nf(count)}</b></li>`;
   };
   const questLink = (id) => {
     const x = byId.get(id);
