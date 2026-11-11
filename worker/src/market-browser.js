@@ -106,9 +106,10 @@ export async function browseListings(env, p) {
     where.push("last_seen >= ?");
     args.push(stamp(since));
   }
+  // One lower bound, the tightest: with two, SQLite could range-scan the whole 7-day window to answer a 1-day question.
   if (state === "open") {
-    where.push("sold=0", "last_seen >= ?");
-    args.push(stamp(now - DAY));
+    where.push("sold=0");
+    if (args[0] < stamp(now - DAY)) args[0] = stamp(now - DAY);
   }
   if (state === "sold") where.push("sold=1");
   if (state === "stale") {

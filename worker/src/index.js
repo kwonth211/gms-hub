@@ -171,9 +171,27 @@ async function marketTop(env, only = null) {
 // The ranking is computed on a schedule (every 15 minutes) and stored, so the database work does not grow with visitors:
 // every page view reads one stored row.
 async function refreshSnapshot(env) {
-  const data = await marketTop(env);
+  const data = { ...(await marketTop(env)), version: await dataVersion(env) };
   await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key, json, at) VALUES ('market', ?, datetime('now'))").bind(JSON.stringify(data)).run();
   return data;
+}
+
+// Read diet (D1 free plan: 5M rows read/day; 11/9 used 3.8M). New data arrives about hourly, but the ranking and the
+// catalog were rebuilt every 15 and 5 minutes, each reading thousands of listings. A two-row version check (newest
+// sighting, newest report) lets a stored snapshot stand until something changed, up to an hour, since "open in the last
+// 24 hours" windows still move with the clock.
+async function dataVersion(env) {
+  const r = await env.DB.prepare('SELECT (SELECT MAX(last_seen) FROM listings) AS l, (SELECT MAX(id) FROM prices) AS p').first();
+  return `${r?.l || ''}|${r?.p || ''}`;
+}
+async function freshSnapshot(env, key, minutes) {
+  const row = await env.DB.prepare('SELECT json, at FROM snapshots WHERE key = ?').bind(key).first();
+  if (!row) return null;
+  const age = (Date.now() - Date.parse(`${row.at.replace(' ', 'T')}Z`)) / 60000;
+  const data = JSON.parse(row.json);
+  if (age < minutes) return data;
+  if (age < 60 && data.version && data.version === (await dataVersion(env))) return data;
+  return null;
 }
 
 // Everything the item view needs for one item: its listings of the last week (newest first, for the charts and the
@@ -192,7 +210,7 @@ async function itemDetail(env, item) {
 
 const api = {
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(refreshSnapshot(env));
+    ctx.waitUntil(freshSnapshot(env, 'market', 0).then((data) => data || refreshSnapshot(env)));
   },
 
   async fetch(req, env) {
@@ -266,7 +284,7 @@ const api = {
       for (const r of results) (byItem.get(r.item) || byItem.set(r.item, []).get(r.item)).push(r);
       const out = {};
       for (const [item, rows] of byItem) out[item] = summarize(rows);
-      return json(out, cors, 200, 'public, max-age=600');
+      return json(out, cors, 200, 'public, max-age=3600');
     }
 
     if (url.pathname === '/prices/recent' && req.method === 'GET') {
@@ -283,13 +301,14 @@ const api = {
       try {
         let data;
         if (url.pathname === '/market/catalog') {
-          const cached = await env.DB.prepare("SELECT json FROM snapshots WHERE key='market-catalog' AND at>=datetime('now','-5 minutes')").first();
-          data = cached ? JSON.parse(cached.json) : await marketCatalog(env);
+          const cached = await freshSnapshot(env, 'market-catalog', 5);
+          data = cached || { ...(await marketCatalog(env)), version: await dataVersion(env) };
           if (!cached) await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('market-catalog',?,datetime('now'))").bind(JSON.stringify(data)).run();
         } else if (url.pathname === '/market/listings') data = await browseListings(env, url.searchParams);
         else if (url.pathname === '/market/reports') data = await browseReports(env, url.searchParams);
         else data = await marketHistory(env, url.searchParams);
-        return json(data, cors, 200, 'public, max-age=20');
+        // Edge cache: data changes about hourly, so a minute (catalog five) saves repeat reads without visible lag.
+        return json(data, cors, 200, url.pathname === '/market/catalog' ? 'public, max-age=300' : 'public, max-age=60');
       } catch (e) {
         const invalid = e.message?.startsWith('bad ');
         return json({error: invalid ? e.message : 'market unavailable'}, cors, invalid ? 400 : 503);
@@ -297,8 +316,7 @@ const api = {
     }
 
     if (url.pathname === '/market/top' && req.method === 'GET') {
-      const row = await env.DB.prepare("SELECT json FROM snapshots WHERE key = 'market' AND at >= datetime('now', '-15 minutes')").first();
-      const data = row ? JSON.parse(row.json) : await refreshSnapshot(env);
+      const data = (await freshSnapshot(env, 'market', 15)) || (await refreshSnapshot(env));
       return json(data, cors, 200, 'public, max-age=60');
     }
 

@@ -138,3 +138,20 @@ test('the 7-day line uses every recorded sighting, not just each shop\'s last on
   assert.equal(spark.filter((v) => v != null).length, 2);
   assert.equal(spark.at(-1), 100);
 });
+
+test('a shop seen again unchanged adds history at most every 6 hours; changes always record', () => {
+  const db = new DatabaseSync(':memory:');
+  db.exec(fs.readFileSync(new URL('../worker/schema.sql', import.meta.url), 'utf8'));
+  for (const f of ['0002_listing_history.sql', '0004_trim_writes.sql']) db.exec(fs.readFileSync(new URL(`../worker/migrations/${f}`, import.meta.url), 'utf8'));
+  const count = () => db.prepare('SELECT COUNT(*) AS n FROM listing_history').get().n;
+  db.exec("INSERT INTO listings (item,price,seller,channel,room,reporter,last_seen) VALUES (4000000,100,'Shop',1,1,'t','2026-11-11 00:00:00')");
+  assert.equal(count(), 1);
+  db.exec("UPDATE listings SET last_seen='2026-11-11 01:00:00'");
+  db.exec("UPDATE listings SET last_seen='2026-11-11 05:59:00'");
+  assert.equal(count(), 1, 'unchanged re-sightings within 6 hours add nothing');
+  db.exec("UPDATE listings SET last_seen='2026-11-11 06:30:00'");
+  assert.equal(count(), 2, 'a sighting more than 6 hours after the last kept one is kept');
+  db.exec("UPDATE listings SET last_seen='2026-11-11 07:00:00', sold=1");
+  assert.equal(count(), 3, 'a sale is always recorded');
+  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE name='listings_seller_location'").get().n, 0);
+});
