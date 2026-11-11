@@ -109,3 +109,14 @@ test('status distinguishes paused, never ingested and delayed data, not merely a
  const plan=e.sqlite.prepare("EXPLAIN QUERY PLAN SELECT SUM(accepted) FROM market_batch_runs WHERE received_at>=date('now')").all();
  assert.ok(plan.some(r=>r.detail.includes('market_batch_runs_received_at')));
 });
+test('the item list summary rides along, stores reference prices at most every three hours, and never fails a run',async()=>{
+ const e=environment();
+ const s=[{item:2040801,typical:1490000,day:6,week:-6,sales:4276},{item:9999999,typical:5,day:null,week:null,sales:1},{item:2040801,typical:1,day:0,week:0,sales:0}];
+ const first=await post(e,{...batch(),summary:s});
+ assert.equal(first.status,200); assert.equal(first.data.summary.stored,1); assert.equal(first.data.summary.daily,1);
+ assert.deepEqual(e.sqlite.prepare('SELECT item,typical,day,week,sales FROM item_summary').all().map(r=>({...r})),[{item:2040801,typical:1490000,day:6,week:-6,sales:4276}]);
+ const soon=await post(e,{...batch(),summary:[{...s[0],typical:1500000}]});
+ assert.equal(soon.data.summary.skipped,'recent'); assert.equal(e.sqlite.prepare('SELECT typical FROM item_summary').get().typical,1490000);
+ const bad=await post(e,{...batch(),summary:[{item:2040801,typical:'x'}]});
+ assert.equal(bad.status,200); assert.equal(bad.data.summary,null);
+});

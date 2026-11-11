@@ -8,3 +8,18 @@ CREATE INDEX IF NOT EXISTS listings_item ON listings (item, last_seen);
 CREATE INDEX IF NOT EXISTS listings_seen ON listings (last_seen);
 CREATE TABLE IF NOT EXISTS room_titles (id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT NOT NULL, room INTEGER NOT NULL, reporter TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT (datetime('now')));
 CREATE TABLE IF NOT EXISTS snapshots (key TEXT PRIMARY KEY, json TEXT NOT NULL, at TEXT NOT NULL);
+
+CREATE TABLE IF NOT EXISTS item_summary (
+  item INTEGER PRIMARY KEY,
+  typical INTEGER NOT NULL,
+  day REAL,
+  week REAL,
+  sales INTEGER,
+  at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS item_summary_daily (
+  item INTEGER NOT NULL,
+  day TEXT NOT NULL,
+  typical INTEGER NOT NULL,
+  PRIMARY KEY (item, day)
+) WITHOUT ROWID;

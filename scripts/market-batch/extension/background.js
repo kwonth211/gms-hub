@@ -12,7 +12,7 @@ const owned = tab => tab?.url?.startsWith(PAGE) || tab?.pendingUrl?.startsWith(P
 async function broadcast() {
   const s = await get();
   // No secret is ever included in content-script messages or the public DOM.
-  return { ...s, version: '0.4.0', nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
+  return { ...s, version: '0.5.0', nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
 }
 async function ensureAlarms() {
   const s = await get();
@@ -156,7 +156,7 @@ async function finish(report, sender) {
     if (s.testRemaining) await launch('test', 'repeat-test');
     return;
   }
-  const body = { runId: report.runId, world: report.world, startedAt: report.startedAt, finishedAt: report.finishedAt, shops: report.shops, rows: report.rows };
+  const body = { runId: report.runId, world: report.world, startedAt: report.startedAt, finishedAt: report.finishedAt, shops: report.shops, rows: report.rows, summary: report.summary || [] };
   s.pending = { body: JSON.stringify(body), attempts: 0, trigger: s.run.trigger }; s.run.phase = 'uploading'; await put(s);
   await upload();
 }

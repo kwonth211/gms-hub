@@ -66,8 +66,8 @@ export function catalogRows(
     }));
   const compare =
     {
-      active: (a, b) => b.open - a.open || b.records - a.records,
-      price: (a, b) => (a.median ?? Infinity) - (b.median ?? Infinity),
+      active: (a, b) => b.open - a.open || b.records - a.records || (b.sales || 0) - (a.sales || 0),
+      price: (a, b) => (a.median ?? a.typical ?? Infinity) - (b.median ?? b.typical ?? Infinity),
       low: (a, b) => (a.low ?? Infinity) - (b.low ?? Infinity),
       recent: (a, b) => (b.last || "").localeCompare(a.last || ""),
       name: (a, b) => a.name.localeCompare(b.name),

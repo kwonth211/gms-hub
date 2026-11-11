@@ -54,6 +54,36 @@ export function validBatch(body, known, now = Date.now()) {
   return true;
 }
 
+// The item list's reference prices ride along with a run. A bad summary is dropped on its own; it never fails the run.
+const SUMMARY_EVERY_MS = 3 * 3600000;
+export function validSummary(summary, known) {
+  if (!Array.isArray(summary) || !summary.length || summary.length > 3000) return null;
+  const pct = (v) => v === null || (Number.isFinite(v) && Math.abs(v) < 100000);
+  const seen = new Set();
+  const ok = summary.filter((s) => s && known.has(s.item) && !seen.has(s.item) && seen.add(s.item) &&
+    Number.isSafeInteger(s.typical) && s.typical > 0 && s.typical <= 1e11 && pct(s.day) && pct(s.week) &&
+    (s.sales === null || (Number.isSafeInteger(s.sales) && s.sales >= 0)));
+  return ok.length ? ok.map(({ item, typical, day, week, sales }) => ({ item, typical, day, week, sales })) : null;
+}
+// Writes only rows whose numbers changed, plus one row per item per day, and at most every three hours.
+export async function storeSummary(env, summary, now = Date.now()) {
+  const last = await env.DB.prepare("SELECT at FROM snapshots WHERE key = 'item-summary'").first().catch(() => null);
+  if (last && now - Date.parse(last.at.replace(' ', 'T') + 'Z') < SUMMARY_EVERY_MS) return { stored: 0, skipped: 'recent' };
+  const at = new Date(now).toISOString().slice(0, 19).replace('T', ' ');
+  const json = JSON.stringify(summary);
+  const results = await env.DB.batch([
+    env.DB.prepare(`INSERT INTO item_summary (item, typical, day, week, sales, at)
+      SELECT j.value->>'item', j.value->>'typical', j.value->>'day', j.value->>'week', j.value->>'sales', ? FROM json_each(?) j WHERE true
+      ON CONFLICT (item) DO UPDATE SET typical = excluded.typical, day = excluded.day, week = excluded.week, sales = excluded.sales, at = excluded.at
+      WHERE excluded.typical IS NOT item_summary.typical OR excluded.sales IS NOT item_summary.sales
+        OR excluded.day IS NOT item_summary.day OR excluded.week IS NOT item_summary.week`).bind(at, json),
+    env.DB.prepare(`INSERT OR IGNORE INTO item_summary_daily (item, day, typical)
+      SELECT j.value->>'item', date(?), j.value->>'typical' FROM json_each(?) j`).bind(at, json),
+    env.DB.prepare("INSERT OR REPLACE INTO snapshots (key, json, at) VALUES ('item-summary', ?, ?)").bind(JSON.stringify({ items: summary.length }), at)
+  ]);
+  return { stored: results[0].meta.changes, daily: results[1].meta.changes };
+}
+
 export async function handleMarketBatch(req, env, knownItems) {
   if (!env.MARKET_BATCH_TOKEN) return reply({ error: 'collector not configured' }, 503);
   const auth = req.headers.get('Authorization') || '';
@@ -65,9 +95,9 @@ export async function handleMarketBatch(req, env, knownItems) {
     return reply({ runs: results, ...status });
   }
   if (req.method !== 'POST') return reply({ error: 'method not allowed' }, 405);
-  if (Number(req.headers.get('Content-Length')) > 200000) return reply({ error: 'body too large' }, 413);
+  if (Number(req.headers.get('Content-Length')) > 400000) return reply({ error: 'body too large' }, 413);
   const raw = await req.text();
-  if (raw.length > 200000) return reply({ error: 'body too large' }, 413);
+  if (raw.length > 400000) return reply({ error: 'body too large' }, 413);
   let body; try { body = JSON.parse(raw); } catch { return reply({ error: 'invalid JSON' }, 400); }
   const hash = await digest(raw);
   const previous = async () => env.DB.prepare('SELECT payload_hash, accepted FROM market_batch_runs WHERE run_id = ?').bind(body?.runId || '').first();
@@ -106,7 +136,9 @@ export async function handleMarketBatch(req, env, knownItems) {
       body.runId,hash,r.item,r.price,r.seller,r.channel,r.room,r.seen))]);
     if (!results[0].meta.changes) return quotaReply();
     const changed = results.slice(1).filter(r => r.meta.changes > 0).length;
-    return reply({ ok: true, duplicate: false, accepted: body.rows.length,
+    const summary = validSummary(body.summary, known);
+    const summaryReceipt = summary ? await storeSummary(env, summary).catch(() => ({ stored: 0, skipped: 'error' })) : null;
+    return reply({ ok: true, duplicate: false, accepted: body.rows.length, summary: summaryReceipt,
       listingsChanged: changed, observationsAdded: changed, historyStorage: 'listing_history',
       rowsRead: results.reduce((n,r) => n + (r.meta.rows_read || 0), 0),
       rowsWritten: results.reduce((n,r) => n + (r.meta.rows_written || 0), 0) });

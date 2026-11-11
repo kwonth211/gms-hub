@@ -280,10 +280,17 @@ const api = {
       )
         .bind(...ids, ...ids)
         .all();
+      // Items nobody has scanned or reported yet fall back to the source site's reference price (basis 'typical').
+      const { results: refs } = await env.DB.prepare(`SELECT item, typical, day, week, sales, at FROM item_summary WHERE item IN (${marks})`)
+        .bind(...ids).all().catch(() => ({ results: [] }));
+      const ref = new Map(refs.map((r) => [r.item, r]));
       const out = {};
       for (const id of ids) {
         const rows = results.filter((r) => r.item === id);
-        if (rows.length) out[id] = summarize(rows);
+        const t = ref.get(id);
+        const typical = t ? { price: t.typical, day: t.day, week: t.week, sales: t.sales, at: t.at } : null;
+        if (rows.length) out[id] = { ...summarize(rows), typical };
+        else if (t) out[id] = { n: 0, median: t.typical, basis: 'typical', low: null, high: null, last: t.at, sold: null, selling: null, buying: null, typical };
       }
       return json(out, cors, 200, 'public, max-age=30');
     }

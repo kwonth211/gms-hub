@@ -2,12 +2,30 @@
   const localPause = ms => new Promise(resolve => setTimeout(resolve, ms));
   const key = r => JSON.stringify([r.item, r.price, r.seller, r.channel, r.room]);
   const failure = (code, message) => Object.assign(new Error(message), { code });
+  // "1.49M" → 1490000, "40.6K" → 40600, "9,999" → 9999; "+6%" / "−11%" → 6 / -11; blanks → null.
+  const amount = text => { const m = /^([\d.,]+)\s*([KMB])?$/i.exec((text || '').trim()); if (!m) return null;
+    const n = Number(m[1].replace(/,/g, '')) * ({ K: 1e3, M: 1e6, B: 1e9 }[(m[2] || '').toUpperCase()] || 1); return Number.isFinite(n) ? Math.round(n) : null; };
+  const percent = text => { const m = /^([+\-\u2212]?)([\d.]+)%$/.exec((text || '').trim()); return m ? Number(m[2]) * (m[1] && m[1] !== '+' ? -1 : 1) : null; };
+  // Every list row whose name matches our catalogue: the typical price, its 24-hour and 7-day change and the sales count.
+  function readSummary(selector) {
+    const out = [];
+    for (const tr of document.querySelectorAll(selector)) {
+      const item = Number((tr.getAttribute('data-id') || '').split(':')[1]);
+      const name = tr.querySelector('.item-select')?.getAttribute('title');
+      const cell = col => tr.querySelector(`td[data-col="${col}"]`)?.textContent.trim();
+      const typical = amount(cell('price'));
+      if (!item || GmsBatchCatalog[item] !== name || !typical) continue;
+      const sales = amount(cell('sales'));
+      out.push({ item, typical, day: percent(cell('day')), week: percent((cell('trend') || '').split(/\s+/).pop()), sales });
+    }
+    return out;
+  }
   async function collect(options, progress = async () => {}, cancelled = () => false, pause = localPause) {
     const maxRows = options.mode === 'test' ? 40 : Math.min(150, Math.max(1, Number(options.maxRows) || 150));
     const maxShops = options.mode === 'test' ? 40 : Math.min(600, Number(options.maxShops) || 360);
     const maxItems = options.mode === 'test' ? 2 : Math.min(60, Number(options.maxItems) || 12);
     const perItem = Math.min(50, Number(options.shopsPerItem) || 20);
-    const report = { version: '0.4.0', runId: options.runId, world: 'Windia', startedAt: new Date().toISOString(),
+    const report = { version: '0.5.0', runId: options.runId, world: 'Windia', startedAt: new Date().toISOString(),
       status: 'running', rows: [], shops: 0, rejected: {}, queue: [], skippedItems: [], aiCalls: 0 };
     const rows = new Map();
     const openModal = () => { const el = document.querySelector('#sv-modal'); return el && !el.closest('[hidden]') ? el : null; };
@@ -34,7 +52,17 @@
       if (cls && cls.value !== 'All') { cls.value = 'All'; cls.dispatchEvent(new Event('change', { bubbles: true })); await pause(800); }
       const allTab = [...document.querySelectorAll('#market button.tab')].find(b => /^ALL/i.test(b.textContent.trim()));
       if (allTab && allTab.getAttribute('aria-pressed') === 'false') { allTab.click(); await pause(800); }
+      // The list renders 300 rows and adds more as its own box scrolls; scroll it to the end so the summary and the item
+      // rotation both see every item.
+      const wrap = document.querySelector('#rows')?.closest('.table-wrap');
+      for (let i = 0, before = -1; wrap && i < 80; i++) {
+        const now = document.querySelectorAll('#rows tr[data-id]').length;
+        if (now === before) break;
+        before = now; wrap.scrollTop = wrap.scrollHeight; await pause(700); guard();
+      }
+      if (wrap) wrap.scrollTop = 0;
       const listRows = document.querySelectorAll('#rows tr[data-id]').length ? '#rows tr[data-id]' : 'tr[data-id]';
+      report.summary = readSummary(listRows);
       const all = [...document.querySelectorAll(listRows)].map(tr => ({ id: tr.getAttribute('data-id'), name: tr.querySelector('.item-select')?.getAttribute('title') || tr.querySelector('.item-select')?.textContent.trim() }))
         .filter(x => GmsBatchCatalog[Number(x.id.split(':')[1])] === x.name);
       if (all.length < 2) throw new Error('검증 가능한 아이템 목록 부족');

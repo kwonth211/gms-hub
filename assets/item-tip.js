@@ -54,6 +54,15 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches && body.dataset.tip
     const p = prices.get(id);
     if (p === undefined) return `<section class="tip-market"><h4>${tr('자유시장', 'Free Market')}</h4><p class="tip-muted">${tr('시세 불러오는 중…', 'Loading prices…')}</p></section>`;
     if (!p?.median) return `<section class="tip-market"><h4>${tr('자유시장', 'Free Market')}</h4><p class="tip-muted">${tr('최근 14일 시세 기록이 없어요', 'No price seen in the last 14 days')}</p></section>`;
+    const change = (v) => (v == null ? '' : `${v > 0 ? '+' : ''}${v}%`);
+    // Items nobody has scanned yet carry only the reference price, its changes and the sales count.
+    if (p.basis === 'typical') {
+      const t = p.typical || {};
+      const row = (k, v) => (v ? `<div><dt>${k}</dt><dd>${v}</dd></div>` : '');
+      return `<section class="tip-market"><h4>${tr('자유시장', 'Free Market')}</h4>
+<p class="tip-price"><b>${nf.format(p.median)}</b> <small>${tr('메소', 'mesos')} · ${tr('대표 시세', 'typical price')}</small></p>
+<dl>${row(tr('24시간', '24h'), change(t.day))}${row(tr('7일', '7d'), change(t.week))}${row(tr('판매', 'Sales'), t.sales != null ? nf.format(t.sales) : '')}</dl></section>`;
+    }
     const span = p.high > p.low ? Math.min(100, Math.max(0, ((p.median - p.low) / (p.high - p.low)) * 100)) : 50;
     const basis = { sold: tr('판매 완료 중앙값', 'sold median'), selling: tr('판매 중 중앙값', 'asking median'), buying: tr('구매 희망 중앙값', 'buying median') }[p.basis];
     const row = (k, v) => (v ? `<div><dt>${k}</dt><dd>${v}</dd></div>` : '');

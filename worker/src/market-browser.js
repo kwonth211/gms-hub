@@ -34,6 +34,10 @@ export async function marketCatalog(env) {
   }
   for (const r of reports) if (!groups.has(r.item)) groups.set(r.item, []);
   const reportCounts = new Map(reports.map((r) => [r.item, r.reports]));
+  // Reference prices cover items with no scans of our own, so the catalogue lists (nearly) every traded item.
+  const refs = await all(env, "SELECT item, typical, day, week, sales FROM item_summary", []).catch(() => []);
+  const refBy = new Map(refs.map((r) => [r.item, r]));
+  for (const r of refs) if (!groups.has(r.item)) groups.set(r.item, []);
   const items = [...groups]
     .map(([item, rs]) => {
       const open = rs.filter((r) => !r.sold && r.seen >= current),
@@ -51,6 +55,9 @@ export async function marketCatalog(env) {
           open.map((r) => JSON.stringify([r.seller, r.channel, r.room])),
         ).size,
         last: rs.reduce((a, r) => (r.seen > a ? r.seen : a), "") || null,
+        typical: refBy.get(item)?.typical ?? null,
+        typicalDay: refBy.get(item)?.day ?? null,
+        sales: refBy.get(item)?.sales ?? null,
       };
     })
     .sort((a, b) => b.open - a.open || a.item - b.item);

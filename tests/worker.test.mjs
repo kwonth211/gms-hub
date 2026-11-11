@@ -170,3 +170,12 @@ test('after migration 0005 listing writes no longer copy into listing_history', 
   db.exec("UPDATE listings SET sold=1");
   assert.equal(db.prepare('SELECT COUNT(*) AS n FROM listing_history').get().n, 0);
 });
+
+test('prices fall back to the reference price for items with no scans or reports', async () => {
+  const env = environment();
+  env.sqlite.exec("INSERT INTO item_summary (item, typical, day, week, sales, at) VALUES (4000000, 5000, 2, -3, 40, '2026-11-11 10:00:00'), (4000001, 7000, null, null, 3, '2026-11-11 10:00:00')");
+  await send(env, '/listings', { items: [{ ...row, price: 6500 }] });
+  const out = await (await worker.fetch(new Request('https://test.invalid/prices?ids=4000000,4000001'), env)).json();
+  assert.equal(out['4000001'].basis, 'typical'); assert.equal(out['4000001'].median, 7000); assert.equal(out['4000001'].n, 0);
+  assert.equal(out['4000000'].basis, 'selling'); assert.equal(out['4000000'].median, 6500); assert.equal(out['4000000'].typical.price, 5000);
+});

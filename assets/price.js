@@ -142,6 +142,10 @@ function paintSummary(id, sum) {
     .filter((k) => sum[k])
     .map((k) => `${i18n.kinds[k]} ${fmtPrice(sum[k].median)}`)
     .join(' · ');
+  if (sum.basis === 'typical') {
+    value.innerHTML = `<b>${fmtPrice(sum.median)}</b> <small>${esc(i18n.typical)}</small>`;
+    return;
+  }
   value.innerHTML = `<b>${fmtPrice(sum.median)}</b> <small>${sum.basis ? `${esc(i18n.kinds[sum.basis])} · ` : ''}${esc(fill(i18n.hubSummary, { n: sum.n, low: fmtPrice(sum.low), high: fmtPrice(sum.high) }))}${kinds ? `<br>${esc(kinds)}` : ''}</small>`;
 }
 

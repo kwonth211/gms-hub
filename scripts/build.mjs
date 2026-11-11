@@ -1161,6 +1161,7 @@ const PR = {
     badPrice: '가격을 알아볼 수 없어요. 58만, 580000, 580k처럼 적어 주세요.',
     failed: '지금은 올릴 수 없어요. 잠시 후 다시 해 주세요.',
     kinds: { sold: '팔린 가격', selling: '파는 가격', buying: '사는 가격' },
+    typical: '대표 시세 (아직 우리 기록 없음)',
     recent: '방금 올라온 시세',
     recentNone: '아직 올라온 시세가 없어요. 아이템을 검색해서 첫 시세를 올려 주세요.',
     cats: { Equip: '장비', Use: '소비', Etc: '기타', Setup: '설치' },
@@ -1222,6 +1223,7 @@ const PR = {
     badPrice: "Couldn't read that price. Try 580000, 580k or 1.2m.",
     failed: "Couldn't send right now. Please try again shortly.",
     kinds: { sold: 'Sold for', selling: 'Selling for', buying: 'Buying for' },
+    typical: 'Typical price (no records of our own yet)',
     recent: 'Latest prices',
     recentNone: 'No prices yet. Search an item and add the first one.',
     cats: { Equip: 'Equip', Use: 'Use', Etc: 'Etc', Setup: 'Setup' },
@@ -1270,7 +1272,7 @@ ${config.priceReports ? `<p class="muted">${esc(t.reportNote)}</p>` : ''}
 ${t.tradingLink && guides.some((g) => g.slug === 'trading-and-mesos') ? `<p>${fill(t.tradingLink, { href: href(langPath('ko', '/guides/trading-and-mesos/')) })}</p>` : ''}
 </section>
 </div>
-${jsonScript('i18n', { lang, ...Object.fromEntries(Object.entries(t).filter(([k]) => ['none', 'more', 'level', 'copy', 'copied', 'paid', 'direct', 'copyNote', 'twin', 'cats', 'subs', 'hubLabel', 'hubNone', 'hubSummary', 'report', 'pricePh', 'submit', 'thanks', 'badPrice', 'failed', 'kinds', 'recent', 'recentNone'].includes(k))), sites: PRICE_SITES, itemsUrl: href('/assets/items.json'), api: config.priceReports ? config.voteApi : '' })}`;
+${jsonScript('i18n', { lang, ...Object.fromEntries(Object.entries(t).filter(([k]) => ['none', 'more', 'level', 'copy', 'copied', 'paid', 'direct', 'copyNote', 'twin', 'cats', 'subs', 'hubLabel', 'hubNone', 'hubSummary', 'report', 'pricePh', 'submit', 'thanks', 'badPrice', 'failed', 'kinds', 'typical', 'recent', 'recentNone'].includes(k))), sites: PRICE_SITES, itemsUrl: href('/assets/items.json'), api: config.priceReports ? config.voteApi : '' })}`;
 }
 
 // ---------- shop scanner (sample collection) ----------
