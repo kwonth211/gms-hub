@@ -1412,7 +1412,7 @@ const EXP = {
     stats: { now: '지금 EXP', rate: '시간당 경험치', pct: '시간당 %', next: '다음 레벨까지', gained: '이번 측정 획득', time: '측정 시간' },
     skipIdle: '쉬는 시간 빼기 (2분 넘게 EXP가 안 오르면 제외)',
     mobLabel: '사냥하는 몬스터', mobPh: '몬스터 이름 (예: 스티지)', mobHelp: '고르면 잡은 마릿수를 계산해요.',
-    manualHeading: '직접 입력', manualHelp: '화면 공유가 안 되는 환경이면 상태바의 EXP 숫자와 퍼센트를 그대로 넣고 기록을 누르세요. 사냥 전과 후에 한 번씩이면 돼요.',
+    manualHeading: '직접 입력', manualHelp: '화면 공유 없이 쓰는 방법이에요. 사냥 시작할 때 상태바의 EXP와 퍼센트를 넣고 한 번, 사냥 끝나고 다시 넣고 한 번 누르면 그 사이 얻은 경험치로 계산해요. 중간에 몇 번 더 넣어도 돼요.',
     manualExp: 'EXP', manualPct: '퍼센트', manualSave: '기록',
     empty: '아직 기록이 없어요. 위에서 시작을 누르거나 EXP를 직접 넣어 보세요.',
     how: [['창 모드 추천', '창 모드가 가장 잘 돼요. 전체 화면이면 공유 창에서 "전체 화면"을 고르면 되고, 검게 보이면 창 모드로 바꿔 주세요. 해상도·화면 배율은 자동으로 맞춰요.'], ['시작', '위 버튼을 누르고 메이플 창을 고르면 5초마다 EXP를 읽어요. 레벨업도 자동으로 이어서 계산해요.'], ['정지', '자리를 옮기거나 끝나면 정지를 누르세요. 기록은 이 브라우저에 남아서 다시 열어도 이어져요.']],
@@ -1424,7 +1424,7 @@ const EXP = {
       readOk: 'EXP {exp} ({pct}%)', readFail: '숫자를 못 읽었어요. 잠시 뒤 다시 읽어요. {text}',
       idle: '쉬는 시간 {m}분은 뺐어요', levelsUp: '레벨업 {n}번 포함',
       kills: '{mob} 약 {n}마리', killsPerHour: '시간당 약 {n}마리',
-      resetAsk: '지금 기록을 지우고 새로 측정할까요?', manualOk: '기록했어요.', manualBad: 'EXP와 퍼센트(소수점 두 자리)를 확인해 주세요.'
+      resetAsk: '지금 기록을 지우고 새로 측정할까요?', manualOk: '기록했어요.', manualFirstOk: '시작값을 기록했어요. 사냥이 끝나면 그때 EXP를 넣고 다시 눌러 주세요.', manualFirst: '시작값 기록', manualNext: '지금 값 기록', manualBad: 'EXP와 퍼센트(소수점 두 자리)를 확인해 주세요.'
     }
   },
   en: {
@@ -1438,7 +1438,7 @@ const EXP = {
     stats: { now: 'EXP now', rate: 'EXP per hour', pct: 'Percent per hour', next: 'Next level in', gained: 'Gained this session', time: 'Time tracked' },
     skipIdle: 'Skip idle time (no EXP gain for over 2 minutes)',
     mobLabel: 'Monster you are training on', mobPh: 'Monster name (e.g. Stirge)', mobHelp: 'Pick one to count kills.',
-    manualHeading: 'Type it in', manualHelp: 'If screen sharing is not an option, enter the EXP number and percent from the status bar and press save, once before and once after training.',
+    manualHeading: 'Type it in', manualHelp: 'The way without screen sharing. Enter the EXP and percent from the status bar when you start training and press once, then again when you finish: the gain in between is what gets calculated. Extra entries along the way are fine.',
     manualExp: 'EXP', manualPct: 'Percent', manualSave: 'Save',
     empty: 'Nothing recorded yet. Press start above or type your EXP in.',
     how: [['Windowed mode works best', 'A window is read best. In full screen pick "Entire screen" in the share dialog; if it shows black, switch to a window. Any resolution and display scale is fine.'], ['Start', 'Press the button and pick the game window; EXP is read every 5 seconds, level-ups included.'], ['Stop', 'Press stop when you move or finish. The session stays in this browser, so reopening the page continues it.']],
@@ -1450,7 +1450,7 @@ const EXP = {
       readOk: 'EXP {exp} ({pct}%)', readFail: 'Could not read the numbers; trying again shortly. {text}',
       idle: '{m} idle minutes left out', levelsUp: 'includes {n} level-up(s)',
       kills: 'about {n} {mob}', killsPerHour: 'about {n} an hour',
-      resetAsk: 'Clear this session and start a new one?', manualOk: 'Saved.', manualBad: 'Check the EXP and the percent (two decimals).'
+      resetAsk: 'Clear this session and start a new one?', manualOk: 'Saved.', manualFirstOk: 'Starting value saved. When you finish training, enter the EXP again and press once more.', manualFirst: 'Save starting value', manualNext: 'Save current value', manualBad: 'Check the EXP and the percent (two decimals).'
     }
   }
 };
@@ -1462,7 +1462,7 @@ function expBody(lang) {
 <section class="panel exp-control">
 <div class="exp-buttons"><button type="button" class="btn exp-start" id="exp-start">▶ ${esc(t.start)}</button><button type="button" class="btn ghost exp-stop" id="exp-stop">■ ${esc(t.stop)}</button></div>
 <p id="exp-status" class="exp-status" role="status" aria-live="polite"></p>
-<form id="exp-manual" class="exp-manual-form"><strong>${esc(t.manualHeading)}</strong><label>${esc(t.manualExp)} <input id="exp-m-exp" inputmode="numeric" placeholder="83,631" required></label><label>${esc(t.manualPct)} <input id="exp-m-pct" inputmode="decimal" placeholder="68.13" required></label><button class="btn ghost small-btn" type="submit">${esc(t.manualSave)}</button><small class="muted">${esc(t.manualHelp)}</small></form>
+<form id="exp-manual" class="exp-manual-form"><strong>${esc(t.manualHeading)}</strong><label>${esc(t.manualExp)} <input id="exp-m-exp" inputmode="numeric" placeholder="83,631" required></label><label>${esc(t.manualPct)} <input id="exp-m-pct" inputmode="decimal" placeholder="68.13" required></label><button class="btn ghost small-btn" type="submit" id="exp-m-save">${esc(t.manualSave)}</button><small class="muted">${esc(t.manualHelp)}</small></form>
 <ol class="scan-checks exp-checks" aria-live="polite">${['share', 'bar', 'read'].map((k) => `<li id="exp-check-${k}" data-state="wait"><span class="dot" aria-hidden="true"></span><strong>${esc(t.checks[k])}</strong><small>${esc(t.i.wait)}</small></li>`).join('')}</ol>
 </section>
 <section class="panel exp-board">

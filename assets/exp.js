@@ -150,8 +150,11 @@ function render() {
   const s = summarize(session.samples, { skipIdle: session.skipIdle });
   const last = session.samples.at(-1);
   $('exp-now').textContent = last ? `${nf.format(last.exp)} · ${last.pct.toFixed(2)}%` : '—';
-  $('exp-rate').textContent = s?.perHour != null ? big(s.perHour) : '—';
-  $('exp-pct').textContent = s?.pctPerHour != null ? `${s.pctPerHour.toFixed(1)}%` : '—';
+  // One reading is a starting point, not a rate: the rate shows once a second reading exists.
+  const two = session.samples.length >= 2;
+  $('exp-rate').textContent = two && s?.perHour != null ? big(s.perHour) : '—';
+  $('exp-pct').textContent = two && s?.pctPerHour != null ? `${s.pctPerHour.toFixed(1)}%` : '—';
+  $('exp-m-save').textContent = session.samples.length ? t.manualNext : t.manualFirst;
   $('exp-next').textContent = s ? dur(s.toLevelMs) : '—';
   $('exp-gained').textContent = s ? big(s.gained) : '—';
   $('exp-time').textContent = s ? dur(s.active) : '—';
@@ -235,8 +238,10 @@ $('exp-manual').addEventListener('submit', (e) => {
   const exp = Number(String($('exp-m-exp').value).replace(/[^\d]/g, '')), pct = Number($('exp-m-pct').value);
   const r = parseExp(`${exp}[${pct.toFixed(2)}%]`);
   if (!r) return say(t.manualBad);
+  const first = !session.samples.length;
   pending = r; accept(r);
-  say(t.manualOk);
+  say(first ? t.manualFirstOk : t.manualOk);
+  $('exp-m-exp').value = ''; $('exp-m-pct').value = '';
   track('exp_manual');
 });
 if (!navigator.mediaDevices?.getDisplayMedia) { $('exp-start').disabled = true; say(t.unsupported); }
