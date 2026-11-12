@@ -2149,8 +2149,10 @@ body.exp-running .exp-stop { display: inline-flex; }
 .exp-mob-label input { font: inherit; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--panel); color: var(--text); }
 .exp-mob-label small { font-weight: 500; }
 .exp-mob-out { margin: 0; font-weight: 700; color: var(--accent); }
-.exp-manual h2 { margin: 0 0 4px; font-size: 1rem; }
-.exp-manual-form { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; }
+/* Typing EXP in by hand: one row under the share button, the explanation beneath it. */
+.exp-manual-form { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin: 12px 0 4px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.exp-manual-form > strong { align-self: center; font-size: 0.95rem; padding-bottom: 6px; }
 .exp-manual-form label { display: grid; gap: 4px; font-size: 0.85rem; font-weight: 700; }
-.exp-manual-form input { font: inherit; width: 140px; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--panel); color: var(--text); }
+.exp-manual-form input { font: inherit; width: 130px; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--panel); color: var(--text); }
+.exp-manual-form small { flex-basis: 100%; }
 @media (max-width: 480px) { .exp-stat:first-child { grid-column: 1 / -1; } }

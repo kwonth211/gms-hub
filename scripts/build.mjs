@@ -1412,10 +1412,10 @@ const EXP = {
     stats: { now: '지금 EXP', rate: '시간당 경험치', pct: '시간당 %', next: '다음 레벨까지', gained: '이번 측정 획득', time: '측정 시간' },
     skipIdle: '쉬는 시간 빼기 (2분 넘게 EXP가 안 오르면 제외)',
     mobLabel: '사냥하는 몬스터', mobPh: '몬스터 이름 (예: 스티지)', mobHelp: '고르면 잡은 마릿수를 계산해요.',
-    manualHeading: '화면 공유가 안 되면 직접 입력', manualHelp: '상태바의 EXP 숫자와 퍼센트를 그대로 넣고 기록을 누르세요. 사냥 전과 후에 한 번씩 넣으면 돼요.',
+    manualHeading: '직접 입력', manualHelp: '화면 공유가 안 되는 환경이면 상태바의 EXP 숫자와 퍼센트를 그대로 넣고 기록을 누르세요. 사냥 전과 후에 한 번씩이면 돼요.',
     manualExp: 'EXP', manualPct: '퍼센트', manualSave: '기록',
     empty: '아직 기록이 없어요. 위에서 시작을 누르거나 EXP를 직접 넣어 보세요.',
-    how: [['창 모드', '메이플을 창 모드로 켜 두세요. 맥은 크롬과 메이플 둘 다 전체 화면이 아니어야 해요.'], ['시작', '위 버튼을 누르고 메이플 창을 고르면 5초마다 EXP를 읽어요. 레벨업도 자동으로 이어서 계산해요.'], ['정지', '자리를 옮기거나 끝나면 정지를 누르세요. 기록은 이 브라우저에 남아서 다시 열어도 이어져요.']],
+    how: [['창 모드 추천', '창 모드가 가장 잘 돼요. 전체 화면이면 공유 창에서 "전체 화면"을 고르면 되고, 검게 보이면 창 모드로 바꿔 주세요. 해상도·화면 배율은 자동으로 맞춰요.'], ['시작', '위 버튼을 누르고 메이플 창을 고르면 5초마다 EXP를 읽어요. 레벨업도 자동으로 이어서 계산해요.'], ['정지', '자리를 옮기거나 끝나면 정지를 누르세요. 기록은 이 브라우저에 남아서 다시 열어도 이어져요.']],
     privacy: '공유한 화면은 이 컴퓨터 안에서만 읽어요. EXP 숫자만 이 브라우저에 저장되고 어디에도 올라가지 않아요.',
     i: {
       unsupported: '이 브라우저는 화면 공유가 안 돼요. PC 크롬이나 엣지에서 열어 주세요. 아래에서 직접 입력은 돼요.', denied: '공유가 취소됐어요. 다시 시작을 누르면 돼요.',
@@ -1438,10 +1438,10 @@ const EXP = {
     stats: { now: 'EXP now', rate: 'EXP per hour', pct: 'Percent per hour', next: 'Next level in', gained: 'Gained this session', time: 'Time tracked' },
     skipIdle: 'Skip idle time (no EXP gain for over 2 minutes)',
     mobLabel: 'Monster you are training on', mobPh: 'Monster name (e.g. Stirge)', mobHelp: 'Pick one to count kills.',
-    manualHeading: 'No screen share? Type it in', manualHelp: 'Enter the EXP number and percent from the status bar and press save, once before and once after training.',
+    manualHeading: 'Type it in', manualHelp: 'If screen sharing is not an option, enter the EXP number and percent from the status bar and press save, once before and once after training.',
     manualExp: 'EXP', manualPct: 'Percent', manualSave: 'Save',
     empty: 'Nothing recorded yet. Press start above or type your EXP in.',
-    how: [['Windowed mode', 'Run MapleStory in a window. On a Mac neither Chrome nor the game may be full screen.'], ['Start', 'Press the button and pick the game window; EXP is read every 5 seconds, level-ups included.'], ['Stop', 'Press stop when you move or finish. The session stays in this browser, so reopening the page continues it.']],
+    how: [['Windowed mode works best', 'A window is read best. In full screen pick "Entire screen" in the share dialog; if it shows black, switch to a window. Any resolution and display scale is fine.'], ['Start', 'Press the button and pick the game window; EXP is read every 5 seconds, level-ups included.'], ['Stop', 'Press stop when you move or finish. The session stays in this browser, so reopening the page continues it.']],
     privacy: 'The shared screen is read only on this computer. Only the EXP numbers are kept, in this browser, and nothing is uploaded.',
     i: {
       unsupported: 'This browser cannot share a screen. Use Chrome or Edge on a computer; typing EXP in below still works.', denied: 'Sharing was cancelled. Press start again.',
@@ -1462,6 +1462,7 @@ function expBody(lang) {
 <section class="panel exp-control">
 <div class="exp-buttons"><button type="button" class="btn exp-start" id="exp-start">▶ ${esc(t.start)}</button><button type="button" class="btn ghost exp-stop" id="exp-stop">■ ${esc(t.stop)}</button></div>
 <p id="exp-status" class="exp-status" role="status" aria-live="polite"></p>
+<form id="exp-manual" class="exp-manual-form"><strong>${esc(t.manualHeading)}</strong><label>${esc(t.manualExp)} <input id="exp-m-exp" inputmode="numeric" placeholder="83,631" required></label><label>${esc(t.manualPct)} <input id="exp-m-pct" inputmode="decimal" placeholder="68.13" required></label><button class="btn ghost small-btn" type="submit">${esc(t.manualSave)}</button><small class="muted">${esc(t.manualHelp)}</small></form>
 <ol class="scan-checks exp-checks" aria-live="polite">${['share', 'bar', 'read'].map((k) => `<li id="exp-check-${k}" data-state="wait"><span class="dot" aria-hidden="true"></span><strong>${esc(t.checks[k])}</strong><small>${esc(t.i.wait)}</small></li>`).join('')}</ol>
 </section>
 <section class="panel exp-board">
@@ -1477,8 +1478,6 @@ function expBody(lang) {
 </div>
 </section>
 <ol class="scan-steps">${t.how.map(([h, d], n) => `<li><b>${n + 1}</b><strong>${esc(h)}</strong><span>${esc(d)}</span></li>`).join('')}</ol>
-<section class="panel exp-manual"><h2>${esc(t.manualHeading)}</h2><p class="muted small">${esc(t.manualHelp)}</p>
-<form id="exp-manual" class="exp-manual-form"><label>${esc(t.manualExp)} <input id="exp-m-exp" inputmode="numeric" placeholder="83,631" required></label><label>${esc(t.manualPct)} <input id="exp-m-pct" inputmode="decimal" placeholder="68.13" required></label><button class="btn small-btn" type="submit">${esc(t.manualSave)}</button></form></section>
 <p class="muted small">${esc(t.privacy)}</p>
 </div>
 ${jsonScript('exp-data', { lang, t: { ...t.i, stats: t.stats }, mobsUrl: href('/assets/mobs.json') })}`;
