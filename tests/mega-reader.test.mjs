@@ -44,3 +44,9 @@ test('a partly known line keeps the table words and fills only the unknown lette
   assert.equal(mergeReading([['S', '>'], [null], ['k']], 'S> 850 k'), 'S> 850 k');
   assert.equal(mergeReading([['a'], ['b']], 'one'), null);
 });
+
+test('a small l inside a word of capitals is the capital I', async () => {
+  const { capsI } = await import('../assets/mega-reader.js');
+  assert.equal(capsI('SELLlNG GLOVE MAGlC ATK'), 'SELLING GLOVE MAGIC ATK');
+  assert.equal(capsI('Sell meba lol'), 'Sell meba lol');
+});

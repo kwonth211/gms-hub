@@ -45,6 +45,69 @@ const GLOSS = [[/\b(s\s?>|wts|selling|sell)\b:?/gi, '[팝니다]'], [/\b(b\s?>|w
   [/\bobo\b/gi, '협상 가능'], [/\bea\b/gi, '개당'], [/\b(pm|w)\s?me\b/gi, '귓말 주세요'], [/\bpm\b/gi, '귓말'], [/\blf\b/gi, '구함'], [/\blfg\b/gi, '파티 구함'],
   [/\bnow\b/gi, '지금'], [/\bclean\b/gi, '노작'], [/\b(\d+)\s?slots?\b/gi, '$1업횟'], [/\batt\b/gi, '공격력'], [/\bmatt\b/gi, '마력'], [/\bacc\b/gi, '명중'],
   [/(\d+(?:\.\d+)?)\s?(k|m|b)\b/gi, (_, n, u) => mesos(Math.round(Number(n) * { k: 1e3, m: 1e6, b: 1e9 }[u.toLowerCase()]))]];
+// ---------- AI translation (Chrome's built-in, on-device Translator API) ----------
+// Trade shorthand is spelled out first so the model sees plain English, and known item names are swapped for this
+// language's names (Korean) or kept as the game's English names. Translations are cached per text for the session.
+const SHORT = [[/(^|\s|\])\s*(s\s?>+|wts)\s*/gi, '$1Selling: '], [/(^|\s|\])\s*(b\s?>+|wtb)\s*/gi, '$1Buying: '], [/(^|\s)t\s?>\s*/gi, '$1Trading: '],
+  [/\bc\s?\/\s?o\b/gi, 'current offer'], [/\ba\s?\/\s?w\b/gi, 'instant buy price'], [/\bb\s?\/\s?o\b/gi, 'buyout price'], [/\bobo\b/gi, 'or best offer'],
+  [/\bpmo\b/gi, 'message me with offers'], [/\b(pm|w|dm|whisper) ?me\b/gi, 'message me'], [/\bpm\b/gi, 'message me'], [/\bea\b/gi, 'each'],
+  [/\bfm\b/gi, 'Free Market'], [/\bcc\b/gi, 'change channel'], [/\blf\b/gi, 'looking for'], [/\bnx\b/gi, 'NX'], [/\bgfa\b/gi, 'Gloves Attack scroll'],
+  [/\b(\d+(?:\.\d+)?)\s?(k|m|b|mil)\b/gi, (_, n, u) => `${n}${{ k: ' thousand', m: ' million', mil: ' million', b: ' billion' }[u.toLowerCase()]} mesos`]];
+// The bracketed item at the front is never sent to the model (it mistranslates game names); the card shows it in this
+// language's item name and translates only the rest. Shouting in capitals is lowered, which the model reads far better.
+const capsI = (t) => t.replace(/[A-Za-z]{3,}/g, (w) => (w.replace(/l/g, '').length >= 2 && w.replace(/l/g, '') === w.replace(/l/g, '').toUpperCase() ? w.replace(/l/g, 'I') : w));
+const plain = (text) => {
+  let t = capsI(text).replace(/^\s*\[[^\]]*\]\s*/, '');
+  const letters = t.replace(/[^A-Za-z]/g, '');
+  if (letters.length > 6 && letters.replace(/[^A-Z]/g, '').length / letters.length > 0.7) t = t.toLowerCase();
+  for (const [re, to] of SHORT) t = t.replace(re, to);
+  return t.replace(/\s+/g, ' ').trim();
+};
+const itemPrefix = (text, items) => {
+  const b = /^\s*\[([^\]]*)\]/.exec(text);
+  if (!b) return '';
+  const it = items[0];
+  return `[${it && it.en.toLowerCase() === b[1].toLowerCase() && ko && it.ko ? it.ko : b[1]}] `;
+};
+const AI_LANG = { ko: 'ko', zh: 'zh', ja: 'ja' }[lang];
+let translator = null, aiState = 'off';
+const aiCache = new Map();
+async function setupAi(fromClick = false) {
+  if (!AI_LANG || !('Translator' in self)) return;
+  try {
+    const avail = await self.Translator.availability({ sourceLanguage: 'en', targetLanguage: AI_LANG });
+    if (avail === 'unavailable') return;
+    // The first download of the language model needs a click; once it is on the device it loads by itself.
+    if (avail !== 'available' && !fromClick) { aiState = 'ask'; aiButton(); return; }
+    aiState = 'loading'; aiButton();
+    translator = await self.Translator.create({ sourceLanguage: 'en', targetLanguage: AI_LANG });
+    aiState = 'on'; aiButton(); render();
+    track('mega_ai_translate', { lang: AI_LANG });
+  } catch (e) { aiState = 'off'; aiButton(); }
+}
+function aiButton() {
+  const b = $('mg-ai');
+  if (!b) return;
+  b.hidden = aiState === 'off';
+  b.disabled = aiState !== 'ask';
+  b.textContent = { ask: tr('AI 번역 켜기', 'Turn on AI translation'), loading: tr('AI 번역 준비 중…', 'Preparing AI translation…'), on: tr('AI 번역 켜짐', 'AI translation on') }[aiState] || '';
+}
+async function aiTranslate(text) {
+  if (aiCache.has(text)) return aiCache.get(text);
+  const p = translator.translate(text).catch(() => '');
+  aiCache.set(text, p);
+  return p;
+}
+// Fill the translation line of each card on screen, newest first.
+async function fillAi() {
+  if (!translator) return;
+  for (const el of document.querySelectorAll('#mg-feed .mg-ai:not([data-done])')) {
+    el.dataset.done = '1';
+    const out = await aiTranslate(el.dataset.src);
+    if (out) { el.textContent = (el.dataset.prefix || '') + out; el.hidden = false; el.closest('.mg-msg')?.querySelector('.mg-gloss')?.setAttribute('hidden', ''); }
+  }
+}
+
 function gloss(text, items) {
   let out = text;
   for (const it of items) if (it.ko) out = out.split(new RegExp(it.en.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')).join(it.ko);
@@ -71,7 +134,7 @@ function card(r) {
   return `<li class="mg-msg mg-${r.color || 'Y'} mg-k-${r.kind}">
 <div class="mg-head"><span class="mg-kind">${KIND[r.kind]?.() || ''}</span><strong class="mg-nick">${esc(r.nick)}</strong>${r.channel ? `<span class="mg-ch">CH ${r.channel}</span>` : ''}${tag}<time>${ago(r.seen)}</time>
 <button type="button" class="mg-copy" data-nick="${esc(r.nick)}" title="${esc(tr('귓말 명령어 복사', 'Copy whisper command'))}">/w</button></div>
-<p class="mg-text">${text}</p>${g ? `<p class="mg-gloss">${esc(g)}</p>` : ''}${cmp}</li>`;
+<p class="mg-text">${text}</p>${translator && plain(r.text) ? `<p class="mg-ai" data-src="${esc(plain(r.text))}" data-prefix="${esc(itemPrefix(r.text, items))}" hidden></p>` : ''}${g ? `<p class="mg-gloss">${esc(g)}</p>` : ''}${cmp}</li>`;
 }
 
 const haystack = (r) => (r.hay ||= `${r.nick} ${r.text} ${itemsOf(r.text).map((i) => i.ko || '').join(' ')}`.toLowerCase());
@@ -109,6 +172,7 @@ function render() {
   feed.innerHTML = list.slice(0, 300).map(card).join('');
   if (feed.scrollTop > 0) feed.scrollTop = feed.scrollHeight - fromBottom;
   if (q) highlight(feed, q.split(/\s+/));
+  fillAi();
   $('mg-count').textContent = q || ch || intent ? tr('{n}개 찾음', '{n} found', { n: list.length }) : tr('최근 {n}개', 'Latest {n}', { n: list.length });
   $('mg-empty').hidden = rows.length > 0;
 }
@@ -192,6 +256,7 @@ form.addEventListener('submit', (e) => {
   track('chat_send');
 });
 
-loadItems().then(() => { poll(); setInterval(poll, POLL_MS); });
+loadItems().then(() => { poll(); setInterval(poll, POLL_MS); setupAi(); });
+$('mg-ai')?.addEventListener('click', () => setupAi(true));
 connect();
 setInterval(() => document.querySelectorAll('#mg-feed time').length && render(), 30000);

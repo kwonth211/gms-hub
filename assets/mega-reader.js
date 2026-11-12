@@ -225,8 +225,10 @@ export async function readLine(img, line, ocr, glyph = null) {
 
 // Common misreads of the trade shorthand at the start of a phrase: "S>" read as "5»", "S=", "5=" or "S<", "B>" as "B=",
 // "Bx" or "B»"; "Cal's"/"Cat's" style letter swaps are left alone.
+// In a word of capitals a small l is the capital I the font draws the same way ("SELLlNG" → "SELLING").
+export const capsI = (t) => t.replace(/[A-Za-z]{3,}/g, (w) => (w.replace(/l/g, '').length >= 2 && w.replace(/l/g, '') === w.replace(/l/g, '').toUpperCase() ? w.replace(/l/g, 'I') : w));
 export function cleanText(t) {
-  return t.replace(/\s*\|\s*$/, '').replace(/(^|[\s\]])[S5]\s?(?:=+>*|»|>|<|«)\s?/g, '$1S> ').replace(/(^|[\s\]])B\s?(?:=+>*|»|>|x|«)\s?/g, '$1B> ').replace(/\s+/g, ' ').trim();
+  return capsI(t).replace(/\s*\|\s*$/, '').replace(/(^|[\s\]])[S5]\s?(?:=+>*|»|>|<|«)\s?/g, '$1S> ').replace(/(^|[\s\]])B\s?(?:=+>*|»|>|x|«)\s?/g, '$1B> ').replace(/\s+/g, ' ').trim();
 }
 
 // Lines in reading order → megaphones. A line without a channel badge continues the megaphone above it (long
