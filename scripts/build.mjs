@@ -3030,7 +3030,7 @@ write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko
     const droppers = (DROP_INDEX.get(id) || []).filter(({ m }) => live.has(m.id)).sort((a, b) => a.m.lv - b.m.lv);
     tips[id] = [i.ko || '', i.en, i.cat, i.sub || '', d.req?.lv || i.lv || 0, d.req?.job || 0,
       Object.fromEntries(['str', 'dex', 'int', 'luk'].filter((k) => d.req?.[k]).map((k) => [k, d.req[k]])), d.inc || {}, d.slots || 0, d.sell || 0,
-      scrollOf.get(id) || 0, droppers.slice(0, 4).map(({ m }) => m.id), droppers.length, questGives.get(id) || 0];
+      scrollOf.get(id) || 0, droppers.slice(0, 16).map(({ m }) => m.id), droppers.length, questGives.get(id) || 0];
   }
   const rankDrop = (d) => (d.cat === 'Equip' ? 0 : /Scroll/.test(d.en) ? 1 : d.cat === 'Use' ? 3 : 2);
   const mobs = {};

@@ -1908,3 +1908,17 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .contact-card h2 { margin: 0 0 6px; font-size: 1.05rem; }
 .contact-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 0; }
 .contact-mail { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+/* Market item panel: what the item is and which monsters drop it. */
+.mb-info { margin: 10px 0 12px; }
+.mb-info:empty { display: none; }
+.mb-info h3 { margin: 10px 0 6px; font-size: 0.92rem; }
+.mb-info h3 small { color: var(--muted); font-weight: 600; }
+.mb-info-facts { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+.mb-info-facts span { font-size: 0.8rem; padding: 3px 8px; border-radius: 6px; background: var(--panel-2); color: var(--text-2); }
+.mb-drops { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.mb-drops a { display: grid; grid-template-columns: 36px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 8px; align-items: center; padding: 5px 8px; border: 1px solid var(--line); border-radius: 8px; color: var(--text); text-decoration: none; background: var(--panel); }
+.mb-drops a:hover { border-color: var(--accent-fill); }
+.mb-drops a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.mb-drops img { grid-row: 1 / 3; image-rendering: pixelated; object-fit: contain; }
+.mb-drops span { font-size: 0.85rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mb-drops small { font-size: 0.72rem; color: var(--muted); }

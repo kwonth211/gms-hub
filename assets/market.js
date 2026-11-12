@@ -473,8 +473,9 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
       ? `<dl class="mb-detail-stats"><div><dt>${tr("판매가 중앙값", "Asking median")}</dt><dd>${money(s.median)} <small>${T.priceUnit}</small></dd></div><div><dt>${tr("최저 판매가", "Lowest ask")}</dt><dd>${money(s.low)}</dd></div><div><dt>${tr("판매 매물 · 24h", "Asking · 24h")}</dt><dd>${s.open}</dd></div></dl>`
       : "";
   const pageLink = D.itemPaths?.[id] ? `<a class="mb-item-page" href="${esc(D.itemPaths[id])}">${esc(D.itemLink)}</a>` : "";
+  fillItemInfo(id);
   $("mk-detail").innerHTML =
-    `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(it.name)}</h2><small>${esc(it.en)}</small></div>${starButton(id, "mb-star-detail")}<button class="btn ghost small-btn" data-share-item="${id}" title="${tr("이 아이템 링크 복사", "Copy a link to this item")}">${tr("링크 복사", "Copy link")}</button><button class="btn ghost small-btn" data-close-item aria-label="${tr("상세 닫기", "Close details")}">×</button></header><p class="share-status mb-share-status" id="mb-share-status" role="status" aria-live="polite"></p>${stats}${changed || reset ? visitNote(id) : ""}${pageLink}
+    `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(it.name)}</h2><small>${esc(it.en)}</small></div>${starButton(id, "mb-star-detail")}<button class="btn ghost small-btn" data-share-item="${id}" title="${tr("이 아이템 링크 복사", "Copy a link to this item")}">${tr("링크 복사", "Copy link")}</button><button class="btn ghost small-btn" data-close-item aria-label="${tr("상세 닫기", "Close details")}">×</button></header><p class="share-status mb-share-status" id="mb-share-status" role="status" aria-live="polite"></p>${stats}<section class="mb-info" id="mb-info" aria-live="polite"></section>${changed || reset ? visitNote(id) : ""}${pageLink}
  <div class="mb-tabs" role="tablist" aria-label="${tr("아이템 상세", "Item details")}"><button data-detail-tab="listings" role="tab" aria-selected="${detailTab === "listings"}" aria-controls="mb-detail-listings">${tr("판매 매물", "Shop listings")}</button><button data-detail-tab="charts" role="tab" aria-selected="${detailTab === "charts"}" aria-controls="mb-detail-charts">${tr("가격 추이·매물대", "Trends & depth")}</button><button class="mb-detail-refresh" data-refresh-item>${tr("새로고침", "Refresh")}</button></div>
  <div id="mb-detail-listings" role="tabpanel" aria-label="${tr("판매 매물", "Shop listings")}"><p class="muted note">${T.whereNote}</p><div class="mb-detail-filters"><label>${tr("채널", "Channel")}<select id="md-channel">${selectLocation("channel", detailState.channel)}</select></label><label>${tr("방", "Room")}<select id="md-room">${selectLocation("room", detailState.room)}</select></label><label>${tr("정렬", "Sort")}<select id="md-sort"><option value="price">${T.sortPrice}</option><option value="recent">${T.sortRecent}</option><option value="high">${tr("높은 가격순", "Highest price")}</option></select></label><label>${tr("상태", "Status")}<select id="md-state"><option value="open">${tr("판매 중 · 24h", "Asking · 24h")}</option><option value="all">${tr("전체 기록 · 7일", "All records · 7d")}</option><option value="sold">${tr("판매 완료 표시", "Marked sold")}</option><option value="stale">${tr("24시간 경과", "Over 24h old")}</option></select></label></div><div class="price-band-filter" id="md-price-band" hidden><span></span><button class="btn ghost small-btn" data-clear-band>${tr("가격대 해제", "Clear price band")}</button></div><p id="md-count" class="muted note" role="status"></p><div id="md-rows"></div><div id="md-pages" class="mb-pagination"></div></div>
  <div id="mb-detail-charts" role="tabpanel" aria-label="${tr("가격 추이와 매물대", "Trends and depth")}"><div id="mk-charts"><p>${T.loading}</p></div></div>`;
@@ -844,3 +845,39 @@ async function initialize() {
 setInterval(refresh, 60000);
 document.addEventListener("visibilitychange", refresh);
 initialize();
+
+// What the item is and where it comes from, under the price: requirements and stats, NPC price, quest rewards and the
+// monsters that drop it (the same data file as the hover cards, loaded once).
+let tipsData = null;
+const loadTips = () => (tipsData ||= fetch(document.body.dataset.tips).then((r) => r.json()).catch(() => null));
+const TIP_INC = { PAD: () => tr("공격력", "Weapon attack"), MAD: () => tr("마력", "Magic attack"), STR: () => "STR", DEX: () => "DEX", INT: () => "INT", LUK: () => "LUK",
+  MHP: () => "HP", MMP: () => "MP", PDD: () => tr("물리 방어력", "Weapon defense"), MDD: () => tr("마법 방어력", "Magic defense"), ACC: () => tr("명중률", "Accuracy"),
+  EVA: () => tr("회피율", "Avoidability"), Speed: () => tr("이동속도", "Speed"), Jump: () => tr("점프력", "Jump") };
+const TIP_JOBS = [[1, () => tr("전사", "Warrior")], [2, () => tr("마법사", "Magician")], [4, () => tr("궁수", "Bowman")], [8, () => tr("도적", "Thief")]];
+async function fillItemInfo(id) {
+  const data = await loadTips();
+  const box = $("mb-info");
+  const t = data?.items?.[id];
+  if (!box || !t || selected !== id) return;
+  const [, , cat, , lv, job, req, inc, slots, sell, scroll, drops, dropN, questN] = t;
+  const facts = [];
+  if (scroll) facts.push(`${tr("성공률", "Success")} ${scroll[1]}%${scroll[2] ? ` · ${tr("실패 시 파괴", "Boom on fail")} ${scroll[2]}%` : ""}`);
+  if (cat === "Equip") {
+    const jobs = TIP_JOBS.filter(([b]) => job & b).map(([, n]) => n()).join(", ") || tr("모든 직업", "All classes");
+    facts.push(`${lv ? `Lv. ${lv} · ` : ""}${esc(jobs)}`);
+    const reqs = Object.entries(req || {}).map(([k, v]) => `${k.toUpperCase()} ${v}`).join(" · ");
+    if (reqs) facts.push(reqs);
+    if (slots) facts.push(`${tr("업그레이드 가능 횟수", "Upgrade slots")} ${slots}`);
+  }
+  // Stats apply to throwing stars and bullets too, not just equipment.
+  const st = Object.entries(inc || {}).map(([k, v]) => `${TIP_INC[k] ? TIP_INC[k]() : esc(k)} +${v}`).join(" · ");
+  if (st) facts.push(st);
+  if (sell) facts.push(`${tr("상점 판매가", "Sells to NPC for")} ${nf.format(sell)} ${tr("메소", "mesos")}`);
+  if (questN) facts.push(`${tr("퀘스트 보상", "Quest reward")} ${questN}${tr("개", "")}`);
+  const mobs = (drops || []).filter((m) => data.mobs[m]);
+  const mobLink = (m) => `/${D.lang}/monsters/${m}/`;
+  const sprites = document.body.dataset.sprites;
+  box.innerHTML = `${facts.length ? `<p class="mb-info-facts">${facts.map((f) => `<span>${f}</span>`).join("")}</p>` : ""}
+<h3>${tr("드롭하는 몬스터", "Dropped by")} <small>${dropN ? tr(`${dropN}마리`, `${dropN}`) : ""}</small></h3>
+${mobs.length ? `<ul class="mb-drops">${mobs.map((m) => { const x = data.mobs[m]; return `<li><a href="${mobLink(m)}"><img src="${sprites}${m}.gif" width="36" height="36" alt="" loading="lazy"><span>${esc(ko ? x[0] : x[1])}</span><small>Lv. ${x[2]}</small></a></li>`; }).join("")}</ul>${dropN > mobs.length ? `<p class="muted note">${tr(`외 ${dropN - mobs.length}마리는 아이템 페이지에서 볼 수 있어요.`, `${dropN - mobs.length} more on the item page.`)}</p>` : ""}` : `<p class="muted note">${tr("지금 열린 맵의 몬스터는 이 아이템을 드롭하지 않아요.", "No monster on an open map drops this item.")}</p>`}`;
+}

@@ -94,7 +94,9 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
     const from = [];
     let dropList = '';
     if (drops?.length) {
-      dropList = `<ul class="tip-mobs">${drops.filter((m) => data.mobs[m]).map((m) => `<li>${sprite(m, 36)}<span>${esc(mobName(m))}</span><small>Lv. ${data.mobs[m][2]}</small></li>`).join('')}</ul>${dropN > drops.length ? `<p class="tip-muted">${tr(`외 ${dropN - drops.length}마리`, `+${dropN - drops.length} more`)}</p>` : ''}`;
+      // The data keeps up to 16 droppers for the market's item panel; the card shows the first four.
+      const shown = drops.slice(0, 4);
+      dropList = `<ul class="tip-mobs">${shown.filter((m) => data.mobs[m]).map((m) => `<li>${sprite(m, 36)}<span>${esc(mobName(m))}</span><small>Lv. ${data.mobs[m][2]}</small></li>`).join('')}</ul>${dropN > shown.length ? `<p class="tip-muted">${tr(`외 ${dropN - shown.length}마리`, `+${dropN - shown.length} more`)}</p>` : ''}`;
     }
     if (questN) from.push(`${tr('퀘스트 보상', 'Quest reward')} ${questN}${tr('개', '')}`);
     card.innerHTML = `<header><img src="https://maplestory.io/api/MCW/1/item/${id}/icon" width="32" height="32" alt=""><div><strong>${esc(name)}</strong><small>${esc(ko ? CAT[cat] || cat : sub || CAT[cat] || cat)}</small></div></header>
