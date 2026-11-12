@@ -2027,3 +2027,8 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 /* Room for the search button: the live pill drops its LIVE word on narrow desktops and steps aside on phones. */
 @media (min-width: 761px) and (max-width: 1360px) { .presence .pr-live { display: none; } }
 @media (max-width: 480px) { .presence { display: none !important; } }
+.mb-move { display: inline-block; min-width: 44px; text-align: center; padding: 2px 6px; border-radius: 999px; font-size: 0.74rem; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--muted); background: var(--panel-2); border: 1px solid var(--line); }
+.mb-move.up { color: #1f7a45; background: color-mix(in srgb, #2e9d5b 14%, transparent); border-color: color-mix(in srgb, #2e9d5b 35%, transparent); }
+.mb-move.down { color: #b23a32; background: color-mix(in srgb, #d9534f 13%, transparent); border-color: color-mix(in srgb, #d9534f 35%, transparent); }
+[data-theme='dark'] .mb-move.up { color: #6fdc9a; } [data-theme='dark'] .mb-move.down { color: #ff8a80; }
+@media (max-width: 640px) { .mb-catalog .mb-move-cell { display: none; } }

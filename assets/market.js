@@ -160,6 +160,8 @@ function pager(data, scope) {
 }
 // Channel and Free Market room as chips. Each channel keeps its own hue (spread round the colour wheel) so the same
 // channel is easy to spot down a list.
+// 24h move of the reference price as a small badge; nothing when unknown.
+const moveBadge = (v) => (v == null ? "" : `<span class="mb-move ${v > 0 ? "up" : v < 0 ? "down" : ""}">${v > 0 ? "+" : ""}${v}%</span>`);
 const placeChips = (r) => `<span class="mb-ch" style="--h:${(Number(r.channel) * 47) % 360}">CH ${r.channel}</span><span class="mb-room">${placeLabel(r.room, ko)}</span>`;
 // The item panel's "where to buy" list: one card per listing, price first, then how fresh it is, who and where.
 // Freshness follows MesoWatch's wording: seen within an hour is probably still up, older ones may have sold.
@@ -190,7 +192,7 @@ function listingTable(rows, { showItem = true, shopButtons = true } = {}) {
 const URL_FIELDS = [
   ["state", "mb-state", "open"], ["sort", "mb-list-sort", "recent"], ["seller", "mb-seller", ""],
   ["ch", "mb-channel", ""], ["room", "mb-room", ""], ["days", "mb-days", "7"],
-  ["kind", "mb-report-kind", ""], ["isort", "mb-item-sort", "active"], ["cls", "mb-class", ""],
+  ["kind", "mb-report-kind", ""], ["isort", "mb-item-sort", "sales"], ["cls", "mb-class", ""],
 ];
 function syncURL() {
   const p = new URLSearchParams(location.search);
@@ -247,11 +249,11 @@ function renderDirectory() {
   );
   const start = (page - 1) * 40;
   $("mb-results").innerHTML = rows.length
-    ? `<div class="mb-table-wrap"><table class="mb-table mb-catalog"><thead><tr><th><span class="sr-only">${tr("관심", "Wishlist")}</span>☆</th><th>${tr("아이템", "Item")}</th><th class="mb-src">${tr("드롭", "Drops")}</th><th>${tr("판매가 중앙값 / 최저가", "Asking median / lowest")}<small>${T.priceUnit} · 24h</small></th><th>${tr("판매 매물", "Asking")}</th><th>${tr("최근 확인", "Last seen")}</th></tr></thead><tbody>${rows
+    ? `<div class="mb-table-wrap"><table class="mb-table mb-catalog"><thead><tr><th><span class="sr-only">${tr("관심", "Wishlist")}</span>☆</th><th>${tr("아이템", "Item")}</th><th class="mb-src">${tr("드롭", "Drops")}</th><th>${tr("판매가 중앙값 / 최저가", "Asking median / lowest")}<small>${T.priceUnit} · 24h</small></th><th>${tr("24시간", "24h")}</th><th>${tr("판매 매물", "Asking")}</th><th>${tr("최근 확인", "Last seen")}</th></tr></thead><tbody>${rows
         .slice(start, start + 40)
         .map(
           (r) =>
-            `<tr class="${r.id === selected ? "selected" : ""}"><td>${starButton(r.id)}</td><td>${itemLink(r.id)}<small>${categories[r.category]}${r.reports ? ` · ${tr("가격 제보", "Reports")} ${r.reports}` : ""}</small></td><td class="mb-src">${dropIcons(r.id)}</td><td class="num">${r.median == null && r.typical ? `${money(r.typical)}<small>${tr("대표 시세", "Typical")}</small>` : `${money(r.median)}<small>${tr("최저", "Low")} ${money(r.low)}</small>`}</td><td><strong>${r.open}</strong><small>${r.records ? `${tr("기록", "Records")} ${r.records}` : r.sales ? `${tr("판매", "Sales")} ${money(r.sales)}` : `${tr("기록", "Records")} 0`}</small></td><td>${r.last ? newMark(r.last) : ""}${when(r.last)}</td></tr>`,
+            `<tr class="${r.id === selected ? "selected" : ""}"><td>${starButton(r.id)}</td><td>${itemLink(r.id)}<small>${categories[r.category]}${r.reports ? ` · ${tr("가격 제보", "Reports")} ${r.reports}` : ""}</small></td><td class="mb-src">${dropIcons(r.id)}</td><td class="num">${r.median == null && r.typical ? `${money(r.typical)}<small>${tr("대표 시세", "Typical")}</small>` : `${money(r.median)}<small>${tr("최저", "Low")} ${money(r.low)}</small>`}</td><td class="mb-move-cell">${moveBadge(r.typicalDay)}</td><td><strong>${r.open}</strong><small>${r.sales ? `${tr("거래", "Traded")} ${money(r.sales)}` : `${tr("기록", "Records")} ${r.records || 0}`}</small></td><td>${r.last ? newMark(r.last) : ""}${when(r.last)}</td></tr>`,
         )
         .join("")}</tbody></table></div>`
     : categoryMiss() || `<div class="market-empty"><strong>${tr("표시할 아이템이 없어요.", "No matching items.")}</strong><p>${$("mb-favorites").checked ? tr("별표를 눌러 관심 아이템을 저장해 보세요.", "Use the star to save items to your wishlist.") : T.noMatches}</p>${$("mk-q").value.trim() ? `<p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="listings">${tr("전체 매물에서 찾기", "Search all listings instead")}</button></p>` : ""}</div>`;

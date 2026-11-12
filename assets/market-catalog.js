@@ -71,6 +71,11 @@ export function catalogRows(
       low: (a, b) => (a.low ?? Infinity) - (b.low ?? Infinity),
       recent: (a, b) => (b.last || "").localeCompare(a.last || ""),
       name: (a, b) => a.name.localeCompare(b.name),
+      // Trade volume and the 24h move of the reference price (MesoWatch-style "what is hot").
+      // By meso volume (sales × typical price), so cheap ores traded by the thousand do not lead.
+      sales: (a, b) => (b.sales || 0) * (b.typical || b.median || 0) - (a.sales || 0) * (a.typical || a.median || 0),
+      rising: (a, b) => (b.typicalDay ?? -Infinity) - (a.typicalDay ?? -Infinity),
+      falling: (a, b) => (a.typicalDay ?? Infinity) - (b.typicalDay ?? Infinity),
     }[sort] || ((a, b) => b.open - a.open);
   return rows.sort((a, b) => compare(a, b) || a.id - b.id);
 }
