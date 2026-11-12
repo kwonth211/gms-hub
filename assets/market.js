@@ -43,7 +43,7 @@ const when = (s) =>
 let items = [],
   byId = new Map(),
   catalog = null,
-  view = "listings",
+  view = "items",
   category = "all",
   page = 1,
   selected = null,
@@ -174,7 +174,7 @@ function syncURL() {
   const p = new URLSearchParams(location.search);
   for (const k of ["item", "view", "q", "cat", "page", "fav", ...URL_FIELDS.map((f) => f[0])]) p.delete(k);
   if (selected) p.set("item", selected);
-  if (view !== "listings" || selected) p.set("view", view);
+  if (view !== "items" || selected) p.set("view", view);
   const q = $("mk-q").value.trim();
   if (q) p.set("q", q);
   if (category !== "all") p.set("cat", category);
@@ -232,7 +232,7 @@ function renderDirectory() {
             `<tr class="${r.id === selected ? "selected" : ""}"><td>${starButton(r.id)}</td><td>${itemLink(r.id)}<small>${categories[r.category]}${r.reports ? ` · ${tr("가격 제보", "Reports")} ${r.reports}` : ""}</small></td><td class="mb-src">${dropIcons(r.id)}</td><td class="num">${r.median == null && r.typical ? `${money(r.typical)}<small>${tr("대표 시세", "Typical")}</small>` : `${money(r.median)}<small>${tr("최저", "Low")} ${money(r.low)}</small>`}</td><td><strong>${r.open}</strong><small>${r.records ? `${tr("기록", "Records")} ${r.records}` : r.sales ? `${tr("판매", "Sales")} ${money(r.sales)}` : `${tr("기록", "Records")} 0`}</small></td><td>${r.last ? newMark(r.last) : ""}${when(r.last)}</td></tr>`,
         )
         .join("")}</tbody></table></div>`
-    : categoryMiss() || `<div class="market-empty"><strong>${tr("표시할 아이템이 없어요.", "No matching items.")}</strong><p>${$("mb-favorites").checked ? tr("별표를 눌러 관심 아이템을 저장해 보세요.", "Use the star to save items to your wishlist.") : T.noMatches}</p>${$("mk-q").value.trim() ? `<p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="listings">${tr("매물 목록에서 찾기", "Search listings instead")}</button></p>` : ""}</div>`;
+    : categoryMiss() || `<div class="market-empty"><strong>${tr("표시할 아이템이 없어요.", "No matching items.")}</strong><p>${$("mb-favorites").checked ? tr("별표를 눌러 관심 아이템을 저장해 보세요.", "Use the star to save items to your wishlist.") : T.noMatches}</p>${$("mk-q").value.trim() ? `<p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="listings">${tr("전체 매물에서 찾기", "Search all listings instead")}</button></p>` : ""}</div>`;
   if (!rows.length && !$("mb-favorites").checked) noResults($("mk-q").value.trim());
   $("mb-pagination").innerHTML = pager({ page, pages }, "main");
   $("mb-results").setAttribute("aria-busy", "false");
@@ -333,7 +333,7 @@ async function renderRecords() {
       const suggest = known.length
         ? `<p>${tr("지금 올라온 매물은 없지만, 이 아이템들이 있어요:", "No open listings right now, but these items match:")}</p><ul class="mb-suggest">${known.map((id) => `<li>${itemLink(id)}${typical.has(id) ? `<small>${tr("대표 시세", "Typical")} ${money(typical.get(id))}</small>` : `<small>${tr("시세 기록 없음", "No price yet")}</small>`}</li>`).join("")}</ul>`
         : `<p>${tr("한글·영문·초성·약어(장공, 귀힘, 아대)로도 검색돼요.", "Korean, English, initials and common abbreviations all work.")}</p>`;
-      $("mb-results").innerHTML = categoryMiss() || `<div class="market-empty"><strong>${T.noMatches}</strong>${suggest}<p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="items">${tr("아이템 목록 보기", "Browse items")}</button></p></div>`;
+      $("mb-results").innerHTML = categoryMiss() || `<div class="market-empty"><strong>${T.noMatches}</strong>${suggest}<p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="items">${tr("아이템 시세 보기", "Browse item prices")}</button></p></div>`;
       noResults($("mk-q").value.trim());
       $("mb-count").textContent = "0";
       $("mb-pagination").innerHTML = "";
@@ -972,10 +972,11 @@ async function initialize() {
     const p = new URLSearchParams(location.search),
       id = Number(p.get("item"));
     if (p.get("q")) $("mk-q").value = p.get("q");
-    // The anonymous price-report tab was removed (no one used it); old ?view=reports links open the listings.
+    // Items (one row per item, like MesoWatch) is the default view; "all listings" is for finding a seller, channel or
+    // room. The anonymous price-report tab was removed (no one used it); old ?view=reports links open the items.
     const initialView = ["items", "listings"].includes(p.get("view"))
       ? p.get("view")
-      : byId.has(id) ? "items" : "listings";
+      : "items";
     // How the page was reached with an item preselected: a shared link, the home "pick up" strip, or any other link.
     const source = p.get("utm_source") === "share" ? "share" : p.get("src") === "home" ? "home" : "url";
     if (p.has("src")) {
