@@ -39,8 +39,10 @@ export function findChatBox(img) {
   for (const r of near) (clusters.length && r.y - clusters.at(-1).at(-1).y <= 24 ? clusters.at(-1) : clusters[clusters.push([]) - 1]).push(r);
   const kept = clusters.sort((a, b) => b.length - a.length)[0] || [];
   if (kept.length < 4) return null;
-  const lasts = kept.map((r) => r.last).sort((a, b) => a - b);
-  const x0 = Math.min(...kept.map((r) => r.first)), x1 = lasts[lasts.length >> 1];
+  // Both edges are medians: a band-coloured patch of scenery next to a box moved off the window's edge (a shop sign,
+  // a name tag) can stretch a few rows sideways.
+  const lasts = kept.map((r) => r.last).sort((a, b) => a - b), firsts = kept.map((r) => r.first).sort((a, b) => a - b);
+  const x0 = firsts[firsts.length >> 1], x1 = lasts[lasts.length >> 1];
   const y0 = Math.max(0, kept[0].y - 48), y1 = Math.min(h, kept.at(-1).y + 48);
   return { x: Math.max(0, x0 - 12), y: y0, w: Math.min(w, x1 + 24) - Math.max(0, x0 - 12), h: y1 - y0 };
 }
@@ -151,15 +153,23 @@ export function lineBitmap(img, line, { x0 = LEFT, x1, scale = 3, scrollbar = 20
 }
 
 // The chat box's dark left border is inked on every row of the band; text starts at the first column that isn't.
+// When the chat box is moved away from the window's left edge the crop also holds map scenery, so the scan starts a few
+// columns before the first column that is mostly band colour.
 export function textLeft(img, line) {
   const h = line.bottom - line.top + 1;
-  for (let x = 0; x < 40; x++) {
+  let start = 0;
+  for (let x = 0; x < img.width >> 1; x++) {
+    let n = 0;
+    for (let y = line.top; y <= line.bottom; y++) { const i = (y * img.width + x) * 4; if (bandClass(img.data[i], img.data[i + 1], img.data[i + 2]) === line.color) n++; }
+    if (n >= h * 0.5) { start = Math.max(0, x - 6); break; }
+  }
+  for (let x = start; x < start + 40; x++) {
     let n = 0;
     for (let y = line.top; y <= line.bottom; y++) { const i = (y * img.width + x) * 4, r = img.data[i], g = img.data[i + 1], b = img.data[i + 2];
       if (Math.abs(r - line.bg[0]) + Math.abs(g - line.bg[1]) + Math.abs(b - line.bg[2]) >= 110 && !bandClass(r, g, b)) n++; }
     if (n < h * 0.7) return x + 1;
   }
-  return LEFT;
+  return start + LEFT;
 }
 
 // Channel digits are a fixed 4x5 pixel font (red on white): split the badge into glyphs by empty columns, skip "C"
