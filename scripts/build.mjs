@@ -663,17 +663,18 @@ const CHARM_VARS = `:root{--cur:url("${spriteDataPng('cursor', 2)}") 1 1,auto;--
 function header(lang, pagePath, only) {
   const t = T[lang];
   // Only the pages people actually open all day sit in the header (page views, 2026-11-12: market 34%, training 19%,
-  // monsters 14%, megaphones, and the new EXP tracker). The rest, the three calculators and the site directory, live in
+  // monsters 14%, megaphones, guides 5%, and the new EXP tracker). The rest, the three calculators and the site directory, live in
   // the "more" menu and in the header search, so nothing is lost, just out of the way.
   const tabs = [
     ['/tools/market/', 'coin', t.navMarket],
     ['/tools/training/', 'sword', t.navTraining],
     ['/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monsters'],
     ['/tools/exp/', 'clock', EXP[lang].nav],
-    ['/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Megaphones']
-  ];
+    ['/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Megaphones'],
+    guides.some((g) => g.lang === lang) && ['/guides/', 'book', t.navGuides]
+  ].filter(Boolean);
   const moved = [
-    ['/', 'book', t.navLinks],
+    ['/', 'star', t.navLinks],
     ['/tools/scroll/', 'scroll', t.navScroll],
     ['/tools/drop-rate/', 'bag', t.navDrop],
     ['/tools/damage/', 'hammer', DMG[lang].h1]
@@ -681,7 +682,7 @@ function header(lang, pagePath, only) {
   // English labels that would break mid-word on a phone ("Calcul/ator") get a one-word form there.
   // The newest tab carries a small N so returning visitors notice it.
   const NEW_TAB = '/tools/exp/';
-  const SHORT_EN = { '/': 'Home', '/monsters/': 'Mobs', '/tools/training/': 'Spots', '/tools/scroll/': 'Scrolls', '/tools/drop-rate/': 'Odds', '/tools/damage/': 'Hits', '/tools/market/': 'Market', '/megaphone/': 'Megas', '/tools/exp/': 'EXP' };
+  const SHORT_EN = { '/': 'Home', '/monsters/': 'Mobs', '/tools/training/': 'Spots', '/tools/scroll/': 'Scrolls', '/tools/drop-rate/': 'Odds', '/tools/damage/': 'Hits', '/tools/market/': 'Market', '/megaphone/': 'Megas', '/tools/exp/': 'EXP', '/guides/': 'Guides' };
   const tabHtml = tabs
     .map(
       ([p, icon, label]) =>
@@ -719,7 +720,6 @@ function moreMenu(lang, moved = []) {
   const ko = lang === 'ko';
   const links = [
     ...moved.map(([p, , label]) => [p, label]),
-    guides.some((g) => g.lang === lang) && ['/guides/', ko ? '가이드' : 'Guides'],
     ['/rank/', ko ? '캐릭터 랭킹' : 'Character ranking'],
     ['/equipment/', ko ? '직업별 장비' : 'Gear by class'],
     ['/bosses/', ko ? '보스' : 'Bosses'],

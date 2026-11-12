@@ -1834,7 +1834,8 @@ html[data-charm='off'] :is(.charm-walk, .charm-leaves) { display: none; }
 }
 
 /* "More" menu at the end of the header, beside the language menu. */
-.more-menu { position: relative; }
+/* The details box is as tall as the tabs; flex keeps the summary centred in it instead of on the line box's baseline. */
+.more-menu { position: relative; display: flex; align-items: center; }
 .more-btn { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; font-size: 0.85rem; font-weight: 700; padding: 7px 12px; border: 1px solid var(--line); border-radius: 10px; color: var(--text); white-space: nowrap; }
 .more-btn::-webkit-details-marker { display: none; }
 .more-btn:hover, .more-menu[open] .more-btn { border-color: var(--accent); }
@@ -2150,9 +2151,10 @@ body.exp-running .exp-stop { display: inline-flex; }
 .exp-mob-label small { font-weight: 500; }
 .exp-mob-out { margin: 0; font-weight: 700; color: var(--accent); }
 /* Typing EXP in by hand: one row under the share button, the explanation beneath it. */
-.exp-manual-form { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin: 12px 0 4px; padding-top: 12px; border-top: 1px dashed var(--line); }
-.exp-manual-form > strong { align-self: center; font-size: 0.95rem; padding-bottom: 6px; }
-.exp-manual-form label { display: grid; gap: 4px; font-size: 0.85rem; font-weight: 700; }
-.exp-manual-form input { font: inherit; width: 130px; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--panel); color: var(--text); }
+.exp-manual-form { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 12px 0 4px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.exp-manual-form > strong { font-size: 0.95rem; }
+.exp-manual-form label { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; }
+.exp-manual-form input { font: inherit; width: 120px; height: 38px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--panel); color: var(--text); }
+.exp-manual-form button { min-height: 38px; padding: 0 14px; }
 .exp-manual-form small { flex-basis: 100%; }
 @media (max-width: 480px) { .exp-stat:first-child { grid-column: 1 / -1; } }
