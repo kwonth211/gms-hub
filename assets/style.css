@@ -1908,3 +1908,9 @@ html[data-charm='off'] .mg-tk-set[aria-hidden] { display: none; }
 @media (max-width: 480px) { .mg-ticker { height: 30px; font-size: 0.76rem; } .mg-tk-label { padding: 0 9px; } }
 .mg-tk-label .sprite { flex: none; }
 .mg-tk-item .sprite { flex: none; opacity: 0.9; }
+/* The megaphone opened from the header ticker: a maple frame, a strong wash and a "selected" tag, with two short pulses. */
+.mg-msg.mg-focus { position: relative; outline: 3px solid var(--accent-fill); outline-offset: -3px; box-shadow: inset 8px 0 0 var(--band); background: color-mix(in srgb, var(--accent-fill) 20%, var(--panel)); }
+.mg-msg.mg-pulse { animation: mg-focus-pulse 0.9s ease-out 2; }
+.mg-msg.mg-focus .mg-nick::after { content: attr(data-pick); margin-left: 6px; padding: 1px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 800; color: var(--accent-ink); background: var(--accent-fill); vertical-align: 1px; }
+@keyframes mg-focus-pulse { 0% { transform: scale(1); } 40% { transform: scale(1.012); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .mg-msg.mg-pulse { animation: none; } }

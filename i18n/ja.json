@@ -2182,6 +2182,7 @@
  "Select a bar to view listings in that price band across all channels.": "棒を選ぶと全チャンネルのその価格帯の出品を表示します。",
  "Select the chart or use Tab to inspect each interval.": "グラフを選ぶかTabキーで区間ごとに確認できます。",
  "Select your current channel and Free Market room below, or use automatic detection. Update manual selections when you move.": "下で現在のチャンネルとフリーマーケットのルームを選ぶか、自動認識を使ってください。移動したら手動の選択を更新してください。",
+ "Selected": "選択中",
  "Selected item": "選択中のアイテム",
  "Selected price band": "選択中の価格帯",
  "Seller": "出品者",
