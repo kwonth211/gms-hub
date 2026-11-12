@@ -1795,7 +1795,7 @@ function marketBody(lang) {
 ${collectionStatus(lang)}</div>
 </div>
 ${marketGuide(lang)}
-${jsonScript('mk-data', { lang, api: config.voteApi, itemsUrl: href('/assets/items.json'), t, itemBase: href(langPath(lang, '/items/')), itemLink: IT[lang].pageLink, itemPages: PRICED.map((i) => i.id), itemPaths: Object.fromEntries(PRICED.map((i) => [i.id, href(langPath(lang, itemPath(i)))])) })}`;
+${jsonScript('mk-data', { lang, api: config.voteApi, itemsUrl: href('/assets/items.json'), t, itemBase: href(langPath(lang, '/items/')), itemLink: IT[lang].pageLink, itemPages: PRICED.map((i) => i.id), itemPaths: Object.fromEntries(PRICED.map((i) => [i.id, href(langPath(lang, itemPath(i)))])), alerts: config.alerts && config.vapidPublic ? { key: config.vapidPublic, sw: href('/sw.js') } : null })}`;
 }
 
 // "Drop rate" visitors mostly want to know which monster drops an item (Clarity: half of them went straight back), so the
@@ -2999,6 +2999,9 @@ for (const size of [180, 192, 512]) {
   fs.mkdirSync(path.join(out, 'assets'), { recursive: true });
   fs.writeFileSync(path.join(out, 'assets', `icon-${size}.png`), spritePng('mushroom', size));
 }
+// Service worker for price alerts only: it handles pushes and notification clicks and caches nothing, so pages are
+// never served stale.
+write('sw.js', fs.readFileSync(path.join(root, 'assets', 'sw.js'), 'utf8').replace('__API__', config.voteApi));
 write('manifest.webmanifest', JSON.stringify({
   name: 'GMS Hub', short_name: 'GMS Hub',
   description: 'MapleStory Classic World live prices, training routes, monster and item database',

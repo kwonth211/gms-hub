@@ -9,6 +9,8 @@
 // GET  /listings/recent -> [{ item, price, qty, sold, seller, channel, room, seen }]
 // GET  /market/top -> { at, stats, items: [{ item, rank, move, avg, n, sold, change, spark: [7 daily medians] }] }  (stored every 15 min)
 // GET  /market/item?id= -> { item, listings: [...last 7 days], trend }
+// POST /alerts {endpoint, keys, item, price, name, lang} · GET /alerts?endpoint= · DELETE /alerts?endpoint=&item= · GET /alerts/hits?endpoint=
+//      (price alerts by Web Push; see src/alerts.js)
 // GET  /megaphones?after=<id> -> { rows: [{ id, seen, kind, channel, nick, text }] }  (newest first)
 // POST /internal/megaphone {rows} (Bearer MEGAPHONE_TOKEN)  (admin collector)
 // GET  /rank -> { at, source, stats, rows: [top 1,000 by level] }  (ClassicRank, refreshed hourly by the schedule)
@@ -22,13 +24,14 @@ import { Presence, handlePresence } from './presence.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
 import { validRoom } from '../../assets/place.js';
 import { postMegaphones, listMegaphones, pruneMegaphones } from './megaphone.js';
+import { createAlert, listAlerts, deleteAlert, takeHits, checkAlerts } from './alerts.js';
 export { Presence };
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
 
 function corsHeaders(origin) {
   return {
     'Access-Control-Allow-Origin': ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0],
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     Vary: 'Origin'
   };
@@ -237,6 +240,7 @@ const api = {
     ctx.waitUntil(freshSnapshot(env, 'market', 0).then((data) => data || refreshSnapshot(env)));
     ctx.waitUntil(refreshRank(env).catch(() => null));
     ctx.waitUntil(pruneMegaphones(env).catch(() => null));
+    ctx.waitUntil(checkAlerts(env).catch(() => null));
   },
 
   async fetch(req, env) {
@@ -355,6 +359,17 @@ const api = {
         const invalid = e.message?.startsWith('bad ');
         return json({error: invalid ? e.message : 'market unavailable'}, cors, invalid ? 400 : 503);
       }
+    }
+
+    if (url.pathname === '/alerts' || url.pathname === '/alerts/hits') {
+      const endpoint = url.searchParams.get('endpoint') || '';
+      let out;
+      if (url.pathname === '/alerts/hits' && req.method === 'GET') out = await takeHits(env, endpoint);
+      else if (req.method === 'POST') out = await createAlert(env, await req.json().catch(() => null));
+      else if (req.method === 'DELETE') out = await deleteAlert(env, endpoint, url.searchParams.get('item'));
+      else if (req.method === 'GET') out = await listAlerts(env, endpoint);
+      else out = [{ error: 'method' }, 405];
+      return json(out[0], cors, out[1], 'no-store');
     }
 
     if (url.pathname === '/megaphones' && req.method === 'GET') {

@@ -2032,3 +2032,8 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-move.down { color: #b23a32; background: color-mix(in srgb, #d9534f 13%, transparent); border-color: color-mix(in srgb, #d9534f 35%, transparent); }
 [data-theme='dark'] .mb-move.up { color: #6fdc9a; } [data-theme='dark'] .mb-move.down { color: #ff8a80; }
 @media (max-width: 640px) { .mb-catalog .mb-move-cell { display: none; } }
+.mb-alert { margin: 8px 0; padding: 10px 12px; border: 1px solid var(--accent-band); border-radius: 10px; background: var(--accent-soft); }
+.mb-alert-form { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.mb-alert-form label { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-weight: 700; font-size: 0.86rem; }
+.mb-alert-form input { width: 130px; font: inherit; padding: 5px 8px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--panel); color: var(--text); }
+.mb-alert-form small { width: 100%; }

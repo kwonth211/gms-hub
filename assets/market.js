@@ -528,9 +528,10 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
       : "";
   const pageLink = D.itemPaths?.[id] ? `<a class="mb-item-page" href="${esc(D.itemPaths[id])}">${esc(D.itemLink)}</a>` : "";
   priceData = null;
+  if ($("mb-alert")) $("mb-alert").hidden = true;
   fillItemInfo(id);
   $("mk-detail").innerHTML =
-    `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(it.name)}</h2><small>${esc(it.en)}</small></div>${starButton(id, "mb-star-detail")}<button class="btn ghost small-btn" data-share-item="${id}" title="${tr("이 아이템 링크 복사", "Copy a link to this item")}">${tr("링크 복사", "Copy link")}</button><button class="btn ghost small-btn" data-close-item aria-label="${tr("상세 닫기", "Close details")}">×</button></header><p class="share-status mb-share-status" id="mb-share-status" role="status" aria-live="polite"></p><section class="mb-history" id="mb-history" aria-label="${tr("가격 한눈에 보기", "Price at a glance")}"><p class="muted note">${T.loading}</p></section>${stats}<section class="mb-info" id="mb-info" aria-live="polite"></section>${changed || reset ? visitNote(id) : ""}${pageLink}
+    `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(it.name)}</h2><small>${esc(it.en)}</small></div>${starButton(id, "mb-star-detail")}${D.alerts ? `<button type="button" class="btn ghost small-btn" data-alert-open="${id}">${tr("가격 알림", "Price alert")}</button>` : ""}<button class="btn ghost small-btn" data-share-item="${id}" title="${tr("이 아이템 링크 복사", "Copy a link to this item")}">${tr("링크 복사", "Copy link")}</button><button class="btn ghost small-btn" data-close-item aria-label="${tr("상세 닫기", "Close details")}">×</button></header><p class="share-status mb-share-status" id="mb-share-status" role="status" aria-live="polite"></p><section class="mb-alert" id="mb-alert" hidden></section><section class="mb-history" id="mb-history" aria-label="${tr("가격 한눈에 보기", "Price at a glance")}"><p class="muted note">${T.loading}</p></section>${stats}<section class="mb-info" id="mb-info" aria-live="polite"></section>${changed || reset ? visitNote(id) : ""}${pageLink}
  <div class="mb-tabs" role="tablist" aria-label="${tr("아이템 상세", "Item details")}"><button data-detail-tab="listings" role="tab" aria-selected="${detailTab === "listings"}" aria-controls="mb-detail-listings">${tr("판매 매물", "Shop listings")}</button><button data-detail-tab="charts" role="tab" aria-selected="${detailTab === "charts"}" aria-controls="mb-detail-charts">${tr("가격 추이·매물대", "Trends & depth")}</button><button class="mb-detail-refresh" data-refresh-item>${tr("새로고침", "Refresh")}</button></div>
  <div id="mb-detail-listings" role="tabpanel" aria-label="${tr("판매 매물", "Shop listings")}"><p class="muted note">${T.whereNote}</p><div class="mb-detail-filters"><label>${tr("채널", "Channel")}<select id="md-channel">${selectLocation("channel", detailState.channel)}</select></label><label>${tr("방", "Room")}<select id="md-room">${selectLocation("room", detailState.room)}</select></label><label>${tr("정렬", "Sort")}<select id="md-sort"><option value="price">${T.sortPrice}</option><option value="recent">${T.sortRecent}</option><option value="high">${tr("높은 가격순", "Highest price")}</option></select></label><label>${tr("상태", "Status")}<select id="md-state"><option value="open">${tr("판매 중 · 24h", "Asking · 24h")}</option><option value="all">${tr("전체 기록 · 7일", "All records · 7d")}</option><option value="sold">${tr("판매 완료 표시", "Marked sold")}</option><option value="stale">${tr("24시간 경과", "Over 24h old")}</option></select></label></div><div class="price-band-filter" id="md-price-band" hidden><span></span><button class="btn ghost small-btn" data-clear-band>${tr("가격대 해제", "Clear price band")}</button></div><p id="md-count" class="muted note" role="status"></p><div id="md-rows"></div><div id="md-pages" class="mb-pagination"></div></div>
  <div id="mb-detail-charts" role="tabpanel" aria-label="${tr("가격 추이와 매물대", "Trends and depth")}"><div id="mk-charts"><p>${T.loading}</p></div></div>`;
@@ -1007,6 +1008,62 @@ document.addEventListener("click", (e) => {
   histRange = b.dataset.histRange === "all" ? "all" : Number(b.dataset.histRange);
   renderDaily();
 });
+// Price alerts (Web Push): "tell me when this item is listed at or under X". The browser subscribes once with the site's
+// VAPID key; the worker's schedule checks new listings every 15 minutes and pushes; assets/sw.js shows the notification.
+// Shown only when site.config enables alerts.
+const b64key = (s) => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((s.length + 3) % 4)), (c) => c.charCodeAt(0));
+async function pushSubscription(create) {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return null;
+  const reg = await navigator.serviceWorker.register(D.alerts.sw);
+  await navigator.serviceWorker.ready;
+  return (await reg.pushManager.getSubscription()) || (create ? reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64key(D.alerts.key) }) : null);
+}
+async function openAlert(id) {
+  const box = $("mb-alert");
+  if (!box) return;
+  box.hidden = false;
+  const supported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+  if (!supported) {
+    box.innerHTML = `<p class="muted note">${tr("이 브라우저는 알림을 지원하지 않아요. 아이폰은 사이트를 홈 화면에 추가한 뒤 그 앱에서 켤 수 있어요.", "This browser cannot show alerts. On iPhone, add the site to your home screen and turn alerts on from there.")}</p>`;
+    return;
+  }
+  const open = (priceData?.profile || []).map((r) => r.price).filter((p) => p > 0).sort((a, b) => a - b);
+  const suggest = open.length >= 4 ? quant(open, 0.25) : open[0] || "";
+  let current = null;
+  try {
+    const sub = await pushSubscription(false);
+    if (sub) current = ((await (await fetch(`${D.api}/alerts?endpoint=${encodeURIComponent(sub.endpoint)}`)).json()).alerts || []).find((a) => a.item === id) || null;
+  } catch {}
+  box.innerHTML = `<form class="mb-alert-form" data-alert-item="${id}"><label>${tr("이 가격 이하로 올라오면 알려 주기", "Tell me when it is listed at or under")} <input name="price" inputmode="numeric" value="${current?.price || suggest}" required></label><button class="btn small-btn" type="submit">${current ? tr("알림 가격 바꾸기", "Update alert") : tr("알림 켜기", "Turn on alert")}</button>${current ? `<button type="button" class="btn ghost small-btn" data-alert-off="${id}">${tr("알림 끄기", "Turn off")}</button>` : ""}<small class="muted">${tr("새 매물은 15분마다 확인해요. 한 번 울리면 6시간 동안은 다시 울리지 않아요.", "New listings are checked every 15 minutes; after an alert it rests for 6 hours.")}</small><span class="share-status" role="status"></span></form>`;
+}
+document.addEventListener("click", async (e) => {
+  const openBtn = e.target.closest("[data-alert-open]");
+  if (openBtn) { openAlert(Number(openBtn.dataset.alertOpen)); window.track?.("alert_open"); return; }
+  const off = e.target.closest("[data-alert-off]");
+  if (off) {
+    const sub = await pushSubscription(false).catch(() => null);
+    if (sub) await fetch(`${D.api}/alerts?endpoint=${encodeURIComponent(sub.endpoint)}&item=${off.dataset.alertOff}`, { method: "DELETE" }).catch(() => null);
+    $("mb-alert").innerHTML = `<p class="muted note">${tr("알림을 껐어요.", "Alert turned off.")}</p>`;
+  }
+});
+document.addEventListener("submit", async (e) => {
+  const form = e.target.closest(".mb-alert-form");
+  if (!form) return;
+  e.preventDefault();
+  const status = form.querySelector(".share-status");
+  const price = Number(String(form.price.value).replace(/[^\d]/g, ""));
+  if (!(price > 0)) { status.textContent = tr("가격을 숫자로 적어 주세요.", "Enter a price in mesos."); return; }
+  try {
+    if ((await Notification.requestPermission()) !== "granted") { status.textContent = tr("브라우저 알림을 허용해야 받을 수 있어요.", "Allow notifications in the browser to get alerts."); return; }
+    const sub = (await pushSubscription(true)).toJSON();
+    const id = Number(form.dataset.alertItem);
+    const r = await fetch(`${D.api}/alerts`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ endpoint: sub.endpoint, keys: sub.keys, item: id, price, name: itemName(id), lang: D.lang }) });
+    if (!r.ok) throw Error(String(r.status));
+    status.textContent = tr(`${money(price)} 메소 이하로 올라오면 알려 드릴게요.`, `You will be alerted at ${money(price)} mesos or less.`);
+    window.track?.("alert_on", { item_id: id });
+  } catch { status.textContent = tr("알림을 켜지 못했어요. 잠시 뒤 다시 시도해 주세요.", "Could not turn the alert on. Please try again."); }
+});
+
 async function initialize() {
   // Drop sources fill the catalog's source column once the hover-card data arrives.
   loadTips().then(() => { if (view === "items" || $("mb-class").value) renderMain(); });

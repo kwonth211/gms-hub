@@ -27,5 +27,7 @@
   "priceReports": true,
   "support": {
     "kofi": ""
-  }
+  },
+  "vapidPublic": "BJqUwAMBL2kL0VOHin8sIsDgRP-g7I34ddinSHW3JJlCKoU8tSXPSjTZbQo4I71kSWSvbSg8XAg8w_e29WOWaog",
+  "alerts": false
 }
