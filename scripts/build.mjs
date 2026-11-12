@@ -644,6 +644,7 @@ ${naverVerify}
 <link rel="apple-touch-icon" href="${href('/assets/icon-180.png')}">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="preconnect" href="${esc(config.voteApi)}" crossorigin>
+${pageKey === 'market' ? `<link rel="preload" as="fetch" href="${esc(config.voteApi)}/market/catalog" crossorigin>` : ''}
 <link rel="preload" as="style" href="${PRETENDARD}" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="${PRETENDARD}"></noscript>
 <link rel="stylesheet" href="${scriptSrc('style.css')}">
 <style>${CHARM_VARS}</style>

@@ -16,7 +16,7 @@ if (boxes.length) {
     try {
       [stats, names] = await Promise.all([
         fetch(`${api}/megaphones/stats`).then((r) => r.json()),
-        fetch(first.dataset.items).then((r) => r.json()).then((rows) => new Map(rows.map(([id, k, e]) => [id, ko && k ? k : e]))),
+        (window.__gmsItems ||= fetch(first.dataset.items).then((r) => r.json())).then((rows) => new Map(rows.map(([id, k, e]) => [id, ko && k ? k : e]))),
       ]);
     } catch (e) { return; }
     if (!stats?.items?.length) return;

@@ -174,11 +174,12 @@ function loadItems() {
   itemError = false;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
-  itemsPromise = fetch(searchPanel.dataset.items, { signal: controller.signal })
+  // The same download serves the header search and the trends panel (window.__gmsItems).
+  itemsPromise = (window.__gmsItems ||= fetch(searchPanel.dataset.items, { signal: controller.signal })
     .then((r) => {
       if (!r.ok) throw new Error(`Item index: ${r.status}`);
       return r.json();
-    })
+    }))
     .then((rows) => {
       if (!Array.isArray(rows) || !rows.length || rows.some((row) => !Array.isArray(row) || !Number.isInteger(row[0]) || typeof row[2] !== 'string')) throw new Error('Invalid item index');
       items = rows.map(([id, ko, en]) => ({ id, ko, en, name: korean ? ko || en : en }));

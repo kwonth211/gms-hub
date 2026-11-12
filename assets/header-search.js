@@ -19,7 +19,8 @@ if (btn) {
 
   const pageEntries = JSON.parse(btn.dataset.pages || '[]').map(([title, href]) => indexEntry({ type: 'page', id: href, title, href, names: [title] }));
   const load = () => (loading ||= Promise.all([
-    fetch(btn.dataset.items).then((r) => r.json()).catch(() => []),
+    // One download of the item index per page, shared with the home search and the trends panel.
+    (window.__gmsItems ||= fetch(btn.dataset.items).then((r) => r.json())).catch(() => []),
     fetch(btn.dataset.mobs).then((r) => r.json()).catch(() => []),
   ]).then(([items, mobs]) => {
     entries = [
