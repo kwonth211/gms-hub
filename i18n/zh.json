@@ -1022,6 +1022,7 @@
  "Free Market prices": "自由市場價格",
  "Free Market prices for {n0} {e0} World items scanned in the last {n1} days, grouped by type and refreshed daily.": "最近 {n1} 天掃描到的 {n0} 種 {e0} World 道具的自由市場價格，依類型分組並每日更新。",
  "Free Market room": "自由市場房間",
+ "Free Market room or spot": "自由市場房間或地點",
  "Free Market room {room}": "自由市場 {room} 號房",
  "Free Market tracking tool for Classic World, with its source on GitHub.": "Classic World 的自由市場追蹤工具，原始碼在 GitHub。",
  "Free accuracy that covers hit requirements; very useful until {n0}": "免费的命中，能满足命中要求；{n0} 级前很有用",

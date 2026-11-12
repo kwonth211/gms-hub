@@ -125,7 +125,7 @@ export async function browseListings(env, p) {
   }
   for (const [key, max] of [
     ["channel", 40],
-    ["room", 40],
+    ["room", 101],
     ["item", 9999999],
   ]) {
     const n = integer(p, key, key === "item" ? 1000000 : 1, max, null);

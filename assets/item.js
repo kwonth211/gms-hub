@@ -1,3 +1,4 @@
+import { placeLabel } from './place.js';
 import { DAY, parseUtc, newMark } from './market-data.js';
 import { mountMarketCharts } from './market-charts.js';
 // Item page: the price summary is baked into the HTML at build time; the trend charts and open shops load live here.
@@ -18,7 +19,7 @@ function ago(utc) {
 }
 
 const line = (r) =>
-  `<tr><td class="num">${nf.format(r.price)}</td><td>${nf.format(r.qty)}</td><td>${esc(r.seller)}</td><td><span class="where">CH ${r.channel}</span> <span class="where">FM ${r.room}</span></td><td class="muted">${newMark(r.seen)}${ago(r.seen)}</td></tr>`;
+  `<tr><td class="num">${nf.format(r.price)}</td><td>${nf.format(r.qty)}</td><td>${esc(r.seller)}</td><td><span class="where">CH ${r.channel}</span> <span class="where">${placeLabel(r.room, document.documentElement.lang === 'ko')}</span></td><td class="muted">${newMark(r.seen)}${ago(r.seen)}</td></tr>`;
 const table = (rs) =>
   `<div class="mk-where"><table><thead><tr><th>${T.table.price}</th><th>${T.table.qty}</th><th>${T.table.seller}</th><th>${T.table.where}</th><th>${T.table.seen}</th></tr></thead><tbody>${rs.map(line).join('')}</tbody></table></div>`;
 

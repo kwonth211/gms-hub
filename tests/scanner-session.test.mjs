@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import * as reader from '../assets/shop-reader.js';
 import * as state from '../assets/scan-state.js';
+import * as place from '../assets/place.js';
 
 // No browser permissions or live writes: exercise the actual scanner session with a tiny DOM and a fake transport.
 class Element {
@@ -27,7 +28,7 @@ async function session() {
   get('i18n').textContent = JSON.stringify({ lang: 'en', api: '/api', itemsUrl: '/items', glyphsUrl: '/glyphs', summary: '{items}', stopped: '{n}', uploadOk: '{n}', uploadNeed: 'pending', uploadFail: 'failed', roomOk: '{room}', channelOk: '{ch}', shopOk: '{n}', shopPartial: '{n}' });
   const requests = [];
   const control = { accept: true, failFix: false };
-  const sandbox = { ...reader, ...state, Intl, console, setInterval: () => 0, clearInterval() {}, queueMicrotask, Uint8Array, Date,
+  const sandbox = { ...place, ...reader, ...state, Intl, console, setInterval: () => 0, clearInterval() {}, queueMicrotask, Uint8Array, Date,
     location: { hostname: 'test.invalid' }, window: { devicePixelRatio: 1 }, navigator: { mediaDevices: { getDisplayMedia() {} } }, track() {},
     document: { getElementById: get, createElement: () => new Element(), body: new Element() },
     fetch: async (url, options) => {

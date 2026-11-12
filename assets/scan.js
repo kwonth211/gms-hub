@@ -3,6 +3,7 @@
 // dev server, which keeps them as samples for building the shop reader.
 import { detectScale, findChannel, findRoom, findShopRows, findShopRowsLoose, matchItem, parsePriceLine, priceFromLine, readLine, readOwner, scrollTier } from './shop-reader.js';
 
+import { KERNING, placeLabel } from './place.js';
 import { SELLER, validLocation, listingKey, payload, fingerprint, validListing, canUpload, sameShop, verifiedPrice } from './scan-state.js';
 
 const i18n = JSON.parse(document.getElementById('i18n').textContent);
@@ -315,7 +316,7 @@ async function rowByOcr(row, readName = true) {
   return { name, price };
 }
 
-const where = (ch, fm) => [ch ? `CH ${ch}` : '', fm ? `FM${fm}` : ''].filter(Boolean);
+const where = (ch, fm) => [ch ? `CH ${ch}` : '', fm ? placeLabel(fm, i18n.lang === 'ko') : ''].filter(Boolean);
 
 // The five recognition steps under the buttons: each is waiting, fine, or needs something from the player.
 function check(step, state, text) {
@@ -502,7 +503,8 @@ function openEditor(r, tr) {
   form.item.focus();
 }
 
-const locationOptions = (value, prefix) => `<option value="">${i18n.chooseLocation}</option>` + Array.from({ length: 40 }, (_, i) => `<option value="${i + 1}"${value === i + 1 ? ' selected' : ''}>${prefix} ${i + 1}</option>`).join('');
+const locationOptions = (value, prefix) => `<option value="">${i18n.chooseLocation}</option>` + Array.from({ length: 40 }, (_, i) => `<option value="${i + 1}"${value === i + 1 ? ' selected' : ''}>${prefix} ${i + 1}</option>`).join('') +
+  (prefix === 'FM' ? `<option value="${KERNING}"${value === KERNING ? ' selected' : ''}>${placeLabel(KERNING, i18n.lang === 'ko')}</option>` : '');
 
 function applyEdit(r, tr, change) {
   if (sending) { check('upload', 'warn', i18n.sending); render(r, tr); return; }

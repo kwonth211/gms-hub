@@ -1,5 +1,6 @@
 import './collection-status.js';
 import { DAY, parseUtc, newMark } from "./market-data.js";
+import { KERNING, placeLabel } from "./place.js";
 import { makeMarketIndex, catalogRows, matchingIds } from "./market-catalog.js";
 import { mountMarketCharts } from "./market-charts.js";
 import { WISHLIST_KEY, RECENT_KEY, SEEN_KEY, WISHLIST_MAX, readList, addRecent, removeRecent, toggleWishlist, snapshot, visitDelta, pruneSeen } from "./market-memory.js";
@@ -159,7 +160,7 @@ function pager(data, scope) {
 function listingTable(rows, { showItem = true, shopButtons = true } = {}) {
   if (!rows.length)
     return `<p class="market-empty">${tr("조건에 맞는 매물이 없어요. 검색어나 필터를 바꿔 보세요.", "No listings match. Try changing the search or filters.")}</p>`;
-  return `<div class="mb-table-wrap"><table class="mb-table mb-listings-table"><thead><tr>${showItem ? `<th>${tr("아이템", "Item")}</th>` : ""}<th>${tr("가격", "Price")}<small>${T.priceUnit}</small></th><th>${tr("수량", "Qty")}</th><th>${T.table.seller}</th><th>${T.table.where}</th><th>${tr("최근 확인", "Last seen")}</th></tr></thead><tbody>${rows.map((r) => `<tr>${showItem ? `<td class="mb-cell-item">${itemLink(r.item)}</td>` : ""}<td class="num mb-cell-price">${money(r.price)}${r.qty > 1 ? `<small>${T.total} ${money(r.price * r.qty)}</small>` : ""}</td><td class="mb-cell-qty"><span class="mb-mobile-label">${tr("수량", "Qty")} </span>${money(r.qty)}</td><td class="mb-cell-seller">${shopButtons ? `<button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)} ↗</button>` : esc(r.seller)}</td><td class="mb-cell-location"><span class="where">CH ${r.channel}</span> <span class="where">FM ${r.room}</span></td><td class="mb-cell-seen">${newMark(r.seen)}${when(r.seen)}<small class="${r.sold ? "mb-sold" : ""}">${r.sold ? tr("판매 완료 표시", "Marked sold") : Date.now() - parseUtc(r.seen) >= DAY ? tr("24시간 경과", "Over 24h old") : tr("판매 중 관측", "Seen for sale")}</small></td></tr>`).join("")}</tbody></table></div>`;
+  return `<div class="mb-table-wrap"><table class="mb-table mb-listings-table"><thead><tr>${showItem ? `<th>${tr("아이템", "Item")}</th>` : ""}<th>${tr("가격", "Price")}<small>${T.priceUnit}</small></th><th>${tr("수량", "Qty")}</th><th>${T.table.seller}</th><th>${T.table.where}</th><th>${tr("최근 확인", "Last seen")}</th></tr></thead><tbody>${rows.map((r) => `<tr>${showItem ? `<td class="mb-cell-item">${itemLink(r.item)}</td>` : ""}<td class="num mb-cell-price">${money(r.price)}${r.qty > 1 ? `<small>${T.total} ${money(r.price * r.qty)}</small>` : ""}</td><td class="mb-cell-qty"><span class="mb-mobile-label">${tr("수량", "Qty")} </span>${money(r.qty)}</td><td class="mb-cell-seller">${shopButtons ? `<button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)} ↗</button>` : esc(r.seller)}</td><td class="mb-cell-location"><span class="where">CH ${r.channel}</span> <span class="where">${placeLabel(r.room, ko)}</span></td><td class="mb-cell-seen">${newMark(r.seen)}${when(r.seen)}<small class="${r.sold ? "mb-sold" : ""}">${r.sold ? tr("판매 완료 표시", "Marked sold") : Date.now() - parseUtc(r.seen) >= DAY ? tr("24시간 경과", "Over 24h old") : tr("판매 중 관측", "Seen for sale")}</small></td></tr>`).join("")}</tbody></table></div>`;
 }
 // Every browsing filter lives in the address, so refresh, back and a copied link reopen the same view.
 // Defaults are left out to keep plain visits on the canonical URL.
@@ -402,7 +403,7 @@ function setView(next, keepPage = false) {
   renderMain();
 }
 const selectLocation = (type, value) =>
-  `<option value="">${type === "channel" ? T.filterChannel : T.filterRoom}</option>${Array.from({ length: 40 }, (_, i) => `<option value="${i + 1}" ${String(i + 1) === String(value) ? "selected" : ""}>${type === "channel" ? "CH" : "FM"} ${i + 1}</option>`).join("")}`;
+  `<option value="">${type === "channel" ? T.filterChannel : T.filterRoom}</option>${Array.from({ length: 40 }, (_, i) => `<option value="${i + 1}" ${String(i + 1) === String(value) ? "selected" : ""}>${type === "channel" ? "CH" : "FM"} ${i + 1}</option>`).join("")}${type === "channel" ? "" : `<option value="${KERNING}" ${String(KERNING) === String(value) ? "selected" : ""}>${placeLabel(KERNING, ko)}</option>`}`;
 function detailPanels() {
   for (const key of ["listings", "charts"]) {
     $("mb-detail-" + key).hidden = detailTab !== key;
@@ -554,7 +555,7 @@ async function showShop(seller, channel, room, shopPage = 1) {
   shopContext = { seller, channel, room, page: shopPage };
   const dialog = $("mb-shop");
   $("mb-shop-body").innerHTML =
-    `<header class="mk-head"><div><h2 id="mb-shop-title">${esc(seller)}</h2><p>CH ${channel} · FM ${room}</p></div><button class="btn ghost small-btn" data-close-shop aria-label="${tr("상점 닫기", "Close shop")}">×</button></header><p class="muted note">${tr("이 위치의 상점에서 우리 DB에 확인된 판매 매물이에요. 전체 재고를 뜻하지는 않아요.", "Asking listings recorded in our database for this shop and location, not guaranteed complete inventory.")}</p><p id="mb-shop-count"></p><div id="mb-shop-rows">${T.loading}</div><div id="mb-shop-pages" class="mb-pagination"></div>`;
+    `<header class="mk-head"><div><h2 id="mb-shop-title">${esc(seller)}</h2><p>CH ${channel} · ${placeLabel(Number(room), ko)}</p></div><button class="btn ghost small-btn" data-close-shop aria-label="${tr("상점 닫기", "Close shop")}">×</button></header><p class="muted note">${tr("이 위치의 상점에서 우리 DB에 확인된 판매 매물이에요. 전체 재고를 뜻하지는 않아요.", "Asking listings recorded in our database for this shop and location, not guaranteed complete inventory.")}</p><p id="mb-shop-count"></p><div id="mb-shop-rows">${T.loading}</div><div id="mb-shop-pages" class="mb-pagination"></div>`;
   dialog.setAttribute("aria-labelledby", "mb-shop-title");
   if (!dialog.open) dialog.showModal();
   try {

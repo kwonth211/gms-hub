@@ -1,3 +1,4 @@
+import { placeLabel } from './place.js';
 // My shop vs the market: a seller's open listings, each against the item's market median and today's cheapest competing
 // listing. The name stays in this browser (gms-my-shop) so a returning seller gets the report straight away.
 const tx = globalThis.tx || ((s) => s);
@@ -66,7 +67,7 @@ if (root) {
 <td class="num">${rank} / ${comp.length + 1}</td>
 <td><span class="ms-verdict">${esc(text)}</span></td></tr>`;
     });
-    const where = [...new Set(rows.map((r) => `CH ${r.channel} · FM${r.room}`))].join(', ');
+    const where = [...new Set(rows.map((r) => `CH ${r.channel} · ${placeLabel(r.room, document.documentElement.lang === 'ko')}`))].join(', ');
     status.textContent = '';
     out.innerHTML = `<section class="panel my-shop-summary"><h2>${esc(seller)} <small>${esc(where)}</small></h2>
 <dl><div><dt>${tr('판매 중', 'Listed')}</dt><dd>${rows.length}${tr('개', '')}</dd></div><div><dt>${tr('합계', 'Total')}</dt><dd>${nf.format(total)}</dd></div><div><dt>${tr('가격 확인 필요', 'Worth a look')}</dt><dd>${warn}${tr('개', '')}</dd></div></dl></section>

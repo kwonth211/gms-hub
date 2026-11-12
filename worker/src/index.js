@@ -20,6 +20,7 @@ import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoint
 import { cachedPublicResponse } from './public-cache.js';
 import { Presence, handlePresence } from './presence.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
+import { validRoom } from '../../assets/place.js';
 import { postMegaphones, listMegaphones, pruneMegaphones } from './megaphone.js';
 export { Presence };
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
@@ -396,7 +397,7 @@ const api = {
       const body = await req.json().catch(() => null);
       const room = Number(body?.room);
       const key = typeof body?.key === 'string' ? body.key : '';
-      if (!Number.isInteger(room) || room < 1 || room > 40 || !/^[0-9.]{10,4000}$/.test(key)) return json({ error: 'bad input' }, cors, 400);
+      if (!validRoom(room) || !/^[0-9.]{10,4000}$/.test(key)) return json({ error: 'bad input' }, cors, 400);
       const reporter = await visitorHash(req.headers.get('CF-Connecting-IP') || '', 'room', env.VOTE_SALT);
       await env.DB.prepare('INSERT INTO room_titles (key, room, reporter) VALUES (?, ?, ?)').bind(key, room, reporter).run();
       return json({ ok: true }, cors);
@@ -415,11 +416,11 @@ const api = {
         valid.has(to.item) && Number.isInteger(to.price) && to.price >= 1 && to.price <= 10_000_000_000 &&
         Number.isInteger(to.qty) && to.qty >= 1 && to.qty <= 10000 && typeof to.seller === 'string' && /^[A-Za-z0-9]{2,13}$/.test(to.seller) &&
         typeof to.sold === 'boolean' && Number.isInteger(to.channel) && to.channel >= 1 && to.channel <= 40 &&
-        Number.isInteger(to.room) && to.room >= 1 && to.room <= 40;
+        validRoom(to.room);
       if (!okTo || !Number.isInteger(from.item) || !Number.isInteger(from.price) ||
           typeof from.seller !== 'string' || !/^[A-Za-z0-9]{2,13}$/.test(from.seller) ||
           !Number.isInteger(from.channel) || from.channel < 1 || from.channel > 40 ||
-          !Number.isInteger(from.room) || from.room < 1 || from.room > 40) return json({ error: 'bad input' }, cors, 400);
+          !validRoom(from.room)) return json({ error: 'bad input' }, cors, 400);
       const reporter = await visitorHash(req.headers.get('CF-Connecting-IP') || '', 'scan', env.VOTE_SALT);
       const where = 'seller = ? AND item = ? AND price = ? AND channel = ? AND room = ? AND reporter = ?';
       const keys = [from.seller, from.item, from.price, from.channel, from.room, reporter];
@@ -456,7 +457,7 @@ const api = {
           (r.qty === undefined || (Number.isInteger(r.qty) && r.qty >= 1 && r.qty <= 10000)) &&
           typeof r.seller === 'string' && /^[A-Za-z0-9]{2,13}$/.test(r.seller) &&
           Number.isInteger(r.channel) && r.channel >= 1 && r.channel <= 40 &&
-          Number.isInteger(r.room) && r.room >= 1 && r.room <= 40
+          validRoom(r.room)
       );
       if (ok.length !== rows.length) return json({ error: 'invalid listing', stored: 0 }, cors, 400);
       const ip = req.headers.get('CF-Connecting-IP') || '';

@@ -1314,7 +1314,7 @@ const SCAN = {
     privacy: '공유한 화면은 이 컴퓨터 안에서만 읽고, 읽어 낸 아이템과 가격만 시세에 반영해요. 게임 화면 자체는 어디에도 올리지 않아요.',
     i: {
       loading: '아이템·글자 데이터를 불러오는 중이에요…', ready: '준비됐어요. 채널·방을 고르고 화면을 공유하세요.', dataFail: '인식 데이터를 불러오지 못했어요. 다시 시도해 주세요.',
-      duplicateEdit: '같은 매물이 이미 있어요. 기존 줄을 수정해 주세요.', retry: '다시 시도', manual: '직접 선택', channelLabel: '채널', roomLabel: '자유시장 방', chooseLocation: '선택해 주세요',
+      duplicateEdit: '같은 매물이 이미 있어요. 기존 줄을 수정해 주세요.', retry: '다시 시도', manual: '직접 선택', channelLabel: '채널', roomLabel: '자유시장 방·위치', chooseLocation: '선택해 주세요',
       locationChanged: '선택한 위치는 다음 인식부터 적용돼요. 기존 매물은 각 줄에서 수정할 수 있어요.', sending: '전송 중이에요. 완료 후 수정해 주세요.',
       watching: '공유 중 · 상점 화면 {n}장 확인',
       selling: '판매 중', sold: '판매 완료 표시', ok: '인식됨', check: '확인 필요', each: '메소', now: '방금',
@@ -1366,7 +1366,7 @@ const SCAN = {
     privacy: 'The shared screen is read only on this computer; just the items and prices it finds go into the price data. The game screen itself is never uploaded.',
     i: {
       loading: 'Loading item and text data…', ready: 'Ready. Choose your location and share your window.', dataFail: 'Could not load recognition data. Please retry.',
-      duplicateEdit: 'This listing already exists. Edit its existing row.', retry: 'Retry', manual: 'Manual', channelLabel: 'Channel', roomLabel: 'Free Market room', chooseLocation: 'Choose location',
+      duplicateEdit: 'This listing already exists. Edit its existing row.', retry: 'Retry', manual: 'Manual', channelLabel: 'Channel', roomLabel: 'Free Market room or spot', chooseLocation: 'Choose location',
       locationChanged: 'Location applies to the next read. Use each row’s edit button to correct earlier listings.', sending: 'Sending. Please edit after the upload finishes.',
       watching: 'Sharing · {n} shop screens checked',
       selling: 'For sale', sold: 'Sold', ok: 'OK', check: 'Check', each: 'mesos', now: 'now',
@@ -1401,8 +1401,10 @@ const SCAN = {
   }
 };
 
+// Free Market rooms, plus town streets players use as markets (assets/place.js: 101 is the Kerning construction site).
 function locationChoices(lang, prefix) {
-  return `<option value="">${lang === 'ko' ? '자동 인식' : 'Automatic'}</option>` + Array.from({ length: 40 }, (_, i) => `<option value="${i + 1}">${prefix} ${i + 1}</option>`).join('');
+  return `<option value="">${lang === 'ko' ? '자동 인식' : 'Automatic'}</option>` + Array.from({ length: 40 }, (_, i) => `<option value="${i + 1}">${prefix} ${i + 1}</option>`).join('') +
+    (prefix === 'FM' ? `<option value="101">${lang === 'ko' ? '커닝 공사장' : 'Kerning Construction Site'}</option>` : '');
 }
 
 // "My shop vs the market": a seller name in, every open listing of that shop out, each against the item's market median and
