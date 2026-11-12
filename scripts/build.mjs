@@ -2253,6 +2253,8 @@ function mesoText(lang, n) {
 const IT = {
   ko: {
     title: '{name} 시세 · 가격 (글클메 자유시장) | GMS Hub',
+    // With a price the title carries it, so the search result answers the question before the click.
+    titlePrice: '{name} 시세 {median} 메소 ({date}) · 글클메 자유시장 | GMS Hub',
     desc: '{name} 글클메 자유시장 시세: {basis} 중앙값 {median} 메소 (최근 14일 매물 {n}건, {low}~{high}). 유저가 스캔한 상점 매물 기준이고, 7일 추이와 지금 파는 채널·방도 보여 줘요.',
     descNone: '{name} 글로벌 메이플 클래식 월드 아이템 정보 ({info}). 최근 14일 스캔 시세가 아직 없어요. 상점을 스캔하면 시세가 바로 쌓여요.',
     h1: '{name} 시세',
@@ -2301,6 +2303,7 @@ const IT = {
   },
   en: {
     title: '{name} Price – MapleStory Classic World Free Market | GMS Hub',
+    titlePrice: '{name} Price: {median} mesos ({date}) – MapleStory Classic World | GMS Hub',
     desc: '{name} price in MapleStory Classic World: {basis} median {median} mesos ({n} listings in 14 days, {low}–{high}). From Free Market shops players scanned, with a 7-day trend and where it is for sale now.',
     descNone: '{name} in MapleStory Classic World ({info}). No scanned price in the last 14 days yet; scanning a shop that sells it adds one right away.',
     h1: '{name} Price',
@@ -2833,7 +2836,7 @@ for (const lang of LANGS) {
         lang,
         pageKey: 'item',
         pagePath: itemPath(i),
-        title: fill(dropOnly ? it.titleDrop : it.title, { name }),
+        title: priceOf(i)?.median ? fill(it.titlePrice, { name, median: mesoText(lang, priceOf(i).median), date: PRICES_DATE.slice(5).replace('-', '/') }) : fill(dropOnly ? it.titleDrop : it.title, { name }),
         desc: itemDesc(lang, i),
         body: itemBody(lang, i),
         modules: ['item.js'],
