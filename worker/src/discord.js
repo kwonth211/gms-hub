@@ -1,7 +1,8 @@
-// Feeds for the GMS Hub Discord server. Two channel webhooks, both worker secrets and both optional (without them nothing
-// is sent): DISCORD_MEGA_WEBHOOK gets every new megaphone as it is ingested (no D1 read: the rows are already in hand),
-// DISCORD_TRENDS_WEBHOOK gets a summary of the megaphone trend snapshot four times a day. Megaphone text is written by
-// players, so it goes out as inline code with mentions and link previews off.
+// Feeds for the GMS Hub Discord server through channel webhooks (worker secrets, optional: without them nothing is sent).
+// DISCORD_TRENDS_WEBHOOK gets a summary of the megaphone trend snapshot four times a day. megaphonesToDiscord can relay
+// megaphones to DISCORD_MEGA_WEBHOOK; relaying every megaphone was tried and dropped (a copy of the game chat is noise), so
+// nothing calls it now; it is kept for item alerts. Megaphone text is written by players, so it goes out as inline
+// code with mentions and link previews off.
 const MARK = { super: '📣', item: '🟡', double: '🟢', mega: '📢' };
 const code = (s) => '`' + String(s).replace(/`/g, "'").replace(/\s+/g, ' ').trim() + '`';
 export const megaphoneLine = (r) => `${MARK[r.kind] || '📢'} ${r.channel ? `CH ${r.channel} · ` : ''}**${r.nick}** ${code(r.text)}`;

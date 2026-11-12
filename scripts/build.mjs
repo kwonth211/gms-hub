@@ -13,6 +13,7 @@ import { megaphoneBody } from './megaphone-page.mjs';
 import { selectRoutes, routeCards, publicTrainingData, jobNames, validateTraining } from '../assets/training-evidence.js';
 import { loadLocales, loadMemory, entityMatcher, localizePage, clientKeys, TX_RUNTIME } from './i18n.mjs';
 import { SKILLS as DMG_SKILLS, windowRange as dmgWindow, hitRange as dmgHit, hitsToKill as dmgKill, accuracyNeeded as dmgAccNeed } from '../assets/damage-calc.js';
+import { indexEntry } from '../assets/search-index.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const out = path.join(root, 'dist');
@@ -3181,6 +3182,15 @@ write('assets/shop-glyphs.json', fs.readFileSync(path.join(root, 'data/shop-glyp
 write('assets/mobs.json', JSON.stringify(MOBS.map((m) => [m.id, m.ko || '', m.en, m.lv, m.hp, m.wdef, m.mdef, m.eva, m.el || '', m.undead ? 1 : 0, m.boss ? 1 : 0, m.mp, m.aka.join(' '), m.status || ''])));
 write('assets/weapons.json', JSON.stringify(readJson('data/weapons.json').weapons.map((w) => [w.id, w.ko || '', w.en, w.type, w.lv, w.watk || 0, w.matk || 0])));
 write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko || '', i.en, i.cat, i.sub, i.lv || 0])));
+// Data for the Discord bot (worker/src/discord-bot.js): the item search index built here once, so the worker does not
+// spend its CPU budget indexing 5,000 names, plus the monsters and training routes its commands answer from.
+write('assets/bot.json', JSON.stringify({
+  items: itemsData.items.map((i) => { const { names, ...e } = indexEntry({ id: i.id, title: i.en, ko: i.ko || '', en: i.en, names: [i.ko, i.en] }); return e; }),
+  mobs: MOBS.filter((m) => !m.status).map((m) => ({ id: m.id, ko: m.ko || '', en: m.en, aka: m.aka, lv: m.lv, hp: m.hp, exp: m.exp,
+    maps: (m.locations || []).filter((l) => l.availability === 'open').slice(0, 3).map((l) => [l.ko || '', l.en, l.count]),
+    drops: (m.drops || []).filter((x) => x.cat !== 'Etc').slice(0, 8).map((x) => [x.ko || '', x.en]) })),
+  routes: training.routes.map((r) => ({ id: r.id, min: r.level.min, max: r.level.max, jobs: r.jobs, title: r.title, monsters: r.monsters, summary: r.summary })),
+}));
 // Hover cards (assets/item-tip.js): the static half of what a card shows for every item or monster a page can link to.
 // Live prices come from the worker on hover.
 // items: id -> [ko, en, cat, sub, reqLevel, jobBits, req, inc, slots, sellPrice, scroll [gain, success, destroyOnFail] | 0,

@@ -23,7 +23,8 @@ import { cachedPublicResponse } from './public-cache.js';
 import { Presence, handlePresence } from './presence.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
 import { validRoom } from '../../assets/place.js';
-import { megaphonesToDiscord, trendsToDiscord } from './discord.js';
+import { trendsToDiscord } from './discord.js';
+import { discordInteractions } from './discord-bot.js';
 import { postMegaphones, listMegaphones, pruneMegaphones, megaphoneAsks, megaphoneStats } from './megaphone.js';
 import { createAlert, listAlerts, deleteAlert, takeHits, checkAlerts } from './alerts.js';
 export { Presence };
@@ -267,11 +268,16 @@ const api = {
     // Private extension service worker uses a narrowly scoped ingestion token, never public CORS.
     if (url.pathname === '/internal/market-batch') return handleMarketBatch(req, env, knownItems);
     // The collector page runs on gms-hub.com (or localhost while testing) and sends the admin key, so it needs CORS.
+    // Discord slash commands (signed by Discord; see discord-bot.js). Prices come from this worker's own summary.
+    if (url.pathname === '/discord/interactions' && req.method === 'POST') {
+      return discordInteractions(req, env, { discord: env.DISCORD_INVITE,
+        prices: (id) => api.fetch(new Request(`https://internal.invalid/prices?ids=${id}`), env, ctx).then((r) => r.json()) });
+    }
     if (url.pathname === '/internal/megaphone') {
       const allow = { ...corsHeaders(req.headers.get('Origin') || ''), 'Access-Control-Allow-Headers': 'Content-Type, Authorization' };
       if (req.method === 'OPTIONS') return new Response(null, { headers: allow });
       if (req.method !== 'POST') return json({ error: 'method not allowed' }, allow, 405);
-      const r = await postMegaphones(req, env, itemNames, (rows) => { const p = megaphonesToDiscord(env, rows); if (ctx?.waitUntil) ctx.waitUntil(p); });
+      const r = await postMegaphones(req, env, itemNames);
       for (const [k, v] of Object.entries(allow)) r.headers.set(k, v);
       return r;
     }
