@@ -662,18 +662,23 @@ const CHARM_VARS = `:root{--cur:url("${spriteDataPng('cursor', 2)}") 1 1,auto;--
 
 function header(lang, pagePath, only) {
   const t = T[lang];
+  // Only the pages people actually open all day sit in the header (page views, 2026-11-12: market 34%, training 19%,
+  // monsters 14%, megaphones, and the new EXP tracker). The rest, the three calculators and the site directory, live in
+  // the "more" menu and in the header search, so nothing is lost, just out of the way.
   const tabs = [
-    ['/', 'book', t.navLinks],
-    ['/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monsters'],
-    ['/tools/training/', 'sword', t.navTraining],
-    ['/tools/exp/', 'clock', EXP[lang].nav],
-    ['/tools/scroll/', 'scroll', t.navScroll],
-    ['/tools/drop-rate/', 'bag', t.navDrop],
-    ['/tools/damage/', 'hammer', DMG[lang].h1],
     ['/tools/market/', 'coin', t.navMarket],
+    ['/tools/training/', 'sword', t.navTraining],
+    ['/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monsters'],
+    ['/tools/exp/', 'clock', EXP[lang].nav],
     ['/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Megaphones']
   ];
-  // Seven tabs share a phone's width, so English labels that would break mid-word ("Calcul/ator") get a one-word form there.
+  const moved = [
+    ['/', 'book', t.navLinks],
+    ['/tools/scroll/', 'scroll', t.navScroll],
+    ['/tools/drop-rate/', 'bag', t.navDrop],
+    ['/tools/damage/', 'hammer', DMG[lang].h1]
+  ];
+  // English labels that would break mid-word on a phone ("Calcul/ator") get a one-word form there.
   // The newest tab carries a small N so returning visitors notice it.
   const NEW_TAB = '/tools/exp/';
   const SHORT_EN = { '/': 'Home', '/monsters/': 'Mobs', '/tools/training/': 'Spots', '/tools/scroll/': 'Scrolls', '/tools/drop-rate/': 'Odds', '/tools/damage/': 'Hits', '/tools/market/': 'Market', '/megaphone/': 'Megas', '/tools/exp/': 'EXP' };
@@ -687,10 +692,10 @@ function header(lang, pagePath, only) {
 <a class="brand" href="${href(langPath(lang, '/'))}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>${esc(t.gameName)}</small></span></a>
 <nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}</nav>
 ${presencePill(lang)}
-${headerSearch(lang, tabs)}
+${headerSearch(lang, [...tabs, ...moved])}
 <button type="button" class="theme-toggle" data-theme-toggle>${THEME_ICON}<span class="sr-only">${lang === 'ko' ? '낮과 밤 화면 바꾸기' : 'Switch day or night theme'}</span></button>
 <details class="lang-menu"><summary class="lang-current" aria-label="Language"><span class="lang-full" translate="no">${LANG_NAMES[lang]}</span><span class="lang-code" translate="no" aria-hidden="true">${lang.toUpperCase()}</span></summary><div class="lang-list">${(only ? [lang, ...ALL_LANGS.filter((l) => l !== lang)] : ALL_LANGS).map((l) => `<a class="lang-opt" href="${href(langPath(l, only && l !== lang ? '/' : pagePath || '/'))}" data-lang="${l}" hreflang="${HREFLANG[l]}" lang="${HREFLANG[l]}"${l === lang ? ' aria-current="true"' : ''}>${LANG_NAMES[l]}</a>`).join('')}</div></details>
-${moreMenu(lang)}
+${moreMenu(lang, moved)}
 </div></header>`;
 }
 
@@ -708,11 +713,12 @@ function headerSearch(lang, tabs) {
   return `<button type="button" class="hs-open" data-hs data-items="${esc(href('/assets/items.json'))}" data-mobs="${esc(href('/assets/mobs.json'))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-monsters="${esc(href(langPath(lang, '/monsters/')))}" data-pages="${esc(JSON.stringify(pages))}" aria-label="${ko ? '검색' : 'Search'}" title="${ko ? '검색 ( / )' : 'Search ( / )'}"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="hs-label">${ko ? '검색' : 'Search'}</span></button>`;
 }
 
-// Pages that do not fit the eight tabs (guides, ranking, gear, bosses, databases, shop tools) open from one menu at the end
+// Pages that are not in the header tabs (the moved tabs, guides, ranking, gear, bosses, databases, shop tools) open from one menu at the end
 // of the header, so none of them is reachable only from the home page or the footer.
-function moreMenu(lang) {
+function moreMenu(lang, moved = []) {
   const ko = lang === 'ko';
   const links = [
+    ...moved.map(([p, , label]) => [p, label]),
     guides.some((g) => g.lang === lang) && ['/guides/', ko ? '가이드' : 'Guides'],
     ['/rank/', ko ? '캐릭터 랭킹' : 'Character ranking'],
     ['/equipment/', ko ? '직업별 장비' : 'Gear by class'],
