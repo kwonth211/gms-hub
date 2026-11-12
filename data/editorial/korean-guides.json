@@ -304,6 +304,42 @@
       "kind": "guide",
       "lang": "ko",
       "notes": "사수 30~70(클메CM tXunA_vnBmg, 교차 확인 단풍항해 E1sA4XDrSds). 스킬북 320: 아이언 애로우 120→180% 6마리 관통 뒤 80%씩 MP14→28, 크로스보우 마스터리 크뎀+20, 부스터·소울 애로우 헌터와 동일, 파이널 어택 단일 270→360% MP12→20, 저지먼트 동일. 순서 아이언1→마스터리5→부스터1→부스터5+소울1(34)→마스터리20(39)→아이언30(49)→부스터·소울 마무리→파이널 어택, 저지먼트1. 석궁 weapons.json(이글크로52 속7, 헤클러59 속6, 실버크로우67, 로우어72, 골든크로우82, 그로스야거92), STR 이글크로20·그로스야거62(영상). 긴 평평한 발판, 맨 뒤 몹 확인."
+    },
+    {
+      "id": "patch-assassin-17-75",
+      "url": "https://www.youtube.com/watch?v=DEeaUICUfzM",
+      "author": "Patch Briefs",
+      "checked": "2026-11-12",
+      "kind": "guide",
+      "lang": "en",
+      "notes": "Assassin 17~75: Bubbling(L1A1) 17-21, KPQ 21+, Stirge transfer area 25-35 (38 spawns), Burnt Land III/I ~35 (Fire Boar ACC~70 => LUK build ~31, two-hit), Cold Eye ~40 at Another Path (23 Cold Eyes, ACC~82 at 40 => ~39 LUK build); Tunnel That Lost Light has Drakes that miss until high 40s; ~55 Drake Hunting Ground platforms 2-4, Golem's Temple 2 (stone golem 56, ok at 55), Tomb 1, Sleepy IV, Red Drakes, Camps. Skills: Haste1, Mastery5, Booster1, Mastery20 by 37, Critical Throw max by 47."
+    },
+    {
+      "id": "omer-assassin-35-40",
+      "url": "https://www.youtube.com/watch?v=4nL_4hmGd3A",
+      "author": "Omer Rokach",
+      "checked": "2026-11-12",
+      "kind": "gameplay",
+      "lang": "en",
+      "notes": "Assassin 35-37, Haste 15, EXP/hour measured on 7 maps: Ant Tunnel Park 70k; Burnt Land 3 75k; KPQ rush 62k (~10 runs/h x 6.2k); KPQ bonus party 60k; Excavation Site 3 good EXP, 46k meso/h, crowded; KPQ bonus solo 105k + 100k meso/h but 20-25 min and needs party to clear; Murky Swamp 2 solo 88k EXP + 69k meso/h (Jr Necki 1-hit, Ligator 2-hit) = pick."
+    },
+    {
+      "id": "cm3-36-70",
+      "url": "https://www.youtube.com/watch?v=7iG-gdHJSwc",
+      "author": "CM3",
+      "checked": "2026-11-12",
+      "kind": "guide",
+      "lang": "en",
+      "notes": "36-45: Lorang Lorang instead of Fire Boar (ACC 79 same level, 36 alive). 45-55: Wraith Line 2 area 2/3 (ACC 104), backups tomb dogs (Skeledog 44 ACC 89, Mummydog 47 ACC 95; Tomb 3 1.4x) and Line 1 area 4. Drake ground dropped: crowded, Drake EXP 142->133. Sleepy V nerfed (31->20 mobs, respawn 0.6->0.4): use Sleepy IV (Dark Stone Golem ACC 101). Camp 1 (Skeleton Soldier 57, ACC 111, MeowDB est ~340k EXP/h) then Camp 3 past 60 (ACC 120). Monkey Forest 2: level 55 assassin test 110k EXP/h, 70k meso/h. Forgotten Hollow 39-59 opens 11/18."
+    },
+    {
+      "id": "chueok-thief-tier",
+      "url": "https://www.youtube.com/watch?v=AL4MrH7hxMg",
+      "author": "추억서리",
+      "checked": "2026-11-12",
+      "kind": "guide",
+      "lang": "ko",
+      "notes": "Thief tiers by level. Assassin: 30-39 Ant Tunnel to Deep Ant Tunnel tier 1 (a ranker spent ~2.5 days there), Wild Boar 2, Lorang 39-40 3; 40-43 Burnt Land; 43-47 Zombie Lupin; 47-50 Lorang tier 1, Wraith tier 2 once two-shot, Curse Eye tier 3. Evil Eye floor 4->1 'honey route' is the Bandit tier 1, not Assassin."
     }
   ]
 }

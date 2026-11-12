@@ -1501,22 +1501,42 @@
       "h1": "어쌔신 30~70레벨: 럭키 세븐 하나로 70까지",
       "desc": "클로 마스터리부터 드레인까지 스킬 순서, DEX와 명중, 아대·표창 고르기, 레벨별 사냥터까지 정리했어요.",
       "published": "2026-11-11",
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "sources": [
         {
           "title": "자동사냥",
           "url": "https://www.youtube.com/watch?v=VZzc1LLhE1M"
+        },
+        {
+          "title": "Patch Briefs",
+          "url": "https://www.youtube.com/watch?v=DEeaUICUfzM"
+        },
+        {
+          "title": "Omer Rokach",
+          "url": "https://www.youtube.com/watch?v=4nL_4hmGd3A"
+        },
+        {
+          "title": "CM3",
+          "url": "https://www.youtube.com/watch?v=7iG-gdHJSwc"
+        },
+        {
+          "title": "추억서리",
+          "url": "https://www.youtube.com/watch?v=AL4MrH7hxMg"
         }
       ],
       "tools": [
         "training",
         "damage"
       ],
-      "reviewed": "2026-11-11",
+      "reviewed": "2026-11-12",
       "status": "published",
       "evidenceKind": "conditional-guide",
       "evidenceRefs": [
-        "assassin-guide-30-70"
+        "assassin-guide-30-70",
+        "patch-assassin-17-75",
+        "omer-assassin-35-40",
+        "cm3-36-70",
+        "chueok-thief-tier"
       ]
     },
     {
@@ -1526,22 +1546,42 @@
       "h1": "Assassin, levels 30–70: Lucky Seven all the way",
       "desc": "Skill order from Claw Mastery to Drain, DEX and accuracy, choosing claws and stars, and training spots by level.",
       "published": "2026-11-11",
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "sources": [
         {
           "title": "자동사냥",
           "url": "https://www.youtube.com/watch?v=VZzc1LLhE1M"
+        },
+        {
+          "title": "Patch Briefs",
+          "url": "https://www.youtube.com/watch?v=DEeaUICUfzM"
+        },
+        {
+          "title": "Omer Rokach",
+          "url": "https://www.youtube.com/watch?v=4nL_4hmGd3A"
+        },
+        {
+          "title": "CM3",
+          "url": "https://www.youtube.com/watch?v=7iG-gdHJSwc"
+        },
+        {
+          "title": "추억서리",
+          "url": "https://www.youtube.com/watch?v=AL4MrH7hxMg"
         }
       ],
       "tools": [
         "training",
         "damage"
       ],
-      "reviewed": "2026-11-11",
+      "reviewed": "2026-11-12",
       "status": "published",
       "evidenceKind": "conditional-guide",
       "evidenceRefs": [
-        "assassin-guide-30-70"
+        "assassin-guide-30-70",
+        "patch-assassin-17-75",
+        "omer-assassin-35-40",
+        "cm3-36-70",
+        "chueok-thief-tier"
       ]
     }
   ]

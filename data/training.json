@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "updated": "2026-11-11",
+  "updated": "2026-11-12",
   "routes": [
     {
       "id": "island",
@@ -738,7 +738,9 @@
         "geun",
         "thief-guide",
         "voyage-mage",
-        "il-guide-30-70"
+        "il-guide-30-70",
+        "patch-assassin-17-75",
+        "omer-assassin-35-40"
       ],
       "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
       "title": {
@@ -853,7 +855,8 @@
         "shumi-warrior",
         "thief-guide",
         "voyage-warrior",
-        "warrior-play"
+        "warrior-play",
+        "chueok-thief-tier"
       ],
       "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
       "title": {
@@ -881,8 +884,8 @@
         "en": "Contact costs can change sharply around a one-hit threshold."
       },
       "exit": {
-        "ko": "미스나 2타가 잦으면 개미굴 버섯·파퀘로 돌아가는 것이 합리적이에요.",
-        "en": "Frequent misses or two-hit kills justify returning to mushrooms or KPQ."
+        "ko": "미스나 2타가 잦으면 개미굴 버섯·파퀘로 돌아가는 것이 합리적이에요. 어쌔신은 이 굴 대신 늪·불타버린 땅·로랑을 봐요.",
+        "en": "Frequent misses or two-hit kills justify returning to mushrooms or KPQ. Assassins should look at the swamp, Burnt Land or Lorangs instead."
       },
       "alternative": {
         "ko": "개미굴 1타 구역, 파퀘 보너스팟.",
@@ -895,7 +898,7 @@
     {
       "id": "lorang",
       "level": {
-        "min": 40,
+        "min": 36,
         "max": 55
       },
       "jobs": [
@@ -913,7 +916,9 @@
         "hunter",
         "mujin",
         "thief-guide",
-        "voyage-mage"
+        "voyage-mage",
+        "cm3-36-70",
+        "chueok-thief-tier"
       ],
       "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
       "title": {
@@ -1090,7 +1095,9 @@
         "hunter",
         "mujin",
         "voyage-mage",
-        "il-guide-30-70"
+        "il-guide-30-70",
+        "cm3-36-70",
+        "patch-assassin-17-75"
       ],
       "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
       "title": {
@@ -1132,7 +1139,7 @@
     {
       "id": "cold-eye",
       "level": {
-        "min": 43,
+        "min": 40,
         "max": 65
       },
       "jobs": [
@@ -1149,7 +1156,8 @@
         "bandit-play",
         "fire-guide",
         "hunter",
-        "voyage-mage"
+        "voyage-mage",
+        "patch-assassin-17-75"
       ],
       "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
       "title": {
@@ -1161,12 +1169,12 @@
         "en": "Cold Eye"
       },
       "summary": {
-        "ko": "헌터와 불독은 콜드아이를 안정적으로 처리하는 발판을 비교해요.",
-        "en": "Hunters and Fire/Poison users can compare safe attack positions against Cold Eye."
+        "ko": "어쌔신·헌터·불독이 콜드아이를 안정적으로 처리하는 발판을 비교해요. 또 다른 길은 콜드아이 23마리만 나와요.",
+        "en": "Assassins, Hunters and Fire/Poison users compare safe attack positions against Cold Eye. Another Path spawns 23 Cold Eyes and nothing else."
       },
       "entry": {
-        "ko": "헌터는 사거리, 불독은 화살이 지형에 막히지 않는 자리를 먼저 봐요. 3회 이상 공격해야 하면 비용을 재확인해요.",
-        "en": "Check bow reach or Fire Arrow collisions; recheck costs when kills take three or more casts."
+        "ko": "40레벨에 다 맞히려면 명중 약 82(LUK 위주 어쌔신은 장비 없이 39레벨쯤)이고, 두 방에 잡혀야 해요. 헌터는 사거리, 불독은 화살이 지형에 막히지 않는 자리를 먼저 봐요.",
+        "en": "Never missing at 40 takes about 82 accuracy (a LUK-build Assassin gets there around 39 without gear), and kills should take two casts. Hunters check reach, Fire/Poison checks Fire Arrow collisions."
       },
       "route": {
         "ko": "옥상의 쉬운 자리와 2층 낚시 자리가 있어요. 불독은 38레벨부터 명중 100%, 파이어 애로우 세 방이에요. 채널마다 꽉 찬 경우가 많아요.",
@@ -1181,8 +1189,8 @@
         "en": "Compare Wraith or your earlier map using both kills and supply use."
       },
       "alternative": {
-        "ko": "헌터는 로랑·불타버린 땅, 불독은 주니어 레이스.",
-        "en": "Hunters: Lorang or Burnt Land. Fire/Poison: Jr. Wraith."
+        "ko": "빛을 잃은 터널 I은 콜드아이가 더 많지만 드레이크가 섞여 40대 후반까지 잘 안 맞아요. 헌터는 로랑·불타버린 땅, 불독은 주니어 레이스.",
+        "en": "The Tunnel That Lost Light I has more Cold Eyes but mixes in Drakes you miss until the high 40s. Hunters: Lorang or Burnt Land. Fire/Poison: Jr. Wraith."
       },
       "mobIds": [
         37
@@ -1208,7 +1216,8 @@
         "clme-36-70",
         "hunter",
         "thief-guide",
-        "voyage-mage"
+        "voyage-mage",
+        "cm3-36-70"
       ],
       "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
       "title": {
@@ -1320,7 +1329,8 @@
       "evidence": [
         "cleric-play",
         "clme-36-70",
-        "mujin"
+        "mujin",
+        "cm3-36-70"
       ],
       "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
       "title": {
@@ -2177,7 +2187,7 @@
       "id": "ant-park",
       "level": {
         "min": 25,
-        "max": 42
+        "max": 37
       },
       "jobs": [],
       "party": "preferred",
@@ -2186,7 +2196,8 @@
       "evidence": [
         "patch-25-65",
         "samool-quiet",
-        "melech-cleric"
+        "melech-cleric",
+        "omer-assassin-35-40"
       ],
       "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
       "title": {
@@ -2198,8 +2209,8 @@
         "en": "Zombie Mushroom, Evil Eye, Horny Mushroom"
       },
       "summary": {
-        "ko": "맵 안에 상점이 있어서 물약과 표창을 바로 채울 수 있어요. 개미 터널 I보다 덜 붐비고 돈이 남는 맵이에요.",
-        "en": "There is a shop on the map, so potions and stars are steps away. Less crowded than Ant Tunnel I, and it pays for itself."
+        "ko": "맵 안에 상점이 있어서 물약과 표창을 바로 채울 수 있어요. 다만 35~37 어쌔신 실측에서 시간당 경험치 약 7만으로, 비교한 7곳 중 하위권이었어요.",
+        "en": "There is a shop on the map, so potions and stars are steps away. But a level 35 to 37 Assassin measured about 70,000 EXP an hour here, near the bottom of seven maps."
       },
       "entry": {
         "ko": "25 전후, 좀비버섯을 2타에 잡을 때 와요. 메소가 부족하면 40 초반까지 있어도 괜찮아요.",
@@ -2214,8 +2225,8 @@
         "en": "Magic and speed potions drop often, and the shop means almost no trips back to town."
       },
       "exit": {
-        "ko": "35 이후 커즈아이나 절망의 늪으로 넘어가요.",
-        "en": "After 35, compare the Curse Eye maps or the Swamp of Despair."
+        "ko": "35 전후면 떠나요. 어쌔신은 어두컴컴한 늪 II·불타버린 땅·로랑, 근접은 커즈아이나 절망의 늪과 비교해요.",
+        "en": "Leave around 35: Assassins compare the Murky Swamp II, Burnt Land or Lorangs; melee compares Curse Eyes or the Swamp of Despair."
       },
       "alternative": {
         "ko": "개미 터널 I은 20명 넘게 몰려요. 이블아이의 굴은 좁고 물약이 많이 들어요.",
@@ -2292,7 +2303,8 @@
       "advanced": false,
       "evidence": [
         "samool-quiet",
-        "patch-25-65"
+        "patch-25-65",
+        "omer-assassin-35-40"
       ],
       "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
       "title": {
@@ -2304,12 +2316,12 @@
         "en": "Jr. Necki, Ligator"
       },
       "summary": {
-        "ko": "절망의 늪보다 덜 알려진 히든 맵이에요. 주니어 네키는 체력 대비 경험치가 좋은 편이에요.",
-        "en": "A lesser-known hidden map next to the Swamp of Despair. Jr. Neckis give good EXP for their HP."
+        "ko": "절망의 늪보다 덜 알려진 히든 맵이에요. 35~37 어쌔신이 솔로로 시간당 경험치 약 8.8만, 메소 약 6.9만을 재서, 파티 없이 꾸준히 할 수 있는 곳 중 1위였어요.",
+        "en": "A lesser-known hidden map next to the Swamp of Despair. A level 35 to 37 Assassin measured about 88,000 EXP and 69,000 mesos an hour solo, the best of the maps you can keep without a party."
       },
       "entry": {
-        "ko": "리게이터(31)는 방어력이 높아서 35 전후가 실제 시작이에요. 불독은 불 약점으로 수월하고, 썬콜은 얼음이 저항돼서 맞지 않아요.",
-        "en": "Ligators (level 31) have high defense, so 35 is the real start. Fire/Poison mages exploit their fire weakness; Ice/Lightning is resisted here."
+        "ko": "리게이터(31)는 방어력이 높아서 35 전후가 실제 시작이에요. 주니어 네키 한 방, 리게이터 두 방이면 충분해요. 불독은 불 약점으로 수월하고, 썬콜은 얼음이 저항돼서 맞지 않아요.",
+        "en": "Ligators (level 31) have high defense, so 35 is the real start; one hit on Jr. Neckis and two on Ligators is enough. Fire/Poison mages exploit their fire weakness; Ice/Lightning is resisted here."
       },
       "route": {
         "ko": "커닝시티 병원(니오라) 뒤 숨은 입구로 들어가요. 좁은 편이라 6명까지가 적당해요. 주니어 네키가 빨라서 표도는 표창이 넘어가기 쉬워요.",
@@ -2397,7 +2409,8 @@
       "evidence": [
         "eleveny-1-70",
         "patch-25-65",
-        "il-guide-30-70"
+        "il-guide-30-70",
+        "patch-assassin-17-75"
       ],
       "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
       "title": {
@@ -2450,7 +2463,8 @@
       "advanced": false,
       "evidence": [
         "eleveny-1-70",
-        "patch-25-65"
+        "patch-25-65",
+        "patch-assassin-17-75"
       ],
       "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
       "title": {
@@ -2502,7 +2516,8 @@
       "costTier": "medium",
       "advanced": false,
       "evidence": [
-        "patch-25-65"
+        "patch-25-65",
+        "cm3-36-70"
       ],
       "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
       "title": {
