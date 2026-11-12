@@ -23,3 +23,18 @@ export const plain = (text) => {
   for (const [re, to] of SHORT) t = t.replace(re, to);
   return t.replace(/\s+/g, ' ').trim();
 };
+
+// Selling or buying, and the first amount as the asking price (shared with the market's item panel).
+const SELL = /(^|[^a-z])(s\s?>|wts|selling|sell(?:ing)?|s:)/i;
+const BUY = /(^|[^a-z])(b\s?>|wtb|buying|buy(?:ing)?|b:)/i;
+export function intentOf(text) {
+  const s = SELL.exec(text), b = BUY.exec(text);
+  if (s && (!b || s.index <= b.index)) return 'sell';
+  return b ? 'buy' : '';
+}
+// "132K", "4m", "1.5b", "380k ea" → mesos. The first amount is the asking price.
+export function priceOf(text) {
+  const m = /(\d+(?:[.,]\d+)?)\s?(k|m|mil|b)\b/i.exec(text);
+  if (!m) return null;
+  return Math.round(Number(m[1].replace(',', '.')) * { k: 1e3, m: 1e6, mil: 1e6, b: 1e9 }[m[2].toLowerCase()]);
+}

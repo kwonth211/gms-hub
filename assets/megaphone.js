@@ -1,7 +1,8 @@
 // Live megaphones. Megaphones are polled from the worker every 5 seconds; each line is sorted into
 // selling or buying, its items are matched to our catalogue and compared with the market, and Korean readers get a plain
 // reading of the trade shorthand.
-import { koMesos, GLOSS, plain } from './mega-text.js';
+import { koMesos, GLOSS, plain, intentOf, priceOf } from './mega-text.js';
+export { intentOf, priceOf };
 
 const root = document.getElementById('mg-page');
 const ko = document.documentElement.lang === 'ko';
@@ -18,19 +19,6 @@ let focused = false;
 let rows = [], lastId = 0, intent = '', names = [], byName = new Map(), prices = new Map();
 
 // ---------- reading a megaphone ----------
-const SELL = /(^|[^a-z])(s\s?>|wts|selling|sell(?:ing)?|s:)/i;
-const BUY = /(^|[^a-z])(b\s?>|wtb|buying|buy(?:ing)?|b:)/i;
-export function intentOf(text) {
-  const s = SELL.exec(text), b = BUY.exec(text);
-  if (s && (!b || s.index <= b.index)) return 'sell';
-  return b ? 'buy' : '';
-}
-// "132K", "4m", "1.5b", "380k ea" → mesos. The first amount is the asking price.
-export function priceOf(text) {
-  const m = /(\d+(?:[.,]\d+)?)\s?(k|m|mil|b)\b/i.exec(text);
-  if (!m) return null;
-  return Math.round(Number(m[1].replace(',', '.')) * { k: 1e3, m: 1e6, mil: 1e6, b: 1e9 }[m[2].toLowerCase()]);
-}
 // "[Shoes Speed Scroll: Intermediate]" is an exact item megaphone; otherwise the longest catalogue name in the text.
 function itemsOf(text) {
   const found = [];

@@ -3,6 +3,7 @@ import { DAY, parseUtc, newMark } from "./market-data.js";
 import { KERNING, placeLabel } from "./place.js";
 import { makeMarketIndex, catalogRows, matchingIds } from "./market-catalog.js";
 import { mountMarketCharts } from "./market-charts.js";
+import { intentOf, priceOf as megaPrice } from "./mega-text.js";
 import { WISHLIST_KEY, RECENT_KEY, SEEN_KEY, WISHLIST_MAX, readList, addRecent, removeRecent, toggleWishlist, snapshot, visitDelta, pruneSeen } from "./market-memory.js";
 const D = JSON.parse(document.getElementById("mk-data").textContent),
   T = D.t,
@@ -530,8 +531,9 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
   priceData = null;
   if ($("mb-alert")) $("mb-alert").hidden = true;
   fillItemInfo(id);
+  fillMegaphones(id);
   $("mk-detail").innerHTML =
-    `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(it.name)}</h2><small>${esc(it.en)}</small></div>${starButton(id, "mb-star-detail")}${D.alerts ? `<button type="button" class="btn ghost small-btn" data-alert-open="${id}">${tr("가격 알림", "Price alert")}</button>` : ""}<button class="btn ghost small-btn" data-share-item="${id}" title="${tr("이 아이템 링크 복사", "Copy a link to this item")}">${tr("링크 복사", "Copy link")}</button><button class="btn ghost small-btn" data-close-item aria-label="${tr("상세 닫기", "Close details")}">×</button></header><p class="share-status mb-share-status" id="mb-share-status" role="status" aria-live="polite"></p><section class="mb-alert" id="mb-alert" hidden></section><section class="mb-history" id="mb-history" aria-label="${tr("가격 한눈에 보기", "Price at a glance")}"><p class="muted note">${T.loading}</p></section>${stats}<section class="mb-info" id="mb-info" aria-live="polite"></section>${changed || reset ? visitNote(id) : ""}${pageLink}
+    `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(it.name)}</h2><small>${esc(it.en)}</small></div>${starButton(id, "mb-star-detail")}${D.alerts ? `<button type="button" class="btn ghost small-btn" data-alert-open="${id}">${tr("가격 알림", "Price alert")}</button>` : ""}<button class="btn ghost small-btn" data-share-item="${id}" title="${tr("이 아이템 링크 복사", "Copy a link to this item")}">${tr("링크 복사", "Copy link")}</button><button class="btn ghost small-btn" data-close-item aria-label="${tr("상세 닫기", "Close details")}">×</button></header><p class="share-status mb-share-status" id="mb-share-status" role="status" aria-live="polite"></p><section class="mb-alert" id="mb-alert" hidden></section><section class="mb-history" id="mb-history" aria-label="${tr("가격 한눈에 보기", "Price at a glance")}"><p class="muted note">${T.loading}</p></section>${stats}<section class="mb-info" id="mb-info" aria-live="polite"></section><section class="mb-megas" id="mb-megas" hidden></section>${changed || reset ? visitNote(id) : ""}${pageLink}
  <div class="mb-tabs" role="tablist" aria-label="${tr("아이템 상세", "Item details")}"><button data-detail-tab="listings" role="tab" aria-selected="${detailTab === "listings"}" aria-controls="mb-detail-listings">${tr("판매 매물", "Shop listings")}</button><button data-detail-tab="charts" role="tab" aria-selected="${detailTab === "charts"}" aria-controls="mb-detail-charts">${tr("가격 추이·매물대", "Trends & depth")}</button><button class="mb-detail-refresh" data-refresh-item>${tr("새로고침", "Refresh")}</button></div>
  <div id="mb-detail-listings" role="tabpanel" aria-label="${tr("판매 매물", "Shop listings")}"><p class="muted note">${T.whereNote}</p><div class="mb-detail-filters"><label>${tr("채널", "Channel")}<select id="md-channel">${selectLocation("channel", detailState.channel)}</select></label><label>${tr("방", "Room")}<select id="md-room">${selectLocation("room", detailState.room)}</select></label><label>${tr("정렬", "Sort")}<select id="md-sort"><option value="price">${T.sortPrice}</option><option value="recent">${T.sortRecent}</option><option value="high">${tr("높은 가격순", "Highest price")}</option></select></label><label>${tr("상태", "Status")}<select id="md-state"><option value="open">${tr("판매 중 · 24h", "Asking · 24h")}</option><option value="all">${tr("전체 기록 · 7일", "All records · 7d")}</option><option value="sold">${tr("판매 완료 표시", "Marked sold")}</option><option value="stale">${tr("24시간 경과", "Over 24h old")}</option></select></label></div><div class="price-band-filter" id="md-price-band" hidden><span></span><button class="btn ghost small-btn" data-clear-band>${tr("가격대 해제", "Clear price band")}</button></div><p id="md-count" class="muted note" role="status"></p><div id="md-rows"></div><div id="md-pages" class="mb-pagination"></div></div>
  <div id="mb-detail-charts" role="tabpanel" aria-label="${tr("가격 추이와 매물대", "Trends and depth")}"><div id="mk-charts"><p>${T.loading}</p></div></div>`;
@@ -1091,6 +1093,25 @@ document.addEventListener("submit", async (e) => {
     window.track?.("alert_on", { item_id: id });
   } catch { status.textContent = tr("알림을 켜지 못했어요. 잠시 뒤 다시 시도해 주세요.", "Could not turn the alert on. Please try again."); }
 });
+
+// Recent megaphones naming this item (last 3 days): who is selling or buying it, for how much, on which channel. Each
+// opens the megaphone page focused on it. The asking price is compared with the typical range when it is known.
+async function fillMegaphones(id) {
+  const it = byId.get(id);
+  if (!it?.en) return;
+  let rows = [];
+  try { rows = (await get(`/megaphones?q=${encodeURIComponent(`[${it.en}]`)}&limit=8`)).rows || []; } catch { return; }
+  // The panel is drawn after this call starts, so the box is looked up once the answer is in.
+  const box = $("mb-megas");
+  if (selected !== id || !box) return;
+  if (!rows.length) { box.hidden = true; return; }
+  const megaPage = `/${D.lang}/megaphone/`;
+  box.innerHTML = `<h3>${tr("최근 고확에 나온 이 아이템", "In recent megaphones")} <small>${tr("최근 3일", "last 3 days")}</small></h3><ul class="mb-mega-list">${rows.map((r) => {
+    const intent = intentOf(r.text), p = megaPrice(r.text);
+    return `<li><a href="${megaPage}?m=${r.id}"><span class="mb-mega-kind ${intent}">${intent === "sell" ? tr("팝니다", "Selling") : intent === "buy" ? tr("삽니다", "Buying") : tr("고확", "Mega")}</span><span class="mb-mega-text">${esc(r.text.replace(/^\s*\[[^\]]*\]\s*/, ""))}</span><span class="mb-mega-meta">${p ? `<b>${kmoney(p)}</b>` : ""}${r.channel ? `<span class="mb-ch" style="--h:${(Number(r.channel) * 47) % 360}">CH ${r.channel}</span>` : ""}<small>${esc(r.nick)} · ${ago(r.seen)}</small></span></a></li>`;
+  }).join("")}</ul>`;
+  box.hidden = false;
+}
 
 async function initialize() {
   // Drop sources fill the catalog's source column once the hover-card data arrives.

@@ -31,6 +31,13 @@ export async function postMegaphones(req, env) {
 export async function listMegaphones(env, params) {
   const after = Math.max(0, Number(params.get('after')) || 0);
   const limit = Math.min(200, Math.max(1, Number(params.get('limit')) || 100));
+  // ?q=<English item name>: megaphones naming that item (the market's item panel), newest first, last 3 days.
+  const q = String(params.get('q') || '').trim().slice(0, 60);
+  if (q.length >= 3) {
+    const { results } = await env.DB.prepare("SELECT id, seen_at AS seen, kind, color, channel, nick, text FROM megaphones WHERE text LIKE ? ESCAPE '\\' ORDER BY id DESC LIMIT ?")
+      .bind(`%${q.replace(/[\\%_]/g, (c) => `\\${c}`)}%`, Math.min(limit, 30)).all();
+    return { rows: results, at: new Date().toISOString() };
+  }
   const { results } = await env.DB.prepare('SELECT id, seen_at AS seen, kind, color, channel, nick, text FROM megaphones WHERE id > ? ORDER BY id DESC LIMIT ?').bind(after, limit).all();
   return { rows: results, at: new Date().toISOString() };
 }

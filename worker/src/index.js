@@ -373,7 +373,7 @@ const api = {
     }
 
     if (url.pathname === '/megaphones' && req.method === 'GET') {
-      return json(await listMegaphones(env, url.searchParams), cors, 200, 'public, max-age=5');
+      return json(await listMegaphones(env, url.searchParams), cors, 200, url.searchParams.get('q') ? 'public, max-age=120' : 'public, max-age=5');
     }
 
     if (url.pathname === '/rank' && req.method === 'GET') {
