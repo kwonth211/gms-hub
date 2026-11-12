@@ -96,9 +96,16 @@ export function findLines(img, { scrollbar = 20 } = {}) {
       // The band ends where the box border and scrollbar begin: the last column of this line's own band colour on the
       // middle row (the scrollbar's blue button is a band colour too, so any band colour would stop too late and the
       // border and scroll grip would be read as "|=").
+      // Walking left from the crop's edge along the middle row: the scroll grip (gold) and the scrollbar are only a few
+      // columns of band colour, the band itself ends in a solid stretch; the first run of 8 columns in this line's own
+      // colour is the band's end. A line whose text reaches the border has no such run and keeps the crop's edge.
       const mid = (y + end) >> 1;
-      let edge = right;
-      while (edge > 10) { const i = (mid * img.width + edge - 1) * 4; if (bandClass(img.data[i], img.data[i + 1], img.data[i + 2]) === rows[y].cls) break; edge--; }
+      let edge = right, run = 0;
+      for (let x = right - 1; x >= 10; x--) {
+        const i = (mid * img.width + x) * 4;
+        run = bandClass(img.data[i], img.data[i + 1], img.data[i + 2]) === rows[y].cls ? run + 1 : 0;
+        if (run >= 8) { edge = x + 8; break; }
+      }
       // A couple of columns short of the border, where the band's bevel shading starts.
       edge = Math.max(10, edge - 2);
       lines.push({ top: y, bottom: end, color: rows[y].cls, bg: rows[Math.min(end, y + 2)].bg, right: edge });
