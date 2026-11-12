@@ -1984,3 +1984,21 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-hist-legend .k.ask { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--accent-fill); }
 .mb-hist-legend .k.band { width: 16px; height: 10px; border-radius: 3px; background: color-mix(in srgb, var(--accent-fill) 22%, transparent); }
 .mb-hist-legend .k.med { width: 16px; border-top: 2.5px solid var(--accent-fill); }
+/* Where to buy: listing cards in the item panel, and channel/room chips everywhere listings show. */
+.mb-ch { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap;
+  color: hsl(var(--h) 55% 28%); background: hsl(var(--h) 75% 90%); border: 1px solid hsl(var(--h) 50% 78%); }
+[data-theme='dark'] .mb-ch { color: hsl(var(--h) 80% 82%); background: hsl(var(--h) 35% 22%); border-color: hsl(var(--h) 35% 34%); }
+.mb-room { display: inline-block; margin-left: 4px; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; color: var(--text-2); background: var(--panel-2); border: 1px solid var(--line); }
+.mb-offers { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.mb-offer { display: grid; grid-template-columns: minmax(120px, auto) minmax(0, 1fr) auto; align-items: center; gap: 6px 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); box-shadow: inset 3px 0 0 var(--fresh, var(--line-strong)); }
+.mb-offer.fresh { --fresh: #2e9d5b; } .mb-offer.warm { --fresh: #d9a520; } .mb-offer.old { --fresh: var(--line-strong); opacity: 0.82; } .mb-offer.sold { --fresh: var(--muted); opacity: 0.6; }
+.mb-offer-price strong { display: block; font-size: 1.15rem; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.mb-offer-price small { color: var(--muted); font-size: 0.74rem; }
+.mb-deal { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 4px; font-size: 0.7rem; vertical-align: 1px; }
+.mb-deal.cheap { color: #fff; background: #2e9d5b; } .mb-deal.fair { color: var(--accent-ink); background: color-mix(in srgb, var(--accent-fill) 35%, transparent); } .mb-deal.pricey { color: var(--muted); background: var(--panel-2); }
+.mb-offer-who { display: grid; gap: 2px; min-width: 0; }
+.mb-offer-who .mb-seller { justify-self: start; font-weight: 800; }
+.mb-fresh { display: flex; align-items: center; gap: 6px; font-size: 0.76rem; color: var(--muted); }
+.mb-fresh i { width: 7px; height: 7px; border-radius: 50%; background: var(--fresh, var(--muted)); flex: none; }
+.mb-offer-where { justify-self: end; white-space: nowrap; }
+@media (max-width: 640px) { .mb-offer { grid-template-columns: minmax(0, 1fr) auto; } .mb-offer-who { grid-column: 1 / -1; grid-row: 2; } }

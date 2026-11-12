@@ -158,10 +158,32 @@ function pager(data, scope) {
   if (data.pages <= 1) return "";
   return `<button class="btn ghost small-btn" type="button" data-page="${data.page - 1}" data-scope="${scope}" ${data.page <= 1 ? "disabled" : ""}>${tr("이전", "Previous")}</button><span>${data.page} / ${data.pages}</span><button class="btn ghost small-btn" type="button" data-page="${data.page + 1}" data-scope="${scope}" ${data.page >= data.pages ? "disabled" : ""}>${tr("다음", "Next")}</button>`;
 }
+// Channel and Free Market room as chips. Each channel keeps its own hue (spread round the colour wheel) so the same
+// channel is easy to spot down a list.
+const placeChips = (r) => `<span class="mb-ch" style="--h:${(Number(r.channel) * 47) % 360}">CH ${r.channel}</span><span class="mb-room">${placeLabel(r.room, ko)}</span>`;
+// The item panel's "where to buy" list: one card per listing, price first, then how fresh it is, who and where.
+// Freshness follows MesoWatch's wording: seen within an hour is probably still up, older ones may have sold.
+let lastOffers = null;
+function offerCards(rows) {
+  lastOffers = rows;
+  if (!rows.length)
+    return `<p class="market-empty">${tr("조건에 맞는 매물이 없어요. 필터를 바꿔 보세요.", "No listings match. Try other filters.")}</p>`;
+  const open = (priceData?.profile || []).map((r) => r.price).filter((p) => p > 0).sort((a, b) => a - b);
+  const [r25, r75] = open.length >= 4 ? [quant(open, 0.25), quant(open, 0.75)] : [null, null];
+  return `<ul class="mb-offers">${rows.map((r) => {
+    const age = Date.now() - parseUtc(r.seen);
+    const fresh = r.sold ? "sold" : age < 3600000 ? "fresh" : age < 6 * 3600000 ? "warm" : "old";
+    const status = { sold: tr("판매 완료 표시", "Marked sold"), fresh: tr("아직 팔고 있을 가능성 높음", "Likely still up"), warm: tr("몇 시간 전 확인", "Seen a few hours ago"), old: tr("팔렸을 수도 있어요", "May have sold") }[fresh];
+    const tag = r25 == null || r.sold ? "" : r.price < r25 ? `<b class="mb-deal cheap">${tr("싼 편", "Cheap")}</b>` : r.price > r75 ? `<b class="mb-deal pricey">${tr("비싼 편", "Pricey")}</b>` : `<b class="mb-deal fair">${tr("보통", "Typical")}</b>`;
+    return `<li class="mb-offer ${fresh}"><div class="mb-offer-price"><strong>${money(r.price)}</strong><small>${T.priceUnit}${r.qty > 1 ? ` · ×${money(r.qty)} = ${money(r.price * r.qty)}` : ""}</small>${tag}</div>
+<div class="mb-offer-who"><button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)}</button><span class="mb-fresh"><i aria-hidden="true"></i>${when(r.seen)} · ${status}</span></div>
+<div class="mb-offer-where">${placeChips(r)}</div></li>`;
+  }).join("")}</ul>`;
+}
 function listingTable(rows, { showItem = true, shopButtons = true } = {}) {
   if (!rows.length)
     return `<p class="market-empty">${tr("조건에 맞는 매물이 없어요. 검색어나 필터를 바꿔 보세요.", "No listings match. Try changing the search or filters.")}</p>`;
-  return `<div class="mb-table-wrap"><table class="mb-table mb-listings-table"><thead><tr>${showItem ? `<th>${tr("아이템", "Item")}</th>` : ""}<th>${tr("가격", "Price")}<small>${T.priceUnit}</small></th><th>${tr("수량", "Qty")}</th><th>${T.table.seller}</th><th>${T.table.where}</th><th>${tr("최근 확인", "Last seen")}</th></tr></thead><tbody>${rows.map((r) => `<tr>${showItem ? `<td class="mb-cell-item">${itemLink(r.item)}</td>` : ""}<td class="num mb-cell-price">${money(r.price)}${r.qty > 1 ? `<small>${T.total} ${money(r.price * r.qty)}</small>` : ""}</td><td class="mb-cell-qty"><span class="mb-mobile-label">${tr("수량", "Qty")} </span>${money(r.qty)}</td><td class="mb-cell-seller">${shopButtons ? `<button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)} ↗</button>` : esc(r.seller)}</td><td class="mb-cell-location"><span class="where">CH ${r.channel}</span> <span class="where">${placeLabel(r.room, ko)}</span></td><td class="mb-cell-seen">${newMark(r.seen)}${when(r.seen)}<small class="${r.sold ? "mb-sold" : ""}">${r.sold ? tr("판매 완료 표시", "Marked sold") : Date.now() - parseUtc(r.seen) >= DAY ? tr("24시간 경과", "Over 24h old") : tr("판매 중 관측", "Seen for sale")}</small></td></tr>`).join("")}</tbody></table></div>`;
+  return `<div class="mb-table-wrap"><table class="mb-table mb-listings-table"><thead><tr>${showItem ? `<th>${tr("아이템", "Item")}</th>` : ""}<th>${tr("가격", "Price")}<small>${T.priceUnit}</small></th><th>${tr("수량", "Qty")}</th><th>${T.table.seller}</th><th>${T.table.where}</th><th>${tr("최근 확인", "Last seen")}</th></tr></thead><tbody>${rows.map((r) => `<tr>${showItem ? `<td class="mb-cell-item">${itemLink(r.item)}</td>` : ""}<td class="num mb-cell-price">${money(r.price)}${r.qty > 1 ? `<small>${T.total} ${money(r.price * r.qty)}</small>` : ""}</td><td class="mb-cell-qty"><span class="mb-mobile-label">${tr("수량", "Qty")} </span>${money(r.qty)}</td><td class="mb-cell-seller">${shopButtons ? `<button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)} ↗</button>` : esc(r.seller)}</td><td class="mb-cell-location">${placeChips(r)}</td><td class="mb-cell-seen">${newMark(r.seen)}${when(r.seen)}<small class="${r.sold ? "mb-sold" : ""}">${r.sold ? tr("판매 완료 표시", "Marked sold") : Date.now() - parseUtc(r.seen) >= DAY ? tr("24시간 경과", "Over 24h old") : tr("판매 중 관측", "Seen for sale")}</small></td></tr>`).join("")}</tbody></table></div>`;
 }
 // Every browsing filter lives in the address, so refresh, back and a copied link reopen the same view.
 // Defaults are left out to keep plain visits on the canonical URL.
@@ -530,6 +552,8 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
     if (seq !== detailSeq) return;
     priceData = data;
     renderDaily();
+    // The cheap/typical/pricey tags need the typical range, which can arrive after the listing cards.
+    if (lastOffers && $("md-rows")?.querySelector(".mb-offers")) $("md-rows").innerHTML = offerCards(lastOffers);
     const normalize = (rs) =>
       rs.map((r) => ({ ...r, sold: !!r.sold, t: parseUtc(r.seen) }));
     chart = mountMarketCharts($("mk-charts"), normalize(data.rows), {
@@ -589,7 +613,7 @@ async function loadDetailRows() {
       `조건에 맞는 매물 ${data.total}건 · ${ago(data.asOf)}`,
       `${data.total} matching listings · ${ago(data.asOf)}`,
     );
-    $("md-rows").innerHTML = listingTable(data.rows, { showItem: false });
+    $("md-rows").innerHTML = offerCards(data.rows);
     $("md-pages").innerHTML = pager(data, "detail");
     // One event per item opened (not per filter change, page or refresh): the detail loaded and showed its listings.
     if (pendingOpen?.id === id) {
