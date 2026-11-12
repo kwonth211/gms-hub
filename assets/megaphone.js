@@ -115,8 +115,11 @@ function gloss(text, items) {
   return out === text ? '' : out;
 }
 
+const seenAt = (seen) => Date.parse(`${seen.replace(' ', 'T')}Z`);
+const clock = (seen) => new Date(seenAt(seen)).toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+
 function ago(seen) {
-  const s = Math.max(0, (Date.now() - Date.parse(`${seen.replace(' ', 'T')}Z`)) / 1000);
+  const s = Math.max(0, (Date.now() - seenAt(seen)) / 1000);
   const f = new Intl.RelativeTimeFormat(lang, { numeric: 'auto', style: 'short' });
   return s < 60 ? f.format(0, 'second') : s < 3600 ? f.format(-Math.floor(s / 60), 'minute') : f.format(-Math.floor(s / 3600), 'hour');
 }
@@ -133,7 +136,7 @@ function card(r) {
   const cmp = it && market?.median ? `<a class="mg-price" href="${root.dataset.market}?item=${it.id}">${tr('시세', 'Market')} ${mesos(market.median)}${diff != null ? ` · <b class="${diff > 0 ? 'up' : diff < 0 ? 'down' : ''}">${diff > 0 ? '+' : ''}${diff}%</b>` : ''}</a>` : '';
   // One compact row: who and where on the left, the message and its reading in the middle, the whisper copy on the right.
   return `<li class="mg-msg mg-${r.color || 'Y'} mg-k-${r.kind}">
-<div class="mg-who"><strong class="mg-nick">${esc(r.nick)}</strong><span class="mg-meta">${r.channel ? `<span class="mg-ch">CH${String(r.channel).padStart(2, '0')}</span>` : ''}<time>${ago(r.seen)}</time></span><span class="mg-kind">${KIND[r.kind]?.() || ''}</span></div>
+<div class="mg-who"><strong class="mg-nick">${esc(r.nick)}</strong><span class="mg-meta">${r.channel ? `<span class="mg-ch">CH${String(r.channel).padStart(2, '0')}</span>` : ''}<time datetime="${new Date(seenAt(r.seen)).toISOString()}" title="${ago(r.seen)}">${clock(r.seen)}</time></span><span class="mg-kind">${KIND[r.kind]?.() || ''}</span></div>
 <div class="mg-body"><p class="mg-text">${tag}${text}</p>${translator && plain(r.text) ? `<p class="mg-ai" data-src="${esc(plain(r.text))}" data-prefix="${esc(itemPrefix(r.text, items))}" hidden></p>` : ''}${g ? `<p class="mg-gloss">${esc(g)}</p>` : ''}${cmp}</div>
 <button type="button" class="mg-copy" data-nick="${esc(r.nick)}" title="${esc(tr('귓말 명령어 복사', 'Copy whisper command'))}" aria-label="${esc(tr('귓말 명령어 복사', 'Copy whisper command'))}">/w</button></li>`;
 }
