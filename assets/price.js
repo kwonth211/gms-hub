@@ -81,7 +81,7 @@ function card(it) {
 <div class="item-head"><img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="32" height="32" loading="lazy"><div><strong>${esc(it.name)}</strong>${en}<small>${esc(kind)}</small></div></div>
 ${i18n.api ? `<div class="hub-price" data-id="${it.id}"><span class="hub-label">${i18n.hubLabel}</span><span class="hub-value">…</span></div>` : ''}
 <div class="price-links">${i18n.sites.map((s) => siteLink(s, it)).join('')}</div>
-${i18n.api ? reportForm(it) : ''}
+${i18n.api && i18n.reports ? reportForm(it) : ''}
 </article>`;
 }
 

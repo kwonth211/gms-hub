@@ -1367,12 +1367,12 @@ function priceBody(lang) {
 <ol>${t.how.map((x) => `<li>${esc(x)}</li>`).join('')}</ol>
 <h2>${t.sitesHeading}</h2>
 <ul>${t.sites.map(([n, d]) => `<li><strong>${n}</strong>: ${esc(d)}</li>`).join('')}</ul>
-${config.priceReports ? `<p class="muted">${esc(t.reportNote)}</p>` : ''}
+
 <p class="muted">${esc(t.sourceNote)}</p>
 ${t.tradingLink && guides.some((g) => g.slug === 'trading-and-mesos') ? `<p>${fill(t.tradingLink, { href: href(langPath('ko', '/guides/trading-and-mesos/')) })}</p>` : ''}
 </section>
 </div>
-${jsonScript('i18n', { lang, ...Object.fromEntries(Object.entries(t).filter(([k]) => ['none', 'more', 'level', 'copy', 'copied', 'paid', 'direct', 'copyNote', 'twin', 'cats', 'subs', 'hubLabel', 'hubNone', 'hubSummary', 'report', 'pricePh', 'submit', 'thanks', 'badPrice', 'failed', 'kinds', 'typical', 'recent', 'recentNone'].includes(k))), sites: PRICE_SITES, itemsUrl: href('/assets/items.json'), api: config.priceReports ? config.voteApi : '' })}`;
+${jsonScript('i18n', { lang, ...Object.fromEntries(Object.entries(t).filter(([k]) => ['none', 'more', 'level', 'copy', 'copied', 'paid', 'direct', 'copyNote', 'twin', 'cats', 'subs', 'hubLabel', 'hubNone', 'hubSummary', 'report', 'pricePh', 'submit', 'thanks', 'badPrice', 'failed', 'kinds', 'typical', 'recent', 'recentNone'].includes(k))), sites: PRICE_SITES, itemsUrl: href('/assets/items.json'), api: config.priceReports ? config.voteApi : '', reports: false })}`;
 }
 
 // ---------- shop scanner (sample collection) ----------
@@ -1762,7 +1762,7 @@ function marketBody(lang) {
   return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 확인하세요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="char-links"><a href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 리포트', "Today's price report")}</a><a href="${href(langPath(lang, '/tools/my-shop/'))}">${tr('내 상점 시세 비교', 'Compare my shop with the market')}</a><a href="${href(langPath(lang, '/tools/scan/'))}">${tr('화면 스캔으로 내 상점 올리기', 'Upload my shop with the scan')}</a></p></section>
 <div class="wrap mk market-browser">
 <div class="mb-status"><p id="mk-status" role="status">${t.loading}</p><button id="mk-retry" class="btn ghost small-btn" type="button">${tr('새로고침','Refresh')}</button></div>
-<div class="mb-tabs" role="tablist" aria-label="${tr('시장 탐색','Browse market')}"><button id="mb-tab-listings" role="tab" aria-selected="true" aria-controls="mb-browser" data-view="listings">${tr('매물 목록','Listings')}</button><button id="mb-tab-items" role="tab" aria-selected="false" tabindex="-1" aria-controls="mb-browser" data-view="items">${tr('아이템 목록','Items')}</button><button id="mb-tab-reports" role="tab" aria-selected="false" aria-controls="mb-browser" data-view="reports">${tr('가격 제보','Price reports')}</button></div>
+<div class="mb-tabs" role="tablist" aria-label="${tr('시장 탐색','Browse market')}"><button id="mb-tab-listings" role="tab" aria-selected="true" aria-controls="mb-browser" data-view="listings">${tr('매물 목록','Listings')}</button><button id="mb-tab-items" role="tab" aria-selected="false" tabindex="-1" aria-controls="mb-browser" data-view="items">${tr('아이템 목록','Items')}</button></div>
 <div class="mb-workspace" id="mb-workspace"><section class="panel mb-browser" id="mb-browser" role="tabpanel" aria-labelledby="mb-tab-listings">
 <div class="mb-search"><label for="mk-q">${tr('아이템 검색','Search items')}</label><div><input type="search" id="mk-q" placeholder="${esc(t.placeholder)}" autocomplete="off"><button id="mb-clear-search" class="btn ghost small-btn" type="button">${tr('지우기','Clear')}</button></div></div>
 <div id="mb-mine" class="mb-mine" hidden aria-label="${tr('관심 아이템과 최근 본 아이템','Wishlist and recently viewed items')}"></div>

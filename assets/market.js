@@ -972,7 +972,8 @@ async function initialize() {
     const p = new URLSearchParams(location.search),
       id = Number(p.get("item"));
     if (p.get("q")) $("mk-q").value = p.get("q");
-    const initialView = ["items", "listings", "reports"].includes(p.get("view"))
+    // The anonymous price-report tab was removed (no one used it); old ?view=reports links open the listings.
+    const initialView = ["items", "listings"].includes(p.get("view"))
       ? p.get("view")
       : byId.has(id) ? "items" : "listings";
     // How the page was reached with an item preselected: a shared link, the home "pick up" strip, or any other link.
