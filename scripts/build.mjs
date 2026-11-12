@@ -685,10 +685,25 @@ function header(lang, pagePath, only) {
 <a class="brand" href="${href(langPath(lang, '/'))}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>${esc(t.gameName)}</small></span></a>
 <nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}</nav>
 ${presencePill(lang)}
+${headerSearch(lang, tabs)}
 <button type="button" class="theme-toggle" data-theme-toggle>${THEME_ICON}<span class="sr-only">${lang === 'ko' ? '낮과 밤 화면 바꾸기' : 'Switch day or night theme'}</span></button>
 <details class="lang-menu"><summary class="lang-current" aria-label="Language"><span class="lang-full" translate="no">${LANG_NAMES[lang]}</span><span class="lang-code" translate="no" aria-hidden="true">${lang.toUpperCase()}</span></summary><div class="lang-list">${(only ? [lang, ...ALL_LANGS.filter((l) => l !== lang)] : ALL_LANGS).map((l) => `<a class="lang-opt" href="${href(langPath(l, only && l !== lang ? '/' : pagePath || '/'))}" data-lang="${l}" hreflang="${HREFLANG[l]}" lang="${HREFLANG[l]}"${l === lang ? ' aria-current="true"' : ''}>${LANG_NAMES[l]}</a>`).join('')}</div></details>
 ${moreMenu(lang)}
 </div></header>`;
+}
+
+// Search from every page (assets/header-search.js): items open their market panel, monsters their page, and the site's
+// own pages by name. The indexes load on first use, so pages that never search pay nothing.
+function headerSearch(lang, tabs) {
+  const ko = lang === 'ko';
+  const pages = [...tabs.map(([p, , label]) => [label, href(langPath(lang, p))]),
+    ...publishedGuides.filter((g) => g.lang === lang || (!LANGS.includes(lang) && g.lang === 'en')).map((g) => [g.h1 || g.title, href(langPath(lang, guidePath(g)))]),
+    [ko ? '오늘의 시세 리포트' : "Today's price report", href(langPath(lang, '/tools/market/today/'))], [ko ? '상점 스캔' : 'Shop scan', href(langPath(lang, '/tools/scan/'))],
+    [ko ? '내 상점 시세 비교' : 'Compare my shop', href(langPath(lang, '/tools/my-shop/'))], [ko ? '캐릭터 랭킹' : 'Character ranking', href(langPath(lang, '/rank/'))],
+    [ko ? '직업별 장비' : 'Gear by class', href(langPath(lang, '/equipment/'))], [ko ? '보스' : 'Bosses', href(langPath(lang, '/bosses/'))],
+    [ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests', href(langPath(lang, '/quests/best-exp/'))], [ko ? '맵 도감' : 'Maps', href(langPath(lang, '/maps/'))],
+    [ko ? '문의·협찬·후원' : 'Contact and support', href(langPath(lang, '/contact/'))]];
+  return `<button type="button" class="hs-open" data-hs data-items="${esc(href('/assets/items.json'))}" data-mobs="${esc(href('/assets/mobs.json'))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-monsters="${esc(href(langPath(lang, '/monsters/')))}" data-pages="${esc(JSON.stringify(pages))}" aria-label="${ko ? '검색' : 'Search'}" title="${ko ? '검색 ( / )' : 'Search ( / )'}"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="hs-label">${ko ? '검색' : 'Search'}</span></button>`;
 }
 
 // Pages that do not fit the eight tabs (guides, ranking, gear, bosses, databases, shop tools) open from one menu at the end
@@ -758,6 +773,7 @@ ${header(lang, pagePath, only)}
 <main>${ads && pageKey !== 'home' ? adfitRails() : ''}${withTopAd(body, ads)}${ads ? adfitSlot() : ''}</main>
 ${footer(lang)}
 <script src="${href('/assets/common.js')}" defer></script>
+<script type="module" src="${href(`/assets/header-search.js?v=${moduleVersion}`)}"></script>
 ${ads ? `<script src="${scriptSrc('adfit.js')}" defer></script>` : ''}
 ${scripts.map((s) => `<script src="${scriptSrc(s)}" defer></script>`).join('\n')}
 ${modules.map((s) => `<script type="module" src="${href(`/assets/${s}?v=${moduleVersion}`)}"></script>`).join('\n')}

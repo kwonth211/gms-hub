@@ -2002,3 +2002,28 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-fresh i { width: 7px; height: 7px; border-radius: 50%; background: var(--fresh, var(--muted)); flex: none; }
 .mb-offer-where { justify-self: end; white-space: nowrap; }
 @media (max-width: 640px) { .mb-offer { grid-template-columns: minmax(0, 1fr) auto; } .mb-offer-who { grid-column: 1 / -1; grid-row: 2; } }
+/* Header search: a button in the header and a search sheet over the page. */
+.hs-open { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--text-2); font: inherit; font-size: 0.85rem; cursor: pointer; }
+.hs-open:hover { color: var(--text); border-color: var(--line-strong); }
+.hs-open:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+@media (max-width: 1360px) { .hs-label { display: none; } .hs-open { padding: 0; width: 38px; justify-content: center; } }
+.hs-sheet { width: min(640px, calc(100vw - 24px)); margin: 72px auto auto; padding: 0; border: 1px solid var(--line-strong); border-radius: 14px; background: var(--panel); color: var(--text); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25); }
+.hs-sheet::backdrop { background: rgba(15, 20, 32, 0.45); }
+.hs-form { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); color: var(--muted); }
+.hs-input { flex: 1; min-width: 0; font: inherit; font-size: 1.05rem; border: 0; background: none; color: var(--text); outline: none; }
+.hs-close { font: inherit; font-size: 0.72rem; padding: 3px 7px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel-2); color: var(--muted); cursor: pointer; }
+.hs-results { list-style: none; margin: 0; padding: 6px; max-height: min(60vh, 520px); overflow-y: auto; }
+.hs-results a { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; color: var(--text); text-decoration: none; }
+.hs-results [aria-selected="true"] a, .hs-results a:hover { background: var(--accent-soft); }
+.hs-results a:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.hs-results img { image-rendering: pixelated; object-fit: contain; }
+.hs-ico { text-align: center; color: var(--accent); font-weight: 800; }
+.hs-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hs-name small { margin-left: 6px; color: var(--muted); font-weight: 500; font-size: 0.78rem; }
+.hs-type { font-size: 0.72rem; color: var(--muted); padding: 1px 6px; border: 1px solid var(--line); border-radius: 999px; }
+.hs-empty { padding: 14px 10px; color: var(--muted); font-size: 0.9rem; }
+.hs-hint { margin: 0; padding: 6px 14px 10px; }
+@media (max-width: 480px) { .hs-sheet { margin-top: 12px; } .hs-hint { display: none; } }
+/* Room for the search button: the live pill drops its LIVE word on narrow desktops and steps aside on phones. */
+@media (min-width: 761px) and (max-width: 1360px) { .presence .pr-live { display: none; } }
+@media (max-width: 480px) { .presence { display: none !important; } }
