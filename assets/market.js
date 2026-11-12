@@ -370,10 +370,28 @@ async function renderRecords() {
     if (seq === listSeq) $("mb-results").setAttribute("aria-busy", "false");
   }
 }
+// A search answers "what does it cost" before the listings: up to four matching items with their asking median, lowest
+// ask and how many are on sale, each opening its seller list.
+function renderSummary() {
+  const box = $("mb-summary"), q = $("mk-q").value.trim();
+  const rows = view === "listings" && q && catalog
+    ? catalogRows(items, catalog.items, { query: q, category, sort: "active", favorites: null }).filter((r) => r.median != null || r.typical).slice(0, 4)
+    : [];
+  box.hidden = !rows.length;
+  box.innerHTML = rows.map((r) => `<a class="mb-sum" href="?item=${r.id}" data-item="${r.id}" data-source="summary">${icon(r.id, 28)}<span class="mb-sum-name">${esc(itemName(r.id))}</span><strong>${money(r.median ?? r.typical)}</strong><small>${r.median != null ? `${tr("최저", "Low")} ${money(r.low)} · ${tr(`판매 ${r.open}건`, `${r.open} for sale`)}` : tr("대표 시세", "Typical")}</small></a>`).join("");
+}
+// The folded filter row says how many filters are on, and opens itself when a shared link arrives with some set.
+function filterCount() {
+  const on = [["mb-seller", ""], ["mb-channel", ""], ["mb-room", ""], ["mb-state", "open"], ["mb-list-sort", "recent"]].filter(([id, d]) => $(id).value !== d).length;
+  $("mb-filter-count").textContent = on ? tr(`${on}개 적용 중`, `${on} on`) : tr("판매자 · 채널 · 방 · 상태 · 정렬", "Seller · channel · room · status · sort");
+  if (on) $("mb-list-controls").open = true;
+}
 function renderMain() {
   if (!items.length) return;
   syncURL();
   $("mb-range").hidden = view === "items" || (view === "listings" && $("mb-state").value === "open");
+  filterCount();
+  renderSummary();
   view === "items" ? renderDirectory() : renderRecords();
 }
 function setView(next, keepPage = false) {
@@ -607,6 +625,7 @@ async function refresh() {
       ? `목록 기준 ${clock(Date.parse(catalog.asOf))} · 60초마다 확인`
       : tx("Directory as of {at} · checks every 60s", { at: clock(Date.parse(catalog.asOf)) });
     if (view === "items") renderDirectory();
+    else renderSummary();
   } catch {
     $("mk-status").textContent = catalog ? T.staleData : T.failed;
     if (!catalog) {

@@ -1821,3 +1821,28 @@ html[data-charm='off'] :is(.charm-walk, .charm-leaves) { display: none; }
 
 .mg-ai { margin: 2px 0 0; font-size: 0.86rem; color: var(--text-2); }
 .mg-ai-btn[disabled] { opacity: 0.8; }
+
+/* Market: the search answer first (per-item summary), filters folded, stats and collection health under the browser. */
+.mb-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin: 10px 0 4px; }
+.mb-sum { display: grid; grid-template-columns: 28px minmax(0, 1fr); grid-template-rows: auto auto auto; gap: 1px 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--accent-line); border-radius: 10px; background: var(--accent-soft); color: var(--text); text-decoration: none; }
+.mb-sum img { grid-row: 1 / span 3; }
+.mb-sum-name { font-size: 0.82rem; font-weight: 700; overflow-wrap: anywhere; }
+.mb-sum strong { font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.mb-sum small { font-size: 0.74rem; color: var(--muted); }
+.mb-sum:hover { border-color: var(--accent); }
+.mb-sum:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.mb-filter-box { margin: 4px 0 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.mb-filter-box > summary { cursor: pointer; padding: 9px 12px; font-size: 0.85rem; font-weight: 700; color: var(--text); list-style: none; }
+.mb-filter-box > summary::-webkit-details-marker { display: none; }
+.mb-filter-box > summary::after { content: ' ▾'; color: var(--muted); }
+.mb-filter-box[open] > summary::after { content: ' ▴'; }
+.mb-filter-box > summary small { font-weight: 500; color: var(--muted); margin-left: 6px; }
+.mb-filter-box > summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 10px; }
+.mb-filter-box .mb-list-controls { margin: 0; padding: 0 12px 12px; }
+.mb-filter-box[hidden] { display: none; }
+.mk-foot { margin: 18px 0 0; }
+/* On a phone the item name gets its own line; the star, link and close buttons wrap under it instead of squeezing it. */
+@media (max-width: 600px) {
+  .mb-detail .mk-head { flex-wrap: wrap; }
+  .mb-detail .mk-head > div { flex-basis: calc(100% - 52px); }
+}
