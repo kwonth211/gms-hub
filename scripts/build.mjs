@@ -645,6 +645,7 @@ ${naverVerify}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="${scriptSrc('style.css')}">
 <style>${CHARM_VARS}</style>
+<script type="speculationrules">${SPECULATION}</script>
 ${adsense}
 ${ga}
 ${clarity}
@@ -689,7 +690,7 @@ function header(lang, pagePath, only) {
         `<a class="tab" href="${href(langPath(lang, p))}"${(p === pagePath || (p !== '/' && pagePath?.startsWith(p))) ? ' aria-current="page"' : ''}${lang === 'ko' ? '' : ` title="${esc(label)}"`}>${p === NEW_TAB ? `<span class="tab-ico">${spriteSvg(icon, 20)}<span class="tab-new" title="${lang === 'ko' ? '새 기능' : 'New'}">N</span></span>` : spriteSvg(icon, 20)}${lang === 'ko' ? `<span>${label}</span>` : `<span class="tab-full">${label}</span><span class="tab-short" aria-hidden="true">${SHORT_EN[p]}</span>`}</a>`
     )
     .join('');
-  return `${pagePath === '/megaphone/' ? '' : megaTicker(lang)}<header class="site-header"><div class="wrap header-inner">
+  return `${megaTicker(lang)}<header class="site-header"><div class="wrap header-inner">
 <a class="brand" href="${href(langPath(lang, '/'))}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>${esc(t.gameName)}</small></span></a>
 <nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}</nav>
 ${presencePill(lang)}
@@ -734,9 +735,13 @@ function moreMenu(lang, moved = []) {
   return `<details class="more-menu"><summary class="more-btn" aria-label="${label}"><span class="more-bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="more-label">${label}</span></summary><div class="more-list">${links.map(([p, name]) => `<a class="lang-opt" href="${href(langPath(lang, p))}">${name}</a>`).join('')}<button type="button" class="lang-opt more-theme" data-theme-toggle>${ko ? '낮·밤 화면 바꾸기' : 'Switch day or night theme'}</button><button type="button" class="lang-opt more-charm" data-charm-toggle><span class="charm-on-label">${ko ? '낙엽·움직이는 효과 끄기' : 'Turn off falling leaves and effects'}</span><span class="charm-off-label">${ko ? '낙엽·움직이는 효과 켜기' : 'Turn on falling leaves and effects'}</span></button></div></details>`;
 }
 
-// A strip above the header that scrolls the latest game megaphones (assets/common.js fills it from /megaphones); each one
-// opens the megaphone page focused on it (?m=<id>). Its height
+// A strip above the header, on every page, that scrolls the latest game megaphones (assets/common.js fills it from
+// /megaphones); each one opens the megaphone page focused on it (?m=<id>), in place when that page is already open. Its height
 // is reserved from the start so nothing below moves when the messages arrive.
+// Same-site links are fetched when the pointer comes down on them or rests on them, so the next page is already here
+// when it opens; together with the cross-document view transition in style.css the site moves like one app.
+const SPECULATION = JSON.stringify({ prefetch: [{ where: { and: [{ href_matches: '/*' }, { not: { selector_matches: '[target], [download]' } }] }, eagerness: 'moderate' }] });
+
 function megaTicker(lang) {
   const ko = lang === 'ko';
   const url = href(langPath(lang, '/megaphone/'));

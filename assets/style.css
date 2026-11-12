@@ -2164,3 +2164,14 @@ body.exp-running .exp-stop { display: inline-flex; }
 .exp-manual-form button { min-height: 38px; padding: 0 14px; }
 .exp-manual-form small { flex-basis: 100%; }
 @media (max-width: 480px) { .exp-stat:first-child { grid-column: 1 / -1; } }
+
+/* Page to page: the browser keeps the old page on screen and fades the new one in (no blank flash), while the ticker
+   and the header stay exactly where they are. Off for reduced motion. */
+@view-transition { navigation: auto; }
+.mg-ticker { view-transition-name: ticker; }
+.site-header { view-transition-name: header; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.14s; }
+::view-transition-group(ticker), ::view-transition-group(header), ::view-transition-old(ticker), ::view-transition-old(header), ::view-transition-new(ticker), ::view-transition-new(header) { animation: none; }
+::view-transition-old(ticker), ::view-transition-old(header) { opacity: 0; }
+::view-transition-new(ticker), ::view-transition-new(header) { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }

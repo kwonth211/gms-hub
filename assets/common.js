@@ -98,9 +98,9 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   if (!spots.length || !api || !('WebSocket' in window)) return;
   let ws = null, ping = 0, idle = 0, retry = 0;
   // A changed number pops briefly, like a broadcast viewer counter.
-  const show = (site) => spots.forEach((el) => {
+  const show = (site, quiet) => spots.forEach((el) => {
     const num = el.querySelector('[data-site]');
-    if (num.textContent !== String(site) && !el.hidden) {
+    if (num.textContent !== String(site) && !el.hidden && !quiet) {
       num.classList.remove('bump');
       void num.offsetWidth;
       num.classList.add('bump');
@@ -108,12 +108,16 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
     num.textContent = site;
     el.hidden = !(site >= 2);
   });
+  // The last count is drawn at once on the next page, so the pill does not pop in after the socket connects.
+  const PR_KEY = 'gms-presence';
+  try { const last = Number(sessionStorage.getItem(PR_KEY)); if (last >= 2) show(last, true); } catch (x) {}
+  const remember = (site) => { try { sessionStorage.setItem(PR_KEY, String(site)); } catch (x) {} };
   const open = () => {
     if (ws || document.hidden) return;
     ws = new WebSocket(`${api.replace(/^http/, 'ws')}/presence?p=${encodeURIComponent(location.pathname)}`);
     ws.onmessage = (e) => {
       retry = 0;
-      try { show(JSON.parse(e.data).site); } catch (x) {}
+      try { const site = JSON.parse(e.data).site; show(site); remember(site); } catch (x) {}
     };
     ws.onclose = () => {
       clearInterval(ping);
@@ -241,11 +245,42 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
       return [original, read ? await read(original).catch(() => original) : original];
     }));
     const items = rows.map((r, i) => `<a class="mg-tk-item mg-tk-${esc(r.color || 'Y')}" href="${box.dataset.href}?m=${Number(r.id)}" tabindex="-1"${texts[i][1] !== texts[i][0] ? ` title="${esc(texts[i][0])}"` : ''}>${icon}${r.channel ? `<b>CH${r.channel}</b>` : ''}<time>${clock(r.seen)}</time><strong>${esc(r.nick)}</strong><span>${esc(short(texts[i][1]))}</span></a>`).join('');
+    const anim = () => run.getAnimations()[0];
+    const before = anim()?.currentTime || 0;
     run.innerHTML = `<div class="mg-tk-set">${items}</div><div class="mg-tk-set" aria-hidden="true">${items}</div>`;
     run.style.setProperty('--tk-dur', `${Math.max(40, Math.round(run.firstChild.scrollWidth / 60))}s`);
     box.classList.add('ready');
+    // The strip keeps rolling from where it was: across a page change (the place is kept for a moment in this tab,
+    // with the time that passed added on) and when fresh megaphones replace the drawn ones.
+    const a = anim();
+    if (a) {
+      let at = before;
+      if (saved) {
+        try {
+          const keep = JSON.parse(sessionStorage.getItem(TK_POS) || 'null');
+          if (keep && keep.id === lastId && Date.now() - keep.at < 120000) at = keep.t + (Date.now() - keep.at);
+        } catch (e) {}
+      }
+      const dur = parseFloat(run.style.getPropertyValue('--tk-dur')) * 1000;
+      if (at && dur) a.currentTime = at % dur;
+    }
   }
-  box.addEventListener('click', (e) => { if (e.target.closest('a')) track('mega_ticker_click'); });
+  const TK_POS = 'gms-ticker-pos';
+  addEventListener('pagehide', () => {
+    const a = run.getAnimations()[0];
+    if (a) try { sessionStorage.setItem(TK_POS, JSON.stringify({ id: lastId, t: a.currentTime, at: Date.now() })); } catch (e) {}
+  });
+  // On the megaphone page itself a ticker item is focused in place instead of reloading the page.
+  const samePage = location.pathname === new URL(box.dataset.href, location.href).pathname;
+  box.addEventListener('click', (e) => {
+    const a = e.target.closest('a.mg-tk-item');
+    if (!a) return;
+    track('mega_ticker_click');
+    if (samePage) {
+      const id = Number(new URL(a.href).searchParams.get('m'));
+      if (id && dispatchEvent(new CustomEvent('mega-focus', { detail: { id }, cancelable: true })) === false) { e.preventDefault(); history.replaceState(null, '', `?m=${id}`); }
+    }
+  });
   load(true).then(() => load());
   setInterval(() => document.visibilityState === 'visible' && load(), 60000);
 })();

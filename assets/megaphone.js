@@ -14,8 +14,10 @@ const tr = (k, e, vars = {}) => (ko ? k : tx(e, vars)).replace(/\{(\w+)\}/g, (_,
 const POLL_MS = 5000;
 
 // ?m=<id> (from the header ticker) scrolls to that megaphone once and marks it.
-const focusId = Number(new URLSearchParams(location.search).get('m')) || 0;
+let focusId = Number(new URLSearchParams(location.search).get('m')) || 0;
 let focused = false;
+// The header ticker asks for a megaphone that is on this page already: mark it and scroll to it without a reload.
+addEventListener('mega-focus', (e) => { focusId = e.detail.id; focused = false; e.preventDefault(); render(); });
 let rows = [], lastId = 0, names = [], byName = new Map(), prices = new Map();
 
 // ---------- reading a megaphone ----------
