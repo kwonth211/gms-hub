@@ -2843,17 +2843,15 @@ for (const lang of LANGS) {
   }
 }
 
-// Root: send visitors to their language; crawlers follow the hreflang links.
+// Root: send visitors to their language before anything else loads. The redirect runs first in <head> and the page
+// carries no ads or analytics, so there is no flash of a language chooser; the chooser shows only without JavaScript.
+// Crawlers follow the hreflang links.
 write(
   'index.html',
-  `${head({ lang: 'en', title: T.en.homeTitle, desc: T.en.homeDesc, pagePath: '/' })}
-<body class="root-choice">
-<main class="wrap center">
-${spriteSvg('mushroom', 64)}
-<h1>GMS Hub</h1>
-<p class="muted">Global MapleStory Classic World · 글로벌 메이플스토리 클래식 월드</p>
-<p class="choice">${ALL_LANGS.map((l, i) => `<a class="btn${i ? ' ghost' : ''}" href="${href(`/${l}/`)}" data-lang="${l}" lang="${HREFLANG[l]}">${LANG_NAMES[l]}</a>`).join(' ')}</p>
-</main>
+  `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
 <script>
 (function(){var saved;try{saved=localStorage.getItem('cb_lang')}catch(e){}
 var langs=${JSON.stringify(ALL_LANGS)},nav=(navigator.language||'').toLowerCase().slice(0,2);
@@ -2864,7 +2862,23 @@ var q=location.search,from='';try{from=new URL(document.referrer).hostname}catch
 if(from&&from!==location.hostname&&!/[?&]utm_source=/.test(q)){q+=(q?'&':'?')+'utm_source='+encodeURIComponent(from)+'&utm_medium='+(/(^|\\.)(naver|google|bing|daum|yahoo|duckduckgo)\\./.test(from)?'organic':'referral')}
 location.replace('${config.basePath}/'+lang+'/'+q);})();
 </script>
-<script src="${href('/assets/common.js')}" defer></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(T.en.homeTitle)}</title>
+<meta name="description" content="${esc(T.en.homeDesc)}">
+<link rel="canonical" href="${absUrl(langPath('en', '/'))}">
+${ALL_LANGS.map((l) => `<link rel="alternate" hreflang="${HREFLANG[l]}" href="${absUrl(langPath(l, '/'))}">`).join('\n')}
+<link rel="alternate" hreflang="x-default" href="${absUrl(langPath('en', '/'))}">
+${config.naverSiteVerification ? `<meta name="naver-site-verification" content="${esc(config.naverSiteVerification)}">` : ''}
+<link rel="icon" href="${href('/assets/favicon.svg')}" type="image/svg+xml">
+<style>body{margin:0;font-family:system-ui,sans-serif;background:#f6f1e7;color:#1c2130}.root-choice{visibility:hidden}main{max-width:520px;margin:15vh auto;text-align:center;padding:0 16px}a{display:inline-block;margin:4px;padding:10px 16px;border-radius:999px;border:1px solid #c45f0b;color:#1c2130;text-decoration:none}</style>
+<noscript><style>.root-choice{visibility:visible}</style></noscript>
+</head>
+<body>
+<main class="root-choice">
+<h1>GMS Hub</h1>
+<p>Global MapleStory Classic World · 글로벌 메이플스토리 클래식 월드</p>
+<p>${ALL_LANGS.map((l) => `<a href="${href(`/${l}/`)}" lang="${HREFLANG[l]}">${LANG_NAMES[l]}</a>`).join(' ')}</p>
+</main>
 </body></html>`
 );
 
