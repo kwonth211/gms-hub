@@ -503,9 +503,10 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
       ? `<dl class="mb-detail-stats"><div><dt>${tr("판매가 중앙값", "Asking median")}</dt><dd>${money(s.median)} <small>${T.priceUnit}</small></dd></div><div><dt>${tr("최저 판매가", "Lowest ask")}</dt><dd>${money(s.low)}</dd></div><div><dt>${tr("판매 매물 · 24h", "Asking · 24h")}</dt><dd>${s.open}</dd></div></dl>`
       : "";
   const pageLink = D.itemPaths?.[id] ? `<a class="mb-item-page" href="${esc(D.itemPaths[id])}">${esc(D.itemLink)}</a>` : "";
+  priceData = null;
   fillItemInfo(id);
   $("mk-detail").innerHTML =
-    `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(it.name)}</h2><small>${esc(it.en)}</small></div>${starButton(id, "mb-star-detail")}<button class="btn ghost small-btn" data-share-item="${id}" title="${tr("이 아이템 링크 복사", "Copy a link to this item")}">${tr("링크 복사", "Copy link")}</button><button class="btn ghost small-btn" data-close-item aria-label="${tr("상세 닫기", "Close details")}">×</button></header><p class="share-status mb-share-status" id="mb-share-status" role="status" aria-live="polite"></p>${stats}<section class="mb-history" id="mb-history" aria-label="${tr("가격 히스토리", "Price history")}"><p class="muted note">${T.loading}</p></section><section class="mb-info" id="mb-info" aria-live="polite"></section>${changed || reset ? visitNote(id) : ""}${pageLink}
+    `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(it.name)}</h2><small>${esc(it.en)}</small></div>${starButton(id, "mb-star-detail")}<button class="btn ghost small-btn" data-share-item="${id}" title="${tr("이 아이템 링크 복사", "Copy a link to this item")}">${tr("링크 복사", "Copy link")}</button><button class="btn ghost small-btn" data-close-item aria-label="${tr("상세 닫기", "Close details")}">×</button></header><p class="share-status mb-share-status" id="mb-share-status" role="status" aria-live="polite"></p><section class="mb-history" id="mb-history" aria-label="${tr("가격 한눈에 보기", "Price at a glance")}"><p class="muted note">${T.loading}</p></section>${stats}<section class="mb-info" id="mb-info" aria-live="polite"></section>${changed || reset ? visitNote(id) : ""}${pageLink}
  <div class="mb-tabs" role="tablist" aria-label="${tr("아이템 상세", "Item details")}"><button data-detail-tab="listings" role="tab" aria-selected="${detailTab === "listings"}" aria-controls="mb-detail-listings">${tr("판매 매물", "Shop listings")}</button><button data-detail-tab="charts" role="tab" aria-selected="${detailTab === "charts"}" aria-controls="mb-detail-charts">${tr("가격 추이·매물대", "Trends & depth")}</button><button class="mb-detail-refresh" data-refresh-item>${tr("새로고침", "Refresh")}</button></div>
  <div id="mb-detail-listings" role="tabpanel" aria-label="${tr("판매 매물", "Shop listings")}"><p class="muted note">${T.whereNote}</p><div class="mb-detail-filters"><label>${tr("채널", "Channel")}<select id="md-channel">${selectLocation("channel", detailState.channel)}</select></label><label>${tr("방", "Room")}<select id="md-room">${selectLocation("room", detailState.room)}</select></label><label>${tr("정렬", "Sort")}<select id="md-sort"><option value="price">${T.sortPrice}</option><option value="recent">${T.sortRecent}</option><option value="high">${tr("높은 가격순", "Highest price")}</option></select></label><label>${tr("상태", "Status")}<select id="md-state"><option value="open">${tr("판매 중 · 24h", "Asking · 24h")}</option><option value="all">${tr("전체 기록 · 7일", "All records · 7d")}</option><option value="sold">${tr("판매 완료 표시", "Marked sold")}</option><option value="stale">${tr("24시간 경과", "Over 24h old")}</option></select></label></div><div class="price-band-filter" id="md-price-band" hidden><span></span><button class="btn ghost small-btn" data-clear-band>${tr("가격대 해제", "Clear price band")}</button></div><p id="md-count" class="muted note" role="status"></p><div id="md-rows"></div><div id="md-pages" class="mb-pagination"></div></div>
  <div id="mb-detail-charts" role="tabpanel" aria-label="${tr("가격 추이와 매물대", "Trends and depth")}"><div id="mk-charts"><p>${T.loading}</p></div></div>`;
@@ -527,7 +528,8 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
   try {
     const data = await get(`/market/history?id=${id}`, detailAbort.signal);
     if (seq !== detailSeq) return;
-    renderDaily(data.daily);
+    priceData = data;
+    renderDaily();
     const normalize = (rs) =>
       rs.map((r) => ({ ...r, sold: !!r.sold, t: parseUtc(r.seen) }));
     chart = mountMarketCharts($("mk-charts"), normalize(data.rows), {
@@ -891,52 +893,74 @@ ${mobs.length ? `<ul class="mb-drops">${mobs.map((m) => { const x = data.mobs[m]
 ${data.quests?.[id]?.length ? `<h3>${tr("퀘스트 보상", "Quest reward")} <small>${tr(`${questN}개`, `${questN}`)}</small></h3><ul class="mb-quests">${data.quests[id].map(([p, name, lv]) => `<li><a href="/${D.lang}${p}">${esc(name)}</a>${lv ? `<small>Lv. ${lv}+</small>` : ""}</li>`).join("")}</ul>` : ""}`;
 }
 
-// Daily price history, always on view under the price: the asking median per day (solid), the day's lowest ask (thin) and
-// the reference typical price (dashed), on a date axis so days without collection show as gaps. One axis, mesos.
-function renderDaily(days) {
+// Price at a glance, always on view under the item name (modelled on MesoWatch): the typical range (25th to 75th
+// percentile of today's open asks) set large, how many current listings sit below, inside and above it, and a chart of
+// every listing seen (dots) over the daily typical-range band and median line. One axis, mesos; 7 days, 30 days or all.
+const kmoney = (n) => (n == null ? "—" : ko ? (n >= 1e8 ? `${+(n / 1e8).toFixed(2)}억` : n >= 1e4 ? `${+(n / 1e4).toFixed(n >= 1e6 ? 0 : 1)}만` : nf.format(n)) : n >= 1e6 ? `${+(n / 1e6).toFixed(2)}M` : n >= 1e3 ? `${+(n / 1e3).toFixed(1)}K` : nf.format(n));
+const quant = (sorted, f) => sorted[Math.min(sorted.length - 1, Math.floor(f * (sorted.length - 1) + 0.5))];
+let priceData = null, histRange = 7;
+function renderDaily() {
   const box = $("mb-history");
-  if (!box) return;
-  const pts = (days || []).filter((d) => d.median || d.typical);
-  if (pts.length < 2) {
-    box.innerHTML = `<h3>${tr("가격 히스토리", "Price history")}</h3><p class="muted note">${tr("아직 하루치 기록만 있어요. 매일 쌓이면 여기에 추이가 그려져요.", "Only one day recorded so far; the trend appears here as days add up.")}</p>`;
-    return;
+  if (!box || !priceData) return;
+  const { daily = [], rows = [], profile = [] } = priceData;
+  const now = Date.parse(priceData.asOf) || Date.now();
+  const open = profile.map((r) => r.price).filter((p) => p > 0).sort((a, b) => a - b);
+  const lastDay = daily.filter((d) => d.p25 != null).at(-1);
+  const [r25, r75] = open.length >= 4 ? [quant(open, 0.25), quant(open, 0.75)] : lastDay ? [lastDay.p25, lastDay.p75] : [null, null];
+  const below = open.filter((p) => p < r25).length, above = open.filter((p) => p > r75).length, inside = open.length - below - above;
+  const head = r25 != null
+    ? `<div class="mb-range"><span class="mb-range-label">${tr("보통 가격대", "Typical range")}</span><b>${kmoney(r25)}${r75 !== r25 ? ` – ${kmoney(r75)}` : ""}</b><small>${open.length >= 4 ? tr(`지금 판매 중 ${open.length}건 기준`, `from ${open.length} listings now`) : tr(`${lastDay.day.slice(5).replace("-", "/")} 기록 기준`, `from ${lastDay.day.slice(5).replace("-", "/")} records`)}</small></div>`
+    : `<div class="mb-range"><span class="mb-range-label">${tr("보통 가격대", "Typical range")}</span><b>—</b><small>${tr("아직 기록이 부족해요", "Not enough records yet")}</small></div>`;
+  // Where today's listings sit: a dot per listing on a price line with the typical range shaded.
+  let dist = "";
+  if (open.length >= 2) {
+    const W = 600, H = 46, P = 10;
+    const lo = quant(open, 0.03), hi = quant(open, 0.97) > lo ? quant(open, 0.97) : lo * 1.1 + 1;
+    const x = (v) => P + ((Math.min(hi, Math.max(lo, v)) - lo) / (hi - lo)) * (W - 2 * P);
+    const stack = new Map();
+    const dots = open.map((p) => { const cx = Math.round(x(p) / 6) * 6, k = stack.get(cx) || 0; stack.set(cx, k + 1); return `<circle cx="${cx}" cy="${30 - k * 6}" r="2.6" class="${p < r25 ? "lo" : p > r75 ? "hi" : "in"}"/>`; }).join("");
+    dist = `<div class="mb-dist"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${tr("지금 매물 가격 분포", "Where current listings sit")}"><rect class="band" x="${x(r25)}" y="2" width="${Math.max(3, x(r75) - x(r25))}" height="34" rx="4"/>${dots}<line class="base" x1="${P}" x2="${W - P}" y1="36" y2="36"/><text x="${P}" y="${H - 1}">${kmoney(lo)}</text><text x="${W - P}" y="${H - 1}" text-anchor="end">${kmoney(hi)}</text></svg>
+<p class="mb-dist-counts"><span class="lo">${tr(`싸게 ${below}건`, `${below} below`)}</span><span class="in">${tr(`보통 ${inside}건`, `${inside} in range`)}</span><span class="hi">${tr(`비싸게 ${above}건`, `${above} above`)}</span><small>${tr(`최저 ${kmoney(open[0])}`, `lowest ${kmoney(open[0])}`)}</small></p></div>`;
   }
-  const W = 600, H = 170, L = 70, R = 10, Tp = 10, B = 24;
-  const t = (d) => Date.parse(`${d}T00:00:00Z`);
-  const t0 = t(pts[0].day), t1 = t(pts.at(-1).day);
-  const vals = pts.flatMap((d) => [d.median, d.low, d.typical]).filter((v) => v != null).sort((a, b) => a - b);
-  // The scale ignores the wildest 5% of lows/highs so one mistyped price does not flatten the line.
-  let lo = vals[Math.floor(vals.length * 0.05)], hi = vals[Math.ceil(vals.length * 0.95) - 1];
-  if (hi === lo) { hi *= 1.1; lo *= 0.9; }
-  const x = (d) => L + ((t(d) - t0) / Math.max(1, t1 - t0)) * (W - L - R);
-  const y = (v) => Tp + (1 - (Math.min(hi, Math.max(lo, v)) - lo) / (hi - lo)) * (H - Tp - B);
-  // A line breaks across a gap of more than two days.
-  const line = (key) => {
-    let out = "", prev = null;
-    for (const d of pts) {
-      if (d[key] == null) { prev = null; continue; }
-      out += `${prev && t(d.day) - t(prev) <= 2 * 86400000 ? "L" : "M"}${x(d.day).toFixed(1)},${y(d[key]).toFixed(1)}`;
-      prev = d.day;
-    }
-    return out;
-  };
-  const fmt = (d) => d.slice(5).replace("-", "/");
-  const ticks = [lo, (lo + hi) / 2, hi];
-  const last = pts.filter((d) => d.median).at(-1), first = pts.find((d) => d.median);
-  const weekAgo = pts.filter((d) => d.median && t(d.day) <= t(last?.day || pts.at(-1).day) - 6 * 86400000).at(-1);
-  const pct = (a, b) => (a && b ? Math.round(((a - b) / b) * 100) : null);
-  const ch = pct(last?.median, (weekAgo || first)?.median);
-  box.innerHTML = `<h3>${tr("가격 히스토리", "Price history")} <small>${fmt(pts[0].day)} – ${fmt(pts.at(-1).day)}</small></h3>
-${ch != null && last !== first ? `<p class="mb-hist-change">${weekAgo ? tr("7일 전 대비", "vs 7 days ago") : tr("첫 기록 대비", "vs first record")} <b class="${ch > 0 ? "up" : ch < 0 ? "down" : ""}">${ch > 0 ? "+" : ""}${ch}%</b> <small>${money(last.median)} ${T.priceUnit}</small></p>` : ""}
-<svg class="mb-hist" viewBox="0 0 ${W} ${H}" role="img" aria-label="${tr("일별 판매가 중앙값 추이", "Daily asking median")}">
-${ticks.map((v) => `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${money(Math.round(v))}</text>`).join("")}
-<text class="ax" x="${L}" y="${H - 6}">${fmt(pts[0].day)}</text><text class="ax" x="${W - R}" y="${H - 6}" text-anchor="end">${fmt(pts.at(-1).day)}</text>
-<path class="typ" d="${line("typical")}"/><path class="low" d="${line("low")}"/><path class="med" d="${line("median")}"/>
-${pts.filter((d) => d.median).map((d) => `<circle class="pt" cx="${x(d.day).toFixed(1)}" cy="${y(d.median).toFixed(1)}" r="4"><title>${fmt(d.day)} · ${tr("중앙값", "median")} ${money(d.median)} · ${tr("최저", "low")} ${money(d.low)} · ${tr(`매물 ${d.n}건`, `${d.n} listings`)}${d.typical ? ` · ${tr("대표 시세", "typical")} ${money(d.typical)}` : ""}</title></circle>`).join("")}
-</svg>
-<p class="mb-hist-legend"><span class="k med"></span>${tr("판매가 중앙값", "Asking median")} <span class="k low"></span>${tr("그날 최저가", "Day's lowest ask")} <span class="k typ"></span>${tr("대표 시세", "Typical price")}</p>`;
+  // History chart.
+  const DAYMS = 86400000;
+  const firstDay = daily.length ? Date.parse(`${daily[0].day}T00:00:00Z`) : now - 7 * DAYMS;
+  const start = histRange === "all" ? firstDay : Math.max(firstDay, now - histRange * DAYMS);
+  const W = 600, H = 190, L = 58, R = 10, Tp = 12, B = 22;
+  const days = daily.filter((d) => Date.parse(`${d.day}T12:00:00Z`) >= start - DAYMS / 2 && d.median != null);
+  const pts = rows.filter((r) => r.price > 0).map((r) => ({ t: Date.parse(`${String(r.seen).replace(" ", "T")}Z`), p: r.price, sold: !!r.sold })).filter((r) => r.t >= start);
+  const all = [...days.flatMap((d) => [d.p25, d.p75, d.median]), ...pts.map((r) => r.p)].filter((v) => v != null).sort((a, b) => a - b);
+  let chart = "";
+  if (all.length >= 2 && (days.length >= 1 || pts.length >= 2)) {
+    let lo = quant(all, 0.04), hi = quant(all, 0.96);
+    if (hi <= lo) { hi = lo * 1.1 + 1; lo = lo * 0.9; }
+    const pad = (hi - lo) * 0.08; lo = Math.max(0, lo - pad); hi += pad;
+    const x = (t) => L + ((t - start) / Math.max(1, now - start)) * (W - L - R);
+    const y = (v) => Tp + (1 - (v - lo) / (hi - lo)) * (H - Tp - B);
+    const noon = (d) => Date.parse(`${d.day}T12:00:00Z`);
+    // Band and line run only across consecutive days; a gap in collection breaks them.
+    const runs = [];
+    for (const d of days) (runs.length && noon(d) - noon(runs.at(-1).at(-1)) <= 2 * DAYMS ? runs.at(-1) : runs[runs.push([]) - 1]).push(d);
+    const band = runs.map((r) => r.length > 1 ? `<path class="band" d="M${r.map((d) => `${x(noon(d)).toFixed(1)},${y(Math.min(hi, d.p75)).toFixed(1)}`).join("L")}L${[...r].reverse().map((d) => `${x(noon(d)).toFixed(1)},${y(Math.max(lo, d.p25)).toFixed(1)}`).join("L")}Z"/>` : `<rect class="band" x="${x(noon(r[0])) - 5}" y="${y(Math.min(hi, r[0].p75))}" width="10" height="${Math.max(2, y(Math.max(lo, r[0].p25)) - y(Math.min(hi, r[0].p75)))}"/>`).join("");
+    const line = runs.map((r) => `<path class="med" d="M${r.map((d) => `${x(noon(d)).toFixed(1)},${y(Math.min(hi, Math.max(lo, d.median))).toFixed(1)}`).join("L")}"/>`).join("");
+    const dots = pts.map((r) => r.p > hi ? `<path class="out" d="M${x(r.t).toFixed(1)},${Tp - 2}l-3,5h6z"/>` : r.p < lo ? `<path class="out" d="M${x(r.t).toFixed(1)},${H - B + 2}l-3,-5h6z"/>` : `<circle class="${r.sold ? "sale" : "ask"}" cx="${x(r.t).toFixed(1)}" cy="${y(r.p).toFixed(1)}" r="2.4"/>`).join("");
+    const ticks = [lo + (hi - lo) * 0.1, (lo + hi) / 2, hi - (hi - lo) * 0.1];
+    const dayTicks = [start, (start + now) / 2, now].map((t) => new Date(t).toLocaleDateString(D.lang, { month: "numeric", day: "numeric", ...TZ }));
+    chart = `<svg class="mb-hist" viewBox="0 0 ${W} ${H}" role="img" aria-label="${tr("가격 추이", "Price history")}">${ticks.map((v) => `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${kmoney(Math.round(v))}</text>`).join("")}
+${band}${dots}${line}${days.map((d) => `<circle class="dm" cx="${x(noon(d)).toFixed(1)}" cy="${y(Math.min(hi, Math.max(lo, d.median))).toFixed(1)}" r="3.5"><title>${d.day.slice(5).replace("-", "/")} · ${tr("중앙값", "median")} ${money(d.median)} · ${tr("보통", "typical")} ${money(d.p25)}–${money(d.p75)} · ${tr(`매물 ${d.n}건`, `${d.n} listings`)}</title></circle>`).join("")}
+${dayTicks.map((s, i) => `<text class="ax" x="${[L, (L + W - R) / 2, W - R][i]}" y="${H - 5}" text-anchor="${["start", "middle", "end"][i]}">${s}</text>`).join("")}</svg>
+<p class="mb-hist-legend"><span class="k ask"></span>${tr("매물", "Listing")} <span class="k band"></span>${tr("보통 가격대", "Typical range")} <span class="k med"></span>${tr("하루 중앙값", "Daily median")}${pts.some((r) => r.p > hi || r.p < lo) ? ` <span>▲▼ ${tr("범위 밖 가격", "off the scale")}</span>` : ""}</p>`;
+  } else chart = `<p class="muted note">${tr("아직 기록이 적어서 추이를 그리기 어려워요. 매일 쌓이면 여기에 그려져요.", "Too few records for a trend yet; it fills in as days add up.")}</p>`;
+  const ranges = [[7, tr("7일", "7d")], [30, tr("30일", "30d")], ["all", tr("전체", "All")]];
+  box.innerHTML = `${head}${dist}<div class="mb-hist-head"><h3>${tr("가격 추이", "Price history")}</h3><div class="mb-hist-range" role="group">${ranges.map(([v, l]) => `<button type="button" data-hist-range="${v}" aria-pressed="${histRange === v}">${l}</button>`).join("")}</div></div>${chart}`;
 }
 
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-hist-range]");
+  if (!b) return;
+  histRange = b.dataset.histRange === "all" ? "all" : Number(b.dataset.histRange);
+  renderDaily();
+});
 async function initialize() {
   // Drop sources fill the catalog's source column once the hover-card data arrives.
   loadTips().then(() => { if (view === "items" || $("mb-class").value) renderMain(); });

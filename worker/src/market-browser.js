@@ -312,7 +312,9 @@ export async function dailyHistory(env, item) {
   const typ = new Map(typical.map((r) => [r.day, r.typical]));
   return [...days].sort().map((day) => {
     const ps = (byDay.get(day) || []).sort((a, b) => a - b);
+    const q = (f) => (ps.length ? ps[Math.min(ps.length - 1, Math.floor(f * (ps.length - 1) + 0.5))] : null);
     const mid = ps.length ? (ps.length % 2 ? ps[ps.length >> 1] : Math.round((ps[ps.length / 2 - 1] + ps[ps.length / 2]) / 2)) : null;
-    return { day, median: mid, low: ps[0] ?? null, high: ps.at(-1) ?? null, n: ps.length, typical: typ.get(day) ?? null };
+    // p25-p75 is the day's "typical range" band, as on MesoWatch.
+    return { day, median: mid, p25: q(0.25), p75: q(0.75), low: ps[0] ?? null, high: ps.at(-1) ?? null, n: ps.length, typical: typ.get(day) ?? null };
   });
 }

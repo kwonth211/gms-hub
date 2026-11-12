@@ -1949,22 +1949,38 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mt-said li { display: grid; gap: 2px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
 .mt-said small { color: var(--muted); font-size: 0.78rem; }
 .mt-more { display: flex; flex-wrap: wrap; gap: 8px; }
-/* Market item panel: daily price history. */
-.mb-history { margin: 10px 0 4px; }
-.mb-history h3 { margin: 0 0 4px; font-size: 0.92rem; }
-.mb-history h3 small { color: var(--muted); font-weight: 600; }
-.mb-hist-change { margin: 0 0 4px; font-size: 0.85rem; color: var(--text-2); }
-.mb-hist-change b.up { color: var(--danger); } .mb-hist-change b.down { color: #23824a; }
-[data-theme='dark'] .mb-hist-change b.down { color: #6fdc9a; }
+/* Market item panel: price at a glance (typical range, where listings sit, history). */
+.mb-history { margin: 8px 0 6px; display: grid; gap: 8px; }
+.mb-range { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.mb-range-label { width: 100%; font-size: 0.78rem; color: var(--muted); font-weight: 700; }
+.mb-range b { font-size: 1.7rem; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--text); }
+.mb-range small { color: var(--muted); font-size: 0.78rem; }
+.mb-dist svg { width: 100%; height: auto; display: block; }
+.mb-dist .band { fill: color-mix(in srgb, var(--accent-fill) 22%, transparent); }
+.mb-dist .base { stroke: var(--line-strong); }
+.mb-dist circle.in { fill: var(--accent-fill); } .mb-dist circle.lo { fill: #2e9d5b; } .mb-dist circle.hi { fill: var(--muted); }
+.mb-dist text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.mb-dist-counts { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0; font-size: 0.82rem; font-weight: 700; }
+.mb-dist-counts .lo { color: #23824a; } .mb-dist-counts .in { color: var(--accent); } .mb-dist-counts .hi { color: var(--muted); }
+.mb-dist-counts small { color: var(--muted); font-weight: 600; }
+[data-theme='dark'] .mb-dist-counts .lo { color: #6fdc9a; } [data-theme='dark'] .mb-dist circle.lo { fill: #6fdc9a; }
+.mb-hist-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mb-hist-head h3 { margin: 0; font-size: 0.92rem; }
+.mb-hist-range { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.mb-hist-range button { font: inherit; font-size: 0.76rem; padding: 3px 10px; border: 0; background: none; color: var(--muted); cursor: pointer; }
+.mb-hist-range button[aria-pressed="true"] { background: var(--accent-fill); color: var(--accent-ink); font-weight: 700; }
+.mb-hist-range button:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
 .mb-hist { width: 100%; height: auto; display: block; }
 .mb-hist .grid { stroke: var(--line); stroke-width: 1; }
 .mb-hist .ax { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
-.mb-hist path { fill: none; stroke-linejoin: round; stroke-linecap: round; }
-.mb-hist .med { stroke: var(--accent-fill); stroke-width: 2.5; }
-.mb-hist .low { stroke: var(--muted); stroke-width: 1.2; opacity: 0.7; }
-.mb-hist .typ { stroke: var(--text-2); stroke-width: 1.5; stroke-dasharray: 5 4; opacity: 0.8; }
-.mb-hist .pt { fill: var(--accent-fill); stroke: var(--panel); stroke-width: 2; }
-.mb-hist-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 2px 0 0; font-size: 0.76rem; color: var(--muted); }
-.mb-hist-legend .k { display: inline-block; width: 16px; height: 0; border-top: 2.5px solid var(--accent-fill); margin-right: -6px; vertical-align: middle; }
-.mb-hist-legend .k.low { border-top: 1.5px solid var(--muted); }
-.mb-hist-legend .k.typ { border-top: 1.5px dashed var(--text-2); }
+.mb-hist .band { fill: color-mix(in srgb, var(--accent-fill) 20%, transparent); }
+.mb-hist .med { fill: none; stroke: var(--accent-fill); stroke-width: 2.5; stroke-linejoin: round; }
+.mb-hist .dm { fill: var(--accent-fill); stroke: var(--panel); stroke-width: 2; }
+.mb-hist .ask { fill: none; stroke: color-mix(in srgb, var(--accent-fill) 70%, var(--text)); stroke-width: 1; opacity: 0.55; }
+.mb-hist .sale { fill: var(--accent-fill); opacity: 0.8; }
+.mb-hist .out { fill: var(--muted); }
+.mb-hist-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 0; font-size: 0.76rem; color: var(--muted); }
+.mb-hist-legend .k { display: inline-block; vertical-align: middle; margin-right: -6px; }
+.mb-hist-legend .k.ask { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--accent-fill); }
+.mb-hist-legend .k.band { width: 16px; height: 10px; border-radius: 3px; background: color-mix(in srgb, var(--accent-fill) 22%, transparent); }
+.mb-hist-legend .k.med { width: 16px; border-top: 2.5px solid var(--accent-fill); }
