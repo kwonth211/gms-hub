@@ -23,7 +23,7 @@ import { cachedPublicResponse } from './public-cache.js';
 import { Presence, handlePresence } from './presence.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
 import { validRoom } from '../../assets/place.js';
-import { postMegaphones, listMegaphones, pruneMegaphones } from './megaphone.js';
+import { postMegaphones, listMegaphones, pruneMegaphones, megaphoneAsks, megaphoneStats } from './megaphone.js';
 import { createAlert, listAlerts, deleteAlert, takeHits, checkAlerts } from './alerts.js';
 export { Presence };
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
@@ -57,14 +57,20 @@ const WINDOW = "datetime('now', '-14 days')";
 const ITEMS_URL = 'https://gms-hub.com/assets/items.json';
 
 // Tradeable item ids, loaded from the site's own item index once per worker instance, so a forged scan cannot invent items.
-let itemIds = null;
-async function knownItems() {
-  if (itemIds) return itemIds;
+let itemIds = null, itemNamesMap = null, itemCats = null;
+async function loadItems() {
+  if (itemIds) return;
   const r = await fetch(ITEMS_URL, { cf: { cacheTtl: 3600 } });
   if (!r.ok) throw new Error(`items ${r.status}`);
-  itemIds = new Set((await r.json()).map((row) => row[0]));
-  return itemIds;
+  const rows = await r.json();
+  itemIds = new Set(rows.map((row) => row[0]));
+  // English name → id (for megaphones) and id → category (Equip, Use, Etc, Setup, Cash).
+  itemNamesMap = new Map(rows.map((row) => [String(row[2]).toLowerCase(), row[0]]));
+  itemCats = new Map(rows.map((row) => [row[0], row[3]]));
 }
+async function knownItems() { await loadItems(); return itemIds; }
+async function itemNames() { await loadItems(); return itemNamesMap; }
+async function itemCategories() { await loadItems(); return itemCats; }
 
 const median = (xs) => {
   const s = [...xs].sort((a, b) => a - b);
@@ -254,7 +260,7 @@ const api = {
       const allow = { ...corsHeaders(req.headers.get('Origin') || ''), 'Access-Control-Allow-Headers': 'Content-Type, Authorization' };
       if (req.method === 'OPTIONS') return new Response(null, { headers: allow });
       if (req.method !== 'POST') return json({ error: 'method not allowed' }, allow, 405);
-      const r = await postMegaphones(req, env);
+      const r = await postMegaphones(req, env, itemNames);
       for (const [k, v] of Object.entries(allow)) r.headers.set(k, v);
       return r;
     }
@@ -306,13 +312,18 @@ const api = {
       const { results: refs } = await env.DB.prepare(`SELECT item, typical, day, week, sales, at FROM item_summary WHERE item IN (${marks})`)
         .bind(...ids).all().catch(() => ({ results: [] }));
       const ref = new Map(refs.map((r) => [r.item, r]));
+      // Megaphone asking prices stand in for consumables, scrolls and cash items that no shop scan covers (scrolled
+      // equipment sells in megaphones at prices unrelated to clean shop copies, so Equip never takes them).
+      const [asks, cats] = await Promise.all([megaphoneAsks(env, ids).catch(() => ({})), itemCategories().catch(() => new Map())]);
       const out = {};
       for (const id of ids) {
         const rows = results.filter((r) => r.item === id);
         const t = ref.get(id);
         const typical = t ? { price: t.typical, day: t.day, week: t.week, sales: t.sales, at: t.at } : null;
-        if (rows.length) out[id] = { ...summarize(rows), typical };
-        else if (t) out[id] = { n: 0, median: t.typical, basis: 'typical', low: null, high: null, last: t.at, sold: null, selling: null, buying: null, typical };
+        const mega = cats.get(id) !== 'Equip' && asks[id]?.n >= 5 && asks[id].p75 <= asks[id].p25 * 2 ? asks[id] : null;
+        if (rows.length) out[id] = { ...summarize(rows), typical, mega };
+        else if (mega) out[id] = { n: 0, median: mega.median, basis: 'mega', low: mega.p25, high: mega.p75, last: null, sold: null, selling: null, buying: null, typical, mega };
+        else if (t) out[id] = { n: 0, median: t.typical, basis: 'typical', low: null, high: null, last: t.at, sold: null, selling: null, buying: null, typical, mega: null };
       }
       return json(out, cors, 200, 'public, max-age=30');
     }
@@ -372,8 +383,16 @@ const api = {
       return json(out[0], cors, out[1], 'no-store');
     }
 
+    if (url.pathname === '/megaphones/stats' && req.method === 'GET') {
+      const data = (await freshSnapshot(env, 'mega-stats', 60)) || (await megaphoneStats(env).then(async (d) => {
+        await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('mega-stats',?,datetime('now'))").bind(JSON.stringify(d)).run();
+        return d;
+      }));
+      return json(data, cors, 200, 'public, max-age=300');
+    }
+
     if (url.pathname === '/megaphones' && req.method === 'GET') {
-      return json(await listMegaphones(env, url.searchParams), cors, 200, url.searchParams.get('q') ? 'public, max-age=120' : 'public, max-age=5');
+      return json(await listMegaphones(env, url.searchParams), cors, 200, url.searchParams.get('item') ? 'public, max-age=120' : 'public, max-age=5');
     }
 
     if (url.pathname === '/rank' && req.method === 'GET') {

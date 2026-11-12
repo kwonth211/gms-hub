@@ -213,12 +213,13 @@ function queuePrices(ids) {
     } catch (e) {}
   }, 250);
 }
-const priceBasis = korean ? { sold: '거래가', selling: '판매가', buying: '구매가', typical: '대표 시세' } : { sold: tx('Sold'), selling: tx('Asking'), buying: tx('Buying'), typical: tx('Typical') };
+const priceBasis = korean ? { sold: '거래가', selling: '판매가', buying: '구매가', typical: '대표 시세', mega: '고확 호가' } : { sold: tx('Sold'), selling: tx('Asking'), buying: tx('Buying'), typical: tx('Typical'), mega: tx('Megaphone ask') };
 function priceTag(id) {
   const p = prices.get(id);
   if (!p?.median) return labels.market;
   // A reference price has no records of our own behind it, so it shows no count.
   if (p.basis === 'typical') return `<b>${mesos(p.median)}</b><small>${priceBasis.typical}</small>`;
+  if (p.basis === 'mega') return `<b>${mesos(p.median)}</b><small>${priceBasis.mega} · ${korean ? `${p.mega.n}건` : tx('{n} seen', { n: p.mega.n })}</small>`;
   return `<b>${mesos(p.median)}</b><small>${priceBasis[p.basis]} · ${korean ? `${p.n}건` : tx('{n} seen', { n: p.n })}</small>`;
 }
 

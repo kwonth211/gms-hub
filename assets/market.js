@@ -582,6 +582,8 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
     if (seq !== detailSeq) return;
     priceData = data;
     renderDaily();
+    // Consumables and cash items that no shop scan covers take their asking price from megaphones (/prices basis "mega").
+    if (!(data.profile || []).length) get(`/prices?ids=${id}`).then((p) => { if (priceData === data && p?.[id]?.mega) { data.megaAsk = p[id].mega; renderDaily(); } }).catch(() => null);
     // The cheap/typical/pricey tags need the typical range, which can arrive after the listing cards.
     if (lastOffers && $("md-rows")?.querySelector(".mb-offers")) $("md-rows").innerHTML = offerCards(lastOffers);
     const normalize = (rs) =>
@@ -1008,11 +1010,14 @@ function renderDaily() {
   const now = Date.parse(priceData.asOf) || Date.now();
   const open = profile.map((r) => r.price).filter((p) => p > 0).sort((a, b) => a - b);
   const lastDay = daily.filter((d) => d.p25 != null).at(-1);
+  const megaAsk = priceData.megaAsk || null;
   const [r25, r75] = open.length >= 4 ? [quant(open, 0.25), quant(open, 0.75)] : lastDay ? [lastDay.p25, lastDay.p75] : [null, null];
   const below = open.filter((p) => p < r25).length, above = open.filter((p) => p > r75).length, inside = open.length - below - above;
   const head = r25 != null
     ? `<div class="mb-range"><span class="mb-range-label">${tr("보통 가격대", "Typical range")}</span><b>${kmoney(r25)}${r75 !== r25 ? ` – ${kmoney(r75)}` : ""}</b><small>${open.length >= 4 ? tr(`지금 판매 중 ${open.length}건 기준`, `from ${open.length} listings now`) : tr(`${lastDay.day.slice(5).replace("-", "/")} 기록 기준`, `from ${lastDay.day.slice(5).replace("-", "/")} records`)}</small></div>`
-    : `<div class="mb-range"><span class="mb-range-label">${tr("보통 가격대", "Typical range")}</span><b>—</b><small>${tr("아직 기록이 부족해요", "Not enough records yet")}</small></div>`;
+    : megaAsk
+      ? `<div class="mb-range"><span class="mb-range-label">${tr("고확 호가", "Megaphone asking price")}</span><b>${kmoney(megaAsk.p25)}${megaAsk.p75 !== megaAsk.p25 ? ` – ${kmoney(megaAsk.p75)}` : ""}</b><small>${tr(`최근 7일 고확 ${megaAsk.n}건 기준 · 상점 매물은 아직 없어요`, `from ${megaAsk.n} megaphones in 7 days; no shop listings yet`)}</small></div>`
+      : `<div class="mb-range"><span class="mb-range-label">${tr("보통 가격대", "Typical range")}</span><b>—</b><small>${tr("아직 기록이 부족해요", "Not enough records yet")}</small></div>`;
   // Where today's listings sit: a dot per listing on a price line with the typical range shaded.
   let dist = "";
   if (open.length >= 2) {
@@ -1125,7 +1130,7 @@ async function fillMegaphones(id) {
   const it = byId.get(id);
   if (!it?.en) return;
   let rows = [];
-  try { rows = (await get(`/megaphones?q=${encodeURIComponent(`[${it.en}]`)}&limit=8`)).rows || []; } catch { return; }
+  try { rows = (await get(`/megaphones?item=${id}&limit=8`)).rows || []; } catch { return; }
   // The panel is drawn after this call starts, so the box is looked up once the answer is in.
   const box = $("mb-megas");
   if (selected !== id || !box) return;

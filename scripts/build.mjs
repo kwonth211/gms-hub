@@ -926,6 +926,7 @@ function liveMarket(lang) {
  data-text="${esc(JSON.stringify(t))}">
 <header class="market-head"><span class="live-dot" aria-hidden="true"></span><h2 id="live-title">${t.title}</h2><p>${t.sub}</p><small id="live-updated"></small><small class="live-fresh" id="live-fresh" role="status" hidden></small><a class="btn ghost small-btn market-myshop" href="${href(langPath(lang, '/tools/my-shop/'))}">${lang === 'ko' ? '내 상점 시세 비교' : 'Compare my shop'}</a><a class="btn small-btn market-scan" href="${href(langPath(lang, '/tools/scan/'))}">● ${t.scan}</a><strong class="market-preview" id="market-preview" hidden>${t.preview}</strong></header>
 ${collectionStatus(lang)}
+<section class="panel mega-trends" data-mega-trends="compact" data-items="${esc(href('/assets/items.json'))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-megaphone="${esc(href(langPath(lang, '/megaphone/')))}" hidden aria-label="${lang === 'ko' ? '지금 뜨는 아이템' : 'Trending in megaphones'}"></section>
 <div id="live-mine" class="live-mine" hidden aria-label="${esc(t.mine)}"></div>
 <div class="market-grid">
 <div class="market-panel market-top" id="market-top">
@@ -2544,7 +2545,7 @@ for (const lang of LANGS) {
   });
 
   const defs = {
-    home: { title: t.homeTitle, desc: t.homeDesc, body: homeBody(lang), modules: ['home.js'], ld: [websiteLd, directoryLd, faqLd] },
+    home: { title: t.homeTitle, desc: t.homeDesc, body: homeBody(lang), modules: ['home.js', 'mega-trends.js'], ld: [websiteLd, directoryLd, faqLd] },
     training: {
       title: t.trTitle,
       desc: t.trDesc,
@@ -2761,7 +2762,7 @@ for (const lang of LANGS) {
       ld: [breadcrumbLd(lang, lang === 'ko' ? '퀘스트' : 'Quests', '/quests/')]
     }));
     write(path.join(lang, 'megaphone', 'index.html'), page({
-      lang, pageKey: 'megaphone', pagePath: '/megaphone/', modules: ['megaphone.js'],
+      lang, pageKey: 'megaphone', pagePath: '/megaphone/', modules: ['megaphone.js', 'mega-trends.js'],
       title: lang === 'ko' ? '글클메 실시간 확성기: 고확·팝니다·삽니다 모아 보기 | GMS Hub' : 'MapleStory Classic World Live Megaphones: Super Megaphones, Buying & Selling | GMS Hub',
       desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드 게임 확성기를 실시간으로 모아 보여 줘요. 고확과 일반 확성기 구분, 팝니다·삽니다·채널 필터, 시세 비교, 귓말 복사까지.' : 'Live MapleStory Classic World megaphones: super and regular megaphones apart, buying and selling filters, market price comparison and a one-tap whisper command.',
       body: megaphoneBody({ lang, itemsUrl: href('/assets/items.json'), marketUrl: href(langPath(lang, '/tools/market/')) }),

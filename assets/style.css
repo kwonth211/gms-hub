@@ -2085,3 +2085,33 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-mega-meta b { font-variant-numeric: tabular-nums; font-size: 0.85rem; }
 .mb-mega-meta small { color: var(--muted); font-size: 0.72rem; }
 @media (max-width: 640px) { .mb-mega-list a { grid-template-columns: auto minmax(0, 1fr); } .mb-mega-meta { grid-column: 1 / -1; } }
+/* Megaphone trends: the items named most, the ones more wanted than offered, top callers and the hourly curve. */
+.mega-trends { padding: 14px 16px; margin: 0 0 14px; }
+.mt-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.mt-head h3 { margin: 0; font-size: 1rem; }
+.mt-head h3 small { color: var(--muted); font-weight: 600; font-size: 0.78rem; margin-left: 6px; }
+.mt-head a { font-size: 0.82rem; font-weight: 700; white-space: nowrap; }
+.mt-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr); gap: 14px 22px; }
+.mt-grid.compact { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+.mt-side h4 { margin: 0 0 6px; font-size: 0.82rem; color: var(--text-2); }
+.mt-side h4 small { color: var(--muted); font-weight: 600; }
+.mt-side h4 + .mt-curve, .mt-callers + h4 { margin-top: 10px; }
+.mt-list, .mt-callers { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
+.mt-list li { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto auto; align-items: center; gap: 8px; font-size: 0.86rem; }
+.mt-list a { display: inline-flex; align-items: center; gap: 6px; min-width: 0; color: var(--text); text-decoration: none; font-weight: 700; }
+.mt-list a span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mt-list a:hover span { text-decoration: underline; }
+.mt-list img { image-rendering: pixelated; flex: none; }
+.mt-list small { color: var(--muted); font-size: 0.72rem; white-space: nowrap; }
+.mt-rank { font-size: 0.74rem; font-weight: 800; color: var(--muted); text-align: right; }
+.mt-list li:nth-child(-n+3) .mt-rank { color: var(--accent); }
+.mt-list i { font-style: normal; font-size: 0.7rem; font-weight: 800; min-width: 44px; text-align: right; }
+.mt-up { color: #1f7a45; } .mt-down { color: #b23a32; } .mt-flat, .mt-new { color: var(--muted); }
+[data-theme='dark'] .mt-up { color: #6fdc9a; } [data-theme='dark'] .mt-down { color: #ff8a80; }
+.mt-wanted li { grid-template-columns: 18px minmax(0, 1fr) auto; }
+.mt-callers li { display: flex; justify-content: space-between; gap: 8px; font-size: 0.84rem; }
+.mt-callers a { color: var(--text); text-decoration: none; }
+.mt-callers small { color: var(--muted); font-size: 0.72rem; white-space: nowrap; }
+.mt-curve { display: flex; align-items: flex-end; gap: 2px; height: 44px; }
+.mt-curve i { flex: 1; background: var(--accent-fill); opacity: 0.75; border-radius: 2px 2px 0 0; min-width: 2px; }
+@media (max-width: 760px) { .mt-grid, .mt-grid.compact { grid-template-columns: minmax(0, 1fr); } }

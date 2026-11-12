@@ -56,6 +56,11 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches && body.dataset.tip
     if (!p?.median) return `<section class="tip-market"><h4>${tr('자유시장', 'Free Market')}</h4><p class="tip-muted">${tr('최근 14일 시세 기록이 없어요', 'No price seen in the last 14 days')}</p></section>`;
     const change = (v) => (v == null ? '' : `${v > 0 ? '+' : ''}${v}%`);
     // Items nobody has scanned yet carry only the reference price, its changes and the sales count.
+    if (p.basis === 'mega') {
+      return `<section class="tip-market"><h4>${tr('자유시장', 'Free Market')}</h4>
+<p class="tip-price"><b>${nf.format(p.median)}</b> <small>${tr('메소', 'mesos')} · ${tr('고확 호가', 'megaphone ask')}</small></p>
+<p class="tip-muted">${tr(`최근 7일 고확 ${p.mega.n}건, ${nf.format(p.mega.p25)}~${nf.format(p.mega.p75)}`, `${p.mega.n} megaphones in 7 days, ${nf.format(p.mega.p25)}–${nf.format(p.mega.p75)}`)}</p></section>`;
+    }
     if (p.basis === 'typical') {
       const t = p.typical || {};
       const row = (k, v) => (v ? `<div><dt>${k}</dt><dd>${v}</dd></div>` : '');

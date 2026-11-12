@@ -4,6 +4,7 @@ export function megaphoneBody({ lang, itemsUrl, marketUrl }) {
   return `<section class="page-head wrap"><h1>${ko ? '실시간 확성기' : 'Live megaphones'}</h1>
 <p class="lead">${ko ? '게임 안 고확을 실시간으로 모아 보여 드려요. 분홍은 고확, 노랑은 아이템 고확, 청록은 더블 아이템 고확이에요. 아이템이 나오면 지금 시세와 비교해 드리고, 귓말 명령어도 바로 복사돼요.' : 'Super megaphones from the game, live: pink for super megaphones, gold for item megaphones, teal for double item megaphones. Items are compared with the current market price, and the whisper command copies in one tap.'}</p></section>
 <div class="wrap mg-page" id="mg-page" data-items="${itemsUrl}" data-market="${marketUrl}">
+<section class="panel mega-trends" data-mega-trends="full" data-items="${itemsUrl}" data-market="${marketUrl}" data-megaphone="${ko ? '/ko/megaphone/' : '/en/megaphone/'}" hidden aria-label="${ko ? '오늘의 고확' : "Today's megaphones"}"></section>
 <section class="mg-feed-panel" aria-label="${ko ? '게임 확성기' : 'Game megaphones'}">
 <div class="mg-filters">
 <div class="chips" role="group" aria-label="${ko ? '종류' : 'Type'}">
