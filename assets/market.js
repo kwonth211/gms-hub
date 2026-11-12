@@ -102,11 +102,36 @@ const categories = {
   cash: tr("캐시", "Cash"),
   other: tr("소비·기타", "Use & other"),
 };
-async function get(path, signal) {
-  const r = await fetch(D.api + path, { signal });
-  if (!r.ok) throw Error("HTTP " + r.status);
-  return r.json();
+// API answers are kept for a minute and shared, so an item opened again (or prefetched on hover) shows at once. The
+// API answers from the US, so every saved round trip is half a second or more.
+const apiCache = new Map();
+function get(path, signal) {
+  const hit = apiCache.get(path);
+  if (hit && Date.now() - hit.t < 60000) return hit.p;
+  const p = fetch(D.api + path, { signal }).then((r) => {
+    if (!r.ok) throw Error("HTTP " + r.status);
+    return r.json();
+  });
+  apiCache.set(path, { t: Date.now(), p });
+  p.catch(() => apiCache.delete(path));
+  if (apiCache.size > 200) apiCache.delete(apiCache.keys().next().value);
+  return p;
 }
+// Pointing at an item row starts loading what its panel needs (price history and the cheapest listings), so the click
+// opens a panel that is usually already filled.
+function prefetchItem(id) {
+  if (!Number.isInteger(id) || id === selected) return;
+  get(`/market/history?id=${id}`).catch(() => null);
+  get("/market/listings?" + new URLSearchParams({ item: id, state: "open", sort: "price", channel: "", room: "", seller: "", page: 1, limit: 30, days: 7 })).catch(() => null);
+}
+let hoverTimer = null;
+document.addEventListener("pointerover", (e) => {
+  const a = e.target.closest?.(".mb-catalog a[href*='item='], .mb-sum[data-item], .mb-results a[href*='item=']");
+  if (!a) return;
+  clearTimeout(hoverTimer);
+  const id = Number(a.dataset.item || new URL(a.href, location.href).searchParams.get("item"));
+  hoverTimer = setTimeout(() => prefetchItem(id), 120);
+});
 function itemName(id) {
   return byId.get(id)?.name || `#${id}`;
 }

@@ -222,9 +222,16 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
     };
   })());
   let lastId = 0;
-  async function load() {
+  // The last megaphones seen are kept in this browser and drawn at once on the next page, then replaced by fresh ones.
+  const TK_KEY = 'gms-ticker';
+  async function load(saved) {
     let rows = [];
-    try { rows = (await (await fetch(`${api}/megaphones?limit=20`)).json()).rows || []; } catch (e) { return; }
+    if (saved) {
+      try { rows = JSON.parse(localStorage.getItem(TK_KEY) || '[]'); } catch (e) {}
+    } else {
+      try { rows = (await (await fetch(`${api}/megaphones?limit=20`)).json()).rows || []; } catch (e) { return; }
+      try { localStorage.setItem(TK_KEY, JSON.stringify(rows)); } catch (e) {}
+    }
     if (!rows.length || rows[0].id === lastId) return;
     lastId = rows[0].id;
     const read = await getReader();
@@ -239,7 +246,7 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
     box.classList.add('ready');
   }
   box.addEventListener('click', (e) => { if (e.target.closest('a')) track('mega_ticker_click'); });
-  load();
+  load(true).then(() => load());
   setInterval(() => document.visibilityState === 'visible' && load(), 60000);
 })();
 
