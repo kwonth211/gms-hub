@@ -170,7 +170,8 @@ export function localizePage(html, loc, ctx) {
     .replace(/<meta property="og:locale" content="[^"]*">/, `<meta property="og:locale" content="${loc.og}">`)
     .replace(/(<a class="lang-opt"[^>]*)( aria-current="true")/g, '$1')
     .replace(new RegExp(`(<a class="lang-opt"[^>]*data-lang="${loc.code}")`), '$1 aria-current="true"')
-    .replace(/(<summary class="lang-current"[^>]*>)[^<]*/, `$1${loc.name}`);
+    .replace(/(<summary class="lang-current"[^>]*>)[^<]*/, `$1${loc.name}`)
+    .replace(/(<summary class="lang-current"[^>]*>)[^<]*(<span class="lang-full"[^>]*>)[^<]*(<\/span><span class="lang-code"[^>]*>)[^<]*/, `$1$2${loc.name}$3${loc.code.toUpperCase()}`);
   const [headPart, ...rest] = s.split('</head>');
   let headOut = headPart
     .replace(/<title>([^<]*)<\/title>/, (m, v) => `<title>${translateText(v, ctx)}</title>`)

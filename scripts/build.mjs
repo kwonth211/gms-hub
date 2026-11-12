@@ -678,8 +678,29 @@ function header(lang, pagePath, only) {
 <nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}</nav>
 ${presencePill(lang)}
 <button type="button" class="theme-toggle" data-theme-toggle>${THEME_ICON}<span class="sr-only">${lang === 'ko' ? '낮과 밤 화면 바꾸기' : 'Switch day or night theme'}</span></button>
-<details class="lang-menu"><summary class="lang-current" aria-label="Language">${LANG_NAMES[lang]}</summary><div class="lang-list">${(only ? [lang, ...ALL_LANGS.filter((l) => l !== lang)] : ALL_LANGS).map((l) => `<a class="lang-opt" href="${href(langPath(l, only && l !== lang ? '/' : pagePath || '/'))}" data-lang="${l}" hreflang="${HREFLANG[l]}" lang="${HREFLANG[l]}"${l === lang ? ' aria-current="true"' : ''}>${LANG_NAMES[l]}</a>`).join('')}</div></details>
+<details class="lang-menu"><summary class="lang-current" aria-label="Language"><span class="lang-full" translate="no">${LANG_NAMES[lang]}</span><span class="lang-code" translate="no" aria-hidden="true">${lang.toUpperCase()}</span></summary><div class="lang-list">${(only ? [lang, ...ALL_LANGS.filter((l) => l !== lang)] : ALL_LANGS).map((l) => `<a class="lang-opt" href="${href(langPath(l, only && l !== lang ? '/' : pagePath || '/'))}" data-lang="${l}" hreflang="${HREFLANG[l]}" lang="${HREFLANG[l]}"${l === lang ? ' aria-current="true"' : ''}>${LANG_NAMES[l]}</a>`).join('')}</div></details>
+${moreMenu(lang)}
 </div></header>`;
+}
+
+// Pages that do not fit the eight tabs (guides, ranking, gear, bosses, databases, shop tools) open from one menu at the end
+// of the header, so none of them is reachable only from the home page or the footer.
+function moreMenu(lang) {
+  const ko = lang === 'ko';
+  const links = [
+    guides.some((g) => g.lang === lang) && ['/guides/', ko ? '가이드' : 'Guides'],
+    ['/rank/', ko ? '캐릭터 랭킹' : 'Character ranking'],
+    ['/equipment/', ko ? '직업별 장비' : 'Gear by class'],
+    ['/bosses/', ko ? '보스' : 'Bosses'],
+    ['/quests/best-exp/', ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests'],
+    ['/items/', ko ? '아이템 도감' : 'Item database'],
+    ['/maps/', ko ? '맵 도감' : 'Map database'],
+    ['/tools/my-shop/', ko ? '내 상점 시세 비교' : 'Compare my shop'],
+    ['/tools/scan/', ko ? '상점 스캔으로 올리기' : 'Upload a shop scan'],
+    ['/about/', ko ? '사이트 소개' : 'About']
+  ].filter(Boolean);
+  const label = ko ? '더보기' : 'More';
+  return `<details class="more-menu"><summary class="more-btn" aria-label="${label}"><span class="more-bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="more-label">${label}</span></summary><div class="more-list">${links.map(([p, name]) => `<a class="lang-opt" href="${href(langPath(lang, p))}">${name}</a>`).join('')}<button type="button" class="lang-opt more-theme" data-theme-toggle>${ko ? '낮·밤 화면 바꾸기' : 'Switch day or night theme'}</button></div></details>`;
 }
 
 // Live viewer count (assets/common.js fills it from the worker's presence room). Hidden until someone else is on the site,

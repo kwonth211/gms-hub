@@ -1846,3 +1846,31 @@ html[data-charm='off'] :is(.charm-walk, .charm-leaves) { display: none; }
   .mb-detail .mk-head { flex-wrap: wrap; }
   .mb-detail .mk-head > div { flex-basis: calc(100% - 52px); }
 }
+
+/* "More" menu at the end of the header, beside the language menu. */
+.more-menu { position: relative; }
+.more-btn { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; font-size: 0.85rem; font-weight: 700; padding: 7px 12px; border: 1px solid var(--line); border-radius: 10px; color: var(--text); white-space: nowrap; }
+.more-btn::-webkit-details-marker { display: none; }
+.more-btn:hover, .more-menu[open] .more-btn { border-color: var(--accent); }
+.more-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.more-bars { display: grid; gap: 3px; width: 14px; }
+.more-bars i { display: block; height: 2px; border-radius: 2px; background: currentColor; }
+.more-list { position: absolute; right: 0; top: calc(100% + 6px); z-index: 50; display: grid; min-width: 190px; padding: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 4px 0 var(--line-strong); }
+@media (max-width: 1180px) { .more-label { display: none; } .more-btn { padding: 9px 10px; } }
+@media (max-width: 480px) { .more-btn { padding: 8px 9px; } }
+.lang-code { display: none; }
+/* A phone's first row holds the brand, live pill, theme, language and More: the language shows as its code there. */
+@media (max-width: 480px) { .lang-full { display: none; } .lang-code { display: inline; } }
+/* Below 1250px the header also carries More, so tabs tighten instead of wrapping the brand. */
+@media (min-width: 761px) and (max-width: 1250px) { .tab { padding: 8px 9px; gap: 6px; } .header-inner { gap: 12px; } }
+@media (max-width: 1360px) { .more-label { display: none; } .more-btn { padding: 9px 10px; } }
+@media (min-width: 761px) and (max-width: 1340px) { .presence .pr-label { display: none; } }
+@media (max-width: 480px) {
+  .header-inner { column-gap: 6px; }
+  .brand strong { font-size: 1rem; }
+  .brand svg { width: 28px; height: 28px; }
+}
+/* Narrow phones: the day/night switch moves from the header row into More, so the row still fits on one line. */
+.more-theme { display: none; font: inherit; font-size: 0.9rem; text-align: left; background: none; border: 0; cursor: pointer; border-top: 1px solid var(--line); border-radius: 0 0 8px 8px; }
+@media (max-width: 400px) { .site-header .theme-toggle { display: none; } .more-theme { display: block; } }
+@media (max-width: 760px) { .more-menu { order: 2; } }
