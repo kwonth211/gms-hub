@@ -124,6 +124,7 @@ h2 { font-size: 1.35rem; margin: 48px 0 16px; }
 .brand strong { display: block; font-size: 1.15rem; font-weight: 800; }
 .brand small { display: block; font-size: 0.75rem; color: var(--muted); margin-top: -2px; }
 .tabs { display: flex; gap: 4px; flex: 1; overflow-x: auto; scrollbar-width: none; }
+.tabs .tab { flex: none; }
 .tabs::-webkit-scrollbar { display: none; }
 .tab {
   display: flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 10px;
@@ -147,7 +148,7 @@ h2 { font-size: 1.35rem; margin: 48px 0 16px; }
   .header-inner { flex-wrap: wrap; gap: 8px; padding-top: 10px; }
   .brand { flex: 1; }
   /* Keep every destination visible on phones. */
-  .tabs { order: 3; flex-basis: 100%; padding-bottom: 8px; display: grid; grid-template-columns: repeat(8, 1fr); }
+  .tabs { order: 3; flex-basis: 100%; padding-bottom: 8px; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
   .tab { flex-direction: column; justify-content: center; gap: 2px; padding: 6px 2px; font-size: 0.75rem; text-align: center; white-space: normal; word-break: keep-all; line-height: 1.2; }
 }
 
@@ -1221,10 +1222,10 @@ input.dm-filled { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset
 @media (min-width: 761px) and (max-width: 1340px) {
   .tabs .tab { font-size: .81rem; padding: 9px; gap: 6px; }
 }
-@media (min-width: 761px) and (max-width: 1100px) {
+@media (min-width: 761px) and (max-width: 1200px) {
   .header-inner { flex-wrap: wrap; padding-top: 10px; }
   .brand { flex: 1; }
-  .tabs { order: 3; flex-basis: 100%; display: grid; grid-template-columns: repeat(8,1fr); padding-bottom: 8px; }
+  .tabs { order: 3; flex-basis: 100%; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); padding-bottom: 8px; }
   .tabs .tab { justify-content: center; }
 }
 
@@ -1309,8 +1310,7 @@ input.dm-filled { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset
 .scan-device-note p { margin: 6px 0 0; }
 
 /* Header menu on narrow screens: seven equal columns that may shrink, so long English labels wrap instead of overflowing. */
-@media (max-width: 1100px) {
-  .tabs { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+@media (max-width: 1200px) {
   .tabs .tab { min-width: 0; overflow-wrap: anywhere; hyphens: auto; }
 }
 
@@ -1426,9 +1426,11 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 }
 .mb-table, .mb-detail-stats dd, #mb-count, .monster-card-stats dd, .monster-stats dd, .monster-hunt-stats dd, .monster-acc-table, .collection-status, .stat.big strong, .mk-tiles dd, .analysis-metric strong { font-variant-numeric: tabular-nums; }
 /* Laptop widths: long tab names wrap to two lines instead of scrolling the menu sideways. */
-@media (min-width: 1101px) and (max-width: 1340px) {
-  .tabs { overflow: visible; }
-  .tabs .tab { flex: 1 1 0; min-width: 0; white-space: normal; line-height: 1.2; overflow-wrap: normal; padding: 8px 6px; }
+/* One header row from 1201px up. Tab sizes are fixed per tier (never stretched or wrapped), and everything fits with
+   the live pill showing, so the header looks the same on every page. */
+@media (min-width: 1201px) and (max-width: 1340px) {
+  .header-inner { gap: 12px; }
+  .tabs .tab { white-space: nowrap; font-size: .81rem; padding: 8px 8px; gap: 5px; }
   .brand small { display: none; }
 }
 .tr-for { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 10px; }
@@ -1850,8 +1852,10 @@ html[data-charm='off'] :is(.charm-walk, .charm-leaves) { display: none; }
 @media (max-width: 480px) { .lang-full { display: none; } .lang-code { display: inline; } }
 /* Below 1250px the header also carries More, so tabs tighten instead of wrapping the brand. */
 @media (min-width: 761px) and (max-width: 1250px) { .tab { padding: 8px 9px; gap: 6px; } .header-inner { gap: 12px; } }
-@media (max-width: 1360px) { .more-label { display: none; } .more-btn { padding: 9px 10px; } }
-@media (min-width: 761px) and (max-width: 1340px) { .presence .pr-label { display: none; } }
+.more-label { display: none; }
+.more-btn { padding: 9px 10px; }
+@media (min-width: 761px) { .presence .pr-label { display: none; } }
+@media (min-width: 1341px) { .header-inner { gap: 12px; } .tabs .tab { font-size: .88rem; padding: 9px 10px; gap: 6px; } .brand small { display: none; } }
 @media (max-width: 480px) {
   .header-inner { column-gap: 6px; }
   .brand strong { font-size: 1rem; }
@@ -2007,7 +2011,8 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .hs-open { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--text-2); font: inherit; font-size: 0.85rem; cursor: pointer; }
 .hs-open:hover { color: var(--text); border-color: var(--line-strong); }
 .hs-open:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-@media (max-width: 1360px) { .hs-label { display: none; } .hs-open { padding: 0; width: 38px; justify-content: center; } }
+.hs-label { display: none; }
+.hs-open { padding: 0; width: 38px; justify-content: center; }
 .hs-sheet { width: min(640px, calc(100vw - 24px)); margin: 72px auto auto; padding: 0; border: 1px solid var(--line-strong); border-radius: 14px; background: var(--panel); color: var(--text); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25); }
 .hs-sheet::backdrop { background: rgba(15, 20, 32, 0.45); }
 .hs-form { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); color: var(--muted); }
@@ -2026,7 +2031,8 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .hs-hint { margin: 0; padding: 6px 14px 10px; }
 @media (max-width: 480px) { .hs-sheet { margin-top: 12px; } .hs-hint { display: none; } }
 /* Room for the search button: the live pill drops its LIVE word on narrow desktops and steps aside on phones. */
-@media (min-width: 761px) and (max-width: 1360px) { .presence .pr-live { display: none; } }
+/* On one header row there is no room for the pill's words: the green dot and the count say it. */
+@media (min-width: 761px) { .presence .pr-live { display: none; } }
 @media (max-width: 480px) { .presence { display: none !important; } }
 .mb-move { display: inline-block; min-width: 44px; text-align: center; padding: 2px 6px; border-radius: 999px; font-size: 0.74rem; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--muted); background: var(--panel-2); border: 1px solid var(--line); }
 .mb-move.up { color: #1f7a45; background: color-mix(in srgb, #2e9d5b 14%, transparent); border-color: color-mix(in srgb, #2e9d5b 35%, transparent); }
