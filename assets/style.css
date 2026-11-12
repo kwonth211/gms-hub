@@ -2112,6 +2112,12 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mt-callers li { display: flex; justify-content: space-between; gap: 8px; font-size: 0.84rem; }
 .mt-callers a { color: var(--text); text-decoration: none; }
 .mt-callers small { color: var(--muted); font-size: 0.72rem; white-space: nowrap; }
-.mt-curve { display: flex; align-items: flex-end; gap: 2px; height: 44px; }
-.mt-curve i { flex: 1; background: var(--accent-fill); opacity: 0.75; border-radius: 2px 2px 0 0; min-width: 2px; }
+.mt-curve { display: flex; align-items: flex-end; gap: 2px; height: 72px; padding-top: 14px; }
+.mt-bar { position: relative; flex: 1; height: 100%; display: flex; align-items: flex-end; min-width: 2px; }
+.mt-bar i { display: block; width: 100%; background: var(--accent-fill); opacity: 0.75; border-radius: 2px 2px 0 0; }
+.mt-bar[data-peak] i { opacity: 1; }
+.mt-bar small { position: absolute; top: 100%; left: 0; margin-top: 3px; font-size: 0.66rem; color: var(--muted); white-space: nowrap; }
+.mt-bar:last-child small { left: auto; right: 0; }
+.mt-bar b { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 2px; font-size: 0.66rem; color: var(--accent); white-space: nowrap; }
+.mt-side .mt-curve { margin-bottom: 18px; }
 @media (max-width: 760px) { .mt-grid, .mt-grid.compact { grid-template-columns: minmax(0, 1fr); } }
