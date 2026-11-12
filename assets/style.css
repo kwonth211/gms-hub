@@ -1903,3 +1903,6 @@ html[data-charm='off'] .mg-ticker.ready .mg-tk-run { animation: none; }
 html[data-charm='off'] .mg-tk-track { overflow-x: auto; }
 html[data-charm='off'] .mg-tk-set[aria-hidden] { display: none; }
 @media (max-width: 480px) { .mg-ticker { height: 30px; font-size: 0.76rem; } .mg-tk-label { padding: 0 9px; } }
+.mg-msg.mg-focus { outline: 2px solid var(--band, var(--accent)); outline-offset: -2px; background: color-mix(in srgb, var(--band, var(--accent)) 22%, var(--panel)); }
+.mg-tk-label .sprite { flex: none; }
+.mg-tk-item .sprite { flex: none; opacity: 0.9; }

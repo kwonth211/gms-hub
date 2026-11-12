@@ -10,6 +10,9 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const tr = (k, e, vars = {}) => (ko ? k : tx(e, vars)).replace(/\{(\w+)\}/g, (_, v) => vars[v] ?? '');
 const POLL_MS = 5000;
 
+// ?m=<id> (from the header ticker) scrolls to that megaphone once and marks it.
+const focusId = Number(new URLSearchParams(location.search).get('m')) || 0;
+let focused = false;
 let rows = [], lastId = 0, intent = '', names = [], byName = new Map(), prices = new Map();
 
 // ---------- reading a megaphone ----------
@@ -138,7 +141,7 @@ function card(r) {
   const tag = r.intent ? `<span class="mg-intent ${r.intent}">${r.intent === 'sell' ? tr('팝니다', 'Selling') : tr('삽니다', 'Buying')}</span>` : '';
   const cmp = it && market?.median ? `<a class="mg-price" href="${root.dataset.market}?item=${it.id}">${tr('시세', 'Market')} ${mesos(market.median)}${diff != null ? ` · <b class="${diff > 0 ? 'up' : diff < 0 ? 'down' : ''}">${diff > 0 ? '+' : ''}${diff}%</b>` : ''}</a>` : '';
   // One compact row: who and where on the left, the message and its reading in the middle, the whisper copy on the right.
-  return `<li class="mg-msg mg-${r.color || 'Y'} mg-k-${r.kind}">
+  return `<li class="mg-msg mg-${r.color || 'Y'} mg-k-${r.kind}${r.id === focusId ? ' mg-focus' : ''}" id="m-${r.id}">
 <div class="mg-who"><strong class="mg-nick">${esc(r.nick)}</strong><span class="mg-meta">${r.channel ? `<span class="mg-ch">CH${String(r.channel).padStart(2, '0')}</span>` : ''}<time datetime="${new Date(seenAt(r.seen)).toISOString()}" title="${ago(r.seen)}">${clock(r.seen)}</time></span><span class="mg-kind">${KIND[r.kind]?.() || ''}</span></div>
 <div class="mg-body"><p class="mg-text">${tag}${text}</p>${translator && plain(r.text) ? `<p class="mg-ai" data-src="${esc(plain(r.text))}" data-prefix="${esc(itemPrefix(r.text, items))}" hidden></p>` : ''}${g ? `<p class="mg-gloss">${esc(g)}</p>` : ''}${cmp}</div>
 <button type="button" class="mg-copy" data-nick="${esc(r.nick)}" title="${esc(tr('귓말 명령어 복사', 'Copy whisper command'))}" aria-label="${esc(tr('귓말 명령어 복사', 'Copy whisper command'))}">${WHISPER}</button></li>`;
@@ -170,6 +173,7 @@ function render() {
     if (ch && r.channel !== ch) return false;
     // Search covers the nick, the text, and the Korean names of the items it mentions, every word anywhere.
     if (q && !q.split(/\s+/).every((w) => haystack(r).includes(w))) return false;
+    if (r.id === focusId) return true;
     if (once) { const k = `${r.nick}|${r.text.toLowerCase()}`; if (seen.has(k)) return false; seen.add(k); }
     return true;
   });
@@ -179,6 +183,12 @@ function render() {
   feed.innerHTML = list.slice(0, 300).map(card).join('');
   if (feed.scrollTop > 0) feed.scrollTop = feed.scrollHeight - fromBottom;
   if (q) highlight(feed, q.split(/\s+/));
+  const target = focusId && !focused && document.getElementById(`m-${focusId}`);
+  if (target) {
+    target.scrollIntoView({ block: 'center' });
+    target.querySelector('.mg-copy')?.focus({ preventScroll: true });
+    focused = true;
+  }
   fillAi();
   $('mg-count').textContent = q || ch || intent ? tr('{n}개 찾음', '{n} found', { n: list.length }) : tr('최근 {n}개', 'Latest {n}', { n: list.length });
   $('mg-empty').hidden = rows.length > 0;
