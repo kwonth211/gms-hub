@@ -93,10 +93,14 @@ export function findLines(img, { scrollbar = 20 } = {}) {
     while (end + 1 < rows.length && isText(rows[end + 1]) && rows[end + 1].cls === rows[y].cls) end++;
     // A line cut by the top or bottom edge of the box is not read; it is read whole in another frame.
     if (end - y + 1 >= 6 && y > 0 && end < rows.length - 1) {
-      // The band ends where the scrollbar begins: the last band-coloured column on the line's middle row.
+      // The band ends where the box border and scrollbar begin: the last column of this line's own band colour on the
+      // middle row (the scrollbar's blue button is a band colour too, so any band colour would stop too late and the
+      // border and scroll grip would be read as "|=").
       const mid = (y + end) >> 1;
       let edge = right;
-      while (edge > 10) { const i = (mid * img.width + edge - 1) * 4; if (bandClass(img.data[i], img.data[i + 1], img.data[i + 2])) break; edge--; }
+      while (edge > 10) { const i = (mid * img.width + edge - 1) * 4; if (bandClass(img.data[i], img.data[i + 1], img.data[i + 2]) === rows[y].cls) break; edge--; }
+      // A couple of columns short of the border, where the band's bevel shading starts.
+      edge = Math.max(10, edge - 2);
       lines.push({ top: y, bottom: end, color: rows[y].cls, bg: rows[Math.min(end, y + 2)].bg, right: edge });
     }
     y = end;
@@ -237,9 +241,14 @@ export async function readLine(img, line, ocr, glyph = null) {
 // "Bx" or "B»"; "Cal's"/"Cat's" style letter swaps are left alone.
 // In a word of capitals a small l is the capital I the font draws the same way ("SELLlNG" → "SELLING").
 export const capsI = (t) => t.replace(/[A-Za-z]{3,}/g, (w) => (w.replace(/l/g, '').length >= 2 && w.replace(/l/g, '') === w.replace(/l/g, '').toUpperCase() ? w.replace(/l/g, 'I') : w));
+// Stray marks the box's border, scrollbar and cursor leave in a reading: standing alone between spaces or at the end.
+// Marks players really type at the end (! ? . ) ~ <3 ^^ *o*) are kept.
+// A lone "=" stays: players write "crit = 2" and "= 500k".
+const JUNK_TOKEN = /(^|\s)(?:[|’‘`'"_;:,\[({&\\/}\]-]|\|=)(?=\s|$)/g;
+const JUNK_TAIL = /(?:\s*(?:\|=?|=+|\[+\s*\|?\]*|[}’‘`_;:,(&\\/-]))+\s*$/;
 export function cleanText(t) {
   // A run of @ or ~ at the end is the chat box's background pattern read as letters, never part of the message.
-  return capsI(t).replace(/(?:\s*[@~]){3,}\s*$/, '').replace(/\s*\|\s*$/, '').replace(/(^|[\s\]])[S5]\s?(?:=+>*|»|>|<|«)\s?/g, '$1S> ').replace(/(^|[\s\]])B\s?(?:=+>*|»|>|x|«)\s?/g, '$1B> ').replace(/\s+/g, ' ').trim();
+  return capsI(t).replace(/(?:\s*[@~]){3,}\s*$/, '').replace(JUNK_TOKEN, '$1').replace(JUNK_TAIL, '').replace(/(^|[\s\]])[S5]\s?(?:=+>*|»|>|<|«)\s?/g, '$1S> ').replace(/(^|[\s\]])B\s?(?:=+>*|»|>|x|«)\s?/g, '$1B> ').replace(/\s+/g, ' ').trim();
 }
 
 // Lines in reading order → megaphones. A line without a channel badge continues the megaphone above it (long
