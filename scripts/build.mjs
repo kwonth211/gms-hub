@@ -673,7 +673,7 @@ function header(lang, pagePath, only) {
         `<a class="tab" href="${href(langPath(lang, p))}"${(p === pagePath || (p !== '/' && pagePath?.startsWith(p))) ? ' aria-current="page"' : ''}${lang === 'ko' ? '' : ` title="${esc(label)}"`}>${p === NEW_TAB ? `<span class="tab-ico">${spriteSvg(icon, 20)}<span class="tab-new" title="${lang === 'ko' ? '새 기능' : 'New'}">N</span></span>` : spriteSvg(icon, 20)}${lang === 'ko' ? `<span>${label}</span>` : `<span class="tab-full">${label}</span><span class="tab-short" aria-hidden="true">${SHORT_EN[p]}</span>`}</a>`
     )
     .join('');
-  return `<header class="site-header"><div class="wrap header-inner">
+  return `${pagePath === '/megaphone/' ? '' : megaTicker(lang)}<header class="site-header"><div class="wrap header-inner">
 <a class="brand" href="${href(langPath(lang, '/'))}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>${esc(t.gameName)}</small></span></a>
 <nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}</nav>
 ${presencePill(lang)}
@@ -701,6 +701,14 @@ function moreMenu(lang) {
   ].filter(Boolean);
   const label = ko ? '더보기' : 'More';
   return `<details class="more-menu"><summary class="more-btn" aria-label="${label}"><span class="more-bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="more-label">${label}</span></summary><div class="more-list">${links.map(([p, name]) => `<a class="lang-opt" href="${href(langPath(lang, p))}">${name}</a>`).join('')}<button type="button" class="lang-opt more-theme" data-theme-toggle>${ko ? '낮·밤 화면 바꾸기' : 'Switch day or night theme'}</button></div></details>`;
+}
+
+// A strip above the header that scrolls the latest game megaphones (assets/common.js fills it from /megaphones). Its height
+// is reserved from the start so nothing below moves when the messages arrive.
+function megaTicker(lang) {
+  const ko = lang === 'ko';
+  const url = href(langPath(lang, '/megaphone/'));
+  return `<div class="mg-ticker" data-href="${url}" data-lang="${lang}"><a class="mg-tk-label" href="${url}"><i class="pr-dot" aria-hidden="true"></i>${ko ? '실시간 고확' : 'Live megaphones'}</a><div class="mg-tk-track" aria-label="${ko ? '최근 게임 확성기' : 'Latest game megaphones'}"><div class="mg-tk-run"></div></div></div>`;
 }
 
 // Live viewer count (assets/common.js fills it from the worker's presence room). Hidden until someone else is on the site,

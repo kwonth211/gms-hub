@@ -1880,3 +1880,26 @@ html[data-charm='off'] :is(.charm-walk, .charm-leaves) { display: none; }
 .scan-table .diff-low { background: color-mix(in srgb, #2e9d5b 16%, transparent); color: #23824a; }
 [data-theme='dark'] .scan-table .diff-high { color: #ff8a80; }
 [data-theme='dark'] .scan-table .diff-low { color: #6fdc9a; }
+
+/* Megaphone ticker above the header. */
+.mg-ticker { --tk-Y: #d9a520; --tk-P: #d26fc3; --tk-C: #2fb3cf; display: flex; align-items: center; height: 32px; background: var(--panel-2); border-bottom: 1px solid var(--line); font-size: 0.8rem; overflow: hidden; }
+.mg-tk-label { flex: none; display: flex; align-items: center; gap: 6px; height: 100%; padding: 0 12px; font-weight: 700; color: var(--text); text-decoration: none; background: var(--panel); border-right: 1px solid var(--line); white-space: nowrap; }
+.mg-tk-label:hover { color: var(--accent); }
+.mg-tk-label:focus-visible, .mg-tk-item:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.mg-tk-track { flex: 1; min-width: 0; overflow: hidden; height: 100%; }
+.mg-tk-run { display: flex; width: max-content; height: 100%; }
+.mg-ticker.ready .mg-tk-run { animation: mg-tk var(--tk-dur, 60s) linear infinite; }
+.mg-ticker:hover .mg-tk-run, .mg-ticker:focus-within .mg-tk-run { animation-play-state: paused; }
+@keyframes mg-tk { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.mg-tk-set { display: flex; height: 100%; }
+.mg-tk-item { display: flex; align-items: center; gap: 6px; padding: 0 18px 0 12px; height: 100%; white-space: nowrap; color: var(--text-2); text-decoration: none; box-shadow: inset 3px 0 0 var(--band, var(--tk-Y)); }
+.mg-tk-item:hover { color: var(--text); background: color-mix(in srgb, var(--band, var(--tk-Y)) 12%, transparent); }
+.mg-tk-Y { --band: var(--tk-Y); } .mg-tk-P { --band: var(--tk-P); } .mg-tk-C { --band: var(--tk-C); }
+.mg-tk-item time { color: var(--muted); font-variant-numeric: tabular-nums; }
+.mg-tk-item b { font-size: 0.7rem; color: var(--muted); }
+.mg-tk-item strong { color: var(--text); }
+@media (prefers-reduced-motion: reduce) { .mg-ticker.ready .mg-tk-run { animation: none; } .mg-tk-track { overflow-x: auto; } .mg-tk-set[aria-hidden] { display: none; } }
+html[data-charm='off'] .mg-ticker.ready .mg-tk-run { animation: none; }
+html[data-charm='off'] .mg-tk-track { overflow-x: auto; }
+html[data-charm='off'] .mg-tk-set[aria-hidden] { display: none; }
+@media (max-width: 480px) { .mg-ticker { height: 30px; font-size: 0.76rem; } .mg-tk-label { padding: 0 9px; } }

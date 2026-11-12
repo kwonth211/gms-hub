@@ -177,3 +177,29 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
     track('charm_toggle', { on: turnOff ? 0 : 1 });
   });
 })();
+
+// Megaphone ticker above the header: the latest game megaphones scroll past; each one opens the megaphone page. The list is
+// written twice so the loop has no seam, and the speed follows its length. It holds still on hover or focus, and does not
+// move for reduced motion or with the site's animations turned off (then it scrolls by hand).
+(() => {
+  const box = document.querySelector('.mg-ticker');
+  const api = document.body.dataset.priceApi;
+  if (!box || !api) return;
+  const run = box.querySelector('.mg-tk-run');
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const clock = (seen) => new Date(Date.parse(`${seen.replace(' ', 'T')}Z`)).toLocaleTimeString(box.dataset.lang, { hour: '2-digit', minute: '2-digit', hour12: false });
+  let lastId = 0;
+  async function load() {
+    let rows = [];
+    try { rows = (await (await fetch(`${api}/megaphones?limit=20`)).json()).rows || []; } catch (e) { return; }
+    if (!rows.length || rows[0].id === lastId) return;
+    lastId = rows[0].id;
+    const items = rows.map((r) => `<a class="mg-tk-item mg-tk-${esc(r.color || 'Y')}" href="${box.dataset.href}" tabindex="-1"><time>${clock(r.seen)}</time>${r.channel ? `<b>CH${r.channel}</b>` : ''}<strong>${esc(r.nick)}</strong><span>${esc(r.text.length > 90 ? `${r.text.slice(0, 88)}…` : r.text)}</span></a>`).join('');
+    run.innerHTML = `<div class="mg-tk-set">${items}</div><div class="mg-tk-set" aria-hidden="true">${items}</div>`;
+    run.style.setProperty('--tk-dur', `${Math.max(40, Math.round(run.firstChild.scrollWidth / 60))}s`);
+    box.classList.add('ready');
+  }
+  box.addEventListener('click', (e) => { if (e.target.closest('a')) track('mega_ticker_click'); });
+  load();
+  setInterval(() => document.visibilityState === 'visible' && load(), 60000);
+})();
