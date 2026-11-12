@@ -47,6 +47,12 @@ const LANGS = ['ko', 'en'];
 const LOCALES = loadLocales(root);
 const ALL_LANGS = [...LANGS, ...LOCALES.map((l) => l.code)];
 const HREFLANG = { ko: 'ko', en: 'en', ...Object.fromEntries(LOCALES.map((l) => [l.code, l.hreflang])) };
+// Search Console (28 days to 2026-11-12): the machine-translated zh/ja database pages (one per item, monster, map and
+// quest, about 2,600 of them) drew 2 impressions, and most sat in "crawled - currently not indexed", diluting the site.
+// They stay on the site for visitors but are noindex, out of the sitemap and out of hreflang; zh/ja keep the home,
+// tools, guides and list pages.
+const DB_DETAIL = /^\/(items|monsters|maps|quests)\/(?!best-exp\/)[^/]+\/$/;
+const indexedIn = (lang, pagePath) => LANGS.includes(lang) || !DB_DETAIL.test(pagePath || '');
 const LANG_NAMES = { ko: '한국어', en: 'English', ...Object.fromEntries(LOCALES.map((l) => [l.code, l.name])) };
 const BUILD_DATE = new Date().toISOString().slice(0, 10);
 const SITE_COUNT = sites.categories.reduce((n, c) => n + c.sites.length, 0);
@@ -576,7 +582,7 @@ function head({ lang, title, desc, pagePath, noindex, ld = [], only }) {
   const alternates = only
     ? ''
     : pagePath
-    ? ALL_LANGS.map((l) => `<link rel="alternate" hreflang="${HREFLANG[l]}" href="${absUrl(langPath(l, pagePath))}">`).join('\n') +
+    ? ALL_LANGS.filter((l) => indexedIn(l, pagePath)).map((l) => `<link rel="alternate" hreflang="${HREFLANG[l]}" href="${absUrl(langPath(l, pagePath))}">`).join('\n') +
       `\n<link rel="alternate" hreflang="x-default" href="${absUrl(langPath(config.defaultLang, pagePath))}">`
     : '';
   const canonical = pagePath ? absUrl(langPath(lang, pagePath)) : absUrl('/');
@@ -2820,7 +2826,9 @@ for (const loc of LOCALES) {
   for (const [rel, html] of EN_PAGES) {
     const target = rel.replace(/^en\//, `${loc.code}/`);
     // Band redirect stubs only need their paths moved.
-    const content = html.includes('http-equiv="refresh"') ? html.replaceAll('/en/', `/${loc.code}/`).replace('lang="en"', `lang="${loc.hreflang}"`) : localizePage(html, loc, ctx);
+    let content = html.includes('http-equiv="refresh"') ? html.replaceAll('/en/', `/${loc.code}/`).replace('lang="en"', `lang="${loc.hreflang}"`) : localizePage(html, loc, ctx);
+    if (!indexedIn(loc.code, `/${path.posix.dirname(rel.replace(/^en\//, ''))}/`))
+      content = content.replace(/<meta name="robots" content="index[^"]*">\n<link rel="canonical" href="[^"]*">/, '<meta name="robots" content="noindex">');
     write(target, content);
   }
   for (const k of CLIENT_KEYS) if (!client[k]) ctx.missing.add(k);
@@ -2855,7 +2863,10 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
       ).join('')}<xhtml:link rel="alternate" hreflang="x-default" href="${absUrl(langPath(config.defaultLang, p.path))}"/></url>`
     )
   )
-).join('\n');
+).join('\n')
+  // Locale database pages are noindex (see DB_DETAIL): their entries and the alternates pointing at them are dropped.
+  .split('\n').filter((u) => { const m = /<loc>[^<]*?\/(zh|ja)(\/[^<]*)<\/loc>/.exec(u); return !m || indexedIn(m[1], m[2]); }).join('\n')
+  .replace(/<xhtml:link rel="alternate" hreflang="[^"]*" href="[^"]*?\/(?:zh|ja)\/(?:items|monsters|maps|quests)\/(?!best-exp\/)[^"/]+\/"\/>/g, '');
 write(
   'sitemap.xml',
   `<?xml version="1.0" encoding="UTF-8"?>
