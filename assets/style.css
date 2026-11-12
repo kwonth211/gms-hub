@@ -2037,3 +2037,17 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-alert-form label { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-weight: 700; font-size: 0.86rem; }
 .mb-alert-form input { width: 130px; font: inherit; padding: 5px 8px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--panel); color: var(--text); }
 .mb-alert-form small { width: 100%; }
+.mb-scrolls { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.mb-scrolls li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; font-size: 0.82rem; }
+.mb-scrolls strong { min-width: 74px; }
+.mb-scrolls a { padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--text-2); text-decoration: none; white-space: nowrap; }
+.mb-scrolls a:hover { border-color: var(--accent-fill); color: var(--text); }
+.mb-scrolls a b { color: var(--accent); }
+.mb-near { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.mb-near a { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 8px; color: var(--text); text-decoration: none; }
+.mb-near a:hover { background: var(--panel-2); }
+.mb-near .me a { background: var(--accent-soft); outline: 1px solid var(--accent-band); }
+.mb-near img { image-rendering: pixelated; object-fit: contain; }
+.mb-near span { font-weight: 700; font-size: 0.86rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mb-near small { display: block; font-weight: 500; color: var(--muted); font-size: 0.74rem; }
+.mb-near b { font-variant-numeric: tabular-nums; font-size: 0.86rem; }

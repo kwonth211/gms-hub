@@ -700,6 +700,8 @@ async function refresh() {
     if (!fresh) throw Error("catalog");
     catalog = fresh;
     try { localStorage.setItem(CATALOG_KEY, JSON.stringify(fresh)); } catch {}
+    // The item panel's scroll and comparison prices come from the catalog; redraw them once it is in.
+    if (selected && !$("mb-info")?.dataset.priced) fillItemInfo(selected);
     for (const k of ["open", "shops", "items", "records"])
       $("mk-stat-" + k).textContent = money(catalog.stats[k]);
     // The time goes in as a variable so derived locales match their translation key.
@@ -912,6 +914,30 @@ const TIP_INC = { PAD: () => tr("공격력", "Weapon attack"), MAD: () => tr("�
   MHP: () => "HP", MMP: () => "MP", PDD: () => tr("물리 방어력", "Weapon defense"), MDD: () => tr("마법 방어력", "Magic defense"), ACC: () => tr("명중률", "Accuracy"),
   EVA: () => tr("회피율", "Avoidability"), Speed: () => tr("이동속도", "Speed"), Jump: () => tr("점프력", "Jump") };
 const TIP_JOBS = [[1, () => tr("전사", "Warrior")], [2, () => tr("마법사", "Magician")], [4, () => tr("궁수", "Bowman")], [8, () => tr("도적", "Thief")]];
+// For equipment: the scrolls that go on it (success rates and current price, by stat) and nearby items of the same type
+// to compare (level, main stats, price), like NiaDB's item page. All from the hover-card data and the catalog.
+const EQUIP_SCROLL_SLOT = { Hat: "Helmet", Top: "Topwear", Bottom: "Bottomwear", Glove: "Gloves", "One-Handed Blunt Weapon": "One-Handed BW", "Two-Handed Blunt": "Two-Handed BW", "Pole Arm": "Polearm" };
+const TIERS = [["Lesser", () => tr("하급", "Lesser")], ["Intermediate", () => tr("중급", "Intermediate")], ["Greater", () => tr("상급", "Greater")], ["Chaos", () => tr("혼돈", "Chaos")]];
+function equipExtras(id, data) {
+  const me = data.items[id];
+  const [, , , sub, lv] = me;
+  const priceOfItem = (x) => { const c = catalog?.items.find((r) => r.item === x); return c ? c.median ?? c.typical : null; };
+  const slot = EQUIP_SCROLL_SLOT[sub] || sub;
+  const groups = new Map();
+  for (const [sid, t] of Object.entries(data.items)) {
+    if (t[2] !== "Use" || !t[10] || t[3] !== slot) continue;
+    const m = /^(.*) Scroll: (\w+)$/.exec(t[1]);
+    if (!m) continue;
+    const stat = m[1].split(" ").slice(slot.split(" ").length).join(" ") || m[1];
+    (groups.get(stat) || groups.set(stat, []).get(stat)).push({ id: Number(sid), tier: m[2], t });
+  }
+  const scrolls = [...groups].map(([stat, list]) => `<li><strong>${esc(stat)}</strong>${TIERS.map(([k, label]) => list.find((x) => x.tier === k)).filter(Boolean).map((x) => { const p = priceOfItem(x.id); const tier = TIERS.find(([k]) => k === x.tier)[1](); return `<a href="?item=${x.id}" data-item="${x.id}">${tier} +${x.t[10][0]} · ${x.t[10][1]}%${p ? ` <b>${kmoney(p)}</b>` : ""}</a>`; }).join("")}</li>`).join("");
+  const near = Object.entries(data.items).filter(([sid, t]) => t[2] === "Equip" && t[3] === sub && Number(sid) !== id && Math.abs((t[4] || 0) - (lv || 0)) <= 10)
+    .sort((a, b) => Math.abs(a[1][4] - lv) - Math.abs(b[1][4] - lv) || a[1][4] - b[1][4]).slice(0, 6);
+  const statLine = (t) => Object.entries(t[7] || {}).slice(0, 3).map(([k, v]) => `${TIP_INC[k] ? TIP_INC[k]() : esc(k)} +${v}`).join(" · ");
+  const compare = near.length ? `<h3>${tr("비슷한 장비 비교", "Compare similar gear")}</h3><ul class="mb-near">${[[String(id), me], ...near].sort((a, b) => a[1][4] - b[1][4]).map(([sid, t]) => { const p = priceOfItem(Number(sid)); return `<li${Number(sid) === id ? ' class="me"' : ""}><a href="?item=${sid}" data-item="${sid}"><img src="https://maplestory.io/api/MCW/1/item/${sid}/icon" width="26" height="26" alt="" loading="lazy"><span>${esc(ko && t[0] ? t[0] : t[1])}<small>Lv. ${t[4] || 0} · ${statLine(t) || "—"}</small></span><b>${p ? kmoney(p) : "—"}</b></a></li>`; }).join("")}</ul>` : "";
+  return `${scrolls ? `<h3>${tr("이 장비에 쓰는 주문서", "Scrolls for this item")}${me[8] ? ` <small>${tr(`업그레이드 ${me[8]}번`, `${me[8]} slots`)}</small>` : ""}</h3><ul class="mb-scrolls">${scrolls}</ul>` : ""}${compare}`;
+}
 async function fillItemInfo(id) {
   const data = await loadTips();
   const box = $("mb-info");
@@ -934,9 +960,11 @@ async function fillItemInfo(id) {
   const mobs = (drops || []).filter((m) => data.mobs[m]);
   const mobLink = (m) => `/${D.lang}/monsters/${m}/`;
   const sprites = document.body.dataset.sprites;
+  if (catalog) box.dataset.priced = "1";
   box.innerHTML = `${facts.length ? `<p class="mb-info-facts">${facts.map((f) => `<span>${f}</span>`).join("")}</p>` : ""}
 <h3>${tr("드롭하는 몬스터", "Dropped by")} <small>${dropN ? tr(`${dropN}마리`, `${dropN}`) : ""}</small></h3>
 ${mobs.length ? `<ul class="mb-drops">${mobs.map((m) => { const x = data.mobs[m]; return `<li><a href="${mobLink(m)}"><img src="${sprites}${m}.gif" width="36" height="36" alt="" loading="lazy"><span>${esc(ko ? x[0] : x[1])}</span><small>Lv. ${x[2]}${x[7] ? ` <b class="mb-boss">${tr("보스", "BOSS")}</b>` : ""}</small></a></li>`; }).join("")}</ul>${dropN > mobs.length ? `<p class="muted note">${tr(`외 ${dropN - mobs.length}마리는 아이템 페이지에서 볼 수 있어요.`, `${dropN - mobs.length} more on the item page.`)}</p>` : ""}` : `<p class="muted note">${tr("지금 열린 맵의 몬스터는 이 아이템을 드롭하지 않아요.", "No monster on an open map drops this item.")}</p>`}
+${cat === "Equip" ? equipExtras(id, data) : ""}
 ${data.quests?.[id]?.length ? `<h3>${tr("퀘스트 보상", "Quest reward")} <small>${tr(`${questN}개`, `${questN}`)}</small></h3><ul class="mb-quests">${data.quests[id].map(([p, name, lv]) => `<li><a href="/${D.lang}${p}">${esc(name)}</a>${lv ? `<small>Lv. ${lv}+</small>` : ""}</li>`).join("")}</ul>` : ""}`;
 }
 
