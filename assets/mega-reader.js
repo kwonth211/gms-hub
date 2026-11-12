@@ -65,7 +65,13 @@ export function findLines(img, { scrollbar = 20 } = {}) {
   const rows = [];
   for (let y = 0; y < img.height; y++) {
     const bg = rowBackground(img, y, right);
-    const cls = bg.share > 0.3 ? bandClass(...bg.rgb) : null;
+    // Pink bands are dithered between two tones, so the share counts every pixel of the band's class, not one tone.
+    let cls = bandClass(...bg.rgb);
+    if (cls) {
+      let n = 0;
+      for (let x = 0; x < right; x += 2) { const i = (y * img.width + x) * 4; if (bandClass(img.data[i], img.data[i + 1], img.data[i + 2]) === cls) n++; }
+      if (n * 2 < right * 0.3) cls = null;
+    }
     let text = 0;
     if (cls) for (let x = 0; x < right; x++) {
       const i = (y * img.width + x) * 4;
@@ -190,9 +196,16 @@ export async function readLine(img, line, ocr, glyph = null) {
   const badge = findBadge(img, line);
   const x0 = textLeft(img, line);
   const byTable = (a, z) => (glyph ? glyph.read(glyphs(img, line, a, z, glyph.wTop)) : null);
+  // Table first; failing that, OCR with the table's known words kept.
+  const readText = async (a, z, bm) => {
+    const t = byTable(a, z);
+    if (t != null) return t;
+    const raw = await ocr(bm, 'text');
+    if (!glyph) return raw;
+    return mergeReading(glyph.read.words(glyphs(img, line, a, z, glyph.wTop)), raw) ?? raw;
+  };
   if (!badge) {
-    const t = byTable(x0, img.width);
-    return { color: line.color, cont: true, text: cleanText(t ?? (await ocr(lineBitmap(img, line, { x0 }), 'text'))) };
+    return { color: line.color, cont: true, text: cleanText(await readText(x0, img.width, lineBitmap(img, line, { x0 }))) };
   }
   // Without the font table, nicks (short, no dictionary words) get three OCR readings that vote: one word at 4x, a line
   // at 2x and at 3x, letters and digits only; without a majority the one-word reading wins.
@@ -206,7 +219,7 @@ export async function readLine(img, line, ocr, glyph = null) {
     nick = top && top[1] >= 2 ? top[0] : reads[0];
   }
   const channel = readChannel(img, line, badge);
-  const text = cleanText((byTable(badge.message, img.width) ?? (await ocr(lineBitmap(img, line, { x0: badge.message }), 'text'))).replace(/^[^A-Za-z0-9[<>]*/, ''));
+  const text = cleanText((await readText(badge.message, img.width, lineBitmap(img, line, { x0: badge.message }))).replace(/^[^A-Za-z0-9[<>]*/, ''));
   return { color: line.color, nick, channel, text };
 }
 
@@ -402,8 +415,34 @@ export function glyphReader(table) {
     return out.replace(/[A-Za-z]*[Il][A-Za-z]*/g, (w) => {
       const others = w.replace(/[Il]/g, '');
       const upper = others.length ? others === others.toUpperCase() : w[0] === 'I';
-      return w.replace(/[Il]/g, (c, i) => (upper ? 'I' : i === 0 && others && others[0] === others[0].toLowerCase() ? 'l' : c === 'I' && i === 0 ? 'I' : 'l'));
+      // At the start of a word: I before a capital ("IGfusion"), l before a small letter ("lord0").
+      return w.replace(/[Il]/g, (c, i) => (upper ? 'I' : i === 0 && w[1] ? (w[1] === w[1].toUpperCase() && /[A-Z]/.test(w[1]) ? 'I' : 'l') : 'l'));
     });
   };
-  return Object.assign(read, { charOf });
+  // Words of a line: each word's letters as read by the table, null where a run is unknown.
+  const words = (gs) => {
+    const out = [];
+    let prev = '';
+    for (const g of gs) {
+      const ch = charOf(g.key);
+      const space = g.gap >= 5 || (g.space && !(narrow(prev.slice(-1)) || narrow((ch || 'x')[0])));
+      if (!out.length || space) out.push([]);
+      out.at(-1).push(ch);
+      prev = ch || '';
+    }
+    return out;
+  };
+  return Object.assign(read, { charOf, words });
+}
+
+// A line the table can't read in full: keep every word it can read, and take the OCR's word where it can't. When a
+// word's runs are mostly known and the OCR word has the same length, only the unknown letters come from the OCR.
+export function mergeReading(tableWords, ocrText) {
+  const ocr = ocrText.trim().split(/\s+/).filter(Boolean);
+  if (tableWords.length !== ocr.length) return null;
+  return tableWords.map((w, i) => {
+    if (w.every((c) => c != null)) return w.join('');
+    if (w.length === ocr[i].length && w.every((c) => c == null || c.length === 1)) return w.map((c, j) => c ?? ocr[i][j]).join('');
+    return ocr[i];
+  }).join(' ');
 }

@@ -37,3 +37,10 @@ test('misread bracketed item names snap to the catalogue only when clearly the s
   assert.equal(fix('[work gloves] PMO'), '[Work Gloves] PMO');
   assert.equal(fix('[Totally Unknown Thing] hi'), '[Totally Unknown Thing] hi');
 });
+
+test('a partly known line keeps the table words and fills only the unknown letters from OCR', async () => {
+  const { mergeReading } = await import('../assets/mega-reader.js');
+  assert.equal(mergeReading([['P', 'i', 'n', 'k'], ['R', 'a', null, 'b', 'i', 't']], 'Pink Rabhit'), 'Pink Rabbit');
+  assert.equal(mergeReading([['S', '>'], [null], ['k']], 'S> 850 k'), 'S> 850 k');
+  assert.equal(mergeReading([['a'], ['b']], 'one'), null);
+});
