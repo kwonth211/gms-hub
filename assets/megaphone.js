@@ -16,7 +16,7 @@ const POLL_MS = 5000;
 // ?m=<id> (from the header ticker) scrolls to that megaphone once and marks it.
 const focusId = Number(new URLSearchParams(location.search).get('m')) || 0;
 let focused = false;
-let rows = [], lastId = 0, intent = '', names = [], byName = new Map(), prices = new Map();
+let rows = [], lastId = 0, names = [], byName = new Map(), prices = new Map();
 
 // ---------- reading a megaphone ----------
 // "[Shoes Speed Scroll: Intermediate]" is an exact item megaphone; otherwise the longest catalogue name in the text.
@@ -45,25 +45,18 @@ const itemPrefix = (text, items) => {
 const AI_LANG = { ko: 'ko', zh: 'zh', ja: 'ja' }[lang];
 let translator = null, aiState = 'off';
 const aiCache = new Map();
-async function setupAi(fromClick = false) {
+async function setupAi() {
   if (!AI_LANG || !('Translator' in self)) return;
   try {
     const avail = await self.Translator.availability({ sourceLanguage: 'en', targetLanguage: AI_LANG });
     if (avail === 'unavailable') return;
-    // The first download of the language model needs a click; once it is on the device it loads by itself.
-    if (avail !== 'available' && !fromClick) { aiState = 'ask'; aiButton(); return; }
-    aiState = 'loading'; aiButton();
+    // There is no button: the translator is used only when its model is already on the device (a download needs a
+    // user gesture, and the page shows the plain Korean reading of the trade shorthand without it).
+    if (avail !== 'available') return;
     translator = await self.Translator.create({ sourceLanguage: 'en', targetLanguage: AI_LANG });
-    aiState = 'on'; aiButton(); render();
+    aiState = 'on'; render();
     track('mega_ai_translate', { lang: AI_LANG });
-  } catch (e) { aiState = 'off'; aiButton(); }
-}
-function aiButton() {
-  const b = $('mg-ai');
-  if (!b) return;
-  b.hidden = aiState === 'off';
-  b.disabled = aiState !== 'ask';
-  b.textContent = { ask: tr('AI 번역 켜기', 'Turn on AI translation'), loading: tr('AI 번역 준비 중…', 'Preparing AI translation…'), on: tr('AI 번역 켜짐', 'AI translation on') }[aiState] || '';
+  } catch (e) { aiState = 'off'; }
 }
 async function aiTranslate(text) {
   if (aiCache.has(text)) return aiCache.get(text);
@@ -136,10 +129,10 @@ function highlight(feed, words) {
 }
 
 function render() {
-  const ch = Number($('mg-channel').value) || 0, q = $('mg-search').value.trim().toLowerCase(), once = $('mg-once').checked;
+  // No filter row any more: only the search box, and repeats of the same line are always folded.
+  const ch = 0, q = $('mg-search').value.trim().toLowerCase(), once = true;
   const seen = new Set();
   const list = rows.filter((r) => {
-    if (intent === 'item' ? !['item', 'double'].includes(r.kind) : intent && r.intent !== intent) return false;
     if (ch && r.channel !== ch) return false;
     // Search covers the nick, the text, and the Korean names of the items it mentions, every word anywhere.
     if (q && !q.split(/\s+/).every((w) => haystack(r).includes(w))) return false;
@@ -160,7 +153,7 @@ function render() {
     focused = true;
   }
   fillAi();
-  $('mg-count').textContent = q || ch || intent ? tr('{n}개 찾음', '{n} found', { n: list.length }) : tr('최근 {n}개', 'Latest {n}', { n: list.length });
+  $('mg-count').textContent = q || ch ? tr('{n}개 찾음', '{n} found', { n: list.length }) : tr('최근 {n}개', 'Latest {n}', { n: list.length });
   $('mg-empty').hidden = rows.length > 0;
 }
 
@@ -192,15 +185,7 @@ async function poll() {
   } catch (e) {}
 }
 
-root.querySelector('.mg-filters .chips').addEventListener('click', (e) => {
-  const b = e.target.closest('[data-intent]');
-  if (!b) return;
-  intent = b.dataset.intent;
-  root.querySelectorAll('[data-intent]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-  render();
-  track('mega_filter', { intent: intent || 'all' });
-});
-['mg-channel', 'mg-search', 'mg-once'].forEach((id) => $(id).addEventListener(id === 'mg-search' ? 'input' : 'change', render));
+$('mg-search').addEventListener('input', render);
 $('mg-feed').addEventListener('click', async (e) => {
   const b = e.target.closest('.mg-copy');
   if (!b) return;
@@ -209,5 +194,4 @@ $('mg-feed').addEventListener('click', async (e) => {
 });
 
 loadItems().then(() => { poll(); setInterval(poll, POLL_MS); setupAi(); });
-$('mg-ai')?.addEventListener('click', () => setupAi(true));
 setInterval(() => document.querySelectorAll('#mg-feed time').length && render(), 30000);
