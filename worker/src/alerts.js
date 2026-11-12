@@ -66,6 +66,8 @@ async function vapidHeader(env, endpoint) {
 // Scheduled: match watched prices against listings seen in the last 30 minutes.
 export async function checkAlerts(env) {
   if (!env.VAPID_PRIVATE_JWK || !env.VAPID_PUBLIC) return { sent: 0 };
+  // With no alerts registered (the feature is off) the listings join is never run.
+  if (!(await env.DB.prepare('SELECT 1 FROM alerts LIMIT 1').first())) return { sent: 0 };
   const { results } = await env.DB.prepare(`SELECT a.id, a.endpoint, a.item, a.name, a.price AS want, a.lang, l.price, l.channel, l.room, l.seller
     FROM alerts a JOIN listings l ON l.item = a.item AND l.sold = 0 AND l.last_seen >= datetime('now', '-30 minutes') AND l.price <= a.price
     WHERE a.fired_at IS NULL OR a.fired_at < datetime('now', '${REST}')

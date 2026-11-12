@@ -87,14 +87,14 @@ export async function megaphoneAsks(env, ids) {
   return out;
 }
 
-// Pattern content for the home and megaphone pages (snapshot once an hour, to keep D1 reads small): the items named most in the last 24
+// Pattern content for the home and megaphone pages (snapshot every three hours by the schedule, to keep D1 reads small): the items named most in the last 24
 // hours with their change against the day before, how many sell vs buy, the busiest callers today, and megaphones per
-// hour over the last 3 days. Only what was read from the game; names and ids are resolved by the pages.
+// hour over the last day. Only what was read from the game; names and ids are resolved by the pages.
 export async function megaphoneStats(env) {
   const [day, prev, hourly, callers, total] = await Promise.all([
     env.DB.prepare("SELECT item, COUNT(*) n, SUM(intent='sell') sell, SUM(intent='buy') buy FROM megaphones WHERE item IS NOT NULL AND seen_at >= datetime('now','-1 day') GROUP BY item ORDER BY n DESC LIMIT 40").all(),
     env.DB.prepare("SELECT item, COUNT(*) n FROM megaphones WHERE item IS NOT NULL AND seen_at >= datetime('now','-2 day') AND seen_at < datetime('now','-1 day') GROUP BY item").all(),
-    env.DB.prepare("SELECT strftime('%Y-%m-%dT%H', seen_at) h, COUNT(*) n FROM megaphones WHERE seen_at >= datetime('now','-3 day') GROUP BY h ORDER BY h").all(),
+    env.DB.prepare("SELECT strftime('%Y-%m-%dT%H', seen_at) h, COUNT(*) n FROM megaphones WHERE seen_at >= datetime('now','-1 day') GROUP BY h ORDER BY h").all(),
     env.DB.prepare("SELECT nick, COUNT(*) n, COUNT(DISTINCT item) items FROM megaphones WHERE seen_at >= datetime('now','-1 day') GROUP BY nick ORDER BY n DESC LIMIT 10").all(),
     env.DB.prepare("SELECT COUNT(*) n, COUNT(DISTINCT nick) nicks, SUM(item IS NOT NULL) withItem FROM megaphones WHERE seen_at >= datetime('now','-1 day')").first(),
   ]);

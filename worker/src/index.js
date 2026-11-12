@@ -245,7 +245,11 @@ const api = {
   async scheduled(event, env, ctx) {
     ctx.waitUntil(freshSnapshot(env, 'market', 0).then((data) => data || refreshSnapshot(env)));
     ctx.waitUntil(refreshRank(env).catch(() => null));
-    ctx.waitUntil(pruneMegaphones(env).catch(() => null));
+    // Once a day (the 16:00 UTC run, a quiet hour in Korea): old megaphones are dropped by a table scan, and the
+    // megaphone trend snapshot is refreshed every three hours. Both are read-heavy, so they are not run on every tick.
+    const now = new Date();
+    if (now.getUTCHours() === 16 && now.getUTCMinutes() < 15) ctx.waitUntil(pruneMegaphones(env).catch(() => null));
+    if (now.getUTCHours() % 3 === 0 && now.getUTCMinutes() < 15) ctx.waitUntil(megaphoneStats(env).then((d) => env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('mega-stats',?,datetime('now'))").bind(JSON.stringify(d)).run()).catch(() => null));
     ctx.waitUntil(checkAlerts(env).catch(() => null));
   },
 
@@ -384,7 +388,8 @@ const api = {
     }
 
     if (url.pathname === '/megaphones/stats' && req.method === 'GET') {
-      const data = (await freshSnapshot(env, 'mega-stats', 60)) || (await megaphoneStats(env).then(async (d) => {
+      // Served from the snapshot the schedule writes every three hours; computed on demand only when none exists yet.
+      const data = (await freshSnapshot(env, 'mega-stats', 240)) || (await megaphoneStats(env).then(async (d) => {
         await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('mega-stats',?,datetime('now'))").bind(JSON.stringify(d)).run();
         return d;
       }));
