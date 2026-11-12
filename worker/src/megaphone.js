@@ -31,7 +31,8 @@ export function validMegaphone(r, now = Date.now()) {
     Number.isFinite(seen) && seen <= now + 60000 && now - seen < 3600000;
 }
 
-export async function postMegaphones(req, env, itemNames) {
+// onNew(rows) is handed the rows that were actually inserted (repeats left out), for the Discord feed.
+export async function postMegaphones(req, env, itemNames, onNew) {
   if (!env.MEGAPHONE_TOKEN) return reply({ error: 'megaphones not configured' }, 503);
   const auth = req.headers.get('Authorization') || '';
   if (auth.length > 256 || (await digest(auth)) !== (await digest(`Bearer ${env.MEGAPHONE_TOKEN}`))) return reply({ error: 'unauthorized' }, 401);
@@ -47,7 +48,9 @@ export async function postMegaphones(req, env, itemNames) {
     return insert.bind(stamp(r.seen), r.kind, r.color ?? null, r.channel ?? null, r.nick, text, await digest(`${r.nick}|${text.toLowerCase()}|${Math.floor(Date.parse(r.seen) / 600000)}`), p.item, p.intent, p.price);
   }));
   const results = await env.DB.batch(stmts);
-  return reply({ ok: true, accepted: results.filter((x) => x.meta.changes > 0).length });
+  const fresh = rows.filter((_, i) => results[i].meta.changes > 0);
+  if (fresh.length && onNew) onNew(fresh.map((r) => ({ ...r, text: r.text.trim() })));
+  return reply({ ok: true, accepted: fresh.length });
 }
 
 export async function listMegaphones(env, params) {

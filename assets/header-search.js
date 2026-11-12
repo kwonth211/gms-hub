@@ -42,7 +42,7 @@ if (btn) {
     cursor = 0;
     list.innerHTML = hits.length
       ? hits.map((e, i) => `<li role="option" aria-selected="${i === cursor}"><a href="${esc(e.href)}" data-hs-type="${e.type}">${e.icon ? `<img src="${esc(e.icon)}" width="28" height="28" alt="" loading="lazy">` : '<span class="hs-ico" aria-hidden="true">›</span>'}<span class="hs-name">${esc(e.title)}${e.sub ? `<small>${esc(e.sub)}</small>` : ''}</span><span class="hs-type">${TYPE[e.type]()}</span></a></li>`).join('')
-      : `<li class="hs-empty">${tr('찾는 결과가 없어요. 한글·영문·초성(ㅈㄱ)·줄임말(장공)로도 찾아져요.', 'No match. Korean, English, initials and short names work too.')}</li>`;
+      : `<li class="hs-empty">${tr('찾는 결과가 없어요. 한글·영문·초성(ㅈㄱ)·줄임말(장공)로도 찾아져요.', 'No match. Korean, English, initials and short names work too.')}${document.body.dataset.discordUrl ? ` <a href="${esc(document.body.dataset.discordUrl)}" target="_blank" rel="noopener" data-discord="search-empty">${tr('디스코드에서 물어보기', 'Ask on Discord')}</a>` : ''}</li>`;
   }
   const move = (d) => {
     if (!hits.length) return;

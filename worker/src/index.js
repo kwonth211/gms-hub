@@ -23,6 +23,7 @@ import { cachedPublicResponse } from './public-cache.js';
 import { Presence, handlePresence } from './presence.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
 import { validRoom } from '../../assets/place.js';
+import { megaphonesToDiscord, trendsToDiscord } from './discord.js';
 import { postMegaphones, listMegaphones, pruneMegaphones, megaphoneAsks, megaphoneStats } from './megaphone.js';
 import { createAlert, listAlerts, deleteAlert, takeHits, checkAlerts } from './alerts.js';
 export { Presence };
@@ -57,7 +58,7 @@ const WINDOW = "datetime('now', '-14 days')";
 const ITEMS_URL = 'https://gms-hub.com/assets/items.json';
 
 // Tradeable item ids, loaded from the site's own item index once per worker instance, so a forged scan cannot invent items.
-let itemIds = null, itemNamesMap = null, itemCats = null;
+let itemIds = null, itemNamesMap = null, itemCats = null, itemLabels = null;
 async function loadItems() {
   if (itemIds) return;
   const r = await fetch(ITEMS_URL, { cf: { cacheTtl: 3600 } });
@@ -67,10 +68,12 @@ async function loadItems() {
   // English name → id (for megaphones) and id → category (Equip, Use, Etc, Setup, Cash).
   itemNamesMap = new Map(rows.map((row) => [String(row[2]).toLowerCase(), row[0]]));
   itemCats = new Map(rows.map((row) => [row[0], row[3]]));
+  itemLabels = new Map(rows.map((row) => [row[0], String(row[2])]));
 }
 async function knownItems() { await loadItems(); return itemIds; }
 async function itemNames() { await loadItems(); return itemNamesMap; }
 async function itemCategories() { await loadItems(); return itemCats; }
+async function itemLabel() { await loadItems().catch(() => null); return (id) => itemLabels?.get(id); }
 
 const median = (xs) => {
   const s = [...xs].sort((a, b) => a - b);
@@ -249,11 +252,15 @@ const api = {
     // trend snapshot is refreshed once an hour. Both are read-heavy, so they are not run on every tick.
     const now = new Date();
     if (now.getUTCHours() === 16 && now.getUTCMinutes() < 15) ctx.waitUntil(pruneMegaphones(env).catch(() => null));
-    if (now.getUTCMinutes() < 15) ctx.waitUntil(megaphoneStats(env).then((d) => env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('mega-stats',?,datetime('now'))").bind(JSON.stringify(d)).run()).catch(() => null));
+    // Four times a day (00, 06, 12, 18 UTC) the same snapshot also goes to the Discord trends channel.
+    if (now.getUTCMinutes() < 15) ctx.waitUntil(megaphoneStats(env).then(async (d) => {
+      await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('mega-stats',?,datetime('now'))").bind(JSON.stringify(d)).run();
+      if (now.getUTCHours() % 6 === 0) await trendsToDiscord(env, d, await itemLabel());
+    }).catch(() => null));
     ctx.waitUntil(checkAlerts(env).catch(() => null));
   },
 
-  async fetch(req, env) {
+  async fetch(req, env, ctx) {
     const url = new URL(req.url);
     const origin = req.headers.get('Origin') || '';
     const cors = corsHeaders(origin);
@@ -264,7 +271,7 @@ const api = {
       const allow = { ...corsHeaders(req.headers.get('Origin') || ''), 'Access-Control-Allow-Headers': 'Content-Type, Authorization' };
       if (req.method === 'OPTIONS') return new Response(null, { headers: allow });
       if (req.method !== 'POST') return json({ error: 'method not allowed' }, allow, 405);
-      const r = await postMegaphones(req, env, itemNames);
+      const r = await postMegaphones(req, env, itemNames, (rows) => { const p = megaphonesToDiscord(env, rows); if (ctx?.waitUntil) ctx.waitUntil(p); });
       for (const [k, v] of Object.entries(allow)) r.headers.set(k, v);
       return r;
     }

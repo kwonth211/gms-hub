@@ -785,7 +785,7 @@ function withTopAd(body, ads) {
 function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], modules = [], ld = [], only, noindex }) {
   const ads = ADFIT_PAGES.has(pageKey) && !noindex && Object.values(config.adfit || {}).some(Boolean);
   return `${head({ lang, title, desc, pagePath, ld, only, noindex })}
-<body data-page="${pageKey}" data-price-api="${esc(config.voteApi)}" data-tips="${esc(href('/assets/item-tips.json'))}" data-sprites="${esc(href('/assets/monsters/'))}">
+<body data-page="${pageKey}" data-price-api="${esc(config.voteApi)}"${config.discord ? ` data-discord-url="${esc(config.discord)}"` : ''} data-tips="${esc(href('/assets/item-tips.json'))}" data-sprites="${esc(href('/assets/monsters/'))}">
 ${header(lang, pagePath, only)}
 <main>${ads && pageKey !== 'home' ? adfitRails() : ''}${withTopAd(body, ads)}${ads ? adfitSlot() : ''}</main>
 ${footer(lang)}
@@ -1080,7 +1080,7 @@ ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이�
 </div>
 <div id="search-item-state" class="search-item-state" hidden><span></span> <button type="button" id="search-retry" hidden>${lang === 'ko' ? '다시 불러오기' : 'Retry'}</button></div>
 <div id="search-groups"></div>
-<p id="search-empty" class="search-empty" hidden>${lang === 'ko' ? '일치하는 결과가 없어요. 더 짧은 이름이나 영문 이름으로 검색해 보세요.' : 'No matches. Try a shorter name or an English item name.'}</p>
+<p id="search-empty" class="search-empty" hidden>${lang === 'ko' ? '일치하는 결과가 없어요. 더 짧은 이름이나 영문 이름으로 검색해 보세요.' : 'No matches. Try a shorter name or an English item name.'}${config.discord ? ` <a href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="search-empty">${DISCORD_ICON(14)}${lang === 'ko' ? '디스코드에서 물어보기' : 'Ask on Discord'}</a>` : ''}</p>
 </section>
 </div>
 <p class="search-help" id="search-help">${lang === 'ko' ? '한글·영문·초성·줄임말로 검색하세요. 예: 귀힘, 미스릴, 좀비 루팡, 사냥터' : 'Search by name or keyword. Try Gloves Attack, Mithril, Zombie Lupin or training.'}</p>
