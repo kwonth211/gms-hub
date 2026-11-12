@@ -178,24 +178,62 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   });
 })();
 
-// Megaphone ticker above the header: the latest game megaphones scroll past; each one opens the megaphone page focused on it. The list is
-// written twice so the loop has no seam, and the speed follows its length. It holds still on hover or focus, and does not
-// move for reduced motion or with the site's animations turned off (then it scrolls by hand).
+// Megaphone ticker above the header: the latest game megaphones scroll past; each one opens the megaphone page focused on
+// it. The list is written twice so the loop has no seam, and the speed follows its length. It holds still on hover or
+// focus, and does not move for reduced motion or with the site's animations turned off (then it scrolls by hand).
+// Outside English the text is translated by the browser's on-device translator when it is already on this device (the
+// ticker never starts a download); Korean otherwise gets the plain reading of the trade shorthand.
 (() => {
   const box = document.querySelector('.mg-ticker');
   const api = document.body.dataset.priceApi;
   if (!box || !api) return;
+  const lang = box.dataset.lang;
+  const textModule = new URL('mega-text.js', document.currentScript.src).href;
   const run = box.querySelector('.mg-tk-run');
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-  const clock = (seen) => new Date(Date.parse(`${seen.replace(' ', 'T')}Z`)).toLocaleTimeString(box.dataset.lang, { hour: '2-digit', minute: '2-digit', hour12: false });
+  const clock = (seen) => new Date(Date.parse(`${seen.replace(' ', 'T')}Z`)).toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit', hour12: false });
+  // The channel is shown up front, so the same channel written again in the message ("FM CH30", "ch 30") is dropped.
+  const noChannel = (text, ch) => (ch ? text.replace(new RegExp(`\\s*\\b(?:ch(?:annel)?\\.?\\s*0?${ch})\\b[,.]?`, 'gi'), '').trim() : text);
+  const short = (t) => (t.length > 90 ? `${t.slice(0, 88)}…` : t);
+  let reader = null;
+  const getReader = () => (reader ||= (async () => {
+    if (lang === 'en') return null;
+    const mod = await import(textModule).catch(() => null);
+    if (!mod) return null;
+    let translator = null;
+    try {
+      if ('Translator' in self && (await self.Translator.availability({ sourceLanguage: 'en', targetLanguage: lang })) === 'available')
+        translator = await self.Translator.create({ sourceLanguage: 'en', targetLanguage: lang });
+    } catch (e) {}
+    const cache = new Map();
+    return async (text) => {
+      if (translator) {
+        const item = /^\s*\[[^\]]*\]\s*/.exec(text)?.[0] || '';
+        const src = mod.plain(text);
+        if (!src) return text;
+        if (!cache.has(src)) cache.set(src, translator.translate(src).catch(() => ''));
+        const out = await cache.get(src);
+        if (out) return `${item}${out}`;
+      }
+      if (lang !== 'ko') return text;
+      let out = text;
+      for (const [re, to] of mod.GLOSS) out = out.replace(re, to);
+      return out;
+    };
+  })());
   let lastId = 0;
   async function load() {
     let rows = [];
     try { rows = (await (await fetch(`${api}/megaphones?limit=20`)).json()).rows || []; } catch (e) { return; }
     if (!rows.length || rows[0].id === lastId) return;
     lastId = rows[0].id;
+    const read = await getReader();
     const icon = box.querySelector('.mg-tk-icon')?.innerHTML || '';
-    const items = rows.map((r) => `<a class="mg-tk-item mg-tk-${esc(r.color || 'Y')}" href="${box.dataset.href}?m=${Number(r.id)}" tabindex="-1">${icon}<time>${clock(r.seen)}</time>${r.channel ? `<b>CH${r.channel}</b>` : ''}<strong>${esc(r.nick)}</strong><span>${esc(r.text.length > 90 ? `${r.text.slice(0, 88)}…` : r.text)}</span></a>`).join('');
+    const texts = await Promise.all(rows.map(async (r) => {
+      const original = noChannel(r.text, r.channel);
+      return [original, read ? await read(original).catch(() => original) : original];
+    }));
+    const items = rows.map((r, i) => `<a class="mg-tk-item mg-tk-${esc(r.color || 'Y')}" href="${box.dataset.href}?m=${Number(r.id)}" tabindex="-1"${texts[i][1] !== texts[i][0] ? ` title="${esc(texts[i][0])}"` : ''}>${icon}${r.channel ? `<b>CH${r.channel}</b>` : ''}<time>${clock(r.seen)}</time><strong>${esc(r.nick)}</strong><span>${esc(short(texts[i][1]))}</span></a>`).join('');
     run.innerHTML = `<div class="mg-tk-set">${items}</div><div class="mg-tk-set" aria-hidden="true">${items}</div>`;
     run.style.setProperty('--tk-dur', `${Math.max(40, Math.round(run.firstChild.scrollWidth / 60))}s`);
     box.classList.add('ready');

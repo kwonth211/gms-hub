@@ -709,7 +709,7 @@ function moreMenu(lang) {
 function megaTicker(lang) {
   const ko = lang === 'ko';
   const url = href(langPath(lang, '/megaphone/'));
-  return `<div class="mg-ticker" data-href="${url}" data-lang="${lang}"><a class="mg-tk-label" href="${url}"><i class="pr-dot" aria-hidden="true"></i>${spriteSvg('megaphone', 18)}${ko ? '실시간 고확' : 'Live megaphones'}</a><div class="mg-tk-track" aria-label="${ko ? '최근 게임 확성기' : 'Latest game megaphones'}"><div class="mg-tk-run"></div></div><template class="mg-tk-icon">${spriteSvg('megaphone', 14)}</template></div>`;
+  return `<div class="mg-ticker" data-href="${url}" data-lang="${lang}"><a class="mg-tk-label" href="${url}">${spriteSvg('megaphone', 18)}${ko ? '실시간 고확' : 'Live megaphones'}</a><div class="mg-tk-track" aria-label="${ko ? '최근 게임 확성기' : 'Latest game megaphones'}"><div class="mg-tk-run"></div></div><template class="mg-tk-icon">${spriteSvg('megaphone', 14)}</template></div>`;
 }
 
 // Live viewer count (assets/common.js fills it from the worker's presence room). Hidden until someone else is on the site,
