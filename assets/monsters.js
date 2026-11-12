@@ -6,6 +6,23 @@ document.querySelectorAll('.monster-page form').forEach(form => form.addEventLis
 
 if ($('monster-index')) {
   const cards = [...document.querySelectorAll('[data-monster]')];
+  // Card or list layout. The list (one monster per row, like NiaDB's tables) is the default: on cards only about six
+  // monsters fit a screen, and 60% of visits to this page left quickly. The choice is remembered.
+  const grid = $('monster-grid');
+  const views = document.createElement('div');
+  views.className = 'monster-views';
+  views.setAttribute('role', 'group');
+  views.innerHTML = `<button type="button" data-mview="list">${ko ? '목록' : tx('List')}</button><button type="button" data-mview="cards">${ko ? '카드' : tx('Cards')}</button>`;
+  $('monster-reset')?.before(views);
+  const setView = (v) => {
+    grid.classList.toggle('compact', v === 'list');
+    views.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.mview === v));
+    try { localStorage.setItem('gms-mob-view', v); } catch (e) {}
+  };
+  let savedView = 'list';
+  try { savedView = localStorage.getItem('gms-mob-view') || 'list'; } catch (e) {}
+  setView(savedView);
+  views.addEventListener('click', (e) => { const b = e.target.closest('[data-mview]'); if (b) { setView(b.dataset.mview); window.track?.('monster_view', { view: b.dataset.mview }); } });
   const entries = cards.map((el,id)=>indexEntry({id,title:el.dataset.name,names:[el.dataset.search]}));
   const query = $('monster-query'), level = $('monster-level'), type = $('monster-type'), sort = $('monster-sort'), unavailable = $('monster-unavailable');
   function render() {

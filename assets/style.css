@@ -2051,3 +2051,25 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-near span { font-weight: 700; font-size: 0.86rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mb-near small { display: block; font-weight: 500; color: var(--muted); font-size: 0.74rem; }
 .mb-near b { font-variant-numeric: tabular-nums; font-size: 0.86rem; }
+/* Monster list layout: one row per monster. */
+.monster-views { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; margin-right: 8px; }
+.monster-views button { font: inherit; font-size: 0.8rem; padding: 4px 12px; border: 0; background: none; color: var(--muted); cursor: pointer; }
+.monster-views button[aria-pressed="true"] { background: var(--accent-fill); color: var(--accent-ink); font-weight: 700; }
+.monster-views button:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.monster-grid.compact { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+.monster-grid.compact .monster-card { display: grid; grid-template-columns: minmax(200px, 1.4fr) minmax(0, 1fr) minmax(240px, 1.3fr) 110px; align-items: center; gap: 4px 14px; padding: 6px 12px; border-radius: 10px; }
+.monster-grid.compact .monster-card-link { gap: 10px; }
+.monster-grid.compact .monster-sprite { width: 40px; height: 40px; object-fit: contain; }
+.monster-grid.compact .monster-card-link strong { font-size: 0.98rem; }
+.monster-grid.compact .monster-arrow { display: none; }
+.monster-grid.compact .monster-tags { margin: 0; }
+.monster-grid.compact .monster-card-stats { display: flex; gap: 16px; margin: 0; padding: 0; border: 0; }
+.monster-grid.compact .monster-card-stats div { display: flex; flex-direction: column; }
+.monster-grid.compact .monster-card-stats dd { font-size: 0.92rem; margin: 0; }
+.monster-grid.compact .monster-card > p { margin: 0; text-align: right; }
+@media (max-width: 760px) {
+  .monster-grid.compact .monster-card { grid-template-columns: minmax(0, 1fr) auto; }
+  .monster-grid.compact .monster-tags { grid-column: 1 / -1; grid-row: 3; }
+  .monster-grid.compact .monster-card-stats { grid-column: 1 / -1; }
+  .monster-grid.compact .monster-card > p { grid-column: 2; grid-row: 1; }
+}
