@@ -506,6 +506,8 @@ function mesos(n) {
 
 // D1 timestamps are UTC without a zone marker.
 function ago(utc) {
+  // A megaphone-based price has no last sale time.
+  if (!utc) return '';
   const s = Math.max(0, (Date.now() - Date.parse(`${utc.replace(' ', 'T')}Z`)) / 1000);
   if (s < 60) return liveRtf.format(0, 'second');
   if (s < 3600) return liveRtf.format(-Math.floor(s / 60), 'minute');
@@ -756,7 +758,7 @@ async function renderMine() {
   } catch (e) {}
   const chip = (id, kind) => {
     const it = index.get(id), p = summary[id];
-    return `<a class="mine-chip" href="${live.dataset.price}?item=${id}&src=home" data-kind="${kind}" data-item="${id}"><img src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="22" height="22" loading="lazy"><span class="mine-name">${escHtml(it.name)}</span>${p?.median ? `<b>${mesos(p.median)}</b><small>${priceBasis[p.basis]} · ${ago(p.last)}</small>` : `<small>${escHtml(liveText.noTrend)}</small>`}</a>`;
+    return `<a class="mine-chip" href="${live.dataset.price}?item=${id}&src=home" data-kind="${kind}" data-item="${id}"><img src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="22" height="22" loading="lazy"><span class="mine-name">${escHtml(it.name)}</span>${p?.median ? `<b>${mesos(p.median)}</b><small>${priceBasis[p.basis]}${p.last ? ` · ${ago(p.last)}` : ''}</small>` : `<small>${escHtml(liveText.noTrend)}</small>`}</a>`;
   };
   const group = (title, ids, kind) => ids.length ? `<div class="mine-group"><h4>${escHtml(title)} <span>${ids.length}</span></h4><div class="mine-row">${ids.map((id) => chip(id, kind)).join('')}</div></div>` : '';
   mine.innerHTML = `<div class="mine-head"><h3>${escHtml(liveText.mine)}</h3><a href="${live.dataset.price}?view=items">${escHtml(liveText.mineAll)}</a></div>${group(liveText.mineWish, wish, 'wishlist')}${group(liveText.mineRecent, recentIds, 'recent')}<p class="muted small">${escHtml(liveText.mineNote)}</p>`;
