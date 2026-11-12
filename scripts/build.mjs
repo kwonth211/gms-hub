@@ -735,7 +735,7 @@ function moreMenu(lang, moved = []) {
     ['/contact/', ko ? '문의·협찬·후원' : 'Contact and support']
   ].filter(Boolean);
   const label = ko ? '더보기' : 'More';
-  return `<details class="more-menu"><summary class="more-btn" aria-label="${label}"><span class="more-bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="more-label">${label}</span></summary><div class="more-list">${links.map(([p, name]) => `<a class="lang-opt" href="${href(langPath(lang, p))}">${name}</a>`).join('')}<button type="button" class="lang-opt more-theme" data-theme-toggle>${ko ? '낮·밤 화면 바꾸기' : 'Switch day or night theme'}</button><button type="button" class="lang-opt more-charm" data-charm-toggle><span class="charm-on-label">${ko ? '낙엽·움직이는 효과 끄기' : 'Turn off falling leaves and effects'}</span><span class="charm-off-label">${ko ? '낙엽·움직이는 효과 켜기' : 'Turn on falling leaves and effects'}</span></button></div></details>`;
+  return `<details class="more-menu"><summary class="more-btn" aria-label="${label}"><span class="more-bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="more-label">${label}</span></summary><div class="more-list">${links.map(([p, name]) => `<a class="lang-opt" href="${href(langPath(lang, p))}">${name}</a>`).join('')}${config.discord ? `<a class="lang-opt" href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="menu">${ko ? '디스코드 커뮤니티' : 'Discord community'}</a>` : ''}<button type="button" class="lang-opt more-theme" data-theme-toggle>${ko ? '낮·밤 화면 바꾸기' : 'Switch day or night theme'}</button><button type="button" class="lang-opt more-charm" data-charm-toggle><span class="charm-on-label">${ko ? '낙엽·움직이는 효과 끄기' : 'Turn off falling leaves and effects'}</span><span class="charm-off-label">${ko ? '낙엽·움직이는 효과 켜기' : 'Turn on falling leaves and effects'}</span></button></div></details>`;
 }
 
 // A strip above the header, on every page, that scrolls the latest game megaphones (assets/common.js fills it from
@@ -766,7 +766,7 @@ function footer(lang) {
 <div class="footer-brand">${spriteSvg('mushroom', 24)}<strong>GMS Hub</strong></div>
 <p>${esc(t.footerDisclaimer)}</p>
 <p><button type="button" class="charm-toggle" data-charm-toggle><span class="charm-on-label">${lang === 'ko' ? '움직이는 효과 끄기' : 'Turn off animations'}</span><span class="charm-off-label">${lang === 'ko' ? '움직이는 효과 켜기' : 'Turn on animations'}</span></button></p>
-<p>${guides.some((g) => g.lang === lang) ? `<a href="${href(langPath(lang, '/guides/'))}">${t.navGuides}</a> · ` : ''}<a href="${href(langPath(lang, '/about/'))}">${t.navAbout}</a> · <a href="${href(langPath(lang, '/privacy/'))}">${t.privacy}</a> · <a href="${href(langPath(lang, '/terms/'))}">${t.terms}</a> · <a href="${href(langPath(lang, '/contact/'))}">${lang === 'ko' ? '문의·협찬·후원' : 'Contact and support'}</a> · <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub</a>${config.support?.kofi ? ` · <a href="${esc(config.support.kofi)}" target="_blank" rel="noopener" data-support="kofi">${lang === 'ko' ? '커피 한 잔 사 주기' : 'Buy me a coffee'}</a>` : ''}</p>
+<p>${guides.some((g) => g.lang === lang) ? `<a href="${href(langPath(lang, '/guides/'))}">${t.navGuides}</a> · ` : ''}<a href="${href(langPath(lang, '/about/'))}">${t.navAbout}</a> · <a href="${href(langPath(lang, '/privacy/'))}">${t.privacy}</a> · <a href="${href(langPath(lang, '/terms/'))}">${t.terms}</a> · <a href="${href(langPath(lang, '/contact/'))}">${lang === 'ko' ? '문의·협찬·후원' : 'Contact and support'}</a> · <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub</a>${config.discord ? ` · <a href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="footer">${lang === 'ko' ? '디스코드' : 'Discord'}</a>` : ''}${config.support?.kofi ? ` · <a href="${esc(config.support.kofi)}" target="_blank" rel="noopener" data-support="kofi">${lang === 'ko' ? '커피 한 잔 사 주기' : 'Buy me a coffee'}</a>` : ''}</p>
 </div></footer>`;
 }
 
@@ -2156,7 +2156,10 @@ function contactBody(lang) {
   return `<article class="wrap prose contact-page"><h1>${tr('문의·협찬·후원', 'Contact, sponsorship and support')}</h1>
 <p>${tr('GMS Hub는 한 사람이 운영하는 비공식 팬 사이트예요. 아래 중 맞는 창구로 연락 주세요. 보통 2~3일 안에 답장드려요.', 'GMS Hub is an unofficial fan site run by one person. Pick the channel that fits below; replies usually take two or three days.')}</p>
 <div class="contact-grid">
-<section class="panel contact-card"><h2>${tr('오류 제보·데이터 수정', 'Bug reports and data fixes')}</h2>
+${config.discord ? `<section class="panel contact-card"><h2>${tr('디스코드 커뮤니티', 'Discord community')}</h2>
+<p>${tr('질문, 시세·파티 이야기, 사이트 건의와 오류 제보를 디스코드에서 바로 나눌 수 있어요. 사이트 업데이트 소식도 여기에 먼저 올려요.', 'Ask questions, talk prices and parties, and send site feedback or bug reports on Discord. Site updates are posted there first.')}</p>
+<p class="contact-actions"><a class="btn small-btn" href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="contact">${tr('디스코드 참여하기', 'Join the Discord')}</a></p></section>
+` : ''}<section class="panel contact-card"><h2>${tr('오류 제보·데이터 수정', 'Bug reports and data fixes')}</h2>
 <p>${tr('가격·드롭·사냥터 정보가 틀렸거나 페이지가 깨졌다면 알려 주세요. 어느 페이지의 무엇인지 적어 주시면 빨리 고칠 수 있어요.', 'Wrong prices, drops or training spots, or a broken page: tell us which page and what is wrong.')}</p>
 <p class="contact-actions"><a class="btn small-btn" href="${mail(tr('[GMS Hub] 오류 제보', '[GMS Hub] Bug report'))}">${tr('메일로 제보', 'Report by email')}</a><a class="btn ghost small-btn" href="${issuesUrl}" target="_blank" rel="noopener">${tr('GitHub에 남기기', 'Open a GitHub issue')}</a></p></section>
 <section class="panel contact-card"><h2>${tr('광고·협찬·제휴 문의', 'Advertising, sponsorship and partnerships')}</h2>
