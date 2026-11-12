@@ -593,15 +593,17 @@ function head({ lang, title, desc, pagePath, noindex, ld = [], only }) {
     ? `<meta name="google-adsense-account" content="${esc(config.adsenseClient)}">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${esc(config.adsenseClient)}" crossorigin="anonymous"></script>`
     : '';
+  // Analytics load after the page has (GA 1.2s after load, Clarity 2.5s): their queues (dataLayer, clarity.q) hold
+  // anything sent before, so nothing is lost, and the first paint no longer waits behind 200KB of tag scripts.
   const ga = config.gaMeasurementId
-    ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${esc(config.gaMeasurementId)}"></script>
+    ? `<script>addEventListener('load',function(){setTimeout(function(){var s=document.createElement('script');s.async=1;s.src='https://www.googletagmanager.com/gtag/js?id=${esc(config.gaMeasurementId)}';document.head.appendChild(s)},1200)})</script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());
 // Operator, local and automated visits are tagged internal (GA4 "Internal traffic" filter): localhost, or any browser that once opened ?internal=1.
 var gmsInternal=/^(localhost|127\\.0\\.0\\.1|\\[::1\\])$/.test(location.hostname);try{if(/[?&]internal=1(&|$)/.test(location.search))localStorage.setItem('gmshub_internal','1');gmsInternal=gmsInternal||localStorage.getItem('gmshub_internal')==='1'}catch(e){}
 gtag('config','${esc(config.gaMeasurementId)}',gmsInternal?{traffic_type:'internal'}:{});</script>`
     : '';
   const clarity = config.clarityProjectId
-    ? `<script>(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","${esc(config.clarityProjectId)}");</script>`
+    ? `<script>(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};addEventListener('load',function(){setTimeout(function(){t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)},2500)})})(window,document,"clarity","script","${esc(config.clarityProjectId)}");</script>`
     : '';
   const cfBeacon = config.cfAnalyticsToken
     ? `<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "${esc(config.cfAnalyticsToken)}"}'></script>`
@@ -642,7 +644,7 @@ ${naverVerify}
 <link rel="apple-touch-icon" href="${href('/assets/icon-180.png')}">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="preconnect" href="${esc(config.voteApi)}" crossorigin>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preload" as="style" href="${PRETENDARD}" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="${PRETENDARD}"></noscript>
 <link rel="stylesheet" href="${scriptSrc('style.css')}">
 <style>${CHARM_VARS}</style>
 <script type="speculationrules">${SPECULATION}</script>
@@ -740,6 +742,7 @@ function moreMenu(lang, moved = []) {
 // is reserved from the start so nothing below moves when the messages arrive.
 // Same-site links are fetched when the pointer comes down on them or rests on them, so the next page is already here
 // when it opens; together with the cross-document view transition in style.css the site moves like one app.
+const PRETENDARD = 'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css';
 const SPECULATION = JSON.stringify({ prefetch: [{ where: { and: [{ href_matches: '/*' }, { not: { selector_matches: '[target], [download]' } }] }, eagerness: 'moderate' }] });
 
 function megaTicker(lang) {

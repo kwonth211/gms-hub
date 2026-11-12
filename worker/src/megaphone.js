@@ -1,5 +1,5 @@
 // In-game megaphones. The admin collector posts what it reads from a shared game window; the public page polls the
-// newest rows. color is the background band the line was drawn on (Y gold, P pink, C cyan, N none). Writes need MEGAPHONE_TOKEN; rows older than 14 days are dropped by the schedule.
+// newest rows. color is the background band the line was drawn on (Y gold, P pink, C cyan, N none). Writes need MEGAPHONE_TOKEN; rows older than 30 days are dropped by the schedule.
 // At ingest the text is parsed once: the item it names, whether it sells or buys, and the asking price (see parseMegaphone).
 const reply = (body, status = 200, headers = {}) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store', ...headers } });
 const KINDS = new Set(['super', 'item', 'double', 'mega']);
@@ -64,7 +64,7 @@ export async function listMegaphones(env, params) {
   return { rows: results, at: new Date().toISOString() };
 }
 
-export const pruneMegaphones = (env) => env.DB.prepare("DELETE FROM megaphones WHERE seen_at < datetime('now', '-14 days')").run();
+export const pruneMegaphones = (env) => env.DB.prepare("DELETE FROM megaphones WHERE seen_at < datetime('now', '-30 days')").run();
 
 // Asking prices from megaphones for the price summaries: selling megaphones of the last 7 days, outliers past 5x the
 // median dropped, with the middle half of the spread. Meant for consumables, scrolls and cash items, whose megaphone

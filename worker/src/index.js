@@ -245,11 +245,11 @@ const api = {
   async scheduled(event, env, ctx) {
     ctx.waitUntil(freshSnapshot(env, 'market', 0).then((data) => data || refreshSnapshot(env)));
     ctx.waitUntil(refreshRank(env).catch(() => null));
-    // Once a day (the 16:00 UTC run, a quiet hour in Korea): old megaphones are dropped by a table scan, and the
-    // megaphone trend snapshot is refreshed every three hours. Both are read-heavy, so they are not run on every tick.
+    // Once a day (the 16:00 UTC run, a quiet hour in Korea): old megaphones are dropped by a table scan. The megaphone
+    // trend snapshot is refreshed once an hour. Both are read-heavy, so they are not run on every tick.
     const now = new Date();
     if (now.getUTCHours() === 16 && now.getUTCMinutes() < 15) ctx.waitUntil(pruneMegaphones(env).catch(() => null));
-    if (now.getUTCHours() % 3 === 0 && now.getUTCMinutes() < 15) ctx.waitUntil(megaphoneStats(env).then((d) => env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('mega-stats',?,datetime('now'))").bind(JSON.stringify(d)).run()).catch(() => null));
+    if (now.getUTCMinutes() < 15) ctx.waitUntil(megaphoneStats(env).then((d) => env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('mega-stats',?,datetime('now'))").bind(JSON.stringify(d)).run()).catch(() => null));
     ctx.waitUntil(checkAlerts(env).catch(() => null));
   },
 
@@ -329,7 +329,7 @@ const api = {
         else if (mega) out[id] = { n: 0, median: mega.median, basis: 'mega', low: mega.p25, high: mega.p75, last: null, sold: null, selling: null, buying: null, typical, mega };
         else if (t) out[id] = { n: 0, median: t.typical, basis: 'typical', low: null, high: null, last: t.at, sold: null, selling: null, buying: null, typical, mega: null };
       }
-      return json(out, cors, 200, 'public, max-age=30');
+      return json(out, cors, 200, 'public, max-age=120');
     }
 
     if (url.pathname === '/prices/all' && req.method === 'GET') {
@@ -362,13 +362,15 @@ const api = {
       try {
         let data;
         if (url.pathname === '/market/catalog') {
-          const cached = await freshSnapshot(env, 'market-catalog', 5);
+          const cached = await freshSnapshot(env, 'market-catalog', 15);
           data = cached || { ...(await marketCatalog(env)), version: await dataVersion(env) };
           if (!cached) await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('market-catalog',?,datetime('now'))").bind(JSON.stringify(data)).run();
         } else if (url.pathname === '/market/listings') data = await browseListings(env, url.searchParams);
         else if (url.pathname === '/market/reports') data = await browseReports(env, url.searchParams);
         else data = await marketHistory(env, url.searchParams);
         // Edge cache: data changes about hourly, so a minute (catalog five) saves repeat reads without visible lag.
+        // The catalog itself is recomputed at most every 15 minutes (the collector uploads about that often), since each
+        // recomputation reads the whole 7-day listings window.
         return json(data, cors, 200, url.pathname === '/market/catalog' ? 'public, max-age=300' : 'public, max-age=60');
       } catch (e) {
         const invalid = e.message?.startsWith('bad ');
@@ -389,7 +391,7 @@ const api = {
 
     if (url.pathname === '/megaphones/stats' && req.method === 'GET') {
       // Served from the snapshot the schedule writes every three hours; computed on demand only when none exists yet.
-      const data = (await freshSnapshot(env, 'mega-stats', 240)) || (await megaphoneStats(env).then(async (d) => {
+      const data = (await freshSnapshot(env, 'mega-stats', 90)) || (await megaphoneStats(env).then(async (d) => {
         await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('mega-stats',?,datetime('now'))").bind(JSON.stringify(d)).run();
         return d;
       }));
@@ -418,7 +420,7 @@ const api = {
     if (url.pathname === '/market/item' && req.method === 'GET') {
       const item = Number(url.searchParams.get('id'));
       if (!Number.isInteger(item) || item < 1000000 || item > 9999999) return json({ error: 'bad item' }, cors, 400);
-      return json(await itemDetail(env, item), cors, 200, 'public, max-age=30');
+      return json(await itemDetail(env, item), cors, 200, 'public, max-age=120');
     }
 
     if (url.pathname === '/listings/recent' && req.method === 'GET') {

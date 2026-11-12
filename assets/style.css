@@ -2175,3 +2175,8 @@ body.exp-running .exp-stop { display: inline-flex; }
 ::view-transition-old(ticker), ::view-transition-old(header) { opacity: 0; }
 ::view-transition-new(ticker), ::view-transition-new(header) { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }
+
+/* Long lists are laid out only as they come into view: the home directory's categories, monster cards and megaphones.
+   The size hint keeps the scrollbar honest before a block has been laid out. */
+.cat, .faq { content-visibility: auto; contain-intrinsic-size: auto 700px; }
+.monster-card, .mg-msg { content-visibility: auto; contain-intrinsic-size: auto 120px; }

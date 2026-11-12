@@ -11,7 +11,9 @@ const api = document.body.dataset.priceApi;
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const tr = (k, e, vars = {}) => (ko ? k : tx(e, vars)).replace(/\{(\w+)\}/g, (_, v) => vars[v] ?? '');
-const POLL_MS = 5000;
+// New megaphones are asked for every 10 seconds (the ticker on every other page every 60); a megaphone is read from the
+// game about that often anyway.
+const POLL_MS = 10000;
 
 // ?m=<id> (from the header ticker) scrolls to that megaphone once and marks it.
 let focusId = Number(new URLSearchParams(location.search).get('m')) || 0;
