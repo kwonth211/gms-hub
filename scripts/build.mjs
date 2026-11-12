@@ -700,7 +700,7 @@ function moreMenu(lang) {
     ['/about/', ko ? '사이트 소개' : 'About']
   ].filter(Boolean);
   const label = ko ? '더보기' : 'More';
-  return `<details class="more-menu"><summary class="more-btn" aria-label="${label}"><span class="more-bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="more-label">${label}</span></summary><div class="more-list">${links.map(([p, name]) => `<a class="lang-opt" href="${href(langPath(lang, p))}">${name}</a>`).join('')}<button type="button" class="lang-opt more-theme" data-theme-toggle>${ko ? '낮·밤 화면 바꾸기' : 'Switch day or night theme'}</button></div></details>`;
+  return `<details class="more-menu"><summary class="more-btn" aria-label="${label}"><span class="more-bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="more-label">${label}</span></summary><div class="more-list">${links.map(([p, name]) => `<a class="lang-opt" href="${href(langPath(lang, p))}">${name}</a>`).join('')}<button type="button" class="lang-opt more-theme" data-theme-toggle>${ko ? '낮·밤 화면 바꾸기' : 'Switch day or night theme'}</button><button type="button" class="lang-opt more-charm" data-charm-toggle><span class="charm-on-label">${ko ? '낙엽·움직이는 효과 끄기' : 'Turn off falling leaves and effects'}</span><span class="charm-off-label">${ko ? '낙엽·움직이는 효과 켜기' : 'Turn on falling leaves and effects'}</span></button></div></details>`;
 }
 
 // A strip above the header that scrolls the latest game megaphones (assets/common.js fills it from /megaphones); each one

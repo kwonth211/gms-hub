@@ -1708,8 +1708,8 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
   html:not([data-charm='off']) :is(a, button, summary, select, label, [role='button'], [role='tab']) { cursor: var(--cur-on); }
   html:not([data-charm='off']) :is(input, textarea) { cursor: text; }
 }
-.charm-leaves { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
-.charm-leaf { position: absolute; top: -26px; width: 22px; height: 24px; background: var(--leaf) center / contain no-repeat; image-rendering: pixelated; opacity: 0.9;
+.charm-leaves { position: fixed; inset: 0; z-index: 15; overflow: hidden; pointer-events: none; --fall: calc(100vh + 60px); }
+.charm-leaf { position: absolute; top: -30px; width: 22px; height: 24px; background: var(--leaf) center / contain no-repeat; image-rendering: pixelated; opacity: 0.7;
   scale: var(--size); animation: leaf-fall var(--dur) linear var(--delay) infinite; }
 @keyframes leaf-fall {
   0% { transform: translate3d(0, 0, 0) rotate(0deg); }
@@ -1906,9 +1906,6 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mg-tk-item b { font-size: 0.7rem; color: var(--band); }
 .mg-tk-item strong { color: var(--tk-hi); }
 @media (prefers-reduced-motion: reduce) { .mg-ticker.ready .mg-tk-run { animation: none; } .mg-tk-track { overflow-x: auto; } .mg-tk-set[aria-hidden] { display: none; } }
-html[data-charm='off'] .mg-ticker.ready .mg-tk-run { animation: none; }
-html[data-charm='off'] .mg-tk-track { overflow-x: auto; }
-html[data-charm='off'] .mg-tk-set[aria-hidden] { display: none; }
 @media (max-width: 480px) { .mg-ticker { font-size: 0.76rem; } .mg-tk-label { padding: 0 9px; } }
 .mg-tk-label .sprite { flex: none; }
 .mg-tk-item .sprite { flex: none; opacity: 0.9; }
@@ -1918,3 +1915,5 @@ html[data-charm='off'] .mg-tk-set[aria-hidden] { display: none; }
 .mg-msg.mg-focus .mg-nick::after { content: attr(data-pick); margin-left: 6px; padding: 1px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 800; color: var(--accent-ink); background: var(--accent-fill); vertical-align: 1px; }
 @keyframes mg-focus-pulse { 0% { transform: scale(1); } 40% { transform: scale(1.012); } 100% { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .mg-msg.mg-pulse { animation: none; } }
+.more-charm { display: block; width: 100%; font: inherit; font-size: 0.9rem; text-align: left; background: none; border: 0; cursor: pointer; border-top: 1px solid var(--line); border-radius: 0 0 8px 8px; }
+@media (prefers-reduced-motion: reduce) { .more-charm { display: none; } }

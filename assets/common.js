@@ -131,27 +131,27 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   open();
 })();
 
-// Small touches: maple leaves drifting over the home hero and a sparkle where you click (mouse only). The footer
-// switch turns them, the custom cursor and the walking mushroom off for good; reduced-motion users never get them.
+// Small touches: a few maple leaves drifting down over every page and a sparkle where you click (mouse only). The switch
+// in the footer and in the More menu turns them, the custom cursor and the walking mushroom off for good; reduced-motion
+// users never get them. The leaves sit under the header and never take a click.
 (() => {
   const html = document.documentElement;
   const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const off = () => html.dataset.charm === 'off';
   function leaves() {
-    const hero = document.querySelector('.hero');
-    if (!hero || calm || off() || hero.querySelector('.charm-leaves')) return;
+    if (calm || off() || document.querySelector('.charm-leaves')) return;
     const box = document.createElement('div');
     box.className = 'charm-leaves';
     box.setAttribute('aria-hidden', 'true');
-    const fall = hero.offsetHeight + 40;
-    for (let i = 0; i < 9; i++) {
+    const n = innerWidth < 600 ? 4 : 7;
+    for (let i = 0; i < n; i++) {
       const leaf = document.createElement('i');
       leaf.className = 'charm-leaf';
-      leaf.style.cssText = `left:${(Math.random() * 100).toFixed(1)}%;--fall:${fall}px;--sway:${(Math.random() * 80 - 40).toFixed(0)}px;` +
-        `--dur:${(9 + Math.random() * 7).toFixed(1)}s;--delay:${(-Math.random() * 14).toFixed(1)}s;--size:${(0.7 + Math.random() * 0.6).toFixed(2)}`;
+      leaf.style.cssText = `left:${((i + Math.random()) * (100 / n)).toFixed(1)}%;--sway:${(Math.random() * 90 - 45).toFixed(0)}px;` +
+        `--dur:${(16 + Math.random() * 10).toFixed(1)}s;--delay:${(-Math.random() * 26).toFixed(1)}s;--size:${(0.6 + Math.random() * 0.5).toFixed(2)}`;
       box.append(leaf);
     }
-    hero.querySelector('.hero-scene')?.after(box);
+    document.body.append(box);
   }
   leaves();
   if (!calm && matchMedia('(pointer: fine)').matches) {
@@ -180,7 +180,7 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
 
 // Megaphone ticker above the header: the latest game megaphones scroll past; each one opens the megaphone page focused on
 // it. The list is written twice so the loop has no seam, and the speed follows its length. It holds still on hover or
-// focus, and does not move for reduced motion or with the site's animations turned off (then it scrolls by hand).
+// focus, and does not move for reduced motion (then it scrolls by hand). The leaves switch does not stop it.
 // Outside English the text is translated by the browser's on-device translator when it is already on this device (the
 // ticker never starts a download); Korean otherwise gets the plain reading of the trade shorthand.
 (() => {
