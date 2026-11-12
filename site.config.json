@@ -24,5 +24,8 @@
     "railLeft": "DAN-3Piv51dy0qZbahnp",
     "railRight": "DAN-IE4qlbEOGCFPO1nV"
   },
-  "priceReports": true
+  "priceReports": true,
+  "support": {
+    "kofi": ""
+  }
 }

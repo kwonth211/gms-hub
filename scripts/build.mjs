@@ -734,7 +734,7 @@ function footer(lang) {
 <div class="footer-brand">${spriteSvg('mushroom', 24)}<strong>GMS Hub</strong></div>
 <p>${esc(t.footerDisclaimer)}</p>
 <p><button type="button" class="charm-toggle" data-charm-toggle><span class="charm-on-label">${lang === 'ko' ? '움직이는 효과 끄기' : 'Turn off animations'}</span><span class="charm-off-label">${lang === 'ko' ? '움직이는 효과 켜기' : 'Turn on animations'}</span></button></p>
-<p>${guides.some((g) => g.lang === lang) ? `<a href="${href(langPath(lang, '/guides/'))}">${t.navGuides}</a> · ` : ''}<a href="${href(langPath(lang, '/about/'))}">${t.navAbout}</a> · <a href="${href(langPath(lang, '/privacy/'))}">${t.privacy}</a> · <a href="${href(langPath(lang, '/terms/'))}">${t.terms}</a> · <a href="${href(langPath(lang, '/contact/'))}">${lang === 'ko' ? '문의·협찬·후원' : 'Contact and support'}</a> · <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub</a></p>
+<p>${guides.some((g) => g.lang === lang) ? `<a href="${href(langPath(lang, '/guides/'))}">${t.navGuides}</a> · ` : ''}<a href="${href(langPath(lang, '/about/'))}">${t.navAbout}</a> · <a href="${href(langPath(lang, '/privacy/'))}">${t.privacy}</a> · <a href="${href(langPath(lang, '/terms/'))}">${t.terms}</a> · <a href="${href(langPath(lang, '/contact/'))}">${lang === 'ko' ? '문의·협찬·후원' : 'Contact and support'}</a> · <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub</a>${config.support?.kofi ? ` · <a href="${esc(config.support.kofi)}" target="_blank" rel="noopener" data-support="kofi">${lang === 'ko' ? '커피 한 잔 사 주기' : 'Buy me a coffee'}</a>` : ''}</p>
 </div></footer>`;
 }
 
@@ -2008,7 +2008,7 @@ function contactBody(lang) {
   const tr = (k, e) => (ko ? k : e);
   const mail = (subject) => `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}`;
   const support = Object.entries(config.support || {}).filter(([, url]) => url);
-  const NAMES = { kofi: 'Ko-fi', buymeacoffee: 'Buy Me a Coffee', toss: tr('토스로 후원', 'Toss (Korea)'), patreon: 'Patreon' };
+  const NAMES = { kofi: tr('커피 한 잔 사 주기 (Ko-fi)', 'Buy me a coffee (Ko-fi)'), buymeacoffee: 'Buy Me a Coffee', toss: tr('토스로 후원', 'Toss (Korea)'), patreon: 'Patreon' };
   return `<article class="wrap prose contact-page"><h1>${tr('문의·협찬·후원', 'Contact, sponsorship and support')}</h1>
 <p>${tr('GMS Hub는 한 사람이 운영하는 비공식 팬 사이트예요. 아래 중 맞는 창구로 연락 주세요. 보통 2~3일 안에 답장드려요.', 'GMS Hub is an unofficial fan site run by one person. Pick the channel that fits below; replies usually take two or three days.')}</p>
 <div class="contact-grid">
