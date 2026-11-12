@@ -498,7 +498,8 @@ const PAGES = [
   { key: 'damage', path: '/tools/damage/' },
   { key: 'about', path: '/about/' },
   { key: 'privacy', path: '/privacy/' },
-  { key: 'terms', path: '/terms/' }
+  { key: 'terms', path: '/terms/' },
+  { key: 'contact', path: '/contact/' }
 ];
 
 // Shared reviewed snapshot keeps home search, calculator and detail pages consistent.
@@ -703,7 +704,8 @@ function moreMenu(lang) {
     ['/maps/', ko ? '맵 도감' : 'Map database'],
     ['/tools/my-shop/', ko ? '내 상점 시세 비교' : 'Compare my shop'],
     ['/tools/scan/', ko ? '상점 스캔으로 올리기' : 'Upload a shop scan'],
-    ['/about/', ko ? '사이트 소개' : 'About']
+    ['/about/', ko ? '사이트 소개' : 'About'],
+    ['/contact/', ko ? '문의·협찬·후원' : 'Contact and support']
   ].filter(Boolean);
   const label = ko ? '더보기' : 'More';
   return `<details class="more-menu"><summary class="more-btn" aria-label="${label}"><span class="more-bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="more-label">${label}</span></summary><div class="more-list">${links.map(([p, name]) => `<a class="lang-opt" href="${href(langPath(lang, p))}">${name}</a>`).join('')}<button type="button" class="lang-opt more-theme" data-theme-toggle>${ko ? '낮·밤 화면 바꾸기' : 'Switch day or night theme'}</button><button type="button" class="lang-opt more-charm" data-charm-toggle><span class="charm-on-label">${ko ? '낙엽·움직이는 효과 끄기' : 'Turn off falling leaves and effects'}</span><span class="charm-off-label">${ko ? '낙엽·움직이는 효과 켜기' : 'Turn on falling leaves and effects'}</span></button></div></details>`;
@@ -732,7 +734,7 @@ function footer(lang) {
 <div class="footer-brand">${spriteSvg('mushroom', 24)}<strong>GMS Hub</strong></div>
 <p>${esc(t.footerDisclaimer)}</p>
 <p><button type="button" class="charm-toggle" data-charm-toggle><span class="charm-on-label">${lang === 'ko' ? '움직이는 효과 끄기' : 'Turn off animations'}</span><span class="charm-off-label">${lang === 'ko' ? '움직이는 효과 켜기' : 'Turn on animations'}</span></button></p>
-<p>${guides.some((g) => g.lang === lang) ? `<a href="${href(langPath(lang, '/guides/'))}">${t.navGuides}</a> · ` : ''}<a href="${href(langPath(lang, '/about/'))}">${t.navAbout}</a> · <a href="${href(langPath(lang, '/privacy/'))}">${t.privacy}</a> · <a href="${href(langPath(lang, '/terms/'))}">${t.terms}</a> · <a href="mailto:${CONTACT_EMAIL}">${t.contact}</a> · <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub</a></p>
+<p>${guides.some((g) => g.lang === lang) ? `<a href="${href(langPath(lang, '/guides/'))}">${t.navGuides}</a> · ` : ''}<a href="${href(langPath(lang, '/about/'))}">${t.navAbout}</a> · <a href="${href(langPath(lang, '/privacy/'))}">${t.privacy}</a> · <a href="${href(langPath(lang, '/terms/'))}">${t.terms}</a> · <a href="${href(langPath(lang, '/contact/'))}">${lang === 'ko' ? '문의·협찬·후원' : 'Contact and support'}</a> · <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub</a></p>
 </div></footer>`;
 }
 
@@ -1999,6 +2001,32 @@ function scrollGuide(lang) {
 
 const prose = (h1, body) => `<article class="wrap prose"><h1>${h1}</h1>${body.replaceAll('{issues}', issuesUrl)}</article>`;
 
+// Contact, sponsorship and support: one page for bug reports, ad or partnership enquiries, and tips. Tip platforms come
+// from site.config.json "support" (ko-fi, toss.me…) and are shown only once a link is set.
+function contactBody(lang) {
+  const ko = lang === 'ko';
+  const tr = (k, e) => (ko ? k : e);
+  const mail = (subject) => `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}`;
+  const support = Object.entries(config.support || {}).filter(([, url]) => url);
+  const NAMES = { kofi: 'Ko-fi', buymeacoffee: 'Buy Me a Coffee', toss: tr('토스로 후원', 'Toss (Korea)'), patreon: 'Patreon' };
+  return `<article class="wrap prose contact-page"><h1>${tr('문의·협찬·후원', 'Contact, sponsorship and support')}</h1>
+<p>${tr('GMS Hub는 한 사람이 운영하는 비공식 팬 사이트예요. 아래 중 맞는 창구로 연락 주세요. 보통 2~3일 안에 답장드려요.', 'GMS Hub is an unofficial fan site run by one person. Pick the channel that fits below; replies usually take two or three days.')}</p>
+<div class="contact-grid">
+<section class="panel contact-card"><h2>${tr('오류 제보·데이터 수정', 'Bug reports and data fixes')}</h2>
+<p>${tr('가격·드롭·사냥터 정보가 틀렸거나 페이지가 깨졌다면 알려 주세요. 어느 페이지의 무엇인지 적어 주시면 빨리 고칠 수 있어요.', 'Wrong prices, drops or training spots, or a broken page: tell us which page and what is wrong.')}</p>
+<p class="contact-actions"><a class="btn small-btn" href="${mail(tr('[GMS Hub] 오류 제보', '[GMS Hub] Bug report'))}">${tr('메일로 제보', 'Report by email')}</a><a class="btn ghost small-btn" href="${issuesUrl}" target="_blank" rel="noopener">${tr('GitHub에 남기기', 'Open a GitHub issue')}</a></p></section>
+<section class="panel contact-card"><h2>${tr('광고·협찬·제휴 문의', 'Advertising, sponsorship and partnerships')}</h2>
+<p>${tr('게임 관련 서비스·커뮤니티·크리에이터의 배너, 소개, 링크 제휴를 받아요. 회사·채널 이름, 원하는 노출 위치와 기간, 예산을 적어 주세요. 게임 규칙에 어긋나는 서비스(매크로, 계정·아이템 현금 거래 등)는 받지 않아요.', 'Banners, features and link partnerships for game-related services, communities and creators. Tell us who you are, where and how long you want to appear, and your budget. We do not take anything against the game rules (bots, real-money trading of accounts or items).')}</p>
+<p class="contact-actions"><a class="btn small-btn" href="${mail(tr('[GMS Hub] 광고·협찬 문의', '[GMS Hub] Sponsorship enquiry'))}">${tr('협찬 문의 메일 쓰기', 'Email a sponsorship enquiry')}</a></p></section>
+<section class="panel contact-card"><h2>${tr('사이트 후원', 'Support the site')}</h2>
+<p>${tr('서버와 데이터 수집 비용은 광고와 후원으로 충당해요. 도움이 됐다면 커피 한 잔 값으로 응원해 주세요. 후원은 기능이나 혜택과 상관없는 순수한 응원이에요.', 'Servers and data collection are paid for by ads and tips. If the site helped you, a coffee keeps it going. Tips are thanks only; they do not unlock anything.')}</p>
+${support.length ? `<p class="contact-actions">${support.map(([k, url]) => `<a class="btn small-btn" href="${esc(url)}" target="_blank" rel="noopener" data-support="${esc(k)}">${esc(NAMES[k] || k)}</a>`).join('')}</p>` : `<p class="muted">${tr('후원 링크를 준비하고 있어요. 그전에는 메일로 연락 주세요.', 'Tip links are on the way; until then, email us.')}</p>`}</section>
+</div>
+<p class="contact-mail">${tr('메일 주소', 'Email')}: <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a> <button type="button" class="btn ghost small-btn" data-copy="${CONTACT_EMAIL}">${tr('주소 복사', 'Copy address')}</button> <span class="share-status" role="status"></span></p>
+<p class="muted small">${tr('GMS Hub는 넥슨과 관계없는 팬 사이트예요. 게임 계정·결제 문의는 넥슨 고객센터로 해 주세요.', 'GMS Hub is not affiliated with Nexon. For game account or payment issues, contact Nexon support.')}</p>
+</article>`;
+}
+
 // ---------- guides ----------
 
 const guidePath = (g) => `/guides/${g.slug}/`;
@@ -2511,7 +2539,13 @@ for (const lang of LANGS) {
     },
     about: { title: t.aboutTitle, desc: t.aboutDesc, body: prose(t.aboutH1, t.aboutBody), ld: [breadcrumbLd(lang, t.aboutH1, '/about/')] },
     privacy: { title: t.privacyTitle, desc: t.privacyDesc, body: prose(t.privacyH1, t.privacyBody) },
-    terms: { title: t.termsTitle, desc: t.termsDesc, body: prose(t.termsH1, t.termsBody) }
+    terms: { title: t.termsTitle, desc: t.termsDesc, body: prose(t.termsH1, t.termsBody) },
+    contact: {
+      title: lang === 'ko' ? '문의·협찬·후원 | GMS Hub' : 'Contact, sponsorship and support | GMS Hub',
+      desc: lang === 'ko' ? 'GMS Hub 오류 제보, 광고·협찬·제휴 문의, 사이트 후원 창구예요.' : 'Report a bug, ask about advertising or partnerships, or support GMS Hub.',
+      body: contactBody(lang),
+      ld: [breadcrumbLd(lang, lang === 'ko' ? '문의·협찬·후원' : 'Contact', '/contact/')]
+    }
   };
 
   const bandDef = (band) => {

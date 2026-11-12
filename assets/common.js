@@ -242,3 +242,12 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   load();
   setInterval(() => document.visibilityState === 'visible' && load(), 60000);
 })();
+
+// Copy buttons (contact page e-mail): data-copy holds the text; the status next to it says it worked.
+document.addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-copy]');
+  if (!b) return;
+  const out = b.parentElement.querySelector('.share-status');
+  try { await navigator.clipboard.writeText(b.dataset.copy); if (out) out.textContent = document.documentElement.lang === 'ko' ? '복사했어요' : 'Copied'; } catch (x) {}
+});
+document.addEventListener('click', (e) => { const a = e.target.closest('[data-support]'); if (a) track('support_click', { platform: a.dataset.support }); });

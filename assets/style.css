@@ -1903,3 +1903,8 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 @media (prefers-reduced-motion: reduce) { .mg-msg.mg-pulse { animation: none; } }
 .more-charm { display: block; width: 100%; font: inherit; font-size: 0.9rem; text-align: left; background: none; border: 0; cursor: pointer; border-top: 1px solid var(--line); border-radius: 0 0 8px 8px; }
 @media (prefers-reduced-motion: reduce) { .more-charm { display: none; } }
+.contact-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; margin: 22px 0; }
+.contact-card { padding: 18px; }
+.contact-card h2 { margin: 0 0 6px; font-size: 1.05rem; }
+.contact-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 0; }
+.contact-mail { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
