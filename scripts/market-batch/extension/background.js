@@ -17,7 +17,7 @@ async function beat(event, force = false, gap = 45000) {
   if (!GMS_BATCH_CONFIG.token || (!force && Date.now() - lastBeatAt < gap)) return;
   lastBeatAt = Date.now();
   const s = await get();
-  const body = { version: '0.7.0', event, enabled: !!s.enabled, phase: s.run?.phase || (s.pending ? 'pending' : 'idle'), shops: s.run?.progress?.shops ?? null,
+  const body = { version: '0.7.0', instance: GMS_BATCH_CONFIG.name || 'chrome', event, enabled: !!s.enabled, phase: s.run?.phase || (s.pending ? 'pending' : 'idle'), shops: s.run?.progress?.shops ?? null,
     rows: s.run?.progress?.rows ?? null, item: s.run?.progress?.item ?? null, hidden: !!s.run?.progress?.hidden, error: s.error || null, runId: s.run?.runId || null,
     startedAt: s.run?.startedAt || null, nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
   fetch(ENDPOINT + '?heartbeat=1', { method: 'POST', headers: { Authorization: `Bearer ${GMS_BATCH_CONFIG.token}`, 'Content-Type': 'application/json' },
@@ -283,5 +283,10 @@ chrome.alarms.onAlarm.addListener(alarm => enqueue(async () => {
   const s = await get(); if (alarm.name === SCHEDULE && s.enabled) await launch('production', 'alarm');
 }).catch(async e => stop(e.message || '배치 실행 오류. 예약을 중지했습니다.')));
 chrome.runtime.onStartup.addListener(() => enqueue(ensureAlarms));
-chrome.runtime.onInstalled.addListener(() => enqueue(ensureAlarms));
+// A dedicated collector browser (scripts/market-batch/collector.sh) sets autoStart in its config, so collection is on
+// from the first launch and after every extension reload, with nobody pressing the panel button.
+chrome.runtime.onInstalled.addListener(() => enqueue(async () => {
+  if (GMS_BATCH_CONFIG.autoStart && GMS_BATCH_CONFIG.token) { const s = await get(); if (!s.enabled && !s.pending) { s.enabled = true; s.error = null; s.retryAt = null; s.waitReason = null; await put(s); } }
+  await ensureAlarms();
+}));
 enqueue(ensureAlarms);

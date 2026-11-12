@@ -3,6 +3,16 @@
 일반 Chrome 확장 프로그램 → 검증된 매물 → 인증된 Worker 수신부 → D1.
 수집 과정은 일반 JavaScript로 실행되며 AI API를 호출하지 않습니다.
 
+## 전용 수집 브라우저 (2026-11-13 KST)
+
+확장은 창이 가려지거나 다른 데스크톱(게임)에 있으면 크롬의 타이머 절전 때문에 분당 2~4곳밖에 못 읽습니다(앞에 있으면 40곳). 그래서 수집은 **사용자 크롬이 아니라 전용 브라우저**에서 돕니다.
+
+- 브라우저: Chrome for Testing (`npx -y @puppeteer/browsers install chrome@stable --path ~/gms-hub-collector/browsers`). `--load-extension`을 받아 주고, 절전 옵션을 끄고 띄웁니다.
+- 실행: `~/gms-hub-collector/collector.sh start|stop|restart|status|log` (저장소의 `scripts/market-batch/collector.sh` 사본). 확장은 `~/gms-hub-collector/extension` (config.private.js 에 `"name": "collector-browser", "autoStart": true` 추가 → 켤 때마다 자동 수집이 켜짐).
+- 로그인 시 자동 실행·죽으면 재시작: `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.gmshub.market-collector.plist` (plist는 `collector.sh run`을 KeepAlive로 돌림).
+- 디버깅: `node ~/gms-hub-collector/inspect.mjs` — DevTools 포트(9223, 로컬 전용)로 확장 서비스워커의 상태·알람·설정을 읽습니다. 식을 넘기면 그 안에서 실행합니다.
+- 사용자 크롬의 확장은 "자동 수집 끄기"로 꺼 둡니다(둘이 같이 돌면 서버가 10분 간격으로 하나만 받지만 낭비).
+
 ## v0.7.0 (2026-11-13 KST) — 스스로 회복하고 밖에서 보이는 수집기
 
 - **하트비트**: 실행 시작·수집 중(45초마다)·저장·오류·대기(5분마다)에 상태 몇 가지(단계, 상점 수, 건수, 오류, 다음 예약)를 서버에 보냅니다. `GET https://gms-hub-votes.kwonth211.workers.dev/market/collector` 로 브라우저를 열지 않고 상태와 최근 저장 3건을 봅니다.
