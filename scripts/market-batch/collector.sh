@@ -24,10 +24,12 @@ ARGS=(--user-data-dir=$PROFILE --load-extension=$EXT
 running() { [[ -f $PID ]] && kill -0 $(cat $PID) 2>/dev/null; }
 need_app() { [[ -n $APP && -x $APP ]] || { echo "수집용 브라우저가 없습니다: npx -y @puppeteer/browsers install chrome@stable --path ~/gms-hub-collector/browsers"; exit 1; }; }
 case $1 in
-  run) need_app; exec caffeinate -i $APP $ARGS >> $LOG 2>&1 ;;
+  run) need_app; rm -rf "$PROFILE/Default/Extension Scripts" "$PROFILE/Default/Extension Rules" "$PROFILE/Default/Code Cache"; exec caffeinate -i $APP $ARGS >> $LOG 2>&1 ;;
   start)
     if running; then echo "이미 실행 중 (pid $(cat $PID))"; exit 0; fi
     need_app
+    # The browser caches extension scripts; dropping the cache makes edited extension files take effect on start.
+    rm -rf "$PROFILE/Default/Extension Scripts" "$PROFILE/Default/Extension Rules" "$PROFILE/Default/Code Cache"
     nohup caffeinate -i $APP $ARGS >> $LOG 2>&1 &
     echo $! > $PID; echo "수집 브라우저 시작 (pid $!) · 기록: $LOG" ;;
   stop)
@@ -41,7 +43,7 @@ import json, sys, time
 d = json.load(sys.stdin); h = d.get("heartbeat")
 if h:
     el = (time.time() * 1000 - (h.get("startedAt") or time.time() * 1000)) / 60000
-    print(f"확장 {h.get(\"version\")} · {h.get(\"phase\")} · 상점 {h.get(\"shops\")} · 매물 {h.get(\"rows\")} · {el:.1f}분 경과 · 가려짐 {h.get(\"hidden\")} · 보고 {h.get(\"ageSeconds\")}초 전 · 오류 {h.get(\"error\")}")
+    print("확장 %s · %s · 상점 %s · 매물 %s · %.1f분 경과 · 가려짐 %s · 보고 %s초 전 · 오류 %s" % (h.get("version"), h.get("phase"), h.get("shops"), h.get("rows"), el, h.get("hidden"), h.get("ageSeconds"), h.get("error")))
 else:
     print("상태 보고 없음")
 print("상태", d.get("state"), "· 마지막 저장", d.get("lastSuccessAt"), "· 오늘", d.get("todayRows"), "건")
