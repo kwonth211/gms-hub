@@ -493,7 +493,6 @@ const PAGES = [
   { key: 'drop', path: '/tools/drop-rate/' },
   { key: 'price', path: '/tools/price/' },
   { key: 'scan', path: '/tools/scan/' },
-  { key: 'myShop', path: '/tools/my-shop/' },
   { key: 'marketToday', path: '/tools/market/today/' },
   { key: 'market', path: '/tools/market/' },
   { key: 'damage', path: '/tools/damage/' },
@@ -700,7 +699,7 @@ function headerSearch(lang, tabs) {
   const pages = [...tabs.map(([p, , label]) => [label, href(langPath(lang, p))]),
     ...publishedGuides.filter((g) => g.lang === lang || (!LANGS.includes(lang) && g.lang === 'en')).map((g) => [g.h1 || g.title, href(langPath(lang, guidePath(g)))]),
     [ko ? '오늘의 시세 리포트' : "Today's price report", href(langPath(lang, '/tools/market/today/'))], [ko ? '상점 스캔' : 'Shop scan', href(langPath(lang, '/tools/scan/'))],
-    [ko ? '내 상점 시세 비교' : 'Compare my shop', href(langPath(lang, '/tools/my-shop/'))], [ko ? '캐릭터 랭킹' : 'Character ranking', href(langPath(lang, '/rank/'))],
+    [ko ? '캐릭터 랭킹' : 'Character ranking', href(langPath(lang, '/rank/'))],
     [ko ? '직업별 장비' : 'Gear by class', href(langPath(lang, '/equipment/'))], [ko ? '보스' : 'Bosses', href(langPath(lang, '/bosses/'))],
     [ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests', href(langPath(lang, '/quests/best-exp/'))], [ko ? '맵 도감' : 'Maps', href(langPath(lang, '/maps/'))],
     [ko ? '문의·협찬·후원' : 'Contact and support', href(langPath(lang, '/contact/'))]];
@@ -719,7 +718,6 @@ function moreMenu(lang) {
     ['/quests/best-exp/', ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests'],
     ['/items/', ko ? '아이템 도감' : 'Item database'],
     ['/maps/', ko ? '맵 도감' : 'Map database'],
-    ['/tools/my-shop/', ko ? '내 상점 시세 비교' : 'Compare my shop'],
     ['/tools/scan/', ko ? '상점 스캔으로 올리기' : 'Upload a shop scan'],
     ['/about/', ko ? '사이트 소개' : 'About'],
     ['/contact/', ko ? '문의·협찬·후원' : 'Contact and support']
@@ -755,7 +753,7 @@ function footer(lang) {
 </div></footer>`;
 }
 
-const ADFIT_PAGES = new Set(['home', 'myShop', 'marketToday', 'training', 'trBand', 'trClass', 'scroll', 'drop', 'price', 'scan', 'market', 'damage', 'guides', 'guide', 'monsters', 'monster', 'items', 'item',
+const ADFIT_PAGES = new Set(['home', 'marketToday', 'training', 'trBand', 'trClass', 'scroll', 'drop', 'price', 'scan', 'market', 'damage', 'guides', 'guide', 'monsters', 'monster', 'items', 'item',
   'bosses', 'maps', 'map', 'quests', 'quest', 'questBest', 'equipment', 'equipmentClass', 'rank', 'megaphone']);
 // AdFit counted only 5-9% of the end-of-page banner as viewed (most visitors never scroll that far), so a second slot sits
 // just under the page title: after the page head, after the home hero, or after a guide's first paragraph. Never beside
@@ -924,7 +922,7 @@ function liveMarket(lang) {
   return `<section class="wrap market" id="live-market" aria-labelledby="live-title"
  data-api="${esc(config.voteApi)}" data-items="${esc(href('/assets/items.json'))}" data-price="${esc(href(langPath(lang, '/tools/market/')))}"
  data-text="${esc(JSON.stringify(t))}">
-<header class="market-head"><span class="live-dot" aria-hidden="true"></span><h2 id="live-title">${t.title}</h2><p>${t.sub}</p><small id="live-updated"></small><small class="live-fresh" id="live-fresh" role="status" hidden></small><a class="btn ghost small-btn market-myshop" href="${href(langPath(lang, '/tools/my-shop/'))}">${lang === 'ko' ? '내 상점 시세 비교' : 'Compare my shop'}</a><a class="btn small-btn market-scan" href="${href(langPath(lang, '/tools/scan/'))}">● ${t.scan}</a><strong class="market-preview" id="market-preview" hidden>${t.preview}</strong></header>
+<header class="market-head"><span class="live-dot" aria-hidden="true"></span><h2 id="live-title">${t.title}</h2><p>${t.sub}</p><small id="live-updated"></small><small class="live-fresh" id="live-fresh" role="status" hidden></small><a class="btn small-btn market-scan" href="${href(langPath(lang, '/tools/scan/'))}">● ${t.scan}</a><strong class="market-preview" id="market-preview" hidden>${t.preview}</strong></header>
 ${collectionStatus(lang)}
 <section class="panel mega-trends" data-mega-trends="compact" data-items="${esc(href('/assets/items.json'))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-megaphone="${esc(href(langPath(lang, '/megaphone/')))}" hidden aria-label="${lang === 'ko' ? '지금 뜨는 아이템' : 'Trending in megaphones'}"></section>
 <div id="live-mine" class="live-mine" hidden aria-label="${esc(t.mine)}"></div>
@@ -987,7 +985,6 @@ tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc),
 tool('/tools/scroll/', 'scroll', t.navScroll, t.scCardDesc),
 tool('/tools/drop-rate/', 'bag', t.navDrop, t.dropCardDesc),
 tool('/tools/market/', 'coin', t.navMarket, MK[lang].lead),
-tool('/tools/my-shop/', 'coin', lang === 'ko' ? '내 상점 시세 비교' : 'My shop vs the market', lang === 'ko' ? '판매자 이름만 넣으면 내 물건이 시세보다 비싼지, 몇 번째로 싼지 알려 줘요.' : 'Enter your character name: is each item in your shop priced above the market, and where does it rank?'),
 tool('/tools/price/', 'coin', t.navPrice, PR[lang].cardDesc),
 tool('/tools/damage/', 'hammer', DMG[lang].h1, DMG[lang].cardDesc),
 tool('/tools/scan/', 'megaphone', SCAN[lang].h1, SCAN[lang].cardDesc),
@@ -1002,7 +999,6 @@ tool('/rank/', 'crown', lang === 'ko' ? '캐릭터 랭킹' : 'Character rankings
 tool('/quests/best-exp/', 'star', lang === 'ko' ? '경험치 퀘스트' : 'Best EXP quests', lang === 'ko' ? '레벨 구간마다 보상 경험치가 큰 퀘스트 10개씩.' : 'The ten biggest EXP quest rewards for each level band.'),
 tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc),
 tool('/tools/market/', 'coin', t.navMarket, MK[lang].lead),
-tool('/tools/my-shop/', 'coin', lang === 'ko' ? '내 상점 시세 비교' : 'My shop vs the market', lang === 'ko' ? '판매자 이름만 넣으면 내 물건이 시세보다 비싼지, 몇 번째로 싼지 알려 줘요.' : 'Enter your character name: is each item in your shop priced above the market, and where does it rank?'),
 tool('/quests/', 'scroll', lang === 'ko' ? '퀘스트' : 'Quests', lang === 'ko' ? `퀘스트 ${QUESTS.length}개의 시작 레벨, 모아 올 아이템과 드롭 몬스터, 보상을 봐요.` : `${QUESTS.length} quests: start level, items to bring and who drops them, rewards.`),
 tool('/bosses/', 'crown', lang === 'ko' ? '보스 몬스터' : 'Bosses', lang === 'ko' ? '마노부터 주니어 발록까지 보스의 출현 맵, 필요 명중, 드롭을 한 표로 봐요.' : 'Mano to Jr. Balrog: spawn maps, accuracy needed and equipment drops in one table.'),
 tool('/maps/', 'tree', lang === 'ko' ? '맵 도감' : 'Maps', lang === 'ko' ? `맵 ${MAPS.filter((l) => l.availability === 'open').length}곳의 몬스터, 출현 수, 드롭을 지역별로 봐요.` : `${MAPS.filter((l) => l.availability === 'open').length} maps: which monsters spawn there, how many, and what they drop.`),
@@ -1515,24 +1511,6 @@ function locationChoices(lang, prefix) {
 // "My shop vs the market": a seller name in, every open listing of that shop out, each against the item's market median and
 // today's cheapest competing listing. Listings come from shop scans and the collector, so many shops are found without
 // uploading anything; when none are, the page points to the shop scan.
-function myShopBody(lang) {
-  const ko = lang === 'ko';
-  return `${pageHead(lang, 'coin', ko ? '내 상점 시세 비교' : 'My shop vs the market', ko ? '판매자 이름을 넣으면 지금 올려 둔 물건이 시세보다 비싼지, 같은 물건 중 몇 번째로 싼지 알려 줘요.' : 'Enter your character name to see whether each item in your shop is priced above the market and where it ranks among current listings.')}
-<div class="wrap my-shop" id="my-shop" data-api="${esc(config.voteApi)}" data-items="${esc(href('/assets/items.json'))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-scan="${esc(href(langPath(lang, '/tools/scan/')))}">
-<form class="panel my-shop-form" id="my-shop-form">
-<label>${ko ? '판매자(캐릭터) 이름' : 'Seller (character) name'}<input name="seller" required maxlength="13" pattern="[A-Za-z0-9]{2,13}" autocomplete="nickname" placeholder="${ko ? '예: Maplehero' : 'e.g. Maplehero'}"></label>
-<button class="btn" type="submit">${ko ? '내 상점 비교하기' : 'Compare my shop'}</button>
-<p class="muted small">${ko ? '이름은 이 브라우저에만 저장돼요. 다음에 오면 바로 결과가 나와요.' : 'Your name is saved in this browser only, so next time the report opens by itself.'}</p>
-</form>
-<p class="my-shop-status" id="my-shop-status" role="status" aria-live="polite"></p>
-<div id="my-shop-result"></div>
-<section class="panel my-shop-cta" id="my-shop-cta">
-<h2>${ko ? '내 상점이 안 보이면' : 'Shop not found?'}</h2>
-<p>${ko ? '최근 하루 안에 수집된 상점만 보여요. PC에서 게임 화면을 공유해 내 상점 창을 띄워 두면, 화면 스캔이 물건과 가격을 읽어 바로 올려요. 올린 뒤 이 페이지에서 비교 결과를 볼 수 있어요.' : 'Only shops seen in the last 24 hours show up. On a computer, share your game window with your shop open: the shop scan reads items and prices and uploads them, then compare here.'}</p>
-<p><a class="btn" href="${href(langPath(lang, '/tools/scan/'))}">${ko ? '화면 스캔으로 내 상점 올리기' : 'Upload my shop with the scan'}</a></p>
-</section>
-</div>`;
-}
 
 function scanBody(lang) {
   const t = SCAN[lang];
@@ -1541,7 +1519,6 @@ function scanBody(lang) {
 <div class="wrap scan">
 <div class="panel scan-device-note" id="scan-device-note" hidden role="note"><strong>${lang === 'ko' ? '상점 스캔은 PC 크롬·엣지에서만 돼요.' : 'Shop scanning works only in Chrome or Edge on a computer.'}</strong><p>${lang === 'ko' ? '휴대폰·태블릿 브라우저는 게임 화면 공유를 지원하지 않아요. 이 페이지 주소를 PC에서 열어 주세요. 시세는 휴대폰에서도 실시간 시세 메뉴로 볼 수 있어요.' : 'Phone and tablet browsers cannot share a game window. Open this page on a computer; prices are still available on Live Market from any device.'}</p><p><button type="button" class="btn small-btn" id="scan-copy-link">${lang === 'ko' ? '이 페이지 링크 복사' : 'Copy this page link'}</button> <a class="btn ghost small-btn" href="${href(langPath(lang, '/tools/market/'))}">${lang === 'ko' ? '실시간 시세 보기' : 'Open Live Market'}</a> <span class="share-status" id="scan-copy-status" role="status"></span></p></div>
 <ol class="scan-steps">${steps}</ol>
-<p class="panel scan-myshop" id="scan-myshop" data-base="${esc(href(langPath(lang, '/tools/my-shop/')))}" hidden>${lang === 'ko' ? '올린 상점이 시세보다 비싼지 확인해 보세요.' : 'See how your uploaded shop compares with the market.'} <a class="btn small-btn" href="${esc(href(langPath(lang, '/tools/my-shop/')))}">${lang === 'ko' ? '내 상점 시세 비교' : 'Compare my shop'}</a></p>
 <div class="panel scan-panel">
 <fieldset class="scan-location"><legend>${lang === 'ko' ? '현재 상점 위치' : 'Current shop location'}</legend>
 <label>${t.i.channelLabel}<select id="scan-channel">${locationChoices(lang, 'CH')}</select></label>
@@ -1777,7 +1754,7 @@ const MK = {
 function marketBody(lang) {
   const t = MK[lang], tr = (ko,en) => lang === 'ko' ? ko : en;
   const stat = (key,label) => `<div><dd id="mk-stat-${key}">–</dd><dt>${label}</dt></div>`;
-  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 확인하세요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="char-links"><a href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 리포트', "Today's price report")}</a><a href="${href(langPath(lang, '/tools/my-shop/'))}">${tr('내 상점 시세 비교', 'Compare my shop with the market')}</a><a href="${href(langPath(lang, '/tools/scan/'))}">${tr('화면 스캔으로 내 상점 올리기', 'Upload my shop with the scan')}</a></p></section>
+  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 확인하세요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="char-links"><a href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 리포트', "Today's price report")}</a><a href="${href(langPath(lang, '/tools/scan/'))}">${tr('화면 스캔으로 내 상점 올리기', 'Upload my shop with the scan')}</a></p></section>
 <div class="wrap mk market-browser">
 <div class="mb-status"><p id="mk-status" role="status">${t.loading}</p><button id="mk-retry" class="btn ghost small-btn" type="button">${tr('새로고침','Refresh')}</button></div>
 <div class="mb-tabs" role="tablist" aria-label="${tr('시장 탐색','Browse market')}"><button id="mb-tab-items" role="tab" aria-selected="true" aria-controls="mb-browser" data-view="items">${tr('아이템 시세','Item prices')}</button><button id="mb-tab-listings" role="tab" aria-selected="false" tabindex="-1" aria-controls="mb-browser" data-view="listings">${tr('전체 매물','All listings')}</button></div>
@@ -2587,13 +2564,6 @@ for (const lang of LANGS) {
       body: marketTodayBody(lang),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '오늘의 글클메 시세' : "Today's prices", '/tools/market/today/')]
     },
-    myShop: {
-      title: lang === 'ko' ? '글클메 내 상점 시세 비교: 내 가격이 시세보다 비싼지 확인 | GMS Hub' : 'MapleStory Classic World Shop Price Check: Is My Shop Priced Right? | GMS Hub',
-      desc: lang === 'ko' ? '판매자 이름만 넣으면 지금 자유시장에 올려 둔 물건마다 시세 중앙값, 현재 최저가, 같은 물건 중 몇 번째로 싼지 보여 줘요.' : 'Enter your character name to compare every item in your Free Market shop with the market median and the cheapest current listing.',
-      body: myShopBody(lang),
-      modules: ['my-shop.js'],
-      ld: [breadcrumbLd(lang, lang === 'ko' ? '내 상점 시세 비교' : 'My shop vs the market', '/tools/my-shop/')]
-    },
     scan: {
       title: SCAN[lang].title,
       desc: SCAN[lang].lead,
@@ -2846,6 +2816,12 @@ for (const lang of LANGS) {
       })
     );
   }
+}
+
+// /tools/my-shop/ was folded into the scan page (its per-item "vs market" column); old links land there.
+for (const lang of LANGS) {
+  const url = absUrl(langPath(lang, '/tools/scan/'));
+  write(`${lang}/tools/my-shop/index.html`, `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><title>GMS Hub</title><meta name="robots" content="noindex"><link rel="canonical" href="${url}"><meta http-equiv="refresh" content="0; url=${url}"></head><body><a href="${url}">${url}</a><script>location.replace(${JSON.stringify(langPath(lang, '/tools/scan/'))})</script></body></html>`);
 }
 
 // Root: send visitors to their language before anything else loads. The redirect runs first in <head> and the page

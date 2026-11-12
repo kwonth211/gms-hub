@@ -27,7 +27,7 @@ if (boxes.length) {
       const d = Math.round(((r.n - r.before) / r.before) * 100);
       return d > 10 ? `<i class="mt-up">▲ ${d}%</i>` : d < -10 ? `<i class="mt-down">▼ ${-d}%</i>` : `<i class="mt-flat">—</i>`;
     };
-    const itemRow = (r, i) => `<li><span class="mt-rank">${i + 1}</span><a href="${market}?item=${r.item}" data-item="${r.item}">${icon(r.item)}<span>${esc(name(r.item))}</span></a><small>${tr('팝니다 {s} · 삽니다 {b}', 'Selling {s} · Buying {b}', { s: r.sell, b: r.buy })}</small>${change(r)}</li>`;
+    const itemRow = (r, i) => `<li><span class="mt-rank">${i + 1}</span><a href="${market}?item=${r.item}" data-item="${r.item}">${icon(r.item)}<span>${esc(name(r.item))}</span></a><small>${tr('S {s} · B {b}', 'S {s} · B {b}', { s: r.sell, b: r.buy })}</small>${change(r)}</li>`;
     const hot = stats.items.slice(0, 10);
     const wanted = stats.wanted.slice(0, 5);
     const hours = stats.hourly.slice(-24);
@@ -41,7 +41,7 @@ if (boxes.length) {
       box.innerHTML = `<div class="mt-head"><h3>${tr('지금 뜨는 아이템', 'Trending in megaphones')} <small>${tr('최근 24시간 고확 {n}건', '{n} megaphones in 24h', { n: stats.today.n.toLocaleString() })}</small></h3><a href="${mega}">${tr('실시간 확성기', 'Live megaphones')} →</a></div>
 <div class="mt-grid${compact ? ' compact' : ''}">
 <ol class="mt-list">${hot.slice(0, compact ? 5 : 10).map(itemRow).join('')}</ol>
-${wanted.length ? `<div class="mt-side"><h4>${tr('사려는 사람이 더 많은 아이템', 'More buyers than sellers')}</h4><ol class="mt-list mt-wanted">${wanted.map((r, i) => `<li><span class="mt-rank">${i + 1}</span><a href="${market}?item=${r.item}" data-item="${r.item}">${icon(r.item)}<span>${esc(name(r.item))}</span></a><small>${tr('팝니다 {s} · 삽니다 {b}', 'Selling {s} · Buying {b}', { s: r.sell, b: r.buy })}</small></li>`).join('')}</ol></div>` : ''}
+${wanted.length ? `<div class="mt-side"><h4>${tr('사려는 사람이 더 많은 아이템', 'More buyers than sellers')}</h4><ol class="mt-list mt-wanted">${wanted.map((r, i) => `<li><span class="mt-rank">${i + 1}</span><a href="${market}?item=${r.item}" data-item="${r.item}">${icon(r.item)}<span>${esc(name(r.item))}</span></a><small>${tr('S {s} · B {b}', 'S {s} · B {b}', { s: r.sell, b: r.buy })}</small></li>`).join('')}</ol></div>` : ''}
 ${compact ? '' : `<div class="mt-side"><h4>${tr('오늘의 고확왕', "Today's top callers")}</h4><ol class="mt-callers">${stats.callers.slice(0, 5).map((c) => `<li><a href="${mega}?q=${encodeURIComponent(c.nick)}"><b>${esc(c.nick)}</b></a><small>${tr('{n}건 · 아이템 {i}종', '{n} megaphones · {i} items', { n: c.n, i: c.items })}</small></li>`).join('')}</ol>
 <h4>${tr('시간대별 고확', 'Megaphones by hour')} <small>${tr('최근 24시간', 'last 24h')}</small></h4><div class="mt-curve">${curve}</div></div>`}
 </div>`;
