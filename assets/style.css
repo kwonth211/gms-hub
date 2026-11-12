@@ -1802,3 +1802,10 @@ html[data-charm='off'] :is(.charm-walk, .charm-leaves) { display: none; }
 .mb-suggest { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 6px; }
 .mb-suggest li { display: flex; align-items: center; gap: 10px; }
 .mb-suggest small { color: var(--muted); }
+
+/* New-feature shortcuts under the home search. */
+.hero-new { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 12px 0 0; font-size: 0.85rem; }
+.hero-new-tag { font-size: 0.68rem; font-weight: 800; padding: 1px 6px; border-radius: 4px; background: var(--danger); color: var(--panel); }
+.hero-new a { padding: 3px 10px; border-radius: 999px; border: 1px solid var(--accent-line); background: var(--accent-soft); color: var(--text); text-decoration: none; font-weight: 700; }
+.hero-new a:hover { border-color: var(--accent); }
+.hero-new a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }

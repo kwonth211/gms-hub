@@ -966,6 +966,7 @@ ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이�
 </section>
 </div>
 <p class="search-help" id="search-help">${lang === 'ko' ? '한글·영문·초성·줄임말로 검색하세요. 예: 귀힘, 미스릴, 좀비 루팡, 사냥터' : 'Search by name or keyword. Try Gloves Attack, Mithril, Zombie Lupin or training.'}</p>
+<p class="hero-new"><span class="hero-new-tag">NEW</span><a href="${href(langPath(lang, '/megaphone/'))}">${lang === 'ko' ? '실시간 확성기' : 'Live megaphones'}</a><a href="${href(langPath(lang, '/rank/'))}">${lang === 'ko' ? '캐릭터 랭킹' : 'Character rankings'}</a><a href="${href(langPath(lang, '/tools/market/'))}">${lang === 'ko' ? '커닝 공사장 상점' : 'Kerning street shops'}</a></p>
 <dl class="hero-stats"><div data-market-stat="listings" hidden><dt>${lang === 'ko' ? '24시간 매물' : 'Listings, 24h'}</dt><dd>0</dd></div><div data-market-stat="shops" hidden><dt>${lang === 'ko' ? '24시간 확인한 상점' : 'Shops checked, 24h'}</dt><dd>0</dd></div>${lang === 'ko'
   ? `<div><dt>${t.statSites}</dt><dd>${SITE_COUNT}</dd></div><div><dt>${t.statCats}</dt><dd>${cats.length}</dd></div>`
   : `<div><dt>Monsters</dt><dd>${MONSTERS.monsters.filter((m) => m.status !== 'unplaced').length}</dd></div><div><dt>Quests</dt><dd>${QUESTS.length}</dd></div><div><dt>Maps</dt><dd>${MAPS.filter((l) => l.availability === 'open').length}</dd></div>`}</dl>
