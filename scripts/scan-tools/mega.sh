@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Megaphone collector control (admin's Mac). Usage: ./mega.sh start | stop | status | log | check | install <repo>
+# Megaphone collector control (admin's Mac). Usage: ./mega.sh start | stop | status | log | check | learn | install <repo>
 # start runs mega-collector.mjs in the background (detached, keeps the Mac awake while it runs) and logs to
 # ~/gms-hub-samples/mega-collector.log; the game must be open, but its window may be covered by other windows.
 DIR=${0:A:h}
@@ -19,15 +19,18 @@ case $1 in
     echo "최근 확성기:"; grep -E '^[0-9]{2}:[0-9]{2}:[0-9]{2} ' $LOG | tail -5 ;;
   log) tail -f $LOG ;;
   check) cd $DIR && node mega-check.mjs ${2:-300} ;;
+  learn)
+    # Relearn the chat-font table from every kept sample, then install it here and restart.
+    cd $DIR && node mega-learn.mjs ../../assets/mega-glyphs.json ${TMPDIR:-/tmp}/gms-mega-segs.json ~/gms-hub-samples/mega-frames ~/gms-hub-samples/mega-live && $0 stop && $0 start ;;
   install)
     # Copy the collector from a checkout into ~/gms-hub-mega (a fixed folder) and restart it there.
     REPO=${2:-~/gms-hub}; DEST=~/gms-hub-mega
     mkdir -p $DEST/scripts/scan-tools $DEST/assets
-    cp $REPO/scripts/scan-tools/{mega-collector.mjs,mega-check.mjs,maple-window.swift,mega.sh,package.json} $DEST/scripts/scan-tools/
+    cp $REPO/scripts/scan-tools/{mega-collector.mjs,mega-check.mjs,mega-learn.mjs,maple-window.swift,mega.sh,package.json} $DEST/scripts/scan-tools/
     cp $REPO/assets/mega-reader.js $REPO/assets/mega-glyphs.json $DEST/assets/
     node -e "const d=require('$REPO/data/items.json');console.log(JSON.stringify([...new Set(d.items.map(i=>i.en))]))" > $DEST/assets/items-names.json
     [[ -e $DEST/scripts/scan-tools/node_modules ]] || ln -s ~/gms-hub/scripts/scan-tools/node_modules $DEST/scripts/scan-tools/node_modules
     rm -f ${TMPDIR:-/tmp}/gms-maple-window
     $DEST/scripts/scan-tools/mega.sh stop; $DEST/scripts/scan-tools/mega.sh start ;;
-  *) echo "사용법: ./mega.sh start | stop | status | log | check | install <repo>"; exit 1 ;;
+  *) echo "사용법: ./mega.sh start | stop | status | log | check | learn | install <repo>"; exit 1 ;;
 esac
