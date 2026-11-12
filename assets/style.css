@@ -1931,3 +1931,5 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-quests { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .mb-quests li { display: flex; gap: 8px; align-items: baseline; font-size: 0.86rem; }
 .mb-quests small { color: var(--muted); font-size: 0.74rem; }
+.mb-class { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--muted); margin: 0 0 10px; }
+.mb-class select { font: inherit; color: var(--text); }

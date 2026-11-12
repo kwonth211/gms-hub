@@ -168,7 +168,7 @@ function listingTable(rows, { showItem = true, shopButtons = true } = {}) {
 const URL_FIELDS = [
   ["state", "mb-state", "open"], ["sort", "mb-list-sort", "recent"], ["seller", "mb-seller", ""],
   ["ch", "mb-channel", ""], ["room", "mb-room", ""], ["days", "mb-days", "7"],
-  ["kind", "mb-report-kind", ""], ["isort", "mb-item-sort", "active"],
+  ["kind", "mb-report-kind", ""], ["isort", "mb-item-sort", "active"], ["cls", "mb-class", ""],
 ];
 function syncURL() {
   const p = new URLSearchParams(location.search);
@@ -216,7 +216,7 @@ function renderDirectory() {
     category,
     sort: $("mb-item-sort").value,
     favorites: $("mb-favorites").checked ? favorites : null,
-  });
+  }).filter(classOk);
   const pages = Math.ceil(rows.length / 40);
   page = Math.max(1, Math.min(page, pages || 1));
   $("mb-count").textContent = tr(
@@ -259,6 +259,29 @@ function categoryMiss() {
   if (!others.length) return "";
   return `<div class="market-empty"><strong>${(ko ? `'${categories[category]}' 분류에는 이 검색어와 맞는 아이템이 없어요.` : tx("No '{cat}' items match this search.", { cat: categories[category] }))}</strong><p>${tr("다른 분류에서 찾았어요:", "Found in other categories:")} ${others.map(([c, n]) => `<button type="button" class="btn ghost small-btn" data-category="${c}">${categories[c]} ${n}</button>`).join(" ")} <button type="button" class="btn ghost small-btn" data-category="all">${tr("전체 분류", "All categories")}</button></p></div>`;
 }
+// Class filter (like MesoWatch's): gear the class can wear, its weapons, scrolls for those weapons and for armour and
+// accessories, and throwing stars for assassins. Potions, etc. and cash items drop out. Uses the hover-card data (job
+// bits and sub-types from the game client); until it has loaded nothing is filtered.
+const SWORD = ["One-Handed Sword", "Two-Handed Sword"], AXE = ["One-Handed Axe", "Two-Handed Axe"], BW = ["One-Handed Blunt Weapon", "Two-Handed Blunt"], SPEAR = ["Spear", "Pole Arm"];
+const CLASSES = {
+  warrior: [1, [...SWORD, ...AXE, ...BW, ...SPEAR]], fighter: [1, [...SWORD, ...AXE]], page: [1, [...SWORD, ...BW]], spearman: [1, SPEAR],
+  magician: [2, ["Wand", "Staff"]], bowman: [4, ["Bow", "Crossbow"]], hunter: [4, ["Bow"]], crossbowman: [4, ["Crossbow"]],
+  thief: [8, ["Claw", "Dagger"]], assassin: [8, ["Claw"]], bandit: [8, ["Dagger"]],
+};
+const WEAPONS = new Set(Object.values(CLASSES).flatMap(([, w]) => w));
+// Scroll sub-types name the slot they go on, spelled a little differently from the equipment's own sub-types.
+const SCROLL_SLOT = { "One-Handed BW": "One-Handed Blunt Weapon", "Two-Handed BW": "Two-Handed Blunt", Polearm: "Pole Arm" };
+function classOk(it) {
+  const cls = CLASSES[$("mb-class").value];
+  if (!cls || !tips) return true;
+  const t = tips.items[it.id];
+  if (!t || it.category === "cash") return false;
+  const [bit, weapons] = cls;
+  const [, , cat, sub, , job, , , , , scroll] = t;
+  if (cat === "Equip") return WEAPONS.has(sub) ? weapons.includes(sub) && (!job || job & bit) : !job || !!(job & bit);
+  if (scroll) { const slot = SCROLL_SLOT[sub] || sub; return WEAPONS.has(slot) ? weapons.includes(slot) : true; }
+  return sub === "Thrown" && weapons.includes("Claw");
+}
 function filteredIds() {
   const matches = matchingIds(items, $("mk-q").value);
   const recorded = new Set(
@@ -269,7 +292,8 @@ function filteredIds() {
       (it) =>
         recorded.has(it.id) &&
         (!matches || matches.includes(it.id)) &&
-        (category === "all" || category === it.category),
+        (category === "all" || category === it.category) &&
+        classOk(it),
     )
     .map((it) => it.id);
 }
@@ -292,9 +316,15 @@ async function renderRecords() {
     return;
   }
   const p = new URLSearchParams({ page, limit: 50, days: $("mb-days").value });
-  const filtering = $("mk-q").value.trim() || category !== "all";
+  const filtering = $("mk-q").value.trim() || category !== "all" || $("mb-class").value;
   if (filtering) {
-    const ids = filteredIds();
+    let ids = filteredIds();
+    // The worker takes at most 200 items per query. A class filter alone can match more, so it keeps the 200 with the
+    // most open listings (rarely traded gear drops out); a search or category that broad still asks for a narrower name.
+    if (ids.length > 200 && $("mb-class").value && !$("mk-q").value.trim()) {
+      const open = new Map((catalog?.items || []).map((r) => [r.item, r.open || 0]));
+      ids = ids.sort((a, b) => (open.get(b) || 0) - (open.get(a) || 0)).slice(0, 200);
+    }
     if (!ids.length) {
       // No open listings, but the item itself usually exists: offer the matching items (with their reference price when
       // known) instead of a dead end; pets, cash items and rarely traded gear land here.
@@ -375,7 +405,7 @@ async function renderRecords() {
 function renderSummary() {
   const box = $("mb-summary"), q = $("mk-q").value.trim();
   const rows = view === "listings" && q && catalog
-    ? catalogRows(items, catalog.items, { query: q, category, sort: "active", favorites: null }).filter((r) => r.median != null || r.typical).slice(0, 4)
+    ? catalogRows(items, catalog.items, { query: q, category, sort: "active", favorites: null }).filter((r) => (r.median != null || r.typical) && classOk(r)).slice(0, 4)
     : [];
   box.hidden = !rows.length;
   box.innerHTML = rows.map((r) => `<a class="mb-sum" href="?item=${r.id}" data-item="${r.id}" data-source="summary">${icon(r.id, 28)}<span class="mb-sum-name">${esc(itemName(r.id))}</span><strong>${money(r.median ?? r.typical)}</strong><small>${r.median != null ? `${tr("최저", "Low")} ${money(r.low)} · ${tr(`판매 ${r.open}건`, `${r.open} for sale`)}` : tr("대표 시세", "Typical")}</small></a>`).join("");
@@ -664,6 +694,7 @@ for (const id of [
   "mb-list-sort",
   "mb-days",
   "mb-report-kind",
+  "mb-class",
 ])
   $(id).addEventListener("change", () => {
     page = 1;
@@ -860,7 +891,7 @@ ${data.quests?.[id]?.length ? `<h3>${tr("퀘스트 보상", "Quest reward")} <sm
 
 async function initialize() {
   // Drop sources fill the catalog's source column once the hover-card data arrives.
-  loadTips().then(() => { if (view === "items") renderDirectory(); });
+  loadTips().then(() => { if (view === "items" || $("mb-class").value) renderMain(); });
   try {
     const r = await fetch(D.itemsUrl);
     if (!r.ok) throw Error("items");
