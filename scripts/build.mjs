@@ -3040,7 +3040,10 @@ write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko
     mobs[m.id] = [m.ko || m.en, m.en, m.lv, m.hp, m.exp, m.el || '', m.eva, m.boss ? 1 : 0, m.eva ? dmgAccNeed(m.lv, m) : 0,
       open.slice(0, 2).map((l) => [l.ko || l.en, l.en]), open.length, drops.slice(0, 4).map((d) => d.itemId), m.drops.length, m.status];
   }
-  write('assets/item-tips.json', JSON.stringify({ mobs, items: tips }));
+  // Which quests give each item (for the market's item panel): path, client name and level, at most six.
+  const questsOf = {};
+  for (const q of QUESTS) if (!q.expired) for (const g of q.gets) if (tips[g.id]) (questsOf[g.id] ||= []).length < 6 && questsOf[g.id].push([questPath(q), q.name, q.lv]);
+  write('assets/item-tips.json', JSON.stringify({ mobs, items: tips, quests: questsOf }));
 }
 
 

@@ -1922,3 +1922,12 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-drops img { grid-row: 1 / 3; image-rendering: pixelated; object-fit: contain; }
 .mb-drops span { font-size: 0.85rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mb-drops small { font-size: 0.72rem; color: var(--muted); }
+.mb-catalog .mb-src { width: 1%; white-space: nowrap; }
+.mb-src-mobs { display: inline-flex; align-items: center; gap: 2px; }
+.mb-src-mobs img { image-rendering: pixelated; object-fit: contain; }
+.mb-src-mobs small { font-size: 0.72rem; color: var(--muted); margin-left: 2px; }
+@media (max-width: 640px) { .mb-catalog .mb-src { display: none; } }
+.mb-boss { font-size: 0.66rem; padding: 0 4px; border-radius: 3px; color: #fff; background: var(--danger); }
+.mb-quests { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.mb-quests li { display: flex; gap: 8px; align-items: baseline; font-size: 0.86rem; }
+.mb-quests small { color: var(--muted); font-size: 0.74rem; }
