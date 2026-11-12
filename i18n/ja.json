@@ -2262,6 +2262,7 @@
  "Seller · channel · room · status · sort": "出品者・チャンネル・部屋・状態・並び順",
  "Selling": "売ります",
  "Selling for": "出品価格",
+ "Selling {s} · Buying {b}": "売り {s} · 買い {b}",
  "Sells to NPC for": "NPC売却価格",
  "Sells to NPC for {n0} mesos": "NPC売却額 {n0} メル",
  "Send": "送信",
