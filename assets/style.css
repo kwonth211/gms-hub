@@ -1798,3 +1798,7 @@ html[data-charm='off'] :is(.charm-walk, .charm-leaves) { display: none; }
   .tab { font-size: 0.68rem; padding-left: 0; padding-right: 0; letter-spacing: -0.02em; }
   .tab .sprite { width: 18px; height: 18px; }
 }
+
+.mb-suggest { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 6px; }
+.mb-suggest li { display: flex; align-items: center; gap: 10px; }
+.mb-suggest small { color: var(--muted); }

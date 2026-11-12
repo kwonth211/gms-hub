@@ -1,5 +1,8 @@
 // Shared, deterministic search: no network or AI is needed after the item index loads.
-export const normalize = (value) => String(value ?? '').normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}%]+/gu, '');
+// A trailing bare jamo is a syllable still being typed ("망ㅌ"); it is dropped so the finished part still matches.
+// Initials-only queries ("ㅈㄱ") are kept whole.
+const typing = (s) => (/[\uac00-\ud7a3]/.test(s) ? s.replace(/[\u3131-\u318e\u1100-\u11ff]+$/u, '') : s);
+export const normalize = (value) => typing(String(value ?? '').trim()).normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}%]+/gu, '');
 
 // Korean scroll names keep the English stat word ("귀고리 STR 주문서", "상의 DEF 주문서"), so Korean stat words map to those exact tokens.
 const synonyms = [
@@ -10,6 +13,8 @@ const synonyms = [
   ['인트', 'int'], ['행운', 'luk'], ['럭', 'luk'], ['체력', 'hp'], ['투구', '모자'],
   ['크리티컬데미지', 'critdamage'], ['크리데미지', 'critdamage'], ['크뎀', 'critdamage'], ['크리티컬', 'crit'],
   ['장공', '장갑attack'], ['장마', '장갑magicattack'], ['마공', 'magicattack'], ['귀작', '귀고리'], ['카오스', '혼돈'],
+  // Everyday names players type for gear types and common misspellings seen in failed market searches.
+  ['아대', '클로'], ['글로브', '장갑'], ['글러브', '장갑'], ['귀걸이', '귀고리'], ['귀골', '귀고리'], ['전갑', '전신갑옷'], ['전신갑옷', '전신갑옷'], ['너크', '너클'],
 ].sort((a, b) => b[0].length - a[0].length);
 
 // Players type scrolls as gear + stat in two or three syllables (귀힘, 창공, 폴공, 망럭, 신이속). A query made only of such a

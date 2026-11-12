@@ -147,7 +147,8 @@ function visitNote(id) {
 }
 function noResults(term) {
   clearTimeout(noResultTimer);
-  if (!term || term === lastNoResult) return;
+  // A Korean word still being typed ends in a bare consonant or vowel ("망ㅌ"); that is not a failed search.
+  if (!term || term === lastNoResult || (/[\uac00-\ud7a3]/.test(term) && /[\u3131-\u318e]$/.test(term))) return;
   noResultTimer = setTimeout(() => {
     lastNoResult = term;
     track("market_no_results", { search_term: term.slice(0, 40), view, category, lang: D.lang });
@@ -295,7 +296,14 @@ async function renderRecords() {
   if (filtering) {
     const ids = filteredIds();
     if (!ids.length) {
-      $("mb-results").innerHTML = categoryMiss() || `<div class="market-empty"><strong>${T.noMatches}</strong><p>${tr("최근 30일에 기록된 아이템만 찾을 수 있어요. 한글·영문·초성·약어(장공, 귀힘)로도 검색돼요.", "Only items recorded in the last 30 days can be found. Korean, English, initials and common abbreviations all work.")}</p><p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="items">${tr("아이템 목록 보기", "Browse items")}</button></p></div>`;
+      // No open listings, but the item itself usually exists: offer the matching items (with their reference price when
+      // known) instead of a dead end; pets, cash items and rarely traded gear land here.
+      const typical = new Map((catalog?.items || []).filter((r) => r.typical).map((r) => [r.item, r.typical]));
+      const known = (matchingIds(items, $("mk-q").value) || []).slice(0, 8);
+      const suggest = known.length
+        ? `<p>${tr("지금 올라온 매물은 없지만, 이 아이템들이 있어요:", "No open listings right now, but these items match:")}</p><ul class="mb-suggest">${known.map((id) => `<li>${itemLink(id)}${typical.has(id) ? `<small>${tr("대표 시세", "Typical")} ${money(typical.get(id))}</small>` : `<small>${tr("시세 기록 없음", "No price yet")}</small>`}</li>`).join("")}</ul>`
+        : `<p>${tr("한글·영문·초성·약어(장공, 귀힘, 아대)로도 검색돼요.", "Korean, English, initials and common abbreviations all work.")}</p>`;
+      $("mb-results").innerHTML = categoryMiss() || `<div class="market-empty"><strong>${T.noMatches}</strong>${suggest}<p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="items">${tr("아이템 목록 보기", "Browse items")}</button></p></div>`;
       noResults($("mk-q").value.trim());
       $("mb-count").textContent = "0";
       $("mb-pagination").innerHTML = "";
