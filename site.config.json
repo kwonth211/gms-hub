@@ -26,6 +26,7 @@
   },
   "priceReports": true,
   "discord": "https://discord.gg/kVmXpHSKq",
+  "discordBotInstall": "https://discord.com/oauth2/authorize?client_id=1570465541343150292",
   "support": {
     "kofi": ""
   },

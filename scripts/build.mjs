@@ -501,7 +501,8 @@ const PAGES = [
   { key: 'about', path: '/about/' },
   { key: 'privacy', path: '/privacy/' },
   { key: 'terms', path: '/terms/' },
-  { key: 'contact', path: '/contact/' }
+  { key: 'contact', path: '/contact/' },
+  { key: 'bot', path: '/discord-bot/' }
 ];
 
 // Shared reviewed snapshot keeps home search, calculator and detail pages consistent.
@@ -733,6 +734,7 @@ function moreMenu(lang, moved = []) {
     ['/maps/', ko ? '맵 도감' : 'Map database'],
     ['/tools/scan/', ko ? '상점 스캔으로 올리기' : 'Upload a shop scan'],
     ['/about/', ko ? '사이트 소개' : 'About'],
+    config.discordBotInstall && ['/discord-bot/', ko ? '디스코드 봇' : 'Discord bot'],
     ['/contact/', ko ? '문의·협찬·후원' : 'Contact and support']
   ].filter(Boolean);
   const label = ko ? '더보기' : 'More';
@@ -2160,7 +2162,7 @@ function contactBody(lang) {
 <div class="contact-grid">
 ${config.discord ? `<section class="panel contact-card"><h2>${tr('디스코드 커뮤니티', 'Discord community')}</h2>
 <p>${tr('질문, 시세·파티 이야기, 사이트 건의와 오류 제보를 디스코드에서 바로 나눌 수 있어요. 사이트 업데이트 소식도 여기에 먼저 올려요.', 'Ask questions, talk prices and parties, and send site feedback or bug reports on Discord. Site updates are posted there first.')}</p>
-<p class="contact-actions"><a class="btn small-btn" href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="contact">${DISCORD_ICON(16)}${tr('디스코드 참여하기', 'Join the Discord')}</a></p></section>
+<p class="contact-actions"><a class="btn small-btn" href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="contact">${DISCORD_ICON(16)}${tr('디스코드 참여하기', 'Join the Discord')}</a>${config.discordBotInstall ? `<a class="btn ghost small-btn" href="${href(langPath(lang, '/discord-bot/'))}">${tr('디스코드 봇', 'Discord bot')}</a>` : ''}</p></section>
 ` : ''}<section class="panel contact-card"><h2>${tr('오류 제보·데이터 수정', 'Bug reports and data fixes')}</h2>
 <p>${tr('가격·드롭·사냥터 정보가 틀렸거나 페이지가 깨졌다면 알려 주세요. 어느 페이지의 무엇인지 적어 주시면 빨리 고칠 수 있어요.', 'Wrong prices, drops or training spots, or a broken page: tell us which page and what is wrong.')}</p>
 <p class="contact-actions"><a class="btn small-btn" href="${mail(tr('[GMS Hub] 오류 제보', '[GMS Hub] Bug report'))}">${tr('메일로 제보', 'Report by email')}</a><a class="btn ghost small-btn" href="${issuesUrl}" target="_blank" rel="noopener">${tr('GitHub에 남기기', 'Open a GitHub issue')}</a></p></section>
@@ -2173,6 +2175,37 @@ ${support.length ? `<p class="contact-actions">${support.map(([k, url]) => `<a c
 </div>
 <p class="contact-mail">${tr('메일 주소', 'Email')}: <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a> <button type="button" class="btn ghost small-btn" data-copy="${CONTACT_EMAIL}">${tr('주소 복사', 'Copy address')}</button> <span class="share-status" role="status"></span></p>
 <p class="muted small">${tr('GMS Hub는 넥슨과 관계없는 팬 사이트예요. 게임 계정·결제 문의는 넥슨 고객센터로 해 주세요.', 'GMS Hub is not affiliated with Nexon. For game account or payment issues, contact Nexon support.')}</p>
+</article>`;
+}
+
+// The Discord bot page: what the slash commands do and the button that adds the bot to a server or an account. The bot
+// itself is worker/src/discord-bot.js; the install link is site.config.json "discordBotInstall".
+function botBody(lang) {
+  const ko = lang === 'ko';
+  const tr = (k, e) => (ko ? k : e);
+  const cmds = [
+    [tr('/시세 장공', '/price steely'), tr('아이템의 자유시장 시세. 입력하는 동안 후보가 뜨고, 장공·귀힘 같은 줄임말도 알아들어요.', 'Free Market price of an item, with suggestions while you type.')],
+    [tr('/몬스터 엄티', '/mob zombie lupin'), tr('레벨, HP, 경험치, 많이 나오는 맵, 주요 드롭.', 'Level, HP, EXP, the busiest maps and notable drops.')],
+    [tr('/사냥터 45 클레릭', '/train 45 cleric'), tr('레벨과 직업에 맞는 사냥터와 동선 요약.', 'Training spots for your level and class.')],
+    [tr('/알림 추가 일비 표창', '/alert add ilbi'), tr('게임 확성기에 그 아이템이 뜨면 DM으로 알려 줘요. 팔 때만, 살 때만도 고를 수 있어요.', 'A DM when a game megaphone names the item. Selling only or buying only if you like.')],
+    [tr('/건의 보스 타이머 만들어 주세요', '/feedback please add boss timers'), tr('사이트에 바라는 점이나 틀린 정보를 바로 보내요.', 'Send a request or a correction straight to us.')],
+  ];
+  return `<article class="wrap prose contact-page bot-page"><h1>${tr('GMS Hub 디스코드 봇', 'GMS Hub Discord bot')}</h1>
+<p>${tr('디스코드 채팅창에서 메이플스토리 클래식 월드 시세, 몬스터, 사냥터를 바로 찾아보는 봇이에요. 길드나 친구 서버에 추가하면 모두가 쓸 수 있고, 내 계정에만 추가해도 어느 서버에서든 쓸 수 있어요. 무료예요.', 'Look up MapleStory Classic World prices, monsters and training spots without leaving Discord. Add it to your guild or friends server for everyone, or to your own account to use it in any server. It is free.')}</p>
+<p class="contact-actions"><a class="btn" href="${esc(config.discordBotInstall)}" target="_blank" rel="noopener" data-discord="bot-install">${DISCORD_ICON(18)}${tr('디스코드에 추가하기', 'Add to Discord')}</a>${config.discord ? `<a class="btn ghost" href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="bot-page">${tr('GMS Hub 디스코드 들어가기', 'Join the GMS Hub Discord')}</a>` : ''}</p>
+<h2>${tr('명령어', 'Commands')}</h2>
+<div class="table-wrap"><table class="bot-cmds"><thead><tr><th>${tr('이렇게 입력', 'Type this')}</th><th>${tr('이런 답이 와요', 'What you get')}</th></tr></thead><tbody>
+${cmds.map(([c, d]) => `<tr><td><code translate="no">${esc(c)}</code></td><td>${esc(d)}</td></tr>`).join('\n')}
+</tbody></table></div>
+<p>${tr('디스코드를 한국어로 쓰면 한국어로, 그 밖에는 영어로 답해요. 답에는 그래프와 상점 목록을 볼 수 있는 사이트 링크가 붙어요.', 'Replies are in Korean for Korean Discord clients and in English otherwise, each with a link to the charts and shop lists on the site.')}</p>
+<h2>${tr('권한과 개인정보', 'Permissions and privacy')}</h2>
+<ul>
+<li>${tr('서버 권한을 요구하지 않아요. 슬래시 명령어만 추가되고, 채팅 내용을 읽지 않아요.', 'It asks for no server permissions. It only adds slash commands and does not read your chat.')}</li>
+<li>${tr('알림을 켜면 디스코드 사용자 번호와 고른 아이템을 저장해요. 알림을 지우면 함께 지워져요.', 'Turning on an alert stores your Discord user ID and the items you picked; removing the alert removes them.')}</li>
+<li>${tr('건의 명령으로 보낸 글은 GMS Hub 디스코드의 건의 채널에 디스코드 이름과 함께 올라가요.', 'Text sent with the feedback command is posted in the feedback channel of the GMS Hub Discord with your Discord name.')}</li>
+<li>${tr('알림 DM을 받으려면 GMS Hub 디스코드에 들어와 있거나 봇을 내 계정에 추가해 두어야 해요.', 'To receive alert DMs, be in the GMS Hub Discord or have the bot added to your account.')}</li>
+</ul>
+<p class="muted small">${tr('GMS Hub는 넥슨과 관계없는 팬 사이트예요.', 'GMS Hub is an unofficial fan site and is not affiliated with Nexon.')}</p>
 </article>`;
 }
 
@@ -2703,6 +2736,12 @@ for (const lang of LANGS) {
       desc: lang === 'ko' ? 'GMS Hub 오류 제보, 광고·협찬·제휴 문의, 사이트 후원 창구예요.' : 'Report a bug, ask about advertising or partnerships, or support GMS Hub.',
       body: contactBody(lang),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '문의·협찬·후원' : 'Contact', '/contact/')]
+    },
+    bot: {
+      title: lang === 'ko' ? '글클메 디스코드 봇: 시세·몬스터·사냥터 명령어 | GMS Hub' : 'MapleStory Classic World Discord Bot: Prices, Monsters, Training | GMS Hub',
+      desc: lang === 'ko' ? '디스코드에서 /시세, /몬스터, /사냥터로 글로벌 클래식 메이플 정보를 바로 찾는 무료 봇. 확성기 아이템 알림도 받아요.' : 'A free Discord bot for MapleStory Classic World: /price, /mob and /train answer from live Free Market data, plus megaphone item alerts by DM.',
+      body: botBody(lang),
+      ld: [breadcrumbLd(lang, lang === 'ko' ? '디스코드 봇' : 'Discord bot', '/discord-bot/')]
     }
   };
 

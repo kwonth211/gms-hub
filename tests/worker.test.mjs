@@ -13,6 +13,7 @@ function environment() {
   sqlite.exec(fs.readFileSync(new URL('../worker/migrations/0002_listing_history.sql', import.meta.url), 'utf8').split('CREATE TRIGGER')[0]);
   // Megaphones carry parsed item/intent/price since migration 0009.
   sqlite.exec(fs.readFileSync(new URL('../worker/migrations/0009_megaphone_fields.sql', import.meta.url), 'utf8'));
+  sqlite.exec(fs.readFileSync(new URL('../worker/migrations/0011_discord_alerts.sql', import.meta.url), 'utf8'));
   const DB = { failUpdates: false, prepare(sql, args = []) {
     return { bind(...values) { return DB.prepare(sql, values); }, async first() { return sqlite.prepare(sql).get(...args) || null; },
       async all() { return { results: sqlite.prepare(sql).all(...args) }; }, async run() {

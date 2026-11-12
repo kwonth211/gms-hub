@@ -2186,3 +2186,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 .discord-link { text-decoration: none; }
 .discord-link .discord-ico { margin: 0; vertical-align: 0; }
 @media (max-width: 760px) { .site-header .discord-link { display: none; } }
+
+/* Discord bot page: the command table keeps each command on one line. */
+.bot-cmds code { white-space: nowrap; }
+.bot-page .btn .discord-ico { vertical-align: -0.2em; }

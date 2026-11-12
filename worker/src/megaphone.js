@@ -31,7 +31,8 @@ export function validMegaphone(r, now = Date.now()) {
     Number.isFinite(seen) && seen <= now + 60000 && now - seen < 3600000;
 }
 
-// onNew(rows) is handed the rows that were actually inserted (repeats left out), for the Discord feed.
+// onNew(rows) is handed the rows that were actually inserted (repeats left out) with their parsed item, intent and
+// price, for the Discord alerts.
 export async function postMegaphones(req, env, itemNames, onNew) {
   if (!env.MEGAPHONE_TOKEN) return reply({ error: 'megaphones not configured' }, 503);
   const auth = req.headers.get('Authorization') || '';
@@ -43,13 +44,15 @@ export async function postMegaphones(req, env, itemNames, onNew) {
   // The same line stays on screen for a while and scrolls through several frames: one row per nick+text per 10 minutes.
   const names = itemNames ? await itemNames().catch(() => null) : null;
   const insert = env.DB.prepare('INSERT OR IGNORE INTO megaphones (seen_at, kind, color, channel, nick, text, hash, item, intent, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-  const stmts = await Promise.all(rows.map(async (r) => {
+  const parsed = [];
+  const stmts = await Promise.all(rows.map(async (r, i) => {
     const text = r.text.trim(), p = parseMegaphone(text, names);
+    parsed[i] = { ...r, text, ...p };
     return insert.bind(stamp(r.seen), r.kind, r.color ?? null, r.channel ?? null, r.nick, text, await digest(`${r.nick}|${text.toLowerCase()}|${Math.floor(Date.parse(r.seen) / 600000)}`), p.item, p.intent, p.price);
   }));
   const results = await env.DB.batch(stmts);
-  const fresh = rows.filter((_, i) => results[i].meta.changes > 0);
-  if (fresh.length && onNew) onNew(fresh.map((r) => ({ ...r, text: r.text.trim() })));
+  const fresh = parsed.filter((_, i) => results[i].meta.changes > 0);
+  if (fresh.length && onNew) onNew(fresh);
   return reply({ ok: true, accepted: fresh.length });
 }
 

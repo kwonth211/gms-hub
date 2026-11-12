@@ -19,6 +19,8 @@ VAPID_SUBJECT = "mailto:kwonth211@gmail.com"
 # (public, shown on the Developer Portal), and the invite the bot hands out.
 DISCORD_PUBLIC_KEY = "d680698602135c2a47f7054d1ec72b69ab810f0b8965de527a74375a32a801b2"
 DISCORD_INVITE = "https://discord.gg/kVmXpHSKq"
+# /feedback posts into this channel of the GMS Hub server (needs the DISCORD_BOT_TOKEN secret, as do /alert DMs).
+DISCORD_FEEDBACK_CHANNEL = "1570460324203602010"
 
 [[d1_databases]]
 binding = "DB"
