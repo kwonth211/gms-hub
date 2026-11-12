@@ -910,7 +910,7 @@ function homeBody(lang) {
 ${(lang === 'ko' ? [
 tool('/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monster database', lang === 'ko' ? '몬스터 78종의 능력치, 드롭 아이템, 출현 위치를 검색하세요.' : 'Explore stats, reported drops and map locations for 78 monsters.'),
 tool('/equipment/', 'hammer', lang === 'ko' ? '장비 찾기' : 'Equipment finder', lang === 'ko' ? `직업과 레벨로 지금 얻을 수 있는 장비 ${EQUIPMENT.length}개를 찾고, 떨어뜨리는 몬스터를 봐요.` : `${EQUIPMENT.length} pieces of gear by class and level, with the monsters that drop them and quests that give them.`),
-tool('/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Live megaphones', lang === 'ko' ? '게임 확성기를 실시간으로 모아 보고, 시세와 비교하고, 귓말을 바로 복사해요. 방문자 채팅도 있어요.' : 'Game megaphones live, compared with market prices, with one-tap whisper and a visitors chat.'),
+tool('/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Live megaphones', lang === 'ko' ? '게임 확성기를 실시간으로 모아 보고, 시세와 비교하고, 귓말을 바로 복사해요.' : 'Game megaphones live, compared with market prices, with a one-tap whisper command.'),
 tool('/rank/', 'crown', lang === 'ko' ? '캐릭터 랭킹' : 'Character rankings', lang === 'ko' ? '레벨 순위 상위 1,000명과 직업 분포, 내 캐릭터 순위를 찾고 맞는 사냥터로 바로 가요.' : 'Top 1,000 by level, the class breakdown, and your own rank with training spots for your level.'),
 tool('/quests/best-exp/', 'star', lang === 'ko' ? '경험치 퀘스트' : 'Best EXP quests', lang === 'ko' ? '레벨 구간마다 보상 경험치가 큰 퀘스트 10개씩.' : 'The ten biggest EXP quest rewards for each level band.'),
 tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc),
@@ -927,7 +927,7 @@ tool('/maps/', 'tree', lang === 'ko' ? '맵 도감' : 'Maps', lang === 'ko' ? `�
 ] : [
 tool('/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monster database', lang === 'ko' ? '몬스터 78종의 능력치, 드롭 아이템, 출현 위치를 검색하세요.' : 'Explore stats, reported drops and map locations for 78 monsters.'),
 tool('/equipment/', 'hammer', lang === 'ko' ? '장비 찾기' : 'Equipment finder', lang === 'ko' ? `직업과 레벨로 지금 얻을 수 있는 장비 ${EQUIPMENT.length}개를 찾고, 떨어뜨리는 몬스터를 봐요.` : `${EQUIPMENT.length} pieces of gear by class and level, with the monsters that drop them and quests that give them.`),
-tool('/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Live megaphones', lang === 'ko' ? '게임 확성기를 실시간으로 모아 보고, 시세와 비교하고, 귓말을 바로 복사해요. 방문자 채팅도 있어요.' : 'Game megaphones live, compared with market prices, with one-tap whisper and a visitors chat.'),
+tool('/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Live megaphones', lang === 'ko' ? '게임 확성기를 실시간으로 모아 보고, 시세와 비교하고, 귓말을 바로 복사해요.' : 'Game megaphones live, compared with market prices, with a one-tap whisper command.'),
 tool('/rank/', 'crown', lang === 'ko' ? '캐릭터 랭킹' : 'Character rankings', lang === 'ko' ? '레벨 순위 상위 1,000명과 직업 분포, 내 캐릭터 순위를 찾고 맞는 사냥터로 바로 가요.' : 'Top 1,000 by level, the class breakdown, and your own rank with training spots for your level.'),
 tool('/quests/best-exp/', 'star', lang === 'ko' ? '경험치 퀘스트' : 'Best EXP quests', lang === 'ko' ? '레벨 구간마다 보상 경험치가 큰 퀘스트 10개씩.' : 'The ten biggest EXP quest rewards for each level band.'),
 tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc),
@@ -2653,7 +2653,7 @@ for (const lang of LANGS) {
     write(path.join(lang, 'megaphone', 'index.html'), page({
       lang, pageKey: 'megaphone', pagePath: '/megaphone/', modules: ['megaphone.js'],
       title: lang === 'ko' ? '글클메 실시간 확성기: 고확·팝니다·삽니다 모아 보기 | GMS Hub' : 'MapleStory Classic World Live Megaphones: Super Megaphones, Buying & Selling | GMS Hub',
-      desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드 게임 확성기를 실시간으로 모아 보여 줘요. 고확과 일반 확성기 구분, 팝니다·삽니다·채널 필터, 시세 비교, 귓말 복사, 방문자 채팅까지.' : 'Live MapleStory Classic World megaphones: super and regular megaphones apart, buying and selling filters, market price comparison, one-tap whisper command and a visitors chat.',
+      desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드 게임 확성기를 실시간으로 모아 보여 줘요. 고확과 일반 확성기 구분, 팝니다·삽니다·채널 필터, 시세 비교, 귓말 복사까지.' : 'Live MapleStory Classic World megaphones: super and regular megaphones apart, buying and selling filters, market price comparison and a one-tap whisper command.',
       body: megaphoneBody({ lang, itemsUrl: href('/assets/items.json'), marketUrl: href(langPath(lang, '/tools/market/')) }),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '실시간 확성기' : 'Live megaphones', '/megaphone/')]
     }));

@@ -1,6 +1,6 @@
-// Live megaphones and the site chat. Megaphones are polled from the worker every 5 seconds; each line is sorted into
+// Live megaphones. Megaphones are polled from the worker every 5 seconds; each line is sorted into
 // selling or buying, its items are matched to our catalogue and compared with the market, and Korean readers get a plain
-// reading of the trade shorthand. The chat is a WebSocket room on the worker and is drawn in a different style.
+// reading of the trade shorthand.
 import { koMesos, GLOSS, plain } from './mega-text.js';
 
 const root = document.getElementById('mg-page');
@@ -220,42 +220,6 @@ $('mg-feed').addEventListener('click', async (e) => {
   track('mega_whisper_copy');
 });
 
-// ---------- site chat ----------
-const chat = $('mg-chat'), form = $('mg-chat-form'), nameInput = $('mg-chat-name');
-let sock = null, retry = 0;
-try { nameInput.value = localStorage.getItem('gms-chat-name') || ''; } catch (e) {}
-const line = (m) => `<li><strong>${esc(m.name)}</strong><span>${esc(m.text)}</span><time>${new Date(m.at).toLocaleTimeString(lang, { hour: 'numeric', minute: '2-digit' })}</time></li>`;
-function addLine(m) {
-  const atEnd = chat.scrollTop + chat.clientHeight >= chat.scrollHeight - 30;
-  chat.insertAdjacentHTML('beforeend', line(m));
-  while (chat.children.length > 100) chat.firstElementChild.remove();
-  if (atEnd) chat.scrollTop = chat.scrollHeight;
-}
-const CHAT_ERR = { name: () => tr('닉네임은 2~12자예요.', 'Names are 2 to 12 characters.'), length: () => tr('메시지는 140자까지예요.', 'Messages are up to 140 characters.'),
-  link: () => tr('링크는 보낼 수 없어요.', 'Links are not allowed.'), slow: () => tr('조금 천천히 보내 주세요.', 'Please slow down a little.') };
-function connect() {
-  if (sock || !api) return;
-  sock = new WebSocket(`${api.replace(/^http/, 'ws')}/chat`);
-  sock.onmessage = (e) => {
-    let m; try { m = JSON.parse(e.data); } catch (x) { return; }
-    if (m.type === 'history') { chat.innerHTML = m.items.map(line).join(''); chat.scrollTop = chat.scrollHeight; $('mg-chat-count').textContent = m.n ? tr('{n}명 접속', '{n} here', { n: m.n }) : ''; }
-    else if (m.type === 'chat') addLine(m);
-    else if (m.type === 'error') $('mg-chat-status').textContent = CHAT_ERR[m.error]?.() || '';
-  };
-  sock.onopen = () => { retry = 0; $('mg-chat-status').textContent = ''; };
-  sock.onclose = () => { sock = null; if (retry < 6) setTimeout(connect, 2000 * 2 ** retry++); else $('mg-chat-status').textContent = tr('채팅 연결이 끊겼어요. 새로고침해 주세요.', 'Chat disconnected. Reload the page.'); };
-}
-form.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const name = nameInput.value.trim(), text = $('mg-chat-text').value.trim();
-  if (!sock || sock.readyState !== 1 || !text) return;
-  try { localStorage.setItem('gms-chat-name', name); } catch (x) {}
-  sock.send(JSON.stringify({ type: 'say', name, text }));
-  $('mg-chat-text').value = '';
-  track('chat_send');
-});
-
 loadItems().then(() => { poll(); setInterval(poll, POLL_MS); setupAi(); });
 $('mg-ai')?.addEventListener('click', () => setupAi(true));
-connect();
 setInterval(() => document.querySelectorAll('#mg-feed time').length && render(), 30000);

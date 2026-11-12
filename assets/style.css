@@ -1744,9 +1744,8 @@ html[data-charm='off'] :is(.charm-walk, .charm-leaves) { display: none; }
 }
 
 
-/* Live megaphones and site chat: game megaphones are coloured bands like the game's own; the site chat is plain
-   blue-grey bubbles under its own heading, so the two can't be confused. */
-.mg-page { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
+/* Live megaphones: coloured bands like the game's own. */
+.mg-page { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; align-items: start; }
 .mg-filters { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 6px; }
 .mg-filters input[type='search'] { min-width: 0; }
 .mg-check { font-size: 0.85rem; display: inline-flex; gap: 6px; align-items: center; }
@@ -1786,20 +1785,7 @@ html[data-charm='off'] :is(.charm-walk, .charm-leaves) { display: none; }
   .mg-body { grid-column: 1 / -1; grid-row: 2; }
   .mg-copy { grid-column: 2; grid-row: 1; }
 }
-.mg-chat-panel { position: sticky; top: calc(90px + var(--tk-h)); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: grid; gap: 8px; }
-.mg-chat-panel h2 { margin: 0; font-size: 1.05rem; }
-.mg-chat-panel h2 small { font-size: 0.75rem; color: var(--muted); font-weight: 600; }
-.mg-chat { list-style: none; margin: 0; padding: 0; height: 420px; overflow-y: auto; display: grid; align-content: start; gap: 6px; }
-.mg-chat li { background: var(--panel-2); border-radius: 10px; padding: 6px 9px; font-size: 0.88rem; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0 8px; }
-.mg-chat li strong { color: var(--ko); }
-.mg-chat li span { overflow-wrap: anywhere; }
-.mg-chat li time { color: var(--muted); font-size: 0.72rem; }
-.mg-chat-form { display: grid; grid-template-columns: 90px minmax(0, 1fr) auto; gap: 6px; }
-.mg-chat-form input { min-width: 0; }
 @media (max-width: 900px) {
-  .mg-page { grid-template-columns: minmax(0, 1fr); }
-  .mg-chat-panel { position: static; order: -1; }
-  .mg-chat { height: 220px; }
   .mg-feed { height: 65vh; }
 }
 /* Eight tabs on a phone: a slightly smaller label keeps one-word labels on one line. */

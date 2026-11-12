@@ -1,5 +1,4 @@
-// Live megaphones (read from the game by the admin collector) beside a visitors' site chat. assets/megaphone.js fills
-// both; the two are styled apart so a game megaphone can never be mistaken for a site message.
+// Live megaphones, read from the game by the admin collector; assets/megaphone.js fills the feed.
 export function megaphoneBody({ lang, itemsUrl, marketUrl }) {
   const ko = lang === 'ko';
   return `<section class="page-head wrap"><h1>${ko ? '실시간 확성기' : 'Live megaphones'}</h1>
@@ -23,16 +22,5 @@ export function megaphoneBody({ lang, itemsUrl, marketUrl }) {
 <ol class="mg-feed" id="mg-feed" aria-live="polite" tabindex="0"></ol>
 <p id="mg-empty" class="panel" hidden>${ko ? '아직 들어온 확성기가 없어요. 수집이 켜지면 여기에 바로 나와요.' : 'No megaphones yet. They appear here as soon as collection is running.'}</p>
 </section>
-<aside class="mg-chat-panel" aria-label="${ko ? '사이트 채팅' : 'Site chat'}">
-<h2>${ko ? '사이트 채팅' : 'Site chat'} <small id="mg-chat-count"></small></h2>
-<p class="muted small">${ko ? '이 사이트 방문자끼리 나누는 대화예요. 게임 확성기가 아니에요. 링크는 보낼 수 없어요.' : 'A chat between visitors of this site, not a game megaphone. Links are not allowed.'}</p>
-<ol class="mg-chat" id="mg-chat" aria-live="polite"></ol>
-<form class="mg-chat-form" id="mg-chat-form">
-<input id="mg-chat-name" maxlength="12" placeholder="${ko ? '닉네임' : 'Name'}" autocomplete="nickname" required>
-<input id="mg-chat-text" maxlength="140" placeholder="${ko ? '메시지 (140자)' : 'Message (140 characters)'}" autocomplete="off" required>
-<button class="btn small-btn" type="submit">${ko ? '보내기' : 'Send'}</button>
-</form>
-<p id="mg-chat-status" class="muted small" role="status"></p>
-</aside>
 </div>`;
 }
