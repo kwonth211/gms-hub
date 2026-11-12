@@ -672,11 +672,31 @@ async function showShop(seller, channel, room, shopPage = 1) {
         `<p>${T.failed}</p><button class="btn small-btn" data-retry-shop>${T.retry}</button>`;
   }
 }
+// The catalog is the slowest call (the API answers from the US), so the last copy is kept in this browser and drawn at
+// once on the next visit while the fresh one loads; the first request also starts before the item names have arrived.
+const CATALOG_KEY = "gms-market-catalog";
+let catalogFetch = get("/market/catalog").catch(() => null);
+function cachedCatalog() {
+  try {
+    const c = JSON.parse(localStorage.getItem(CATALOG_KEY) || "null");
+    return c && Date.now() - Date.parse(c.asOf) < 6 * 3600000 ? c : null;
+  } catch { return null; }
+}
 async function refresh() {
   if (refreshing || document.hidden) return;
   refreshing = true;
   try {
-    catalog = await get("/market/catalog");
+    const pending = catalogFetch || get("/market/catalog");
+    catalogFetch = null;
+    // First draw from the saved copy while the network answers.
+    if (!catalog) {
+      const saved = cachedCatalog();
+      if (saved) { catalog = saved; if (view === "items") renderDirectory(); }
+    }
+    const fresh = await pending;
+    if (!fresh) throw Error("catalog");
+    catalog = fresh;
+    try { localStorage.setItem(CATALOG_KEY, JSON.stringify(fresh)); } catch {}
     for (const k of ["open", "shops", "items", "records"])
       $("mk-stat-" + k).textContent = money(catalog.stats[k]);
     // The time goes in as a variable so derived locales match their translation key.

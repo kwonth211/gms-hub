@@ -641,6 +641,7 @@ ${naverVerify}
 <link rel="manifest" href="${href('/manifest.webmanifest')}">
 <link rel="apple-touch-icon" href="${href('/assets/icon-180.png')}">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="${esc(config.voteApi)}" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="${scriptSrc('style.css')}">
 <style>${CHARM_VARS}</style>
