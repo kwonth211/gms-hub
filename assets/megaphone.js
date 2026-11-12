@@ -118,6 +118,9 @@ function gloss(text, items) {
 const seenAt = (seen) => Date.parse(`${seen.replace(' ', 'T')}Z`);
 const clock = (seen) => new Date(seenAt(seen)).toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
 
+// The whisper button copies "/w <nick> " for pasting into the game's chat.
+const WHISPER = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 3h10a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H7l-3 2.5V11H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span>${tr('귓속말', 'Whisper')}</span>`;
+
 function ago(seen) {
   const s = Math.max(0, (Date.now() - seenAt(seen)) / 1000);
   const f = new Intl.RelativeTimeFormat(lang, { numeric: 'auto', style: 'short' });
@@ -138,7 +141,7 @@ function card(r) {
   return `<li class="mg-msg mg-${r.color || 'Y'} mg-k-${r.kind}">
 <div class="mg-who"><strong class="mg-nick">${esc(r.nick)}</strong><span class="mg-meta">${r.channel ? `<span class="mg-ch">CH${String(r.channel).padStart(2, '0')}</span>` : ''}<time datetime="${new Date(seenAt(r.seen)).toISOString()}" title="${ago(r.seen)}">${clock(r.seen)}</time></span><span class="mg-kind">${KIND[r.kind]?.() || ''}</span></div>
 <div class="mg-body"><p class="mg-text">${tag}${text}</p>${translator && plain(r.text) ? `<p class="mg-ai" data-src="${esc(plain(r.text))}" data-prefix="${esc(itemPrefix(r.text, items))}" hidden></p>` : ''}${g ? `<p class="mg-gloss">${esc(g)}</p>` : ''}${cmp}</div>
-<button type="button" class="mg-copy" data-nick="${esc(r.nick)}" title="${esc(tr('귓말 명령어 복사', 'Copy whisper command'))}" aria-label="${esc(tr('귓말 명령어 복사', 'Copy whisper command'))}">/w</button></li>`;
+<button type="button" class="mg-copy" data-nick="${esc(r.nick)}" title="${esc(tr('귓말 명령어 복사', 'Copy whisper command'))}" aria-label="${esc(tr('귓말 명령어 복사', 'Copy whisper command'))}">${WHISPER}</button></li>`;
 }
 
 const haystack = (r) => (r.hay ||= `${r.nick} ${r.text} ${itemsOf(r.text).map((i) => i.ko || '').join(' ')}`.toLowerCase());
@@ -221,7 +224,7 @@ root.querySelector('.mg-filters .chips').addEventListener('click', (e) => {
 $('mg-feed').addEventListener('click', async (e) => {
   const b = e.target.closest('.mg-copy');
   if (!b) return;
-  try { await navigator.clipboard.writeText(`/w ${b.dataset.nick} `); b.textContent = tr('복사됨', 'Copied'); setTimeout(() => (b.textContent = '/w'), 1200); } catch (x) {}
+  try { await navigator.clipboard.writeText(`/w ${b.dataset.nick} `); b.innerHTML = `<span>${tr('복사됨', 'Copied')}</span>`; setTimeout(() => (b.innerHTML = WHISPER), 1200); } catch (x) {}
   track('mega_whisper_copy');
 });
 
