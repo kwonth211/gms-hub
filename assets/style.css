@@ -1748,35 +1748,42 @@ html[data-charm='off'] :is(.charm-walk, .charm-leaves) { display: none; }
 .mg-filters { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 6px; }
 .mg-filters input[type='search'] { min-width: 0; }
 .mg-check { font-size: 0.85rem; display: inline-flex; gap: 6px; align-items: center; }
-.mg-feed { list-style: none; margin: 0; padding: 4px 6px 4px 0; display: grid; gap: 8px; align-content: start; height: min(72vh, 760px); overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.mg-feed { list-style: none; margin: 0; padding: 0; display: grid; align-content: start; height: min(72vh, 760px); overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
 .mg-feed:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .mg-feed mark { background: var(--star); color: var(--star-ink); border-radius: 3px; padding: 0 1px; }
 .mg-search { flex: 2 1 240px; font-size: 1rem; }
 .mg-count { margin: 4px 0 6px; }
-.mg-msg { border-radius: 10px; padding: 9px 12px; border: 1px solid; }
-.mg-Y { background: #fbefc4; border-color: #e3bf55; }
-.mg-P { background: #f7e1f3; border-color: #d79ad0; }
-.mg-C { background: #def3f8; border-color: #8fd3e8; }
-[data-theme='dark'] .mg-Y { background: #3a3218; border-color: #8a7130; }
-[data-theme='dark'] .mg-P { background: #3a2337; border-color: #8a5383; }
-[data-theme='dark'] .mg-C { background: #1d3540; border-color: #4d8799; }
-.mg-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.82rem; }
-.mg-kind { font-weight: 800; font-size: 0.72rem; padding: 1px 7px; border-radius: 999px; background: var(--text); color: var(--panel); }
-.mg-k-super .mg-kind { background: #a3437f; color: #fff; }
-.mg-k-item .mg-kind { background: #a8790b; color: #fff; }
-.mg-k-double .mg-kind { background: #23808f; color: #fff; }
-.mg-nick { font-size: 0.92rem; }
-.mg-ch { font-size: 0.72rem; font-weight: 700; padding: 0 6px; border-radius: 4px; border: 1px solid currentColor; color: #c0392b; }
-.mg-intent { font-size: 0.72rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; }
-.mg-intent.sell { background: var(--up); color: #fff; }
-.mg-intent.buy { background: var(--down); color: #fff; }
-.mg-head time { color: var(--muted); margin-left: auto; font-size: 0.75rem; }
-.mg-copy { font: inherit; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; border: 1px solid var(--line-strong); background: var(--panel); color: var(--text); }
-.mg-text { margin: 5px 0 0; font-size: 0.95rem; overflow-wrap: anywhere; }
+/* Band colours from the game: pink super, gold item, teal double. Shown as a thin edge and a faint wash, not a full box. */
+.mg-page { --mg-Y: #d9a520; --mg-P: #d26fc3; --mg-C: #2fb3cf; }
+.mg-msg { --band: var(--mg-Y); display: grid; grid-template-columns: 128px minmax(0, 1fr) auto; gap: 2px 14px; align-items: start; padding: 10px 12px 10px 14px; border-bottom: 1px solid var(--line); box-shadow: inset 3px 0 0 var(--band); background: linear-gradient(90deg, color-mix(in srgb, var(--band) 9%, transparent), transparent 45%); }
+.mg-msg:last-child { border-bottom: 0; }
+.mg-P { --band: var(--mg-P); }
+.mg-C { --band: var(--mg-C); }
+.mg-who { display: grid; gap: 1px; min-width: 0; }
+.mg-nick { font-size: 0.9rem; overflow-wrap: anywhere; }
+.mg-meta { display: flex; gap: 6px; align-items: baseline; font-size: 0.74rem; color: var(--muted); }
+.mg-ch { font-weight: 700; color: var(--up); font-variant-numeric: tabular-nums; }
+.mg-kind { justify-self: start; margin-top: 3px; font-size: 0.68rem; font-weight: 700; padding: 0 6px; border-radius: 4px; color: var(--text-2); background: color-mix(in srgb, var(--band) 22%, transparent); }
+.mg-body { min-width: 0; }
+.mg-intent { display: inline-block; margin-right: 6px; font-size: 0.7rem; font-weight: 700; padding: 0 6px; border-radius: 4px; vertical-align: 1px; color: var(--panel); }
+.mg-intent.sell { background: var(--up); }
+.mg-intent.buy { background: var(--down); }
+.mg-copy { font: inherit; font-size: 0.75rem; font-weight: 700; padding: 3px 9px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--muted); }
+.mg-copy:hover { color: var(--text); border-color: var(--line-strong); }
+.mg-copy:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.mg-text { margin: 0; font-size: 0.92rem; line-height: 1.45; overflow-wrap: anywhere; }
 .mg-item { font-weight: 700; color: var(--accent-2); }
-.mg-gloss { margin: 3px 0 0; font-size: 0.85rem; color: var(--text-2); }
-.mg-price { display: inline-block; margin-top: 6px; font-size: 0.8rem; padding: 2px 8px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); color: var(--text); text-decoration: none; }
+.mg-gloss { margin: 2px 0 0; font-size: 0.84rem; color: var(--text-2); }
+.mg-price { display: inline-block; margin-top: 4px; font-size: 0.76rem; color: var(--muted); text-decoration: none; }
+.mg-price:hover { color: var(--text); text-decoration: underline; }
 .mg-price .up { color: var(--up); } .mg-price .down { color: var(--down); }
+@media (max-width: 640px) {
+  .mg-msg { grid-template-columns: minmax(0, 1fr) auto; padding: 9px 10px 9px 12px; }
+  .mg-who { grid-column: 1; grid-auto-flow: column; justify-content: start; align-items: baseline; gap: 8px; }
+  .mg-kind { margin-top: 0; }
+  .mg-body { grid-column: 1 / -1; grid-row: 2; }
+  .mg-copy { grid-column: 2; grid-row: 1; }
+}
 .mg-chat-panel { position: sticky; top: 90px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: grid; gap: 8px; }
 .mg-chat-panel h2 { margin: 0; font-size: 1.05rem; }
 .mg-chat-panel h2 small { font-size: 0.75rem; color: var(--muted); font-weight: 600; }
@@ -1810,5 +1817,5 @@ html[data-charm='off'] :is(.charm-walk, .charm-leaves) { display: none; }
 .hero-new a:hover { border-color: var(--accent); }
 .hero-new a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
-.mg-ai { margin: 4px 0 0; font-size: 0.9rem; color: var(--text); padding-left: 8px; border-left: 3px solid var(--accent-line); }
+.mg-ai { margin: 2px 0 0; font-size: 0.86rem; color: var(--text-2); }
 .mg-ai-btn[disabled] { opacity: 0.8; }
