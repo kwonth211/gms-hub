@@ -10,10 +10,30 @@ const enqueue = fn => { const next = serial.then(fn); serial = next.catch(() => 
 const get = async () => (await chrome.storage.local.get('state')).state || { enabled: false, cursor: 0, history: [] };
 const put = state => chrome.storage.local.set({ state });
 const owned = tab => tab?.url?.startsWith(PAGE) || tab?.pendingUrl?.startsWith(PAGE);
+// Heartbeat: a few fields about the current state go to the server (GET /market/collector shows them), so the
+// collector can be watched and debugged from outside the browser. Throttled unless an event forces it; never blocks.
+let lastBeatAt = 0;
+async function beat(event, force = false, gap = 45000) {
+  if (!GMS_BATCH_CONFIG.token || (!force && Date.now() - lastBeatAt < gap)) return;
+  lastBeatAt = Date.now();
+  const s = await get();
+  const body = { version: '0.7.0', event, enabled: !!s.enabled, phase: s.run?.phase || (s.pending ? 'pending' : 'idle'), shops: s.run?.progress?.shops ?? null,
+    rows: s.run?.progress?.rows ?? null, item: s.run?.progress?.item ?? null, hidden: !!s.run?.progress?.hidden, error: s.error || null, runId: s.run?.runId || null,
+    startedAt: s.run?.startedAt || null, nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
+  fetch(ENDPOINT + '?heartbeat=1', { method: 'POST', headers: { Authorization: `Bearer ${GMS_BATCH_CONFIG.token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body), signal: AbortSignal.timeout(10000) }).catch(() => {});
+}
+// The collector window is thrown away and made fresh when a run stalls or it has lived six hours, so a renderer that
+// has gone bad (one sat at 100% CPU for three days) never stays in service.
+const WINDOW_LIFE = 6 * 3600000;
+async function recycleWindow(s) {
+  if (s.workerWindowId) await chrome.windows.remove(s.workerWindowId).catch(() => {});
+  s.workerWindowId = null; s.workerTabId = null; s.workerCreatedAt = null;
+}
 async function broadcast() {
   const s = await get();
   // No secret is ever included in content-script messages or the public DOM.
-  return { ...s, version: '0.6.1', nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
+  return { ...s, version: '0.7.0', nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
 }
 async function ensureAlarms() {
   const s = await get();
@@ -33,6 +53,7 @@ async function stop(error, report = null) {
   if (s.run?.tabId) await chrome.tabs.sendMessage(s.run.tabId, { type: 'cancel' }).catch(() => {});
   s.run = null; await put(s); await chrome.alarms.clear(SCHEDULE);
   await chrome.alarms.clear(COLLECT_RETRY);
+  await beat('stop', true);
 }
 async function recover(error, report = null) {
   const s = await get();
@@ -47,6 +68,7 @@ async function recover(error, report = null) {
   if (s.run) s.history = [{ runId: s.run.runId, mode: s.run.mode, trigger: s.run.trigger, status: 'retrying', at: new Date().toISOString(), error }, ...(s.history || [])].slice(0, 20);
   s.run = null; s.testRemaining = 0; await put(s);
   await chrome.alarms.create(COLLECT_RETRY, { when: s.retryAt });
+  await beat('recover', true);
 }
 async function launch(mode, trigger) {
   const s = await get();
@@ -94,6 +116,7 @@ async function launch(mode, trigger) {
   const summaryDue = mode !== 'test' && Date.now() - (s.lastSummaryAt || 0) >= SUMMARY_EVERY;
   s.run = { runId: crypto.randomUUID(), mode, trigger, maxRows, ...scope, summaryDue, itemIds: s.itemIds || [], startedAt: Date.now(), cursor: s.cursor || 0, phase: 'loading', tabId: null };
   await put(s);
+  if (s.workerWindowId && Date.now() - (s.workerCreatedAt || 0) > WINDOW_LIFE) { await recycleWindow(s); await put(s); }
   const tab = s.workerTabId ? await chrome.tabs.get(s.workerTabId).catch(() => null) : null;
   try {
     const window = s.workerWindowId ? await chrome.windows.get(s.workerWindowId).catch(() => null) : null;
@@ -107,11 +130,12 @@ async function launch(mode, trigger) {
       const created = await chrome.windows.create({ url: PAGE, type: 'popup', focused: false, width: 1200, height: 850 });
       const id = created.tabs?.[0]?.id;
       if (!id) throw new Error('전용 수집 창의 탭을 찾을 수 없습니다.');
-      s.workerWindowId = created.id; s.workerTabId = id; s.run.tabId = id; await put(s);
+      s.workerWindowId = created.id; s.workerTabId = id; s.workerCreatedAt = Date.now(); s.run.tabId = id; await put(s);
       await chrome.tabs.update(id, { autoDiscardable: false });
     }
+    await beat('launch', true);
     return { started: true, runId: s.run.runId };
-  } catch (e) { await stop(e.message || '전용 수집 창을 열 수 없습니다.'); throw e; }
+  } catch (e) { const s2 = await get(); await recycleWindow(s2); await put(s2); await stop(e.message || '전용 수집 창을 열 수 없습니다.'); throw e; }
 }
 async function upload() {
   const s = await get(); if (!s.pending || s.pending.paused) return;
@@ -131,6 +155,12 @@ async function upload() {
       await chrome.alarms.create(RETRY, { delayInMinutes: Math.max(1, retryAfter / 60) });
       return;
     }
+    if (retryable) {
+      // The server or the database is down (the daily limit, an outage): keep the result and keep trying every
+      // 30 minutes rather than switching automatic collection off, so nobody has to press a button afterwards.
+      pending.attempts = 0; s.pending = pending; s.error = `DB 저장 지연 (${code || '연결 오류'}) · 30분마다 다시 시도`; await put(s);
+      await chrome.alarms.create(RETRY, { delayInMinutes: 30 }); await beat('upload-delayed', true); return;
+    }
     await stop(`DB 저장 실패 (${code || '연결 오류'}). 결과를 보존했습니다. 재시도 버튼으로 복구할 수 있습니다.`, s.lastReport);
     return;
   }
@@ -140,6 +170,7 @@ async function upload() {
   current.pending = null; current.run = null; current.error = null; current.lastReceipt = receipt;
   current.lastSuccessAt = new Date().toISOString(); current.cursor = current.lastReport.nextCursor || 0;
   current.collectionFailures = 0; current.retryAt = null;
+  lastBeatAt = 0;
   const sent = JSON.parse(pending.body).summary || [];
   // Remember every traded item (busiest first) so later runs rotate through all of them, not only the rows on screen.
   if (sent.length > 100) { current.lastSummaryAt = Date.now(); current.itemIds = [...sent].sort((a, b) => (b.sales || 0) - (a.sales || 0)).map(x => x.item); }
@@ -164,6 +195,7 @@ async function finish(report, sender) {
   }
   const body = { runId: report.runId, world: report.world, startedAt: report.startedAt, finishedAt: report.finishedAt, shops: report.shops, rows: report.rows, summary: report.summary || [] };
   s.pending = { body: JSON.stringify(body), attempts: 0, trigger: s.run.trigger }; s.run.phase = 'uploading'; await put(s);
+  await beat('uploading', true);
   await upload();
 }
 async function message(m, sender) {
@@ -179,7 +211,7 @@ async function message(m, sender) {
   if (m.type === 'ready') {
     const s = await get();
     if (s.run?.tabId !== sender.tab.id || s.run.phase !== 'loading') return null;
-    s.run.phase = 'collecting'; s.run.readyAt = Date.now(); await put(s); return s.run;
+    s.run.phase = 'collecting'; s.run.readyAt = Date.now(); s.run.progressAt = Date.now(); await put(s); await beat('ready', true); return s.run;
   }
   if (m.type === 'focus') {
     const s = await get();
@@ -195,7 +227,8 @@ async function message(m, sender) {
   if (m.type === 'progress') {
     const s = await get();
     if (s.run?.runId !== m.runId || s.run.tabId !== sender.tab.id) throw new Error('실행 불일치');
-    s.run.progress = m.progress; await put(s); return { ok: true };
+    if ((m.progress?.shops ?? 0) !== (s.run.progress?.shops ?? 0)) s.run.progressAt = Date.now();
+    s.run.progress = m.progress; await put(s); await beat('progress'); return { ok: true };
   }
   if (m.type === 'finish') { await finish(m.report, sender); return { ok: true }; }
   if (m.type === 'test3') {
@@ -239,7 +272,10 @@ chrome.alarms.onAlarm.addListener(alarm => enqueue(async () => {
   }
   if (alarm.name === WATCHDOG) {
     const s = await get();
-    if (s.run && !s.pending && ((s.run.phase === 'loading' && Date.now() - s.run.startedAt > 90000) || Date.now() - (s.run.readyAt || s.run.startedAt) > 14 * 60000)) await recover('수집 창 응답 시간 초과');
+    if (s.run && !s.pending && ((s.run.phase === 'loading' && Date.now() - s.run.startedAt > 90000) || Date.now() - (s.run.readyAt || s.run.startedAt) > 14 * 60000)) { await recycleWindow(s); await put(s); await recover('수집 창 응답 시간 초과'); }
+    // No shop read for four minutes while collecting: the window is stuck (a frozen renderer), so it is replaced.
+    else if (s.run?.phase === 'collecting' && !s.pending && Date.now() - (s.run.progressAt || s.run.readyAt || s.run.startedAt) > 4 * 60000) { await recycleWindow(s); await put(s); await recover('수집 진행 멈춤 (창 재생성)'); }
+    else if (!s.run) await beat('idle', false, 5 * 60000);
     // Resume a durable outbox after a browser/service-worker restart.
     if (s.pending && !s.pending.paused && !await chrome.alarms.get(RETRY)) await chrome.alarms.create(RETRY, { delayInMinutes: 1 });
     return;

@@ -95,6 +95,19 @@ export async function handleMarketBatch(req, env, knownItems) {
     return reply({ runs: results, ...status });
   }
   if (req.method !== 'POST') return reply({ error: 'method not allowed' }, 405);
+  // The collector's heartbeat: a few fields about its current state, kept as one snapshot row so the collector can be
+  // watched from outside the browser (GET /market/collector) without opening its window.
+  if (new URL(req.url).searchParams.has('heartbeat')) {
+    const raw = await req.text();
+    if (raw.length > 4000) return reply({ error: 'body too large' }, 413);
+    let b; try { b = JSON.parse(raw); } catch { return reply({ error: 'invalid JSON' }, 400); }
+    const str = (v, n = 120) => (typeof v === 'string' ? v.slice(0, n) : null);
+    const num = v => (Number.isFinite(Number(v)) ? Number(v) : null);
+    const beat = { version: str(b.version, 16), enabled: !!b.enabled, phase: str(b.phase, 24), shops: num(b.shops), rows: num(b.rows), item: str(b.item, 60),
+      hidden: !!b.hidden, error: str(b.error, 200), runId: str(b.runId, 36), startedAt: num(b.startedAt), nextAt: num(b.nextAt), event: str(b.event, 24) };
+    await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('collector',?,datetime('now'))").bind(JSON.stringify(beat)).run();
+    return reply({ ok: true });
+  }
   if (Number(req.headers.get('Content-Length')) > 400000) return reply({ error: 'body too large' }, 413);
   const raw = await req.text();
   if (raw.length > 400000) return reply({ error: 'body too large' }, 413);
@@ -153,4 +166,14 @@ export async function handleMarketBatch(req, env, knownItems) {
     const raced = await previous().catch(() => null);
     return raced ? replay(raced) : reply({ error: 'database transaction failed' }, 503);
   }
+}
+
+// What the collector last reported about itself plus its last three stored runs: enough to tell "running", "stuck",
+// "stopped with error" and "never uploaded today" apart from the command line.
+export async function collectorView(env) {
+  const beat = await env.DB.prepare("SELECT json, at FROM snapshots WHERE key = 'collector'").first().catch(() => null);
+  const { results } = await env.DB.prepare('SELECT received_at AS at, shops, accepted FROM market_batch_runs ORDER BY received_at DESC, rowid DESC LIMIT 3').all();
+  const status = await getCollectionStatus(env);
+  return { heartbeat: beat ? { ...JSON.parse(beat.json), at: beat.at.replace(' ', 'T') + 'Z', ageSeconds: Math.round((Date.now() - Date.parse(beat.at.replace(' ', 'T') + 'Z')) / 1000) } : null,
+    runs: results, state: status.state, lastSuccessAt: status.lastSuccessAt, nextEligibleAt: status.nextEligibleAt, todayRows: status.usage?.rows ?? null, asOf: status.asOf };
 }

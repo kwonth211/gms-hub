@@ -17,7 +17,7 @@
 // GET  /rank/lookup?name= -> { data: one character }  (ClassicRank, cached an hour)
 // GET  /presence?p=<path> (WebSocket) -> messages { site, here }: open pages on the whole site and on this page
 // The shop scanner runs from the local dev server for now, so its origin may post scans too.
-import { handleMarketBatch, getCollectionStatus } from './market-batch.js';
+import { handleMarketBatch, getCollectionStatus, collectorView } from './market-batch.js';
 import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoints } from './market-browser.js';
 import { cachedPublicResponse } from './public-cache.js';
 import { Presence, handlePresence } from './presence.js';
@@ -282,6 +282,9 @@ const api = {
       return json({ state: s.state, lastSuccessAt: s.lastSuccessAt, nextEligibleAt: s.nextEligibleAt,
         intervalSeconds: s.policy.intervalSeconds, asOf: s.asOf }, cors, 200, 'public, max-age=180');
     }
+
+    // Collector watch (assets: none; for operators and the daily check): the extension's last heartbeat and last runs.
+    if (url.pathname === '/market/collector' && req.method === 'GET') return json(await collectorView(env), cors, 200, 'public, max-age=20');
 
     if (url.pathname === '/votes' && req.method === 'GET') {
       const { results } = await env.DB.prepare('SELECT site, count FROM votes').all();
