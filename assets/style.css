@@ -1949,3 +1949,22 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mt-said li { display: grid; gap: 2px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
 .mt-said small { color: var(--muted); font-size: 0.78rem; }
 .mt-more { display: flex; flex-wrap: wrap; gap: 8px; }
+/* Market item panel: daily price history. */
+.mb-history { margin: 10px 0 4px; }
+.mb-history h3 { margin: 0 0 4px; font-size: 0.92rem; }
+.mb-history h3 small { color: var(--muted); font-weight: 600; }
+.mb-hist-change { margin: 0 0 4px; font-size: 0.85rem; color: var(--text-2); }
+.mb-hist-change b.up { color: var(--danger); } .mb-hist-change b.down { color: #23824a; }
+[data-theme='dark'] .mb-hist-change b.down { color: #6fdc9a; }
+.mb-hist { width: 100%; height: auto; display: block; }
+.mb-hist .grid { stroke: var(--line); stroke-width: 1; }
+.mb-hist .ax { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.mb-hist path { fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.mb-hist .med { stroke: var(--accent-fill); stroke-width: 2.5; }
+.mb-hist .low { stroke: var(--muted); stroke-width: 1.2; opacity: 0.7; }
+.mb-hist .typ { stroke: var(--text-2); stroke-width: 1.5; stroke-dasharray: 5 4; opacity: 0.8; }
+.mb-hist .pt { fill: var(--accent-fill); stroke: var(--panel); stroke-width: 2; }
+.mb-hist-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 2px 0 0; font-size: 0.76rem; color: var(--muted); }
+.mb-hist-legend .k { display: inline-block; width: 16px; height: 0; border-top: 2.5px solid var(--accent-fill); margin-right: -6px; vertical-align: middle; }
+.mb-hist-legend .k.low { border-top: 1.5px solid var(--muted); }
+.mb-hist-legend .k.typ { border-top: 1.5px dashed var(--text-2); }

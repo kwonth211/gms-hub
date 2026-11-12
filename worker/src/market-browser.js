@@ -288,10 +288,31 @@ export async function marketHistory(env, p) {
   return {
     item,
     rows: rows.slice(0, limit),
+    daily: await dailyHistory(env, item),
     profile: current.slice(0, 10000),
     truncated: rows.length > limit,
     profileTruncated: current.length > 10000,
     limit,
     asOf: new Date().toISOString(),
   };
+}
+
+// Price history per day for the item panel, over everything kept (at most 120 days): the asking median, low and high of
+// the listings seen that day (a listing counts on the day it was last seen) and the reference "typical" price saved once
+// a day in item_summary_daily. Days without either are left out, so gaps in collection stay visible as gaps.
+export async function dailyHistory(env, item) {
+  const since = stamp(Date.now() - 120 * DAY);
+  const [listed, typical] = await Promise.all([
+    all(env, "SELECT substr(last_seen,1,10) AS day, price FROM listings WHERE item=? AND sold=0 AND last_seen>=?", [item, since]),
+    all(env, "SELECT day, typical FROM item_summary_daily WHERE item=? AND day>=?", [item, since.slice(0, 10)]),
+  ]);
+  const byDay = new Map();
+  for (const r of listed) (byDay.get(r.day) || byDay.set(r.day, []).get(r.day)).push(r.price);
+  const days = new Set([...byDay.keys(), ...typical.map((r) => r.day)]);
+  const typ = new Map(typical.map((r) => [r.day, r.typical]));
+  return [...days].sort().map((day) => {
+    const ps = (byDay.get(day) || []).sort((a, b) => a - b);
+    const mid = ps.length ? (ps.length % 2 ? ps[ps.length >> 1] : Math.round((ps[ps.length / 2 - 1] + ps[ps.length / 2]) / 2)) : null;
+    return { day, median: mid, low: ps[0] ?? null, high: ps.at(-1) ?? null, n: ps.length, typical: typ.get(day) ?? null };
+  });
 }
