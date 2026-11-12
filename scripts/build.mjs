@@ -494,6 +494,7 @@ const PAGES = [
   { key: 'price', path: '/tools/price/' },
   { key: 'scan', path: '/tools/scan/' },
   { key: 'myShop', path: '/tools/my-shop/' },
+  { key: 'marketToday', path: '/tools/market/today/' },
   { key: 'market', path: '/tools/market/' },
   { key: 'damage', path: '/tools/damage/' },
   { key: 'about', path: '/about/' },
@@ -738,7 +739,7 @@ function footer(lang) {
 </div></footer>`;
 }
 
-const ADFIT_PAGES = new Set(['home', 'myShop', 'training', 'trBand', 'trClass', 'scroll', 'drop', 'price', 'scan', 'market', 'damage', 'guides', 'guide', 'monsters', 'monster', 'items', 'item',
+const ADFIT_PAGES = new Set(['home', 'myShop', 'marketToday', 'training', 'trBand', 'trClass', 'scroll', 'drop', 'price', 'scan', 'market', 'damage', 'guides', 'guide', 'monsters', 'monster', 'items', 'item',
   'bosses', 'maps', 'map', 'quests', 'quest', 'questBest', 'equipment', 'equipmentClass', 'rank', 'megaphone']);
 // AdFit counted only 5-9% of the end-of-page banner as viewed (most visitors never scroll that far), so a second slot sits
 // just under the page title: after the page head, after the home hero, or after a guide's first paragraph. Never beside
@@ -776,6 +777,49 @@ const breadcrumbLd = (lang, name, p) => ({
 
 const pageHead = (lang, icon, h1, lead) =>
   `<section class="page-head wrap"><span class="badge-game">${esc(T[lang].gameBadge)}</span><h1>${spriteSvg(icon, 36)}${h1}</h1><p class="lead">${esc(lead)}</p></section>`;
+
+// ---------- daily market report ----------
+// /tools/market/today/: rebuilt every night from data/market-report.json (scripts/fetch-market-report.mjs), so search
+// engines find a fresh "today's prices" page without anyone writing it. Only measured numbers: listing counts, asking
+// medians and lows from scanned shops, and how often an item was named in the latest megaphones.
+const MARKET_REPORT = fs.existsSync(path.join(root, 'data/market-report.json')) ? readJson('data/market-report.json') : null;
+function marketTodayBody(lang) {
+  const ko = lang === 'ko';
+  const tr = (k, e) => (ko ? k : e);
+  const R = MARKET_REPORT;
+  const byId = new Map(itemsData.items.map((i) => [i.id, i]));
+  const byEn = new Map(itemsData.items.map((i) => [i.en.toLowerCase(), i]));
+  const name = (i) => (ko && i.ko ? i.ko : i.en);
+  const nf = (n) => Number(n).toLocaleString(ko ? 'ko' : 'en-US');
+  // Amounts and the date are kept out of translation (translate="no") so the zh/ja translation memory keys stay the same
+  // every day.
+  const mesos = (n) => `<span translate="no">${ko ? (n >= 1e8 ? `${+(n / 1e8).toFixed(2)}억` : n >= 1e4 ? `${+(n / 1e4).toFixed(n >= 1e6 ? 0 : 1)}만` : nf(n)) : n >= 1e6 ? `${+(n / 1e6).toFixed(2)}m` : n >= 1e3 ? `${+(n / 1e3).toFixed(1)}k` : nf(n)}</span>`;
+  const market = href(langPath(lang, '/tools/market/'));
+  const icon = (id) => `<img src="https://maplestory.io/api/MCW/1/item/${id}/icon" width="28" height="28" alt="" loading="lazy">`;
+  const link = (i) => `<a class="mt-item" href="${market}?item=${i.id}">${icon(i.id)}<span>${esc(name(i))}</span></a>`;
+  const day = (R?.updated || BUILD_DATE).slice(0, 10);
+  const dayText = ko ? new Date(`${day}T12:00:00Z`).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' }) : day;
+  if (!R) return `${pageHead(lang, 'coin', tr('오늘의 글클메 시세', "Today's MapleStory Classic prices"), tr('시세 리포트를 준비하고 있어요.', 'The report is being prepared.'))}`;
+  const listed = R.listed.map((r) => ({ ...r, i: byId.get(r.item) })).filter((r) => r.i);
+  const said = Object.entries(R.said || {}).map(([k, n]) => ({ i: byEn.get(k), n })).filter((r) => r.i && !/megaphone/i.test(r.i.en)).sort((a, b) => b.n - a.n).slice(0, 12);
+  const median = new Map(R.listed.map((r) => [r.item, r.median]));
+  const movers = (R.movers || []).filter((r) => Math.abs(r.change) >= 3 && byId.has(r.item));
+  const stats = R.stats || {};
+  return `${pageHead(lang, 'coin', `${tr('오늘의 글클메 시세', "Today's MapleStory Classic prices")} <small class="mt-date" translate="no">${esc(dayText)}</small>`, tr('자유시장에서 지금 가장 많이 팔리는 아이템과 최근 고확에 자주 나온 아이템을 매일 정리해요. 모든 숫자는 플레이어 상점 스캔과 게임 확성기에서 모은 실제 기록이에요.', 'Every day: the most listed items in the Free Market and the items named most in recent megaphones. Every number comes from scanned player shops and in-game megaphones.'))}
+<div class="wrap market-today">
+<dl class="mt-stats">${[[tr('판매 중 매물', 'Open listings'), stats.listings], [tr('아이템 종류', 'Items'), stats.items], [tr('상점', 'Shops'), stats.shops]].filter(([, v]) => v).map(([k, v]) => `<div><dt>${k}</dt><dd>${nf(v)}</dd></div>`).join('')}</dl>
+<section class="panel"><h2>${tr('매물이 가장 많은 아이템', 'Most listed items')}</h2>
+<div class="table-wrap"><table class="data mt-table"><thead><tr><th scope="col">#</th><th scope="col">${tr('아이템', 'Item')}</th><th scope="col">${tr('판매가 중앙값', 'Asking median')}</th><th scope="col">${tr('최저가', 'Lowest')}</th><th scope="col">${tr('매물', 'Listings')}</th></tr></thead><tbody>
+${listed.map((r, n) => `<tr><td>${n + 1}</td><th scope="row">${link(r.i)}</th><td class="num">${mesos(r.median)}</td><td class="num">${r.low ? mesos(r.low) : '—'}</td><td class="num">${nf(r.open)}</td></tr>`).join('')}
+</tbody></table></div></section>
+${said.length ? `<section class="panel"><h2>${tr('최근 고확에 많이 나온 아이템', 'Most named in recent megaphones')}</h2>
+<ul class="mt-said">${said.map((r) => `<li>${link(r.i)}<small>${tr(`고확 ${r.n}번`, `${r.n} megaphones`)}${median.has(r.i.id) ? ` · ${tr('시세', 'market')} ${mesos(median.get(r.i.id))}` : ''}</small></li>`).join('')}</ul>
+<p class="muted small">${tr('최근 고확 200개 기준이에요.', 'Based on the latest 200 megaphones.')} <a href="${href(langPath(lang, '/megaphone/'))}">${tr('실시간 확성기 보기', 'Open live megaphones')}</a></p></section>` : ''}
+${movers.length ? `<section class="panel"><h2>${tr('일주일 사이 크게 움직인 아이템', 'Biggest moves this week')}</h2><ul class="mt-said">${movers.map((r) => `<li>${link(byId.get(r.item))}<small>${r.change > 0 ? '+' : ''}${r.change}% · ${mesos(r.median)}</small></li>`).join('')}</ul></section>` : ''}
+<p class="mt-more"><a class="btn" href="${market}">${tr('실시간 시세에서 검색하기', 'Search live prices')}</a> <a class="btn ghost" href="${href(langPath(lang, '/tools/scan/'))}">${tr('내 상점 올리고 시세 보태기', 'Add your shop to the prices')}</a></p>
+<p class="muted small">${tr(`이 페이지는 매일 자정(한국 시간) 무렵 자동으로 새로 만들어져요. 마지막 갱신: ${esc(dayText)}.`, `This page is rebuilt automatically around midnight Korea time. Last updated: <span translate="no">${esc(dayText)}</span>.`)}</p>
+</div>`;
+}
 
 // ---------- home ----------
 
@@ -1715,7 +1759,7 @@ const MK = {
 function marketBody(lang) {
   const t = MK[lang], tr = (ko,en) => lang === 'ko' ? ko : en;
   const stat = (key,label) => `<div><dd id="mk-stat-${key}">–</dd><dt>${label}</dt></div>`;
-  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 확인하세요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="char-links"><a href="${href(langPath(lang, '/tools/my-shop/'))}">${tr('내 상점 시세 비교', 'Compare my shop with the market')}</a><a href="${href(langPath(lang, '/tools/scan/'))}">${tr('화면 스캔으로 내 상점 올리기', 'Upload my shop with the scan')}</a></p></section>
+  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 확인하세요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="char-links"><a href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 리포트', "Today's price report")}</a><a href="${href(langPath(lang, '/tools/my-shop/'))}">${tr('내 상점 시세 비교', 'Compare my shop with the market')}</a><a href="${href(langPath(lang, '/tools/scan/'))}">${tr('화면 스캔으로 내 상점 올리기', 'Upload my shop with the scan')}</a></p></section>
 <div class="wrap mk market-browser">
 <div class="mb-status"><p id="mk-status" role="status">${t.loading}</p><button id="mk-retry" class="btn ghost small-btn" type="button">${tr('새로고침','Refresh')}</button></div>
 <div class="mb-tabs" role="tablist" aria-label="${tr('시장 탐색','Browse market')}"><button id="mb-tab-listings" role="tab" aria-selected="true" aria-controls="mb-browser" data-view="listings">${tr('매물 목록','Listings')}</button><button id="mb-tab-items" role="tab" aria-selected="false" tabindex="-1" aria-controls="mb-browser" data-view="items">${tr('아이템 목록','Items')}</button><button id="mb-tab-reports" role="tab" aria-selected="false" aria-controls="mb-browser" data-view="reports">${tr('가격 제보','Price reports')}</button></div>
@@ -2515,6 +2559,12 @@ for (const lang of LANGS) {
       body: damageBody(lang),
       modules: ['damage.js'],
       ld: [appLd(DMG[lang].h1, DMG[lang].desc, '/tools/damage/'), breadcrumbLd(lang, DMG[lang].h1, '/tools/damage/')]
+    },
+    marketToday: {
+      title: lang === 'ko' ? '오늘의 글클메 시세: 매물 많은 아이템·고확 인기 아이템 | GMS Hub' : "Today's MapleStory Classic World Prices: Most Listed and Most Megaphoned Items | GMS Hub",
+      desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드 자유시장에서 오늘 매물이 가장 많은 아이템과 시세, 최근 고확에 많이 나온 아이템을 매일 정리해요.' : 'Daily MapleStory Classic World Free Market report: the most listed items with their asking prices, and the items named most in recent megaphones.',
+      body: marketTodayBody(lang),
+      ld: [breadcrumbLd(lang, lang === 'ko' ? '오늘의 글클메 시세' : "Today's prices", '/tools/market/today/')]
     },
     myShop: {
       title: lang === 'ko' ? '글클메 내 상점 시세 비교: 내 가격이 시세보다 비싼지 확인 | GMS Hub' : 'MapleStory Classic World Shop Price Check: Is My Shop Priced Right? | GMS Hub',

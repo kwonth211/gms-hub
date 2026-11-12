@@ -1933,3 +1933,19 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-quests small { color: var(--muted); font-size: 0.74rem; }
 .mb-class { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--muted); margin: 0 0 10px; }
 .mb-class select { font: inherit; color: var(--text); }
+/* Daily market report. */
+.market-today { display: grid; gap: 16px; padding-bottom: 24px; }
+.mt-date { font-size: 0.55em; color: var(--muted); font-weight: 600; margin-left: 6px; }
+.mt-stats { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; }
+.mt-stats div { padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+.mt-stats dt { font-size: 0.78rem; color: var(--muted); }
+.mt-stats dd { margin: 0; font-size: 1.2rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.market-today h2 { margin: 0 0 10px; font-size: 1.05rem; }
+.mt-item { display: inline-flex; align-items: center; gap: 8px; color: var(--text); text-decoration: none; font-weight: 700; }
+.mt-item:hover span { text-decoration: underline; }
+.mt-item img { image-rendering: pixelated; }
+.mt-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.mt-said { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+.mt-said li { display: grid; gap: 2px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+.mt-said small { color: var(--muted); font-size: 0.78rem; }
+.mt-more { display: flex; flex-wrap: wrap; gap: 8px; }
