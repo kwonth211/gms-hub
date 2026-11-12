@@ -559,5 +559,5 @@ const api = {
 export default {
   scheduled: api.scheduled,
   // The live viewer count is a WebSocket upgrade, so it skips the public response cache.
-  fetch: (req, env, ctx) => ['/presence', '/chat'].includes(new URL(req.url).pathname) ? handlePresence(req, env) : cachedPublicResponse(req, () => api.fetch(req, env), ctx)
+  fetch: (req, env, ctx) => ['/presence', '/chat'].includes(new URL(req.url).pathname) ? handlePresence(req, env) : cachedPublicResponse(req, () => api.fetch(req, env, ctx), ctx)
 };
