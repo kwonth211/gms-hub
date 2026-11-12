@@ -1874,3 +1874,9 @@ html[data-charm='off'] :is(.charm-walk, .charm-leaves) { display: none; }
 .more-theme { display: none; font: inherit; font-size: 0.9rem; text-align: left; background: none; border: 0; cursor: pointer; border-top: 1px solid var(--line); border-radius: 0 0 8px 8px; }
 @media (max-width: 400px) { .site-header .theme-toggle { display: none; } .more-theme { display: block; } }
 @media (max-width: 760px) { .more-menu { order: 2; } }
+.scan-table td.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.scan-table .diff { display: inline-block; padding: 1px 7px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; font-variant-numeric: tabular-nums; background: color-mix(in srgb, var(--muted) 14%, transparent); color: var(--muted); }
+.scan-table .diff-high { background: color-mix(in srgb, #d9534f 16%, transparent); color: #c0392b; }
+.scan-table .diff-low { background: color-mix(in srgb, #2e9d5b 16%, transparent); color: #23824a; }
+[data-theme='dark'] .scan-table .diff-high { color: #ff8a80; }
+[data-theme='dark'] .scan-table .diff-low { color: #6fdc9a; }

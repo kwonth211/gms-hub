@@ -1333,7 +1333,7 @@ const SCAN = {
     stop: '그만하기',
     checks: { share: '화면 공유', shop: '상점 인식', channel: '채널 인식', room: '위치 인식', upload: '시세 반영' },
     resultsHeading: '인식한 상점 물건',
-    colItem: '아이템', colPrice: '가격', colSeller: '판매자', colWhere: '위치', colState: '상태', colRead: '인식', colEdit: '수정',
+    colItem: '아이템', colPrice: '가격', colMarket: '시세', colDiff: '시세 대비', colSeller: '판매자', colWhere: '위치', colState: '상태', colRead: '인식', colEdit: '수정',
     resultsEmpty: '아직 인식한 물건이 없어요. 공유를 시작하고 자유시장에서 상점을 열어 보세요.',
     privacy: '공유한 화면은 이 컴퓨터 안에서만 읽고, 읽어 낸 아이템과 가격만 시세에 반영해요. 게임 화면 자체는 어디에도 올리지 않아요.',
     i: {
@@ -1346,6 +1346,7 @@ const SCAN = {
       edit: '이 줄 고치기', edited: '수정함', pickItem: '아이템 고르기', unreadable: '읽지 못한 줄 · ✎로 직접 입력', qty: '묶음 개수', save: '저장', cancel: '취소',
       editInvalid: '아이템·채널·방을 선택하고 가격, 1~10,000의 정수 수량, 영문·숫자 판매자명을 확인해 주세요',
       colItem: '아이템', colPrice: '가격', colSeller: '판매자',
+      marketTip: '최근 14일 시세 중앙값', diffHigh: '시세보다 {p}% 비싸요', diffLow: '시세보다 {p}% 싸요', diffEven: '시세 수준', noMarket: '시세 기록 없음',
       summary: '이번 공유: 상점 {shops}곳 · 물건 {items}개 인식 · 그중 확인 필요 {check}개',
       skipped: '못 읽은 줄 {n}개는 건너뜀',
       wait: '대기 중',
@@ -1385,7 +1386,7 @@ const SCAN = {
     stop: 'Stop',
     checks: { share: 'Screen share', shop: 'Shop', channel: 'Channel', room: 'Location', upload: 'Price data' },
     resultsHeading: 'Items recognized',
-    colItem: 'Item', colPrice: 'Price', colSeller: 'Seller', colWhere: 'Where', colState: 'Status', colRead: 'Read', colEdit: 'Edit',
+    colItem: 'Item', colPrice: 'Price', colMarket: 'Market', colDiff: 'vs market', colSeller: 'Seller', colWhere: 'Where', colState: 'Status', colRead: 'Read', colEdit: 'Edit',
     resultsEmpty: 'Nothing recognized yet. Start sharing and open shops in the Free Market.',
     privacy: 'The shared screen is read only on this computer; just the items and prices it finds go into the price data. The game screen itself is never uploaded.',
     i: {
@@ -1398,6 +1399,7 @@ const SCAN = {
       edit: 'Fix this line', edited: 'Edited', pickItem: 'Pick the item', unreadable: 'Unreadable line · fix it with ✎', qty: 'Bundle size', save: 'Save', cancel: 'Cancel',
       editInvalid: 'Pick the item from the list, write the price like 580000 or 580k, and the seller in letters and digits',
       colItem: 'Item', colPrice: 'Price', colSeller: 'Seller',
+      marketTip: 'Median of the last 14 days', diffHigh: '{p}% above the market', diffLow: '{p}% below the market', diffEven: 'In line with the market', noMarket: 'No price record yet',
       summary: 'This session — shops: {shops} · items read: {items} · to check: {check}',
       skipped: 'skipped unreadable lines: {n}',
       wait: 'Waiting',
@@ -1479,8 +1481,8 @@ function scanBody(lang) {
     .join('')}</ol>
 <h2>${t.resultsHeading}</h2>
 <div class="scan-table-wrap"><table class="scan-table">
-<thead><tr><th>${t.colItem}</th><th>${t.colPrice}</th><th>${t.colSeller}</th><th>${t.colWhere}</th><th>${t.colState}</th><th>${t.colRead}</th><th><span class="sr-only">${t.colEdit}</span></th></tr></thead>
-<tbody id="scan-results"><tr class="empty"><td colspan="7">${esc(t.resultsEmpty)}</td></tr></tbody>
+<thead><tr><th>${t.colItem}</th><th>${t.colPrice}</th><th>${t.colMarket}</th><th>${t.colDiff}</th><th>${t.colSeller}</th><th>${t.colWhere}</th><th>${t.colState}</th><th>${t.colRead}</th><th><span class="sr-only">${t.colEdit}</span></th></tr></thead>
+<tbody id="scan-results"><tr class="empty"><td colspan="9">${esc(t.resultsEmpty)}</td></tr></tbody>
 </table></div>
 <p id="scan-summary" class="muted"></p>
 <p class="muted">${esc(t.privacy)}</p>

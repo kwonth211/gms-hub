@@ -420,13 +420,44 @@ $('scan-retry-upload').addEventListener('click', () => { retryAt = 0; upload(); 
 const listings = new Map();
 const correctedKeys = new Set();
 
+// Market medians for the items read, fetched once per item so each row shows how far the asking price is from the market.
+const medians = new Map();
+let medianQueued = false;
+function wantMedian(id) {
+  if (!id || medians.has(id)) return;
+  medians.set(id, undefined);
+  if (medianQueued) return;
+  medianQueued = true;
+  // Rows of one shop arrive together, so one request covers them all.
+  queueMicrotask(async () => {
+    medianQueued = false;
+    const ids = [...medians].filter(([, v]) => v === undefined).map(([k]) => k);
+    let data = null;
+    try { data = await fetch(`${i18n.api}/prices?ids=${ids.join(',')}`).then((res) => (res.ok ? res.json() : null)); } catch {}
+    ids.forEach((k) => medians.set(k, data?.[k]?.median || null));
+    for (const e of listings.values()) if (ids.includes(e.r.item?.id) && !e.tr.classList.contains('editing')) render(e.r, e.tr);
+  });
+}
+
+function marketCells(r) {
+  const median = r.item ? medians.get(r.item.id) : null;
+  if (median === undefined) return '<td class="num muted">…</td><td></td>';
+  if (!median || !r.price) return `<td class="num muted" title="${esc(i18n.noMarket)}">—</td><td></td>`;
+  const p = Math.round(((r.price - median) / median) * 100);
+  const cls = p >= 20 ? 'high' : p <= -20 ? 'low' : 'even';
+  const tip = p >= 5 ? fill(i18n.diffHigh, { p }) : p <= -5 ? fill(i18n.diffLow, { p: -p }) : i18n.diffEven;
+  return `<td class="num" title="${esc(i18n.marketTip)}">${nf.format(median)}</td><td><span class="diff diff-${cls}" title="${esc(tip)}">${p > 0 ? '+' : ''}${p}%</span></td>`;
+}
+
 function render(r, tr) {
+  wantMedian(r.item?.id);
   const title = r.item ? (i18n.lang === 'ko' ? r.item.ko || r.item.en : r.item.en) : r.name || i18n.unreadable;
   const sub = r.item && title !== r.item.en ? `<small>${esc(r.item.en)}</small>` : '';
   const icon = r.item ? `<img src="https://maplestory.io/api/MCW/1/item/${r.item.id}/icon" alt="" width="28" height="28">` : '';
   tr.classList.toggle('sold', r.sold);
   tr.innerHTML = `<td><span class="item">${icon}<span>${esc(title)}${sub}</span></span></td>
 <td class="price">${r.price ? `${nf.format(r.price)} <small>${i18n.each}</small>${r.qty > 1 ? `<small class="bundle">${fill(i18n.bundle, { n: nf.format(r.qty), total: nf.format(r.price * r.qty) })}</small>` : ''}` : '?'}</td>
+${marketCells(r)}
 <td class="seller">${esc(r.owner.replace(/\?/g, '·')) || '—'}</td>
 <td>${where(r.channel, r.room).map((w) => `<span class="where">${w}</span>`).join(' ') || '—'}</td>
 <td>${r.sold ? i18n.sold : i18n.selling}</td>
@@ -469,7 +500,7 @@ function itemsDatalist() {
 function openEditor(r, tr) {
   itemsDatalist();
   tr.classList.add('editing');
-  tr.innerHTML = `<td colspan="7"><form class="row-edit">
+  tr.innerHTML = `<td colspan="9"><form class="row-edit">
 <label>${i18n.colItem}<input name="item" list="scan-item-names" value="${esc(r.item ? itemName(r.item) : r.name)}" autocomplete="off"></label>
 <label>${i18n.colPrice} (${i18n.each})<input name="price" value="${r.price || ''}" inputmode="decimal"></label>
 <label>${i18n.qty}<input name="qty" type="number" min="1" max="10000" value="${r.qty || 1}"></label>
