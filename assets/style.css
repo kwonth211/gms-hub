@@ -2121,3 +2121,36 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mt-bar b { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 2px; font-size: 0.66rem; color: var(--accent); white-space: nowrap; }
 .mt-side .mt-curve { margin-bottom: 18px; }
 @media (max-width: 760px) { .mt-grid, .mt-grid.compact { grid-template-columns: minmax(0, 1fr); } }
+/* EXP tracker. */
+.exp-page { display: grid; gap: 14px; padding-bottom: 24px; }
+.exp-control { display: grid; gap: 12px; }
+.exp-buttons { display: flex; flex-wrap: wrap; gap: 10px; }
+.exp-start { font-size: 1.05rem; padding: 12px 22px; }
+.exp-stop { display: none; }
+body.exp-running .exp-start { display: none; }
+body.exp-running .exp-stop { display: inline-flex; }
+.exp-status { margin: 0; font-weight: 700; color: var(--ok); min-height: 1.4em; }
+.exp-board { display: grid; gap: 12px; }
+.exp-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 0; }
+.exp-stat { padding: 12px 14px; border-radius: 10px; background: var(--panel-2); border: 1px solid var(--line); }
+.exp-stat dt { font-size: 0.78rem; color: var(--muted); }
+.exp-stat dd { margin: 2px 0 0; font-size: 1.5rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.exp-stat:first-child { grid-column: span 2; background: var(--accent-soft); border-color: var(--accent-band); }
+.exp-stat:first-child dd { font-size: 2.2rem; color: var(--accent); }
+.exp-notes { margin: 0; min-height: 1.2em; }
+.exp-chart { width: 100%; height: auto; display: block; }
+.exp-chart .grid { stroke: var(--line); }
+.exp-chart .ax { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.exp-chart .area { fill: color-mix(in srgb, var(--accent-fill) 18%, transparent); }
+.exp-chart .line { fill: none; stroke: var(--accent-fill); stroke-width: 2.5; stroke-linejoin: round; }
+.exp-options { display: grid; gap: 10px; }
+.exp-check { display: inline-flex; gap: 8px; align-items: center; font-size: 0.88rem; }
+.exp-mob-label { display: grid; gap: 4px; font-size: 0.88rem; font-weight: 700; max-width: 360px; }
+.exp-mob-label input { font: inherit; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--panel); color: var(--text); }
+.exp-mob-label small { font-weight: 500; }
+.exp-mob-out { margin: 0; font-weight: 700; color: var(--accent); }
+.exp-manual h2 { margin: 0 0 4px; font-size: 1rem; }
+.exp-manual-form { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; }
+.exp-manual-form label { display: grid; gap: 4px; font-size: 0.85rem; font-weight: 700; }
+.exp-manual-form input { font: inherit; width: 140px; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--panel); color: var(--text); }
+@media (max-width: 480px) { .exp-stat:first-child { grid-column: 1 / -1; } }

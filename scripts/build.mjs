@@ -493,6 +493,7 @@ const PAGES = [
   { key: 'drop', path: '/tools/drop-rate/' },
   { key: 'price', path: '/tools/price/' },
   { key: 'scan', path: '/tools/scan/' },
+  { key: 'exp', path: '/tools/exp/' },
   { key: 'marketToday', path: '/tools/market/today/' },
   { key: 'market', path: '/tools/market/' },
   { key: 'damage', path: '/tools/damage/' },
@@ -665,6 +666,7 @@ function header(lang, pagePath, only) {
     ['/', 'book', t.navLinks],
     ['/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monsters'],
     ['/tools/training/', 'sword', t.navTraining],
+    ['/tools/exp/', 'clock', EXP[lang].nav],
     ['/tools/scroll/', 'scroll', t.navScroll],
     ['/tools/drop-rate/', 'bag', t.navDrop],
     ['/tools/damage/', 'hammer', DMG[lang].h1],
@@ -673,8 +675,8 @@ function header(lang, pagePath, only) {
   ];
   // Seven tabs share a phone's width, so English labels that would break mid-word ("Calcul/ator") get a one-word form there.
   // The newest tab carries a small N so returning visitors notice it.
-  const NEW_TAB = '/megaphone/';
-  const SHORT_EN = { '/': 'Home', '/monsters/': 'Mobs', '/tools/training/': 'Spots', '/tools/scroll/': 'Scrolls', '/tools/drop-rate/': 'Odds', '/tools/damage/': 'Hits', '/tools/market/': 'Market', '/megaphone/': 'Megas' };
+  const NEW_TAB = '/tools/exp/';
+  const SHORT_EN = { '/': 'Home', '/monsters/': 'Mobs', '/tools/training/': 'Spots', '/tools/scroll/': 'Scrolls', '/tools/drop-rate/': 'Odds', '/tools/damage/': 'Hits', '/tools/market/': 'Market', '/megaphone/': 'Megas', '/tools/exp/': 'EXP' };
   const tabHtml = tabs
     .map(
       ([p, icon, label]) =>
@@ -753,7 +755,7 @@ function footer(lang) {
 </div></footer>`;
 }
 
-const ADFIT_PAGES = new Set(['home', 'marketToday', 'training', 'trBand', 'trClass', 'scroll', 'drop', 'price', 'scan', 'market', 'damage', 'guides', 'guide', 'monsters', 'monster', 'items', 'item',
+const ADFIT_PAGES = new Set(['home', 'marketToday', 'exp', 'training', 'trBand', 'trClass', 'scroll', 'drop', 'price', 'scan', 'market', 'damage', 'guides', 'guide', 'monsters', 'monster', 'items', 'item',
   'bosses', 'maps', 'map', 'quests', 'quest', 'questBest', 'equipment', 'equipmentClass', 'rank', 'megaphone']);
 // AdFit counted only 5-9% of the end-of-page banner as viewed (most visitors never scroll that far), so a second slot sits
 // just under the page title: after the page head, after the home hero, or after a guide's first paragraph. Never beside
@@ -987,6 +989,7 @@ tool('/tools/drop-rate/', 'bag', t.navDrop, t.dropCardDesc),
 tool('/tools/market/', 'coin', t.navMarket, MK[lang].lead),
 tool('/tools/price/', 'coin', t.navPrice, PR[lang].cardDesc),
 tool('/tools/damage/', 'hammer', DMG[lang].h1, DMG[lang].cardDesc),
+tool('/tools/exp/', 'clock', EXP[lang].h1, EXP[lang].cardDesc),
 tool('/tools/scan/', 'megaphone', SCAN[lang].h1, SCAN[lang].cardDesc),
 tool('/quests/', 'scroll', lang === 'ko' ? '퀘스트' : 'Quests', lang === 'ko' ? `퀘스트 ${QUESTS.length}개의 시작 레벨, 모아 올 아이템과 드롭 몬스터, 보상을 봐요.` : `${QUESTS.length} quests: start level, items to bring and who drops them, rewards.`),
 tool('/bosses/', 'crown', lang === 'ko' ? '보스 몬스터' : 'Bosses', lang === 'ko' ? '마노부터 주니어 발록까지 보스의 출현 맵, 필요 명중, 드롭을 한 표로 봐요.' : 'Mano to Jr. Balrog: spawn maps, accuracy needed and equipment drops in one table.'),
@@ -1004,6 +1007,7 @@ tool('/bosses/', 'crown', lang === 'ko' ? '보스 몬스터' : 'Bosses', lang ==
 tool('/maps/', 'tree', lang === 'ko' ? '맵 도감' : 'Maps', lang === 'ko' ? `맵 ${MAPS.filter((l) => l.availability === 'open').length}곳의 몬스터, 출현 수, 드롭을 지역별로 봐요.` : `${MAPS.filter((l) => l.availability === 'open').length} maps: which monsters spawn there, how many, and what they drop.`),
 tool('/tools/drop-rate/', 'bag', t.navDrop, t.dropCardDesc),
 tool('/tools/damage/', 'hammer', DMG[lang].h1, DMG[lang].cardDesc),
+tool('/tools/exp/', 'clock', EXP[lang].h1, EXP[lang].cardDesc),
 tool('/tools/scroll/', 'scroll', t.navScroll, t.scCardDesc),
 tool('/tools/price/', 'coin', t.navPrice, PR[lang].cardDesc),
 tool('/tools/scan/', 'megaphone', SCAN[lang].h1, SCAN[lang].cardDesc)
@@ -1393,6 +1397,93 @@ ${jsonScript('i18n', { lang, ...Object.fromEntries(Object.entries(t).filter(([k]
 
 // First step of shop scanning: players share the game window and we save exact frames locally, to build the shop reader from.
 // Players share the game window and the page reads open shops into the shared price data.
+// ---------- EXP tracker ----------
+// Share the game window once; the page reads the status bar's EXP every few seconds (assets/exp-reader.js) and shows
+// the rate, the time to the next level and the session's gain. Numbers stay in the visitor's browser.
+const EXP = {
+  ko: {
+    title: '글클메 경험치 측정기: 화면 공유로 시간당 경험치·레벨업까지 남은 시간 | GMS Hub',
+    desc: '글로벌 메이플스토리 클래식 월드 경험치 측정기. 메이플 창을 공유하면 EXP를 자동으로 읽어 시간당 경험치, 시간당 퍼센트, 다음 레벨까지 남은 시간, 잡은 마릿수를 계산해요.',
+    nav: '경험치 측정기', h1: '경험치 측정기',
+    cardDesc: '메이플 창을 공유하면 EXP를 자동으로 읽어 시간당 경험치와 레벨업까지 남은 시간을 보여 줘요. PC 크롬 전용.',
+    lead: '메이플 창을 공유하고 시작을 누르면 EXP를 자동으로 읽어요. 시간당 경험치, 다음 레벨까지 남은 시간, 잡은 마릿수가 사냥하는 동안 바로 보여요.',
+    start: '메이플 창 공유하고 시작', stop: '정지', reset: '새로 측정',
+    checks: { share: '화면 공유', bar: '상태바 인식', read: 'EXP 읽기' },
+    stats: { now: '지금 EXP', rate: '시간당 경험치', pct: '시간당 %', next: '다음 레벨까지', gained: '이번 측정 획득', time: '측정 시간' },
+    skipIdle: '쉬는 시간 빼기 (2분 넘게 EXP가 안 오르면 제외)',
+    mobLabel: '사냥하는 몬스터', mobPh: '몬스터 이름 (예: 스티지)', mobHelp: '고르면 잡은 마릿수를 계산해요.',
+    manualHeading: '화면 공유가 안 되면 직접 입력', manualHelp: '상태바의 EXP 숫자와 퍼센트를 그대로 넣고 기록을 누르세요. 사냥 전과 후에 한 번씩 넣으면 돼요.',
+    manualExp: 'EXP', manualPct: '퍼센트', manualSave: '기록',
+    empty: '아직 기록이 없어요. 위에서 시작을 누르거나 EXP를 직접 넣어 보세요.',
+    how: [['창 모드', '메이플을 창 모드로 켜 두세요. 맥은 크롬과 메이플 둘 다 전체 화면이 아니어야 해요.'], ['시작', '위 버튼을 누르고 메이플 창을 고르면 5초마다 EXP를 읽어요. 레벨업도 자동으로 이어서 계산해요.'], ['정지', '자리를 옮기거나 끝나면 정지를 누르세요. 기록은 이 브라우저에 남아서 다시 열어도 이어져요.']],
+    privacy: '공유한 화면은 이 컴퓨터 안에서만 읽어요. EXP 숫자만 이 브라우저에 저장되고 어디에도 올라가지 않아요.',
+    i: {
+      unsupported: '이 브라우저는 화면 공유가 안 돼요. PC 크롬이나 엣지에서 열어 주세요. 아래에서 직접 입력은 돼요.', denied: '공유가 취소됐어요. 다시 시작을 누르면 돼요.',
+      watching: '읽는 중이에요. 사냥하세요!', stopped: '정지했어요. 기록은 그대로 있어요.', wait: '대기',
+      shareOk: '메이플 창 공유 중', barOk: '상태바를 찾았어요', barFail: '상태바를 못 찾았어요. 메이플 창을 골랐는지, 아래 HP·MP·EXP 막대가 가려지지 않았는지 보세요.',
+      readOk: 'EXP {exp} ({pct}%)', readFail: '숫자를 못 읽었어요. 잠시 뒤 다시 읽어요. {text}',
+      idle: '쉬는 시간 {m}분은 뺐어요', levelsUp: '레벨업 {n}번 포함',
+      kills: '{mob} 약 {n}마리', killsPerHour: '시간당 약 {n}마리',
+      resetAsk: '지금 기록을 지우고 새로 측정할까요?', manualOk: '기록했어요.', manualBad: 'EXP와 퍼센트(소수점 두 자리)를 확인해 주세요.'
+    }
+  },
+  en: {
+    title: 'MapleStory Classic World EXP Tracker: EXP per Hour and Time to Level from Your Screen | GMS Hub',
+    desc: 'EXP tracker for MapleStory Classic World. Share your game window and it reads your EXP automatically: EXP per hour, percent per hour, time to the next level and kills.',
+    nav: 'EXP Tracker', h1: 'EXP Tracker',
+    cardDesc: 'Share your game window and it reads EXP on its own: EXP per hour and time to level up. Chrome on a computer.',
+    lead: 'Share your MapleStory window, press start, and the page reads your EXP by itself. EXP per hour, time to the next level and kills show while you train.',
+    start: 'Share the game window and start', stop: 'Stop', reset: 'New session',
+    checks: { share: 'Screen share', bar: 'Status bar', read: 'EXP reading' },
+    stats: { now: 'EXP now', rate: 'EXP per hour', pct: 'Percent per hour', next: 'Next level in', gained: 'Gained this session', time: 'Time tracked' },
+    skipIdle: 'Skip idle time (no EXP gain for over 2 minutes)',
+    mobLabel: 'Monster you are training on', mobPh: 'Monster name (e.g. Stirge)', mobHelp: 'Pick one to count kills.',
+    manualHeading: 'No screen share? Type it in', manualHelp: 'Enter the EXP number and percent from the status bar and press save, once before and once after training.',
+    manualExp: 'EXP', manualPct: 'Percent', manualSave: 'Save',
+    empty: 'Nothing recorded yet. Press start above or type your EXP in.',
+    how: [['Windowed mode', 'Run MapleStory in a window. On a Mac neither Chrome nor the game may be full screen.'], ['Start', 'Press the button and pick the game window; EXP is read every 5 seconds, level-ups included.'], ['Stop', 'Press stop when you move or finish. The session stays in this browser, so reopening the page continues it.']],
+    privacy: 'The shared screen is read only on this computer. Only the EXP numbers are kept, in this browser, and nothing is uploaded.',
+    i: {
+      unsupported: 'This browser cannot share a screen. Use Chrome or Edge on a computer; typing EXP in below still works.', denied: 'Sharing was cancelled. Press start again.',
+      watching: 'Reading. Go train!', stopped: 'Stopped. The session is kept.', wait: 'Waiting',
+      shareOk: 'Sharing the game window', barOk: 'Status bar found', barFail: 'Status bar not found. Check that the game window is shared and the HP/MP/EXP gauges are not covered.',
+      readOk: 'EXP {exp} ({pct}%)', readFail: 'Could not read the numbers; trying again shortly. {text}',
+      idle: '{m} idle minutes left out', levelsUp: 'includes {n} level-up(s)',
+      kills: 'about {n} {mob}', killsPerHour: 'about {n} an hour',
+      resetAsk: 'Clear this session and start a new one?', manualOk: 'Saved.', manualBad: 'Check the EXP and the percent (two decimals).'
+    }
+  }
+};
+function expBody(lang) {
+  const t = EXP[lang];
+  const stat = (k, id) => `<div class="exp-stat"><dt>${esc(t.stats[k])}</dt><dd id="${id}">—</dd></div>`;
+  return `${pageHead(lang, 'clock', t.h1, t.lead)}
+<div class="wrap exp-page">
+<section class="panel exp-control">
+<div class="exp-buttons"><button type="button" class="btn exp-start" id="exp-start">▶ ${esc(t.start)}</button><button type="button" class="btn ghost exp-stop" id="exp-stop">■ ${esc(t.stop)}</button></div>
+<p id="exp-status" class="exp-status" role="status" aria-live="polite"></p>
+<ol class="scan-checks exp-checks" aria-live="polite">${['share', 'bar', 'read'].map((k) => `<li id="exp-check-${k}" data-state="wait"><span class="dot" aria-hidden="true"></span><strong>${esc(t.checks[k])}</strong><small>${esc(t.i.wait)}</small></li>`).join('')}</ol>
+</section>
+<section class="panel exp-board">
+<dl class="exp-stats">${stat('rate', 'exp-rate')}${stat('next', 'exp-next')}${stat('pct', 'exp-pct')}${stat('gained', 'exp-gained')}${stat('time', 'exp-time')}${stat('now', 'exp-now')}</dl>
+<p class="muted small exp-notes"><span id="exp-idle"></span> <span id="exp-levels"></span></p>
+<svg class="exp-chart" id="exp-chart" viewBox="0 0 600 150" role="img" aria-label="${esc(t.stats.gained)}" hidden></svg>
+<p id="exp-empty" class="muted">${esc(t.empty)}</p>
+<div class="exp-options">
+<label class="exp-check"><input type="checkbox" id="exp-skip-idle" checked> ${esc(t.skipIdle)}</label>
+<label class="exp-mob-label">${esc(t.mobLabel)} <input id="exp-mob" list="exp-mob-list" placeholder="${esc(t.mobPh)}" autocomplete="off"><datalist id="exp-mob-list"></datalist><small class="muted">${esc(t.mobHelp)}</small></label>
+<p id="exp-mob-out" class="exp-mob-out"></p>
+<button type="button" class="btn ghost small-btn" id="exp-reset" hidden>${esc(t.reset)}</button>
+</div>
+</section>
+<ol class="scan-steps">${t.how.map(([h, d], n) => `<li><b>${n + 1}</b><strong>${esc(h)}</strong><span>${esc(d)}</span></li>`).join('')}</ol>
+<section class="panel exp-manual"><h2>${esc(t.manualHeading)}</h2><p class="muted small">${esc(t.manualHelp)}</p>
+<form id="exp-manual" class="exp-manual-form"><label>${esc(t.manualExp)} <input id="exp-m-exp" inputmode="numeric" placeholder="83,631" required></label><label>${esc(t.manualPct)} <input id="exp-m-pct" inputmode="decimal" placeholder="68.13" required></label><button class="btn small-btn" type="submit">${esc(t.manualSave)}</button></form></section>
+<p class="muted small">${esc(t.privacy)}</p>
+</div>
+${jsonScript('exp-data', { lang, t: { ...t.i, stats: t.stats }, mobsUrl: href('/assets/mobs.json') })}`;
+}
+
 const SCAN = {
   ko: {
     title: '글클메 상점 스캔: 화면 공유로 자유시장 시세 올리기 | GMS Hub',
@@ -2570,6 +2661,13 @@ for (const lang of LANGS) {
       body: scanBody(lang),
       modules: ['scan.js'],
       ld: [appLd(SCAN[lang].h1, SCAN[lang].lead, '/tools/scan/'), breadcrumbLd(lang, SCAN[lang].h1, '/tools/scan/')]
+    },
+    exp: {
+      title: EXP[lang].title,
+      desc: EXP[lang].desc,
+      body: expBody(lang),
+      modules: ['exp.js'],
+      ld: [appLd(EXP[lang].h1, EXP[lang].desc, '/tools/exp/'), breadcrumbLd(lang, EXP[lang].h1, '/tools/exp/')]
     },
     price: {
       title: PR[lang].title,
