@@ -2848,6 +2848,7 @@
  "Replies are in Korean for Korean Discord clients and in English otherwise, each with a link to the charts and shop lists on the site.": "Discord 設為韓文時以韓文回覆，其他語言則以英文回覆，並附上可查看圖表與商店列表的網站連結。",
  "Report a bug, ask about advertising or partnerships, or support GMS Hub.": "回報錯誤、洽詢廣告或合作，或支持 GMS Hub。",
  "Report by email": "以電子郵件回報",
+ "Report corrections to {t0}contact@gms-hub.com{t1} or on {t2}GitHub issues{t3}.": "如有错误，请通过 {t0}contact@gms-hub.com{t1} 或 {t2}GitHub issues{t3} 告诉我们。",
  "Report type": "回報類型",
  "Reported": "回報時間",
  "Reported drops {n0} items": "回報掉落物 {n0} 種",
