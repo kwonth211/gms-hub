@@ -1,9 +1,9 @@
 {
- "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: semver judged per entry (major = a new pillar of the site, minor = a new feature or guide, patch = an improvement to an existing one); a new entry takes the next number after the newest.",
+ "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest.",
  "updates": [
   {
    "id": "market-search-gear-type",
-   "version": "4.14.1",
+   "version": "0.4.20",
    "level": "patch",
    "date": "2026-11-13",
    "path": "/tools/market/",
@@ -16,7 +16,7 @@
   },
   {
    "id": "exp-tracker-2",
-   "version": "4.14.0",
+   "version": "0.4.19",
    "level": "minor",
    "date": "2026-11-13",
    "path": "/tools/exp/",
@@ -30,7 +30,7 @@
   },
   {
    "id": "forgotten-hollow",
-   "version": "4.13.0",
+   "version": "0.4.18",
    "level": "minor",
    "date": "2026-11-13",
    "path": "/forgotten-hollow/",
@@ -44,7 +44,7 @@
   },
   {
    "id": "excel",
-   "version": "4.12.0",
+   "version": "0.4.17",
    "level": "minor",
    "date": "2026-11-13",
    "path": "/tools/market/",
@@ -58,7 +58,7 @@
   },
   {
    "id": "english-search",
-   "version": "4.11.2",
+   "version": "0.4.16",
    "level": "patch",
    "date": "2026-11-13",
    "path": "/",
@@ -71,7 +71,7 @@
   },
   {
    "id": "quest-guides-2",
-   "version": "4.11.1",
+   "version": "0.4.15",
    "level": "patch",
    "date": "2026-11-13",
    "path": "/quests/",
@@ -85,7 +85,7 @@
   },
   {
    "id": "quests-tab",
-   "version": "4.11.0",
+   "version": "0.4.14",
    "level": "minor",
    "date": "2026-11-13",
    "path": "/quests/",
@@ -99,7 +99,7 @@
   },
   {
    "id": "glove-quest",
-   "version": "4.10.0",
+   "version": "0.4.13",
    "level": "minor",
    "date": "2026-11-13",
    "path": "/quests/glove-attack/",
@@ -113,7 +113,7 @@
   },
   {
    "id": "training-rates",
-   "version": "4.9.0",
+   "version": "0.4.12",
    "level": "minor",
    "date": "2026-11-13",
    "path": "/tools/training/#rates",
@@ -126,7 +126,7 @@
   },
   {
    "id": "live-megaphones-push",
-   "version": "4.8.1",
+   "version": "0.4.11",
    "level": "patch",
    "date": "2026-11-13",
    "path": "/megaphone/",
@@ -139,7 +139,7 @@
   },
   {
    "id": "discord-bot",
-   "version": "4.8.0",
+   "version": "0.4.10",
    "level": "minor",
    "date": "2026-11-13",
    "path": "/discord-bot/",
@@ -152,7 +152,7 @@
   },
   {
    "id": "exp-tracker",
-   "version": "4.7.0",
+   "version": "0.4.9",
    "level": "minor",
    "date": "2026-11-12",
    "path": "/tools/exp/",
@@ -165,7 +165,7 @@
   },
   {
    "id": "market-panel-2",
-   "version": "4.6.1",
+   "version": "0.4.8",
    "level": "patch",
    "date": "2026-11-12",
    "path": "/tools/market/",
@@ -178,7 +178,7 @@
   },
   {
    "id": "megaphone-trends",
-   "version": "4.6.0",
+   "version": "0.4.7",
    "level": "minor",
    "date": "2026-11-12",
    "path": "/megaphone/",
@@ -191,7 +191,7 @@
   },
   {
    "id": "header-search",
-   "version": "4.5.0",
+   "version": "0.4.6",
    "level": "minor",
    "date": "2026-11-12",
    "path": "/",
@@ -204,7 +204,7 @@
   },
   {
    "id": "market-today",
-   "version": "4.4.0",
+   "version": "0.4.5",
    "level": "minor",
    "date": "2026-11-12",
    "path": "/tools/market/today/",
@@ -217,7 +217,7 @@
   },
   {
    "id": "megaphone-ticker",
-   "version": "4.3.0",
+   "version": "0.4.4",
    "level": "minor",
    "date": "2026-11-12",
    "path": "/megaphone/",
@@ -230,7 +230,7 @@
   },
   {
    "id": "market-class-filter",
-   "version": "4.2.0",
+   "version": "0.4.3",
    "level": "minor",
    "date": "2026-11-12",
    "path": "/tools/market/",
@@ -243,7 +243,7 @@
   },
   {
    "id": "market-panel",
-   "version": "4.1.0",
+   "version": "0.4.2",
    "level": "minor",
    "date": "2026-11-12",
    "path": "/tools/market/",
@@ -256,7 +256,7 @@
   },
   {
    "id": "scan-compare",
-   "version": "4.0.1",
+   "version": "0.4.1",
    "level": "patch",
    "date": "2026-11-12",
    "path": "/tools/scan/",
@@ -269,7 +269,7 @@
   },
   {
    "id": "megaphones",
-   "version": "4.0.0",
+   "version": "0.4.0",
    "level": "major",
    "date": "2026-11-11",
    "path": "/megaphone/",
@@ -282,7 +282,7 @@
   },
   {
    "id": "rank",
-   "version": "3.10.0",
+   "version": "0.3.11",
    "level": "minor",
    "date": "2026-11-11",
    "path": "/rank/",
@@ -295,7 +295,7 @@
   },
   {
    "id": "market-sparklines",
-   "version": "3.9.1",
+   "version": "0.3.10",
    "level": "patch",
    "date": "2026-11-11",
    "path": "/tools/market/",
@@ -308,7 +308,7 @@
   },
   {
    "id": "item-hover",
-   "version": "3.9.0",
+   "version": "0.3.9",
    "level": "minor",
    "date": "2026-11-11",
    "path": "/items/",
@@ -321,7 +321,7 @@
   },
   {
    "id": "class-guides",
-   "version": "3.8.0",
+   "version": "0.3.8",
    "level": "minor",
    "date": "2026-11-11",
    "path": "/guides/hunter/",
@@ -334,7 +334,7 @@
   },
   {
    "id": "equipment",
-   "version": "3.7.0",
+   "version": "0.3.7",
    "level": "minor",
    "date": "2026-11-11",
    "path": "/equipment/",
@@ -347,7 +347,7 @@
   },
   {
    "id": "bosses",
-   "version": "3.6.0",
+   "version": "0.3.6",
    "level": "minor",
    "date": "2026-11-11",
    "path": "/bosses/",
@@ -360,7 +360,7 @@
   },
   {
    "id": "quest-db",
-   "version": "3.5.0",
+   "version": "0.3.5",
    "level": "minor",
    "date": "2026-11-11",
    "path": "/quests/",
@@ -373,7 +373,7 @@
   },
   {
    "id": "map-db",
-   "version": "3.4.0",
+   "version": "0.3.4",
    "level": "minor",
    "date": "2026-11-10",
    "path": "/maps/",
@@ -386,7 +386,7 @@
   },
   {
    "id": "item-db",
-   "version": "3.3.0",
+   "version": "0.3.3",
    "level": "minor",
    "date": "2026-11-10",
    "path": "/items/",
@@ -399,7 +399,7 @@
   },
   {
    "id": "my-character",
-   "version": "3.2.0",
+   "version": "0.3.2",
    "level": "minor",
    "date": "2026-11-10",
    "path": "/",
@@ -412,7 +412,7 @@
   },
   {
    "id": "class-training",
-   "version": "3.1.0",
+   "version": "0.3.1",
    "level": "minor",
    "date": "2026-11-10",
    "path": "/tools/training/",
@@ -425,7 +425,7 @@
   },
   {
    "id": "redesign",
-   "version": "3.0.0",
+   "version": "0.3.0",
    "level": "major",
    "date": "2026-11-10",
    "path": "/",
@@ -438,7 +438,7 @@
   },
   {
    "id": "monster-db",
-   "version": "2.5.0",
+   "version": "0.2.7",
    "level": "minor",
    "date": "2026-11-10",
    "path": "/monsters/",
@@ -451,7 +451,7 @@
   },
   {
    "id": "market-watchlist",
-   "version": "2.4.0",
+   "version": "0.2.6",
    "level": "minor",
    "date": "2026-11-10",
    "path": "/tools/market/",
@@ -464,7 +464,7 @@
   },
   {
    "id": "guides-en",
-   "version": "2.3.2",
+   "version": "0.2.5",
    "level": "patch",
    "date": "2026-11-09",
    "path": "/guides/",
@@ -477,7 +477,7 @@
   },
   {
    "id": "home-search",
-   "version": "2.3.1",
+   "version": "0.2.4",
    "level": "patch",
    "date": "2026-11-09",
    "path": "/",
@@ -490,7 +490,7 @@
   },
   {
    "id": "item-prices",
-   "version": "2.3.0",
+   "version": "0.2.3",
    "level": "minor",
    "date": "2026-11-04",
    "path": "/items/",
@@ -503,7 +503,7 @@
   },
   {
    "id": "damage-calc",
-   "version": "2.2.0",
+   "version": "0.2.2",
    "level": "minor",
    "date": "2026-11-03",
    "path": "/tools/damage/",
@@ -516,7 +516,7 @@
   },
   {
    "id": "guides-builds",
-   "version": "2.1.0",
+   "version": "0.2.1",
    "level": "minor",
    "date": "2026-11-03",
    "path": "/guides/leveling-30-70/",
@@ -529,7 +529,7 @@
   },
   {
    "id": "live-market",
-   "version": "2.0.0",
+   "version": "0.2.0",
    "level": "major",
    "date": "2026-11-02",
    "path": "/tools/market/",
@@ -542,7 +542,7 @@
   },
   {
    "id": "shop-scan",
-   "version": "1.4.0",
+   "version": "0.1.5",
    "level": "minor",
    "date": "2026-11-02",
    "path": "/tools/scan/",
@@ -555,7 +555,7 @@
   },
   {
    "id": "guides-kpq",
-   "version": "1.3.1",
+   "version": "0.1.4",
    "level": "patch",
    "date": "2026-11-02",
    "path": "/guides/kerning-party-quest/",
@@ -568,7 +568,7 @@
   },
   {
    "id": "guides",
-   "version": "1.3.0",
+   "version": "0.1.3",
    "level": "minor",
    "date": "2026-11-02",
    "path": "/guides/",
@@ -581,7 +581,7 @@
   },
   {
    "id": "training-bands",
-   "version": "1.2.0",
+   "version": "0.1.2",
    "level": "minor",
    "date": "2026-10-30",
    "path": "/tools/training/",
@@ -594,7 +594,7 @@
   },
   {
    "id": "votes",
-   "version": "1.1.0",
+   "version": "0.1.1",
    "level": "minor",
    "date": "2026-10-28",
    "path": "/",
@@ -607,7 +607,7 @@
   },
   {
    "id": "launch",
-   "version": "1.0.0",
+   "version": "0.1.0",
    "level": "major",
    "date": "2026-10-28",
    "path": "/",

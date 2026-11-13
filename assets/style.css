@@ -2602,3 +2602,15 @@ body.exp-running .exp-stop { display: inline-flex; }
 .pn-legend li { display: flex; align-items: center; gap: 8px; }
 /* Safety net: if the Excel row ever lands inside a grid, it takes a whole row instead of a column. */
 .dl-tools, .dl-bar { grid-column: 1 / -1; }
+
+/* Update news pager on the home page */
+.upd-pager { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.upd-pages { display: flex; gap: 4px; }
+.upd-pager button { font: inherit; font-size: 0.9rem; font-weight: 700; min-width: 36px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--panel); color: var(--text); cursor: pointer; }
+.upd-pager button:hover:not(:disabled) { border-color: var(--accent-fill); }
+.upd-pager button:active:not(:disabled) { transform: translateY(1px); }
+.upd-pager button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.upd-pager button[aria-current] { background: var(--accent-fill); border-color: var(--accent-edge); color: var(--accent-ink); }
+.upd-pager button:disabled { opacity: 0.45; cursor: default; }
+.upd-list li[hidden] { display: none; }
+.upd-ver { margin-left: auto; flex: none; font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
