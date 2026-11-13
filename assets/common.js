@@ -238,8 +238,8 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
     };
   })());
   // A queue: megaphones roll by oldest first. New ones join the end of the line and scroll in right after what is
-  // showing; with nothing new, a few recent ones roll by again until something arrives. A long line rolls faster so the
-  // strip never falls far behind. The last megaphones are kept in this browser, so the next page starts with the newest
+  // showing; with nothing new, a few recent ones roll by again until something arrives. A long pile-up of new ones rolls a
+  // little faster so the strip never falls far behind. The last megaphones are kept in this browser, so the next page starts with the newest
   // at the right edge and megaphones that came in since then roll in next. New ones arrive pushed over the presence socket
   // (common.js above) the moment the collector stores them, or from the minute poll.
   const TK_KEY = 'gms-ticker';
@@ -269,7 +269,12 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
     const dt = Math.min(0.1, last ? (t - last) / 1000 : 0);
     last = t;
     const view = run.parentElement.clientWidth, ahead = x + set.scrollWidth - view; // px still waiting off the right edge
-    if (!held) x -= 60 * Math.min(3, 1 + Math.max(0, ahead) / (3 * view)) * dt;
+    // Same pace as before (60 px/s). Only a real pile-up of new megaphones (not replays) more than two screens long
+    // speeds it up, and then by at most half again.
+    const re = set.querySelector('.mg-tk-re:last-child') ? [...set.children].reverse().findIndex((el) => !el.classList.contains('mg-tk-re')) : 0;
+    const lastNew = re > 0 ? set.children[set.children.length - 1 - re] : set.lastElementChild;
+    const backlog = lastNew ? x + lastNew.offsetLeft + lastNew.offsetWidth - view : 0;
+    if (!held) x -= 60 * (backlog > 2 * view ? 1.5 : 1) * dt;
     if (ahead < view) replay();
     // Items that have scrolled fully past the left edge are done; dropping them keeps the strip short.
     while (set.children.length > 1 && x + set.firstElementChild.offsetWidth < 0) { x += set.firstElementChild.offsetWidth; set.firstElementChild.remove(); }
