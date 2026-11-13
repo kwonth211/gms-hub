@@ -290,6 +290,31 @@ function renderSearch() {
   }).join('');
   // Don't report an empty item result while its index is loading or unavailable.
   searchEmpty.hidden = !!visible || (!items && (searchType === 'all' || searchType === 'item'));
+  applyCursor();
+}
+
+// Keyboard: like the header search sheet, the arrows move a highlight through the results while typing stays in the box,
+// and Enter opens the highlighted result (or the first one). Focus never leaves the input unless the visitor tabs away.
+let cursor = -1;
+const resultLinks = () => [...searchGroups.querySelectorAll('.search-result')];
+function applyCursor(scroll = false) {
+  const links = resultLinks();
+  if (cursor >= links.length) cursor = links.length - 1;
+  links.forEach((a, i) => { a.classList.toggle('is-active', i === cursor); a.id ||= `search-opt-${i}`; a.setAttribute('aria-selected', String(i === cursor)); });
+  const active = links[cursor];
+  if (active) input.setAttribute('aria-activedescendant', active.id); else input.removeAttribute('aria-activedescendant');
+  if (scroll && active) {
+    const box = searchPanel.getBoundingClientRect();
+    const row = active.getBoundingClientRect();
+    if (row.bottom > box.bottom) searchPanel.scrollTop += row.bottom - box.bottom + 8;
+    else if (row.top < box.top) searchPanel.scrollTop -= box.top - row.top + 8;
+  }
+}
+function moveCursor(step) {
+  const links = resultLinks();
+  if (!links.length) return;
+  cursor = Math.max(-1, Math.min(links.length - 1, cursor + step));
+  applyCursor(true);
 }
 
 // The popup never changes the page URL, layout or scroll position.
@@ -307,6 +332,7 @@ function focusResult(link) {
   else if (row.top < box.top) searchPanel.scrollTop -= box.top - row.top + 8;
 }
 function updateSearch() {
+  cursor = -1;
   searchOpen = !!input.value.trim();
   expanded.clear();
   searchPanel.scrollTop = 0;
@@ -341,13 +367,32 @@ document.getElementById('home-search').addEventListener('submit', (e) => {
   updateSearch();
 });
 input.addEventListener('keydown', (e) => {
-  if (e.isComposing) return;
-  if (e.key === 'ArrowDown' && input.value.trim()) {
+  if (e.isComposing || !input.value.trim()) return;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
     e.preventDefault();
-    searchOpen = true;
-    renderSearch();
-    focusResult(searchGroups.querySelector('.search-result'));
+    if (!searchOpen) { searchOpen = true; renderSearch(); }
+    moveCursor(e.key === 'ArrowDown' ? 1 : -1);
+  } else if (e.key === 'Enter') {
+    const links = resultLinks();
+    const target = links[cursor] || links[0];
+    if (searchOpen && target) {
+      e.preventDefault();
+      track('home_search_click', { result_type: target.dataset.resultType, result_id: target.dataset.resultId, via: 'enter' });
+      target.click();
+    }
   }
+});
+// Arrow keys also work after tabbing into the results.
+searchGroups.addEventListener('keydown', (e) => {
+  const link = e.target.closest('.search-result');
+  if (!link || (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')) return;
+  e.preventDefault();
+  const links = resultLinks();
+  const i = links.indexOf(link) + (e.key === 'ArrowDown' ? 1 : -1);
+  if (i < 0) { cursor = -1; applyCursor(); input.focus({ preventScroll: true }); return; }
+  cursor = Math.min(links.length - 1, i);
+  applyCursor(true);
+  links[cursor].focus({ preventScroll: true });
 });
 searchShell.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && !e.isComposing) {

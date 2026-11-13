@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest.",
  "updates": [
   {
+   "id": "home-search-keys",
+   "version": "0.4.21",
+   "level": "patch",
+   "date": "2026-11-13",
+   "path": "/",
+   "ko": "홈 검색 키보드 이동 — 방향키로 결과 고르고 Enter로 열기",
+   "en": "Home search keyboard: arrow keys pick a result, Enter opens it",
+   "desc": {
+    "ko": "홈 검색창에서 글자를 친 뒤 위아래 방향키로 결과를 고르고 Enter로 바로 열 수 있어요. 고르는 동안에도 계속 타자를 칠 수 있어요.",
+    "en": "After typing in the home search, the up and down arrows pick a result and Enter opens it; you can keep typing while you pick."
+   }
+  },
+  {
    "id": "market-search-gear-type",
    "version": "0.4.20",
    "level": "patch",

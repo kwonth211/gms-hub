@@ -891,7 +891,8 @@ input.dm-filled { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset
 .search-group h3 span, .search-group header small { color: var(--muted); font-size: .75rem; font-weight: 400; }
 .search-result-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 7px; }
 .search-result { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--text); text-decoration: none; }
-.search-result:hover, .search-result:focus-visible { border-color: var(--accent); background: var(--accent-soft); }
+.search-result:hover, .search-result:focus-visible, .search-result.is-active { border-color: var(--accent); background: var(--accent-soft); }
+.search-result.is-active { box-shadow: inset 3px 0 0 var(--accent-fill); }
 .search-result img { flex: none; object-fit: contain; image-rendering: pixelated; }
 .search-result-icon { flex: none; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: var(--panel-2); color: var(--accent); font-size: 1.15rem; }
 .search-result-copy { display: flex; flex-direction: column; flex: 1; min-width: 0; overflow-wrap: anywhere; }
