@@ -3338,6 +3338,14 @@ for (let a = 1; a <= TR_MAX; a += 10) {
     }
   }
 }
+// The old /prices/ pages folded into the item DB (grouped by the same categories); send Google and old links there.
+for (const slug of ['', ...PRICE_CATS.map((c) => c.slug)]) {
+  for (const lang of LANGS) {
+    const to = langPath(lang, '/items/') + (slug ? `#${slug}` : ''), url = absUrl(to);
+    write(langPath(lang, `/prices/${slug ? slug + '/' : ''}`).replace(/^\//, '') + 'index.html',
+      `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><title>GMS Hub</title><meta name="robots" content="noindex"><link rel="canonical" href="${url}"><meta http-equiv="refresh" content="0; url=${url}"></head><body><a href="${url}">${url}</a><script>location.replace(${JSON.stringify(to)})</script></body></html>`);
+  }
+}
 
 write(
   '404.html',
