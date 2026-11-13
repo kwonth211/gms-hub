@@ -2346,3 +2346,41 @@ body.exp-running .exp-stop { display: inline-flex; }
   .gq-place.is-at .gq-label, .gq-place.is-go .gq-label, .gq-place.is-hunt .gq-label { font-size: 20px; }
 }
 @media (prefers-reduced-motion: reduce) { .gq-place.is-at .gq-bang, .gq-leg-now { animation: none; } .gq-bar i { transition: none; } }
+
+/* Left: the quest list. Right: the map with the picked quest's card under it (with JavaScript only that one shows). */
+.gq-cols { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 18px; align-items: start; margin-bottom: 26px; }
+.gq-list { position: sticky; top: calc(80px + var(--tk-h)); max-height: calc(100vh - 100px - var(--tk-h)); overflow: auto; padding: 10px; }
+.gq-list-group + .gq-list-group { margin-top: 10px; }
+.gq-list h4 { margin: 4px 6px 6px; font-size: 0.85rem; color: var(--accent-2); }
+.gq-list ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.gq-pick { width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; border: 2px solid transparent; background: var(--panel-2); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.gq-pick:hover { border-color: var(--line-strong); }
+.gq-pick:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.gq-pick-no { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 0.85rem; background: var(--panel); border: 2px solid var(--line-strong); }
+.gq-pick-name { display: grid; min-width: 0; }
+.gq-pick-name b { font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gq-pick-name small { font-size: 0.76rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gq-pick-star { margin-left: auto; color: #e0a800; }
+.gq-pick.is-sel { border-color: #f0a33a; background: rgba(255, 212, 0, 0.18); }
+.gq-pick.is-sel .gq-pick-no { background: #ffd400; border-color: #8a5a00; color: #5b3a00; }
+.gq-pick.is-done { opacity: 0.55; filter: grayscale(1); }
+.gq-pick.is-done .gq-pick-name b { text-decoration: line-through; }
+.gq-pick.is-done .gq-pick-no { background: #9a9a9a; border-color: #777; color: #fff; }
+.gq-right .gq-world { margin-bottom: 14px; }
+.gq-js .gq-chain:not(.has-sel) { display: none; }
+.gq-js .gq-chain .gq-step:not(.is-current) { display: none; }
+.gq-js .gq-chain .gq-step.is-current .gq-step-body { display: grid; }
+.gq-js .gq-chain { margin-bottom: 0; }
+.gq-js .gq-chain h2 { font-size: 1.05rem; color: var(--muted); }
+.gq-js .gq-chain .lead { display: none; }
+@media (max-width: 960px) {
+  .gq-cols { grid-template-columns: 1fr; }
+  .gq-list { position: static; max-height: 280px; }
+  .gq-right .gq-now { display: none; }
+}
+/* The picked quest reads in full colour even when it is finished; the tracker over the map keeps only title and buttons. */
+.gq-js .gq-step.is-current.is-done { filter: none; opacity: 1; }
+.gq-js .gq-step.is-current.is-done .gq-title h3 { text-decoration: none; }
+.gq-right .gq-now { width: min(260px, 36%); padding: 10px 12px; }
+.gq-right .gq-now p { display: none; }
+.gq-right .gq-now strong { font-size: 1rem; }

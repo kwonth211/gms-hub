@@ -69,6 +69,9 @@ function render() {
   }
   if (current == null || !steps.some((s) => s.id === current)) current = (steps.find((s) => !done.has(s.id)) || steps[steps.length - 1]).id;
   for (const el of document.querySelectorAll('.gq-step')) { const now = Number(el.dataset.q) === current; el.classList.toggle('is-current', now); el.classList.toggle('is-open', now || el.classList.contains('is-peek')); }
+  // Only the picked step's part and card show on the right; the list on the left carries the state of every step.
+  for (const c of document.querySelectorAll('.gq-chain')) c.classList.toggle('has-sel', !!c.querySelector(`.gq-step[data-q="${current}"]`));
+  for (const b of document.querySelectorAll('.gq-pick')) { const id = Number(b.dataset.pick); b.classList.toggle('is-done', done.has(id)); b.classList.toggle('is-sel', id === current); }
   const step = steps.find((s) => s.id === current);
   $('gq-now-title').textContent = step.name;
   $('gq-now-text').textContent = step.do;
@@ -78,10 +81,14 @@ function render() {
   $('gq-bar').style.transform = `scaleX(${d.length / steps.length})`;
   $('gq-progress-text').textContent = !d.length ? D.t.none : d.length === steps.length ? D.t.all : fill(D.t.prog, { d: d.length, n: steps.length, e: fmt(exp) });
 }
-function select(id, scroll) {
+function select(id) {
   current = id; render();
-  if (scroll) stepEl(id)?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
+  document.querySelector(`.gq-pick[data-pick="${id}"]`)?.scrollIntoView({ block: 'nearest' });
+  const top = document.getElementById('gq-world').getBoundingClientRect().top;
+  if (top < 0 || top > innerHeight * 0.6) document.getElementById('gq-world').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
 }
+document.body.classList.add('gq-js');
+document.addEventListener('click', (e) => { const b = e.target.closest('.gq-pick'); if (b) select(Number(b.dataset.pick)); });
 document.addEventListener('change', (e) => {
   const box = e.target.closest('[data-done]');
   if (!box) return;
@@ -101,11 +108,11 @@ $('gq-next').addEventListener('click', () => {
   done.add(current); save();
   const i = D.steps.findIndex((s) => s.id === current);
   const next = D.steps.slice(i + 1).find((s) => !done.has(s.id)) || D.steps.find((s) => !done.has(s.id));
-  select(next ? next.id : current, true);
+  select(next ? next.id : current);
 });
 $('gq-prev').addEventListener('click', () => {
   const i = D.steps.findIndex((s) => s.id === current);
-  if (i > 0) select(D.steps[i - 1].id, true);
+  if (i > 0) select(D.steps[i - 1].id);
 });
 render();
 
