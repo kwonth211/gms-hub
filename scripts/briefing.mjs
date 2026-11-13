@@ -58,11 +58,22 @@ async function traffic() {
   const dayStart = new Date(kst(now).toISOString().slice(0, 10) + 'T00:00:00Z'); dayStart.setTime(dayStart.getTime() - 9 * 3600000); // KST midnight in UTC
   const yStart = new Date(dayStart.getTime() - 86400000), ySame = new Date(now.getTime() - 86400000);
   const sum = (rows) => ({ views: rows.reduce((s, r) => s + r.count, 0), visits: rows.reduce((s, r) => s + r.sum.visits, 0), kr: rows.filter((r) => r.dimensions.countryName === 'KR').reduce((s, r) => s + r.sum.visits, 0) });
-  const [today, ySameRows, yAll] = await Promise.all([rum(iso(dayStart), iso(now), 'requestPath countryName'), rum(iso(yStart), iso(ySame), 'countryName'), rum(iso(yStart), iso(dayStart), 'countryName')]);
+  const [today, ySameRows, yAll] = await Promise.all([rum(iso(dayStart), iso(now), 'requestPath countryName'), rum(iso(yStart), iso(ySame), 'requestPath countryName'), rum(iso(yStart), iso(dayStart), 'countryName')]);
   const byPage = {}; for (const r of today) { const k = kind(r.dimensions.requestPath); byPage[k] = (byPage[k] || 0) + r.count; }
+  const yPage = {}; for (const r of ySameRows) { const k = kind(r.dimensions.requestPath); yPage[k] = (yPage[k] || 0) + r.count; }
+  // Individual pages, language prefix folded in, today vs yesterday at the same time.
+  const bare = (p) => (p.replace(/^\/(ko|en|zh|ja)(?=\/|$)/, '') || '/').replace(/\/$/, '') || '/';
+  const tally = (rows) => { const o = {}; for (const r of rows) { const k = bare(r.dimensions.requestPath); o[k] = (o[k] || 0) + r.count; } return o; };
+  const tp = tally(today), yp = tally(ySameRows);
+  const paths = [...new Set([...Object.keys(tp), ...Object.keys(yp)])].map((p) => [p, tp[p] || 0, yp[p] || 0]);
+  const topPaths = paths.filter((r) => r[1]).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const risers = paths.filter((r) => r[1] - r[2] >= 3).sort((a, b) => (b[1] - b[2]) - (a[1] - a[2])).slice(0, 5);
+  const fallers = paths.filter((r) => r[2] - r[1] >= 3).sort((a, b) => (b[2] - b[1]) - (a[2] - a[1])).slice(0, 5);
+  const CORE = ['실시간 시세', '사냥터 추천', '몬스터 상세', '실시간 확성기', '경험치 측정기', '시세 리포트', '아이템', '퀘스트', '가이드', '몇 방 컷'];
+  const cats = [...new Set([...CORE, ...Object.keys(byPage), ...Object.keys(yPage)])].map((k) => [k, byPage[k] || 0, yPage[k] || 0]).sort((a, b) => b[1] - a[1] || b[2] - a[2]);
   const langs = {}; for (const r of today) { const l = /^\/(ko|en|zh|ja)/.exec(r.dimensions.requestPath)?.[1] || 'root'; langs[l] = (langs[l] || 0) + r.count; }
   const hours = await rum(iso(dayStart), iso(now), 'datetimeHour');
-  return { today: sum(today), yesterdaySameTime: sum(ySameRows), yesterday: sum(yAll), byPage: Object.entries(byPage).sort((a, b) => b[1] - a[1]).slice(0, 10), langs,
+  return { today: sum(today), yesterdaySameTime: sum(ySameRows), yesterday: sum(yAll), byPage: cats, topPaths, risers, fallers, langs,
     hours: hours.sort((a, b) => a.dimensions.datetimeHour.localeCompare(b.dimensions.datetimeHour)).map((r) => [(Number(r.dimensions.datetimeHour.slice(11, 13)) + 9) % 24, r.sum.visits]) };
 }
 
@@ -153,8 +164,15 @@ function markdown(T, D, C, S, M, F) {
   L.push(`- 확성기 수집: ${C.megaRunning ? `실행 중 (pid ${C.megaPid})` : '멈춤'} · 마지막 확성기 ${C.megaLastAgeMin == null ? '—' : `${C.megaLastAgeMin}분 전`} · 오늘 ${C.megaToday ? `${n(C.megaToday.n)}개 / ${n(C.megaToday.nicks)}명` : '—'}`);
   L.push(`- 사이트: ${S.out.map(([p, s, ms]) => `${p} ${s} ${ms}ms`).join(' · ')} · API ${S.apiOk ? `정상 ${S.apiMs}ms` : '오류'}`);
   L.push(`- 맥: CPU 여유 ${M.cpuIdle ?? '—'}% · 메모리 미사용 ${M.memUnused ?? '—'} (압축 ${M.memCompressed ?? '—'}) · 디스크 여유 ${M.diskFree} · 켜진 지 ${M.uptime}`, '');
-  L.push('## 트래픽 (오늘, KST)', '| 페이지 | 조회 | 비중 |', '|---|---|---|');
-  for (const [k, v] of T.byPage) L.push(`| ${k} | ${n(v)} | ${pct(v, T.today.views)} |`);
+  const diff = (a, b) => (b ? `${a >= b ? '+' : ''}${pct(a - b, b)}` : a ? '새로' : '—');
+  L.push('## 트래픽 (오늘, KST)', '### 종류별 (어제 같은 시각과 비교)', '| 종류 | 오늘 조회 | 비중 | 어제 같은 시각 | 변화 |', '|---|---|---|---|---|');
+  for (const [k, v, y] of T.byPage) L.push(`| ${k} | ${n(v)} | ${pct(v, T.today.views)} | ${n(y)} | ${diff(v, y)} |`);
+  L.push('', '### 인기 페이지 (오늘 조회 상위 10)', '| 페이지 | 오늘 | 어제 같은 시각 |', '|---|---|---|');
+  for (const [p, v, y] of T.topPaths) L.push(`| ${p} | ${n(v)} | ${n(y)} |`);
+  L.push('', `### 많이 오른 페이지: ${T.risers.length ? T.risers.map(([p, v, y]) => `${p} ${y}→${v}`).join(' · ') : '없음'}`);
+  L.push(`### 많이 떨어진 페이지: ${T.fallers.length ? T.fallers.map(([p, v, y]) => `${p} ${y}→${v}`).join(' · ') : '없음'}`);
+  const cold = T.byPage.filter(([, v]) => v <= 3).map(([k, v]) => `${k} ${v}`);
+  L.push(`### 조회가 거의 없는 종류 (3 이하): ${cold.length ? cold.join(' · ') : '없음'}`);
   L.push('', `언어: ${Object.entries(T.langs).sort((a, b) => b[1] - a[1]).map(([l, v]) => `${l} ${n(v)}`).join(' · ')}`);
   L.push(`시간대별 방문: ${T.hours.map(([h, v]) => `${h}시 ${v}`).join(' · ')}`, '');
   L.push('## 데이터베이스 (D1, UTC 하루 단위)', '| 날짜(UTC) | 읽기 행 | 쓰기 행 | 읽기 쿼리 | 쓰기 쿼리 |', '|---|---|---|---|---|');
