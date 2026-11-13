@@ -819,7 +819,7 @@ const XL_LIVE_SHEETS = {
 // while it loads. Each entry is a run of markers found in order in the page body; the block starts at the last one's tag
 // (a table's wrapper if it has one). A heading right above the block takes the button on its own line; otherwise the
 // button gets a right-aligned row above the block. No match: it stays under the page heading, aligned right.
-const XL_ANCHOR = { market: ['<section class="panel mb-browser"'], marketToday: ['mt-table'], megaphone: ['class="panel mega-trends'], rank: ['rank-table-panel'],
+const XL_ANCHOR = { market: ['<div class="mb-workspace"'], marketToday: ['mt-table'], megaphone: ['class="panel mega-trends'], rank: ['rank-table-panel'],
   training: ['<section id="tr-result"'], trBand: ['class="tr-route-list'], trClass: ['class="tr-route-list'], monsters: ['id="monster-grid"'], bosses: ['boss-table'],
   items: ['item-page', '<section class="panel"'], equipment: ['<form class="panel eq-filters"'], equipmentClass: ['<form class="panel eq-filters"'], maps: ['map-page', '<section class="panel"'],
   quests: ['<section class="panel" id="area-'], questBest: ['<section class="panel" id="lv-'], questGuide: ['class="gq-cols'], scroll: ['id="sc-compare"'], drop: ['<nav class="chips box-tabs"'] };
