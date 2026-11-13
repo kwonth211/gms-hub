@@ -29,7 +29,7 @@ function drawRoad(step) {
     const state = id === step.id ? 'is-now' : done.has(id) ? 'is-past' : 'is-ahead';
     return `<li class="gq-stop ${state}${s.big ? ' is-big' : ''}" data-pick="${id}">
 <div class="gq-stop-pin">${id === step.id ? `<span class="gq-stop-bang">!</span><span class="gq-me"></span>` : ''}<span class="gq-stop-dot">${done.has(id) && id !== step.id ? '✓' : i + 1}</span></div>
-<div class="gq-stop-card"><b>${esc(placeName(s.at))}</b><span>${esc(s.npc)}${s.end ? ` → ${esc(s.end)}` : ''}</span>
+<div class="gq-stop-card"><div class="gq-stop-npc"><img src="${esc(s.npcImg)}" alt="" loading="lazy">${s.endImg ? `<i>→</i><img src="${esc(s.endImg)}" alt="" loading="lazy">` : ''}</div><b>${esc(placeName(s.at))}</b><span>${esc(s.npc)}${s.end ? ` → ${esc(s.end)}` : ''}</span>
 ${s.need.length ? `<ul>${s.need.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}
 ${s.hunt.length ? `<div class="gq-stop-flags">${s.hunt.map((h) => `<i>${esc(D.t.hunt)} · ${esc(placeName(h))}</i>`).join('')}</div>` : ''}</div></li>`;
   }).join('');
@@ -64,7 +64,7 @@ function select(id) {
   if (top < 0 || top > innerHeight * 0.6) document.getElementById('gq-world').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
 }
 document.body.classList.add('gq-js');
-document.addEventListener('click', (e) => { const b = e.target.closest('.gq-pick'); if (b) select(Number(b.dataset.pick)); });
+document.addEventListener('click', (e) => { const b = e.target.closest('.gq-pick, .gq-go-route'); if (b) select(Number(b.dataset.pick)); });
 document.addEventListener('change', (e) => {
   const box = e.target.closest('[data-done]');
   if (!box) return;
@@ -118,8 +118,11 @@ render();
     }
     table.querySelector('.gq-shop-sum').textContent = total ? `${all ? '' : '≥ '}${mesos(total)} ${D.t.mesos}` : '—';
   }
-  const a = med(D.ev.a), m = med(D.ev.m);
-  if (a && m) { $('gq-ev').textContent = `${mesos((a + m) / 2)} ${D.t.mesos}`; $('gq-ev-note').textContent = fill(D.t.ev, { a: mesos(a), m: mesos(m) }); }
+  // Each route's reward is an equal-chance pick among its scrolls, so its expected value is their average price.
+  for (const dd of document.querySelectorAll('[data-ev]')) {
+    const v = dd.dataset.ev.split(',').map((id) => med(Number(id)));
+    if (v.every(Boolean)) dd.textContent = `${mesos(v.reduce((a, b) => a + b, 0) / v.length)} ${D.t.mesos}`;
+  }
 })();
 
 // ---------- materials ----------

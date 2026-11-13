@@ -2432,3 +2432,29 @@ body.exp-running .exp-stop { display: inline-flex; }
 .gq-shop-table tr.is-have td { opacity: 0.45; }
 .gq-shop-table tr.is-have td:first-child span { text-decoration: line-through; }
 .gq-have { width: 20px; height: 20px; accent-color: #f08a24; }
+/* NPC portraits: in the list, on each road stop and in the quest card header. */
+.gq-pick-npc { flex: none; width: 30px; height: 36px; object-fit: contain; object-position: bottom; image-rendering: pixelated; }
+.gq-stop-npc { display: flex; align-items: flex-end; justify-content: center; gap: 4px; height: 66px; margin: -4px 0 4px; padding-bottom: 4px; border-bottom: 1px dashed #e6d7b0; }
+.gq-stop-npc img { max-height: 62px; max-width: 64px; object-fit: contain; image-rendering: pixelated; }
+.gq-stop-npc i { font-style: normal; color: #a7783f; font-weight: 900; align-self: center; }
+.gq-npcs { flex: none; display: flex; align-items: flex-end; gap: 4px; }
+.gq-npcs img { height: 52px; width: auto; max-width: 60px; object-fit: contain; image-rendering: pixelated; }
+.gq-npcs i { font-style: normal; color: var(--muted); align-self: center; }
+.gq-step.is-done .gq-npcs img { filter: grayscale(1); }
+/* Two glove-scroll routes side by side at the top; the list marks which route each part belongs to. */
+.gq-routes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.gq-route-card { border: 2px solid var(--line-strong); border-radius: 14px; padding: 14px 16px; display: grid; gap: 8px; background: var(--panel-2); }
+.gq-route-card[data-route="rowen"] { border-color: #f0a33a; }
+.gq-route-card[data-route="jane"] { border-color: #6c8cff; }
+.gq-route-card h3 { margin: 0; font-size: 1.15rem; }
+.gq-route-card p { margin: 0; font-size: 0.9rem; color: var(--muted); }
+.gq-route-card dl { margin: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.gq-route-card dl > div { background: var(--panel); border-radius: 10px; padding: 6px 8px; }
+.gq-route-card dt { font-size: 0.74rem; color: var(--muted); font-weight: 700; }
+.gq-route-card dd { margin: 0; font-weight: 900; font-size: 1.02rem; font-variant-numeric: tabular-nums; }
+.gq-route-card .gq-ev dd { color: #c2410c; }
+.gq-route-card .gq-go-route { justify-self: start; }
+.gq-list-group.gq-route-rowen h4 { color: #c2410c; }
+.gq-list-group.gq-route-jane h4 { color: #3d5bd9; }
+.gq-list-group.gq-route-jane, .gq-list-group.gq-route-bonus { margin-top: 16px; padding-top: 10px; border-top: 2px dashed var(--line-strong); }
+@media (max-width: 860px) { .gq-routes { grid-template-columns: 1fr; } .gq-route-card dl { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

@@ -5,6 +5,8 @@
 // quest log with progress, the island map and live free-market prices.
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const icon = (id) => `https://maplestory.io/api/MCW/1/item/${id}/icon`;
+// NPC standing images from the same source as the item icons (the quest data's NPC ids are the game's).
+const npcImg = (id) => `https://maplestory.io/api/MCW/1/npc/${id}/icon`;
 const n = (v, lang) => Number(v).toLocaleString(lang === 'ko' ? 'ko-KR' : 'en-US');
 
 export function gloveQuestData({ guide, raw, items, monsters }) {
@@ -16,6 +18,7 @@ export function gloveQuestData({ guide, raw, items, monsters }) {
     .sort((a, b) => Number(!!a.boss) - Number(!!b.boss) || a.lv - b.lv).slice(0, 4)
     .map((m) => ({ id: m.id, ko: m.ko, en: m.en, lv: m.lv, maps: topMaps(m) }));
   const topMaps = (m) => [...(m.locations || [])].sort((a, b) => b.count - a.count).slice(0, 2).map((l) => ({ id: l.id, ko: l.ko || l.en, en: l.en, count: l.count }));
+  const npc = (id) => { const r = raw.npcs[String(id)]; return r ? { ...r, ko: r.ko || guide.npcs?.[String(id)] || null } : null; };
   const chains = guide.chains.map((c) => ({
     ...c,
     steps: c.steps.map((s) => {
@@ -28,7 +31,7 @@ export function gloveQuestData({ guide, raw, items, monsters }) {
       const gets = (rw.items || []).filter((i) => i.count > 0).map((i) => ({ id: i.id, count: i.count, ...itemName(i.id), job: i.job ?? null, gender: i.gender ?? null }));
       const pick = gets.some((g) => g.job != null) ? 'job' : gets.some((g) => g.gender != null) ? 'gender' : gets.length > 1 ? 'random' : 'all';
       return { ...s, id: q.id, name: q.name, lv: start.levelMinimum || null, startNpc: start.npcId, endNpc: done.npcId,
-        npcStart: raw.npcs[String(start.npcId)] || null, npcEnd: raw.npcs[String(done.npcId)] || null,
+        npcStart: npc(start.npcId), npcEnd: npc(done.npcId),
         kills, bring, exp: rw.exp || 0, meso: rw.meso || 0, fame: rw.fame || 0, gets, pick,
         receive: [...startGives].map((id) => ({ id, ...itemName(id) })) };
     })
@@ -44,7 +47,7 @@ export function gloveQuestBody({ lang, guide, data, link, mobSprite, mobHref, pa
   const tr = (k, e) => (ko ? k : e);
   const L = (o) => (o ? o[ko ? 'ko' : 'en'] : '');
   const place = (id) => guide.places[id];
-  const short = (c) => L(c.title).split(/ — | \(/)[0];
+  const short = (c) => L(c.title).split(/ — /)[0];
   const mapLink = (m) => `<a href="${link(`/maps/${m.id}/`)}">${esc(ko ? m.ko : m.en)}</a> <small>${m.count}${tr('마리', '')}</small>`;
   const all = data.chains.flatMap((c) => c.steps);
   const dolls = data.chains.find((c) => c.id === 'dolls');
@@ -58,7 +61,7 @@ export function gloveQuestBody({ lang, guide, data, link, mobSprite, mobHref, pa
     const gets = s.gets.length ? `<div class="gq-gets"><span>${s.pick === 'random' ? tr('다음 중 하나 (무작위)', 'One of these, at random') : s.pick === 'job' ? tr('직업에 맞는 하나', 'The one for your class') : s.pick === 'gender' ? tr('성별에 따라 하나', 'One by gender') : ''}</span>${s.gets.map((g) => `<a class="gq-get" data-item="${g.id}" href="${link(`/tools/market/?item=${g.id}`)}"><img src="${icon(g.id)}" alt="" width="28" height="28" loading="lazy"><span>${esc(ko ? g.ko : g.en)}${g.count > 1 ? ` ×${g.count}` : ''}</span><em class="gq-price" hidden></em></a>`).join('')}</div>` : '';
     const at = place(s.at), go = s.go ? place(s.go) : null;
     return `<li class="gq-step${s.big ? ' gq-big' : ''}" id="q-${s.id}" data-q="${s.id}" data-at="${esc(s.at)}"${s.go ? ` data-go="${esc(s.go)}"` : ''} data-hunt="${esc((s.hunt || []).join(' '))}" data-exp="${s.exp}" data-meso="${s.meso}">
-<div class="gq-step-head"><span class="gq-no">${i + 1}</span><div class="gq-title"><h3 translate="no">${esc(s.name)}</h3><small translate="no">${s.lv ? `Lv ${s.lv}+ · ` : ''}${esc(npcName(s.npcStart, lang))}${s.endNpc !== s.startNpc ? ` → ${esc(npcName(s.npcEnd, lang))}` : ''}</small></div><span class="gq-state"><span class="gq-st-done">${tr('완료', 'Complete')}</span><span class="gq-st-now">${tr('진행 중', 'In progress')}</span></span><label class="gq-done"><input type="checkbox" data-done="${s.id}"><span>${tr('완료', 'Done')}</span></label></div>
+<div class="gq-step-head"><span class="gq-no">${i + 1}</span><span class="gq-npcs"><img src="${npcImg(s.startNpc)}" alt="${esc(npcName(s.npcStart, lang))}" loading="lazy">${s.endNpc !== s.startNpc ? `<i aria-hidden="true">→</i><img src="${npcImg(s.endNpc)}" alt="${esc(npcName(s.npcEnd, lang))}" loading="lazy">` : ''}</span><div class="gq-title"><h3 translate="no">${esc(s.name)}</h3><small translate="no">${s.lv ? `Lv ${s.lv}+ · ` : ''}${esc(npcName(s.npcStart, lang))}${s.endNpc !== s.startNpc ? ` → ${esc(npcName(s.npcEnd, lang))}` : ''}</small></div><span class="gq-state"><span class="gq-st-done">${tr('완료', 'Complete')}</span><span class="gq-st-now">${tr('진행 중', 'In progress')}</span></span><label class="gq-done"><input type="checkbox" data-done="${s.id}"><span>${tr('완료', 'Done')}</span></label></div>
 <div class="gq-step-body">
 <div class="gq-where"><div class="gq-lbl">${tr('어디서', 'Where')}</div><div><div translate="no">${esc(L(at))}</div>${s.where ? `<div>${esc(L(s.where))}</div>` : ''}</div>${go ? `<div class="gq-lbl">${tr('다음 목적지', 'Next stop')}</div><div translate="no">${esc(L(go))}</div>` : ''}</div>
 <p class="gq-do">${esc(L(s.do))}</p>
@@ -114,7 +117,7 @@ ${Object.entries(guide.places).map(([id, p]) => `<g class="gq-place${towns.inclu
       return { items: [...items.values()], kills: [...kills.values()] };
     };
     const tabs = [
-      { id: 'scroll', label: tr('장공(150개)까지', 'Up to the scroll (150)'), steps: toScroll },
+      { id: 'scroll', label: tr('① 로웬 루트 (장공까지)', '① Rowen route (to the scroll)'), steps: toScroll },
       ...data.chains.map((c) => ({ id: c.id, label: short(c), steps: c.steps })),
       { id: 'all', label: tr('전체', 'Everything'), steps: all }
     ];
@@ -134,18 +137,22 @@ ${tabs.map(table).join('')}
     tr('사우나 가운(비밀의 책) 9단계 → 요정 로웬의 저주받은 인형 5단계 → 제인의 도전까지. 누구에게 무엇을 어디서 가져가는지, 동선과 지금 시세까지 한 번에. 진행한 단계는 체크해 두면 이 브라우저에 남아요.',
       'The Sauna Robe chain (9 steps) → Rowen the Fairy\'s Cursed Dolls (5) → Jane\'s challenges: who wants what, where it drops, the route and today\'s prices. Tick steps as you go; your progress stays in this browser.'));
 
-  const summary = `<section class="gq-hud panel" id="gq-hud">
-<div class="gq-hud-stats">
-<div><span>${tr('장공까지 단계', 'Steps to the scroll')}</span><b>${toScroll.length}</b></div>
-<div><span>${tr('장공까지 경험치', 'EXP to the scroll')}</span><b>${n(sum(toScroll, 'exp'), lang)}</b></div>
-<div><span>${tr('장공까지 처치', 'Kills to the scroll')}</span><b>${n(totalKills(toScroll.map((s) => s.id)), lang)}</b></div>
-<div class="gq-ev"><span>${tr('150개 보상 기대값', '150-doll reward, expected')}</span><b id="gq-ev">—</b><small id="gq-ev-note"></small></div>
-</div>
+  // One card per glove-scroll route: the two routes are separate quest lines with their own reward.
+  const routeCard = (r) => {
+    const ids = data.chains.filter((c) => c.route === r.id).flatMap((c) => c.steps);
+    const upto = ids.slice(0, ids.findIndex((s) => s.id === r.until) + 1);
+    const lvs = upto.map((s) => s.lv).filter(Boolean);
+    const kills = upto.reduce((a, s) => a + s.kills.reduce((x, k) => x + k.count, 0), 0);
+    return `<div class="gq-route-card" data-route="${r.id}"><h3>${esc(L(r.name))}</h3><p>${esc(L(r.reward))}</p>
+<dl><div><dt>${tr('단계', 'Steps')}</dt><dd>${upto.length}</dd></div><div><dt>${tr('레벨', 'Level')}</dt><dd>${Math.min(...lvs)}→${Math.max(...lvs)}</dd></div><div><dt>${tr('처치', 'Kills')}</dt><dd>${n(kills, lang)}</dd></div><div><dt>${tr('경험치', 'EXP')}</dt><dd>${n(sum(upto, 'exp'), lang)}</dd></div><div class="gq-ev"><dt>${tr('보상 기대값', 'Reward, expected')}</dt><dd data-ev="${r.ev.join(',')}">—</dd></div></dl>
+<button type="button" class="btn small-btn gq-go-route" data-pick="${upto[0].id}">${tr('이 루트 보기', 'Show this route')}</button></div>`;
+  };
+  const summary = `<section class="gq-hud panel" id="gq-hud"><div class="gq-routes">${guide.routes.map(routeCard).join('')}</div>
 <div class="gq-progress"><a class="btn ghost small-btn" href="#materials">${tr('재료 총정리', 'All materials')}</a><div class="gq-bar"><i id="gq-bar"></i></div><span id="gq-progress-text">${tr('체크한 단계가 없어요', 'No steps ticked yet')}</span></div>
 </section>`;
 
   // The quest list on the left: every step by part, with its number, name and NPC; picking one shows it on the right.
-  const list = `<aside class="gq-list panel" aria-label="${tr('퀘스트 목록', 'Quest list')}">${data.chains.map((c) => `<div class="gq-list-group"><h4>${esc(short(c))}</h4><ol>${c.steps.map((s, i) => `<li><button type="button" class="gq-pick" data-pick="${s.id}"><span class="gq-pick-no">${i + 1}</span><span class="gq-pick-name"><b translate="no">${esc(s.name)}</b><small translate="no">${esc(npcName(s.npcStart, lang))}${s.lv ? ` · Lv ${s.lv}` : ''}</small></span>${s.big ? '<span class="gq-pick-star" aria-hidden="true">★</span>' : ''}</button></li>`).join('')}</ol></div>`).join('')}</aside>`;
+  const list = `<aside class="gq-list panel" aria-label="${tr('퀘스트 목록', 'Quest list')}">${data.chains.map((c) => `<div class="gq-list-group gq-route-${c.route}"><h4>${esc(short(c))}</h4><ol>${c.steps.map((s, i) => `<li><button type="button" class="gq-pick" data-pick="${s.id}"><span class="gq-pick-no">${i + 1}</span><img class="gq-pick-npc" src="${npcImg(s.startNpc)}" alt="" width="30" height="36" loading="lazy"><span class="gq-pick-name"><b translate="no">${esc(s.name)}</b><small translate="no">${esc(npcName(s.npcStart, lang))}${s.lv ? ` · Lv ${s.lv}` : ''}</small></span>${s.big ? '<span class="gq-pick-star" aria-hidden="true">★</span>' : ''}</button></li>`).join('')}</ol></div>`).join('')}</aside>`;
   // The route as a one-way road: one stop per step of the picked part, drawn by assets/quest-route.js.
   const now = `<section class="gq-world panel" id="gq-world"><div class="gq-road-head"><strong id="gq-road-title"></strong><div class="gq-now-actions"><button type="button" class="btn ghost small-btn" id="gq-prev">${tr('이전', 'Back')}</button><button type="button" class="btn small-btn" id="gq-next">${tr('완료하고 다음', 'Done, next')}</button></div></div>
 <div class="gq-road-scroll"><ol class="gq-road" id="gq-road"></ol></div></section>`;
@@ -156,7 +163,7 @@ ${tabs.map(table).join('')}
 <script id="gq-data" type="application/json">${JSON.stringify({ lang, api: apiBase, places: guide.places, sx: 1000 / 600, sy: 560 / 340, prices: data.priceIds, ev: { a: 2040801, m: 2040805 },
     chains: data.chains.map((c) => ({ id: c.id, title: L(c.title).split(/ — /)[0], steps: c.steps.map((s) => s.id) })),
     steps: all.map((s) => ({ id: s.id, name: s.name, at: s.at, go: s.go || null, hunt: s.hunt || [], exp: s.exp, do: L(s.do),
-      npc: npcName(s.npcStart, lang), end: s.endNpc !== s.startNpc ? npcName(s.npcEnd, lang) : '',
+      npc: npcName(s.npcStart, lang), end: s.endNpc !== s.startNpc ? npcName(s.npcEnd, lang) : '', npcImg: npcImg(s.startNpc), endImg: s.endNpc !== s.startNpc ? npcImg(s.endNpc) : '',
       need: [...s.kills.map((k) => `${ko ? k.ko : k.en} ×${k.count}`), ...s.bring.filter((b) => !b.handed).map((b) => `${ko ? b.ko : b.en} ×${b.count}`)],
       big: !!s.big })),
     t: { kill: tr('처치', 'kill'), hunt: tr('사냥터', 'Hunt'), talk: tr('대화', 'Talk to'), here: tr('지금', 'Now'), none: tr('체크한 단계가 없어요', 'No steps ticked yet'), prog: tr('{d}/{n}단계 · 경험치 {e}', '{d} of {n} steps · {e} EXP'), all: tr('모든 단계를 끝냈어요!', 'Every step is done!'), ev: tr('장공 {a} · 장마 {m} 반반', 'Attack {a} · Magic {m}, 50:50'), mesos: tr('메소', 'mesos') } }).replace(/</g, '\\u003c')}</script>`;
