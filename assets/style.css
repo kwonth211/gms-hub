@@ -2583,9 +2583,20 @@ body.exp-running .exp-stop { display: inline-flex; }
 .pn-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 .pn-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px; align-items: center; padding: 16px 20px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); scroll-margin-top: 120px; }
 .pn-item:target { border-color: var(--accent-fill); box-shadow: 0 0 0 3px var(--accent-soft); }
-.pn-item h3 { margin: 0; font-size: 1.05rem; }
+.pn-item h3 { margin: 0; font-size: 1.05rem; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .pn-item p { grid-column: 1; margin: 0; color: var(--muted); line-height: 1.6; }
 .pn-go { grid-column: 2; grid-row: 1 / span 2; white-space: nowrap; font-weight: 700; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line-strong); color: var(--text); text-decoration: none; background: var(--bg); }
 .pn-go:hover { border-color: var(--accent-fill); }
 .pn-go:active { transform: translateY(1px); }
 @media (max-width: 640px) { .pn-item { grid-template-columns: minmax(0, 1fr); } .pn-go { grid-column: 1; grid-row: auto; justify-self: start; margin-top: 6px; } }
+.pn-ver { font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: var(--veil); color: var(--muted); }
+.pn-ver.pn-major { background: var(--accent-fill); color: var(--accent-ink); }
+.pn-lv { font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
+.pn-lv-major { background: var(--accent-soft); color: var(--accent); }
+.pn-lv-minor { background: var(--tag-green-bg); color: var(--tag-green); }
+.pn-lv-patch { background: var(--tag-violet-bg); color: var(--tag-violet); }
+.pn-item-major { border-color: var(--accent-line); }
+.pn-legend { display: grid; gap: 8px; padding: 14px 18px; border: 1px dashed var(--line-strong); border-radius: var(--radius); }
+.pn-legend p { margin: 0; display: flex; align-items: center; gap: 8px; }
+.pn-legend ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--muted); font-size: 0.92rem; }
+.pn-legend li { display: flex; align-items: center; gap: 8px; }

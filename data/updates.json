@@ -1,8 +1,10 @@
 {
- "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content.",
+ "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: semver judged per entry (major = a new pillar of the site, minor = a new feature or guide, patch = an improvement to an existing one); a new entry takes the next number after the newest.",
  "updates": [
   {
    "id": "market-search-gear-type",
+   "version": "4.14.1",
+   "level": "patch",
    "date": "2026-11-13",
    "path": "/tools/market/",
    "ko": "시세 검색 개선 — 아대·폴암처럼 무기 종류로도 찾고 '공격려' 오타도 찾아요",
@@ -14,6 +16,8 @@
   },
   {
    "id": "exp-tracker-2",
+   "version": "4.14.0",
+   "level": "minor",
    "date": "2026-11-13",
    "path": "/tools/exp/",
    "new": true,
@@ -26,6 +30,8 @@
   },
   {
    "id": "forgotten-hollow",
+   "version": "4.13.0",
+   "level": "minor",
    "date": "2026-11-13",
    "path": "/forgotten-hollow/",
    "new": true,
@@ -38,6 +44,8 @@
   },
   {
    "id": "excel",
+   "version": "4.12.0",
+   "level": "minor",
    "date": "2026-11-13",
    "path": "/tools/market/",
    "new": true,
@@ -50,6 +58,8 @@
   },
   {
    "id": "english-search",
+   "version": "4.11.2",
+   "level": "patch",
    "date": "2026-11-13",
    "path": "/",
    "ko": "영어 검색 개선 — glove att 60, zhelm 같은 줄임말도 찾아요",
@@ -61,6 +71,8 @@
   },
   {
    "id": "quest-guides-2",
+   "version": "4.11.1",
+   "level": "patch",
    "date": "2026-11-13",
    "path": "/quests/",
    "new": true,
@@ -73,6 +85,8 @@
   },
   {
    "id": "quests-tab",
+   "version": "4.11.0",
+   "level": "minor",
    "date": "2026-11-13",
    "path": "/quests/",
    "new": true,
@@ -85,6 +99,8 @@
   },
   {
    "id": "glove-quest",
+   "version": "4.10.0",
+   "level": "minor",
    "date": "2026-11-13",
    "path": "/quests/glove-attack/",
    "new": true,
@@ -97,6 +113,8 @@
   },
   {
    "id": "training-rates",
+   "version": "4.9.0",
+   "level": "minor",
    "date": "2026-11-13",
    "path": "/tools/training/#rates",
    "ko": "사냥터 추천에 시간당 경험치·메소 실측 수치 46개",
@@ -108,6 +126,8 @@
   },
   {
    "id": "live-megaphones-push",
+   "version": "4.8.1",
+   "level": "patch",
    "date": "2026-11-13",
    "path": "/megaphone/",
    "ko": "실시간 확성기가 새로고침 없이 바로 들어와요",
@@ -119,6 +139,8 @@
   },
   {
    "id": "discord-bot",
+   "version": "4.8.0",
+   "level": "minor",
    "date": "2026-11-13",
    "path": "/discord-bot/",
    "ko": "디스코드 봇 — 시세·몬스터·사냥터 검색, 확성기 알림",
@@ -130,6 +152,8 @@
   },
   {
    "id": "exp-tracker",
+   "version": "4.7.0",
+   "level": "minor",
    "date": "2026-11-12",
    "path": "/tools/exp/",
    "ko": "경험치 측정기 — 화면 공유로 시간당 경험치·레벨업까지 남은 시간",
@@ -141,6 +165,8 @@
   },
   {
    "id": "market-panel-2",
+   "version": "4.6.1",
+   "level": "patch",
    "date": "2026-11-12",
    "path": "/tools/market/",
    "ko": "시세 아이템 패널 개편 — 가격 분포·추이·관련 확성기",
@@ -152,6 +178,8 @@
   },
   {
    "id": "megaphone-trends",
+   "version": "4.6.0",
+   "level": "minor",
    "date": "2026-11-12",
    "path": "/megaphone/",
    "ko": "확성기 트렌드 — 지금 뜨는 아이템, 사려는 사람이 많은 아이템",
@@ -163,6 +191,8 @@
   },
   {
    "id": "header-search",
+   "version": "4.5.0",
+   "level": "minor",
    "date": "2026-11-12",
    "path": "/",
    "ko": "상단 검색 — 어느 페이지에서나 검색 버튼이나 / 키로 아이템·몬스터·페이지 찾기",
@@ -174,6 +204,8 @@
   },
   {
    "id": "market-today",
+   "version": "4.4.0",
+   "level": "minor",
    "date": "2026-11-12",
    "path": "/tools/market/today/",
    "ko": "오늘의 시세 리포트 — 매일 밤 새로 정리되는 시세 요약",
@@ -185,6 +217,8 @@
   },
   {
    "id": "megaphone-ticker",
+   "version": "4.3.0",
+   "level": "minor",
    "date": "2026-11-12",
    "path": "/megaphone/",
    "ko": "확성기 띠 — 모든 페이지 맨 위에 최신 확성기가 흘러가요",
@@ -196,6 +230,8 @@
   },
   {
    "id": "market-class-filter",
+   "version": "4.2.0",
+   "level": "minor",
    "date": "2026-11-12",
    "path": "/tools/market/",
    "ko": "시세에 직업 필터 — 내 직업이 쓸 수 있는 장비·무기·주문서·표창만 보기",
@@ -207,6 +243,8 @@
   },
   {
    "id": "market-panel",
+   "version": "4.1.0",
+   "level": "minor",
    "date": "2026-11-12",
    "path": "/tools/market/",
    "ko": "시세 아이템 패널 — 착용 조건·능력치·NPC 가격·드롭 몬스터·퀘스트 보상",
@@ -218,6 +256,8 @@
   },
   {
    "id": "scan-compare",
+   "version": "4.0.1",
+   "level": "patch",
    "date": "2026-11-12",
    "path": "/tools/scan/",
    "ko": "상점 스캔에 시세 비교 — 내 가격이 시세보다 얼마나 비싼지",
@@ -229,6 +269,8 @@
   },
   {
    "id": "megaphones",
+   "version": "4.0.0",
+   "level": "major",
    "date": "2026-11-11",
    "path": "/megaphone/",
    "ko": "실시간 확성기 — 게임 확성기를 모아 보고 검색하기",
@@ -240,6 +282,8 @@
   },
   {
    "id": "rank",
+   "version": "3.10.0",
+   "level": "minor",
    "date": "2026-11-11",
    "path": "/rank/",
    "ko": "캐릭터 랭킹 — 레벨 순위·직업 분포·내 캐릭터 찾기",
@@ -251,6 +295,8 @@
   },
   {
    "id": "market-sparklines",
+   "version": "3.9.1",
+   "level": "patch",
    "date": "2026-11-11",
    "path": "/tools/market/",
    "ko": "인기 아이템 시간별 그래프와 실시간 순위 변동",
@@ -262,6 +308,8 @@
   },
   {
    "id": "item-hover",
+   "version": "3.9.0",
+   "level": "minor",
    "date": "2026-11-11",
    "path": "/items/",
    "ko": "아이템 미리보기 — 아이템 이름에 마우스를 올리면 능력치와 드롭 몬스터",
@@ -273,6 +321,8 @@
   },
   {
    "id": "class-guides",
+   "version": "3.8.0",
+   "level": "minor",
    "date": "2026-11-11",
    "path": "/guides/hunter/",
    "ko": "직업별 상세 가이드 — 파이터·페이지·스피어맨·어쌔신·시프·불독·썬콜·클레릭·헌터·사수 (30~70)",
@@ -284,6 +334,8 @@
   },
   {
    "id": "equipment",
+   "version": "3.7.0",
+   "level": "minor",
    "date": "2026-11-11",
    "path": "/equipment/",
    "ko": "직업별 장비 찾기와 레벨별 경험치 퀘스트",
@@ -295,6 +347,8 @@
   },
   {
    "id": "bosses",
+   "version": "3.6.0",
+   "level": "minor",
    "date": "2026-11-11",
    "path": "/bosses/",
    "ko": "보스 페이지 — 보스별 위치·체력·드롭",
@@ -306,6 +360,8 @@
   },
   {
    "id": "quest-db",
+   "version": "3.5.0",
+   "level": "minor",
    "date": "2026-11-11",
    "path": "/quests/",
    "ko": "퀘스트 도감 — 퀘스트 343개의 조건·보상·필요 아이템 드롭 몬스터",
@@ -317,6 +373,8 @@
   },
   {
    "id": "map-db",
+   "version": "3.4.0",
+   "level": "minor",
    "date": "2026-11-10",
    "path": "/maps/",
    "ko": "맵 도감 — 맵마다 몬스터·마릿수·한 바퀴 경험치·드롭",
@@ -328,6 +386,8 @@
   },
   {
    "id": "item-db",
+   "version": "3.3.0",
+   "level": "minor",
    "date": "2026-11-10",
    "path": "/items/",
    "ko": "아이템 도감 — 몬스터가 떨구는 모든 아이템의 드롭 몬스터·사냥 맵·기본 능력치",
@@ -339,6 +399,8 @@
   },
   {
    "id": "my-character",
+   "version": "3.2.0",
+   "level": "minor",
    "date": "2026-11-10",
    "path": "/",
    "ko": "내 캐릭터 저장 — 직업과 레벨을 저장하면 맞춤 사냥터를 바로 보여줘요",
@@ -350,6 +412,8 @@
   },
   {
    "id": "class-training",
+   "version": "3.1.0",
+   "level": "minor",
    "date": "2026-11-10",
    "path": "/tools/training/",
    "ko": "직업별 사냥터 페이지와 사냥 메모",
@@ -361,6 +425,8 @@
   },
   {
    "id": "redesign",
+   "version": "3.0.0",
+   "level": "major",
    "date": "2026-11-10",
    "path": "/",
    "ko": "새 디자인과 밤 모드 — 크림 종이 바탕, 메이플 주황 버튼",
@@ -372,6 +438,8 @@
   },
   {
    "id": "monster-db",
+   "version": "2.5.0",
+   "level": "minor",
    "date": "2026-11-10",
    "path": "/monsters/",
    "ko": "몬스터 도감 — 체력·경험치·약점·드롭·출현 맵",
@@ -383,6 +451,8 @@
   },
   {
    "id": "market-watchlist",
+   "version": "2.4.0",
+   "level": "minor",
    "date": "2026-11-10",
    "path": "/tools/market/",
    "ko": "시세 관심 목록과 최근 본 아이템, 공유 링크",
@@ -394,6 +464,8 @@
   },
   {
    "id": "guides-en",
+   "version": "2.3.2",
+   "level": "patch",
    "date": "2026-11-09",
    "path": "/guides/",
    "ko": "가이드 14편 영어판",
@@ -405,6 +477,8 @@
   },
   {
    "id": "home-search",
+   "version": "2.3.1",
+   "level": "patch",
    "date": "2026-11-09",
    "path": "/",
    "ko": "홈 검색 개선 — 귀힘·장공 같은 줄임말과 몬스터 별명",
@@ -416,6 +490,8 @@
   },
   {
    "id": "item-prices",
+   "version": "2.3.0",
+   "level": "minor",
    "date": "2026-11-04",
    "path": "/items/",
    "ko": "아이템별 시세 페이지 — 매일 새로 반영",
@@ -427,6 +503,8 @@
   },
   {
    "id": "damage-calc",
+   "version": "2.2.0",
+   "level": "minor",
    "date": "2026-11-03",
    "path": "/tools/damage/",
    "ko": "몇 방 컷 계산기 — 스탯창 화면 공유로 바로 계산",
@@ -438,6 +516,8 @@
   },
   {
    "id": "guides-builds",
+   "version": "2.1.0",
+   "level": "minor",
    "date": "2026-11-03",
    "path": "/guides/leveling-30-70/",
    "ko": "가이드 5편 — 30~70 사냥터, 전사·궁수·법사·도적 육성",
@@ -449,6 +529,8 @@
   },
   {
    "id": "live-market",
+   "version": "2.0.0",
+   "level": "major",
    "date": "2026-11-02",
    "path": "/tools/market/",
    "ko": "실시간 시세 — 아이템 검색·가격 추이·어디서 살지",
@@ -460,6 +542,8 @@
   },
   {
    "id": "shop-scan",
+   "version": "1.4.0",
+   "level": "minor",
    "date": "2026-11-02",
    "path": "/tools/scan/",
    "ko": "상점 스캔 — 게임 화면을 공유하면 상점 가격을 읽어 시세에 반영",
@@ -471,6 +555,8 @@
   },
   {
    "id": "guides-kpq",
+   "version": "1.3.1",
+   "level": "patch",
    "date": "2026-11-02",
    "path": "/guides/kerning-party-quest/",
    "ko": "커닝 파티퀘스트·2차 전직·거래 가이드",
@@ -482,6 +568,8 @@
   },
   {
    "id": "guides",
+   "version": "1.3.0",
+   "level": "minor",
    "date": "2026-11-02",
    "path": "/guides/",
    "ko": "가이드 섹션 — 첫걸음부터 직업 선택·시민권·주문서 확률까지",
@@ -493,6 +581,8 @@
   },
   {
    "id": "training-bands",
+   "version": "1.2.0",
+   "level": "minor",
    "date": "2026-10-30",
    "path": "/tools/training/",
    "ko": "레벨 구간별 사냥터 페이지",
@@ -504,6 +594,8 @@
   },
   {
    "id": "votes",
+   "version": "1.1.0",
+   "level": "minor",
    "date": "2026-10-28",
    "path": "/",
    "ko": "추천 버튼과 즐겨찾기 — 좋은 사이트에 추천, 자주 가는 곳은 별표",
@@ -515,6 +607,8 @@
   },
   {
    "id": "launch",
+   "version": "1.0.0",
+   "level": "major",
    "date": "2026-10-28",
    "path": "/",
    "ko": "GMS Hub 오픈 — 글클메 사이트 모음, 목적별로 찾기",

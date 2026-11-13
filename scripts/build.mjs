@@ -1086,9 +1086,12 @@ function patchNotesBody(lang) {
   const days = [...new Set(UPDATES.map((u) => u.date))];
   const dayLabel = (d) => (ko ? `${Number(d.slice(0, 4))}년 ${Number(d.slice(5, 7))}월 ${Number(d.slice(8, 10))}일` : new Date(`${d}T00:00:00Z`).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }));
   const title = (u) => (ko ? u.ko : u.en).split(/ — |: /)[0];
+  const LV = { major: ko ? '메이저' : 'Major', minor: ko ? '마이너' : 'Minor', patch: ko ? '패치' : 'Patch' };
+  const ver = (u) => `<span class="pn-ver pn-${u.level}" translate="no">v${u.version}</span><span class="pn-lv pn-lv-${u.level}">${LV[u.level]}</span>`;
   return `${pageHead(lang, 'scroll', ko ? '패치노트' : 'Patch notes', ko ? `GMS Hub에 새로 생긴 기능과 콘텐츠를 날짜별로 정리했어요. 지금까지 ${UPDATES.length}개.` : `Every new GMS Hub feature and guide, day by day. ${UPDATES.length} so far.`)}
-<div class="wrap pn-page">${days.map((d) => `<section class="pn-day"><h2><time datetime="${d}">${dayLabel(d)}</time>${d >= since ? ' <span class="upd-new" translate="no">NEW</span>' : ''}</h2>
-<ul class="pn-list">${UPDATES.filter((u) => u.date === d).map((u) => `<li class="pn-item" id="${u.id}"><h3>${esc(title(u))}</h3><p>${esc(ko ? u.desc.ko : u.desc.en)}</p><a class="pn-go" href="${href(langPath(lang, u.path))}">${ko ? '바로 가기' : 'Open it'}</a></li>`).join('')}</ul></section>`).join('\n')}</div>`;
+<div class="wrap pn-page"><div class="pn-legend"><p><b>${ko ? '현재 버전' : 'Current version'}</b> <span class="pn-ver pn-${UPDATES[0].level}" translate="no">v${UPDATES[0].version}</span></p>
+<ul><li><span class="pn-lv pn-lv-major">${LV.major}</span>${ko ? '사이트의 새 큰 축 (시세, 도감, 확성기처럼)' : 'A new pillar of the site, like the market, the databases or megaphones'}</li><li><span class="pn-lv pn-lv-minor">${LV.minor}</span>${ko ? '새 기능이나 새 공략' : 'A new feature or guide'}</li><li><span class="pn-lv pn-lv-patch">${LV.patch}</span>${ko ? '있던 기능을 더 좋게' : 'An improvement to an existing feature'}</li></ul></div>${days.map((d) => `<section class="pn-day"><h2><time datetime="${d}">${dayLabel(d)}</time>${d >= since ? ' <span class="upd-new" translate="no">NEW</span>' : ''}</h2>
+<ul class="pn-list">${UPDATES.filter((u) => u.date === d).map((u) => `<li class="pn-item pn-item-${u.level}" id="${u.id}"><h3>${ver(u)}<span>${esc(title(u))}</span></h3><p>${esc(ko ? u.desc.ko : u.desc.en)}</p><a class="pn-go" href="${href(langPath(lang, u.path))}">${ko ? '바로 가기' : 'Open it'}</a></li>`).join('')}</ul></section>`).join('\n')}</div>`;
 }
 
 function homeBody(lang) {
