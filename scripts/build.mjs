@@ -2251,7 +2251,7 @@ function contactBody(lang) {
   const tr = (k, e) => (ko ? k : e);
   const mail = (subject) => `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}`;
   const support = Object.entries(config.support || {}).filter(([, url]) => url);
-  const NAMES = { kofi: tr('커피 한 잔 사 주기 (Ko-fi)', 'Buy me a coffee (Ko-fi)'), buymeacoffee: 'Buy Me a Coffee', toss: tr('토스로 후원', 'Toss (Korea)'), patreon: 'Patreon' };
+  const NAMES = { kofi: tr('커피 한 잔 사 주기 (Ko-fi)', 'Buy me a coffee (Ko-fi)'), buymeacoffee: 'Buy Me a Coffee', toss: tr('토스로 후원', 'Toss (Korea)'), patreon: 'Patreon', paypal: tr('페이팔로 후원', 'Tip with PayPal') };
   return `<article class="wrap prose contact-page"><h1>${tr('문의·협찬·후원', 'Contact, sponsorship and support')}</h1>
 <p>${tr('GMS Hub는 한 사람이 운영하는 비공식 팬 사이트예요. 아래 중 맞는 창구로 연락 주세요. 보통 2~3일 안에 답장드려요.', 'GMS Hub is an unofficial fan site run by one person. Pick the channel that fits below; replies usually take two or three days.')}</p>
 <div class="contact-grid">

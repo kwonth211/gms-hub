@@ -10,6 +10,12 @@
   },
   {
    "date": "2026-11-13",
+   "path": "/contact/",
+   "ko": "사이트 후원 — 페이팔로 응원할 수 있어요",
+   "en": "Support the site: tips now work through PayPal"
+  },
+  {
+   "date": "2026-11-13",
    "path": "/",
    "ko": "영어 검색 개선 — glove att 60, zhelm 같은 줄임말도 찾아요",
    "en": "Better English search: shorthand like glove att 60 or zhelm now works"
