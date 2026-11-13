@@ -1,0 +1,114 @@
+// The glove attack scroll quest guide (/quests/glove-attack/): every step of the Sauna Robe chain, Rowen's Cursed Dolls,
+// Jane's challenges and Ronnie's new house. Conditions, kill counts, items and rewards come from the game client's quest
+// data, so nothing is retyped; data/quest-guides/glove-attack.json adds where each NPC stands, the route between them and
+// tips. Monster drop sources and spawn maps come from data/monsters.json. assets/quest-route.js turns the page into a
+// quest log with progress, the island map and live free-market prices.
+const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const icon = (id) => `https://maplestory.io/api/MCW/1/item/${id}/icon`;
+const n = (v, lang) => Number(v).toLocaleString(lang === 'ko' ? 'ko-KR' : 'en-US');
+
+export function gloveQuestData({ guide, raw, items, monsters }) {
+  const quests = new Map(raw.quests.map((q) => [q.id, q]));
+  const itemName = (id) => { const i = items.get(id); return { ko: i?.ko || i?.en || `#${id}`, en: i?.en || `#${id}` }; };
+  const mobs = new Map(monsters.map((m) => [m.id, m]));
+  // Where an item comes from: the monsters that drop it, each with its two busiest spawn maps.
+  const droppers = (id) => monsters.filter((m) => (m.drops || []).some((d) => d.itemId === id))
+    .sort((a, b) => Number(!!a.boss) - Number(!!b.boss) || a.lv - b.lv).slice(0, 4)
+    .map((m) => ({ id: m.id, ko: m.ko, en: m.en, lv: m.lv, maps: topMaps(m) }));
+  const topMaps = (m) => [...(m.locations || [])].sort((a, b) => b.count - a.count).slice(0, 2).map((l) => ({ id: l.id, ko: l.ko || l.en, en: l.en, count: l.count }));
+  const chains = guide.chains.map((c) => ({
+    ...c,
+    steps: c.steps.map((s) => {
+      const q = quests.get(s.q);
+      if (!q) throw new Error(`glove quest guide: quest ${s.q} not in client data`);
+      const start = q.requirementToStart || {}, done = q.requirementToComplete || {}, rw = q.rewardOnComplete || {};
+      const kills = (done.mobs || []).map((k) => { const m = mobs.get(k.id); return { id: k.id, count: k.count, ko: m?.ko || `#${k.id}`, en: m?.en || `#${k.id}`, lv: m?.lv, maps: m ? topMaps(m) : [] }; });
+      const startGives = new Set(((q.rewardOnStart || {}).items || []).filter((i) => i.count > 0).map((i) => i.id));
+      const bring = (done.items || []).map((i) => ({ id: i.id, count: i.count, ...itemName(i.id), handed: startGives.has(i.id), from: startGives.has(i.id) ? [] : droppers(i.id) }));
+      const gets = (rw.items || []).filter((i) => i.count > 0).map((i) => ({ id: i.id, count: i.count, ...itemName(i.id), job: i.job ?? null, gender: i.gender ?? null }));
+      const pick = gets.some((g) => g.job != null) ? 'job' : gets.some((g) => g.gender != null) ? 'gender' : gets.length > 1 ? 'random' : 'all';
+      return { ...s, id: q.id, name: q.name, lv: start.levelMinimum || null, startNpc: start.npcId, endNpc: done.npcId,
+        npcStart: raw.npcs[String(start.npcId)] || null, npcEnd: raw.npcs[String(done.npcId)] || null,
+        kills, bring, exp: rw.exp || 0, meso: rw.meso || 0, fame: rw.fame || 0, gets, pick,
+        receive: [...startGives].map((id) => ({ id, ...itemName(id) })) };
+    })
+  }));
+  const priceIds = [...new Set(chains.flatMap((c) => c.steps.flatMap((s) => [...s.bring.filter((b) => !b.handed).map((b) => b.id), ...s.gets.map((g) => g.id)])))];
+  return { chains, priceIds };
+}
+
+const npcName = (p, lang) => (p ? (lang === 'ko' && p.ko ? `${p.ko} (${p.en})` : p.en) : '');
+
+export function gloveQuestBody({ lang, guide, data, link, mobSprite, mobHref, pageHead, apiBase }) {
+  const ko = lang === 'ko';
+  const tr = (k, e) => (ko ? k : e);
+  const L = (o) => (o ? o[ko ? 'ko' : 'en'] : '');
+  const place = (id) => guide.places[id];
+  const mapLink = (m) => `<a href="${link(`/maps/${m.id}/`)}">${esc(ko ? m.ko : m.en)}</a> <small>${m.count}${tr('마리', '')}</small>`;
+  const all = data.chains.flatMap((c) => c.steps);
+  const dolls = data.chains.find((c) => c.id === 'dolls');
+  const totalKills = (ids) => all.filter((s) => ids.includes(s.id)).reduce((a, s) => a + s.kills.reduce((x, k) => x + k.count, 0), 0);
+  const toScroll = all.filter((s) => s.id >= 10500 || (s.id >= 10201 && s.id <= 10204));
+  const sum = (arr, k) => arr.reduce((a, s) => a + s[k], 0);
+
+  const stepHtml = (s, i, chain) => {
+    const kills = s.kills.map((k) => `<li class="gq-need gq-kill"><img src="${mobSprite({ id: k.id })}" alt="" width="40" height="40" loading="lazy"><div translate="no"><b><a href="${mobHref({ id: k.id, en: k.en })}">${esc(ko ? k.ko : k.en)}</a> ×${n(k.count, lang)}</b> <small>Lv ${k.lv}</small><span>${k.maps.map(mapLink).join(' · ')}</span></div></li>`).join('');
+    const bring = s.bring.map((b) => `<li class="gq-need gq-item" data-item="${b.id}" data-qty="${b.count}"${b.handed ? ' data-handed="1"' : ''}><img src="${icon(b.id)}" alt="" width="32" height="32" loading="lazy"><div><b translate="no">${esc(ko ? b.ko : b.en)} ×${n(b.count, lang)}</b>${b.handed ? `<span>${tr('퀘스트를 받을 때 NPC가 줘요', 'Given by the NPC when you accept')}</span>` : b.from.length ? `<span translate="no">${b.from.map((m) => `<a href="${mobHref(m)}">${esc(ko ? m.ko : m.en)}</a> Lv${m.lv}${m.maps.length ? ` — ${m.maps.map(mapLink).join(', ')}` : ''}`).join('<br>')}</span>` : `<span>${tr('몬스터가 떨구지 않아요 — 자유시장 구매 또는 제작', 'No monster drops it — buy on the free market or craft it')}</span>`}<em class="gq-price" hidden></em></div></li>`).join('');
+    const gets = s.gets.length ? `<div class="gq-gets"><span>${s.pick === 'random' ? tr('다음 중 하나 (무작위)', 'One of these, at random') : s.pick === 'job' ? tr('직업에 맞는 하나', 'The one for your class') : s.pick === 'gender' ? tr('성별에 따라 하나', 'One by gender') : ''}</span>${s.gets.map((g) => `<a class="gq-get" data-item="${g.id}" href="${link(`/tools/market/?item=${g.id}`)}"><img src="${icon(g.id)}" alt="" width="28" height="28" loading="lazy"><span>${esc(ko ? g.ko : g.en)}${g.count > 1 ? ` ×${g.count}` : ''}</span><em class="gq-price" hidden></em></a>`).join('')}</div>` : '';
+    const at = place(s.at), go = s.go ? place(s.go) : null;
+    return `<li class="gq-step${s.big ? ' gq-big' : ''}" id="q-${s.id}" data-q="${s.id}" data-at="${esc(s.at)}"${s.go ? ` data-go="${esc(s.go)}"` : ''} data-hunt="${esc((s.hunt || []).join(' '))}" data-exp="${s.exp}" data-meso="${s.meso}">
+<div class="gq-step-head"><span class="gq-no">${i + 1}</span><div class="gq-title"><h3 translate="no">${esc(s.name)}</h3><small translate="no">${s.lv ? `Lv ${s.lv}+ · ` : ''}${esc(npcName(s.npcStart, lang))}${s.endNpc !== s.startNpc ? ` → ${esc(npcName(s.npcEnd, lang))}` : ''}</small></div><label class="gq-done"><input type="checkbox" data-done="${s.id}"><span>${tr('완료', 'Done')}</span></label></div>
+<div class="gq-step-body">
+<div class="gq-where"><div class="gq-lbl">${tr('어디서', 'Where')}</div><div><div translate="no">${esc(L(at))}</div>${s.where ? `<div>${esc(L(s.where))}</div>` : ''}</div>${go ? `<div class="gq-lbl">${tr('다음 목적지', 'Next stop')}</div><div translate="no">${esc(L(go))}</div>` : ''}</div>
+<p class="gq-do">${esc(L(s.do))}</p>
+${s.receive.length ? `<p class="gq-receive"><span>${tr('받는 물건', 'You receive')}</span> <span translate="no">${s.receive.map((r) => `<img src="${icon(r.id)}" alt="" width="22" height="22" loading="lazy"> ${esc(ko ? r.ko : r.en)}`).join(', ')}</span></p>` : ''}
+${kills || bring ? `<ul class="gq-needs">${kills}${bring}</ul>` : ''}
+<div class="gq-reward"><b>${tr('보상', 'Reward')}</b> <span translate="no">EXP ${n(s.exp, lang)}</span>${s.meso ? `<span>${n(s.meso, lang)} ${tr('메소', 'mesos')}</span>` : ''}${s.fame ? `<span><span>${tr('인기도', 'Fame')}</span> <span translate="no">+${s.fame}</span></span>` : ''}${gets}</div>
+${s.tip ? `<p class="gq-tip">${esc(L(s.tip))}</p>` : ''}
+</div></li>`;
+  };
+
+  const svg = `<svg class="gq-svg" viewBox="0 0 600 340" role="img" aria-label="${tr('빅토리아 아일랜드 동선', 'Victoria Island route')}">
+<path class="gq-island" d="M40 120 C30 60 120 10 220 14 C320 8 420 20 520 30 C580 50 590 130 560 200 C540 270 470 300 380 304 C300 330 200 336 120 326 C60 318 30 270 36 210 C38 170 46 150 40 120 Z"/>
+<path class="gq-route" id="gq-route" d=""/>
+${Object.entries(guide.places).map(([id, p]) => `<g class="gq-place${['sleepywood', 'ellinia', 'henesys', 'lith', 'perion', 'kerning'].includes(id) ? ' gq-town' : ''}" data-place="${id}" transform="translate(${p.x} ${p.y})"><circle r="${['sleepywood', 'ellinia', 'henesys', 'lith', 'perion', 'kerning'].includes(id) ? 9 : 6}"/><text y="-13" translate="no">${esc(ko ? p.ko.split(' · ')[0].replace(/^슬리피우드 호텔 /, '') : p.en.split(' · ')[0])}</text></g>`).join('')}
+</svg>`;
+
+  const parts = data.chains.map((c) => `<section class="gq-chain" id="chain-${c.id}"><h2>${esc(L(c.title))}</h2><p class="lead">${esc(L(c.lead))}</p><ol class="gq-steps">${c.steps.map((s, i) => stepHtml(s, i, c)).join('')}</ol></section>`).join('');
+  const diamond = `<section class="panel gq-diamond" id="diamond"><h2><img src="${icon(4020107)}" alt="" width="28" height="28"> ${tr('다이아몬드 구하기', 'Getting a Diamond')} <em class="gq-price" data-item="4020107" hidden></em></h2><ol>${(ko ? guide.diamond.ko : guide.diamond.en).map((t) => `<li>${esc(t)}</li>`).join('')}</ol></section>`;
+
+  const shopping = (() => {
+    const need = new Map();
+    for (const s of toScroll) for (const b of s.bring) if (!b.handed) need.set(b.id, { ...b, count: (need.get(b.id)?.count || 0) + b.count });
+    return `<section class="panel gq-shop" id="shopping"><h2>${tr('장공(로웬 150개)까지 필요한 재료 한눈에', 'Everything you need up to Rowen\'s 150-doll scroll')}</h2>
+<table class="gq-shop-table"><thead><tr><th>${tr('재료', 'Item')}</th><th>${tr('개수', 'Qty')}</th><th>${tr('지금 시세', 'Price now')}</th><th>${tr('다 사면', 'If bought')}</th></tr></thead><tbody>${[...need.values()].map((b) => `<tr data-item="${b.id}" data-qty="${b.count}"><td><img src="${icon(b.id)}" alt="" width="24" height="24" loading="lazy"> ${esc(ko ? b.ko : b.en)}</td><td>${n(b.count, lang)}</td><td class="gq-unit">—</td><td class="gq-total">—</td></tr>`).join('')}</tbody>
+<tfoot><tr><td colspan="3">${tr('합계 (사냥 처치 수는 직접 채워야 해요)', 'Total (kill counts must still be your own)')}</td><td id="gq-shop-total">—</td></tr></tfoot></table>
+<p class="muted small">${tr('처치해야 하는 몬스터', 'Kills needed')}: ${tr('루팡 50 · 좀비 루팡 370 (모자까지 570)', '50 Lupins · 370 Zombie Lupins (570 for the hat)')} · ${tr('시세는 이 사이트의 자유시장 매물 중간값이에요.', 'Prices are this site\'s free-market listing medians.')}</p></section>`;
+  })();
+
+  const head = pageHead(lang, 'scroll', tr('글클메 장공 퀘스트 완전 공략', 'Gloves Attack Scroll Quests: Complete Guide'),
+    tr('사우나 가운(비밀의 책) 9단계 → 요정 로웬의 저주받은 인형 5단계 → 제인의 도전까지. 누구에게 무엇을 어디서 가져가는지, 동선과 지금 시세까지 한 번에. 진행한 단계는 체크해 두면 이 브라우저에 남아요.',
+      'The Sauna Robe chain (9 steps) → Rowen the Fairy\'s Cursed Dolls (5) → Jane\'s challenges: who wants what, where it drops, the route and today\'s prices. Tick steps as you go; your progress stays in this browser.'));
+
+  const summary = `<section class="gq-hud panel" id="gq-hud">
+<div class="gq-hud-stats">
+<div><span>${tr('장공까지 단계', 'Steps to the scroll')}</span><b>${toScroll.length}</b></div>
+<div><span>${tr('장공까지 경험치', 'EXP to the scroll')}</span><b>${n(sum(toScroll, 'exp'), lang)}</b></div>
+<div><span>${tr('장공까지 처치', 'Kills to the scroll')}</span><b>${n(totalKills(toScroll.map((s) => s.id)), lang)}</b></div>
+<div class="gq-ev"><span>${tr('150개 보상 기대값', '150-doll reward, expected')}</span><b id="gq-ev">—</b><small id="gq-ev-note"></small></div>
+</div>
+<div class="gq-progress"><div class="gq-bar"><i id="gq-bar"></i></div><span id="gq-progress-text">${tr('체크한 단계가 없어요', 'No steps ticked yet')}</span></div>
+</section>`;
+
+  const now = `<aside class="gq-side"><div class="panel gq-mapbox">${svg}
+<div class="gq-now" id="gq-now" aria-live="polite"><span class="gq-now-label">${tr('지금 할 일', 'Up next')}</span><strong id="gq-now-title">${esc(all[0].name)}</strong><p id="gq-now-text">${esc(L(all[0].do))}</p>
+<div class="gq-now-actions"><button type="button" class="btn ghost small-btn" id="gq-prev">${tr('이전', 'Back')}</button><button type="button" class="btn small-btn" id="gq-next">${tr('완료하고 다음', 'Done, next')}</button></div></div>
+<ul class="gq-legend"><li><i class="gq-l-at"></i>${tr('퀘스트 NPC', 'Quest NPC')}</li><li><i class="gq-l-go"></i>${tr('다음 목적지', 'Next stop')}</li><li><i class="gq-l-hunt"></i>${tr('사냥터', 'Hunting ground')}</li></ul></div></aside>`;
+
+  const sources = `<section class="gq-sources"><h2>${tr('정리에 쓴 자료', 'Sources')}</h2><p class="muted small">${tr('퀘스트 조건·처치 수·보상은 게임 클라이언트 데이터에서 그대로 가져왔고, NPC 위치·가는 길·팁은 아래 공략을 교차 확인했어요.', 'Conditions, kill counts and rewards are read straight from the game client data; NPC spots, routes and tips were cross-checked against these guides.')}</p><ul>${guide.sources.map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener" translate="no">${esc(s.name)}</a> <small>${esc(s.date)}</small></li>`).join('')}</ul></section>`;
+
+  return `${head}<div class="wrap gq-page">${summary}<div class="gq-layout">${now}<div class="gq-main">${parts}${diamond}${shopping}${sources}</div></div></div>
+<script id="gq-data" type="application/json">${JSON.stringify({ lang, api: apiBase, places: guide.places, prices: data.priceIds, ev: { a: 2040801, m: 2040805 },
+    steps: all.map((s) => ({ id: s.id, name: s.name, at: s.at, go: s.go || null, hunt: s.hunt || [], exp: s.exp, do: L(s.do) })),
+    t: { none: tr('체크한 단계가 없어요', 'No steps ticked yet'), prog: tr('{d}/{n}단계 · 경험치 {e}', '{d} of {n} steps · {e} EXP'), all: tr('모든 단계를 끝냈어요!', 'Every step is done!'), ev: tr('장공 {a} · 장마 {m} 반반', 'Attack {a} · Magic {m}, 50:50'), mesos: tr('메소', 'mesos') } }).replace(/</g, '\\u003c')}</script>`;
+}

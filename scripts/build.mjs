@@ -7,6 +7,7 @@ import { spriteSvg, heroScene, spritePng, spriteDataPng } from './sprites.mjs';
 import { monsterIndex, monsterDetail, monsterPath, monsterName, mapPath, bossIndex } from './monster-pages.mjs';
 import { collectMaps, mapDetail, mapIndex, mapName } from './map-pages.mjs';
 import { collectQuests, questDetail, questIndex, questBestBody, questPath, areaName as questArea } from './quest-pages.mjs';
+import { gloveQuestData, gloveQuestBody } from './glove-quest.mjs';
 import { EQ_CLASSES, equipPath, collectEquipment, equipmentIndexBody, equipmentClassBody } from './equipment-pages.mjs';
 import { rankBody } from './rank-page.mjs';
 import { megaphoneBody } from './megaphone-page.mjs';
@@ -531,6 +532,11 @@ for (const r of training.routes) r.mobs = r.mobIds.map((id) => { const m = MOB_B
 const MAPS = collectMaps(MONSTERS.monsters);
 const QUEST_RAW = readJson('data/quests-raw.json');
 const QUESTS = collectQuests(QUEST_RAW, { buildDate: BUILD_DATE });
+// The glove attack scroll quest guide: steps from the client's quest data, places and routes from the editorial file.
+const GLOVE_GUIDE = readJson('data/quest-guides/glove-attack.json');
+const GLOVE_DATA = gloveQuestData({ guide: GLOVE_GUIDE, raw: QUEST_RAW,
+  items: new Map((readJson('data/items.json').items || readJson('data/items.json')).map((i) => Array.isArray(i) ? [i[0], { ko: i[1], en: i[2] }] : [i.id, i])),
+  monsters: MONSTERS.monsters });
 const DROP_INDEX = new Map();
 for (const m of MONSTERS.monsters) for (const d of m.drops) (DROP_INDEX.get(d.itemId) || DROP_INDEX.set(d.itemId, []).get(d.itemId)).push({ m, confidence: d.confidence });
 // Retain level-band URLs with conditional routes and detailed entry requirements.
@@ -717,7 +723,7 @@ function headerSearch(lang, tabs) {
     [ko ? '오늘의 시세 리포트' : "Today's price report", href(langPath(lang, '/tools/market/today/'))], [ko ? '상점 스캔' : 'Shop scan', href(langPath(lang, '/tools/scan/'))],
     [ko ? '캐릭터 랭킹' : 'Character ranking', href(langPath(lang, '/rank/'))],
     [ko ? '직업별 장비' : 'Gear by class', href(langPath(lang, '/equipment/'))], [ko ? '보스' : 'Bosses', href(langPath(lang, '/bosses/'))],
-    [ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests', href(langPath(lang, '/quests/best-exp/'))], [ko ? '맵 도감' : 'Maps', href(langPath(lang, '/maps/'))],
+    [ko ? '장공 퀘스트 공략 (사우나 가운·저주받은 인형)' : 'Gloves attack scroll quests (Sauna Robe, Cursed Dolls)', href(langPath(lang, '/quests/glove-attack/'))], [ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests', href(langPath(lang, '/quests/best-exp/'))], [ko ? '맵 도감' : 'Maps', href(langPath(lang, '/maps/'))],
     [ko ? '문의·협찬·후원' : 'Contact and support', href(langPath(lang, '/contact/'))]];
   return `<button type="button" class="hs-open" data-hs data-items="${esc(href('/assets/items.json'))}" data-mobs="${esc(href('/assets/mobs.json'))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-monsters="${esc(href(langPath(lang, '/monsters/')))}" data-pages="${esc(JSON.stringify(pages))}" aria-label="${ko ? '검색' : 'Search'}" title="${ko ? '검색 ( / )' : 'Search ( / )'}"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="hs-label">${ko ? '검색' : 'Search'}</span></button>`;
 }
@@ -731,6 +737,7 @@ function moreMenu(lang, moved = []) {
     ['/rank/', ko ? '캐릭터 랭킹' : 'Character ranking'],
     ['/equipment/', ko ? '직업별 장비' : 'Gear by class'],
     ['/bosses/', ko ? '보스' : 'Bosses'],
+    ['/quests/glove-attack/', ko ? '장공 퀘스트 공략' : 'Gloves attack scroll quests'],
     ['/quests/best-exp/', ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests'],
     ['/items/', ko ? '아이템 도감' : 'Item database'],
     ['/maps/', ko ? '맵 도감' : 'Map database'],
@@ -777,7 +784,7 @@ function footer(lang) {
 }
 
 const ADFIT_PAGES = new Set(['home', 'marketToday', 'exp', 'training', 'trBand', 'trClass', 'scroll', 'drop', 'price', 'scan', 'market', 'damage', 'guides', 'guide', 'monsters', 'monster', 'items', 'item',
-  'bosses', 'maps', 'map', 'quests', 'quest', 'questBest', 'equipment', 'equipmentClass', 'rank', 'megaphone']);
+  'bosses', 'maps', 'map', 'quests', 'quest', 'questBest', 'gloveQuest', 'equipment', 'equipmentClass', 'rank', 'megaphone']);
 // AdFit counted only 5-9% of the end-of-page banner as viewed (most visitors never scroll that far), so a second slot sits
 // just under the page title: after the page head, after the home hero, or after a guide's first paragraph. Never beside
 // a form control or a button row.
@@ -1003,6 +1010,7 @@ tool('/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monster databa
 tool('/equipment/', 'hammer', lang === 'ko' ? '장비 찾기' : 'Equipment finder', lang === 'ko' ? `직업과 레벨로 지금 얻을 수 있는 장비 ${EQUIPMENT.length}개를 찾고, 떨어뜨리는 몬스터를 봐요.` : `${EQUIPMENT.length} pieces of gear by class and level, with the monsters that drop them and quests that give them.`),
 tool('/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Live megaphones', lang === 'ko' ? '게임 확성기를 실시간으로 모아 보고, 시세와 비교하고, 귓말을 바로 복사해요.' : 'Game megaphones live, compared with market prices, with a one-tap whisper command.'),
 tool('/rank/', 'crown', lang === 'ko' ? '캐릭터 랭킹' : 'Character rankings', lang === 'ko' ? '레벨 순위 상위 1,000명과 직업 분포, 내 캐릭터 순위를 찾고 맞는 사냥터로 바로 가요.' : 'Top 1,000 by level, the class breakdown, and your own rank with training spots for your level.'),
+tool('/quests/glove-attack/', 'scroll', lang === 'ko' ? '장공 퀘스트 공략' : 'Gloves attack scroll quests', lang === 'ko' ? '사우나 가운 → 로웬 저주받은 인형 → 제인의 도전. 동선·재료·시세까지 단계별로.' : 'Sauna Robe → Rowen\'s Cursed Dolls → Jane\'s challenges, step by step with routes, items and prices.'),
 tool('/quests/best-exp/', 'star', lang === 'ko' ? '경험치 퀘스트' : 'Best EXP quests', lang === 'ko' ? '레벨 구간마다 보상 경험치가 큰 퀘스트 10개씩.' : 'The ten biggest EXP quest rewards for each level band.'),
 tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc),
 tool('/tools/scroll/', 'scroll', t.navScroll, t.scCardDesc),
@@ -1020,6 +1028,7 @@ tool('/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monster databa
 tool('/equipment/', 'hammer', lang === 'ko' ? '장비 찾기' : 'Equipment finder', lang === 'ko' ? `직업과 레벨로 지금 얻을 수 있는 장비 ${EQUIPMENT.length}개를 찾고, 떨어뜨리는 몬스터를 봐요.` : `${EQUIPMENT.length} pieces of gear by class and level, with the monsters that drop them and quests that give them.`),
 tool('/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Live megaphones', lang === 'ko' ? '게임 확성기를 실시간으로 모아 보고, 시세와 비교하고, 귓말을 바로 복사해요.' : 'Game megaphones live, compared with market prices, with a one-tap whisper command.'),
 tool('/rank/', 'crown', lang === 'ko' ? '캐릭터 랭킹' : 'Character rankings', lang === 'ko' ? '레벨 순위 상위 1,000명과 직업 분포, 내 캐릭터 순위를 찾고 맞는 사냥터로 바로 가요.' : 'Top 1,000 by level, the class breakdown, and your own rank with training spots for your level.'),
+tool('/quests/glove-attack/', 'scroll', lang === 'ko' ? '장공 퀘스트 공략' : 'Gloves attack scroll quests', lang === 'ko' ? '사우나 가운 → 로웬 저주받은 인형 → 제인의 도전. 동선·재료·시세까지 단계별로.' : 'Sauna Robe → Rowen\'s Cursed Dolls → Jane\'s challenges, step by step with routes, items and prices.'),
 tool('/quests/best-exp/', 'star', lang === 'ko' ? '경험치 퀘스트' : 'Best EXP quests', lang === 'ko' ? '레벨 구간마다 보상 경험치가 큰 퀘스트 10개씩.' : 'The ten biggest EXP quest rewards for each level band.'),
 tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc),
 tool('/tools/market/', 'coin', t.navMarket, MK[lang].lead),
@@ -2920,6 +2929,14 @@ for (const lang of LANGS) {
       body: rankBody({ lang, link, classes: TR_CLASSES }),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '캐릭터 랭킹' : 'Character rankings', '/rank/')]
     }));
+    write(path.join(lang, 'quests', 'glove-attack', 'index.html'), page({
+      lang, pageKey: 'gloveQuest', pagePath: '/quests/glove-attack/',
+      title: lang === 'ko' ? '글클메 장공 퀘스트 공략: 사우나 가운부터 로웬 저주받은 인형·제인의 도전까지 | GMS Hub' : 'MapleStory Classic World Gloves Attack Scroll Quests: Sauna Robe, Rowen\'s Cursed Dolls, Jane\'s Challenge | GMS Hub',
+      desc: lang === 'ko' ? '장갑 공격력 주문서(장공)를 주는 퀘스트 전 단계: 사우나 가운 9단계, 요정 로웬의 저주받은 인형 50·70·100·150·200개, 제인의 도전. NPC 위치·필요 재료·몬스터·동선·지금 시세까지.' : 'Every step to the Gloves Attack Scroll in MapleStory Classic World: the Sauna Robe chain, Rowen the Fairy\'s Cursed Dolls and Jane\'s challenges, with NPC spots, items, monsters, routes and live prices.',
+      body: gloveQuestBody({ lang, guide: GLOVE_GUIDE, data: GLOVE_DATA, link, mobSprite, mobHref: (m) => link(monsterPath(m)), pageHead, apiBase: config.voteApi }),
+      modules: ['quest-route.js'],
+      ld: [breadcrumbLd(lang, lang === 'ko' ? '장공 퀘스트 공략' : 'Gloves attack scroll quests', '/quests/glove-attack/')]
+    }));
     write(path.join(lang, 'quests', 'best-exp', 'index.html'), page({
       lang, pageKey: 'questBest', pagePath: '/quests/best-exp/',
       title: lang === 'ko' ? '글클메 경험치 퀘스트 추천: 레벨별 보상 EXP 순위 | GMS Hub' : 'MapleStory Classic World Best EXP Quests by Level | GMS Hub',
@@ -3119,7 +3136,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
   )
 ).concat(
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
-  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, {path:'/rank/'}, {path:'/megaphone/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, {path:'/quests/glove-attack/'}, {path:'/rank/'}, {path:'/megaphone/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/bosses/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/quests/'}, ...QUESTS.filter(q=>!q.expired).map(q=>({path:questPath(q)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
   [{path:'/maps/'}, ...MAPS.filter(l=>l.availability==='open').map(l=>({path:mapPath(l)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),

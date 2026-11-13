@@ -1,0 +1,109 @@
+{
+ "updated": "2026-11-13",
+ "note": "Conditions, counts and rewards are read from the game client data (data/quests-raw.json) at build time; this file only holds the places, routes and tips, with the public sources they came from.",
+ "places": {
+  "sleepywood": { "ko": "슬리피우드", "en": "Sleepywood", "x": 330, "y": 215 },
+  "sauna": { "ko": "슬리피우드 호텔 VIP 사우나", "en": "Sleepywood Hotel · VIP Sauna", "x": 342, "y": 232 },
+  "ellinia": { "ko": "엘리니아", "en": "Ellinia", "x": 175, "y": 95 },
+  "ronnie": { "ko": "북쪽 숲 나무 통로", "en": "The Tree Tunnel, Forest Up North", "x": 205, "y": 32 },
+  "curseeye": { "ko": "나무 던전, 북쪽 숲 VIII·IX", "en": "Tree Dungeon, Forest Up North VIII·IX", "x": 262, "y": 40 },
+  "monkey": { "ko": "원숭이 숲 · 원숭이 늪", "en": "Monkey Forest · Monkey Swamp", "x": 92, "y": 140 },
+  "henesys": { "ko": "헤네시스", "en": "Henesys", "x": 150, "y": 232 },
+  "pigs": { "ko": "헤네시스 서쪽 언덕 · 해변 주변 덤불 II", "en": "A Hill West of Henesys · Thicket Around the Beach II", "x": 80, "y": 262 },
+  "lith": { "ko": "리스항구", "en": "Lith Harbor", "x": 118, "y": 318 },
+  "perion": { "ko": "페리온", "en": "Perion", "x": 440, "y": 85 },
+  "eastrocky": { "ko": "동쪽 바위산", "en": "East Rocky Mountain", "x": 520, "y": 60 },
+  "kerning": { "ko": "커닝시티 · 지하철", "en": "Kerning City · Subway", "x": 480, "y": 240 },
+  "evil": { "ko": "악의 숲", "en": "The Forest of Evil", "x": 62, "y": 100 },
+  "drakes": { "ko": "슬리피우드 드레이크 사냥터 · 빛을 잃은 동굴", "en": "Sleepywood Drake grounds · Cave of Lost Light", "x": 382, "y": 265 },
+  "blue": { "ko": "헤네시스 동쪽 파란 버섯 숲", "en": "Blue Mushroom forest east of Henesys", "x": 222, "y": 255 },
+  "ant": { "ko": "개미굴 3·4", "en": "Ant Tunnel III·IV", "x": 300, "y": 280 }
+ },
+ "chains": [
+  {
+   "id": "sauna",
+   "title": { "ko": "1부 · 사우나 가운 (비밀의 책) — 장공 퀘스트 선행", "en": "Part 1 · Sauna Robe (the Secret Book) — required before the glove scroll quest" },
+   "lead": { "ko": "슬리피우드 사우나 아저씨의 가출한 아들 로니를 찾아 비밀의 책을 받아 오는 9단계 연계예요. 이걸 끝내야 요정 로웬의 저주받은 인형(장공) 퀘스트가 열려요. 몬스터 처치가 필요한 건 2단계(루팡 50마리) 하나뿐이고 나머지는 재료 심부름이에요.", "en": "Nine steps to find Mr. Wetbottom's runaway son Ronnie and bring back the secret book. Finishing it unlocks Rowen the Fairy's Cursed Doll quests (the glove scroll). Only step 2 needs kills (50 Lupins); the rest is errands." },
+   "steps": [
+    { "q": 10500, "at": "sauna", "go": "ronnie",
+      "where": { "ko": "슬리피우드 마을에서 호텔 포탈로 들어가 VIP 사우나에 있는 미스터 웻바텀(Mr. Wetbottom)에게 받아요.", "en": "In Sleepywood, enter the hotel portal; Mr. Wetbottom is in the VIP Sauna." },
+      "do": { "ko": "엘리니아 북쪽의 로니를 찾아가 말을 걸면 끝. 엘리니아 → 북쪽 필드 → 자라난 나무(The Tree That Grew) → 북쪽 숲의 숨은 포탈 → 나무 통로 맨 위에 로니가 있어요.", "en": "Find Ronnie north of Ellinia: Ellinia → the north field → The Tree That Grew → the hidden portal in Forest Up North → the top of the tree tunnel." } },
+    { "q": 10501, "at": "ronnie", "hunt": ["monkey"],
+      "do": { "ko": "퀘스트를 받은 뒤에 루팡 50마리를 잡고(받기 전 처치는 안 세요) 루팡의 바나나 30개를 모아요. 루팡은 엘리니아 서쪽 원숭이 숲 I·원숭이 늪 I에 많아요. 루팡이 37레벨이라 35레벨쯤부터 편해요.", "en": "After accepting, kill 50 Lupins (kills before accepting don't count) and collect 30 Lupin's Bananas. Lupins live in Monkey Forest I and Monkey Swamp I west of Ellinia; they are level 37, so 35+ is comfortable." },
+      "tip": { "ko": "다음 단계의 커즈아이 꼬리 50개·돼지 머리 10개는 일반 기타템이라 미리 모아 둬도 돼요. 커즈아이만 나오는 나무 던전, 북쪽 숲 VIII·IX가 로니 바로 근처예요.", "en": "The next step's 50 Curse Eye Tails and 10 Pig's Heads are ordinary drops, so you can collect them early. Tree Dungeon, Forest Up North VIII and IX (Curse Eyes only) are right next to Ronnie." } },
+    { "q": 10502, "at": "ronnie", "go": "henesys",
+      "do": { "ko": "헤네시스 마을의 리나(Rina)에게 가서 말을 걸어요. 장어 구이를 받아 오라는 심부름이에요.", "en": "Go and talk to Rina in Henesys town; Ronnie wants her Unagi Special." } },
+    { "q": 10503, "at": "henesys", "hunt": ["curseeye", "pigs"],
+      "do": { "ko": "리나에게 커즈아이의 꼬리 50개와 돼지의 머리 10개를 가져다줘요. 처치 수는 없어요. 돼지 머리는 돼지·리본 돼지가 떨궈요(헤네시스 서쪽 언덕, 해변 주변 덤불 II).", "en": "Bring Rina 50 Curse Eye Tails and 10 Pig's Heads; no kill count. Pig's Heads drop from Pigs and Ribbon Pigs (A Hill West of Henesys, Thicket Around the Beach II)." },
+      "tip": { "ko": "자유시장에서 둘 다 싸게 팔아요(아래 시세). 사냥할 시간에 사는 쪽이 빠를 때가 많아요.", "en": "Both sell cheaply on the free market (prices below); buying is often faster than hunting." } },
+    { "q": 10504, "at": "henesys", "go": "ronnie",
+      "do": { "ko": "리나가 장어 구이를 바로 줘요. 그걸 로니에게 가져다줘요.", "en": "Rina hands you the Unagi Special at once; take it to Ronnie." } },
+    { "q": 10505, "at": "ronnie", "go": "ellinia",
+      "do": { "ko": "이번엔 목이 마르대요. 엘리니아의 요정 로웬(Rowen the Fairy)에게 가요. 엘리니아 중간쯤 오른쪽 나무집 안에 있어요.", "en": "Now he's thirsty: go to Rowen the Fairy in Ellinia, inside the tree house on the right around the middle of town." } },
+    { "q": 10506, "at": "ellinia",
+      "do": { "ko": "로웬에게 다이아몬드 1개를 줘요. 다이아몬드는 몬스터가 떨구지 않아요(원석만 나와요). 구하는 법은 아래 '다이아몬드 구하기'를 보세요.", "en": "Give Rowen 1 Diamond. No monster drops a Diamond (only Diamond Ore); see 'Getting a Diamond' below." } },
+    { "q": 10507, "at": "ellinia", "go": "ronnie",
+      "do": { "ko": "로웬이 신선한 우유를 바로 줘요. 로니에게 가져다줘요.", "en": "Rowen gives you the Fresh Milk at once; take it to Ronnie." } },
+    { "q": 10508, "at": "ronnie", "go": "sauna",
+      "do": { "ko": "로니가 비밀의 책을 줘요. 슬리피우드 VIP 사우나의 미스터 웻바텀에게 돌려주면 사우나 가운(남자 파란색 / 여자 빨간색)을 받아요. 이제 로웬의 인형 퀘스트와 로니의 새 집 퀘스트가 열려요.", "en": "Ronnie gives you the Secret Book. Return it to Mr. Wetbottom in the Sleepywood VIP Sauna for a Sauna Robe (blue for male, red for female). Rowen's doll quests and Ronnie's new-house quests open now." } }
+   ]
+  },
+  {
+   "id": "dolls",
+   "title": { "ko": "2부 · 요정 로웬의 저주받은 인형 — 장갑 공격력 주문서", "en": "Part 2 · Rowen the Fairy's Cursed Dolls — the gloves attack scroll" },
+   "lead": { "ko": "36레벨부터 엘리니아의 요정 로웬에게 받는 5단계 연계예요. 단계마다 좀비 루팡을 정해진 수만큼 잡고 저주받은 인형을 같은 수만큼 가져가요. 4단계(150개)에서 장갑 공격력 60% 또는 장갑 마력 60%가 반반으로 나와요. 장공까지 인형 370개·좀비 루팡 370마리, 모자까지 570개예요.", "en": "Five steps from Rowen the Fairy in Ellinia, level 36 and up. Each step needs a number of Zombie Lupin kills and the same number of Cursed Dolls. Step 4 (150) gives a Gloves Attack 60% or a Gloves Magic Attack 60% scroll, half and half. 370 dolls and 370 kills to the scroll, 570 to the hat." },
+   "steps": [
+    { "q": 10201, "at": "ellinia", "hunt": ["monkey"],
+      "do": { "ko": "좀비 루팡 50마리 + 저주받은 인형 50개. 좀비 루팡은 엘리니아 → 남쪽 필드 → 지혜의 숲 맨 위 숨은 포탈 → 원숭이 숲 I → 숨은 포탈 → 나무 던전, 원숭이 숲 I에 가장 많아요(26마리). 원숭이 늪 III(31마리)도 좋아요.", "en": "50 Zombie Lupins + 50 Cursed Dolls. Most Zombie Lupins: Ellinia → south field → hidden portal at the top of the Forest of Wisdom → Monkey Forest I → hidden portal → Tree Dungeon, Monkey Forest I (26). Monkey Swamp III (31) is good too." },
+      "tip": { "ko": "처치 수는 퀘스트를 받은 뒤부터 세요. 인형은 사 와도 되지만 처치 수는 직접 채워야 해요. 좀비 루팡은 41레벨·언데드라 클레릭 힐이 잘 들어요. 혼자 버거우면 파티로.", "en": "Kills count only after you accept. Dolls can be bought, but the kills must be your own. Zombie Lupins are level 41 and undead, so a Cleric's Heal hits hard; party up if it's slow." } },
+    { "q": 10202, "at": "ellinia", "hunt": ["monkey"], "do": { "ko": "좀비 루팡 70마리 + 인형 70개. 보상 원석 10개(7종 중 하나).", "en": "70 Zombie Lupins + 70 dolls. Reward: 10 of one of seven jewel ores." } },
+    { "q": 10203, "at": "ellinia", "hunt": ["monkey"], "do": { "ko": "좀비 루팡 100마리 + 인형 100개. 보상 금 원석 5개 또는 다이아몬드 원석 5개.", "en": "100 Zombie Lupins + 100 dolls. Reward: 5 Gold Ore or 5 Diamond Ore." } },
+    { "q": 10204, "at": "ellinia", "hunt": ["monkey"], "big": true,
+      "do": { "ko": "좀비 루팡 150마리 + 인형 150개. 이게 장공 퀘스트예요. 장갑 공격력 주문서 중급(60%, 공격력 +2) 또는 장갑 마력 주문서 중급(60%, 마력 +4)이 50:50으로 나와요.", "en": "150 Zombie Lupins + 150 dolls: the glove scroll quest. Gloves Attack Scroll: Intermediate (60%, +2 ATT) or Gloves Magic Attack Scroll: Intermediate (60%, +4 M.ATT), 50:50." },
+      "tip": { "ko": "보상을 받기 전에 인벤토리 소비창을 비워 두세요. 대신 잡아 주겠다며 메소를 먼저 달라는 사기가 보고됐어요.", "en": "Free a slot in the Use tab before turning in. Scams asking for mesos up front to 'do it for you' have been reported." } },
+    { "q": 10205, "at": "ellinia", "hunt": ["monkey"], "do": { "ko": "좀비 루팡 200마리 + 인형 200개. 직업별 40제 모자(도적 다크 필퍼는 비싸게 팔리고 나머지는 저렴).", "en": "200 Zombie Lupins + 200 dolls. A level-40 hat for your class (the thief's Dark Pilfer sells well, the others cheaply)." } }
+   ]
+  },
+  {
+   "id": "jane",
+   "title": { "ko": "3부 · 제인의 마지막 도전 — 두 번째 장공 퀘스트 (44레벨)", "en": "Part 3 · Jane's Final Challenge — the second glove scroll quest (level 44)" },
+   "lead": { "ko": "장갑 공격력 주문서 중급을 주는 퀘스트는 로웬과 제인 두 개뿐이에요. 리스항구의 제인에게 20레벨 '제인과 버섯'을 먼저 끝내야 44레벨 도전 3단계가 열리고, 마지막 보상이 장공 60% · 장공 10% · 장마 60% · 장마 10% 중 하나(각 25%)예요.", "en": "Only two quests give a Gloves Attack Scroll: Intermediate, Rowen's and Jane's. Finish Jane's level-20 'Jane and the Mushroom' in Lith Harbor first; that opens her three level-44 challenges, and the last one gives one of Gloves Attack 60% / 10% or Gloves Magic Attack 60% / 10%, 25% each." },
+   "steps": [
+    { "q": 10002, "at": "lith", "hunt": ["blue", "ant"],
+      "where": { "ko": "리스항구의 제인(Jane), 티켓 간판이 달린 집 앞이에요.", "en": "Jane in Lith Harbor, by the house with the ticket sign." },
+      "do": { "ko": "퀘스트를 받은 뒤 파란 버섯 30마리·뿔버섯 30마리를 잡고 파란 버섯의 갓 15개·뿔버섯의 갓 15개를 가져가요. 파란 버섯은 헤네시스 동쪽 숨은 포탈 숲, 뿔버섯은 슬리피우드 오른쪽 개미굴 3·4에 많아요. 보상은 무기 공격 60% 주문서 14종 중 하나.", "en": "After accepting, kill 30 Blue Mushrooms and 30 Horny Mushrooms and bring 15 caps of each. Blue Mushrooms: the hidden-portal forest east of Henesys; Horny Mushrooms: Ant Tunnel III and IV right of Sleepywood. Reward: one of 14 weapon attack 60% scrolls." } },
+    { "q": 10003, "at": "lith", "hunt": ["eastrocky", "kerning"],
+      "do": { "ko": "카파 드레이크 50마리(페리온 동쪽 바위산)·레이스 50마리(커닝 지하철)를 잡고, 맑은 물 1개·드레이크의 머리뼈 25개·이상한 느낌의 약 25개를 가져가요.", "en": "Kill 50 Copper Drakes (East Rocky Mountain by Perion) and 50 Wraiths (Kerning subway); bring 1 Pure Water, 25 Drake Skulls and 25 Medicines With Weird Vibes." } },
+    { "q": 10004, "at": "lith", "hunt": ["kerning", "evil"],
+      "do": { "ko": "레이스 50마리·맬러디 50마리(엘리니아 → 원숭이 숲 → 악의 숲)를 잡고, 드레이크의 피 3개·머쉬맘의 포자 1개·이상한 느낌의 약 25개·맬러디의 실험용 개구리 25개를 가져가요.", "en": "Kill 50 Wraiths and 50 Maladies (Ellinia → Monkey Forest → the Forest of Evil); bring 3 Drake's Blood, 1 Mushmom Spore, 25 Medicines With Weird Vibes and 25 Malady's Experimental Frogs." } },
+    { "q": 10005, "at": "lith", "hunt": ["perion", "drakes"], "big": true,
+      "do": { "ko": "다크 엑스텀프 100마리·드레이크 50마리를 잡고, 달의 돌 1개·용의 가죽 20개·고목 나무의 수액 10개를 가져가요. 보상은 장공 60%·장공 10%·장마 60%·장마 10% 중 하나(각 25%).", "en": "Kill 100 Dark Axe Stumps and 50 Drakes; bring 1 Moon Rock, 20 Dragon Skins and 10 Sap of Ancient Tree. Reward: Gloves Attack 60% or 10%, or Gloves Magic Attack 60% or 10%, 25% each." },
+      "tip": { "ko": "맬러디가 55레벨이라 보통 50레벨 전후에 끝내요.", "en": "Maladies are level 55, so most players finish this around level 50." } }
+   ]
+  },
+  {
+   "id": "house",
+   "title": { "ko": "덤 · 로니의 새 집 (41레벨, 사우나 가운 다음에 열림)", "en": "Bonus · Ronnie's new house (level 41, opens after the Sauna Robe)" },
+   "lead": { "ko": "사우나 가운을 끝내면 로니가 요정들의 새 집 재료를 4번 부탁해요. 마지막에 신발 이동속도 주문서 중급·상급을 줘요.", "en": "After the Sauna Robe, Ronnie asks four times for materials for the fairies' new house; the last delivery pays a Shoes Speed Scroll (Intermediate and Greater)." },
+   "steps": [
+    { "q": 10206, "at": "ronnie", "hunt": ["ant", "curseeye"], "do": { "ko": "뿔버섯 50·커즈아이 50마리, 뿔버섯의 갓 30·커즈아이의 꼬리 30.", "en": "50 Horny Mushrooms and 50 Curse Eyes; 30 caps and 30 tails." } },
+    { "q": 10207, "at": "ronnie", "hunt": ["kerning"], "do": { "ko": "버블링 50·주니어 레이스 50마리(커닝 지하철), 버블링의 큰 방울 30·식탁보 30.", "en": "50 Bubblings and 50 Jr. Wraiths (Kerning subway); 30 Huge Bubbles and 30 Tablecloths." } },
+    { "q": 10208, "at": "ronnie", "hunt": ["perion"], "do": { "ko": "파이어보어 50·카파 드레이크 50마리(페리온 쪽), 파이어보어의 송곳니 30·드레이크의 머리뼈 30.", "en": "50 Fire Boars and 50 Copper Drakes (around Perion); 30 Fire Boar's Teeth and 30 Drake Skulls." } },
+    { "q": 10209, "at": "ronnie", "hunt": ["drakes"], "do": { "ko": "콜드아이 50·드레이크 50마리, 콜드아이의 꼬리 30·용의 가죽 10·다이아몬드 1개.", "en": "50 Cold Eyes and 50 Drakes; 30 Cold Eye Tails, 10 Dragon Skins and 1 Diamond." } }
+   ]
+  }
+ ],
+ "diamond": {
+  "ko": ["자유시장에서 사기 — 가장 빨라요(아래 실시간 시세).", "다이아몬드의 원석을 제련 — 원석은 주황버섯·다크 엑스텀프·파이어보어·드레이크가 떨궈요. 제작(Arcforge) 6레벨에서 원석 1개를 1,200메소에 다이아몬드로 바꾼다고 정리돼 있어요(ms-classic.com, 게임 1.0.0 기준).", "헤네시스의 루크(Luke) 19레벨 퀘스트 — 보석 8종 중 하나를 무작위로 줘서 다이아몬드가 나올 수 있어요(1/8)."],
+  "en": ["Buy one on the free market — the quickest (live price below).", "Refine Diamond Ore — the ore drops from Orange Mushrooms, Dark Axe Stumps, Fire Boars and Drakes; ms-classic.com (game 1.0.0) lists Arcforge level 6 turning one ore into a Diamond for 1,200 mesos.", "Luke's level-19 quest in Henesys gives one of eight gems at random, so a Diamond is possible (1 in 8)."]
+ },
+ "sources": [
+  { "name": "추억서리 — 뉴비 필수 꿀퀘 7개", "url": "https://www.youtube.com/watch?v=PM42DLpygG4", "date": "2026-10-25" },
+  { "name": "오소리 — 돈 되는 퀘스트 총정리", "url": "https://www.youtube.com/watch?v=d5ImGXgF1xg", "date": "2026-11-01" },
+  { "name": "클메CM — 장공 주는 퀘스트는 딱 2개", "url": "https://www.youtube.com/watch?v=tM6yJL8gDdY", "date": "2026-10-30" },
+  { "name": "들판염소 — 로웬 장공 퀘스트 진행", "url": "https://www.youtube.com/watch?v=-Wvyz0YRO8E", "date": "2026-10-28" },
+  { "name": "썬이가 쏘아올린 작은 공 — 로웬의 장공 퀘스트", "url": "https://www.youtube.com/watch?v=IDuNzVBFhgE", "date": "2026-11-03" },
+  { "name": "추억서리 — 연계 퀘스트 총정리", "url": "https://www.youtube.com/watch?v=fsS-0wV66x4", "date": "2026-11-02" },
+  { "name": "ms-classic.com — Sauna Robe / Cursed Doll guides", "url": "https://ms-classic.com/guides/rowen-the-fairy-cursed-doll-quest-guide", "date": "2026-10-22" }
+ ]
+}
