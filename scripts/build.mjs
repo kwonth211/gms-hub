@@ -807,7 +807,7 @@ const XL_BY_PAGE = { monsters: 'monsters', bosses: 'monsters', items: 'items', e
   quests: 'quests', questBest: 'quests', training: 'training', trBand: 'training', trClass: 'training', scroll: 'scrolls', drop: 'boxes',
   market: 'live:market', price: 'live:market', marketToday: 'live:market', rank: 'live:rank', megaphone: 'live:mega' };
 const XL_LIVE_SHEETS = {
-  market: { ko: '많이 거래되는 아이템 · 오른 아이템 · 내린 아이템 · 분류별 전체 시세', en: 'Most traded · Risers · Fallers · All prices by category' },
+  market: { ko: '거래 많은 아이템 TOP 100 · 실시간 인기 TOP 10과 7일 가격 흐름 · 분류별 전체 시세', en: 'Top 100 traded · Live top 10 with 7 days of prices · All prices by category' },
   mega: { ko: '많이 불린 아이템과 시세 · 사려는 사람이 많은 아이템 · 시간대별 확성기', en: 'Most called items with prices · Most wanted · Megaphones by hour' },
   rank: { ko: '상위 1,000명 · 직업별 인원과 평균 레벨 · 레벨 구간별 인원', en: 'Top 1,000 · Players and average level by job · Players by level range' }
 };

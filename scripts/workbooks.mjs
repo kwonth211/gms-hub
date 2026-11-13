@@ -5,6 +5,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { xlsx } from '../assets/xlsx.js';
+import { subLabel } from '../assets/item-sub.js';
 import { equipmentCells, EQ_CLASSES, subName } from './equipment-pages.mjs';
 import { monsterPath, mapPath } from './monster-pages.mjs';
 import { regionName } from './map-pages.mjs';
@@ -122,7 +123,7 @@ export function buildWorkbooks({ out, langs, abs, buildDate, monsters, items, eq
     const useful = (i) => byItem.has(i.id) || questUse.has(i.id) || itemPagePath(i.id);
     books.items = { title: L('아이템', 'Items'), sheets: cats.map(([c, label]) => ({ name: label, title: `${label} ${L('아이템', 'items')}`, note: `${stamp}. ${L('몬스터가 떨어뜨리거나 퀘스트에 쓰이는, 지금 얻을 수 있는 아이템만 넣었어요.', 'Only items you can get now: monster drops and quest items.')}`,
       cols: [{ h: L('아이템', 'Item') }, { h: L('영문 이름', 'Korean name') }, { h: L('세부 분류', 'Type') }, { h: L('레벨', 'Level'), t: 'int' }, { h: L('떨어뜨리는 몬스터', 'Dropped by'), t: 'wrap' }, { h: L('관련 퀘스트', 'Quests'), t: 'wrap' }, { h: L('사이트', 'Site'), t: 'link' }],
-      rows: items.filter((i) => i.cat === c && useful(i)).sort((a, b) => (a.lv || 0) - (b.lv || 0) || String(a.sub).localeCompare(String(b.sub))).map((i) => [nm(i), ko ? i.en : i.ko || '', subName(i.sub || '', lang), i.lv || null, (byItem.get(i.id)?.mobs || []).map((m) => `${nm(m)} Lv.${m.lv}`).join(', '), [...new Set(questUse.get(i.id) || [])].slice(0, 4).join(', '), itemLink(i.id)]) })) };
+      rows: items.filter((i) => i.cat === c && useful(i)).sort((a, b) => (a.lv || 0) - (b.lv || 0) || String(a.sub).localeCompare(String(b.sub))).map((i) => [nm(i), ko ? i.en : i.ko || '', subLabel(i.cat, i.sub, lang), i.lv || null, (byItem.get(i.id)?.mobs || []).map((m) => `${nm(m)} Lv.${m.lv}`).join(', '), [...new Set(questUse.get(i.id) || [])].slice(0, 4).join(', '), itemLink(i.id)]) })) };
 
     // Scrolls: chances for a whole run of slots, the numbers people work out by hand.
     const tiers = scrolls.tiers;
