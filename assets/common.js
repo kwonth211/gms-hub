@@ -263,7 +263,7 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
     const a = anim();
     if (a && at) a.currentTime = at % (m.dur * 1000);
   }
-  // Merge: new items go to the end of both copies while the strip keeps rolling. The current pixel offset is kept, and
+  // Merge: new items go into both copies while the strip keeps rolling. The current pixel offset is kept, and
   // if the strip was showing the second copy it is moved to the same place in the first, so nothing on screen moves.
   async function merge(rows) {
     const ids = new Set(shown.map((r) => r.id));
@@ -276,7 +276,15 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
     const before = pxPerSec();
     let offset = a ? ((a.currentTime || 0) / 1000) * before.v : 0;
     if (offset >= before.w) offset -= before.w;
-    for (const set of run.children) set.insertAdjacentHTML('beforeend', html);
+    // New items go in just past the right edge of what is on screen, so they scroll in within seconds instead of waiting
+    // behind every older item. If the seam between the two copies is on screen, they go to the end as before.
+    const target = offset + (run.parentElement?.clientWidth || 0);
+    const kids = [...run.firstChild.children], x0 = run.firstChild.offsetLeft;
+    const at = target < before.w ? kids.findIndex((k) => k.offsetLeft - x0 >= target) : -1;
+    for (const set of run.children) {
+      if (at >= 0) set.children[at].insertAdjacentHTML('beforebegin', html);
+      else set.insertAdjacentHTML('beforeend', html);
+    }
     const m = metrics();
     if (a) a.currentTime = (offset / m.v) * 1000;
     if (run.firstChild.children.length > 36) pruneDue = true;
