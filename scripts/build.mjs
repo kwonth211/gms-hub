@@ -2082,7 +2082,6 @@ function marketBody(lang) {
 <div class="mk-foot"><div class="mk-bar"><dl class="mk-stats">${stat('open',tr('최근 판매 매물','Recent asking listings'))}${stat('shops',tr('상점','Shops'))}${stat('items',tr('아이템 · 7일','Items · 7d'))}${stat('records',tr('매물 기록 · 7일','Listing records · 7d'))}</dl><a class="btn small-btn" href="${href(langPath(lang, '/tools/scan/'))}">${t.scan}</a></div>
 ${collectionStatus(lang)}</div>
 </div>
-${marketSeo(lang)}
 ${marketGuide(lang)}
 ${jsonScript('mk-data', { lang, api: config.voteApi, itemsUrl: href('/assets/items.json'), t, itemBase: href(langPath(lang, '/items/')), itemLink: IT[lang].pageLink, itemPages: PRICED.map((i) => i.id), itemPaths: Object.fromEntries(PRICED.map((i) => [i.id, href(langPath(lang, itemPath(i)))])), alerts: config.alerts && config.vapidPublic ? { key: config.vapidPublic, sw: href('/sw.js') } : null })}`;
 }
@@ -2801,14 +2800,6 @@ function priceCatBody(lang, c) {
 ${priceTable(lang, c.items)}</section>
 <p><a class="btn" href="${href(langPath(lang, '/tools/market/'))}">${ko ? '실시간 시세에서 검색하기' : 'Search the live market'}</a></p></div>`;
 }
-const PRICE_TOP = PRICED.filter((i) => priceOf(i)?.n >= 3).sort((a, b) => priceOf(b).n - priceOf(a).n).slice(0, 40);
-function marketSeo(lang) {
-  const ko = lang === 'ko';
-  return `<section class="wrap market-seo"><div class="panel"><h2>${ko ? '오늘 많이 거래된 아이템 시세 TOP 40' : 'Most listed items today: top 40 prices'}</h2>
-<p class="muted small">${ko ? `최근 14일 판매가 중앙값 · ${PRICES_DATE.slice(5).replace('-', '/')} 기준. 분류별 전체 시세는 아래에서 볼 수 있어요.` : `Median asking price over 14 days, as of ${PRICES_DATE}. Full price lists by category below.`}</p>
-${priceCatLinks(lang, null)}${priceTable(lang, PRICE_TOP)}</div></section>`;
-}
-
 function itemBody(lang, i) {
   const t = IT[lang];
   const p = priceOf(i);

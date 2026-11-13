@@ -1097,6 +1097,7 @@
  "EXP {exp} ({pct}%)": "EXP {exp}（{pct}%）",
  "EXP ↓": "EXP ↓",
  "EXP/h": "經驗/時",
+ "Each category lists today's median price, listing count and range in one table.": "每个分类用一张表列出今日价格中位数、挂单数和价格范围。",
  "Each category lists today's median price, listing count and range in one table. The live market page now also shows today's {n0} most-listed items.": "每个分类用一张表列出今日价格中位数、挂单数和价格范围。实时行情页也新增了今日挂单最多的 {n0} 个物品。",
  "Each kill gives {n0} to {n1} mesos, so it is a profitable spot for unfunded characters past {n2}.": "每隻給 {n0}–{n1} 楓幣，{n2} 級以上無資本角色的獲利地點。",
  "Each map with its monsters and spawn counts, EXP for a full clear, sure-hit accuracy and drops.": "每張地圖的怪物與數量、清一輪經驗值、不會落空的命中與掉落。",

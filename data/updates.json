@@ -10,8 +10,8 @@
    "ko": "분류별 시세표 — 주문서·무기·방어구·표창·소비·재료 시세를 한 표로",
    "en": "Prices by category — scrolls, weapons, armor, stars, potions and materials in one table each",
    "desc": {
-    "ko": "분류마다 오늘 시세(중앙값), 매물 수, 가격 범위를 한 표에 모았어요. 실시간 시세 페이지에도 오늘 많이 거래된 아이템 TOP 40을 붙였어요.",
-    "en": "Each category lists today's median price, listing count and range in one table. The live market page now also shows today's 40 most-listed items."
+    "ko": "분류마다 오늘 시세(중앙값), 매물 수, 가격 범위를 한 표에 모았어요.",
+    "en": "Each category lists today's median price, listing count and range in one table."
    }
   },
   {

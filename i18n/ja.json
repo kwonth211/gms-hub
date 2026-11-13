@@ -1097,6 +1097,7 @@
  "EXP {exp} ({pct}%)": "EXP {exp}（{pct}%）",
  "EXP ↓": "EXP ↓",
  "EXP/h": "経験値/時",
+ "Each category lists today's median price, listing count and range in one table.": "カテゴリごとに今日の中央値・出品数・価格帯を一つの表にまとめました。",
  "Each category lists today's median price, listing count and range in one table. The live market page now also shows today's {n0} most-listed items.": "カテゴリごとに今日の中央値・出品数・価格帯を一つの表にまとめました。リアルタイム相場ページにも今日出品の多い {n0} 件を追加。",
  "Each kill gives {n0} to {n1} mesos, so it is a profitable spot for unfunded characters past {n2}.": "1匹あたり {n0}〜{n1} メルで、{n2} レベル以降の無課金キャラの黒字狩場です。",
  "Each map with its monsters and spawn counts, EXP for a full clear, sure-hit accuracy and drops.": "マップごとのモンスターと出現数、1周の経験値、外さない命中、ドロップ。",
