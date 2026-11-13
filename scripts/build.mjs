@@ -2560,7 +2560,10 @@ const priceOf = (i) => headline(itemPrices.prices[i.id]);
 // (priceOf) still decides which pages exist and are indexed.
 const NOW = itemPrices.now || {};
 const nowOf = (i) => { const r = NOW[i.id]; return r ? { median: r[0], low: r[1], open: r[2] } : null; };
-const shownMedian = (i) => nowOf(i)?.median ?? priceOf(i)?.median;
+// No listing up right now: the last known price (the market list's recent typical price, else the 14-day median).
+const RECENT = itemPrices.recent || {};
+const lastPrice = (i) => RECENT[i.id] ?? priceOf(i)?.median;
+const shownMedian = (i) => nowOf(i)?.median ?? lastPrice(i);
 const itemName = (lang, i) => (lang === 'ko' && i.ko ? i.ko : i.en);
 // Korean players search scrolls by shorthand ("장공 60%", "귀힘 60", "신이속 10%"), not by the client name
 // ("장갑 Attack 주문서: 중급"). Scroll pages lead with that shorthand in the title, heading and description; the
@@ -2613,7 +2616,7 @@ const IT = {
     // With a price the title carries it, so the search result answers the question before the click.
     titlePrice: '{name} 시세 {median} 메소 ({date}) · 글클메 자유시장 | GMS Hub',
     descNow: '{name} 글클메 자유시장 시세: 지금 판매 중 매물의 중앙값 {median} 메소 (판매 중 {open}건, 최저 {low}). 지금 파는 상점의 채널·방과 7일 추이도 보여 줘요.',
-    nowHeadline: '판매 중 중앙값', nowSub: '판매 중 {open}건 · 최저 {low}', nowAsOf: '{date} 기준 · 페이지를 열면 최신 값으로 바뀌어요', nowAsOfLive: '방금 받은 실시간 시세예요', openN: '판매 {n}건', noneNow: '지금 판매 매물 없음',
+    nowHeadline: '판매 중 중앙값', nowSub: '판매 중 {open}건 · 최저 {low}', nowAsOf: '{date} 기준 · 페이지를 열면 최신 값으로 바뀌어요', nowAsOfLive: '방금 받은 실시간 시세예요', openN: '판매 {n}건', lastN: '최근 시세', lastHeadline: '최근 시세', lastSub: '지금은 판매 중인 매물이 없어요. 마지막으로 본 매물 기준이에요.',
     desc: '{name} 글클메 자유시장 시세: {basis} 중앙값 {median} 메소 (최근 14일 매물 {n}건, {low}~{high}). 유저가 스캔한 상점 매물 기준이고, 7일 추이와 지금 파는 채널·방도 보여 줘요.',
     descNone: '{name} 글로벌 메이플 클래식 월드 아이템 정보 ({info}). 최근 14일 스캔 시세가 아직 없어요. 상점을 스캔하면 시세가 바로 쌓여요.',
     h1: '{name} 시세',
@@ -2664,7 +2667,7 @@ const IT = {
     title: '{name} Price – MapleStory Classic World Free Market | GMS Hub',
     titlePrice: '{name} Price: {median} mesos ({date}) – MapleStory Classic World | GMS Hub',
     descNow: '{name} price in MapleStory Classic World: median of the listings for sale now {median} mesos ({open} for sale, lowest {low}). With the shops selling it now, their channels and rooms, and a 7-day trend.',
-    nowHeadline: 'Median of listings for sale', nowSub: '{open} for sale · lowest {low}', nowAsOf: 'As of {date} · updates to the latest when the page opens', nowAsOfLive: 'Live price, just loaded', openN: '{n} for sale', noneNow: 'None for sale now',
+    nowHeadline: 'Median of listings for sale', nowSub: '{open} for sale · lowest {low}', nowAsOf: 'As of {date} · updates to the latest when the page opens', nowAsOfLive: 'Live price, just loaded', openN: '{n} for sale', lastN: 'recent price', lastHeadline: 'Recent price', lastSub: 'Nothing for sale right now; this is from the last listings seen.',
     desc: '{name} price in MapleStory Classic World: {basis} median {median} mesos ({n} listings in 14 days, {low}–{high}). From Free Market shops players scanned, with a 7-day trend and where it is for sale now.',
     descNone: '{name} in MapleStory Classic World ({info}). No scanned price in the last 14 days yet; scanning a shop that sells it adds one right away.',
     h1: '{name} Price',
@@ -2782,7 +2785,7 @@ function relatedItems(i) {
 
 const itemLink = (lang, i) => {
   const p = priceOf(i);
-  return `<li><a href="${href(langPath(lang, itemPath(i)))}">${itemIcon(i.id, 24)}<span>${esc(itemSeoName(lang, i))}</span><small>${p ? (nowOf(i) ? `${mesoText(lang, nowOf(i).median)} · ${fill(IT[lang].openN, { n: nowOf(i).open })}` : IT[lang].noneNow) : itemInfoHtml(lang, i)}</small></a></li>`;
+  return `<li><a href="${href(langPath(lang, itemPath(i)))}">${itemIcon(i.id, 24)}<span>${esc(itemSeoName(lang, i))}</span><small>${p ? (nowOf(i) ? `${mesoText(lang, nowOf(i).median)} · ${fill(IT[lang].openN, { n: nowOf(i).open })}` : `${mesoText(lang, lastPrice(i))} · ${IT[lang].lastN}`) : itemInfoHtml(lang, i)}</small></a></li>`;
 };
 
 // Categories for the priced part of the item DB, so "글클메 주문서 시세"-style searches find a heading that matches.
@@ -2811,10 +2814,9 @@ function itemBody(lang, i) {
 <p class="muted" data-now="sub">${fill(t.nowSub, { open: now.open, low: nf.format(now.low) })}</p>
 <p class="muted note">${fill(t.nowAsOf, { date: PRICES_DATE })}</p>`
     : p
-    ? `<p class="item-headline-label">${fill(t.headline, { basis: t.basis[p.basis] })}</p>
-<p class="item-headline"><b>${nf.format(p.median)}</b> <span>${t.unit}</span></p>
-<p class="muted">${fill(t.count, { n: p.n })} · ${fill(t.range, { low: nf.format(p.low), high: nf.format(p.high) })}</p>
-<ul class="item-kinds">${kinds}</ul>
+    ? `<p class="item-headline-label">${t.lastHeadline}</p>
+<p class="item-headline"><b>${nf.format(lastPrice(i))}</b> <span>${t.unit}</span></p>
+<p class="muted">${t.lastSub}</p>
 <p class="muted note">${fill(t.asOf, { date: PRICES_DATE, last: p.last.slice(0, 10) })}</p>`
     : `<p>${t.none}</p><p><a class="btn small-btn" href="${href(langPath(lang, '/tools/scan/'))}">● ${t.scan}</a></p>`;
   const rows = [
