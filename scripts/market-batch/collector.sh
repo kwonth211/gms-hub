@@ -22,6 +22,9 @@ ARGS=(--user-data-dir=$PROFILE --load-extension=$EXT
   --no-first-run --no-default-browser-check --disable-session-crashed-bubble --hide-crash-restore-bubble
   --remote-debugging-port=9223 --remote-allow-origins=http://127.0.0.1:9223
   --test-type --no-startup-window --window-size=1100,800 --window-position=40,60)
+# Headless by default: the collector runs with no window at all, so nothing ever appears over the admin's work. Set
+# GMS_COLLECTOR_HEADLESS=0 to watch it (the window then shows on screen).
+[[ ${GMS_COLLECTOR_HEADLESS:-1} == 1 ]] && ARGS=(--headless=new $ARGS)
 running() { [[ -f $PID ]] && kill -0 $(cat $PID) 2>/dev/null; }
 need_app() { [[ -n $APP && -x $APP ]] || { echo "수집용 브라우저가 없습니다: npx -y @puppeteer/browsers install chrome@stable --path ~/gms-hub-collector/browsers"; exit 1; }; }
 case $1 in
