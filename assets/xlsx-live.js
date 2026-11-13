@@ -28,11 +28,8 @@ const BOOKS = {
     const topCols = [{ h: L('순위', 'Rank'), t: 'int' }, { h: L('아이템', 'Item') }, { h: L('24시간 평균가', '24h average'), t: 'int' }, { h: L('24시간 중간값', '24h median'), t: 'int' }, { h: L('전날 대비', 'vs day before'), t: 'pct' },
       { h: L('24시간 기록 수', 'Records (24h)'), t: 'int' }, ...days.map((d) => ({ h: d, t: 'int' })), { h: L('사이트', 'Site'), t: 'link' }];
     const topRow = (x) => [x.rank, nm(x.item), x.avg, x.median, x.change, x.n, ...x.spark, page(x.item)];
-    const CAT = { Equip: L('장비', 'Equipment'), Use: L('소비', 'Use'), Etc: L('기타', 'Etc'), Setup: L('설치', 'Set-up') };
     const catCols = [{ h: L('아이템', 'Item') }, { h: L('세부 분류', 'Type') }, { h: L('레벨', 'Level'), t: 'int' }, { h: L('시세', 'Price'), t: 'int' }, { h: L('호가 중간값', 'Median asking'), t: 'int' }, { h: L('최저가', 'Lowest'), t: 'int' },
       { h: L('현재 매물', 'Open listings'), t: 'int' }, { h: L('상점 수', 'Shops'), t: 'int' }, { h: L('마지막 기록 (한국 시간)', 'Last seen (KST)') }, { h: L('사이트', 'Site'), t: 'link' }];
-    const byCat = {};
-    for (const x of cat.items) { const i = items.get(x.item); (byCat[i?.cat || 'Etc'] ||= []).push([nm(x.item), subLabel(i?.cat, i?.sub, ko ? 'ko' : 'en'), i?.lv || null, x.typical ?? x.median, x.median, x.low, x.open, x.shops, kst(x.last), page(x.item)]); }
     const byRecords = [...cat.items].sort((a, b) => (b.records || 0) - (a.records || 0));
     const listCols = [{ h: L('순위', 'Rank'), t: 'int' }, ...catCols.slice(0, 3), ...catCols.slice(3, 8), { h: L('7일 기록 수', 'Records (7 days)'), t: 'int' }, catCols[8], catCols[9]];
     const listRow = (x, i) => { const it = items.get(x.item); return [i + 1, nm(x.item), subLabel(it?.cat, it?.sub, ko ? 'ko' : 'en'), it?.lv || null, x.typical ?? x.median, x.median, x.low, x.open, x.shops, x.records, kst(x.last), page(x.item)]; };
@@ -41,9 +38,6 @@ const BOOKS = {
         note: `${L('기준', 'As of')} ${kst(cat.asOf)} (${L('한국 시간', 'KST')}) · GMS Hub. ${L('시세 = 실제 거래·매물 흐름으로 본 대표 가격, 최저가 = 지금 올라온 가장 싼 매물이에요.', 'Price = typical trading price; Lowest = cheapest listing now.')}`,
         cols: listCols, rows: byRecords.slice(0, 100).map(listRow) },
       { name: L('실시간 인기 TOP 10', 'Live top 10'), title: L('지금 가장 많이 거래되는 10개와 7일 가격 흐름', 'The 10 most traded right now, with 7 days of prices'), note: `${at}. ${L('날짜 칸은 그날 중간값이에요. 빈칸은 그날 기록이 없는 날이에요.', 'Date columns are that day\'s median; blank means no records that day.')}`, cols: topCols, rows: top.items.map(topRow) },
-      ...['Equip', 'Use', 'Etc', 'Setup'].filter((c) => byCat[c]?.length).map((c) => ({ name: `${L('시세', 'Prices')} - ${CAT[c]}`, title: `${CAT[c]} ${L('전체 시세 (지난 7일)', 'prices (last 7 days)')}`,
-        note: `${L('기준', 'As of')} ${kst(cat.asOf)} (${L('한국 시간', 'KST')}). ${L('매물이 많은 순서예요.', 'Sorted by open listings.')}`,
-        cols: catCols, rows: byCat[c].sort((a, b) => (b[6] || 0) - (a[6] || 0)) }))
     ]];
   },
   async mega(ko, lang) {
