@@ -2830,7 +2830,7 @@ for (const lang of LANGS) {
   });
 
   const defs = {
-    home: { title: t.homeTitle, desc: t.homeDesc, body: homeBody(lang), modules: ['home.js', 'mega-trends.js'], ld: [websiteLd, directoryLd, faqLd] },
+    home: { title: t.homeTitle, desc: t.homeDesc, body: homeBody(lang), modules: ['home.js', 'mega-trends.js', 'hero-storm.js'], ld: [websiteLd, directoryLd, faqLd] },
     training: {
       title: t.trTitle,
       desc: t.trDesc,
