@@ -2630,3 +2630,9 @@ body.exp-running .exp-stop { display: inline-flex; }
 .item-cats{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 6px}
 .item-cats .chip{display:inline-flex;align-items:center;gap:6px;text-decoration:none}
 .item-cats .chip small{color:var(--muted);font-weight:600}
+/* Item pages: the market's detail panel for one item, full width, with no list, tabs or close button around it.
+   Drops, quests and stats stay in the item page's own sections below, so the panel's info block is left out. */
+.mb-single{margin:0 0 18px}
+.mb-single .mb-status,.mb-single .mb-tabs,.mb-single .mb-browser,.mb-single .mk-foot,.mb-single [data-close-item],.mb-single #mb-info,.mb-single .mb-item-page{display:none}
+.mb-single .mb-workspace,.mb-single .mb-workspace.has-selection{display:block}
+.mb-single .mb-detail{position:static;max-height:none;overflow:visible}

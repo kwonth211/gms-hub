@@ -2062,11 +2062,12 @@ const MK = {
   }
 };
 
-function marketBody(lang) {
+// The market browser: the item list and the detail panel. The market page shows both; an item page (fixed) shows only
+// the detail panel for its item, so the live price, chart, megaphones and listings look the same wherever they open.
+function marketBrowser(lang, fixed, placeholder) {
   const t = MK[lang], tr = (ko,en) => lang === 'ko' ? ko : en;
   const stat = (key,label) => `<div><dd id="mk-stat-${key}">–</dd><dt>${label}</dt></div>`;
-  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 확인하세요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="char-links"><a href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 리포트', "Today's price report")}</a><a href="${href(langPath(lang, '/tools/scan/'))}">${tr('화면 스캔으로 내 상점 올리기', 'Upload my shop with the scan')}</a></p></section>
-<div class="wrap mk market-browser">
+  return `<div class="${fixed ? 'mk market-browser mb-single' : 'wrap mk market-browser'}">
 <div class="mb-status"><p id="mk-status" role="status">${t.loading}</p><button id="mk-retry" class="btn ghost small-btn" type="button">${tr('새로고침','Refresh')}</button></div>
 <div class="mb-tabs" role="tablist" aria-label="${tr('시장 탐색','Browse market')}"><button id="mb-tab-items" role="tab" aria-selected="true" aria-controls="mb-browser" data-view="items">${tr('아이템 시세','Item prices')}</button><button id="mb-tab-listings" role="tab" aria-selected="false" tabindex="-1" aria-controls="mb-browser" data-view="listings">${tr('전체 매물','All listings')}</button></div>
 <div class="mb-workspace" id="mb-workspace"><section class="panel mb-browser" id="mb-browser" role="tabpanel" aria-labelledby="mb-tab-items">
@@ -2078,13 +2079,18 @@ function marketBody(lang) {
 <div id="mb-report-controls" hidden><label>${tr('제보 종류','Report type')} <select id="mb-report-kind"><option value="">${tr('전체','All')}</option><option value="selling">${tr('판매가','Asking')}</option><option value="sold">${tr('판매 완료','Sold')}</option><option value="buying">${tr('구매 희망','Buying')}</option></select></label></div>
 <div id="mb-range" hidden><label>${tr('조회 기간','Time range')} <select id="mb-days"><option value="7">${tr('최근 7일','Last 7 days')}</option><option value="1">${tr('최근 24시간','Last 24 hours')}</option><option value="30">${tr('최근 30일','Last 30 days')}</option></select></label></div>
 <div id="mb-summary" class="mb-summary" hidden aria-label="${tr('검색한 아이템 시세 요약','Price summary for the search')}"></div><p class="muted note" id="mb-list-note"></p><p id="mb-count" role="status" class="muted note"></p><div id="mb-results" aria-busy="true"><p>${t.loading}</p></div><div id="mb-pagination" class="mb-pagination"></div></section>
-<section id="mk-detail" class="panel mb-detail" hidden aria-label="${tr('선택한 아이템','Selected item')}"></section></div>
+<section id="mk-detail" class="panel mb-detail"${fixed ? '' : ' hidden'} aria-label="${tr('선택한 아이템','Selected item')}">${placeholder || ''}</section></div>
 <dialog id="mb-shop" class="mb-shop"><div id="mb-shop-body"></div></dialog>
 <div class="mk-foot"><div class="mk-bar"><dl class="mk-stats">${stat('open',tr('최근 판매 매물','Recent asking listings'))}${stat('shops',tr('상점','Shops'))}${stat('items',tr('아이템 · 7일','Items · 7d'))}${stat('records',tr('매물 기록 · 7일','Listing records · 7d'))}</dl><a class="btn small-btn" href="${href(langPath(lang, '/tools/scan/'))}">${t.scan}</a></div>
 ${collectionStatus(lang)}</div>
 </div>
-${marketGuide(lang)}
-${jsonScript('mk-data', { lang, api: config.voteApi, itemsUrl: href('/assets/items.json'), t, itemBase: href(langPath(lang, '/items/')), itemLink: IT[lang].pageLink, itemPages: PRICED.map((i) => i.id), itemPaths: Object.fromEntries(PRICED.map((i) => [i.id, href(langPath(lang, itemPath(i)))])), alerts: config.alerts && config.vapidPublic ? { key: config.vapidPublic, sw: href('/sw.js') } : null })}`;
+${jsonScript('mk-data', { ...{ lang, api: config.voteApi, itemsUrl: href('/assets/items.json'), t, itemBase: href(langPath(lang, '/items/')), itemLink: IT[lang].pageLink, itemPages: PRICED.map((i) => i.id), itemPaths: Object.fromEntries(PRICED.map((i) => [i.id, href(langPath(lang, itemPath(i)))])), alerts: config.alerts && config.vapidPublic ? { key: config.vapidPublic, sw: href('/sw.js') } : null }, ...(fixed ? { fixed, itemPages: [], itemPaths: {} } : {}) })}`;
+}
+function marketBody(lang) {
+  const t = MK[lang], tr = (ko,en) => lang === 'ko' ? ko : en;
+  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 확인하세요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="char-links"><a href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 리포트', "Today's price report")}</a><a href="${href(langPath(lang, '/tools/scan/'))}">${tr('화면 스캔으로 내 상점 올리기', 'Upload my shop with the scan')}</a></p></section>
+${marketBrowser(lang, 0)}
+${marketGuide(lang)}`;
 }
 
 // "Drop rate" visitors mostly want to know which monster drops an item (Clarity: half of them went straight back), so the
@@ -2607,7 +2613,7 @@ const IT = {
     // With a price the title carries it, so the search result answers the question before the click.
     titlePrice: '{name} 시세 {median} 메소 ({date}) · 글클메 자유시장 | GMS Hub',
     descNow: '{name} 글클메 자유시장 시세: 지금 판매 중 매물의 중앙값 {median} 메소 (판매 중 {open}건, 최저 {low}). 지금 파는 상점의 채널·방과 7일 추이도 보여 줘요.',
-    nowHeadline: '판매 중 중앙값', nowSub: '판매 중 {open}건 · 최저 {low}', nowAsOf: '{date} 기준 · 페이지를 열면 최신 값으로 바뀌어요', nowAsOfLive: '방금 받은 실시간 시세예요', openN: '판매 {n}건',
+    nowHeadline: '판매 중 중앙값', nowSub: '판매 중 {open}건 · 최저 {low}', nowAsOf: '{date} 기준 · 페이지를 열면 최신 값으로 바뀌어요', nowAsOfLive: '방금 받은 실시간 시세예요', openN: '판매 {n}건', noneNow: '지금 판매 매물 없음',
     desc: '{name} 글클메 자유시장 시세: {basis} 중앙값 {median} 메소 (최근 14일 매물 {n}건, {low}~{high}). 유저가 스캔한 상점 매물 기준이고, 7일 추이와 지금 파는 채널·방도 보여 줘요.',
     descNone: '{name} 글로벌 메이플 클래식 월드 아이템 정보 ({info}). 최근 14일 스캔 시세가 아직 없어요. 상점을 스캔하면 시세가 바로 쌓여요.',
     h1: '{name} 시세',
@@ -2632,7 +2638,7 @@ const IT = {
     scrollTool: '주문서 성공 확률 계산기',
     damageTool: '사냥터별 몇 방 계산기',
     external: '다른 시세 사이트에서 보기',
-    method: '시세는 유저가 직접 스캔하거나 올린 매물만 모아 계산해요. 중앙값에서 5배 넘게 벗어난 가격은 빼고, 판매 완료 기록이 있으면 그 가격을, 없으면 판매 중 가격을 기준으로 보여 줘요. 실제 거래 가격은 다를 수 있어요.',
+    method: '시세는 유저가 직접 스캔하거나 올린 매물로 계산해요. 위 숫자는 지금 판매 중인 매물의 중앙값이고, 중앙값에서 5배 넘게 벗어난 가격은 빼요.',
     loading: '매물을 불러오는 중이에요…', failed: '실시간 매물을 불러오지 못했어요.', noData: '최근 7일 매물이 없어요.', noOpen: '최근 24시간 안에 확인한 판매 매물이 없어요.',
     table: { price: '가격', qty: '묶음', seller: '판매자', where: '위치', seen: '본 시각' },
     indexTitle: '글클메 아이템 시세·DB: 주문서·무기·방어구·소비 시세 {n}개 | GMS Hub',
@@ -2645,7 +2651,7 @@ const IT = {
     descDrop: '{name} ({info}) 드롭 몬스터 {n}종과 그 몬스터가 나오는 맵, 기본 능력치를 정리했어요. 최근 시세가 있으면 함께 보여 줘요.',
     h1Drop: '{name}',
     leadDrop: '어떤 몬스터가 떨어뜨리는지, 어디서 잡는지, 기본 능력치는 얼마인지 정리했어요.',
-    stats: { req: '착용 조건', job: '직업', slots: '업그레이드 가능 횟수', speed: '공격 속도', sell: '상점 판매가', base: '기본 능력치는 게임 클라이언트 데이터 기준이라 실제 아이템은 옵션이 다를 수 있어요.' },
+    stats: { req: '착용 조건', job: '직업', slots: '업그레이드 가능 횟수', speed: '공격 속도', sell: '상점 판매가', base: '기본 능력치는 게임 클라이언트 데이터 기준이에요.' },
     jobs: { 0: '공용', 1: '전사', 2: '마법사', 4: '궁수', 8: '도적', 16: '해적' },
     speeds: { 2: '매우 빠름', 3: '매우 빠름', 4: '빠름', 5: '빠름', 6: '보통', 7: '느림', 8: '느림', 9: '매우 느림' },
     incs: { STR: 'STR', DEX: 'DEX', INT: 'INT', LUK: 'LUK', MHP: 'HP', MMP: 'MP', PAD: '공격력', MAD: '마력', PDD: '물리 방어력', MDD: '마법 방어력', ACC: '명중률', EVA: '회피율', Speed: '이동 속도', Jump: '점프력' },
@@ -2658,7 +2664,7 @@ const IT = {
     title: '{name} Price – MapleStory Classic World Free Market | GMS Hub',
     titlePrice: '{name} Price: {median} mesos ({date}) – MapleStory Classic World | GMS Hub',
     descNow: '{name} price in MapleStory Classic World: median of the listings for sale now {median} mesos ({open} for sale, lowest {low}). With the shops selling it now, their channels and rooms, and a 7-day trend.',
-    nowHeadline: 'Median of listings for sale', nowSub: '{open} for sale · lowest {low}', nowAsOf: 'As of {date} · updates to the latest when the page opens', nowAsOfLive: 'Live price, just loaded', openN: '{n} for sale',
+    nowHeadline: 'Median of listings for sale', nowSub: '{open} for sale · lowest {low}', nowAsOf: 'As of {date} · updates to the latest when the page opens', nowAsOfLive: 'Live price, just loaded', openN: '{n} for sale', noneNow: 'None for sale now',
     desc: '{name} price in MapleStory Classic World: {basis} median {median} mesos ({n} listings in 14 days, {low}–{high}). From Free Market shops players scanned, with a 7-day trend and where it is for sale now.',
     descNone: '{name} in MapleStory Classic World ({info}). No scanned price in the last 14 days yet; scanning a shop that sells it adds one right away.',
     h1: '{name} Price',
@@ -2683,7 +2689,7 @@ const IT = {
     scrollTool: 'Scroll success calculator',
     damageTool: 'Hits-to-kill calculator',
     external: 'See it on other price sites',
-    method: 'Only listings players scanned or reported count. Prices more than 5× away from the median are dropped; the headline uses sold prices when there are any, otherwise asking prices. Real trades can differ.',
+    method: 'Prices come from listings players scanned or reported. The number above is the median of what is for sale now; prices more than 5× away from the median are left out.',
     loading: 'Loading listings…', failed: 'Could not load live listings.', noData: 'No listings in the last 7 days.', noOpen: 'No open listings seen in the last 24 hours.',
     table: { price: 'Price', qty: 'Bundle', seller: 'Seller', where: 'Where', seen: 'Seen' },
     indexTitle: 'MapleStory Classic World Item Database: Prices, Drops & Stats ({n} items) | GMS Hub',
@@ -2696,7 +2702,7 @@ const IT = {
     descDrop: 'Which monsters drop {name} in MapleStory Classic World: {n} droppers, the maps they spawn on, and the item\'s base stats.',
     h1Drop: '{name}',
     leadDrop: 'Which monsters drop it, where to farm them, and its base stats.',
-    stats: { req: 'Requirements', job: 'Class', slots: 'Upgrade slots', speed: 'Attack speed', sell: 'Sells to NPC for', base: 'Base stats come from the game client data; a real drop can roll different stats.' },
+    stats: { req: 'Requirements', job: 'Class', slots: 'Upgrade slots', speed: 'Attack speed', sell: 'Sells to NPC for', base: 'Base stats come from the game client data.' },
     jobs: { 0: 'All classes', 1: 'Warrior', 2: 'Magician', 4: 'Bowman', 8: 'Thief', 16: 'Pirate' },
     speeds: { 2: 'Very fast', 3: 'Very fast', 4: 'Fast', 5: 'Fast', 6: 'Normal', 7: 'Slow', 8: 'Slow', 9: 'Very slow' },
     incs: { STR: 'STR', DEX: 'DEX', INT: 'INT', LUK: 'LUK', MHP: 'HP', MMP: 'MP', PAD: 'Weapon attack', MAD: 'Magic attack', PDD: 'Weapon defense', MDD: 'Magic defense', ACC: 'Accuracy', EVA: 'Avoidability', Speed: 'Speed', Jump: 'Jump' },
@@ -2776,7 +2782,7 @@ function relatedItems(i) {
 
 const itemLink = (lang, i) => {
   const p = priceOf(i);
-  return `<li><a href="${href(langPath(lang, itemPath(i)))}">${itemIcon(i.id, 24)}<span>${esc(itemSeoName(lang, i))}</span><small>${p ? (nowOf(i) ? `${mesoText(lang, nowOf(i).median)} · ${fill(IT[lang].openN, { n: nowOf(i).open })}` : `${mesoText(lang, p.median)} · ${IT[lang].basis[p.basis]}`) : itemInfoHtml(lang, i)}</small></a></li>`;
+  return `<li><a href="${href(langPath(lang, itemPath(i)))}">${itemIcon(i.id, 24)}<span>${esc(itemSeoName(lang, i))}</span><small>${p ? (nowOf(i) ? `${mesoText(lang, nowOf(i).median)} · ${fill(IT[lang].openN, { n: nowOf(i).open })}` : IT[lang].noneNow) : itemInfoHtml(lang, i)}</small></a></li>`;
 };
 
 // Categories for the priced part of the item DB, so "글클메 주문서 시세"-style searches find a heading that matches.
@@ -2832,23 +2838,17 @@ function itemBody(lang, i) {
 </section>
 <div class="wrap item-page">
 ${dropOnly ? dropMonsters(lang, i) : ''}
-<div class="item-grid">
-<section class="panel item-price">${price}</section>
+${p ? marketBrowser(lang, i.id, `<div class="item-price">${price}</div>`) : ``}
 <section class="panel item-info"><h2>${t.infoH}</h2><dl>${rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
 ${ITEM_DETAILS[i.id] && i.cat === 'Equip' ? `<p class="muted note">${t.stats.base}</p>` : ''}
 ${tools.length ? `<h3>${t.tools}</h3><p>${tools.join(' · ')}</p>` : ''}</section>
-</div>
-<section class="panel item-live"><h2>${t.liveH}</h2><p class="muted note">${t.liveNote}</p>
-<div id="mk-charts"></div>
-<h3>${t.open}</h3><div id="it-open" aria-live="polite"><p class="muted">${t.loading}</p></div>
-<p><a class="btn small-btn" data-market-link href="${href(langPath(lang, `/tools/market/?item=${i.id}`))}">${t.market}</a></p></section>
 ${dropOnly ? '' : dropMonsters(lang, i)}
 ${itemQuests(lang, i)}
 <section class="panel"><h2>${t.related}</h2><ul class="item-links">${relatedItems(i).map((x) => itemLink(lang, x)).join('')}</ul></section>
 <p class="muted small">${t.method}</p>
 <p class="muted small">${t.external}: ${external}</p>
 </div>
-${jsonScript('it-data', { lang, id: i.id, api: config.voteApi, t: { loading: t.loading, failed: t.failed, noData: t.noData, noOpen: t.noOpen, table: t.table, nowSub: t.nowSub, nowAsOf: t.nowAsOfLive } })}`;
+`;
 }
 
 function itemsIndexBody(lang) {
@@ -3257,7 +3257,7 @@ for (const lang of LANGS) {
           : priceOf(i)?.median ? fill(it.titlePrice, { name, median: mesoText(lang, shownMedian(i)), date: PRICES_DATE.slice(5).replace('-', '/') }) : fill(dropOnly ? it.titleDrop : it.title, { name: itemSeoName(lang, i) }),
         desc: itemDesc(lang, i),
         body: itemBody(lang, i),
-        modules: ['item.js'],
+        modules: priceOf(i) ? ['market.js'] : [],
         noindex: !INDEXABLE.includes(i),
         ld: [breadcrumbLd(lang, fill(dropOnly ? it.h1Drop : it.h1, { name: itemSeoName(lang, i) }), itemPath(i))]
       })

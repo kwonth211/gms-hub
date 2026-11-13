@@ -8,6 +8,8 @@ import { WISHLIST_KEY, RECENT_KEY, SEEN_KEY, WISHLIST_MAX, readList, addRecent, 
 const D = JSON.parse(document.getElementById("mk-data").textContent),
   T = D.t,
   ko = D.lang === "ko";
+// On an item page (/items/<id>/) the same detail panel opens for that one item, full width, with no list around it.
+const FIXED = Number(D.fixed) || 0;
 const $ = (id) => document.getElementById(id),
   tr = (a, b) => (ko ? a : tx(b)),
   nf = new Intl.NumberFormat(D.lang);
@@ -221,6 +223,7 @@ const URL_FIELDS = [
   ["kind", "mb-report-kind", ""], ["isort", "mb-item-sort", "sales"], ["cls", "mb-class", ""],
 ];
 function syncURL() {
+  if (FIXED) return;
   const p = new URLSearchParams(location.search);
   for (const k of ["item", "view", "q", "cat", "page", "fav", ...URL_FIELDS.map((f) => f[0])]) p.delete(k);
   if (selected) p.set("item", selected);
@@ -249,6 +252,7 @@ function restoreFilters(p) {
   if (Number.isInteger(n) && n > 1 && n < 100000) page = n;
 }
 function closeItem() {
+  if (FIXED) return;
   detailSeq++;
   detailAbort?.abort();
   selected = null;
@@ -552,7 +556,7 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
     stats = s
       ? `<dl class="mb-detail-stats"><div><dt>${tr("판매가 중앙값", "Asking median")}</dt><dd>${money(s.median)} <small>${T.priceUnit}</small></dd></div><div><dt>${tr("최저 판매가", "Lowest ask")}</dt><dd>${money(s.low)}</dd></div><div><dt>${tr("판매 매물 · 24h", "Asking · 24h")}</dt><dd>${s.open}</dd></div></dl>`
       : "";
-  const pageLink = D.itemPaths?.[id] ? `<a class="mb-item-page" href="${esc(D.itemPaths[id])}">${esc(D.itemLink)}</a>` : "";
+  const pageLink = !FIXED && D.itemPaths?.[id] ? `<a class="mb-item-page" href="${esc(D.itemPaths[id])}">${esc(D.itemLink)}</a>` : "";
   priceData = null;
   if ($("mb-alert")) $("mb-alert").hidden = true;
   fillItemInfo(id);
@@ -565,7 +569,7 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
   $("md-sort").value = detailState.sort;
   $("md-state").value = detailState.state;
   detailPanels();
-  if (window.matchMedia("(max-width:1050px)").matches) $("mk-detail").scrollIntoView({behavior:"smooth",block:"start"});
+  if (!FIXED && window.matchMedia("(max-width:1050px)").matches) $("mk-detail").scrollIntoView({behavior:"smooth",block:"start"});
   loadDetailRows();
   for (const key of ["channel", "room", "sort", "state"])
     $("md-" + key).addEventListener("change", () => {
@@ -837,7 +841,7 @@ document.querySelector(".market-browser").addEventListener("click", (e) => {
   }
   if (el.dataset.shareItem) {
     const id = Number(el.dataset.shareItem);
-    const url = shareUrl(`${location.pathname}?item=${id}`, "market-item");
+    const url = shareUrl(FIXED ? location.pathname : `${location.pathname}?item=${id}`, "market-item");
     copyText(url).then((ok) => {
       const status = $("mb-share-status");
       if (status) status.textContent = ok ? tr("링크를 복사했어요. 새 탭이나 다른 기기에서 같은 아이템이 열려요.", "Link copied. It opens the same item on any device.") : `${tr("복사하지 못했어요. 이 주소를 직접 복사해 주세요:", "Could not copy. Copy this address:")} ${url}`;
@@ -1152,7 +1156,7 @@ async function initialize() {
     items = makeMarketIndex(await r.json(), D.lang);
     byId = new Map(items.map((it) => [it.id, it]));
     const p = new URLSearchParams(location.search),
-      id = Number(p.get("item"));
+      id = FIXED || Number(p.get("item"));
     if (p.get("q")) $("mk-q").value = p.get("q");
     // Items (one row per item, like MesoWatch) is the default view; "all listings" is for finding a seller, channel or
     // room. The anonymous price-report tab was removed (no one used it); old ?view=reports links open the items.
@@ -1160,7 +1164,7 @@ async function initialize() {
       ? p.get("view")
       : "items";
     // How the page was reached with an item preselected: a shared link, the home "pick up" strip, or any other link.
-    const source = p.get("utm_source") === "share" ? "share" : p.get("src") === "home" ? "home" : "url";
+    const source = FIXED ? "item-page" : p.get("utm_source") === "share" ? "share" : p.get("src") === "home" ? "home" : "url";
     if (p.has("src")) {
       p.delete("src");
       history.replaceState(null, "", location.pathname + (p.size ? "?" + p : ""));

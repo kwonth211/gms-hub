@@ -17,7 +17,7 @@ const COPY = {
     count: '관측 매물', unit: '건', price: '메소', median: '중앙값', range: '최저~최고',
     inspect: '그래프를 누르거나 Tab 키로 이동하면 구간별 수치를 볼 수 있어요.',
     profileScope: '판매 중 · 최근 {h}시간 · {n}건', table: '시간 구간별 수치 보기', time: '확인 시각',
-    accumulated: '이하 누적', none: '기록 없음', cap: '최근 {n}개 기록만 표시해요. 전체 시장의 분포와 다를 수 있어요.',
+    accumulated: '이하 누적', none: '기록 없음', cap: '최근 {n}개 기록만 표시해요.',
     selected: '선택한 가격대', clear: '가격대 해제', amount: '관측 매물 수'
   },
   en: {
@@ -60,7 +60,7 @@ export function mountMarketCharts(root, rows, { lang = 'ko', now = Date.now(), t
   let analysis, width = 0;
   root.innerHTML = `<section class="market-analysis" aria-labelledby="analysis-title">
     <div class="analysis-heading"><h3 id="analysis-title">${t.title}</h3><div class="chart-segments" role="group" aria-label="${t.period}">${PERIODS.map((h, i) => `<button type="button" data-period="${h}" aria-pressed="${h === hours}">${t.periods[i]}</button>`).join('')}</div></div>
-    <p class="analysis-basis">${persistent ? (lang === 'ko' ? '추이는 저장된 관측 이력, 매물대는 최근 24시간에 확인한 판매 중 매물 기준이에요. 재관측은 거래 건수가 아니며 실제 재고와 다를 수 있어요.' : tx('Trends use retained observations; depth uses distinct asking listings seen in the last 24h. Observations are not trades or guaranteed stock.')) : t.basis}</p>
+    <p class="analysis-basis">${persistent ? (lang === 'ko' ? '추이는 저장된 관측 이력, 매물대는 최근 24시간에 확인한 판매 중 매물 기준이에요.' : tx('Trends use retained observations; depth uses distinct asking listings seen in the last 24h.')) : t.basis}</p>
     ${truncated ? `<p class="analysis-warning">${t.cap.replace('{n}', limit)}</p>` : ''}
     ${profileTruncated ? `<p class="analysis-warning">${lang === 'ko' ? '매물대는 낮은 가격순 10,000건까지 집계했어요. 전체 매물은 목록에서 확인하세요.' : tx('Depth includes the 10,000 lowest-priced listings. Browse the list for all records.')}</p>` : ''}
     <div data-analysis-body></div>
