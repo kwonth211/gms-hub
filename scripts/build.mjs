@@ -898,7 +898,8 @@ function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], module
 ${header(lang, pagePath, only)}
 <main>${ads && pageKey !== 'home' ? adfitRails() : ''}${withTopAd(withDownload(body, lang, pageKey, pagePath), ads)}${ads ? adfitSlot() : ''}</main>
 ${footer(lang)}
-<script src="${href('/assets/common.js')}" defer></script>
+<script src="${scriptSrc('analytics.js')}" defer></script>
+<script src="${scriptSrc('common.js')}" defer></script>
 <script type="module" src="${href(`/assets/header-search.js?v=${moduleVersion}`)}"></script>
 ${ads ? `<script src="${scriptSrc('adfit.js')}" defer></script>` : ''}
 ${scripts.map((s) => `<script src="${scriptSrc(s)}" defer></script>`).join('\n')}

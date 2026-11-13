@@ -32,14 +32,6 @@ document.querySelectorAll('[data-lang]').forEach((a) => {
   });
 });
 
-// One place for product events: Google Analytics and Clarity each get them when their tag is on the page.
-window.track = (name, params = {}) => {
-  try {
-    if (window.gtag) gtag('event', name, params);
-    if (window.clarity) clarity('event', name);
-  } catch (e) {}
-};
-
 // Outbound clicks: which listed site people actually leave for, and from which section.
 document.addEventListener('click', (e) => {
   const a = e.target.closest('a[href^="http"]');

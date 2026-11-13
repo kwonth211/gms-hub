@@ -38,7 +38,7 @@ function show(userAction = false) {
     const term = `Lv${c.level} ${c.job || 'all'} ${c.goal} ${c.party}${c.advanced ? ' adv' : ''}`;
     if (term === lastTerm) return;
     lastTerm = term;
-    track('training_search', { search_term: term, level: c.level, job: c.job || 'all', goal: c.goal, party: c.party, advanced: c.advanced ? 1 : 0, results: rows.length, result: rows.length ? 'ok' : 'empty', lang: document.documentElement.lang });
+    track('training_search', { search_term: term, level: c.level, job: c.job || 'all', goal: c.goal, party: c.party, advanced: c.advanced ? 1 : 0, results: rows.length, result: rows.length ? 'ok' : 'empty', interaction_source: 'form', lang: document.documentElement.lang });
   }
 }
 form.addEventListener('submit',e=>{e.preventDefault();if(form.reportValidity())show(true);});

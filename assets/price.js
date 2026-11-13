@@ -182,7 +182,7 @@ document.querySelectorAll('.chip').forEach((b) =>
   b.addEventListener('click', () => {
     input.value = b.dataset.q;
     render();
-    track('price_search', { search_term: b.dataset.q, source: 'chip' });
+    track('price_search', { search_term: b.dataset.q, interaction_source: 'chip' });
   })
 );
 

@@ -649,7 +649,7 @@ async function loadDetailRows() {
     $("md-pages").innerHTML = pager(data, "detail");
     // One event per item opened (not per filter change, page or refresh): the detail loaded and showed its listings.
     if (pendingOpen?.id === id) {
-      track("market_item", { item_id: id, listings: data.total, result: data.total ? "ok" : "empty", source: pendingOpen.source, lang: D.lang });
+      track("market_item", { item_id: id, listings: data.total, result: data.total ? "ok" : "empty", interaction_source: pendingOpen.source, lang: D.lang });
       pendingOpen = null;
     }
   } catch {
@@ -658,7 +658,7 @@ async function loadDetailRows() {
         `<p>${T.failed}</p><button class="btn small-btn" data-retry-detail>${T.retry}</button>`;
       $("md-count").textContent = "";
       if (pendingOpen?.id === id) {
-        track("market_item", { item_id: id, result: "error", source: pendingOpen.source, lang: D.lang });
+        track("market_item", { item_id: id, result: "error", interaction_source: pendingOpen.source, lang: D.lang });
         pendingOpen = null;
       }
     }

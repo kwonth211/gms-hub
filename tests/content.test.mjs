@@ -10,6 +10,17 @@ const evidence = JSON.parse(read('data/editorial/korean-guides.json'));
 const guides = JSON.parse(read('data/guides.json')).guides;
 execFileSync(process.execPath,['scripts/build.mjs'],{cwd:root});
 
+test('versioned product telemetry loads before all feature scripts in every locale', () => {
+  for (const lang of ['ko', 'en', 'ja', 'zh']) {
+    const html = read(`dist/${lang}/index.html`);
+    const analytics = html.indexOf('/assets/analytics.js?v=');
+    assert.ok(analytics > 0);
+    assert.ok(analytics < html.indexOf('/assets/common.js?v='));
+    assert.ok(analytics < html.indexOf('/assets/header-search.js?v='));
+  }
+  assert.ok(fs.existsSync(new URL('dist/assets/analytics.js', root)));
+});
+
 test('level 20 starter routes do not default to Ant Tunnel; equipped claw route is explicit',()=>{
   for(const job of ['','warrior','archer','mage','thief']){
     const rows=selectRoutes(training.routes,{level:20,job});
