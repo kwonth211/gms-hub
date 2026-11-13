@@ -171,11 +171,20 @@ export async function browseListings(env, p) {
         : sort === "high"
           ? "price DESC, last_seen DESC, id DESC"
           : "last_seen DESC, id DESC";
-  const count = await env.DB.prepare(
-    "SELECT COUNT(*) AS n FROM listings WHERE " + sqlWhere,
-  )
-    .bind(...args)
-    .first();
+  // The total is only for the pager, and counting scans the whole window (5-15k index rows a call: the biggest read on
+  // the account once the market page got busy). Counts for plain views (no seller, price or since filter) are kept
+  // for ten minutes in the snapshots table; filtered views count live, their windows are small.
+  const plain = !p.has("since") && !p.get("seller") && !p.has("min") && !p.has("max") && !p.has("item");
+  const countKey = `listings-count:${state}:${days}`;
+  let count = null;
+  if (plain) {
+    const row = await env.DB.prepare("SELECT json, at FROM snapshots WHERE key = ?").bind(countKey).first().catch(() => null);
+    if (row && now - Date.parse(row.at.replace(" ", "T") + "Z") < 10 * 60000) count = JSON.parse(row.json);
+  }
+  if (!count) {
+    count = await env.DB.prepare("SELECT COUNT(*) AS n FROM listings WHERE " + sqlWhere).bind(...args).first();
+    if (plain) await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES (?,?,datetime('now'))").bind(countKey, JSON.stringify({ n: count.n })).run().catch(() => {});
+  }
   const rows = await all(
     env,
     "SELECT id,item,price,qty,sold,seller,channel,room,first_seen AS firstSeen,last_seen AS seen FROM listings WHERE " +

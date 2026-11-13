@@ -248,7 +248,8 @@ async function itemDetail(env, item) {
 
 const api = {
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(freshSnapshot(env, 'market', 0).then((data) => data || refreshSnapshot(env)));
+    // The home top-10 snapshot reads the whole 8-day listings window, so it is remade hourly, not every tick.
+    ctx.waitUntil(freshSnapshot(env, 'market', 50).then((data) => data || refreshSnapshot(env)));
     ctx.waitUntil(refreshRank(env).catch(() => null));
     // Once a day (the 16:00 UTC run, a quiet hour in Korea): old megaphones are dropped by a table scan. The megaphone
     // trend snapshot is refreshed once an hour. Both are read-heavy, so they are not run on every tick.
