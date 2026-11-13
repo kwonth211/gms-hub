@@ -811,6 +811,12 @@ const XL_LIVE_SHEETS = {
   mega: { ko: '많이 불린 아이템과 시세 · 사려는 사람이 많은 아이템 · 시간대별 확성기', en: 'Most called items with prices · Most wanted · Megaphones by hour' },
   rank: { ko: '상위 1,000명 · 직업별 인원과 평균 레벨 · 레벨 구간별 인원', en: 'Top 1,000 · Players and average level by job · Players by level range' }
 };
+// Where the button sits: at the top right of the page's main table or list (assets/xlsx-live.js moves it there; first
+// selector that exists wins). Without a match it stays under the heading, aligned right.
+const XL_ANCHOR = { market: '#mb-browser', price: '.table-wrap, .panel', marketToday: '.mt-table', megaphone: '.mega-trends:not([hidden]), .mg-feed-panel', rank: '.rank-table-panel',
+  training: '.tr-route-list', trBand: '.tr-route-list', trClass: '.tr-route-list', monsters: '#monster-grid', bosses: '.boss-table', items: '.item-page > .panel',
+  equipment: '.eq-table', equipmentClass: '.eq-table', maps: 'main .table-wrap', quests: 'main .table-wrap', questBest: '.quest-best', questGuide: '.gq-cols',
+  scroll: '#sc-compare', drop: '.box-table' };
 const xlKey = (pageKey, pagePath) => (pageKey === 'questGuide' ? `quest-${pagePath.split('/').filter(Boolean).pop()}` : XL_BY_PAGE[pageKey]);
 const sheetList = (names, ko) => (names.length > 6 ? `${names.slice(0, 4).join(' · ')} ${ko ? `외 ${names.length - 4}개 시트` : `and ${names.length - 4} more sheets`}` : names.join(' · '));
 function downloadBar(lang, pageKey, pagePath) {
@@ -821,11 +827,11 @@ function downloadBar(lang, pageKey, pagePath) {
   const label = `${icon}<span>${ko ? '엑셀로 받기' : 'Download Excel'}</span>`;
   if (key.startsWith('live:')) {
     const k = key.slice(5);
-    return `<div class="wrap dl-bar"><button type="button" class="btn ghost small-btn dl-btn" data-xl-live="${k}" data-lang="${lang}">${label}</button><span class="dl-sheets">${esc(XL_LIVE_SHEETS[k][ko ? 'ko' : 'en'])}</span></div>`;
+    return `<div class="wrap dl-bar" data-xl-anchor="${esc(XL_ANCHOR[pageKey] || '')}"><button type="button" class="dl-btn" data-xl-live="${k}" data-lang="${lang}" title="${esc(XL_LIVE_SHEETS[k][ko ? 'ko' : 'en'])}">${label}</button></div>`;
   }
   const book = WORKBOOKS[key];
   if (!book) return '';
-  return `<div class="wrap dl-bar"><a class="btn ghost small-btn dl-btn" href="${href(`/xlsx/${book.files[fileLang]}`)}" download="gms-hub-${key}-${fileLang}.xlsx" data-xl="${key}">${label}</a><span class="dl-sheets">${esc(sheetList(book.sheets[fileLang], ko))}</span></div>`;
+  return `<div class="wrap dl-bar" data-xl-anchor="${esc(XL_ANCHOR[pageKey] || '')}"><a class="dl-btn" href="${href(`/xlsx/${book.files[fileLang]}`)}" download="gms-hub-${key}-${fileLang}.xlsx" data-xl="${key}" title="${esc(sheetList(book.sheets[fileLang], ko))}">${label}</a></div>`;
 }
 function withDownload(body, lang, pageKey, pagePath) {
   const bar = downloadBar(lang, pageKey, pagePath);

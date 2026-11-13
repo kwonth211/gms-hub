@@ -2506,9 +2506,19 @@ body.exp-running .exp-stop { display: inline-flex; }
 @media (prefers-reduced-motion: reduce) { .tool-caret { transition: none; } }
 @media (max-width: 760px) { .tool-menu > summary { flex-direction: column; justify-content: center; } .tool-caret { display: none; } }
 
-/* Excel downloads: the bar under a page heading (scripts/workbooks.mjs, assets/xlsx-live.js). */
-.dl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 4px; margin-bottom: 12px; }
-.dl-btn { display: inline-flex; align-items: center; gap: 6px; }
+/* Excel downloads (scripts/workbooks.mjs, assets/xlsx-live.js): an Excel-green button at the top right of the page's
+   main table or list. Before the script moves it, it waits under the heading, aligned right. */
+:root { --xl-green: #1d6f42; --xl-green-hover: #185c37; --xl-on: #ffffff; }
+.dl-bar { display: flex; justify-content: flex-end; margin-top: 4px; margin-bottom: 8px; }
+.dl-tools { display: flex; justify-content: flex-end; margin: 0 0 8px; }
+.dl-head { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; }
+.dl-head .dl-btn-inline { margin-left: auto; }
+.dl-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; border: 1px solid var(--xl-green); background: var(--xl-green); color: var(--xl-on);
+  font-size: .88rem; font-weight: 700; line-height: 1.2; text-decoration: none; white-space: nowrap; cursor: pointer; transition: background-color .15s, transform .15s; }
+.dl-btn:hover { background: var(--xl-green-hover); color: var(--xl-on); }
+.dl-btn:active { transform: translateY(1px); }
 .dl-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-.dl-sheets { font-size: .84rem; color: var(--text-2); min-width: 0; overflow-wrap: anywhere; }
+.dl-btn[disabled] { opacity: .75; cursor: progress; }
+.dl-head .dl-btn { font-size: .85rem; }
+@media (prefers-reduced-motion: reduce) { .dl-btn { transition: none; } }
 .pr-count { white-space: nowrap; }
