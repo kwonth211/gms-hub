@@ -287,19 +287,28 @@ export function spriteSvg(name, size = 32, extra = '') {
 // Pixel landscape for the home hero, built from the sprites above.
 export function heroScene() {
   const place = (name, x, y, scale, cls = '') => {
-    const { rects } = spriteRects(name);
+    let { rects } = spriteRects(name);
+    // Recolour only this scene's trees; shared icons and game characters keep their own palette.
+    if (name === 'tree') rects = rects.replaceAll('#123d22', 'var(--autumn-tree-edge)')
+      .replaceAll('#2f9e4f', 'var(--autumn-tree-shade)').replaceAll('#5cc46a', 'var(--autumn-tree-light)');
     return `<g class="${cls}" transform="translate(${x} ${y}) scale(${scale})">${rects}</g>`;
   };
   const cloud = (x, y, s) =>
-    `<g transform="translate(${x} ${y}) scale(${s})" fill="#ffffff" opacity=".85"><rect x="2" y="0" width="6" height="1"/><rect x="1" y="1" width="10" height="1"/><rect x="0" y="2" width="14" height="2"/><rect x="1" y="4" width="12" height="1"/></g>`;
-  return `<svg class="hero-scene" viewBox="0 0 320 120" preserveAspectRatio="xMidYMax slice" shape-rendering="crispEdges" aria-hidden="true">
-<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b6fd1"/><stop offset=".7" stop-color="#8fc3ff"/><stop offset="1" stop-color="#c9e6ff"/></linearGradient></defs>
-<rect width="320" height="120" fill="url(#sky)"/>
-${cloud(20, 12, 2)}${cloud(150, 6, 1.5)}${cloud(250, 18, 2.2)}${cloud(95, 30, 1)}
-<path d="M0 86 L30 70 L60 80 L95 62 L130 78 L170 60 L210 76 L250 64 L290 74 L320 66 L320 120 L0 120Z" fill="#4c8f5a"/>
-<path d="M0 96 L40 86 L80 94 L120 84 L160 92 L200 82 L240 92 L280 86 L320 92 L320 120 L0 120Z" fill="#3a7a47"/>
+    `<g transform="translate(${x} ${y}) scale(${s})" fill="#ffe0b4" opacity=".22"><rect x="2" y="0" width="6" height="1"/><rect x="1" y="1" width="10" height="1"/><rect x="0" y="2" width="14" height="2"/><rect x="1" y="4" width="12" height="1"/></g>`;
+  return `<svg class="hero-scene hero-autumn" viewBox="0 0 320 120" preserveAspectRatio="xMidYMax slice" shape-rendering="crispEdges" aria-hidden="true">
+<defs>
+<linearGradient id="autumn-sky" x1="0" y1="0" x2="1" y2=".8"><stop offset="0" stop-color="var(--autumn-sky-start)"/><stop offset=".55" stop-color="var(--autumn-sky-mid)"/><stop offset="1" stop-color="var(--autumn-sky-end)"/></linearGradient>
+<radialGradient id="autumn-afterglow"><stop offset="0" stop-color="#ffd596" stop-opacity=".23"/><stop offset="1" stop-color="#ffd596" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="320" height="120" fill="url(#autumn-sky)"/>
+<ellipse cx="246" cy="41" rx="86" ry="62" fill="url(#autumn-afterglow)"/>
+<g fill="#ffe0a5" opacity=".045"><path d="M210 0h13l61 104h-29Z"/><path d="M236 0h8l69 104h-23Z"/><path d="M256 0h6l58 82v30Z"/></g>
+${cloud(20, 12, 2)}${cloud(144, 8, 1.25)}${cloud(274, 18, 1.6)}
+<path d="M0 86 L30 70 L60 80 L95 62 L130 78 L170 60 L210 76 L250 64 L290 74 L320 66 L320 120 L0 120Z" fill="var(--autumn-hill-far)"/>
+<path d="M0 96 L40 86 L80 94 L120 84 L160 92 L200 82 L240 92 L280 86 L320 92 L320 120 L0 120Z" fill="var(--autumn-hill-near)"/>
 ${place('tree', 8, 66, 2)}${place('tree', 276, 62, 2.4)}${place('tree', 236, 74, 1.6)}
-<rect y="104" width="320" height="16" fill="#8a5a33"/><rect y="104" width="320" height="3" fill="#5cc46a"/>
+<rect y="104" width="320" height="16" fill="var(--autumn-ground)"/><rect y="104" width="320" height="3" fill="var(--autumn-grass)"/>
+<g fill="#dba35c" opacity=".65"><rect x="166" y="108" width="2" height="1"/><rect x="180" y="110" width="1" height="1"/><rect x="237" y="109" width="2" height="1"/><rect x="266" y="108" width="1" height="1"/><rect x="294" y="111" width="2" height="1"/></g>
 ${place('mushroom', 150, 88, 1.15, 'bob')}${place('slime', 186, 92, 1, 'bob2')}${place('mushroom', 214, 90, 1, 'bob3')}${place('slime', 120, 93, 0.9, 'bob3')}
 ${place('coin', 172, 70, 0.7, 'float')}${place('coin', 200, 66, 0.6, 'float2')}
 </svg>`;

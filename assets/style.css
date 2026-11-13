@@ -155,6 +155,19 @@ h2 { font-size: 1.35rem; margin: 48px 0 16px; }
 /* hero */
 .hero { position: relative; overflow: visible; z-index: 3; border-bottom: 1px solid var(--line); min-height: 380px; display: flex; align-items: center; }
 .hero-scene { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* Static autumn scenery: the cinematic palette adds no animation loop, blur or image request. */
+.hero-autumn {
+  --autumn-sky-start: #344352; --autumn-sky-mid: #795056; --autumn-sky-end: #c88a58;
+  --autumn-hill-far: #86675d; --autumn-hill-near: #645346;
+  --autumn-tree-edge: #683e32; --autumn-tree-shade: #b76536; --autumn-tree-light: #dc9b4e;
+  --autumn-ground: #664732; --autumn-grass: #bd8749;
+}
+:root[data-theme='dark'] .hero-autumn {
+  --autumn-sky-start: #151f30; --autumn-sky-mid: #3b293c; --autumn-sky-end: #815537;
+  --autumn-hill-far: #4d4147; --autumn-hill-near: #3b3835;
+  --autumn-tree-edge: #422d2c; --autumn-tree-shade: #844829; --autumn-tree-light: #b1783e;
+  --autumn-ground: #3f3027; --autumn-grass: #916b3e;
+}
 .hero-storm { position: absolute; pointer-events: none; contain: strict; }
 html[data-charm='off'] .hero-scene * { animation: none !important; }
 .hero-scene .bob { animation: bob 2.4s ease-in-out infinite; }
