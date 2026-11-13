@@ -104,7 +104,7 @@ ${q.prereq.length || q.next.length ? `<section class="panel quest-chain">${q.pre
 </div>`;
 }
 
-export function questIndex({ lang, quests, link, guides = [] }) {
+export function questIndex({ lang, quests, link, guides = [], promo = '' }) {
   const ko = lang === 'ko';
   const order = ['Maple Island', 'Lith Harbor', 'Henesys', 'Ellinia', 'Perion', 'Kerning City', 'Sleepywood', 'Florina Beach', 'Victoria Island', 'Warrior', 'Magician', 'Bowman', 'Thief', 'Citizenship', 'Crafting', 'Forgotten Hollow', 'Event'];
   const areas = [...new Set([...order, ...quests.map((q) => q.area)])].filter((a) => quests.some((q) => q.area === a));
@@ -114,6 +114,7 @@ export function questIndex({ lang, quests, link, guides = [] }) {
 <p class="char-links"><a href="${link('/quests/best-exp/')}">${ko ? '레벨별 경험치 퀘스트' : 'Best EXP quests by level'}</a><a href="${link('/equipment/')}">${ko ? '장비 찾기' : 'Equipment finder'}</a></p>
 <nav class="band-nav" aria-label="${ko ? '지역' : 'Areas'}"><div>${guides.length ? `<a class="band-link" href="#guides">${ko ? '퀘스트 공략' : 'Quest guides'}</a>` : ''}${areas.map((a) => `<a class="band-link" href="#area-${encodeURIComponent(a)}">${esc(areaName(a, lang))}</a>`).join('')}</div></nav></section>
 <div class="wrap quest-page">
+${promo}
 ${guides.length ? questGuideCards({ lang, guides, link }) : ''}
 ${areas
   .map((a) => {

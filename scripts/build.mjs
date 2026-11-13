@@ -737,6 +737,7 @@ function headerSearch(lang, tabs) {
     [ko ? '캐릭터 랭킹' : 'Character ranking', href(langPath(lang, '/rank/'))],
     [ko ? '직업별 장비' : 'Gear by class', href(langPath(lang, '/equipment/'))], [ko ? '보스' : 'Bosses', href(langPath(lang, '/bosses/'))],
     ...QUEST_GUIDES.map(({ guide: g }) => [`${guideLabel(g, lang)}${ko ? ' 공략' : ''}`.replace(/ 공략 공략$/, ' 공략'), href(langPath(lang, `/quests/${g.slug}/`))]), [ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests', href(langPath(lang, '/quests/best-exp/'))], [ko ? '맵 도감' : 'Maps', href(langPath(lang, '/maps/'))],
+    [ko ? '포가튼 할로우 공략' : 'Forgotten Hollow guide', href(langPath(lang, '/forgotten-hollow/'))], [ko ? '잊혀진 골짜기 (포가튼 할로우)' : 'Forgotten Hollow maps, quests and boss', href(langPath(lang, '/forgotten-hollow/'))], [ko ? '썩은 머쉬맘 보스 (포가튼 할로우)' : 'Rotten Mushmom boss (Forgotten Hollow)', href(langPath(lang, '/forgotten-hollow/#boss'))],
     [ko ? '문의·협찬·후원' : 'Contact and support', href(langPath(lang, '/contact/'))]];
   return `<button type="button" class="hs-open" data-hs data-items="${esc(href('/assets/items.json'))}" data-mobs="${esc(href('/assets/mobs.json'))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-monsters="${esc(href(langPath(lang, '/monsters/')))}" data-pages="${esc(JSON.stringify(pages))}" aria-label="${ko ? '검색' : 'Search'}" title="${ko ? '검색 ( / )' : 'Search ( / )'}"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="hs-label">${ko ? '검색' : 'Search'}</span></button>`;
 }
@@ -1051,6 +1052,17 @@ ${collectionStatus(lang)}
 // "what's new" list further down. Every new feature or visible improvement gets an entry.
 const UPDATES = readJson('data/updates.json').updates;
 const updDate = (lang, d) => (lang === 'ko' ? `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}` : d.slice(5).replace('-', '/'));
+// Forgotten Hollow promo strip (home, training, quests) until the end of November: the update's guide at /forgotten-hollow/.
+const FH_PROMO_UNTIL = '2026-11-30';
+function fhPromo(lang) {
+  const today = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
+  if (today > FH_PROMO_UNTIL) return '';
+  const ko = lang === 'ko';
+  const days = Math.round((new Date('2026-11-18T00:00:00+09:00') - new Date(`${today}T00:00:00+09:00`)) / 86400000);
+  const when = days > 0 ? (ko ? `11월 18일 오픈, ${days}일 남음` : `Opens November 18, ${days} day${days === 1 ? '' : 's'} to go`) : days === 0 ? (ko ? '오늘 오픈' : 'Opens today') : (ko ? '지금 열렸어요' : 'Now open');
+  return `<a class="fh-promo" href="${href(langPath(lang, '/forgotten-hollow/'))}"><img src="${href('/assets/monsters/700003.gif')}" alt="" width="44" height="40" loading="lazy"><span><b>${ko ? '포가튼 할로우 공략' : 'Forgotten Hollow guide'}</b><small>${when}. ${ko ? '가는 법, 레벨별 사냥터, 퀘스트, 보스까지 한 페이지에.' : 'Getting in, maps by level, quests and the boss on one page.'}</small></span></a>`;
+}
+
 function heroNew(lang) {
   const ko = lang === 'ko';
   return `<p class="hero-new"><span class="hero-new-tag">NEW</span>${UPDATES.slice(0, 3).map((u) => `<a href="${href(langPath(lang, u.path))}">${esc((ko ? u.ko : u.en).split(' — ')[0])}</a>`).join('')}<a class="hero-new-all" href="#updates">${ko ? '업데이트 소식' : "What's new"}</a></p>`;
@@ -1187,6 +1199,7 @@ ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이�
 </div>
 <p class="search-help" id="search-help">${lang === 'ko' ? '한글·영문·초성·줄임말로 검색하세요. 예: 귀힘, 미스릴, 좀비 루팡, 사냥터' : 'Search by name or keyword. Try Gloves Attack, Mithril, Zombie Lupin or training.'}</p>
 ${heroNew(lang)}
+${fhPromo(lang)}
 <dl class="hero-stats"><div data-market-stat="listings" hidden><dt>${lang === 'ko' ? '24시간 매물' : 'Listings, 24h'}</dt><dd>0</dd></div><div data-market-stat="shops" hidden><dt>${lang === 'ko' ? '24시간 확인한 상점' : 'Shops checked, 24h'}</dt><dd>0</dd></div>${lang === 'ko'
   ? `<div><dt>${t.statSites}</dt><dd>${SITE_COUNT}</dd></div><div><dt>${t.statCats}</dt><dd>${cats.length}</dd></div>`
   : `<div><dt>Monsters</dt><dd>${MONSTERS.monsters.filter((m) => m.status !== 'unplaced').length}</dd></div><div><dt>Quests</dt><dd>${QUESTS.length}</dd></div><div><dt>Maps</dt><dd>${MAPS.filter((l) => l.availability === 'open').length}</dd></div>`}</dl>
@@ -1249,6 +1262,7 @@ function trainingBody(lang) {
   const t=T[lang]; const tr=(ko,en)=>lang==='ko'?ko:en;
   const initial=selectRoutes(training.routes,{level:20});
   return `${pageHead(lang,'sword',t.trH1,t.trLead)}<div class="wrap tr-page">
+${fhPromo(lang)}
 <form id="tr-form" class="panel tr-filters">
 <label>${t.level}<input type="number" name="lv" min="1" max="100" value="20" required inputmode="numeric"></label>
 <label>${tr('직업','Class')}<select name="job"><option value="">${tr('모든 직업','All classes')}</option>${Object.entries(jobNames[lang]).map(([key,label])=>`<option value="${key}">${label}</option>`).join('')}</select></label>
@@ -3007,7 +3021,7 @@ for (const lang of LANGS) {
       lang, pageKey: 'quests', pagePath: '/quests/',
       title: lang === 'ko' ? '글클메 퀘스트 목록: 레벨·보상·필요 아이템 | GMS Hub' : 'MapleStory Classic World Quests: Levels, Rewards & Requirements | GMS Hub',
       desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드 퀘스트 ${QUESTS.length}개를 지역별로 정리했어요. 시작 레벨, 모아 올 아이템과 그 아이템을 떨어뜨리는 몬스터, 보상 EXP와 메소까지.` : `All ${QUESTS.length} MapleStory Classic World quests by area: start level, items to bring and who drops them, monsters to hunt, EXP and meso rewards.`,
-      body: questIndex({ lang, quests: QUESTS, link, guides: QUEST_GUIDES }),
+      body: questIndex({ lang, quests: QUESTS, link, guides: QUEST_GUIDES, promo: fhPromo(lang) }),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '퀘스트' : 'Quests', '/quests/')]
     }));
     write(path.join(lang, 'megaphone', 'index.html'), page({
