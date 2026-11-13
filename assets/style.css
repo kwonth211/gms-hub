@@ -2614,3 +2614,9 @@ body.exp-running .exp-stop { display: inline-flex; }
 .upd-pager button:disabled { opacity: 0.45; cursor: default; }
 .upd-list li[hidden] { display: none; }
 .upd-ver { margin-left: auto; flex: none; font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
+/* Item price table: the drop icons never spill into the price column. With an item open the list is half width, so
+   the drop column steps aside (the open item's panel lists its drops); at full width it keeps room for three icons. */
+.mb-catalog .mb-src { min-width: 104px; }
+.mb-workspace.has-selection .mb-catalog .mb-src { display: none; }
+.mb-move { white-space: nowrap; }
+.mb-workspace.has-selection .mb-catalog th:last-child, .mb-workspace.has-selection .mb-catalog td:last-child { display: none; }
