@@ -90,7 +90,10 @@ export async function handleMarketBatch(req, env, knownItems) {
   if (auth.length > 256 || await digest(auth) !== await digest(`Bearer ${env.MARKET_BATCH_TOKEN}`)) return reply({ error: 'unauthorized' }, 401);
   if (req.method === 'GET') {
     const status = await getCollectionStatus(env);
-    if (new URL(req.url).searchParams.has('preflight')) return reply(status);
+    const params = new URL(req.url).searchParams;
+    // Only the dedicated collector browser (it sends its name) collects. An older install left in the admin's own
+    // Chrome sends none and is told the collection is paused, so it switches itself off before opening its window.
+    if (params.has('preflight')) return reply(params.get('instance') ? status : { ...status, ready: false, reason: 'paused' });
     const { results } = await env.DB.prepare('SELECT run_id, started_at, finished_at, received_at, shops, accepted FROM market_batch_runs ORDER BY received_at DESC, rowid DESC LIMIT 20').all();
     return reply({ runs: results, ...status });
   }

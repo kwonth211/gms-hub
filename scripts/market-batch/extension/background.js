@@ -17,7 +17,7 @@ async function beat(event, force = false, gap = 45000) {
   if (!GMS_BATCH_CONFIG.token || (!force && Date.now() - lastBeatAt < gap)) return;
   lastBeatAt = Date.now();
   const s = await get();
-  const body = { version: '0.7.0', instance: GMS_BATCH_CONFIG.name || 'chrome', event, enabled: !!s.enabled, phase: s.run?.phase || (s.pending ? 'pending' : 'idle'), shops: s.run?.progress?.shops ?? null,
+  const body = { version: '0.7.1', instance: GMS_BATCH_CONFIG.name || 'chrome', event, enabled: !!s.enabled, phase: s.run?.phase || (s.pending ? 'pending' : 'idle'), shops: s.run?.progress?.shops ?? null,
     rows: s.run?.progress?.rows ?? null, item: s.run?.progress?.item ?? null, hidden: !!s.run?.progress?.hidden, error: s.error || null, runId: s.run?.runId || null,
     startedAt: s.run?.startedAt || null, nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
   fetch(ENDPOINT + '?heartbeat=1', { method: 'POST', headers: { Authorization: `Bearer ${GMS_BATCH_CONFIG.token}`, 'Content-Type': 'application/json' },
@@ -33,7 +33,7 @@ async function recycleWindow(s) {
 async function broadcast() {
   const s = await get();
   // No secret is ever included in content-script messages or the public DOM.
-  return { ...s, version: '0.7.0', nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
+  return { ...s, version: '0.7.1', nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
 }
 async function ensureAlarms() {
   const s = await get();
@@ -81,7 +81,8 @@ async function launch(mode, trigger) {
     const localNext = Math.max((s.lastAttemptAt || 0) + INTERVAL, s.lastSuccessAt ? Date.parse(s.lastSuccessAt) + INTERVAL : 0);
     let response, policy;
     try {
-      response = await fetch(ENDPOINT + '?preflight=1', { headers: { Authorization: `Bearer ${GMS_BATCH_CONFIG.token}` }, signal: AbortSignal.timeout(25000) });
+      // The name tells the server this is the dedicated collector browser; an install without one is told to switch off.
+      response = await fetch(ENDPOINT + '?preflight=1&instance=' + encodeURIComponent(GMS_BATCH_CONFIG.name || ''), { headers: { Authorization: `Bearer ${GMS_BATCH_CONFIG.token}` }, signal: AbortSignal.timeout(25000) });
       if (!response.ok) throw new Error(String(response.status));
       policy = await response.json();
       if (!policy.policy || typeof policy.ready !== 'boolean') throw new Error('invalid policy');
