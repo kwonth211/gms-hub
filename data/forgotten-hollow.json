@@ -1,0 +1,148 @@
+{
+ "_note": "Editorial layer of /forgotten-hollow/. Monster stats, spawn counts, EXP per clear and drops come from data/monsters.json; quest steps 10617-10626 from data/quests-raw.json (client data). Everything here was cross-checked between Nexon's 2026-11-13 preview notice, the second closed beta data and several Korean and English preview videos (2026-11-02..13). 'state' tags: official = Nexon notice, data = client / beta data, video = player reports from the beta, pending = not known yet. Re-check everything after the 11-18 patch and remove 'upcoming' from data/mob-overrides.json.",
+ "updated": "2026-11-13",
+ "open": "2026-11-18",
+ "mapNames": {
+  "10006060": { "ko": "잊혀진 입구 III" },
+  "10006050": { "ko": "잊혀진 입구 II" },
+  "10006040": { "ko": "잊혀진 입구 I" },
+  "10006010": { "ko": "태고의 숲 I" },
+  "10006020": { "ko": "태고의 숲 II" },
+  "10006030": { "ko": "태고의 숲 III" },
+  "10006022": { "ko": "얼음과 불의 충돌" },
+  "10006031": { "ko": "죽음의 골짜기" },
+  "10006071": { "ko": "잊혀진 던전 통로" },
+  "10006072": { "ko": null },
+  "10006070": { "ko": "스러지는 빛의 끝" },
+  "10006080": { "ko": "금지된 입구" },
+  "10006090": { "ko": "위험한 내리막길 I" },
+  "10006100": { "ko": "위험한 내리막길 II" },
+  "10006110": { "ko": "위험한 내리막길 III" },
+  "10006120": { "ko": "썩은 통로 I" },
+  "10006130": { "ko": "썩은 통로 II" },
+  "10006140": { "ko": "썩은 통로 III" },
+  "10006150": { "ko": "남은 미련" },
+  "10006160": { "ko": "어둠의 낭떠러지" },
+  "10006161": { "ko": "무너진 무덤" },
+  "10006162": { "ko": "또 다른 안식처" },
+  "10006121": { "ko": "남의 무덤" }
+ },
+ "zones": [
+  {
+   "id": "entry", "lv": "39~45",
+   "name": { "ko": "입구 구역", "en": "The entrance" },
+   "lead": { "ko": "엘리니아 쪽에서 내려오면 처음 만나는 곳이에요. 마을의 동쪽이고, 글로우슈룸과 라플레가 대부분이라 40레벨 초반에 딱 맞아요.", "en": "The first maps you reach coming down from Ellinia, east of the town. Mostly Glowshrooms and Raffles: made for the early 40s." },
+   "maps": [10006060, 10006050, 10006040, 10006071, 10006072, 10006010, 10006020, 10006030, 10006022],
+   "best": [
+    { "map": 10006060, "ko": "41레벨까지는 여기. 몬스터 44마리로 할로우에서 가장 빽빽한 맵이에요.", "en": "Until level 41. 44 monsters, the densest map in the Hollow." },
+    { "map": 10006022, "ko": "43레벨부터 추천하는 숨은 맵. 아쿠맨더 15마리가 몰려 있어요. 단, 아쿠맨더·라플레시아 둘 다 얼음에 강해요.", "en": "Hidden map, from level 43: 15 Aqumanders in one place. Both Aqumanders and Rafflesias resist ice." },
+    { "map": 10006010, "ko": "마을 바로 옆이라 물약 사러 가기 편해요.", "en": "Right next to the town, so restocking is quick." }
+   ]
+  },
+  {
+   "id": "middle", "lv": "45~50",
+   "name": { "ko": "중간 구역", "en": "The middle" },
+   "lead": { "ko": "마을 서쪽 문으로 나가면 바로 이어져요. 라플레시아와 더스크맨더가 나오고, 할로우 전체에서 한 바퀴 경험치가 가장 큰 맵이 여기 있어요.", "en": "Straight out of the town's west gate. Rafflesias and Duskmanders, and the best EXP per clear in the whole Hollow." },
+   "maps": [10006070, 10006080, 10006090, 10006100, 10006110, 10006031],
+   "best": [
+    { "map": 10006080, "ko": "할로우 1등 맵. 마을에서 두 맵이면 도착해서 첫 주에 가장 붐빌 곳이에요.", "en": "The Hollow's best map, two maps from town: expect it to be the busiest in week one." },
+    { "map": 10006070, "ko": "마을 서쪽 문 바로 다음 맵. 금지된 입구가 꽉 찼을 때 대안이에요.", "en": "The first map past the west gate; the fallback when Forbidden Entrance is full." },
+    { "map": 10006100, "ko": "세로로 긴 맵이라 양쪽 숨은 포탈로 층을 오르내려요.", "en": "A tall map: hidden portals on both sides move you between floors." }
+   ]
+  },
+  {
+   "id": "deep", "lv": "50~60",
+   "name": { "ko": "안쪽 구역", "en": "The deep tunnels" },
+   "lead": { "ko": "위험한 내리막길 III 맨 아래 포탈로 내려가면 시작돼요. 썩은 통로부터 막다른 길까지 한 줄로 이어지고, 언데드가 많아 클레릭이 특히 편해요.", "en": "Starts at the bottom portal of Perilous Descent III. One line of maps from the Decayed Tunnels to a dead end, full of undead: good news for Clerics." },
+   "maps": [10006120, 10006130, 10006140, 10006150, 10006160, 10006161, 10006162],
+   "best": [
+    { "map": 10006162, "ko": "무너진 무덤 왼쪽 종유석 안 숨은 포탈로 들어가요. 막다른 맵이라 지나가는 사람이 없고, 4인 파티(왼쪽 2명, 오른쪽 2명)에 딱 맞아요.", "en": "Through a hidden portal inside the stalagmite on the left of Dilapidated Tomb. A dead end nobody walks through, built for a party of four (two left, two right)." },
+    { "map": 10006160, "ko": "안쪽 구역에서 몬스터가 가장 많은 맵. 더스크맨더와 썩은 버섯이 섞여 나와요.", "en": "The most monsters in the deep tunnels: Duskmanders mixed with Rotten Mushrooms." },
+    { "map": 10006161, "ko": "썩은 버섯만 잡을 거라면 여기가 가장 빽빽해요.", "en": "The densest map if you only want Rotten Mushrooms." }
+   ]
+  }
+ ],
+ "hidden": {
+  "10006022": { "ko": "태고의 숲에서 숨은 포탈로 들어가요. 이 맵 끝은 잊혀진 던전 통로로 이어져요.", "en": "Reached through a hidden portal in the Primeval Forest; its far end leads to the Forgotten Dungeon Tunnel." },
+  "10006031": { "ko": "태고의 숲 III 위쪽 숨은 포탈. 좀비 버섯과 좀비 루팡은 언데드라 클레릭이 잘 잡아요.", "en": "Hidden portal at the top of Primeval Forest III. Zombie Mushrooms and Zombie Lupins are undead: easy for Clerics." },
+  "10006162": { "ko": "무너진 무덤 왼쪽 종유석 안 숨은 포탈. 오른쪽 종유석은 남은 미련 쪽으로 돌아 나가요.", "en": "Hidden portal inside the left stalagmite of Dilapidated Tomb; the right one loops back toward Lingering Regret." },
+  "10006121": { "ko": "썩은 통로 I 안의 숨은 포탈로 들어가는 보스 맵이에요. 정확한 포탈 자리는 오픈 후 확인해서 적을게요.", "en": "The boss map, behind a hidden portal in Decayed Tunnel I. We will add the exact spot after launch." }
+ },
+ "entrances": [
+  {
+   "name": { "ko": "엘리니아 북쪽 숲 나무 통로", "en": "The tree passage in North Forest of Ellinia" },
+   "path": { "ko": ["엘리니아", "엘리니아 북쪽 숲", "나무 통로를 끝까지 내려가기", "잊혀진 입구 III"], "en": ["Ellinia", "North Forest of Ellinia", "Ride the tree passage all the way down", "Forgotten Entrance III"] },
+   "note": { "ko": "대부분 이 길로 들어가요. 입구 III에서 입구 II의 작은 포탈로 땅 밑으로 내려가고, 입구 I과 태고의 숲을 지나면 마을이에요.", "en": "Most players come this way. From Entrance III a small portal in Entrance II takes you underground; past Entrance I and the Primeval Forest is the town." }
+  },
+  {
+   "name": { "ko": "슬리피우드 던전 맨 아래", "en": "The bottom of the Sleepywood Dungeon" },
+   "path": { "ko": ["슬리피우드", "슬리피 던전 V", "맨 아래 포탈", "잊혀진 던전 통로"], "en": ["Sleepywood", "Sleepy Dungeon V", "The bottom portal", "Forgotten Dungeon Tunnel"] },
+   "note": { "ko": "잊혀진 던전 통로로 바로 나와요. 개미굴 쪽에서 사냥하다 넘어가기 좋아요.", "en": "Comes out straight into the Forgotten Dungeon Tunnel: handy if you are already training around the Ant Tunnel." }
+  }
+ ],
+ "town": [
+  { "who": { "ko": "니로스", "en": "Nyroth" }, "what": { "ko": "할로우 퀘스트를 주는 NPC", "en": "Gives the Hollow's quests" }, "state": "official" },
+  { "who": { "ko": "제작대", "en": "Crafting station" }, "what": { "ko": "니로스 바로 옆", "en": "Right next to Nyroth" }, "state": "video" },
+  { "who": { "ko": "루마 (잡화점)", "en": "Luma (general store)" }, "what": { "ko": "하얀 포션 350, 파란 포션 220, 잊혀진 골짜기 귀환 주문서 800메소. 창고도 이 방에 있어요.", "en": "White Potion 350, Blue Potion 220, Return Scroll to Forgotten Hollow 800 mesos. The storage keeper is in the same room." }, "state": "video" },
+  { "who": { "ko": "젤리아, 미엔 (요정의 안식처)", "en": "Zelya and Myen (Cave Fairy Sanctuary)" }, "what": { "ko": "마을의 두 번째 문. 젤리아 퀘스트를 끝내면 귀환 주문서 2장을 줘요.", "en": "Behind the town's second door. Zelya's quests end with two return scrolls." }, "state": "video" }
+ ],
+ "classes": [
+  { "job": { "ko": "시프", "en": "Bandit" }, "a": 60, "aw": { "ko": "45제 단검이면 전부 2방이라 경험치가 가장 큰 더스크맨더", "en": "Lv 45 dagger two-shots everything, so take the best EXP: Duskmander" }, "b": 54, "bw": { "ko": "55레벨이면 작 없이 글로우슈룸 1방. 50제보다 공속이 빠른 45제 단검을 그대로", "en": "At 55 a clean dagger one-shots Glowshrooms; keep the faster Lv 45 dagger" } },
+  { "job": { "ko": "어쌔신", "en": "Assassin" }, "a": 54, "aw": { "ko": "40제 아대와 금비로 글로우슈룸 2방", "en": "Lv 40 claw and Kumbis two-shot Glowshrooms" }, "b": 57, "bw": { "ko": "50제 아대. 100% 주문서 7장이면 아쿠맨더도 2방", "en": "Lv 50 claw; with seven 100% scrolls Aqumanders fall in two" } },
+  { "job": { "ko": "파이터", "en": "Fighter" }, "a": 57, "aw": { "ko": "40제 두손검. 물리 방어 0인 아쿠맨더가 가장 빨라요", "en": "Lv 40 two-handed sword; zero-DEF Aqumanders are fastest" }, "b": 60, "bw": { "ko": "50제 두손도끼. 경험치 133에 물리 방어 0인 더스크맨더", "en": "Lv 50 two-handed axe on 133-EXP, zero-DEF Duskmanders" } },
+  { "job": { "ko": "페이지", "en": "Page" }, "a": 54, "aw": { "ko": "40제 두손검으로 글로우슈룸 2방. 두손둔기보다 공속이 빨라요", "en": "Lv 40 two-handed sword two-shots Glowshrooms, faster than a blunt weapon" }, "b": 60, "bw": { "ko": "50제 두손둔기로 더스크맨더", "en": "Lv 50 two-handed blunt weapon on Duskmanders" } },
+  { "job": { "ko": "스피어맨", "en": "Spearman" }, "a": 54, "aw": { "ko": "40제 창으로 글로우슈룸 2~3방. 다른 몹은 3방부터예요", "en": "Lv 40 spear: Glowshrooms in two or three, everything else three or more" }, "b": 54, "bw": { "ko": "구룡도로 글로우슈룸. 휘두르면 1방, 찌르면 2방", "en": "The Nine Dragons on Glowshrooms: one swing or two stabs" } },
+  { "job": { "ko": "헌터", "en": "Hunter" }, "a": 54, "aw": { "ko": "발터 2000으로 글로우슈룸만 2방", "en": "Vaulter 2000 two-shots Glowshrooms only" }, "b": 57, "bw": { "ko": "50제 활이면 아쿠맨더까지 2방", "en": "A Lv 50 bow two-shots up to Aqumanders" } },
+  { "job": { "ko": "사수", "en": "Crossbowman" }, "a": 54, "aw": { "ko": "40제 석궁으로 글로우슈룸 2방", "en": "Lv 40 crossbow two-shots Glowshrooms" }, "b": 57, "bw": { "ko": "50제 석궁이면 아쿠맨더까지 2방", "en": "A Lv 50 crossbow two-shots up to Aqumanders" } },
+  { "job": { "ko": "불독", "en": "F/P Wizard" }, "a": 55, "aw": { "ko": "불에 약하고 마법 방어 0인 라플레가 2방", "en": "Fire-weak, zero-MDEF Raffles fall in two" }, "b": 59, "bw": { "ko": "50제 완드로 불에 약한 라플레시아 (경험치 117)", "en": "Lv 50 wand on fire-weak Rafflesias (117 EXP)" } },
+  { "job": { "ko": "썬콜", "en": "I/L Wizard" }, "a": 54, "aw": { "ko": "45제 스태프로 글로우슈룸 2방. 얼음에 강한 라플레·아쿠맨더는 피하세요", "en": "Lv 45 staff two-shots Glowshrooms; avoid ice-resistant Raffles and Aqumanders" }, "b": 60, "bw": { "ko": "얼음에 약한 더스크맨더. 3방이지만 경험치 133이라 더 빨라요", "en": "Ice-weak Duskmanders: three hits, but 133 EXP makes them faster" } },
+  { "job": { "ko": "클레릭", "en": "Cleric" }, "a": 54, "aw": { "ko": "45제 스태프로 글로우슈룸 2~3방. 주문서 효과가 가장 큰 직업이에요", "en": "Lv 45 staff, Glowshrooms in two or three; scrolls help Clerics most" }, "b": 62, "bw": { "ko": "언데드 썩은 버섯. 4방이지만 경험치 183이라 가장 빨라요", "en": "Undead Rotten Mushrooms: four hits, but 183 EXP makes them fastest" } }
+ ],
+ "classNote": { "ko": "솔로 사냥, 주력 스킬 마스터, 공격력 물약 기준으로 1초당 경험치를 비교한 오픈 전 계산이에요. 40레벨대는 45레벨, 50레벨대는 55레벨 기준. 주문서는 사냥 횟수가 한 방 줄어들 때만 효과가 커요(그대로면 5~8% 빨라지는 정도). 직접 몇 방인지 확인하려면 몬스터 이름을 눌러 몇 방 컷 계산기로 보세요.", "en": "Pre-launch estimate: solo, main skill maxed, an attack potion, comparing EXP per second at level 45 (40s) and 55 (50s). Scrolls only pay off when they cut a hit (otherwise about 5 to 8% faster). Tap a monster to check your own hits in the hits-to-kill calculator." },
+ "entryQuest": [
+  { "who": { "ko": "하인즈 (엘리니아 마법 도서관)", "en": "Grendel the Really Old (Ellinia Magic Library)" }, "do": { "ko": "39레벨부터. 루팡을 잡아 퀘스트 재료 25개를 모아 가요.", "en": "From level 39: hunt Lupins for 25 quest items." } },
+  { "who": { "ko": "요정 아르웬 (엘리니아)", "en": "Arwen the Fairy (Ellinia)" }, "do": { "ko": "콜드아이에게서 퀘스트 재료 25개. 보상은 투구 명중 주문서(60% 또는 10% 무작위).", "en": "25 quest items from Cold Eyes. Reward: a Helmet Accuracy scroll, 60% or 10% at random." } },
+  { "who": { "ko": "니로스 (잊혀진 골짜기 마을)", "en": "Nyroth (Forgotten Hollow town)" }, "do": { "ko": "골짜기로 내려가 니로스를 만나면 내 직업 무기 공격력 10% 주문서를 하나 골라 받아요. 팔 거라면 아대·완드가 가장 비싸요.", "en": "Meet Nyroth in the Hollow and pick one 10% weapon attack scroll for your class. To sell, claw and wand scrolls fetch the most." } }
+ ],
+ "zelya": { "ko": "글로우슈룸의 지도 조각 25개, 라플레 꽃잎 25개를 모으고 아쿠맨더와 에코퍼스를 50마리씩 잡아요. 테스트 서버에서는 마지막 보상이 귀고리 10% 주문서(무작위)와 잊혀진 골짜기 귀환 주문서 2장이었어요.", "en": "Collect 25 map pieces from Glowshrooms and 25 Raffle petals, then 50 Aqumanders and 50 Echopuses. On the test server the final reward was a random 10% earring scroll and two Return Scrolls to Forgotten Hollow." },
+ "officialQuests": ["Echoes of the Past", "A Step Toward Home", "Myra's Wish", "Shadow of the World Tree"],
+ "itemNames": {
+  "4031140": { "ko": "일기장", "en": "A diary" },
+  "4031141": { "ko": "퀘스트 중 받는 물건", "en": "An item from the quest" },
+  "4031142": { "ko": "퀘스트 중 받는 물건", "en": "An item from the quest" },
+  "4031115": { "ko": "퀘스트 중 받는 물건", "en": "An item from the quest" }
+ },
+ "npcs": { "707": "니로스", "711": "방랑 모험가 제이미", "712": "학자 다니엘", "715": "타미아", "313": "하인즈" },
+ "boss": {
+  "lead": { "ko": "할로우의 필드 보스예요. 썩은 통로 I 안 숨은 포탈 너머 '남의 무덤'에 혼자 나와요. 언데드라 성속성과 불에 약하고 독에 강해요.", "en": "The Hollow's field boss, alone in Someone Else's Grave behind a hidden portal in Decayed Tunnel I. Undead: weak to holy and fire, resists poison." },
+  "facts": [
+   { "ko": "다시 나오는 시간은 테스트 서버에서 약 1시간이라는 제보와 1~2시간이라는 제보가 함께 있어요. 오픈 후 확인할게요.", "en": "Respawn: test-server reports range from about one hour to two. We will confirm after launch.", "state": "video" },
+   { "ko": "보스 맵 안쪽 포탈은 몬스터가 없는 이야기 맵 '지나간 날들'로 이어져요.", "en": "The inner portal of the boss map leads to a story map with no monsters.", "state": "video" },
+   { "ko": "60레벨 몬스터라 레벨 차이 명중 보정이 커요. 50레벨이면 명중 176, 60레벨이어도 126이 있어야 다 맞아요.", "en": "As a Lv 60 monster it punishes the level gap: 176 accuracy at level 50, still 126 at level 60, to never miss.", "state": "data" }
+  ]
+ },
+ "prep": [
+  { "ko": "창·도끼·둔기 전사는 마스터리에 명중이 없어 50레벨에 명중이 75쯤이에요. 더스크맨더(명중 98)에서 절반 가까이 빗나가니 투구 명중 주문서와 명중 물약을 미리 챙기세요.", "en": "Spear, axe and blunt warriors get no accuracy from mastery: about 75 at level 50, so nearly half miss on Duskmanders (98). Get helmet accuracy scrolls and an accuracy potion now." },
+  { "ko": "썩은 버섯은 55레벨부터. 50레벨에는 명중 137이 필요해 거의 빗나가요.", "en": "Rotten Mushrooms from level 55: at 50 they need 137 accuracy and you will mostly miss." },
+  { "ko": "어쌔신은 할로우에서 표창이 나오지 않아요. 금비 같은 표창을 미리 사 두세요.", "en": "Assassins: no throwing stars drop in the Hollow, so buy Kumbis or similar beforehand." },
+  { "ko": "귀고리 10%, 망토 명중 10%는 할로우 퀘스트 보상으로 받아요. 지금 따로 살 필요가 없어요.", "en": "Earring 10% and Cape Accuracy 10% scrolls are Hollow quest rewards; no need to buy them now." },
+  { "ko": "귀고리 LUK 60%는 테스트 때 라플레시아가 떨군다는 제보가 있어요. 여러 장 쌓아 뒀다면 일부 정리를 고려해 보세요.", "en": "Rafflesias reportedly dropped Earring LUK 60% scrolls in the beta. If you stockpiled them, consider selling some." },
+  { "ko": "제작 9레벨은 이번 업데이트에 열려요(공식). 10레벨 칸에 50제 무기가 있다는 정보가 있지만 날짜는 미정이에요. 50제 무기는 패치노트를 보고 사세요.", "en": "Crafting Lv 9 opens with this update (official). Lv 10 reportedly holds Lv 50 weapons but has no date; check the patch notes before buying a Lv 50 weapon." },
+  { "ko": "첫날은 금지된 입구와 또 다른 안식처가 붐빌 거예요. 숨은 맵(얼음과 불의 충돌, 죽음의 골짜기)도 기억해 두세요.", "en": "Day one will pack Forbidden Entrance and Another Sanctuary; remember the hidden maps (Collision of Ice and Fire, The Valley of Death)." }
+ ],
+ "november": [
+  { "ko": "추수감사절 호박 파이: 벤슨 할머니에게 재료를 모아 주면 추억의 보상과 가구(건초 더미, 추수 식탁, 칠면조 구이 접시, 호박 수레)를 받아요.", "en": "Thanksgiving Pumpkin Pie: gather ingredients for Grandma Benson for nostalgic rewards and furniture (hay bale, harvest table, roast turkey platter, pumpkin wagon).", "state": "official" },
+  { "ko": "도망친 칠면조: 사냥 중 메이플 월드 곳곳에서 나타나요. 잡으면 보상이 있어요.", "en": "The runaway turkey turns up while you hunt anywhere in Maple World; catch it for rewards.", "state": "official" },
+  { "ko": "월묘의 떡 파티퀘스트: 헤네시스 공원 토리에게 3명 파티로 들어가요. 보상 후보는 월묘 모자와 월묘 석상. 시작일은 아직 발표 전이에요.", "en": "Moon Bunny rice cake party quest: a party of three enters through Tory in Henesys Park. Possible rewards: Moon Bunny Hat and Statue. Start date not announced yet.", "state": "official" },
+  { "ko": "그 밖에: 페리온·슬리피우드·개미굴 새 퀘스트, 제작 9레벨, 채팅창 탭, 파티 줍기 규칙 개선, 새 무기.", "en": "Also: new Perion, Sleepywood and Ant Tunnel quests, Crafting Lv 9, chat tabs, better party loot rules, new weapons.", "state": "official" },
+  { "ko": "12월 9일 예정: 길드, 포가튼 할로우 파티퀘스트(41레벨부터), 크리스마스 마을 해피빌. 니로스의 망토 명중 퀘스트도 이날 열려요.", "en": "Planned for December 9: guilds, the Forgotten Hollow party quest (Lv 41+), Happyville, and Nyroth's cape accuracy quest line.", "state": "video" }
+ ],
+ "pending": [
+  { "ko": "정확한 오픈 시간 (점검 일정 공지 전)", "en": "The exact opening time (maintenance notice not out yet)" },
+  { "ko": "퀘스트 34개 전체 목록과 보상 (공지에는 일부 이름만 있어요)", "en": "All 34 quests and their rewards (the notice names only a few)" },
+  { "ko": "드롭 확률 (클래식은 공개하지 않아요)", "en": "Drop rates (Classic does not publish them)" },
+  { "ko": "새 무기 목록과 제작 9레벨 레시피", "en": "The new weapons and the Crafting Lv 9 recipes" },
+  { "ko": "몬스터 경험치·체력 최종값 (테스트 이후 바뀐 몬스터가 있어요)", "en": "Final monster EXP and HP (some changed after the test)" },
+  { "ko": "새로 나온 마을 상점 목록과 할로우 전용 가구", "en": "The new town shops and the Hollow's furniture" }
+ ]
+}

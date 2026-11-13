@@ -2522,3 +2522,9 @@ body.exp-running .exp-stop { display: inline-flex; }
 .dl-head .dl-btn { font-size: .85rem; }
 @media (prefers-reduced-motion: reduce) { .dl-btn { transition: none; } }
 .pr-count { white-space: nowrap; }
+
+/* Forgotten Hollow monster and map pages point at the guide */
+.fh-link-note { margin: 8px 0 0; }
+.fh-link-note a { display: inline-block; padding: 6px 12px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); font-weight: 700; text-decoration: none; }
+.fh-link-note a:hover { background: var(--accent-band); }
+.fh-link-note a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }

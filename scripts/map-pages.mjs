@@ -54,7 +54,7 @@ export function mapDetail({ lang, l, maps, url, itemUrl, routes, accuracy, notes
     .sort((a, b) => Math.abs(a.minLv - l.minLv) - Math.abs(b.minLv - l.minLv) || a.id - b.id)
     .slice(0, 6);
   return `<section class="page-head wrap">
-<p class="crumbs"><a href="${link('/monsters/')}">${ko ? '몬스터 도감' : 'Monster database'}</a><span aria-hidden="true"> › </span><a href="${link('/maps/')}">${ko ? '맵' : 'Maps'}</a></p>
+<p class="crumbs"><a href="${link('/monsters/')}">${ko ? '몬스터 도감' : 'Monster database'}</a><span aria-hidden="true"> › </span><a href="${link('/maps/')}">${ko ? '맵' : 'Maps'}</a></p>${String(l.id).startsWith('10006') ? `<p class="fh-link-note"><a href="${link('/forgotten-hollow/')}">${ko ? '포가튼 할로우 공략: 가는 법, 구역별 사냥터, 퀘스트, 보스' : 'Forgotten Hollow guide: getting in, maps by level, quests and the boss'}</a></p>` : ''}
 <h1>${esc(name)}${ko && l.ko ? `<small class="en-name">${esc(l.en)}</small>` : ''}</h1>
 <p class="lead">${ko ? `${esc(regionName(l.region, lang))} 지역 맵이에요. 몬스터 ${l.mobs.length}종이 나오고, 레벨은 ${l.minLv}~${l.maxLv}이에요.` : `A ${esc(l.region)} map with ${l.mobs.length} monster types, levels ${l.minLv}–${l.maxLv}.`}</p>
 ${statusTag(l, ko)}
