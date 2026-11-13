@@ -2620,3 +2620,8 @@ body.exp-running .exp-stop { display: inline-flex; }
 .mb-workspace.has-selection .mb-catalog .mb-src { display: none; }
 .mb-move { white-space: nowrap; }
 .mb-workspace.has-selection .mb-catalog th:last-child, .mb-workspace.has-selection .mb-catalog td:last-child { display: none; }
+
+/* Header search: the / shortcut, shown where there is a keyboard */
+.hs-open { position: relative; }
+.hs-kbd { display: none; position: absolute; right: -6px; bottom: -6px; min-width: 16px; padding: 0 4px; border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 5px; font-family: var(--font-mono); font-size: 0.68rem; line-height: 14px; text-align: center; color: var(--muted); background: var(--panel); pointer-events: none; }
+@media (hover: hover) and (pointer: fine) and (min-width: 1100px) { .hs-kbd { display: inline-block; } }

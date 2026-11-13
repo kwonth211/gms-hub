@@ -79,7 +79,7 @@ const T = {
     heroKicker: '글클메 유저를 위한 길잡이',
     heroTitle: '아이템·시세·유용한 사이트, <br>한 번에 찾아보세요',
     heroSub: '아이템·몬스터부터 공략과 도구까지 한곳에서 검색하고, 필요한 사이트로 바로 이동하세요.',
-    searchPlaceholder: '아이템, 몬스터, 사이트 검색',
+    searchPlaceholder: '아이템, 몬스터, 사이트 검색 (어디서든 / 키)',
     statSites: '수록 사이트',
     statCats: '카테고리',
     purposeHeading: '무엇을 찾으세요?',
@@ -292,7 +292,7 @@ const T = {
     heroKicker: 'MapleStory Classic World database',
     heroTitle: 'Who drops it, what it sells for, <br>where to train',
     heroSub: 'Search any item or monster for drops and live prices, or pick your class and level to see where to train.',
-    searchPlaceholder: 'Search items, monsters and sites',
+    searchPlaceholder: 'Search items, monsters and sites (press / anywhere)',
     statSites: 'Sites',
     statCats: 'Categories',
     purposeHeading: 'What do you need?',
@@ -739,7 +739,7 @@ function headerSearch(lang, tabs) {
     ...QUEST_GUIDES.map(({ guide: g }) => [`${guideLabel(g, lang)}${ko ? ' 공략' : ''}`.replace(/ 공략 공략$/, ' 공략'), href(langPath(lang, `/quests/${g.slug}/`))]), [ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests', href(langPath(lang, '/quests/best-exp/'))], [ko ? '맵 도감' : 'Maps', href(langPath(lang, '/maps/'))],
     [ko ? '포가튼 할로우 공략' : 'Forgotten Hollow guide', href(langPath(lang, '/forgotten-hollow/'))], [ko ? '패치노트 (업데이트 기록)' : 'Patch notes', href(langPath(lang, '/updates/'))], [ko ? '잊혀진 골짜기 (포가튼 할로우)' : 'Forgotten Hollow maps, quests and boss', href(langPath(lang, '/forgotten-hollow/'))], [ko ? '썩은 머쉬맘 보스 (포가튼 할로우)' : 'Rotten Mushmom boss (Forgotten Hollow)', href(langPath(lang, '/forgotten-hollow/#boss'))],
     [ko ? '문의·협찬·후원' : 'Contact and support', href(langPath(lang, '/contact/'))]];
-  return `<button type="button" class="hs-open" data-hs data-items="${esc(href('/assets/items.json'))}" data-mobs="${esc(href('/assets/mobs.json'))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-monsters="${esc(href(langPath(lang, '/monsters/')))}" data-pages="${esc(JSON.stringify(pages))}" aria-label="${ko ? '검색' : 'Search'}" title="${ko ? '검색 ( / )' : 'Search ( / )'}"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="hs-label">${ko ? '검색' : 'Search'}</span></button>`;
+  return `<button type="button" class="hs-open" data-hs data-items="${esc(href('/assets/items.json'))}" data-mobs="${esc(href('/assets/mobs.json'))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-monsters="${esc(href(langPath(lang, '/monsters/')))}" data-pages="${esc(JSON.stringify(pages))}" aria-label="${ko ? '검색' : 'Search'}" title="${ko ? '검색 ( / )' : 'Search ( / )'}"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="hs-label">${ko ? '검색' : 'Search'}</span><kbd class="hs-kbd" aria-hidden="true">/</kbd></button>`;
 }
 
 // Pages that are not in the header tabs (the moved tabs, guides, ranking, gear, bosses, databases, shop tools) open from one menu at the end
