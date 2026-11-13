@@ -1137,7 +1137,23 @@ async function fillMegaphones(id) {
   if (!it?.en) return;
   let rows = [];
   try { rows = (await get(`/megaphones?item=${id}&limit=8`)).rows || []; } catch { return; }
-  // The panel is drawn after this call starts, so the box is looked up once the answer is in.
+  if (selected !== id) return;
+  megaRows = { id, rows };
+  drawMegaphones(id);
+}
+// The item's megaphone list, redrawn when a new one naming the item is pushed over the presence socket (common.js).
+let megaRows = { id: 0, rows: [] };
+addEventListener("gms-megaphones", (e) => {
+  if (!selected || megaRows.id !== selected) return;
+  const fresh = e.detail.filter((r) => r.item === selected && !megaRows.rows.some((x) => x.id === r.id));
+  if (!fresh.length) return;
+  megaRows.rows = fresh.sort((a, b) => b.id - a.id).concat(megaRows.rows).slice(0, 8);
+  apiCache.delete(`/megaphones?item=${selected}&limit=8`);
+  drawMegaphones(selected);
+});
+function drawMegaphones(id) {
+  const rows = megaRows.rows;
+  // The panel is drawn after the fetch starts, so the box is looked up once the answer is in.
   const box = $("mb-megas");
   if (selected !== id || !box) return;
   if (!rows.length) { box.hidden = true; return; }
