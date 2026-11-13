@@ -48,9 +48,13 @@ test('source identities stay internal in rendered cards, embedded data and guide
   const publicData=publicTrainingData(training);
   for(const r of publicData.routes) {assert.ok(!('evidence' in r));assert.ok(!('editorialBasis' in r));}
   const pages=['ko','en'].map(l=>read(`dist/${l}/tools/training/index.html`)).concat(guides.map(g=>read(`dist/${g.lang}/guides/${g.slug}/index.html`)));
-  for(const html of pages){
+  // Sources cited by a rate (EXP/mesos an hour) are shown on purpose: public videos and posts, by name, link and date.
+  const cited=new Set(training.routes.flatMap(r=>(r.rates||[]).map(x=>x.src)));
+  const citedSources=evidence.sources.filter(s=>cited.has(s.id));
+  for(const html0 of pages){
+    let html=html0; for(const s of citedSources) html=html.split(s.url).join('').split(s.author).join('');
     assert.ok(!/youtube\.com|youtu\.be|reddit\.com|참고한 자료|Original account ↗/.test(html));
-    for(const s of evidence.sources) assert.ok(!html.includes(s.author),s.author);
+    for(const s of evidence.sources) if(!cited.has(s.id)) assert.ok(!html.includes(s.author),s.author);
   }
   assert.ok(!fs.existsSync(new URL('dist/data/editorial/korean-guides.json',root)));
   const r=structuredClone(training.routes[0]);r.title.ko='<img src=x onerror=alert(1)>';

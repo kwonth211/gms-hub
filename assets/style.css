@@ -2190,3 +2190,28 @@ body.exp-running .exp-stop { display: inline-flex; }
 /* Discord bot page: the command table keeps each command on one line. */
 .bot-cmds code { white-space: nowrap; }
 .bot-page .btn .discord-ico { vertical-align: -0.2em; }
+
+/* Training routes: the sourced EXP/mesos figures. A badge on the collapsed row, a list in the detail, one table at the end. */
+.tr-rate-badge { display: inline-block; align-self: flex-start; width: max-content; margin-left: 8px; padding: 1px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; vertical-align: 2px; background: var(--accent-soft); color: var(--accent-2); border: 1px solid var(--accent-line); white-space: nowrap; }
+.tr-rate-badge.tr-rate-calc, .tr-rate-badge.tr-rate-model { background: var(--panel-2); color: var(--muted); border-color: var(--line); }
+.tr-rates { margin: 10px 0 14px; padding: 10px 12px; border: 1px solid var(--accent-line); border-radius: 10px; background: var(--accent-soft); }
+.tr-rates h4 { margin: 0 0 6px; font-size: 0.85rem; }
+.tr-rates ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.tr-rate { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 12px; align-items: baseline; font-size: 0.86rem; }
+.tr-rate-n b { font-weight: 800; }
+.tr-rate-who { color: var(--muted); }
+.tr-rp { display: inline; }
+.tr-rp + .tr-rp::before { content: ' · '; }
+.tr-rp-basis { font-weight: 700; color: var(--accent-2); }
+.tr-rate-calc .tr-rp-basis, .tr-rate-model .tr-rp-basis { color: var(--muted); }
+.tr-rate-src a { font-size: 0.8rem; white-space: nowrap; }
+.tr-rate small { grid-column: 1 / -1; color: var(--muted); }
+.tr-rate-table-wrap h2 { margin-top: 0; }
+.tr-rate-scroll { overflow-x: auto; }
+.tr-rate-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+.tr-rate-table th, .tr-rate-table td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; }
+.tr-rate-table th { background: var(--panel-2); color: var(--muted); font-size: 0.78rem; white-space: nowrap; }
+.tr-rate-table td:nth-child(3), .tr-rate-table td:nth-child(4) { font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tr-rate-table .tr-rate-who { font-size: 0.8rem; }
+.tr-rate-table td small { display: block; color: var(--muted); font-size: 0.75rem; max-width: 420px; }
+@media (max-width: 760px) { .tr-rate { grid-template-columns: 1fr; } .tr-rate-badge { display: block; width: max-content; margin: 4px 0 0; } }

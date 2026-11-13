@@ -10,7 +10,7 @@ import { collectQuests, questDetail, questIndex, questBestBody, questPath, areaN
 import { EQ_CLASSES, equipPath, collectEquipment, equipmentIndexBody, equipmentClassBody } from './equipment-pages.mjs';
 import { rankBody } from './rank-page.mjs';
 import { megaphoneBody } from './megaphone-page.mjs';
-import { selectRoutes, routeCards, publicTrainingData, jobNames, validateTraining } from '../assets/training-evidence.js';
+import { selectRoutes, routeCards, publicTrainingData, publicRates, rateNum, jobNames, validateTraining } from '../assets/training-evidence.js';
 import { loadLocales, loadMemory, entityMatcher, localizePage, clientKeys, TX_RUNTIME } from './i18n.mjs';
 import { SKILLS as DMG_SKILLS, windowRange as dmgWindow, hitRange as dmgHit, hitsToKill as dmgKill, accuracyNeeded as dmgAccNeed } from '../assets/damage-calc.js';
 import { indexEntry } from '../assets/search-index.js';
@@ -524,6 +524,8 @@ const RATIO_RANK = (() => {
 })();
 // Training routes carry their monsters (name, HP, accuracy for a sure hit at the route's first level) into the page data.
 validateTraining(training, editorialEvidence, MONSTERS.monsters);
+// Rates keep only the public part of their source (name, link, date) from here on; the research notes stay in the data.
+for (const r of training.routes) r.rates = publicRates(r, editorialEvidence);
 for (const r of training.routes) r.mobs = r.mobIds.map((id) => { const m = MOB_BY_ID.get(id); return { id, ko: m.ko || m.en, en: m.en, lv: m.lv, hp: m.hp, acc: dmgAccNeed(r.level.min, m) }; });
 // Which monsters drop an item, for the item pages.
 const MAPS = collectMaps(MONSTERS.monsters);
@@ -1128,6 +1130,23 @@ function trainingMethod(lang) {
 <p>${tr('실제 플레이와 공략을 바탕으로 재구성한 조건부 안내예요. 같은 결과를 모든 장비에서 재현한 실측표는 아니에요.','These conditional routes synthesize gameplay and guides; they are not controlled benchmarks for every setup.')}</p>
 <p><a href="${href(langPath(lang,'/guides/leveling-1-30/'))}">${tr('1~30레벨 상세 동선','Detailed early progression')}</a> · <a href="${href(langPath(lang,'/guides/leveling-30-70/'))}">${tr('30레벨 이후 직업별 분기','Class routes after 30')}</a></p></section>`;
 }
+// Every sourced rate on one table, by level: the quickest answer to "how much does this map give an hour", with the
+// basis (measured, calculated from spawns, a database model, a community post) and the public source beside each.
+function ratesTable(lang) {
+  const tr = (ko, en) => lang === 'ko' ? ko : en;
+  const order = { measured: 0, report: 1, community: 2, calc: 3, model: 4 };
+  const basis = { ko: { measured: '실측', calc: '계산', model: '모델 추정', community: '커뮤니티', report: '유저 보고' }, en: { measured: 'measured', calc: 'calculated', model: 'model', community: 'community', report: 'reports' } };
+  const party = { ko: { solo: '솔로', party: '파티' }, en: { solo: 'solo', party: 'party' } };
+  const rows = training.routes.flatMap((r) => (r.rates || []).map((x) => ({ r, x }))).sort((a, b) => a.r.level.min - b.r.level.min || order[a.x.basis] - order[b.x.basis]);
+  const cell = (x) => [x.x.exp != null && `${rateNum(x.x.exp, lang)}`, x.x.mesos != null && `${tr('메소 ', 'mesos ')}${rateNum(x.x.mesos, lang)}`];
+  return `<section class="panel tr-rate-table-wrap" id="rates"><h2>${tr('사냥터별 시간당 경험치·메소 (출처 있는 수치)', 'EXP and mesos an hour by map (sourced figures)')}</h2>
+<p class="muted">${tr('유튜브 실측 영상과 커뮤니티 후기에서 직접 재거나 계산한 수치만 모았어요. 직업·레벨·파티 인원·장비에 따라 달라지니 조건을 꼭 같이 보세요. 참고로 출시 첫 주 전체 유저 평균은 시간당 메소 약 2.1만이었어요(Maple Math, 962시간 트래커 집계).', 'Only figures measured or calculated in YouTube videos and community posts. They depend on class, level, party size and gear, so read the conditions. For scale, launch-week trackers averaged about 21k mesos an hour across all players (Maple Math, 962 tracked hours).')}</p>
+<div class="tr-rate-scroll"><table class="tr-rate-table"><thead><tr><th>${tr('레벨', 'Level')}</th><th>${tr('사냥터', 'Map')}</th><th>${tr('경험치/시간', 'EXP/h')}</th><th>${tr('메소/시간', 'Mesos/h')}</th><th>${tr('조건', 'Conditions')}</th><th>${tr('근거', 'Source')}</th></tr></thead><tbody>${rows.map(({ r, x }) => {
+    const who = [x.level && `<div class="tr-rp" translate="no">Lv ${esc(x.level)}</div>`, x.job && `<div class="tr-rp">${esc(jobNames[lang][x.job])}</div>`, `<div class="tr-rp">${party[lang][x.party]}</div>`].filter(Boolean).join('');
+    return `<tr class="tr-rate-${esc(x.basis)}"><td translate="no">${r.level.min}–${r.level.max}</td><td><a href="#route-${esc(r.id)}">${esc(r.title[lang])}</a></td><td translate="no">${x.exp != null ? rateNum(x.exp, lang) : '—'}</td><td translate="no">${x.mesos != null ? rateNum(x.mesos, lang) : '—'}</td><td><div class="tr-rate-who">${who}<div class="tr-rp tr-rp-basis">${basis[lang][x.basis]}</div></div>${x.note ? `<small>${esc(lang === 'ko' ? x.note.ko : x.note.en)}</small>` : ''}</td><td translate="no">${x.src ? `<a href="${esc(x.src.url)}" target="_blank" rel="noopener">${esc(x.src.name)}</a><small>${esc(x.src.date)}</small>` : ''}</td></tr>`;
+  }).join('')}</tbody></table></div>
+<p class="muted small">${tr('실측 = 영상에서 10분 이상 직접 잰 값 · 계산 = 젠 수와 처치 속도로 계산한 값 · 모델 추정 = NiaMeowDB 상한 모델(실제는 더 낮음) · 커뮤니티 = 게시판 후기.', 'Measured = timed in the video for 10+ minutes · calculated = from spawn counts and kill speed · model = NiaMeowDB ceiling (real rates are lower) · community = forum posts.')}</p></section>`;
+}
 function trainingBody(lang) {
   const t=T[lang]; const tr=(ko,en)=>lang==='ko'?ko:en;
   const initial=selectRoutes(training.routes,{level:20});
@@ -1142,7 +1161,7 @@ function trainingBody(lang) {
 <p class="tr-filter-help">${tr('표시 레벨은 이동 검토 구간이에요. 카드의 진입 기준을 먼저 확인하세요.','Levels are trial windows; read each card’s entry conditions first.')}</p>
 </form><div class="tr-result-head"><h2 id="tr-status" role="status">${tr('20레벨 사냥 후보','Options for level 20')} ${initial.length}${tr('곳','')}</h2><div class="tr-result-actions"><button type="button" class="btn ghost small-btn" id="tr-share" data-ok="${tr('조건 링크를 복사했어요','Link copied')}" data-fail="${tr('복사하지 못했어요. 주소창의 주소를 직접 복사해 주세요.','Could not copy. Copy the address from the address bar.')}">${tr('이 조건 링크 복사','Copy link to these filters')}</button><span id="tr-share-status" class="share-status" role="status" aria-live="polite"></span><a href="${href(langPath(lang,'/guides/choose-your-job/'))}">${tr('직업별 육성 가이드','Class guides')}</a></div></div>
 <section id="tr-result">${routeCards(initial,lang)}</section><noscript><p>${tr('조건 검색에는 JavaScript가 필요해요. 아래 레벨별 페이지에서 전체 경로를 볼 수 있어요.','Filters require JavaScript. Browse the level-band pages below for all routes.')}</p></noscript>
-${classNav(lang)}${bandNav(lang)}${trainingMethod(lang)}</div>${jsonScript('training-data',publicTrainingData(training))}`;
+${ratesTable(lang)}${classNav(lang)}${bandNav(lang)}${trainingMethod(lang)}</div>${jsonScript('training-data',publicTrainingData(training))}`;
 }
 function trainingBandBody(lang,band) {
   const t=T[lang]; const rows=bandSpots(band); const vars={a:band[0],b:band[1],n:rows.length};
