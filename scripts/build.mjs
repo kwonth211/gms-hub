@@ -687,7 +687,6 @@ function header(lang, pagePath, only) {
     ['/tools/training/', 'sword', t.navTraining],
     ['/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monsters'],
     ['/quests/', 'scroll', lang === 'ko' ? '퀘스트' : 'Quests'],
-    ['/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Megaphones'],
     guides.some((g) => g.lang === lang) && ['/guides/', 'book', t.navGuides]
   ].filter(Boolean);
   // Calculators and the EXP tracker share one header tab that opens a dropdown (2026-11-13, user request), instead of
@@ -698,7 +697,9 @@ function header(lang, pagePath, only) {
     ['/tools/drop-rate/', 'bag', t.navDrop],
     ['/tools/damage/', 'hammer', DMG[lang].h1]
   ];
-  const moved = [['/', 'star', t.navLinks]];
+  // The megaphone page left the tabs when the live-viewer pill squeezed them (2026-11-13); the ticker above the header
+  // already opens it, and it stays in the "more" menu and the search.
+  const moved = [['/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Megaphones'], ['/', 'star', t.navLinks]];
   // English labels that would break mid-word on a phone ("Calcul/ator") get a one-word form there.
   // The newest tab carries a small N so returning visitors notice it.
   const NEW_TAB = UPDATES.find((u) => [...tabs, ...toolItems].some(([p]) => p === u.path.split('#')[0]))?.path.split('#')[0] || '/quests/';
