@@ -41,7 +41,7 @@ export function collectEquipment({ items, details, dropIndex, quests }) {
     .sort((a, b) => a.lv - b.lv || a.id - b.id);
 }
 
-const subName = (sub, lang) => (lang === 'ko' ? SUB_KO[sub] || sub : sub);
+export const subName = (sub, lang) => (lang === 'ko' ? SUB_KO[sub] || sub : sub);
 const statLine = (e, lang) => INC_ORDER.filter((k) => e.inc[k]).map((k) => `<span>${INC_LABEL[lang][k] || k} +${e.inc[k]}</span>`).join('');
 const reqLine = (e) => ['str', 'dex', 'int', 'luk'].filter((k) => e.req[k]).map((k) => `<span>${k.toUpperCase()} ${e.req[k]}</span>`).join('');
 

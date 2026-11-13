@@ -3,10 +3,10 @@
  "updates": [
   {
    "date": "2026-11-13",
-   "path": "/downloads/",
+   "path": "/tools/market/",
    "new": true,
-   "ko": "자료실 — 시세·확성기·랭킹·몬스터·퀘스트·장비를 엑셀로 받기",
-   "en": "Downloads: prices, megaphones, ranking, monsters, quests and gear as Excel files"
+   "ko": "메뉴마다 엑셀로 받기 — 시세 등락·확성기·랭킹 분포·사냥터·퀘스트 체크리스트를 정리된 엑셀로",
+   "en": "Download Excel on every menu: price movers, megaphones, ranking by job, training, quest checklists"
   },
   {
    "date": "2026-11-13",

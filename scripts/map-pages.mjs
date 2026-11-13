@@ -24,7 +24,7 @@ export function collectMaps(monsters) {
 }
 
 export const mapName = (l, lang) => (lang === 'ko' ? l.ko || l.en : l.en);
-const regionName = (r, lang) => (lang === 'ko' ? regionKo[r] || r : r);
+export const regionName = (r, lang) => (lang === 'ko' ? regionKo[r] || r : r);
 const statusTag = (l, ko) =>
   l.availability === 'open' ? '' : `<span class="monster-tag status-upcoming">${l.availability === 'upcoming' ? (ko ? '11/18 개방 예정' : 'Opens Nov 18') : ko ? '미개방 지역' : 'Unreleased area'}</span>`;
 
