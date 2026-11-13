@@ -2564,16 +2564,6 @@ body.exp-running .exp-stop { display: inline-flex; }
 .tr-exp-link { margin: 8px 0 0; font-size: .9rem; font-weight: 700; }
 #exp-best { font-size: 1.05rem; }
 
-/* Update news pager */
-.upd-pager { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-.upd-pages { display: flex; gap: 4px; }
-.upd-pager button { font: inherit; font-size: 0.9rem; font-weight: 700; min-width: 36px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--panel); color: var(--text); cursor: pointer; }
-.upd-pager button:hover:not(:disabled) { border-color: var(--accent-fill); }
-.upd-pager button:active:not(:disabled) { transform: translateY(1px); }
-.upd-pager button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-.upd-pager button[aria-current] { background: var(--accent-fill); border-color: var(--accent-edge); color: var(--accent-ink); }
-.upd-pager button:disabled { opacity: 0.45; cursor: default; }
-.upd-list li[hidden] { display: none; }
 /* Player-measured rate from shared EXP tracker runs (assets/exp-community.js) and the tracker's profile row. */
 .tr-community { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; font-size: .74rem; font-weight: 700; color: var(--ok); background: var(--ok-soft); border: 1px solid var(--ok-line); vertical-align: middle; }
 .exp-me { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
@@ -2583,3 +2573,19 @@ body.exp-running .exp-stop { display: inline-flex; }
 .exp-me small { flex-basis: 100%; }
 .exp-share { white-space: nowrap; }
 .exp-shared { color: var(--ok); font-weight: 700; font-size: .85rem; white-space: nowrap; }
+
+/* Patch notes (/updates/) and the link to them from the home list */
+.home-updates-all { font-weight: 700; font-size: 0.92rem; color: var(--accent); text-decoration: none; }
+.home-updates-all:hover { text-decoration: underline; }
+.home-updates-all:focus-visible, .pn-go:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.pn-page { display: grid; gap: 28px; padding-top: 16px; padding-bottom: 48px; }
+.pn-day h2 { display: flex; align-items: center; gap: 8px; font-size: 1.15rem; margin: 0 0 12px; }
+.pn-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.pn-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px; align-items: center; padding: 16px 20px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); scroll-margin-top: 120px; }
+.pn-item:target { border-color: var(--accent-fill); box-shadow: 0 0 0 3px var(--accent-soft); }
+.pn-item h3 { margin: 0; font-size: 1.05rem; }
+.pn-item p { grid-column: 1; margin: 0; color: var(--muted); line-height: 1.6; }
+.pn-go { grid-column: 2; grid-row: 1 / span 2; white-space: nowrap; font-weight: 700; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line-strong); color: var(--text); text-decoration: none; background: var(--bg); }
+.pn-go:hover { border-color: var(--accent-fill); }
+.pn-go:active { transform: translateY(1px); }
+@media (max-width: 640px) { .pn-item { grid-template-columns: minmax(0, 1fr); } .pn-go { grid-column: 1; grid-row: auto; justify-self: start; margin-top: 6px; } }

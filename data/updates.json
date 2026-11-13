@@ -1,287 +1,517 @@
 {
- "note": "Site updates shown on the home page (newest first). Add an entry with every new feature or visible improvement: date (KST), ko/en text, link path.",
+ "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content.",
  "updates": [
   {
+   "id": "exp-tracker-2",
    "date": "2026-11-13",
    "path": "/tools/exp/",
    "new": true,
    "ko": "경험치 측정기 강화 — 최근 5분 속도·미니 창·사냥 기록·내 최고 기록 비교·멈춤 알림·예시 보기",
-   "en": "EXP tracker upgrade: last 5 minutes, mini window, training log, compare with your best, stall alert, example"
+   "en": "EXP tracker upgrade: last 5 minutes, mini window, training log, compare with your best, stall alert, example",
+   "desc": {
+    "ko": "사냥 중 최근 5분 속도를 따로 보여주고, 작은 창으로 띄워 게임 옆에 둘 수 있어요. 사냥 기록이 쌓이고 내 최고 기록과 비교하며, 경험치가 멈추면 알려줘요.",
+    "en": "Shows your last-5-minute rate, pops out into a small window beside the game, keeps a training log, compares with your best and warns when EXP stalls."
+   }
   },
   {
+   "id": "forgotten-hollow",
    "date": "2026-11-13",
    "path": "/forgotten-hollow/",
    "new": true,
    "ko": "포가튼 할로우 공략 — 가는 법·구역별 사냥터·몬스터·퀘스트·보스 한 페이지",
-   "en": "Forgotten Hollow guide: getting in, maps by level, monsters, quests and the boss on one page"
+   "en": "Forgotten Hollow guide: getting in, maps by level, monsters, quests and the boss on one page",
+   "desc": {
+    "ko": "11월 18일 열리는 새 지역을 한 페이지에 정리했어요. 입구 두 곳, 레벨 구간별 추천 사냥터와 숨은 맵, 새 몬스터 10종의 약점·명중, 직업별 사냥 대상, 퀘스트 보상, 보스 썩은 머쉬맘까지.",
+    "en": "The new area opening November 18 on one page: both entrances, the best and hidden maps by level, the ten monsters with weaknesses and accuracy, what each class should hunt, quest rewards and the Rotten Mushmom boss."
+   }
   },
   {
+   "id": "excel",
    "date": "2026-11-13",
    "path": "/tools/market/",
    "new": true,
    "ko": "메뉴마다 엑셀로 받기 — 시세 등락·확성기·랭킹 분포·사냥터·퀘스트 체크리스트를 정리된 엑셀로",
-   "en": "Download Excel on every menu: price movers, megaphones, ranking by job, training, quest checklists"
+   "en": "Download Excel on every menu: price movers, megaphones, ranking by job, training, quest checklists",
+   "desc": {
+    "ko": "시세, 확성기, 랭킹, 사냥터, 퀘스트 페이지마다 엑셀 버튼이 생겼어요. 표를 그대로 내려받아 내 방식대로 정렬하고 메모할 수 있어요.",
+    "en": "Every main page has an Excel button: download the table and sort or annotate it your own way."
+   }
   },
   {
+   "id": "english-search",
    "date": "2026-11-13",
    "path": "/",
    "ko": "영어 검색 개선 — glove att 60, zhelm 같은 줄임말도 찾아요",
-   "en": "Better English search: shorthand like glove att 60 or zhelm now works"
+   "en": "Better English search: shorthand like glove att 60 or zhelm now works",
+   "desc": {
+    "ko": "영어로 검색할 때 glove att 60, zhelm 같은 게임 줄임말도 알아들어요.",
+    "en": "English search understands game shorthand such as glove att 60 or zhelm."
+   }
   },
   {
+   "id": "quest-guides-2",
    "date": "2026-11-13",
    "path": "/quests/",
    "new": true,
    "ko": "퀘스트 공략 보강 — 맵별 가는 길·주의할 점·영상, 루크·인내의 숲 추가",
-   "en": "Quest guides upgraded: map-by-map routes, warnings and videos, plus Luke and the Forest of Patience"
+   "en": "Quest guides upgraded: map-by-map routes, warnings and videos, plus Luke and the Forest of Patience",
+   "desc": {
+    "ko": "퀘스트 공략마다 맵을 하나씩 이어 가는 길, 주의할 점, 점프 맵 영상을 넣었어요. 루크와 인내의 숲 공략도 추가했어요.",
+    "en": "Each quest guide now has a map-by-map route, warnings and videos for jump maps, plus new guides for Luke and the Forest of Patience."
+   }
   },
   {
+   "id": "quests-tab",
    "date": "2026-11-13",
    "path": "/quests/",
    "new": true,
    "ko": "퀘스트 탭 신설 — 피아·마야·아얀·슈미·아르웬·존·동료의 증명·리엘 공략 8개 추가",
-   "en": "New Quests tab — eight new step-by-step guides: Pia, Maya, Ayan, Shumi, Arwen, John, Lakelis and Riel"
+   "en": "New Quests tab — eight new step-by-step guides: Pia, Maya, Ayan, Shumi, Arwen, John, Lakelis and Riel",
+   "desc": {
+    "ko": "상단에 퀘스트 탭이 생겼어요. 피아, 마야, 아얀, 슈미, 아르웬, 존, 동료의 증명, 리엘 퀘스트를 단계별로 따라 할 수 있어요.",
+    "en": "A new Quests tab with step-by-step guides for Pia, Maya, Ayan, Shumi, Arwen, John, Lakelis and Riel."
+   }
   },
   {
+   "id": "glove-quest",
    "date": "2026-11-13",
    "path": "/quests/glove-attack/",
    "new": true,
    "ko": "장공 퀘스트 공략 — 로웬·제인 두 루트, NPC 위치·재료·동선·시세",
-   "en": "Gloves attack scroll quests — the Rowen and Jane routes, NPCs, items, route and prices"
+   "en": "Gloves attack scroll quests — the Rowen and Jane routes, NPCs, items, route and prices",
+   "desc": {
+    "ko": "장갑 공격력 주문서를 주는 두 루트(로웬 저주받은 인형, 제인의 도전)를 단계별로 정리했어요. NPC 위치, 필요한 재료와 몬스터, 동선, 재료 시세를 함께 보고 진행 상황을 체크할 수 있어요.",
+    "en": "Both routes to the gloves attack scroll (Rowen's cursed dolls and Jane's challenges), step by step: NPC spots, materials, monsters, the route and live prices, with progress you can tick off."
+   }
   },
   {
+   "id": "training-rates",
    "date": "2026-11-13",
    "path": "/tools/training/#rates",
    "ko": "사냥터 추천에 시간당 경험치·메소 실측 수치 46개",
-   "en": "Training routes: 46 measured EXP and meso per hour figures"
+   "en": "Training routes: 46 measured EXP and meso per hour figures",
+   "desc": {
+    "ko": "사냥터 추천에 실제로 측정한 시간당 경험치와 메소 수치 46개를 붙였어요. 어디가 더 빠른지 숫자로 비교할 수 있어요.",
+    "en": "Training routes now carry 46 measured EXP and meso per hour figures, so you can compare spots by numbers."
+   }
   },
   {
+   "id": "live-megaphones-push",
    "date": "2026-11-13",
    "path": "/megaphone/",
    "ko": "실시간 확성기가 새로고침 없이 바로 들어와요",
-   "en": "Live megaphones arrive without a refresh"
+   "en": "Live megaphones arrive without a refresh",
+   "desc": {
+    "ko": "새 확성기가 페이지를 새로고침하지 않아도 바로 목록에 들어와요.",
+    "en": "New megaphones appear in the feed as they happen, no refresh needed."
+   }
   },
   {
+   "id": "discord-bot",
    "date": "2026-11-13",
    "path": "/discord-bot/",
    "ko": "디스코드 봇 — 시세·몬스터·사냥터 검색, 확성기 알림",
-   "en": "Discord bot — prices, monsters, training spots and megaphone alerts"
+   "en": "Discord bot — prices, monsters, training spots and megaphone alerts",
+   "desc": {
+    "ko": "디스코드에서 /price, /mob, /train 명령으로 시세, 몬스터, 사냥터를 찾고, /alert로 원하는 아이템 확성기를 DM으로 받아요.",
+    "en": "In Discord, /price, /mob and /train look up prices, monsters and training spots, and /alert sends you megaphones for an item by DM."
+   }
   },
   {
+   "id": "exp-tracker",
    "date": "2026-11-12",
    "path": "/tools/exp/",
    "ko": "경험치 측정기 — 화면 공유로 시간당 경험치·레벨업까지 남은 시간",
-   "en": "EXP tracker — EXP per hour and time to level from your screen"
+   "en": "EXP tracker — EXP per hour and time to level from your screen",
+   "desc": {
+    "ko": "게임 창을 화면 공유하면 경험치를 읽어서 시간당 경험치와 레벨업까지 남은 시간을 계산해요. 화면 공유 없이 숫자를 직접 넣을 수도 있어요.",
+    "en": "Share your game window and it reads your EXP to show EXP per hour and time to the next level; you can also type the numbers in."
+   }
   },
   {
+   "id": "market-panel-2",
    "date": "2026-11-12",
    "path": "/tools/market/",
    "ko": "시세 아이템 패널 개편 — 가격 분포·추이·관련 확성기",
-   "en": "Market item panel — price spread, history and related megaphones"
+   "en": "Market item panel — price spread, history and related megaphones",
+   "desc": {
+    "ko": "아이템을 누르면 가격 분포, 날짜별 시세 추이, 그 아이템이 나온 확성기를 한 번에 보여줘요.",
+    "en": "Opening an item shows its price spread, daily price history and the megaphones that mention it."
+   }
   },
   {
+   "id": "megaphone-trends",
    "date": "2026-11-12",
    "path": "/megaphone/",
    "ko": "확성기 트렌드 — 지금 뜨는 아이템, 사려는 사람이 많은 아이템",
-   "en": "Megaphone trends — hot items and items more people are buying"
+   "en": "Megaphone trends — hot items and items more people are buying",
+   "desc": {
+    "ko": "확성기에서 지금 많이 언급되는 아이템과, 팔려는 사람보다 사려는 사람이 많은 아이템을 보여줘요.",
+    "en": "Shows the items megaphones mention most right now, and items with more buyers than sellers."
+   }
   },
   {
+   "id": "header-search",
    "date": "2026-11-12",
    "path": "/",
    "ko": "상단 검색 — 어느 페이지에서나 검색 버튼이나 / 키로 아이템·몬스터·페이지 찾기",
-   "en": "Search from every page: the header button or / finds items, monsters and pages"
+   "en": "Search from every page: the header button or / finds items, monsters and pages",
+   "desc": {
+    "ko": "어느 페이지에서나 상단 검색 버튼이나 / 키를 누르면 아이템, 몬스터, 페이지를 바로 찾을 수 있어요.",
+    "en": "On any page, the header search button or the / key finds items, monsters and pages."
+   }
   },
   {
+   "id": "market-today",
    "date": "2026-11-12",
    "path": "/tools/market/today/",
    "ko": "오늘의 시세 리포트 — 매일 밤 새로 정리되는 시세 요약",
-   "en": "Today's price report, rebuilt every night"
+   "en": "Today's price report, rebuilt every night",
+   "desc": {
+    "ko": "매일 밤 자동으로 정리되는 오늘의 시세 요약이에요. 많이 거래된 아이템과 가격 변화를 한눈에 볼 수 있어요.",
+    "en": "A price summary rebuilt every night: the most traded items and how their prices moved."
+   }
   },
   {
+   "id": "megaphone-ticker",
    "date": "2026-11-12",
    "path": "/megaphone/",
    "ko": "확성기 띠 — 모든 페이지 맨 위에 최신 확성기가 흘러가요",
-   "en": "A megaphone ticker across the top of every page"
+   "en": "A megaphone ticker across the top of every page",
+   "desc": {
+    "ko": "모든 페이지 맨 위에 최신 확성기가 흘러가요. 누르면 확성기 페이지에서 그 글을 바로 보여줘요.",
+    "en": "The latest megaphones scroll across the top of every page; tap one to open it on the megaphone page."
+   }
   },
   {
+   "id": "market-class-filter",
    "date": "2026-11-12",
    "path": "/tools/market/",
    "ko": "시세에 직업 필터 — 내 직업이 쓸 수 있는 장비·무기·주문서·표창만 보기",
-   "en": "Class filter on the market: only gear, weapons, scrolls and stars your class can use"
+   "en": "Class filter on the market: only gear, weapons, scrolls and stars your class can use",
+   "desc": {
+    "ko": "시세 목록에서 직업을 고르면 그 직업이 쓸 수 있는 장비, 무기, 주문서, 표창만 남아요.",
+    "en": "Pick a class on the market and only the gear, weapons, scrolls and stars it can use remain."
+   }
   },
   {
+   "id": "market-panel",
    "date": "2026-11-12",
    "path": "/tools/market/",
    "ko": "시세 아이템 패널 — 착용 조건·능력치·NPC 가격·드롭 몬스터·퀘스트 보상",
-   "en": "Item panel: requirements, stats, NPC price, droppers and quest rewards"
+   "en": "Item panel: requirements, stats, NPC price, droppers and quest rewards",
+   "desc": {
+    "ko": "시세에서 아이템을 누르면 착용 조건, 능력치, NPC 판매가, 떨구는 몬스터, 보상으로 주는 퀘스트까지 보여줘요.",
+    "en": "An item on the market opens with its requirements, stats, NPC price, the monsters that drop it and the quests that reward it."
+   }
   },
   {
+   "id": "scan-compare",
    "date": "2026-11-12",
    "path": "/tools/scan/",
    "ko": "상점 스캔에 시세 비교 — 내 가격이 시세보다 얼마나 비싼지",
-   "en": "Shop scan compares each price with the market"
+   "en": "Shop scan compares each price with the market",
+   "desc": {
+    "ko": "상점 스캔 결과에 아이템마다 시세가 함께 나와서, 내가 올린 가격이 시세보다 얼마나 비싼지 싼지 바로 알 수 있어요.",
+    "en": "Shop scan results show each item's market price, so you can see how far your asking price is from it."
+   }
   },
   {
+   "id": "megaphones",
    "date": "2026-11-11",
    "path": "/megaphone/",
    "ko": "실시간 확성기 — 게임 확성기를 모아 보고 검색하기",
-   "en": "Live megaphones: every in-game megaphone, searchable"
+   "en": "Live megaphones: every in-game megaphone, searchable",
+   "desc": {
+    "ko": "게임 확성기를 실시간으로 모아 보여줘요. 팝니다·삽니다를 구분하고 아이템 이름으로 검색하고, 귓속말 문구도 복사할 수 있어요.",
+    "en": "Every in-game megaphone collected live: buying and selling apart, searchable by item, with a one-tap whisper."
+   }
   },
   {
+   "id": "rank",
    "date": "2026-11-11",
    "path": "/rank/",
    "ko": "캐릭터 랭킹 — 레벨 순위·직업 분포·내 캐릭터 찾기",
-   "en": "Character rankings: level ranks, class split and character lookup"
+   "en": "Character rankings: level ranks, class split and character lookup",
+   "desc": {
+    "ko": "레벨 순위 상위 1,000명과 직업 분포를 보여주고, 내 캐릭터 이름으로 순위를 찾아 맞는 사냥터와 가이드로 이어줘요.",
+    "en": "The top 1,000 by level and the class split; look up your character to see its rank and the training spots and guide that fit."
+   }
   },
   {
+   "id": "market-sparklines",
    "date": "2026-11-11",
    "path": "/tools/market/",
    "ko": "인기 아이템 시간별 그래프와 실시간 순위 변동",
-   "en": "Hourly sparklines and live ranking moves for the top 10"
+   "en": "Hourly sparklines and live ranking moves for the top 10",
+   "desc": {
+    "ko": "인기 아이템 10개에 시간별 가격 그래프가 붙고, 순위가 바뀌는 게 실시간으로 보여요.",
+    "en": "The top 10 items get hourly price lines, and rank changes show live."
+   }
   },
   {
+   "id": "item-hover",
    "date": "2026-11-11",
    "path": "/items/",
    "ko": "아이템 미리보기 — 아이템 이름에 마우스를 올리면 능력치와 드롭 몬스터",
-   "en": "Item hover cards with stats and droppers on every page"
+   "en": "Item hover cards with stats and droppers on every page",
+   "desc": {
+    "ko": "사이트 어디서든 아이템 이름에 마우스를 올리면 능력치와 떨구는 몬스터가 작은 카드로 떠요.",
+    "en": "Hover any item name on the site to see its stats and droppers in a small card."
+   }
   },
   {
+   "id": "class-guides",
    "date": "2026-11-11",
    "path": "/guides/hunter/",
    "ko": "직업별 상세 가이드 — 파이터·페이지·스피어맨·어쌔신·시프·불독·썬콜·클레릭·헌터·사수 (30~70)",
-   "en": "Detailed 30–70 guides for all ten second jobs"
+   "en": "Detailed 30–70 guides for all ten second jobs",
+   "desc": {
+    "ko": "2차 직업 10개 모두에 30~70레벨 상세 가이드가 생겼어요. 스킬 찍는 순서, 무기, 사냥터를 레벨별로 정리했어요.",
+    "en": "Detailed level 30–70 guides for all ten second jobs: skill order, weapons and training spots by level."
+   }
   },
   {
+   "id": "equipment",
    "date": "2026-11-11",
    "path": "/equipment/",
    "ko": "직업별 장비 찾기와 레벨별 경험치 퀘스트",
-   "en": "Gear finder by class and level, and the best EXP quests by level"
+   "en": "Gear finder by class and level, and the best EXP quests by level",
+   "desc": {
+    "ko": "직업과 레벨을 고르면 낄 수 있는 장비를 부위별로 보여줘요. 레벨 구간마다 경험치를 많이 주는 퀘스트도 정리했어요.",
+    "en": "Pick a class and level to see the gear you can wear by slot, plus the quests that pay the most EXP at each level."
+   }
   },
   {
+   "id": "bosses",
    "date": "2026-11-11",
    "path": "/bosses/",
    "ko": "보스 페이지 — 보스별 위치·체력·드롭",
-   "en": "Bosses page: where they spawn, HP and drops"
+   "en": "Bosses page: where they spawn, HP and drops",
+   "desc": {
+    "ko": "보스마다 나오는 위치, 체력, 경험치, 드롭을 한 페이지에 모았어요.",
+    "en": "Every boss on one page: where it spawns, HP, EXP and drops."
+   }
   },
   {
+   "id": "quest-db",
    "date": "2026-11-11",
    "path": "/quests/",
    "ko": "퀘스트 도감 — 퀘스트 343개의 조건·보상·필요 아이템 드롭 몬스터",
-   "en": "Quest database: 343 quests with requirements, rewards and who drops the items"
+   "en": "Quest database: 343 quests with requirements, rewards and who drops the items",
+   "desc": {
+    "ko": "퀘스트 343개의 시작 조건, 모아 올 아이템과 그 아이템을 떨구는 몬스터, 보상 경험치와 메소를 지역별로 찾아볼 수 있어요.",
+    "en": "343 quests by area: start conditions, items to bring and who drops them, and the EXP and mesos they pay."
+   }
   },
   {
+   "id": "map-db",
    "date": "2026-11-10",
    "path": "/maps/",
    "ko": "맵 도감 — 맵마다 몬스터·마릿수·한 바퀴 경험치·드롭",
-   "en": "Map database: monsters, spawn counts, EXP per clear and drops for every map"
+   "en": "Map database: monsters, spawn counts, EXP per clear and drops for every map",
+   "desc": {
+    "ko": "맵마다 나오는 몬스터와 마릿수, 한 바퀴 돌 때 경험치, 빗나가지 않는 명중, 드롭을 보여줘요.",
+    "en": "Each map with its monsters and spawn counts, EXP for a full clear, sure-hit accuracy and drops."
+   }
   },
   {
+   "id": "item-db",
    "date": "2026-11-10",
    "path": "/items/",
    "ko": "아이템 도감 — 몬스터가 떨구는 모든 아이템의 드롭 몬스터·사냥 맵·기본 능력치",
-   "en": "Item database: droppers, farm maps and base stats for every monster drop"
+   "en": "Item database: droppers, farm maps and base stats for every monster drop",
+   "desc": {
+    "ko": "몬스터가 떨구는 아이템마다 페이지가 있어요. 어떤 몬스터가 떨구는지, 어느 맵에서 잡으면 되는지, 기본 능력치를 알 수 있어요.",
+    "en": "A page for every monster drop: which monsters drop it, the maps to farm and its base stats."
+   }
   },
   {
+   "id": "my-character",
    "date": "2026-11-10",
    "path": "/",
    "ko": "내 캐릭터 저장 — 직업과 레벨을 저장하면 맞춤 사냥터를 바로 보여줘요",
-   "en": "Save my character: class and level for tailored training spots"
+   "en": "Save my character: class and level for tailored training spots",
+   "desc": {
+    "ko": "직업과 레벨을 한 번 저장해 두면 홈과 사냥터 추천에서 내 캐릭터에 맞는 사냥터를 바로 보여줘요.",
+    "en": "Save your class and level once and the home page and training finder show spots for your character right away."
+   }
   },
   {
+   "id": "class-training",
    "date": "2026-11-10",
    "path": "/tools/training/",
    "ko": "직업별 사냥터 페이지와 사냥 메모",
-   "en": "Training pages for each class, with hunting notes"
+   "en": "Training pages for each class, with hunting notes",
+   "desc": {
+    "ko": "직업마다 레벨별 사냥터 페이지가 생기고, 몬스터마다 사냥할 때 알아 둘 메모가 붙었어요.",
+    "en": "A training page for every class by level, and hunting notes on each monster."
+   }
   },
   {
+   "id": "redesign",
    "date": "2026-11-10",
    "path": "/",
    "ko": "새 디자인과 밤 모드 — 크림 종이 바탕, 메이플 주황 버튼",
-   "en": "New look with a night mode: cream paper and maple orange"
+   "en": "New look with a night mode: cream paper and maple orange",
+   "desc": {
+    "ko": "사이트 디자인이 바뀌었어요. 낮에는 크림색 종이 바탕, 밤에는 어두운 밤 모드로 볼 수 있어요.",
+    "en": "A new look: cream paper by day and a dark night mode."
+   }
   },
   {
+   "id": "monster-db",
    "date": "2026-11-10",
    "path": "/monsters/",
    "ko": "몬스터 도감 — 체력·경험치·약점·드롭·출현 맵",
-   "en": "Monster database: HP, EXP, weaknesses, drops and spawn maps"
+   "en": "Monster database: HP, EXP, weaknesses, drops and spawn maps",
+   "desc": {
+    "ko": "몬스터마다 체력, 경험치, 약점, 드롭, 나오는 맵을 정리한 도감이에요.",
+    "en": "A monster database: HP, EXP, weaknesses, drops and spawn maps."
+   }
   },
   {
+   "id": "market-watchlist",
    "date": "2026-11-10",
    "path": "/tools/market/",
    "ko": "시세 관심 목록과 최근 본 아이템, 공유 링크",
-   "en": "Market watchlist, recently viewed items and share links"
+   "en": "Market watchlist, recently viewed items and share links",
+   "desc": {
+    "ko": "관심 아이템을 담아 두고 최근 본 아이템으로 다시 돌아갈 수 있어요. 아이템 시세를 링크로 공유할 수도 있어요.",
+    "en": "Keep a watchlist, jump back to recently viewed items and share an item's price as a link."
+   }
   },
   {
+   "id": "guides-en",
    "date": "2026-11-09",
    "path": "/guides/",
    "ko": "가이드 14편 영어판",
-   "en": "English versions of all 14 guides"
+   "en": "English versions of all 14 guides",
+   "desc": {
+    "ko": "가이드 14편 모두 영어로도 읽을 수 있어요.",
+    "en": "All 14 guides are now in English too."
+   }
   },
   {
+   "id": "home-search",
    "date": "2026-11-09",
    "path": "/",
    "ko": "홈 검색 개선 — 귀힘·장공 같은 줄임말과 몬스터 별명",
-   "en": "Home search understands shorthand and monster nicknames"
+   "en": "Home search understands shorthand and monster nicknames",
+   "desc": {
+    "ko": "홈 검색이 귀힘, 장공 같은 줄임말과 엄티 같은 몬스터 별명을 알아들어요.",
+    "en": "Home search understands shorthand like 귀힘 or 장공 and monster nicknames."
+   }
   },
   {
+   "id": "item-prices",
    "date": "2026-11-04",
    "path": "/items/",
    "ko": "아이템별 시세 페이지 — 매일 새로 반영",
-   "en": "A price page for every item, updated daily"
+   "en": "A price page for every item, updated daily",
+   "desc": {
+    "ko": "시세가 있는 아이템마다 가격 페이지가 생겼어요. 매일 새 시세로 갱신돼요.",
+    "en": "Every priced item gets its own price page, refreshed daily."
+   }
   },
   {
+   "id": "damage-calc",
    "date": "2026-11-03",
    "path": "/tools/damage/",
    "ko": "몇 방 컷 계산기 — 스탯창 화면 공유로 바로 계산",
-   "en": "Hits-to-kill calculator that reads your stat window"
+   "en": "Hits-to-kill calculator that reads your stat window",
+   "desc": {
+    "ko": "내 스탯과 무기로 몬스터를 몇 방에 잡는지, 명중이 충분한지 계산해요. 스탯창을 화면 공유하면 숫자를 자동으로 읽어요.",
+    "en": "Works out how many hits a monster takes with your stats and weapon and whether your accuracy is enough; share your stat window and it reads the numbers for you."
+   }
   },
   {
+   "id": "guides-builds",
    "date": "2026-11-03",
    "path": "/guides/leveling-30-70/",
    "ko": "가이드 5편 — 30~70 사냥터, 전사·궁수·법사·도적 육성",
-   "en": "Five guides: 30–70 training and warrior, archer, mage and thief builds"
+   "en": "Five guides: 30–70 training and warrior, archer, mage and thief builds",
+   "desc": {
+    "ko": "30~70레벨 사냥터 가이드와 전사, 궁수, 법사, 도적 육성 가이드 5편을 추가했어요.",
+    "en": "Five guides: training spots for levels 30–70 and builds for warriors, archers, mages and thieves."
+   }
   },
   {
+   "id": "live-market",
    "date": "2026-11-02",
    "path": "/tools/market/",
    "ko": "실시간 시세 — 아이템 검색·가격 추이·어디서 살지",
-   "en": "Live market: item search, price trends and where to buy"
+   "en": "Live market: item search, price trends and where to buy",
+   "desc": {
+    "ko": "유저들이 스캔한 상점 가격으로 실시간 시세를 보여줘요. 아이템을 검색하면 가격 추이와 지금 어느 상점에서 살 수 있는지 나와요.",
+    "en": "Live prices from shops players scanned: search an item for its price trend and which shops sell it now."
+   }
   },
   {
+   "id": "shop-scan",
    "date": "2026-11-02",
    "path": "/tools/scan/",
    "ko": "상점 스캔 — 게임 화면을 공유하면 상점 가격을 읽어 시세에 반영",
-   "en": "Shop scan: share your game window and shop prices feed the market"
+   "en": "Shop scan: share your game window and shop prices feed the market",
+   "desc": {
+    "ko": "게임 창을 화면 공유하면 자유시장 상점의 아이템과 가격을 읽어서 시세에 보태요. 설치 없이 크롬에서 바로 돼요.",
+    "en": "Share your game window and it reads Free Market shop items and prices into the market data, right in Chrome with nothing to install."
+   }
   },
   {
+   "id": "guides-kpq",
    "date": "2026-11-02",
    "path": "/guides/kerning-party-quest/",
    "ko": "커닝 파티퀘스트·2차 전직·거래 가이드",
-   "en": "Kerning PQ, 2nd job and trading guides"
+   "en": "Kerning PQ, 2nd job and trading guides",
+   "desc": {
+    "ko": "커닝 파티퀘스트, 2차 전직, 거래 방법 가이드를 추가했어요.",
+    "en": "Guides for the Kerning party quest, the second job advancement and trading."
+   }
   },
   {
+   "id": "guides",
    "date": "2026-11-02",
    "path": "/guides/",
    "ko": "가이드 섹션 — 첫걸음부터 직업 선택·시민권·주문서 확률까지",
-   "en": "Guides: getting started, choosing a class, citizenship, scroll odds"
+   "en": "Guides: getting started, choosing a class, citizenship, scroll odds",
+   "desc": {
+    "ko": "처음 시작하는 법, 직업 고르기, 시민권, 주문서 확률 등 기본 가이드 모음이 생겼어요.",
+    "en": "A guides section: getting started, choosing a class, citizenship, scroll odds and more."
+   }
   },
   {
+   "id": "training-bands",
    "date": "2026-10-30",
    "path": "/tools/training/",
    "ko": "레벨 구간별 사냥터 페이지",
-   "en": "Training pages by level band"
+   "en": "Training pages by level band",
+   "desc": {
+    "ko": "레벨 구간마다 갈 만한 사냥터를 정리한 페이지가 생겼어요.",
+    "en": "A training page for each level band."
+   }
   },
   {
+   "id": "votes",
    "date": "2026-10-28",
    "path": "/",
    "ko": "추천 버튼과 즐겨찾기 — 좋은 사이트에 추천, 자주 가는 곳은 별표",
-   "en": "Recommend and star the sites you use"
+   "en": "Recommend and star the sites you use",
+   "desc": {
+    "ko": "좋은 사이트에 추천을 누르고, 자주 가는 사이트는 별표로 모아 둘 수 있어요.",
+    "en": "Recommend good sites and star the ones you use."
+   }
   },
   {
+   "id": "launch",
    "date": "2026-10-28",
    "path": "/",
    "ko": "GMS Hub 오픈 — 글클메 사이트 모음, 목적별로 찾기",
-   "en": "GMS Hub opens: the Classic World site directory, by purpose"
+   "en": "GMS Hub opens: the Classic World site directory, by purpose",
+   "desc": {
+    "ko": "GMS Hub 오픈. 글로벌 클래식 메이플(글클메)에 쓸모 있는 사이트를 목적별로 모았어요.",
+    "en": "GMS Hub opens: useful MapleStory Classic World sites, gathered by purpose."
+   }
   }
  ]
 }

@@ -737,7 +737,7 @@ function headerSearch(lang, tabs) {
     [ko ? '캐릭터 랭킹' : 'Character ranking', href(langPath(lang, '/rank/'))],
     [ko ? '직업별 장비' : 'Gear by class', href(langPath(lang, '/equipment/'))], [ko ? '보스' : 'Bosses', href(langPath(lang, '/bosses/'))],
     ...QUEST_GUIDES.map(({ guide: g }) => [`${guideLabel(g, lang)}${ko ? ' 공략' : ''}`.replace(/ 공략 공략$/, ' 공략'), href(langPath(lang, `/quests/${g.slug}/`))]), [ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests', href(langPath(lang, '/quests/best-exp/'))], [ko ? '맵 도감' : 'Maps', href(langPath(lang, '/maps/'))],
-    [ko ? '포가튼 할로우 공략' : 'Forgotten Hollow guide', href(langPath(lang, '/forgotten-hollow/'))], [ko ? '잊혀진 골짜기 (포가튼 할로우)' : 'Forgotten Hollow maps, quests and boss', href(langPath(lang, '/forgotten-hollow/'))], [ko ? '썩은 머쉬맘 보스 (포가튼 할로우)' : 'Rotten Mushmom boss (Forgotten Hollow)', href(langPath(lang, '/forgotten-hollow/#boss'))],
+    [ko ? '포가튼 할로우 공략' : 'Forgotten Hollow guide', href(langPath(lang, '/forgotten-hollow/'))], [ko ? '패치노트 (업데이트 기록)' : 'Patch notes', href(langPath(lang, '/updates/'))], [ko ? '잊혀진 골짜기 (포가튼 할로우)' : 'Forgotten Hollow maps, quests and boss', href(langPath(lang, '/forgotten-hollow/'))], [ko ? '썩은 머쉬맘 보스 (포가튼 할로우)' : 'Rotten Mushmom boss (Forgotten Hollow)', href(langPath(lang, '/forgotten-hollow/#boss'))],
     [ko ? '문의·협찬·후원' : 'Contact and support', href(langPath(lang, '/contact/'))]];
   return `<button type="button" class="hs-open" data-hs data-items="${esc(href('/assets/items.json'))}" data-mobs="${esc(href('/assets/mobs.json'))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-monsters="${esc(href(langPath(lang, '/monsters/')))}" data-pages="${esc(JSON.stringify(pages))}" aria-label="${ko ? '검색' : 'Search'}" title="${ko ? '검색 ( / )' : 'Search ( / )'}"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="hs-label">${ko ? '검색' : 'Search'}</span></button>`;
 }
@@ -748,6 +748,7 @@ function moreMenu(lang, moved = []) {
   const ko = lang === 'ko';
   const links = [
     ['/forgotten-hollow/', ko ? '포가튼 할로우 공략' : 'Forgotten Hollow guide'],
+    ['/updates/', ko ? '패치노트' : 'Patch notes'],
     ...moved.map(([p, , label]) => [p, label]),
     ['/rank/', ko ? '캐릭터 랭킹' : 'Character ranking'],
     ['/equipment/', ko ? '직업별 장비' : 'Gear by class'],
@@ -1066,19 +1067,28 @@ function fhPromo(lang) {
 
 function heroNew(lang) {
   const ko = lang === 'ko';
-  return `<p class="hero-new"><span class="hero-new-tag">NEW</span>${UPDATES.slice(0, 3).map((u) => `<a href="${href(langPath(lang, u.path))}">${esc((ko ? u.ko : u.en).split(' — ')[0])}</a>`).join('')}<a class="hero-new-all" href="#updates">${ko ? '업데이트 소식' : "What's new"}</a></p>`;
+  return `<p class="hero-new"><span class="hero-new-tag">NEW</span>${UPDATES.slice(0, 3).map((u) => `<a href="${href(langPath(lang, u.path))}">${esc((ko ? u.ko : u.en).split(' — ')[0])}</a>`).join('')}<a class="hero-new-all" href="${href(langPath(lang, '/updates/'))}">${ko ? '업데이트 소식' : "What's new"}</a></p>`;
 }
-// Every update, newest first, eight to a page (assets/home.js turns the pages; without scripts the whole list shows).
-// Anything from the last three days (KST, rebuilt nightly) carries NEW.
-const UPD_PER_PAGE = 8;
+// Home: the five newest updates, each opening its entry on the patch notes page (/updates/). Anything from the last three
+// days (KST, rebuilt nightly) carries NEW.
+const updSince = () => new Date(Date.now() + 9 * 3600000 - 2 * 86400000).toISOString().slice(0, 10);
 function updatesSection(lang) {
   const ko = lang === 'ko';
-  const today = new Date(Date.now() + 9 * 3600000);
-  const since = new Date(today.getTime() - 2 * 86400000).toISOString().slice(0, 10);
-  const pages = Math.ceil(UPDATES.length / UPD_PER_PAGE);
-  const pager = pages > 1 ? `<nav class="upd-pager" aria-label="${ko ? '업데이트 소식 페이지' : 'Update pages'}" hidden><button type="button" class="upd-prev" data-upd-step="-1">${ko ? '이전' : 'Newer'}</button><span class="upd-pages">${Array.from({ length: pages }, (_, i) => `<button type="button" data-upd-page="${i + 1}"${i === 0 ? ' aria-current="page"' : ''}>${i + 1}</button>`).join('')}</span><button type="button" class="upd-next" data-upd-step="1">${ko ? '다음' : 'Older'}</button></nav>` : '';
-  return `<section class="wrap home-updates" id="updates"><div class="home-updates-head"><h2>${ko ? '업데이트 소식' : "What's new"}</h2><span class="muted small">${ko ? '새 기능과 개선 사항' : 'New features and improvements'}</span></div>
-<ol class="upd-list" data-per-page="${UPD_PER_PAGE}">${UPDATES.map((u, i) => `<li data-upd-page="${Math.floor(i / UPD_PER_PAGE) + 1}"><time datetime="${u.date}" translate="no">${updDate(lang, u.date)}</time>${u.date >= since ? '<span class="upd-new" translate="no">NEW</span>' : ''}<a href="${href(langPath(lang, u.path))}">${esc(ko ? u.ko : u.en)}</a></li>`).join('')}</ol>${pager}</section>`;
+  const since = updSince();
+  return `<section class="wrap home-updates" id="updates"><div class="home-updates-head"><h2>${ko ? '업데이트 소식' : "What's new"}</h2><a class="home-updates-all" href="${href(langPath(lang, '/updates/'))}">${ko ? '패치노트 전체 보기' : 'All patch notes'}</a></div>
+<ol class="upd-list">${UPDATES.slice(0, 5).map((u) => `<li><time datetime="${u.date}" translate="no">${updDate(lang, u.date)}</time>${u.date >= since ? '<span class="upd-new" translate="no">NEW</span>' : ''}<a href="${href(langPath(lang, `/updates/#${u.id}`))}">${esc(ko ? u.ko : u.en)}</a></li>`).join('')}</ol></section>`;
+}
+
+// /updates/: every player-facing update by day, each with what it does and a link to it.
+function patchNotesBody(lang) {
+  const ko = lang === 'ko';
+  const since = updSince();
+  const days = [...new Set(UPDATES.map((u) => u.date))];
+  const dayLabel = (d) => (ko ? `${Number(d.slice(0, 4))}년 ${Number(d.slice(5, 7))}월 ${Number(d.slice(8, 10))}일` : new Date(`${d}T00:00:00Z`).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }));
+  const title = (u) => (ko ? u.ko : u.en).split(/ — |: /)[0];
+  return `${pageHead(lang, 'scroll', ko ? '패치노트' : 'Patch notes', ko ? `GMS Hub에 새로 생긴 기능과 콘텐츠를 날짜별로 정리했어요. 지금까지 ${UPDATES.length}개.` : `Every new GMS Hub feature and guide, day by day. ${UPDATES.length} so far.`)}
+<div class="wrap pn-page">${days.map((d) => `<section class="pn-day"><h2><time datetime="${d}">${dayLabel(d)}</time>${d >= since ? ' <span class="upd-new" translate="no">NEW</span>' : ''}</h2>
+<ul class="pn-list">${UPDATES.filter((u) => u.date === d).map((u) => `<li class="pn-item" id="${u.id}"><h3>${esc(title(u))}</h3><p>${esc(ko ? u.desc.ko : u.desc.en)}</p><a class="pn-go" href="${href(langPath(lang, u.path))}">${ko ? '바로 가기' : 'Open it'}</a></li>`).join('')}</ul></section>`).join('\n')}</div>`;
 }
 
 function homeBody(lang) {
@@ -3083,6 +3093,13 @@ for (const lang of LANGS) {
         ld: [breadcrumbLd(lang, L(guide.title), `/quests/${guide.slug}/`)]
       }));
     }
+    write(path.join(lang, 'updates', 'index.html'), page({
+      lang, pageKey: 'updates', pagePath: '/updates/',
+      title: lang === 'ko' ? 'GMS Hub 패치노트: 새 기능과 업데이트 기록 | GMS Hub' : 'GMS Hub Patch Notes: New Features and Update History | GMS Hub',
+      desc: lang === 'ko' ? 'GMS Hub(글클메 허브)에 생긴 새 기능과 공략을 날짜별로 정리했어요. 기능마다 무엇을 하는지 짧게 설명하고 바로 가는 링크를 달았어요.' : 'Every new GMS Hub feature and guide by date, each with a short note on what it does and a link to it.',
+      body: patchNotesBody(lang),
+      ld: [breadcrumbLd(lang, lang === 'ko' ? '패치노트' : 'Patch notes', '/updates/')]
+    }));
     {
       // /forgotten-hollow/: the November update's new area on one page (scripts/forgotten-hollow.mjs).
       const fh = readJson('data/forgotten-hollow.json');
@@ -3294,7 +3311,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
   )
 ).concat(
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
-  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/forgotten-hollow/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/forgotten-hollow/'}, {path:'/updates/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/bosses/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/quests/'}, ...QUESTS.filter(q=>!q.expired).map(q=>({path:questPath(q)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
   [{path:'/maps/'}, ...MAPS.filter(l=>l.availability==='open').map(l=>({path:mapPath(l)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
