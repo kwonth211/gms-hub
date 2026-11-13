@@ -230,50 +230,66 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
       return out;
     };
   })());
-  let lastId = 0, shown = [];
-  // The last megaphones seen are kept in this browser and drawn at once on the next page, then replaced by fresh ones.
-  // New ones also arrive pushed over the presence socket (common.js above) the moment the collector stores them.
+  let lastId = 0, shown = [], pruneDue = false;
+  // The last megaphones seen are kept in this browser and drawn at once on the next page, then fresh ones are merged in:
+  // pushed over the presence socket (common.js above) the moment the collector stores them, or from the minute poll.
   const TK_KEY = 'gms-ticker';
-  async function load(saved, pushed = null) {
-    let rows = [];
-    if (pushed) {
-      const ids = new Set(shown.map((r) => r.id));
-      rows = [...pushed.filter((r) => !ids.has(r.id)).sort((a, b) => b.id - a.id), ...shown].slice(0, 20);
-      try { localStorage.setItem(TK_KEY, JSON.stringify(rows)); } catch (e) {}
-    } else if (saved) {
-      try { rows = JSON.parse(localStorage.getItem(TK_KEY) || '[]'); } catch (e) {}
-    } else {
-      try { rows = (await (await fetch(`${api}/megaphones?limit=20`)).json()).rows || []; } catch (e) { return; }
-      try { localStorage.setItem(TK_KEY, JSON.stringify(rows)); } catch (e) {}
-    }
-    if (!rows.length || rows[0].id === lastId) return;
-    lastId = rows[0].id; shown = rows;
+  const icon = () => box.querySelector('.mg-tk-icon')?.innerHTML || '';
+  const anim = () => run.getAnimations()[0];
+  const setW = () => run.firstChild?.scrollWidth || 0;
+  // Constant pace: the loop's length in px sets its duration, so adding items never changes the speed.
+  const pxPerSec = () => { const w = setW(); const dur = Math.max(40, Math.round(w / 60)); return { w, dur, v: w / dur }; };
+  const metrics = () => { const m = pxPerSec(); run.style.setProperty('--tk-x', `-${m.w}px`); run.style.setProperty('--tk-dur', `${m.dur}s`); return m; };
+  async function itemsHtml(rows, fresh = false) {
     const read = await getReader();
-    const icon = box.querySelector('.mg-tk-icon')?.innerHTML || '';
-    const texts = await Promise.all(rows.map(async (r) => {
-      const original = noChannel(r.text, r.channel);
-      return [original, read ? await read(original).catch(() => original) : original];
-    }));
-    const items = rows.map((r, i) => `<a class="mg-tk-item mg-tk-${esc(r.color || 'Y')}" href="${box.dataset.href}?m=${Number(r.id)}" tabindex="-1"${texts[i][1] !== texts[i][0] ? ` title="${esc(texts[i][0])}"` : ''}>${icon}${r.channel ? `<b>CH${r.channel}</b>` : ''}<time>${clock(r.seen)}</time><strong>${esc(r.nick)}</strong><span>${esc(short(texts[i][1]))}</span></a>`).join('');
-    const anim = () => run.getAnimations()[0];
-    const before = anim()?.currentTime || 0;
+    const texts = await Promise.all(rows.map(async (r) => { const original = noChannel(r.text, r.channel); return [original, read ? await read(original).catch(() => original) : original]; }));
+    return rows.map((r, i) => `<a class="mg-tk-item mg-tk-${esc(r.color || 'Y')}${fresh ? ' mg-tk-new' : ''}" href="${box.dataset.href}?m=${Number(r.id)}" tabindex="-1"${texts[i][1] !== texts[i][0] ? ` title="${esc(texts[i][0])}"` : ''}>${icon()}${r.channel ? `<b>CH${r.channel}</b>` : ''}<time>${clock(r.seen)}</time><strong>${esc(r.nick)}</strong><span>${esc(short(texts[i][1]))}</span></a>`).join('');
+  }
+  // Full draw: first paint, and the quiet rebuild at a loop boundary after many items were merged in.
+  async function draw(rows, at = 0) {
+    shown = rows; lastId = rows[0].id;
+    const items = await itemsHtml(rows);
     run.innerHTML = `<div class="mg-tk-set">${items}</div><div class="mg-tk-set" aria-hidden="true">${items}</div>`;
-    run.style.setProperty('--tk-dur', `${Math.max(40, Math.round(run.firstChild.scrollWidth / 60))}s`);
+    const m = metrics();
     box.classList.add('ready');
-    // The strip keeps rolling from where it was: across a page change (the place is kept for a moment in this tab,
-    // with the time that passed added on) and when fresh megaphones replace the drawn ones.
     const a = anim();
-    if (a) {
-      let at = before;
-      if (saved) {
-        try {
-          const keep = JSON.parse(sessionStorage.getItem(TK_POS) || 'null');
-          if (keep && keep.id === lastId && Date.now() - keep.at < 120000) at = keep.t + (Date.now() - keep.at);
-        } catch (e) {}
-      }
-      const dur = parseFloat(run.style.getPropertyValue('--tk-dur')) * 1000;
-      if (at && dur) a.currentTime = at % dur;
+    if (a && at) a.currentTime = at % (m.dur * 1000);
+  }
+  // Merge: new items go to the end of both copies while the strip keeps rolling. The current pixel offset is kept, and
+  // if the strip was showing the second copy it is moved to the same place in the first, so nothing on screen moves.
+  async function merge(rows) {
+    const ids = new Set(shown.map((r) => r.id));
+    const add = rows.filter((r) => !ids.has(r.id)).sort((a, b) => a.id - b.id);
+    if (!add.length) return;
+    shown = [...add.slice().reverse(), ...shown].slice(0, 20); lastId = shown[0].id;
+    try { localStorage.setItem(TK_KEY, JSON.stringify(shown)); } catch (e) {}
+    const html = await itemsHtml(add, true);
+    const a = anim();
+    const before = pxPerSec();
+    let offset = a ? ((a.currentTime || 0) / 1000) * before.v : 0;
+    if (offset >= before.w) offset -= before.w;
+    for (const set of run.children) set.insertAdjacentHTML('beforeend', html);
+    const m = metrics();
+    if (a) a.currentTime = (offset / m.v) * 1000;
+    if (run.firstChild.children.length > 36) pruneDue = true;
+  }
+  run.addEventListener('animationiteration', () => { if (pruneDue) { pruneDue = false; draw(shown); } });
+  async function load(saved) {
+    let rows = [];
+    if (saved) {
+      try { rows = JSON.parse(localStorage.getItem(TK_KEY) || '[]'); } catch (e) {}
+      if (!rows.length) return;
+      let at = 0;
+      try {
+        const keep = JSON.parse(sessionStorage.getItem(TK_POS) || 'null');
+        if (keep && keep.id === rows[0].id && Date.now() - keep.at < 120000) at = keep.t + (Date.now() - keep.at);
+      } catch (e) {}
+      return draw(rows, at);
     }
+    try { rows = (await (await fetch(`${api}/megaphones?limit=20`)).json()).rows || []; } catch (e) { return; }
+    if (!rows.length) return;
+    if (!shown.length) { try { localStorage.setItem(TK_KEY, JSON.stringify(rows)); } catch (e) {} return draw(rows); }
+    return merge(rows);
   }
   const TK_POS = 'gms-ticker-pos';
   addEventListener('pagehide', () => {
@@ -292,7 +308,7 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
     }
   });
   load(true).then(() => load());
-  addEventListener('gms-megaphones', (e) => load(false, e.detail));
+  addEventListener('gms-megaphones', (e) => merge(e.detail));
   setInterval(() => document.visibilityState === 'visible' && load(), 60000);
 })();
 

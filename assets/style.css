@@ -1888,7 +1888,10 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mg-tk-run { display: flex; width: max-content; height: 100%; }
 .mg-ticker.ready .mg-tk-run { animation: mg-tk var(--tk-dur, 60s) linear infinite; }
 .mg-ticker:hover .mg-tk-run, .mg-ticker:focus-within .mg-tk-run { animation-play-state: paused; }
-@keyframes mg-tk { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+/* One set's width in px (--tk-x, set by common.js) so items can be added while it rolls without the loop jumping. */
+@keyframes mg-tk { from { transform: translateX(0); } to { transform: translateX(var(--tk-x, -50%)); } }
+.mg-tk-item.mg-tk-new { animation: mg-tk-in 0.6s ease-out; }
+@keyframes mg-tk-in { from { opacity: 0; } to { opacity: 1; } }
 .mg-tk-set { display: flex; height: 100%; }
 .mg-tk-item { display: flex; align-items: center; gap: 6px; padding: 0 18px 0 12px; height: 100%; white-space: nowrap; color: var(--tk-ink); text-decoration: none; box-shadow: inset 3px 0 0 var(--band, var(--tk-Y)); }
 .mg-tk-item:hover { color: var(--tk-hi); background: color-mix(in srgb, var(--band, var(--tk-Y)) 22%, transparent); }
@@ -2215,3 +2218,8 @@ body.exp-running .exp-stop { display: inline-flex; }
 .tr-rate-table .tr-rate-who { font-size: 0.8rem; }
 .tr-rate-table td small { display: block; color: var(--muted); font-size: 0.75rem; max-width: 420px; }
 @media (max-width: 760px) { .tr-rate { grid-template-columns: 1fr; } .tr-rate-badge { display: block; width: max-content; margin: 4px 0 0; } }
+
+/* A megaphone that has just arrived fades in at the top of the feed instead of the whole list redrawing. */
+.mg-msg.mg-new { animation: mg-new-in 0.7s ease-out; }
+@keyframes mg-new-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .mg-msg.mg-new, .mg-tk-item.mg-tk-new { animation: none; } }

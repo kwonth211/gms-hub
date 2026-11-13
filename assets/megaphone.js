@@ -176,12 +176,25 @@ async function loadPrices(newRows) {
 
 // New megaphones pushed over the presence socket (assets/common.js) appear at once; polling stays as the fallback.
 addEventListener('gms-megaphones', async (e) => {
-  const fresh = e.detail.filter((r) => r.id > lastId).map((r) => ({ ...r, intent: intentOf(r.text) }));
+  const fresh = e.detail.filter((r) => r.id > lastId).map((r) => ({ ...r, intent: intentOf(r.text) })).sort((a, b) => b.id - a.id);
   if (!fresh.length) return;
   lastId = Math.max(lastId, ...fresh.map((r) => r.id));
-  rows = fresh.sort((a, b) => b.id - a.id).concat(rows).slice(0, 400);
+  const seen = new Set(rows.map((r) => `${r.nick}|${r.text.toLowerCase()}`));
+  rows = fresh.concat(rows).slice(0, 400);
   await loadPrices(fresh).catch(() => null);
-  render();
+  // With a search open the filtered list is redrawn; otherwise the new cards slide in at the top and the rest stay put
+  // (a reader scrolled down keeps their place).
+  if ($('mg-search').value.trim()) return render();
+  const feed = $('mg-feed');
+  const cards = fresh.filter((r) => !seen.has(`${r.nick}|${r.text.toLowerCase()}`)).map((r) => card(r).replace('class="mg-msg ', 'class="mg-msg mg-new ')).join('');
+  if (!cards) return;
+  const h0 = feed.scrollHeight, top = feed.scrollTop;
+  feed.insertAdjacentHTML('afterbegin', cards);
+  if (top > 0) feed.scrollTop = top + (feed.scrollHeight - h0);
+  while (feed.children.length > 300) feed.lastElementChild.remove();
+  fillAi();
+  $('mg-count').textContent = tr('최근 {n}개', 'Latest {n}', { n: feed.children.length });
+  $('mg-empty').hidden = true;
 });
 async function poll() {
   if (document.hidden) return;
@@ -192,8 +205,8 @@ async function poll() {
       lastId = Math.max(lastId, ...fresh.map((r) => r.id));
       rows = fresh.concat(rows).slice(0, 400);
       await loadPrices(fresh);
-    }
-    render();
+      render();
+    } else if (!rows.length) render();
   } catch (e) {}
 }
 
@@ -206,4 +219,5 @@ $('mg-feed').addEventListener('click', async (e) => {
 });
 
 loadItems().then(() => { poll(); setInterval(poll, POLL_MS); setupAi(); });
-setInterval(() => document.querySelectorAll('#mg-feed time').length && render(), 30000);
+// The "n minutes ago" tooltips tick over in place; the list itself is only redrawn when its contents change.
+setInterval(() => { for (const t of document.querySelectorAll('#mg-feed time')) { const r = rows.find((x) => `m-${x.id}` === t.closest('.mg-msg')?.id); if (r) t.title = ago(r.seen); } }, 30000);
