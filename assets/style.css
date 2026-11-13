@@ -2636,3 +2636,6 @@ body.exp-running .exp-stop { display: inline-flex; }
 .mb-single .mb-status,.mb-single .mb-tabs,.mb-single .mb-browser,.mb-single .mk-foot,.mb-single [data-close-item],.mb-single #mb-info,.mb-single .mb-item-page{display:none}
 .mb-single .mb-workspace,.mb-single .mb-workspace.has-selection{display:block}
 .mb-single .mb-detail{position:static;max-height:none;overflow:visible}
+
+/* Item rows open on a click anywhere in the row. */
+.mb-catalog tbody tr{cursor:pointer}

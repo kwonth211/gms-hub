@@ -2657,7 +2657,7 @@ const IT = {
     incs: { STR: 'STR', DEX: 'DEX', INT: 'INT', LUK: 'LUK', MHP: 'HP', MMP: 'MP', PAD: '공격력', MAD: '마력', PDD: '물리 방어력', MDD: '마법 방어력', ACC: '명중률', EVA: '회피율', Speed: '이동 속도', Jump: '점프력' },
     farm: '주로 나오는 곳',
     indexLink: '아이템별 시세 모아 보기',
-    pageLink: '상세 페이지',
+    pageLink: '넓게 보기',
     cats: { Equip: '장비', Use: '소비', Etc: '기타', Setup: '설치' }
   },
   en: {
@@ -2708,7 +2708,7 @@ const IT = {
     incs: { STR: 'STR', DEX: 'DEX', INT: 'INT', LUK: 'LUK', MHP: 'HP', MMP: 'MP', PAD: 'Weapon attack', MAD: 'Magic attack', PDD: 'Weapon defense', MDD: 'Magic defense', ACC: 'Accuracy', EVA: 'Avoidability', Speed: 'Speed', Jump: 'Jump' },
     farm: 'Most common on',
     indexLink: 'Browse prices by item',
-    pageLink: 'Full page',
+    pageLink: 'Wide view',
     cats: { Equip: 'Equip', Use: 'Use', Etc: 'Etc', Setup: 'Setup' }
   }
 };
