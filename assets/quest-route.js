@@ -107,14 +107,38 @@ render();
     const tag = el.matches('.gq-price') ? el : el.querySelector('.gq-price');
     if (tag) { tag.textContent = `≈ ${mesos(v)} ${D.t.mesos}`; tag.hidden = false; }
   }
-  let total = 0, all = true;
-  for (const tr of document.querySelectorAll('.gq-shop-table tbody tr')) {
-    const v = med(Number(tr.dataset.item)), q = Number(tr.dataset.qty);
-    tr.querySelector('.gq-unit').textContent = v ? mesos(v) : '—';
-    tr.querySelector('.gq-total').textContent = v ? mesos(v * q) : '—';
-    if (v) total += v * q; else all = false;
+  // Each materials tab sums what buying all of its items would cost.
+  for (const table of document.querySelectorAll('.gq-shop-table')) {
+    let total = 0, all = true;
+    for (const tr of table.querySelectorAll('tbody tr[data-item]')) {
+      const v = med(Number(tr.dataset.item)), q = Number(tr.dataset.qty);
+      tr.querySelector('.gq-unit').textContent = v ? mesos(v) : '—';
+      tr.querySelector('.gq-total').textContent = v ? mesos(v * q) : '—';
+      if (v) total += v * q; else all = false;
+    }
+    table.querySelector('.gq-shop-sum').textContent = total ? `${all ? '' : '≥ '}${mesos(total)} ${D.t.mesos}` : '—';
   }
-  $('gq-shop-total').textContent = total ? `${all ? '' : '≥ '}${mesos(total)} ${D.t.mesos}` : '—';
   const a = med(D.ev.a), m = med(D.ev.m);
   if (a && m) { $('gq-ev').textContent = `${mesos((a + m) / 2)} ${D.t.mesos}`; $('gq-ev-note').textContent = fill(D.t.ev, { a: mesos(a), m: mesos(m) }); }
 })();
+
+// ---------- materials ----------
+document.addEventListener('click', (e) => {
+  const tab = e.target.closest('.gq-tab');
+  if (!tab) return;
+  for (const t of document.querySelectorAll('.gq-tab')) { t.classList.toggle('is-on', t === tab); t.setAttribute('aria-selected', String(t === tab)); }
+  for (const p of document.querySelectorAll('.gq-mat-pane')) p.hidden = p.dataset.pane !== tab.dataset.tab;
+});
+const HAVE = 'gms-glove-quest-have';
+let have = new Set();
+try { have = new Set(JSON.parse(localStorage.getItem(HAVE) || '[]')); } catch (e) {}
+const paintHave = () => { for (const box of document.querySelectorAll('.gq-have')) { box.checked = have.has(Number(box.dataset.have)); box.closest('tr').classList.toggle('is-have', box.checked); } };
+document.addEventListener('change', (e) => {
+  const box = e.target.closest('.gq-have');
+  if (!box) return;
+  const id = Number(box.dataset.have);
+  if (box.checked) have.add(id); else have.delete(id);
+  try { localStorage.setItem(HAVE, JSON.stringify([...have])); } catch (x) {}
+  paintHave();
+});
+paintHave();

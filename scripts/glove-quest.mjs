@@ -44,6 +44,7 @@ export function gloveQuestBody({ lang, guide, data, link, mobSprite, mobHref, pa
   const tr = (k, e) => (ko ? k : e);
   const L = (o) => (o ? o[ko ? 'ko' : 'en'] : '');
   const place = (id) => guide.places[id];
+  const short = (c) => L(c.title).split(/ — | \(/)[0];
   const mapLink = (m) => `<a href="${link(`/maps/${m.id}/`)}">${esc(ko ? m.ko : m.en)}</a> <small>${m.count}${tr('마리', '')}</small>`;
   const all = data.chains.flatMap((c) => c.steps);
   const dolls = data.chains.find((c) => c.id === 'dolls');
@@ -100,13 +101,33 @@ ${Object.entries(guide.places).map(([id, p]) => `<g class="gq-place${towns.inclu
   const parts = data.chains.map((c) => `<section class="gq-chain" id="chain-${c.id}"><h2>${esc(L(c.title))}</h2><p class="lead">${esc(L(c.lead))}</p><ol class="gq-steps">${c.steps.map((s, i) => stepHtml(s, i, c)).join('')}</ol></section>`).join('');
   const diamond = `<section class="panel gq-diamond" id="diamond"><h2><img src="${icon(4020107)}" alt="" width="28" height="28"> ${tr('다이아몬드 구하기', 'Getting a Diamond')} <em class="gq-price" data-item="4020107" hidden></em></h2><ol>${(ko ? guide.diamond.ko : guide.diamond.en).map((t) => `<li>${esc(t)}</li>`).join('')}</ol></section>`;
 
+  // Every material and kill in one place: a tab per part, one for everything up to Rowen's 150-doll scroll, and one for
+  // all of it. Each row says how many, where it comes from, today's price and what buying them all would cost; rows can
+  // be ticked off as collected (kept in this browser by assets/quest-route.js).
   const shopping = (() => {
-    const need = new Map();
-    for (const s of toScroll) for (const b of s.bring) if (!b.handed) need.set(b.id, { ...b, count: (need.get(b.id)?.count || 0) + b.count });
-    return `<section class="panel gq-shop" id="shopping"><h2>${tr('장공(로웬 150개)까지 필요한 재료 한눈에', 'Everything you need up to Rowen\'s 150-doll scroll')}</h2>
-<table class="gq-shop-table"><thead><tr><th>${tr('재료', 'Item')}</th><th>${tr('개수', 'Qty')}</th><th>${tr('지금 시세', 'Price now')}</th><th>${tr('다 사면', 'If bought')}</th></tr></thead><tbody>${[...need.values()].map((b) => `<tr data-item="${b.id}" data-qty="${b.count}"><td><img src="${icon(b.id)}" alt="" width="24" height="24" loading="lazy"> ${esc(ko ? b.ko : b.en)}</td><td>${n(b.count, lang)}</td><td class="gq-unit">—</td><td class="gq-total">—</td></tr>`).join('')}</tbody>
-<tfoot><tr><td colspan="3">${tr('합계 (사냥 처치 수는 직접 채워야 해요)', 'Total (kill counts must still be your own)')}</td><td id="gq-shop-total">—</td></tr></tfoot></table>
-<p class="muted small">${tr('처치해야 하는 몬스터', 'Kills needed')}: ${tr('루팡 50 · 좀비 루팡 370 (모자까지 570)', '50 Lupins · 370 Zombie Lupins (570 for the hat)')} · ${tr('시세는 이 사이트의 자유시장 매물 중간값이에요.', 'Prices are this site\'s free-market listing medians.')}</p></section>`;
+    const sum = (steps) => {
+      const items = new Map(), kills = new Map();
+      for (const s of steps) {
+        for (const b of s.bring) if (!b.handed) items.set(b.id, { ...b, count: (items.get(b.id)?.count || 0) + b.count });
+        for (const k of s.kills) kills.set(k.id, { ...k, count: (kills.get(k.id)?.count || 0) + k.count });
+      }
+      return { items: [...items.values()], kills: [...kills.values()] };
+    };
+    const tabs = [
+      { id: 'scroll', label: tr('장공(150개)까지', 'Up to the scroll (150)'), steps: toScroll },
+      ...data.chains.map((c) => ({ id: c.id, label: short(c), steps: c.steps })),
+      { id: 'all', label: tr('전체', 'Everything'), steps: all }
+    ];
+    const table = (t) => {
+      const { items, kills } = sum(t.steps);
+      const killRows = kills.map((k) => `<tr class="gq-kill-row"><td><img src="${mobSprite({ id: k.id })}" alt="" width="28" height="28" loading="lazy"> <span translate="no">${esc(ko ? k.ko : k.en)}</span> <small>Lv ${k.lv}</small></td><td><b>${n(k.count, lang)}</b> ${tr('마리', 'kills')}</td><td translate="no">${k.maps.map(mapLink).join('<br>')}</td><td></td><td></td><td></td></tr>`).join('');
+      const itemRows = items.map((b) => `<tr data-item="${b.id}" data-qty="${b.count}"><td><img src="${icon(b.id)}" alt="" width="26" height="26" loading="lazy"> <span translate="no">${esc(ko ? b.ko : b.en)}</span></td><td><b>${n(b.count, lang)}</b></td><td translate="no">${b.from.length ? b.from.map((m) => `<a href="${mobHref(m)}">${esc(ko ? m.ko : m.en)}</a>${m.maps[0] ? ` — ${mapLink(m.maps[0])}` : ''}`).join('<br>') : `<span class="muted">${tr('드랍 없음 · 구매/제작', 'No drop · buy or craft')}</span>`}</td><td class="gq-unit">—</td><td class="gq-total">—</td><td><input type="checkbox" class="gq-have" data-have="${b.id}" aria-label="${tr('모음', 'Collected')}"></td></tr>`).join('');
+      return `<div class="gq-mat-pane" data-pane="${t.id}"${t.id === 'scroll' ? '' : ' hidden'}><div class="gq-mat-scroll"><table class="gq-shop-table"><thead><tr><th>${tr('재료 / 몬스터', 'Item / monster')}</th><th>${tr('개수', 'Qty')}</th><th>${tr('어디서', 'Where')}</th><th>${tr('지금 시세', 'Price now')}</th><th>${tr('다 사면', 'If bought')}</th><th>${tr('모음', 'Got')}</th></tr></thead><tbody>${itemRows}${killRows}</tbody>
+<tfoot><tr><td colspan="4">${tr('재료를 전부 사면 (처치 수는 직접)', 'Buying every item (kills are on you)')}</td><td class="gq-shop-sum">—</td><td></td></tr></tfoot></table></div></div>`;
+    };
+    return `<section class="panel gq-mats" id="materials"><div class="gq-mats-head"><h2>${tr('재료·처치 총정리', 'All materials and kills')}</h2><div class="gq-tabs" role="tablist">${tabs.map((t) => `<button type="button" role="tab" class="gq-tab${t.id === 'scroll' ? ' is-on' : ''}" data-tab="${t.id}" aria-selected="${t.id === 'scroll'}">${esc(t.label)}</button>`).join('')}</div></div>
+${tabs.map(table).join('')}
+<p class="muted small">${tr('시세는 이 사이트의 자유시장 매물 중간값이에요. 다 모은 재료는 오른쪽 칸에 체크해 두면 이 브라우저에 남아요.', 'Prices are this site\'s free-market listing medians. Tick what you have collected; it stays in this browser.')}</p></section>`;
   })();
 
   const head = pageHead(lang, 'scroll', tr('글클메 장공 퀘스트 완전 공략', 'Gloves Attack Scroll Quests: Complete Guide'),
@@ -120,11 +141,10 @@ ${Object.entries(guide.places).map(([id, p]) => `<g class="gq-place${towns.inclu
 <div><span>${tr('장공까지 처치', 'Kills to the scroll')}</span><b>${n(totalKills(toScroll.map((s) => s.id)), lang)}</b></div>
 <div class="gq-ev"><span>${tr('150개 보상 기대값', '150-doll reward, expected')}</span><b id="gq-ev">—</b><small id="gq-ev-note"></small></div>
 </div>
-<div class="gq-progress"><div class="gq-bar"><i id="gq-bar"></i></div><span id="gq-progress-text">${tr('체크한 단계가 없어요', 'No steps ticked yet')}</span></div>
+<div class="gq-progress"><a class="btn ghost small-btn" href="#materials">${tr('재료 총정리', 'All materials')}</a><div class="gq-bar"><i id="gq-bar"></i></div><span id="gq-progress-text">${tr('체크한 단계가 없어요', 'No steps ticked yet')}</span></div>
 </section>`;
 
   // The quest list on the left: every step by part, with its number, name and NPC; picking one shows it on the right.
-  const short = (c) => L(c.title).split(/ — | \(/)[0];
   const list = `<aside class="gq-list panel" aria-label="${tr('퀘스트 목록', 'Quest list')}">${data.chains.map((c) => `<div class="gq-list-group"><h4>${esc(short(c))}</h4><ol>${c.steps.map((s, i) => `<li><button type="button" class="gq-pick" data-pick="${s.id}"><span class="gq-pick-no">${i + 1}</span><span class="gq-pick-name"><b translate="no">${esc(s.name)}</b><small translate="no">${esc(npcName(s.npcStart, lang))}${s.lv ? ` · Lv ${s.lv}` : ''}</small></span>${s.big ? '<span class="gq-pick-star" aria-hidden="true">★</span>' : ''}</button></li>`).join('')}</ol></div>`).join('')}</aside>`;
   // The route as a one-way road: one stop per step of the picked part, drawn by assets/quest-route.js.
   const now = `<section class="gq-world panel" id="gq-world"><div class="gq-road-head"><strong id="gq-road-title"></strong><div class="gq-now-actions"><button type="button" class="btn ghost small-btn" id="gq-prev">${tr('이전', 'Back')}</button><button type="button" class="btn small-btn" id="gq-next">${tr('완료하고 다음', 'Done, next')}</button></div></div>
@@ -132,7 +152,7 @@ ${Object.entries(guide.places).map(([id, p]) => `<g class="gq-place${towns.inclu
 
   const sources = `<section class="gq-sources"><h2>${tr('정리에 쓴 자료', 'Sources')}</h2><p class="muted small">${tr('퀘스트 조건·처치 수·보상은 게임 클라이언트 데이터에서 그대로 가져왔고, NPC 위치·가는 길·팁은 아래 공략을 교차 확인했어요.', 'Conditions, kill counts and rewards are read straight from the game client data; NPC spots, routes and tips were cross-checked against these guides.')}</p><ul>${guide.sources.map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener" translate="no">${esc(s.name)}</a> <small>${esc(s.date)}</small></li>`).join('')}</ul></section>`;
 
-  return `${head}<div class="wrap gq-page">${summary}<div class="gq-cols">${list}<div class="gq-right">${now}<div class="gq-main">${parts}</div></div></div>${diamond}${shopping}${sources}</div>
+  return `${head}<div class="wrap gq-page">${summary}<div class="gq-cols">${list}<div class="gq-right">${now}<div class="gq-main">${parts}</div></div></div>${shopping}${diamond}${sources}</div>
 <script id="gq-data" type="application/json">${JSON.stringify({ lang, api: apiBase, places: guide.places, sx: 1000 / 600, sy: 560 / 340, prices: data.priceIds, ev: { a: 2040801, m: 2040805 },
     chains: data.chains.map((c) => ({ id: c.id, title: L(c.title).split(/ — /)[0], steps: c.steps.map((s) => s.id) })),
     steps: all.map((s) => ({ id: s.id, name: s.name, at: s.at, go: s.go || null, hunt: s.hunt || [], exp: s.exp, do: L(s.do),

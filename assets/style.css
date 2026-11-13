@@ -2416,3 +2416,19 @@ body.exp-running .exp-stop { display: inline-flex; }
 .gq-stop.is-past .gq-stop-card b { text-decoration: line-through; }
 .gq-stop:hover .gq-stop-card { border-color: #c99a5b; }
 @media (prefers-reduced-motion: reduce) { .gq-stop-bang, .gq-me { animation: none; } }
+/* All materials and kills in one place, a tab per part. */
+.gq-mats { margin-bottom: 22px; }
+.gq-mats-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.gq-mats-head h2 { margin: 0; }
+.gq-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.gq-tab { font: inherit; font-size: 0.86rem; font-weight: 700; padding: 6px 12px; border-radius: 999px; border: 2px solid var(--line-strong); background: var(--panel); color: var(--text); cursor: pointer; }
+.gq-tab.is-on { background: #ffd400; border-color: #8a5a00; color: #5b3a00; }
+.gq-tab:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.gq-mat-scroll { overflow-x: auto; }
+.gq-shop-table td { vertical-align: middle; }
+.gq-shop-table td small { color: var(--muted); }
+.gq-shop-table td:nth-child(3) { font-size: 0.82rem; }
+.gq-kill-row td { background: var(--panel-2); }
+.gq-shop-table tr.is-have td { opacity: 0.45; }
+.gq-shop-table tr.is-have td:first-child span { text-decoration: line-through; }
+.gq-have { width: 20px; height: 20px; accent-color: #f08a24; }
