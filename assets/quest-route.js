@@ -15,21 +15,48 @@ const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...done]));
 const stepEl = (id) => document.querySelector(`.gq-step[data-q="${id}"]`);
 
 // ---------- map ----------
-const place = (id) => D.places[id];
-function drawRoute(step) {
-  for (const g of document.querySelectorAll('.gq-place')) g.classList.remove('is-at', 'is-go', 'is-hunt');
-  const route = $('gq-route');
-  if (!step) { route.setAttribute('d', ''); return; }
+// Every step is one leg: from the NPC to the next stop (or its first hunting ground). Finished legs stay on the map as a
+// grey trail of footprints, the current leg is drawn bright with a marker walking it, later legs are not shown yet.
+const NS = 'http://www.w3.org/2000/svg';
+const pt = (id) => { const p = D.places[id]; return p ? { x: p.x * D.sx, y: p.y * D.sy } : null; };
+const legPath = (a, b) => { const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2 - Math.max(30, Math.abs(a.x - b.x) * 0.18); return `M${a.x} ${a.y} Q${mx} ${my} ${b.x} ${b.y}`; };
+const legOf = (s) => { const to = s.go || s.hunt[0]; return to && to !== s.at ? [s.at, to] : null; };
+function drawMap(step) {
+  const trail = document.getElementById('gq-trail');
+  trail.textContent = '';
+  for (const g of document.querySelectorAll('.gq-place')) g.classList.remove('is-at', 'is-go', 'is-hunt', 'is-visited');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  for (const s of D.steps) {
+    if (!done.has(s.id) || s.id === step?.id) continue;
+    for (const id of [s.at, s.go, ...s.hunt]) if (id) document.querySelector(`.gq-place[data-place="${id}"]`)?.classList.add('is-visited');
+    const leg = legOf(s);
+    if (!leg) continue;
+    const path = document.createElementNS(NS, 'path');
+    path.setAttribute('d', legPath(pt(leg[0]), pt(leg[1])));
+    path.setAttribute('class', 'gq-leg-done');
+    trail.append(path);
+  }
+  if (!step) return;
   document.querySelector(`.gq-place[data-place="${step.at}"]`)?.classList.add('is-at');
   for (const h of step.hunt) document.querySelector(`.gq-place[data-place="${h}"]`)?.classList.add('is-hunt');
-  const to = step.go || step.hunt[0];
-  if (to && to !== step.at) {
-    document.querySelector(`.gq-place[data-place="${to}"]`)?.classList.toggle('is-go', !!step.go);
-    const a = place(step.at), b = place(to);
-    const mx = (a.x + b.x) / 2, my = Math.min(a.y, b.y) - 40;
-    route.setAttribute('d', `M${a.x} ${a.y} Q${mx} ${my} ${b.x} ${b.y}`);
-    route.classList.remove('run'); void route.getBBox(); route.classList.add('run');
-  } else route.setAttribute('d', '');
+  if (step.go) document.querySelector(`.gq-place[data-place="${step.go}"]`)?.classList.add('is-go');
+  const leg = legOf(step);
+  if (!leg) return;
+  const d = legPath(pt(leg[0]), pt(leg[1]));
+  const path = document.createElementNS(NS, 'path');
+  path.setAttribute('d', d);
+  path.setAttribute('class', 'gq-leg-now');
+  path.setAttribute('marker-end', 'url(#gq-arrow)');
+  trail.append(path);
+  if (!reduce) {
+    const walker = document.createElementNS(NS, 'circle');
+    walker.setAttribute('r', '8');
+    walker.setAttribute('class', 'gq-walker');
+    const move = document.createElementNS(NS, 'animateMotion');
+    move.setAttribute('dur', '2.6s'); move.setAttribute('repeatCount', 'indefinite'); move.setAttribute('path', d);
+    walker.append(move);
+    trail.append(walker);
+  }
 }
 
 // ---------- state ----------
@@ -41,11 +68,11 @@ function render() {
     el.querySelector('[data-done]').checked = done.has(s.id);
   }
   if (current == null || !steps.some((s) => s.id === current)) current = (steps.find((s) => !done.has(s.id)) || steps[steps.length - 1]).id;
-  for (const el of document.querySelectorAll('.gq-step')) el.classList.toggle('is-current', Number(el.dataset.q) === current);
+  for (const el of document.querySelectorAll('.gq-step')) { const now = Number(el.dataset.q) === current; el.classList.toggle('is-current', now); el.classList.toggle('is-open', now || el.classList.contains('is-peek')); }
   const step = steps.find((s) => s.id === current);
   $('gq-now-title').textContent = step.name;
   $('gq-now-text').textContent = step.do;
-  drawRoute(step);
+  drawMap(step);
   const d = steps.filter((s) => done.has(s.id));
   const exp = d.reduce((a, s) => a + s.exp, 0);
   $('gq-bar').style.transform = `scaleX(${d.length / steps.length})`;
@@ -62,11 +89,13 @@ document.addEventListener('change', (e) => {
   if (box.checked) done.add(id); else done.delete(id);
   save();
   if (box.checked && id === current) { const next = D.steps.find((s) => !done.has(s.id)); if (next) current = next.id; }
+  if (!box.checked) current = id;
   render();
 });
 document.addEventListener('click', (e) => {
   const head = e.target.closest('.gq-step-head');
-  if (head && !e.target.closest('label, a, input')) select(Number(head.closest('.gq-step').dataset.q), false);
+  // A finished or later step opens for a look without moving the current quest; the current one stays open.
+  if (head && !e.target.closest('label, a, input')) { const li = head.closest('.gq-step'); if (!li.classList.contains('is-current')) { li.classList.toggle('is-peek'); li.classList.toggle('is-open', li.classList.contains('is-peek')); } }
 });
 $('gq-next').addEventListener('click', () => {
   done.add(current); save();
