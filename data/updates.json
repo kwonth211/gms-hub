@@ -24,21 +24,9 @@
   },
   {
    "date": "2026-11-13",
-   "path": "/contact/#support",
-   "ko": "사이트 후원 — Ko-fi로 커피 한 잔 응원할 수 있어요",
-   "en": "Support the site: buy us a coffee on Ko-fi"
-  },
-  {
-   "date": "2026-11-13",
    "path": "/",
    "ko": "영어 검색 개선 — glove att 60, zhelm 같은 줄임말도 찾아요",
    "en": "Better English search: shorthand like glove att 60 or zhelm now works"
-  },
-  {
-   "date": "2026-11-13",
-   "path": "/tools/scroll/",
-   "ko": "헤더에 계산기 탭 — 경험치 측정기·주문서·확률·몇 방 컷 계산기를 한 곳에서",
-   "en": "New Tools tab in the header: the EXP tracker and all calculators in one dropdown"
   },
   {
    "date": "2026-11-13",
@@ -129,18 +117,6 @@
   },
   {
    "date": "2026-11-12",
-   "path": "/monsters/",
-   "ko": "몬스터 도감 목록 보기 — 한 줄에 한 마리씩 빠르게 훑기",
-   "en": "Monster list view: one monster per row"
-  },
-  {
-   "date": "2026-11-12",
-   "path": "/contact/",
-   "ko": "문의 페이지 — 버그 제보·협찬 문의·후원",
-   "en": "Contact page: bug reports, sponsorship and support"
-  },
-  {
-   "date": "2026-11-12",
    "path": "/tools/scan/",
    "ko": "상점 스캔에 시세 비교 — 내 가격이 시세보다 얼마나 비싼지",
    "en": "Shop scan compares each price with the market"
@@ -156,12 +132,6 @@
    "path": "/rank/",
    "ko": "캐릭터 랭킹 — 레벨 순위·직업 분포·내 캐릭터 찾기",
    "en": "Character rankings: level ranks, class split and character lookup"
-  },
-  {
-   "date": "2026-11-11",
-   "path": "/",
-   "ko": "단풍잎·도트 커서 — 사이트에 메이플 분위기 더하기 (더보기 메뉴에서 끄기)",
-   "en": "Maple charm: falling leaves and a pixel cursor (switch off in the More menu)"
   },
   {
    "date": "2026-11-11",
@@ -231,12 +201,6 @@
   },
   {
    "date": "2026-11-10",
-   "path": "/",
-   "ko": "중국어(번체)·일본어 버전 추가",
-   "en": "Traditional Chinese and Japanese versions of every page"
-  },
-  {
-   "date": "2026-11-10",
    "path": "/monsters/",
    "ko": "몬스터 도감 — 체력·경험치·약점·드롭·출현 맵",
    "en": "Monster database: HP, EXP, weaknesses, drops and spawn maps"
@@ -302,22 +266,10 @@
    "en": "Guides: getting started, choosing a class, citizenship, scroll odds"
   },
   {
-   "date": "2026-10-31",
-   "path": "/",
-   "ko": "사이트 안 도구도 검색돼요, 휴대폰에서 모든 탭 보기",
-   "en": "Search finds the site's own tools; every tab fits on phones"
-  },
-  {
    "date": "2026-10-30",
    "path": "/tools/training/",
    "ko": "레벨 구간별 사냥터 페이지",
    "en": "Training pages by level band"
-  },
-  {
-   "date": "2026-10-29",
-   "path": "/",
-   "ko": "추천 많은 순으로 사이트 정렬",
-   "en": "Sites sorted by recommendations"
   },
   {
    "date": "2026-10-28",
