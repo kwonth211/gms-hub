@@ -1,4 +1,4 @@
-import { handleEmail } from './inbox.js';
+import { handleEmail, handleSendMail } from './inbox.js';
 // GMS Hub vote API (Cloudflare Worker + D1).
 // GET  /votes        -> { "<siteId>": count, ... }
 // POST /vote {site}  -> { site, count, counted }  (one vote per visitor per site; visitors are salted IP hashes)
@@ -270,6 +270,7 @@ const api = {
     const cors = corsHeaders(origin);
     // Private extension service worker uses a narrowly scoped ingestion token, never public CORS.
     if (url.pathname === '/internal/market-batch') return handleMarketBatch(req, env, knownItems);
+    if (url.pathname === '/internal/mail/send' && req.method === 'POST') return handleSendMail(req, env);
     // The collector page runs on gms-hub.com (or localhost while testing) and sends the admin key, so it needs CORS.
     // Discord slash commands (signed by Discord; see discord-bot.js). Prices come from this worker's own summary.
     if (url.pathname === '/discord/interactions' && req.method === 'POST') {

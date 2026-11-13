@@ -22,6 +22,10 @@ DISCORD_INVITE = "https://discord.gg/kVmXpHSKq"
 # /feedback posts into this channel of the GMS Hub server (needs the DISCORD_BOT_TOKEN secret, as do /alert DMs).
 DISCORD_FEEDBACK_CHANNEL = "1570460324203602010"
 
+# Email Service: send as contact@gms-hub.com (src/inbox.js handleSendMail).
+[[send_email]]
+name = "EMAIL"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "gms-hub-votes"
