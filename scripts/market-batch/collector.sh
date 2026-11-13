@@ -4,7 +4,8 @@
 # window is covered or on another Space (the game): covered, it read 2-4 shops a minute, in front 40. So it gets its
 # own browser (Chrome for Testing, which still accepts --load-extension), started with throttling switched off and the
 # unpacked extension loaded, separate from the browser the admin uses. `run` keeps it in the foreground (for launchd);
-# `start` detaches it. Port 9223 (local only) is the DevTools protocol, so the extension's service worker can be inspected
+# `start` detaches it. No startup window: the extension opens the one collector window itself; --test-type hides the
+# "automated testing only" bar and Translate is off, so nothing pops up over the page. Port 9223 (local only) is the DevTools protocol, so the extension's service worker can be inspected
 # from a script (`status` does not need it). Install the browser once with:
 #   npx -y @puppeteer/browsers install chrome@stable --path ~/gms-hub-collector/browsers
 DIR=${0:A:h}
@@ -17,10 +18,10 @@ mkdir -p ~/.config/gms-hub ~/gms-hub-samples $PROFILE
 APP=$(ls -d ~/gms-hub-collector/browsers/chrome/*/*/Google\ Chrome\ for\ Testing.app/Contents/MacOS/Google\ Chrome\ for\ Testing 2>/dev/null | tail -1)
 ARGS=(--user-data-dir=$PROFILE --load-extension=$EXT
   --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows
-  --disable-features=IntensiveWakeUpThrottling --disable-hang-monitor
+  --disable-features=IntensiveWakeUpThrottling,Translate,TranslateUI --disable-hang-monitor
   --no-first-run --no-default-browser-check --disable-session-crashed-bubble --hide-crash-restore-bubble
   --remote-debugging-port=9223 --remote-allow-origins=http://127.0.0.1:9223
-  --window-size=1100,800 --window-position=40,60 about:blank)
+  --test-type --no-startup-window --window-size=1100,800 --window-position=40,60)
 running() { [[ -f $PID ]] && kill -0 $(cat $PID) 2>/dev/null; }
 need_app() { [[ -n $APP && -x $APP ]] || { echo "수집용 브라우저가 없습니다: npx -y @puppeteer/browsers install chrome@stable --path ~/gms-hub-collector/browsers"; exit 1; }; }
 case $1 in
