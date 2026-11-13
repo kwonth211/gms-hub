@@ -273,3 +273,19 @@ test('my-shop was folded into the scan page: old links redirect there and nothin
   for (const f of ['dist/ko/index.html','dist/ko/tools/market/index.html','dist/ko/tools/scan/index.html','dist/en/index.html']) assert.doesNotMatch(read(f),/tools\/my-shop\//);
   assert.doesNotMatch(read('dist/sitemap.xml'),/\/tools\/my-shop\//);
 });
+
+test('root and localized share cards resolve to current, correctly sized artwork in every language', () => {
+  for (const lang of ['ko', 'en', 'zh', 'ja']) {
+    for (const page of [`${lang}/index.html`, `${lang}/tools/market/index.html`, ...(lang === 'en' ? ['index.html'] : [])]) {
+      const html = read(`dist/${page}`);
+      const og = /<meta property="og:image" content="([^"]+)"/.exec(html)?.[1];
+      assert.ok(og, `${page}: missing share image`);
+      assert.match(og, new RegExp(`/og-autumn-${lang}-[a-f0-9]{12}\\.png$`), page);
+      assert.equal(/<meta name="twitter:image" content="([^"]+)"/.exec(html)?.[1], og, page);
+      assert.match(html, /<meta property="og:image:alt" content="[^"]+">/);
+      const png = fs.readFileSync(new URL(`../dist${new URL(og).pathname}`, import.meta.url));
+      assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+      assert.equal(png.readUInt32BE(16), 1200); assert.equal(png.readUInt32BE(20), 630);
+    }
+  }
+});

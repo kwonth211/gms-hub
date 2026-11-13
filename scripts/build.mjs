@@ -595,6 +595,29 @@ const moduleFiles = fs.readdirSync(path.join(root, 'assets')).filter((name) => n
 const moduleVersion = createHash('sha256').update(moduleFiles.map((name) => `${name}\n${fs.readFileSync(path.join(root, 'assets', name), 'utf8')}`).join('\n')).digest('hex').slice(0, 12);
 const srcLink = (url, label) => `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(label || host(url))}</a>`;
 
+// A new content-addressed URL makes refreshed share cards distinct from cached old artwork.
+const SHARE_IMAGES = Object.fromEntries(ALL_LANGS.map(lang => {
+  const source = `og-${lang}.png`;
+  const hash = createHash('sha256').update(fs.readFileSync(path.join(root, 'assets', source))).digest('hex').slice(0, 12);
+  return [lang, { source, name: `og-autumn-${lang}-${hash}.png` }];
+}));
+const SHARE_ALT = {
+  ko: '가을 픽셀 풍경과 금빛 단풍 문양의 GMS Hub — 아이템, 실시간 시세, 사냥터와 공략',
+  en: 'GMS Hub in an autumn pixel landscape with a golden maple crest — items, live prices, training and guides',
+  zh: '秋日像素風景與金色楓葉的 GMS Hub — 道具、即時價格、練功地點與攻略',
+  ja: '秋のピクセル風景と金色のメイプルの GMS Hub — アイテム、相場、狩場と攻略',
+};
+function shareImageTags(lang) {
+  const url = absUrl(`/assets/${SHARE_IMAGES[lang].name}`);
+  return `<meta property="og:image" content="${url}">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="${esc(SHARE_ALT[lang])}">
+<meta name="twitter:image" content="${url}">
+<meta name="twitter:image:alt" content="${esc(SHARE_ALT[lang])}">`;
+}
+
 function head({ lang, title, desc, pagePath, noindex, ld = [], only }) {
   const alternates = only
     ? ''
@@ -603,7 +626,6 @@ function head({ lang, title, desc, pagePath, noindex, ld = [], only }) {
       `\n<link rel="alternate" hreflang="x-default" href="${absUrl(langPath(config.defaultLang, pagePath))}">`
     : '';
   const canonical = pagePath ? absUrl(langPath(lang, pagePath)) : absUrl('/');
-  const ogImage = absUrl(`/assets/og-${lang}.png`);
   const adsense = config.adsenseClient
     ? `<meta name="google-adsense-account" content="${esc(config.adsenseClient)}">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${esc(config.adsenseClient)}" crossorigin="anonymous"></script>`
@@ -643,12 +665,9 @@ ${alternates}
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:url" content="${canonical}">
-<meta property="og:image" content="${ogImage}">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
+${shareImageTags(lang)}
 <meta property="og:locale" content="${lang === 'ko' ? 'ko_KR' : 'en_US'}">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="${ogImage}">
 <meta name="theme-color" content="#f6f1e7">
 <script>${THEME_BOOT}</script>
 <script>${TX_RUNTIME}</script>
@@ -3220,6 +3239,14 @@ location.replace('${config.basePath}/'+lang+'/'+q);})();
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(T.en.homeTitle)}</title>
 <meta name="description" content="${esc(T.en.homeDesc)}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="${esc(config.siteName)}">
+<meta property="og:title" content="${esc(T.en.homeTitle)}">
+<meta property="og:description" content="${esc(T.en.homeDesc)}">
+<meta property="og:url" content="${absUrl('/')}">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+${shareImageTags('en')}
 <link rel="canonical" href="${absUrl(langPath('en', '/'))}">
 ${ALL_LANGS.map((l) => `<link rel="alternate" hreflang="${HREFLANG[l]}" href="${absUrl(langPath(l, '/'))}">`).join('\n')}
 <link rel="alternate" hreflang="x-default" href="${absUrl(langPath('en', '/'))}">
@@ -3298,6 +3325,7 @@ for (const loc of LOCALES) {
     let content = html.includes('http-equiv="refresh"') ? html.replaceAll('/en/', `/${loc.code}/`).replace('lang="en"', `lang="${loc.hreflang}"`) : localizePage(html, loc, ctx);
     if (!indexedIn(loc.code, `/${path.posix.dirname(rel.replace(/^en\//, ''))}/`))
       content = content.replace(/<meta name="robots" content="index[^"]*">\n<link rel="canonical" href="[^"]*">/, '<meta name="robots" content="noindex">');
+    content = content.replace(shareImageTags('en'), shareImageTags(loc.code));
     write(target, content);
   }
   for (const k of CLIENT_KEYS) if (!client[k]) ctx.missing.add(k);
@@ -3429,6 +3457,7 @@ const seed = sites.categories
 fs.writeFileSync(path.join(root, 'worker', 'seed.sql'), `${seed}\n`);
 
 fs.cpSync(path.join(root, 'assets'), path.join(out, 'assets'), { recursive: true });
+for (const { source, name } of Object.values(SHARE_IMAGES)) fs.copyFileSync(path.join(root, 'assets', source), path.join(out, 'assets', name));
 for (const name of moduleFiles) {
   const source = fs.readFileSync(path.join(root, 'assets', name), 'utf8');
   write(`assets/${name}`, source.replace(/(from\s+['"])(\.\.?\/[^'"?]+\.js)(['"])/g, `$1$2?v=${moduleVersion}$3`));
