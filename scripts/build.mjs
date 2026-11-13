@@ -2009,7 +2009,7 @@ const MK = {
     dist: '가격대 분포',
     distNote: '최근 7일 매물이 어느 가격대에 몰려 있는지 보여 줘요.',
     where: '최근 확인한 판매 매물',
-    whereNote: '최근 24시간 안에 확인한 판매 중 매물이에요. 실제 재고는 달라질 수 있어요.',
+    whereNote: '최근 24시간 안에 확인한 판매 중 매물이에요.',
     sold: '팔림',
     selling: '판매 중',
     listings: '매물',
@@ -2043,7 +2043,7 @@ const MK = {
     dist: 'Price spread',
     distNote: 'Where the last 7 days of listings sit by price.',
     where: 'Where to buy',
-    whereNote: 'Open listings seen in the last 24 hours. Availability may have changed.',
+    whereNote: 'Open listings seen in the last 24 hours.',
     sold: 'Sold',
     selling: 'For sale',
     listings: 'listings',
@@ -2422,11 +2422,11 @@ const fmtDate = (d) => d.replaceAll('-', '. ') + '.';
 // Every guide ends with links to the other guides, so a reader from search can keep going.
 const GUIDE_T = {
   ko: { toolsChip: '같이 쓰는 도구', toolsHeading: '이 글과 같이 쓰는 도구', more: '다른 가이드', sources: '참고한 자료', byline: (g) => `GMS Hub 작성 · 처음 쓴 날 ${fmtDate(g.published)} · 수정 ${fmtDate(g.updated)}`,
-    note: '장비와 패치에 따라 처치 타수와 비용이 달라질 수 있어요. 잘못된 내용은 {mail}이나 {issues}로 알려 주세요.', issues: 'GitHub 이슈',
+    note: '잘못된 내용은 {mail}이나 {issues}로 알려 주세요.', issues: 'GitHub 이슈',
     indexH1: '글클메 가이드', indexLead: '시작 준비부터 직업별 육성, 퀘스트와 거래까지. 필요한 단계의 가이드를 골라 보세요.',
     indexTitle: '글클메 가이드 모음 | GMS Hub', indexDesc: '글로벌 클래식 메이플 직업별 육성, 사냥 동선, 퀘스트와 시세 이용 가이드.' },
   en: { toolsChip: 'Tools for this guide', toolsHeading: 'Tools to use with this guide', more: 'More guides', sources: 'Sources', byline: (g) => `By GMS Hub · Published ${g.published} · Updated ${g.updated}`,
-    note: 'Gear and patches can change kill thresholds and costs. Report corrections to {mail} or on {issues}.', issues: 'GitHub issues',
+    note: 'Report corrections to {mail} or on {issues}.', issues: 'GitHub issues',
     indexH1: 'MapleStory Classic World Guides', indexLead: 'Getting started, class progression, quests and market tools. Choose the guide for your next step.',
     indexTitle: 'Classic World Class, Quest and Training Guides | GMS Hub', indexDesc: 'Class progression, training conditions, quest routes, supply costs and market tools.' }
 };

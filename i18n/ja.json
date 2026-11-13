@@ -2519,6 +2519,7 @@
  "Open it": "開く",
  "Open it in the Live Market": "リアルタイム相場で開く",
  "Open listings": "出品一覧を見る",
+ "Open listings seen in the last {n0} hours.": "直近 {n0} 時間に確認した出品です。",
  "Open listings seen in the last {n0} hours. Availability may have changed.": "直近{n0}時間に見た出品です。今もあるとは限りません。",
  "Open shops in the Free Market": "フリーマーケットのショップを開く",
  "Open source": "オープンソース",
