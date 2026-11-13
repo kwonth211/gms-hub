@@ -23,7 +23,6 @@ export function mountHeroStorm(hero) {
   canvas.className = 'hero-storm';
   canvas.setAttribute('aria-hidden', 'true');
   hero.insertBefore(canvas, hero.querySelector('.hero-inner'));
-  const html = document.documentElement;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const narrow = matchMedia('(max-width: 760px)');
   const connection = navigator.connection;
@@ -73,13 +72,12 @@ export function mountHeroStorm(hero) {
   let count = constrained ? 72 : 144, fps = constrained ? 24 : 30, slowFrames = 0, overloaded = false;
   let frameCount = 0, totalMs = 0, maxMs = 0;
   const samples = [];
-  const off = () => html.dataset.charm === 'off';
-  const canRun = () => !disposed && !away && inView && !document.hidden && !off()
+  const canRun = () => !disposed && !away && inView && !document.hidden
     && !reduced.matches && !narrow.matches && !overloaded && width >= 160;
 
   function draw(t) {
     ctx.clearRect(0, 0, width, height);
-    if (off() || width < 160) return;
+    if (width < 160) return;
     const phase = t % 11.5, gather = smooth((phase - 1.05) / 2.3), release = smooth((phase - 7.35) / 2.2);
     const hold = gather * (1 - release), x = width / 2, y = height * .42 + Math.sin(t * .9) * 3;
     const cell = radius / 8.5;
@@ -152,8 +150,7 @@ export function mountHeroStorm(hero) {
   function sync() {
     cancel();
     if (disposed) return;
-    if (off()) { draw(5); report('off'); }
-    else if (document.hidden || away) report('hidden');
+    if (document.hidden || away) report('hidden');
     else if (!inView) report('offscreen');
     else if (canRun()) { report('playing'); frameId = requestAnimationFrame(frame); }
     else { draw(5); report('static'); }
@@ -178,7 +175,6 @@ export function mountHeroStorm(hero) {
   const resize = new ResizeObserver(requestLayout); resize.observe(hero); resize.observe(card);
   const intersection = new IntersectionObserver(([entry]) => { inView = entry.isIntersecting; sync(); }, { threshold: 0 });
   intersection.observe(hero);
-  const settings = new MutationObserver(sync); settings.observe(html, { attributes: true, attributeFilter: ['data-charm'] });
   document.addEventListener('visibilitychange', sync);
   reduced.addEventListener('change', sync); narrow.addEventListener('change', requestLayout);
   const leave = () => { away = true; cancel(); cancelAnimationFrame(layoutId); layoutId = 0; };
@@ -187,7 +183,7 @@ export function mountHeroStorm(hero) {
   layout();
   return () => {
     disposed = true; cancel(); cancelAnimationFrame(layoutId);
-    resize.disconnect(); intersection.disconnect(); settings.disconnect();
+    resize.disconnect(); intersection.disconnect();
     document.removeEventListener('visibilitychange', sync); reduced.removeEventListener('change', sync);
     narrow.removeEventListener('change', requestLayout); window.removeEventListener('pagehide', leave); window.removeEventListener('pageshow', enter);
     canvas.remove();

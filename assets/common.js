@@ -157,8 +157,8 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
 })();
 
 // Small touches: a few maple leaves drifting down over every page and a sparkle where you click (mouse only). The switch
-// in the footer and in the More menu turns them, the custom cursor and the walking mushroom off for good; reduced-motion
-// users never get them. The leaves sit under the header and never take a click.
+// in the footer and More menu controls only the falling leaves, independently of the banner and other touches.
+// Reduced-motion users never get the leaves or click sparkles. The leaves sit under the header and never take a click.
 (() => {
   const html = document.documentElement;
   const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -181,7 +181,7 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   leaves();
   if (!calm && matchMedia('(pointer: fine)').matches) {
     document.addEventListener('pointerdown', (e) => {
-      if (off() || e.button !== 0) return;
+      if (e.button !== 0) return;
       for (let i = 0; i < 6; i++) {
         const s = document.createElement('i');
         const a = (Math.PI * 2 * i) / 6 + Math.random() * 0.5, d = 18 + Math.random() * 14;

@@ -169,7 +169,6 @@ h2 { font-size: 1.35rem; margin: 48px 0 16px; }
   --autumn-ground: #3f3027; --autumn-grass: #916b3e;
 }
 .hero-storm { position: absolute; pointer-events: none; contain: strict; }
-html[data-charm='off'] .hero-scene * { animation: none !important; }
 .hero-scene .bob { animation: bob 2.4s ease-in-out infinite; }
 .hero-scene .bob2 { animation: bob 1.9s ease-in-out infinite 0.4s; }
 .hero-scene .bob3 { animation: bob 2.8s ease-in-out infinite 0.9s; }
@@ -1719,11 +1718,11 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 }
 
 /* Charm: our own pixel cursor, falling maple leaves on the home hero, click sparkles and a walking mushroom in the
-   footer. All of it stops for reduced motion and when the footer switch sets html[data-charm=off]. */
+   footer. Reduced motion limits animation; the footer switch controls only falling leaves. */
 @media (pointer: fine) {
-  html:not([data-charm='off']) body { cursor: var(--cur); }
-  html:not([data-charm='off']) :is(a, button, summary, select, label, [role='button'], [role='tab']) { cursor: var(--cur-on); }
-  html:not([data-charm='off']) :is(input, textarea) { cursor: text; }
+  body { cursor: var(--cur); }
+  :is(a, button, summary, select, label, [role='button'], [role='tab']) { cursor: var(--cur-on); }
+  :is(input, textarea) { cursor: text; }
 }
 .charm-leaves { position: fixed; inset: 0; z-index: 15; overflow: hidden; pointer-events: none; --fall: calc(100vh + 60px); }
 .charm-leaf { position: absolute; top: -30px; width: 22px; height: 24px; background: var(--leaf) center / contain no-repeat; image-rendering: pixelated; opacity: 0.7;
@@ -1753,7 +1752,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .charm-toggle:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .charm-off-label, html[data-charm='off'] .charm-on-label { display: none; }
 html[data-charm='off'] .charm-off-label { display: inline; }
-html[data-charm='off'] :is(.charm-walk, .charm-leaves) { display: none; }
+html[data-charm='off'] .charm-leaves { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .charm-leaves, .charm-spark { display: none; }
   .walker, .walker svg { animation: none; }

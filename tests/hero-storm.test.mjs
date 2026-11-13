@@ -39,15 +39,18 @@ function setup({ reduced = false, mobile = false, cores = 8, cost = 1 } = {}) {
     visibility: hidden => { doc.hidden = hidden; documentEvents.visibilitychange(); } };
 }
 
-test('no repeating animation work offscreen, in a hidden tab or with effects off; resumes once', () => {
+test('banner pauses offscreen and in hidden tabs, but keeps playing with falling leaves off', () => {
   const s = setup();
   assert.equal(s.raf.size + s.timers.size, 0);
   s.visible(true); s.tick(); assert.equal(s.timers.size, 1);
   s.visible(false); assert.equal(s.raf.size + s.timers.size, 0); assert.equal(s.canvas.dataset.motion, 'offscreen');
   s.visible(true); s.visibility(true); assert.equal(s.raf.size + s.timers.size, 0);
   s.visibility(false); assert.equal(s.raf.size, 1);
-  s.html.dataset.charm = 'off'; s.observers.settings(); assert.equal(s.raf.size, 0); assert.equal(s.canvas.dataset.motion, 'off');
-  delete s.html.dataset.charm; s.observers.settings(); assert.equal(s.raf.size, 1);
+  s.html.dataset.charm = 'off'; s.observers.settings?.();
+  for (let i = 0; i < 30; i++) s.tick();
+  assert.equal(s.timers.size, 1); assert.equal(s.canvas.dataset.motion, 'playing');
+  assert.ok(JSON.parse(s.canvas.dataset.performance).frames > 1);
+  delete s.html.dataset.charm; s.observers.settings?.(); s.tick(); assert.equal(s.timers.size, 1);
   s.dispose(); assert.equal(s.raf.size + s.timers.size, 0); assert.equal(Object.keys(s.observers).length, 0);
 });
 
