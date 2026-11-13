@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Market collector browser (admin's Mac). Usage: ./collector.sh start | stop | restart | status | log | run
+# Market collector browser (admin's Mac). Usage: ./collector.sh start | stop | restart | status | show | hide | log | run
 # The shop-listing collector is a Chrome extension; it needs a browser whose timers are never throttled while its
 # window is covered or on another Space (the game): covered, it read 2-4 shops a minute, in front 40. So it gets its
 # own browser (Chrome for Testing, which still accepts --load-extension), started with throttling switched off and the
@@ -42,6 +42,7 @@ case $1 in
   status)
     if running; then echo "수집 브라우저 실행 중 (pid $(cat $PID))"; else echo "수집 브라우저: 이 스크립트로 띄운 것 없음 (launchd로 돌면 정상)"; fi
     pgrep -fl "Google Chrome for Testing" | head -1 | awk '{print "브라우저 프로세스 pid", $1}'
+    [[ $(launchctl getenv GMS_COLLECTOR_HEADLESS) == 0 ]] && echo "주의: 창 모드로 떠 있음 (확인 끝났으면 ./collector.sh hide)"
     curl -s --max-time 10 "$API/market/collector" | python3 -c '
 import json, sys, time
 d = json.load(sys.stdin); h = d.get("heartbeat")
@@ -52,6 +53,11 @@ else:
     print("상태 보고 없음")
 print("상태", d.get("state"), "· 마지막 저장", d.get("lastSuccessAt"), "· 오늘", d.get("todayRows"), "건")
 for r in d.get("runs", [])[:3]: print("  ", r["at"], "상점", r["shops"], "저장", r["accepted"])' ;;
+  # The source site sometimes asks for a one-time human check that only a visible window can pass. `show` brings the
+  # launchd-run browser back with a window for that; `hide` returns it to no window. Without `hide` the window would
+  # stay and pop up on every run, so `status` warns while it is on.
+  show) launchctl setenv GMS_COLLECTOR_HEADLESS 0; pkill -f "Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing"; echo "창 모드로 다시 띄웁니다. 확인을 마치면 ./collector.sh hide" ;;
+  hide) launchctl unsetenv GMS_COLLECTOR_HEADLESS; pkill -f "Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing"; echo "창 없는 모드로 다시 띄웁니다" ;;
   log) tail -f $LOG ;;
-  *) echo "사용법: ./collector.sh start | stop | restart | status | log | run"; exit 1 ;;
+  *) echo "사용법: ./collector.sh start | stop | restart | status | show | hide | log | run"; exit 1 ;;
 esac
