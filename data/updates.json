@@ -1,0 +1,12 @@
+{
+ "note": "Site updates shown on the home page (newest first). Add an entry with every new feature or visible improvement: date (KST), ko/en text, link path.",
+ "updates": [
+  { "date": "2026-11-13", "path": "/quests/glove-attack/", "new": true, "ko": "장공 퀘스트 공략 — 로웬·제인 두 루트, NPC 위치·재료·동선·시세", "en": "Gloves attack scroll quests — the Rowen and Jane routes, NPCs, items, route and prices" },
+  { "date": "2026-11-13", "path": "/tools/training/#rates", "ko": "사냥터 추천에 시간당 경험치·메소 실측 수치 46개 (출처 포함)", "en": "Training routes: 46 sourced EXP and meso per hour figures" },
+  { "date": "2026-11-13", "path": "/megaphone/", "ko": "실시간 확성기가 새로고침 없이 바로 들어와요", "en": "Live megaphones arrive without a refresh" },
+  { "date": "2026-11-13", "path": "/discord-bot/", "ko": "디스코드 봇 — 시세·몬스터·사냥터 검색, 확성기 알림", "en": "Discord bot — prices, monsters, training spots and megaphone alerts" },
+  { "date": "2026-11-12", "path": "/tools/exp/", "ko": "경험치 측정기 — 화면 공유로 시간당 경험치·레벨업까지 남은 시간", "en": "EXP tracker — EXP per hour and time to level from your screen" },
+  { "date": "2026-11-12", "path": "/tools/market/", "ko": "시세 아이템 패널 개편 — 가격 분포·추이·관련 확성기", "en": "Market item panel — price spread, history and related megaphones" },
+  { "date": "2026-11-12", "path": "/megaphone/", "ko": "확성기 트렌드 — 지금 뜨는 아이템, 사려는 사람이 많은 아이템", "en": "Megaphone trends — hot items and items more people are buying" }
+ ]
+}

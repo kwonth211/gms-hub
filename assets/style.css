@@ -2458,3 +2458,15 @@ body.exp-running .exp-stop { display: inline-flex; }
 .gq-list-group.gq-route-jane h4 { color: #3d5bd9; }
 .gq-list-group.gq-route-jane, .gq-list-group.gq-route-bonus { margin-top: 16px; padding-top: 10px; border-top: 2px dashed var(--line-strong); }
 @media (max-width: 860px) { .gq-routes { grid-template-columns: 1fr; } .gq-route-card dl { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+/* Home: what's new. */
+.hero-new .hero-new-all { background: none; border-style: dashed; }
+.home-updates { margin-top: 18px; margin-bottom: 18px; }
+.home-updates-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+.home-updates-head h2 { margin: 0; font-size: 1.15rem; }
+.upd-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); overflow: hidden; }
+.upd-list li { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid var(--line); font-size: 0.94rem; }
+.upd-list li:last-child { border-bottom: 0; }
+.upd-list time { flex: none; width: 44px; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 0.85rem; }
+.upd-new { flex: none; font-size: 0.66rem; font-weight: 800; padding: 1px 6px; border-radius: 4px; background: var(--danger); color: var(--panel); }
+.upd-list a { color: var(--text); text-decoration: none; font-weight: 700; min-width: 0; }
+.upd-list a:hover { color: var(--accent-2); text-decoration: underline; }

@@ -695,7 +695,7 @@ function header(lang, pagePath, only) {
   ];
   // English labels that would break mid-word on a phone ("Calcul/ator") get a one-word form there.
   // The newest tab carries a small N so returning visitors notice it.
-  const NEW_TAB = '/tools/exp/';
+  const NEW_TAB = UPDATES.find((u) => tabs.some(([p]) => p === u.path.split('#')[0]))?.path.split('#')[0] || '/tools/exp/';
   const SHORT_EN = { '/': 'Home', '/monsters/': 'Mobs', '/tools/training/': 'Spots', '/tools/scroll/': 'Scrolls', '/tools/drop-rate/': 'Odds', '/tools/damage/': 'Hits', '/tools/market/': 'Market', '/megaphone/': 'Megas', '/tools/exp/': 'EXP', '/guides/': 'Guides' };
   const tabHtml = tabs
     .map(
@@ -971,6 +971,20 @@ ${collectionStatus(lang)}
 </section>`;
 }
 
+// Site updates (data/updates.json, newest first): the three newest as NEW chips in the hero, the rest in a short
+// "what's new" list further down. Every new feature or visible improvement gets an entry.
+const UPDATES = readJson('data/updates.json').updates;
+const updDate = (lang, d) => (lang === 'ko' ? `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}` : d.slice(5).replace('-', '/'));
+function heroNew(lang) {
+  const ko = lang === 'ko';
+  return `<p class="hero-new"><span class="hero-new-tag">NEW</span>${UPDATES.slice(0, 3).map((u) => `<a href="${href(langPath(lang, u.path))}">${esc((ko ? u.ko : u.en).split(' — ')[0])}</a>`).join('')}<a class="hero-new-all" href="#updates">${ko ? '업데이트 소식' : "What's new"}</a></p>`;
+}
+function updatesSection(lang) {
+  const ko = lang === 'ko';
+  return `<section class="wrap home-updates" id="updates"><div class="home-updates-head"><h2>${ko ? '업데이트 소식' : "What's new"}</h2><span class="muted small">${ko ? '새 기능과 개선 사항' : 'New features and improvements'}</span></div>
+<ol class="upd-list">${UPDATES.slice(0, 8).map((u, i) => `<li><time datetime="${u.date}" translate="no">${updDate(lang, u.date)}</time>${i < 3 ? '<span class="upd-new" translate="no">NEW</span>' : ''}<a href="${href(langPath(lang, u.path))}">${esc(ko ? u.ko : u.en)}</a></li>`).join('')}</ol></section>`;
+}
+
 function homeBody(lang) {
   const t = T[lang];
   const cats = sites.categories;
@@ -1098,7 +1112,7 @@ ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이�
 </section>
 </div>
 <p class="search-help" id="search-help">${lang === 'ko' ? '한글·영문·초성·줄임말로 검색하세요. 예: 귀힘, 미스릴, 좀비 루팡, 사냥터' : 'Search by name or keyword. Try Gloves Attack, Mithril, Zombie Lupin or training.'}</p>
-<p class="hero-new"><span class="hero-new-tag">NEW</span><a href="${href(langPath(lang, '/megaphone/'))}">${lang === 'ko' ? '실시간 확성기' : 'Live megaphones'}</a><a href="${href(langPath(lang, '/rank/'))}">${lang === 'ko' ? '캐릭터 랭킹' : 'Character rankings'}</a><a href="${href(langPath(lang, '/tools/market/'))}">${lang === 'ko' ? '커닝 공사장 상점' : 'Kerning street shops'}</a></p>
+${heroNew(lang)}
 <dl class="hero-stats"><div data-market-stat="listings" hidden><dt>${lang === 'ko' ? '24시간 매물' : 'Listings, 24h'}</dt><dd>0</dd></div><div data-market-stat="shops" hidden><dt>${lang === 'ko' ? '24시간 확인한 상점' : 'Shops checked, 24h'}</dt><dd>0</dd></div>${lang === 'ko'
   ? `<div><dt>${t.statSites}</dt><dd>${SITE_COUNT}</dd></div><div><dt>${t.statCats}</dt><dd>${cats.length}</dd></div>`
   : `<div><dt>Monsters</dt><dd>${MONSTERS.monsters.filter((m) => m.status !== 'unplaced').length}</dd></div><div><dt>Quests</dt><dd>${QUESTS.length}</dd></div><div><dt>Maps</dt><dd>${MAPS.filter((l) => l.availability === 'open').length}</dd></div>`}</dl>
@@ -1113,6 +1127,7 @@ ${jsonScript('home-routes', training.routes.map((r) => ({ id: r.id, title: r.tit
 ${jsonScript('home-classes', TR_CLASSES.map((c) => ({ slug: c.slug, job: c.job, title: lang === 'ko' ? `${c.ko} 사냥터` : `${c.en} training routes`, n: classRoutes(c).length,
   href: href(langPath(lang, classPath(c))), keywords: `${c.ko} ${c.en} ${jobNames.ko[c.job]} ${jobNames.en[c.job]}` })))}
 <section class="wrap my-char" id="my-char" data-finder="${esc(href(langPath(lang, '/tools/training/')))}" hidden></section>
+${updatesSection(lang)}
 ${body.join('\n')}
 <section class="wrap faq">
 <h2>${t.faqHeading}</h2>
