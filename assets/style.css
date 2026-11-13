@@ -2626,3 +2626,14 @@ body.exp-running .exp-stop { display: inline-flex; }
 .hs-open { position: relative; }
 .hs-kbd { display: none; position: absolute; right: -6px; bottom: -6px; min-width: 16px; padding: 0 4px; border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 5px; font-family: var(--font-mono); font-size: 0.68rem; line-height: 14px; text-align: center; color: var(--muted); background: var(--panel); pointer-events: none; }
 @media (hover: hover) and (pointer: fine) and (min-width: 1100px) { .hs-kbd { display: inline-block; } }
+/* Price tables (market page top list, /prices/<category>/ pages). */
+.price-cats{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px}
+.price-cats .chip{display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+.price-cats .chip small{color:var(--muted);font-weight:600}
+.price-cats .chip[aria-current]{border-color:var(--accent);color:var(--accent)}
+.price-table th[scope=row] a{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
+.price-table th[scope=row] img{image-rendering:pixelated;flex:none}
+.price-table th[scope=row] small{display:block;font-size:.78rem;color:var(--muted);font-weight:500}
+.price-table td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.market-seo{margin-top:20px}
+.price-page{display:grid;gap:16px;margin-bottom:32px}
