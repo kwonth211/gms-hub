@@ -47,3 +47,5 @@
 `my_shop_search`(`found`): 내 상점 시세 비교에서 판매자 이름을 직접 입력해 조회할 때 보내요. 찾은 판매 중 매물 수를 같이 보내요. 저장된 이름으로 자동 조회할 때는 보내지 않아요. 이름은 `localStorage`의 `gms-my-shop` 키에 저장돼요.
 
 `discord_click`(`place`: `header`·`footer`·`menu`·`contact`·`search-empty`(검색 결과 없음)·`market-empty`(시세 검색 결과 없음)·`bot-install`(봇 페이지의 디스코드에 추가)·`bot-page`): 디스코드 초대 링크를 누를 때 보내요. 링크 주소는 `site.config.json`의 `discord`예요.
+
+`support_click`(`platform`: `toss`·`kakaopay`·`kofi`·`footer`(맨 아래 "서버비 후원" → 문의 페이지 #support)): 후원 버튼을 누를 때 보내요. 후원 링크는 `site.config.json`의 `support`이고, 빈 값은 버튼이 안 보여요.

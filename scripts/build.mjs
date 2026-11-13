@@ -791,7 +791,7 @@ function footer(lang) {
 <div class="footer-brand">${spriteSvg('mushroom', 24)}<strong>GMS Hub</strong></div>
 <p>${esc(t.footerDisclaimer)}</p>
 <p><button type="button" class="charm-toggle" data-charm-toggle><span class="charm-on-label">${lang === 'ko' ? '움직이는 효과 끄기' : 'Turn off animations'}</span><span class="charm-off-label">${lang === 'ko' ? '움직이는 효과 켜기' : 'Turn on animations'}</span></button></p>
-<p>${guides.some((g) => g.lang === lang) ? `<a href="${href(langPath(lang, '/guides/'))}">${t.navGuides}</a> · ` : ''}<a href="${href(langPath(lang, '/about/'))}">${t.navAbout}</a> · <a href="${href(langPath(lang, '/privacy/'))}">${t.privacy}</a> · <a href="${href(langPath(lang, '/terms/'))}">${t.terms}</a> · <a href="${href(langPath(lang, '/contact/'))}">${lang === 'ko' ? '문의·협찬·후원' : 'Contact and support'}</a> · <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub</a>${config.discord ? ` · <a href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="footer">${DISCORD_ICON(14)}${lang === 'ko' ? '디스코드' : 'Discord'}</a>` : ''}${config.support?.kofi ? ` · <a href="${esc(config.support.kofi)}" target="_blank" rel="noopener" data-support="kofi">${lang === 'ko' ? '커피 한 잔 사 주기' : 'Buy me a coffee'}</a>` : ''}</p>
+<p>${guides.some((g) => g.lang === lang) ? `<a href="${href(langPath(lang, '/guides/'))}">${t.navGuides}</a> · ` : ''}<a href="${href(langPath(lang, '/about/'))}">${t.navAbout}</a> · <a href="${href(langPath(lang, '/privacy/'))}">${t.privacy}</a> · <a href="${href(langPath(lang, '/terms/'))}">${t.terms}</a> · <a href="${href(langPath(lang, '/contact/'))}">${lang === 'ko' ? '문의·협찬·후원' : 'Contact and support'}</a> · <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub</a>${config.discord ? ` · <a href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="footer">${DISCORD_ICON(14)}${lang === 'ko' ? '디스코드' : 'Discord'}</a>` : ''}${Object.values(config.support || {}).some(Boolean) ? ` · <a href="${href(langPath(lang, '/contact/'))}#support" data-support="footer">${lang === 'ko' ? '서버비 후원' : 'Help cover the server bill'}</a>` : ''}</p>
 </div></footer>`;
 }
 
@@ -2250,8 +2250,12 @@ function contactBody(lang) {
   const ko = lang === 'ko';
   const tr = (k, e) => (ko ? k : e);
   const mail = (subject) => `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}`;
-  const support = Object.entries(config.support || {}).filter(([, url]) => url);
-  const NAMES = { kofi: tr('커피 한 잔 사 주기 (Ko-fi)', 'Buy me a coffee (Ko-fi)'), buymeacoffee: 'Buy Me a Coffee', toss: tr('토스로 후원', 'Toss (Korea)'), patreon: 'Patreon', paypal: tr('페이팔로 후원', 'Tip with PayPal') };
+  // Korean visitors rarely have PayPal, so on /ko/ the Korean wallets (Toss, KakaoPay) come first and Ko-fi is labelled
+  // as the overseas card / PayPal route; other languages lead with Ko-fi.
+  const ORDER = ko ? ['toss', 'kakaopay', 'kofi'] : ['kofi', 'toss', 'kakaopay'];
+  const rank = (k) => (ORDER.includes(k) ? ORDER.indexOf(k) : ORDER.length);
+  const support = Object.entries(config.support || {}).filter(([, url]) => url).sort(([a], [b]) => rank(a) - rank(b));
+  const NAMES = { kofi: tr('해외 카드·페이팔로 후원 (Ko-fi)', 'Buy me a coffee (Ko-fi)'), buymeacoffee: 'Buy Me a Coffee', toss: tr('토스로 후원', 'Toss (Korea)'), kakaopay: tr('카카오페이로 후원', 'KakaoPay (Korea)'), patreon: 'Patreon', paypal: tr('페이팔로 후원', 'Tip with PayPal') };
   return `<article class="wrap prose contact-page"><h1>${tr('문의·협찬·후원', 'Contact, sponsorship and support')}</h1>
 <p>${tr('GMS Hub는 한 사람이 운영하는 비공식 팬 사이트예요. 아래 중 맞는 창구로 연락 주세요. 보통 2~3일 안에 답장드려요.', 'GMS Hub is an unofficial fan site run by one person. Pick the channel that fits below; replies usually take two or three days.')}</p>
 <div class="contact-grid">
@@ -2264,8 +2268,9 @@ ${config.discord ? `<section class="panel contact-card"><h2>${tr('디스코드 �
 <section class="panel contact-card"><h2>${tr('광고·협찬·제휴 문의', 'Advertising, sponsorship and partnerships')}</h2>
 <p>${tr('게임 관련 서비스·커뮤니티·크리에이터의 배너, 소개, 링크 제휴를 받아요. 회사·채널 이름, 원하는 노출 위치와 기간, 예산을 적어 주세요. 게임 규칙에 어긋나는 서비스(매크로, 계정·아이템 현금 거래 등)는 받지 않아요.', 'Banners, features and link partnerships for game-related services, communities and creators. Tell us who you are, where and how long you want to appear, and your budget. We do not take anything against the game rules (bots, real-money trading of accounts or items).')}</p>
 <p class="contact-actions"><a class="btn small-btn" href="${mail(tr('[GMS Hub] 광고·협찬 문의', '[GMS Hub] Sponsorship enquiry'))}">${tr('협찬 문의 메일 쓰기', 'Email a sponsorship enquiry')}</a></p></section>
-<section class="panel contact-card"><h2>${tr('사이트 후원', 'Support the site')}</h2>
-<p>${tr('서버와 데이터 수집 비용은 광고와 후원으로 충당해요. 도움이 됐다면 커피 한 잔 값으로 응원해 주세요. 후원은 기능이나 혜택과 상관없는 순수한 응원이에요.', 'Servers and data collection are paid for by ads and tips. If the site helped you, a coffee keeps it going. Tips are thanks only; they do not unlock anything.')}</p>
+<section class="panel contact-card" id="support"><h2>${tr('서버비를 함께 내 주세요', 'Help cover the server bill')}</h2>
+<p>${tr('GMS Hub는 한 사람이 운영하고, 아직 광고 수익이 거의 없어요. 실시간 시세·확성기 수집, 서버와 데이터베이스, 도메인 비용을 운영자가 직접 내고 있어요.', 'GMS Hub is run by one person and earns almost nothing from ads yet. The live price and megaphone collectors, the servers, the database and the domain are paid out of pocket.')}</p>
+<p>${tr('사이트가 도움이 됐다면 커피 한 잔 값으로 서버비를 보태 주세요. 후원금은 모두 서버와 데이터 수집에 써요. 후원은 기능이나 혜택과 상관없는 순수한 응원이에요.', 'If the site saved you time, chipping in the price of a coffee keeps it running. Every tip goes to servers and data collection. Tips are thanks only; they do not unlock anything.')}</p>
 ${support.length ? `<p class="contact-actions">${support.map(([k, url]) => `<a class="btn small-btn" href="${esc(url)}" target="_blank" rel="noopener" data-support="${esc(k)}">${esc(NAMES[k] || k)}</a>`).join('')}</p>` : `<p class="muted">${tr('후원 링크를 준비하고 있어요. 그전에는 메일로 연락 주세요.', 'Tip links are on the way; until then, email us.')}</p>`}</section>
 </div>
 <p class="contact-mail">${tr('메일 주소', 'Email')}: <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a> <button type="button" class="btn ghost small-btn" data-copy="${CONTACT_EMAIL}">${tr('주소 복사', 'Copy address')}</button> <span class="share-status" role="status"></span></p>
