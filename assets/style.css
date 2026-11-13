@@ -2600,3 +2600,5 @@ body.exp-running .exp-stop { display: inline-flex; }
 .pn-legend p { margin: 0; display: flex; align-items: center; gap: 8px; }
 .pn-legend ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--muted); font-size: 0.92rem; }
 .pn-legend li { display: flex; align-items: center; gap: 8px; }
+/* Safety net: if the Excel row ever lands inside a grid, it takes a whole row instead of a column. */
+.dl-tools, .dl-bar { grid-column: 1 / -1; }
