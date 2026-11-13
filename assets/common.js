@@ -117,7 +117,12 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
     ws = new WebSocket(`${api.replace(/^http/, 'ws')}/presence?p=${encodeURIComponent(location.pathname)}`);
     ws.onmessage = (e) => {
       retry = 0;
-      try { const site = JSON.parse(e.data).site; show(site); remember(site); } catch (x) {}
+      try {
+        const msg = JSON.parse(e.data);
+        // Pushed megaphones go to whoever listens (the ticker below, the megaphone page); counts update the pill.
+        if (msg.type === 'megaphones') { if (Array.isArray(msg.rows) && msg.rows.length) dispatchEvent(new CustomEvent('gms-megaphones', { detail: msg.rows })); return; }
+        show(msg.site); remember(msg.site);
+      } catch (x) {}
     };
     ws.onclose = () => {
       clearInterval(ping);
@@ -225,19 +230,24 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
       return out;
     };
   })());
-  let lastId = 0;
+  let lastId = 0, shown = [];
   // The last megaphones seen are kept in this browser and drawn at once on the next page, then replaced by fresh ones.
+  // New ones also arrive pushed over the presence socket (common.js above) the moment the collector stores them.
   const TK_KEY = 'gms-ticker';
-  async function load(saved) {
+  async function load(saved, pushed = null) {
     let rows = [];
-    if (saved) {
+    if (pushed) {
+      const ids = new Set(shown.map((r) => r.id));
+      rows = [...pushed.filter((r) => !ids.has(r.id)).sort((a, b) => b.id - a.id), ...shown].slice(0, 20);
+      try { localStorage.setItem(TK_KEY, JSON.stringify(rows)); } catch (e) {}
+    } else if (saved) {
       try { rows = JSON.parse(localStorage.getItem(TK_KEY) || '[]'); } catch (e) {}
     } else {
       try { rows = (await (await fetch(`${api}/megaphones?limit=20`)).json()).rows || []; } catch (e) { return; }
       try { localStorage.setItem(TK_KEY, JSON.stringify(rows)); } catch (e) {}
     }
     if (!rows.length || rows[0].id === lastId) return;
-    lastId = rows[0].id;
+    lastId = rows[0].id; shown = rows;
     const read = await getReader();
     const icon = box.querySelector('.mg-tk-icon')?.innerHTML || '';
     const texts = await Promise.all(rows.map(async (r) => {
@@ -282,6 +292,7 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
     }
   });
   load(true).then(() => load());
+  addEventListener('gms-megaphones', (e) => load(false, e.detail));
   setInterval(() => document.visibilityState === 'visible' && load(), 60000);
 })();
 

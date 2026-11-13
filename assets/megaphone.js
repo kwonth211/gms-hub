@@ -11,9 +11,8 @@ const api = document.body.dataset.priceApi;
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const tr = (k, e, vars = {}) => (ko ? k : tx(e, vars)).replace(/\{(\w+)\}/g, (_, v) => vars[v] ?? '');
-// New megaphones are asked for every 10 seconds (the ticker on every other page every 60); a megaphone is read from the
-// game about that often anyway.
-const POLL_MS = 10000;
+// New megaphones arrive pushed over the presence socket; this poll is the fallback (and the catch-up after a hidden tab).
+const POLL_MS = 30000;
 
 // ?m=<id> (from the header ticker) scrolls to that megaphone once and marks it.
 let focusId = Number(new URLSearchParams(location.search).get('m')) || 0;
@@ -175,6 +174,15 @@ async function loadPrices(newRows) {
   try { const p = await fetch(`${api}/prices?ids=${ids.join(',')}`).then((r) => r.json()); for (const id of ids) prices.set(id, p[id] || null); } catch (e) {}
 }
 
+// New megaphones pushed over the presence socket (assets/common.js) appear at once; polling stays as the fallback.
+addEventListener('gms-megaphones', async (e) => {
+  const fresh = e.detail.filter((r) => r.id > lastId).map((r) => ({ ...r, intent: intentOf(r.text) }));
+  if (!fresh.length) return;
+  lastId = Math.max(lastId, ...fresh.map((r) => r.id));
+  rows = fresh.sort((a, b) => b.id - a.id).concat(rows).slice(0, 400);
+  await loadPrices(fresh).catch(() => null);
+  render();
+});
 async function poll() {
   if (document.hidden) return;
   try {

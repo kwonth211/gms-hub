@@ -16,6 +16,12 @@ export class Presence {
   }
 
   async fetch(req) {
+    // Internal push (only the worker itself can reach this object): fan a message out to every page's socket.
+    if (new URL(req.url).pathname === '/push' && req.method === 'POST') {
+      const out = await req.text();
+      for (const ws of this.state.getWebSockets()) if (!this.state.getTags(ws).includes('chat')) { try { ws.send(out); } catch (e) {} }
+      return new Response(null, { status: 204 });
+    }
     if (req.headers.get('Upgrade') !== 'websocket') return new Response('expected websocket', { status: 426 });
     if (new URL(req.url).pathname === '/chat') return this.joinChat();
     const page = pageKey(new URL(req.url).searchParams.get('p'));

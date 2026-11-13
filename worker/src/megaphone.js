@@ -51,7 +51,8 @@ export async function postMegaphones(req, env, itemNames, onNew) {
     return insert.bind(stamp(r.seen), r.kind, r.color ?? null, r.channel ?? null, r.nick, text, await digest(`${r.nick}|${text.toLowerCase()}|${Math.floor(Date.parse(r.seen) / 600000)}`), p.item, p.intent, p.price);
   }));
   const results = await env.DB.batch(stmts);
-  const fresh = parsed.filter((_, i) => results[i].meta.changes > 0);
+  // New rows carry their id and the stored time stamp, shaped like GET /megaphones rows, so they can be pushed to pages.
+  const fresh = parsed.map((row, i) => ({ ...row, id: results[i].meta.last_row_id, seen: stamp(row.seen) })).filter((_, i) => results[i].meta.changes > 0);
   if (fresh.length && onNew) onNew(fresh);
   return reply({ ok: true, accepted: fresh.length });
 }
