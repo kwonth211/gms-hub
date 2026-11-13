@@ -2562,3 +2562,12 @@ body.exp-running .exp-stop { display: inline-flex; }
 .upd-pager button[aria-current] { background: var(--accent-fill); border-color: var(--accent-edge); color: var(--accent-ink); }
 .upd-pager button:disabled { opacity: 0.45; cursor: default; }
 .upd-list li[hidden] { display: none; }
+/* Player-measured rate from shared EXP tracker runs (assets/exp-community.js) and the tracker's profile row. */
+.tr-community { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; font-size: .74rem; font-weight: 700; color: var(--ok); background: var(--ok-soft); border: 1px solid var(--ok-line); vertical-align: middle; }
+.exp-me { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.exp-me label { display: flex; align-items: center; gap: 6px; font-size: .88rem; font-weight: 700; }
+.exp-me input, .exp-me select { padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--text); font: inherit; font-size: .88rem; }
+.exp-me input { width: 5.5em; }
+.exp-me small { flex-basis: 100%; }
+.exp-share { white-space: nowrap; }
+.exp-shared { color: var(--ok); font-weight: 700; font-size: .85rem; white-space: nowrap; }

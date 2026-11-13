@@ -1569,14 +1569,17 @@ const EXP = {
     demo: '예시로 먼저 보기', demoOff: '예시 끄기', demoNote: '예시 화면이에요. 40분 동안 사냥한 기록을 넣어 봤어요. 실제로 재려면 위의 시작 버튼을 누르세요.',
     pip: '미니 창 띄우기', spotLabel: '사냥터 메모', spotPh: '예: 개미굴 2, 파티 3명', alertLabel: 'EXP가 3분 넘게 안 오르면 소리로 알리기',
     log: { heading: '사냥 기록', help: '정지하거나 새로 측정할 때 3분 넘게 잰 기록이 여기에 남아요. 같은 몬스터 기록끼리 최고 기록과 비교해요. 이 브라우저에만 저장돼요.',
-      cols: ['날짜', '측정 시간', '시간당 경험치', '시간당 %', '얻은 경험치', '몬스터', '사냥터 메모', ''], empty: '아직 남은 기록이 없어요.', del: '삭제', excel: '엑셀로 받기', clear: '기록 전체 삭제', clearAsk: '사냥 기록을 모두 지울까요?' },
+      cols: ['날짜', '측정 시간', '시간당 경험치', '시간당 %', '얻은 경험치', '몬스터', '사냥터 메모', ''], empty: '아직 남은 기록이 없어요.', del: '삭제', excel: '엑셀로 받기', clear: '기록 전체 삭제', clearAsk: '사냥 기록을 모두 지울까요?',
+      share: '사냥터 순위에 보태기', shared: '보탰어요 ✓', shareNeed: '레벨과 직업을 먼저 넣어 주세요.', shareOk: '보태 주셔서 고마워요! 같은 곳 기록이 3명 넘게 모이면 사냥터 추천에 유저 실측으로 나와요.', shareFail: '지금은 보낼 수 없어요. 잠시 뒤 다시 눌러 주세요.' },
+    me: { lv: '내 레벨', job: '직업', party: '파티 인원', solo: '솔로', people: '{n}명', help: '사냥터 순위에 보탤 때 같이 올라가요. 이 브라우저에 기억해요.' },
+    community: '다른 유저 {n}명 실측 중간값 {v}/시간',
     skipIdle: '쉬는 시간 빼기 (2분 넘게 EXP가 안 오르면 제외)',
     mobLabel: '사냥하는 몬스터', mobPh: '몬스터 이름 (예: 스티지)', mobHelp: '고르면 잡은 마릿수를 계산해요.',
     manualHeading: '직접 입력', manualHelp: '화면 공유 없이 쓰는 방법이에요. 사냥 시작할 때 상태바의 EXP와 퍼센트를 넣고 한 번, 사냥 끝나고 다시 넣고 한 번 누르면 그 사이 얻은 경험치로 계산해요. 중간에 몇 번 더 넣어도 돼요.',
     manualExp: 'EXP', manualPct: '퍼센트', manualSave: '기록',
     empty: '아직 기록이 없어요. 위에서 시작을 누르거나 EXP를 직접 넣어 보세요.',
     how: [['창 모드 추천', '창 모드가 가장 잘 돼요. 전체 화면이면 공유 창에서 "전체 화면"을 고르면 되고, 검게 보이면 창 모드로 바꿔 주세요. 해상도·화면 배율은 자동으로 맞춰요.'], ['시작', '위 버튼을 누르고 메이플 창을 고르면 5초마다 EXP를 읽어요. 레벨업도 자동으로 이어서 계산해요.'], ['정지', '자리를 옮기거나 끝나면 정지를 누르세요. 기록은 이 브라우저에 남아서 다시 열어도 이어져요.']],
-    privacy: '공유한 화면은 이 컴퓨터 안에서만 읽어요. EXP 숫자만 이 브라우저에 저장되고 어디에도 올라가지 않아요.',
+    privacy: '공유한 화면은 이 컴퓨터 안에서만 읽어요. 측정 기록은 이 브라우저에만 저장돼요. "사냥터 순위에 보태기"를 누른 기록만 레벨·직업·파티 인원·몬스터·사냥터·측정 시간·시간당 경험치가 이름 없이 올라가요.',
     i: {
       unsupported: '이 브라우저는 화면 공유가 안 돼요. PC 크롬이나 엣지에서 열어 주세요. 아래에서 직접 입력은 돼요.', denied: '공유가 취소됐어요. 다시 시작을 누르면 돼요.',
       watching: '읽는 중이에요. 사냥하세요!', stopped: '정지했어요. 기록은 그대로 있어요.', wait: '대기',
@@ -1601,14 +1604,17 @@ const EXP = {
     demo: 'See an example first', demoOff: 'Close the example', demoNote: 'This is an example: 40 minutes of training. To measure your own, press start above.',
     pip: 'Pop-out mini window', spotLabel: 'Spot note', spotPh: 'e.g. Ant Tunnel 2, party of 3', alertLabel: 'Beep when EXP stops for 3 minutes',
     log: { heading: 'Training log', help: 'Sessions over 3 minutes are kept here when you stop or start a new one. Runs on the same monster are compared with your best. Saved only in this browser.',
-      cols: ['Date', 'Time', 'EXP per hour', '% per hour', 'EXP gained', 'Monster', 'Spot note', ''], empty: 'No sessions kept yet.', del: 'Delete', excel: 'Download Excel', clear: 'Clear the log', clearAsk: 'Delete the whole training log?' },
+      cols: ['Date', 'Time', 'EXP per hour', '% per hour', 'EXP gained', 'Monster', 'Spot note', ''], empty: 'No sessions kept yet.', del: 'Delete', excel: 'Download Excel', clear: 'Clear the log', clearAsk: 'Delete the whole training log?',
+      share: 'Add to spot rankings', shared: 'Added ✓', shareNeed: 'Enter your level and class first.', shareOk: 'Thanks! Once 3 or more players share the same spot, the training finder shows the measured rate.', shareFail: 'Could not send right now. Try again shortly.' },
+    me: { lv: 'Your level', job: 'Class', party: 'Party size', solo: 'Solo', people: '{n} players', help: 'Sent along when you add a run to the rankings. Remembered in this browser.' },
+    community: 'Measured by {n} other players: median {v}/h',
     skipIdle: 'Skip idle time (no EXP gain for over 2 minutes)',
     mobLabel: 'Monster you are training on', mobPh: 'Monster name (e.g. Stirge)', mobHelp: 'Pick one to count kills.',
     manualHeading: 'Type it in', manualHelp: 'The way without screen sharing. Enter the EXP and percent from the status bar when you start training and press once, then again when you finish: the gain in between is what gets calculated. Extra entries along the way are fine.',
     manualExp: 'EXP', manualPct: 'Percent', manualSave: 'Save',
     empty: 'Nothing recorded yet. Press start above or type your EXP in.',
     how: [['Windowed mode works best', 'A window is read best. In full screen pick "Entire screen" in the share dialog; if it shows black, switch to a window. Any resolution and display scale is fine.'], ['Start', 'Press the button and pick the game window; EXP is read every 5 seconds, level-ups included.'], ['Stop', 'Press stop when you move or finish. The session stays in this browser, so reopening the page continues it.']],
-    privacy: 'The shared screen is read only on this computer. Only the EXP numbers are kept, in this browser, and nothing is uploaded.',
+    privacy: 'The shared screen is read only on this computer, and your sessions stay in this browser. Only a run you add to the spot rankings is sent: level, class, party size, monster, spot, minutes and EXP per hour, with no name.',
     i: {
       unsupported: 'This browser cannot share a screen. Use Chrome or Edge on a computer; typing EXP in below still works.', denied: 'Sharing was cancelled. Press start again.',
       watching: 'Reading. Go train!', stopped: 'Stopped. The session is kept.', wait: 'Waiting',
@@ -1642,6 +1648,7 @@ function expBody(lang) {
 <div class="exp-options">
 <label class="exp-check"><input type="checkbox" id="exp-skip-idle" checked> ${esc(t.skipIdle)}</label>
 <label class="exp-check"><input type="checkbox" id="exp-alert"> ${esc(t.alertLabel)}</label>
+<div class="exp-me"><label>${esc(t.me.lv)} <input id="exp-lv" type="number" min="1" max="200" inputmode="numeric"></label><label>${esc(t.me.job)} <select id="exp-job"><option value=""></option></select></label><label>${esc(t.me.party)} <select id="exp-party">${[1, 2, 3, 4, 5, 6].map((n) => `<option value="${n}">${n === 1 ? esc(t.me.solo) : esc(t.me.people.replace('{n}', n))}</option>`).join('')}</select></label><small class="muted">${esc(t.me.help)}</small></div>
 <label class="exp-mob-label">${esc(t.spotLabel)} <input id="exp-spot" placeholder="${esc(t.spotPh)}" autocomplete="off" maxlength="60"></label>
 <label class="exp-mob-label">${esc(t.mobLabel)} <input id="exp-mob" list="exp-mob-list" placeholder="${esc(t.mobPh)}" autocomplete="off"><datalist id="exp-mob-list"></datalist><small class="muted">${esc(t.mobHelp)}</small></label>
 <p id="exp-mob-out" class="exp-mob-out"></p>
@@ -1657,7 +1664,7 @@ function expBody(lang) {
 <ol class="scan-steps">${t.how.map(([h, d], n) => `<li><b>${n + 1}</b><strong>${esc(h)}</strong><span>${esc(d)}</span></li>`).join('')}</ol>
 <p class="muted small">${esc(t.privacy)}</p>
 </div>
-${jsonScript('exp-data', { lang, t: { ...t.i, stats: t.stats, log: t.log }, mobsUrl: href('/assets/mobs.json') })}`;
+${jsonScript('exp-data', { lang, t: { ...t.i, stats: t.stats, log: t.log, me: t.me, community: t.community }, mobsUrl: href('/assets/mobs.json') })}`;
 }
 
 const SCAN = {
@@ -2835,7 +2842,7 @@ for (const lang of LANGS) {
       title: t.trTitle,
       desc: t.trDesc,
       body: trainingBody(lang),
-      modules: ['training.js'],
+      modules: ['training.js', 'exp-community.js'],
       ld: [appLd(t.trH1, t.trDesc, '/tools/training/'), breadcrumbLd(lang, t.trH1, '/tools/training/')]
     },
     scroll: {
@@ -2917,7 +2924,7 @@ for (const lang of LANGS) {
     return {
       title: fill(t.trBandTitle, vars),
       desc: fill(t.trBandDesc, vars),
-      body: trainingBandBody(lang, band),
+      body: trainingBandBody(lang, band), modules: ['exp-community.js'],
       noindex: !spots.length,
       ld: [breadcrumbLd(lang, h1, bandPath(band))]
     };
@@ -2931,7 +2938,7 @@ for (const lang of LANGS) {
     return {
       title: lang === 'ko' ? `글클메 ${name} 사냥터 추천: 레벨별 ${rows.length}곳 (1~${top}) | GMS Hub` : `MapleStory Classic World ${name} Training Routes by Level (1–${top}) | GMS Hub`,
       desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드 ${name} 레벨별 사냥터 ${rows.length}곳. 진입 레벨, 잡을 몬스터와 필요 명중, 물약 비용, 다음 이동 시점을 정리했어요.` : `${name} training in MapleStory Classic World: ${rows.length} routes by level with entry conditions, monsters and the accuracy they need, supply costs and what to do next.`,
-      body: trainingClassBody(lang, cls),
+      body: trainingClassBody(lang, cls), modules: ['exp-community.js'],
       ld: [breadcrumbLd(lang, h1, classPath(cls))]
     };
   };

@@ -4,6 +4,8 @@
 // browser (localStorage), so a reload keeps the session. Without screen sharing the two numbers can be typed by hand.
 import { findGauges, expTextBox, readExpText, parseExp, sameReading, summarize, levelTotal } from './exp-reader.js';
 import { xlsx } from './xlsx.js';
+import { jobNames } from './training-evidence.js';
+import { loadChar, saveChar } from './my-char.js';
 
 const D = JSON.parse(document.getElementById('exp-data').textContent);
 const t = D.t;
@@ -16,6 +18,9 @@ const LOG_KEY = 'gms-exp-log';
 const STALL_MS = 180000;
 const RECENT_MS = 300000;
 const BASE_TITLE = document.title;
+const ME_KEY = 'gms-exp-me';
+const CLIENT_KEY = 'gms-exp-client';
+const API = document.body.dataset.priceApi;
 const TICK_MS = 5000;
 const HEARTBEAT_MS = 60000;
 const TESSERACT_URL = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
@@ -177,9 +182,9 @@ function keepInLog() {
   const s = summarize(session.samples, { skipIdle: session.skipIdle });
   if (!s || s.active < 180000 || !s.gained || !s.perHour) return;
   const row = { id: session.samples[0].t, at: s.last.t, mins: Math.round(s.active / 60000), perHour: Math.round(s.perHour), pctPerHour: s.pctPerHour ? +s.pctPerHour.toFixed(1) : null,
-    gained: s.gained, mob: session.mob ? { id: session.mob.id, name: session.mob.name } : null, spot: session.spot || '' };
+    gained: s.gained, mob: session.mob ? { id: session.mob.id, name: session.mob.name } : null, spot: session.spot || '', route: session.route || null, ...me() };
   const i = log.findIndex((x) => x.id === row.id);
-  if (i >= 0) log[i] = { ...row, spot: log[i].spot || row.spot }; else log.unshift(row);
+  if (i >= 0) log[i] = { ...row, spot: log[i].spot || row.spot, shared: log[i].shared }; else log.unshift(row);
   saveLog();
   say(t.logged);
   renderLog();
@@ -194,7 +199,7 @@ function renderLog() {
   const rows = demoOn ? demoLog() : log;
   const when = (ms) => new Date(ms).toLocaleString(D.lang, { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' });
   body.innerHTML = rows.map((x) => `<tr data-id="${x.id}"><td>${when(x.at)}</td><td>${dur(x.mins * 60000)}</td><td><b>${big(x.perHour)}</b></td><td>${x.pctPerHour != null ? `${x.pctPerHour}%` : '—'}</td><td>${big(x.gained)}</td><td>${x.mob ? escHtml(x.mob.name) : '—'}</td>
-<td><input class="exp-log-spot" value="${escHtml(x.spot || '')}" maxlength="60" aria-label="${escHtml(t.log.cols[6])}"${demoOn ? ' disabled' : ''}></td><td><button type="button" class="btn ghost small-btn exp-log-del"${demoOn ? ' disabled' : ''}>${escHtml(t.log.del)}</button></td></tr>`).join('');
+<td><input class="exp-log-spot" value="${escHtml(x.spot || '')}" maxlength="60" aria-label="${escHtml(t.log.cols[6])}"${demoOn ? ' disabled' : ''}></td><td><div class="exp-log-acts">${x.shared ? `<span class="exp-shared">${escHtml(t.log.shared)}</span>` : x.mins >= 10 && (x.mob || x.route) ? `<button type="button" class="btn small-btn exp-share"${demoOn ? ' disabled' : ''}>${escHtml(t.log.share)}</button>` : ''}<button type="button" class="btn ghost small-btn exp-log-del"${demoOn ? ' disabled' : ''}>${escHtml(t.log.del)}</button></div></td></tr>`).join('');
   $('exp-log-empty').hidden = rows.length > 0;
   $('exp-log-clear').hidden = demoOn || !rows.length;
 }
@@ -257,11 +262,17 @@ function render() {
   $('exp-empty').hidden = session.samples.length > 0;
 }
 
+let community = null;
+function communityLine() {
+  const c = community && ((session.route && community.routes?.[session.route]) || (session.mob && community.mobs?.[session.mob.id]));
+  return c ? fill(t.community, { n: c.players, v: big(c.perHour) }) : '';
+}
 function renderMob(s) {
   const box = $('exp-mob-out');
   const mob = session.mob;
-  if (!mob || !s || !s.gained) { box.textContent = ''; return; }
-  box.innerHTML = `${fill(t.kills, { n: nf.format(Math.round(s.gained / mob.exp)), mob: mob.name })}${s.perHour ? ` · ${fill(t.killsPerHour, { n: nf.format(Math.round(s.perHour / mob.exp)) })}` : ''}`;
+  const extra = communityLine();
+  if (!mob || !s || !s.gained) { box.textContent = extra; return; }
+  box.innerHTML = `${fill(t.kills, { n: nf.format(Math.round(s.gained / mob.exp)), mob: mob.name })}${s.perHour ? ` · ${fill(t.killsPerHour, { n: nf.format(Math.round(s.perHour / mob.exp)) })}` : ''}${extra ? `<br>${escHtml(extra)}` : ''}`;
 }
 
 // EXP over time, with level-ups folded into a rising line (gained so far), and the last hour's rate as the slope.
@@ -378,10 +389,51 @@ $('exp-log-xl').addEventListener('click', () => {
   document.body.append(a); a.click(); a.remove();
   track('excel_download', { set: 'exp-log', live: true });
 });
-// Arriving from a training spot (?mob=<id>&spot=<name>): that monster and spot are filled in for this session.
+// ---------- sharing a run with the spot rankings ----------
+// Level, class and party size are asked once and remembered (level and class also update the saved character).
+function me() {
+  const lv = Number($('exp-lv').value), job = $('exp-job').value, party = Number($('exp-party').value) || 1;
+  return { level: Number.isInteger(lv) && lv >= 1 && lv <= 200 ? lv : null, job: job || null, party };
+}
+function clientId() {
+  try { let id = localStorage.getItem(CLIENT_KEY); if (!id) { id = crypto.randomUUID(); localStorage.setItem(CLIENT_KEY, id); } return id; } catch { return 'no-storage-0000'; }
+}
+{
+  $('exp-job').innerHTML = `<option value=""></option>${Object.keys(jobNames.ko).map((k) => `<option value="${k}">${escHtml(ko ? jobNames.ko[k] : jobNames.en[k])}</option>`).join('')}`;
+  let saved = null; try { saved = JSON.parse(localStorage.getItem(ME_KEY) || 'null'); } catch {}
+  const ch = loadChar();
+  $('exp-lv').value = saved?.level || ch?.lv || '';
+  $('exp-job').value = saved?.job || ch?.job || '';
+  $('exp-party').value = String(saved?.party || 1);
+  for (const id of ['exp-lv', 'exp-job', 'exp-party']) $(id).addEventListener('change', () => {
+    const m = me();
+    try { localStorage.setItem(ME_KEY, JSON.stringify(m)); } catch {}
+    if (m.level && m.job) saveChar({ lv: m.level, job: m.job });
+  });
+}
+$('exp-log-body').addEventListener('click', async (e) => {
+  const b = e.target.closest('.exp-share'); if (!b || demoOn) return;
+  const row = log.find((x) => String(x.id) === b.closest('tr').dataset.id); if (!row) return;
+  const m = me();
+  const level = row.level || m.level, job = row.job || m.job, party = row.party || m.party;
+  if (!level || !job) { say(t.log.shareNeed); $(level ? 'exp-job' : 'exp-lv').focus(); return; }
+  b.disabled = true;
+  try {
+    const r = await fetch(`${API}/exp-runs`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client: clientId(), run: `r${row.id}`, mob: row.mob?.id ?? null, route: row.route || null, level, job, party, minutes: row.mins, perHour: row.perHour, lang: D.lang }) });
+    if (!r.ok) throw new Error(String(r.status));
+    row.shared = true; row.level = level; row.job = job; row.party = party; saveLog(); renderLog();
+    say(t.log.shareOk);
+    track('exp_share', { minutes: row.mins });
+  } catch { b.disabled = false; say(t.log.shareFail); }
+});
+fetch(`${API}/exp-runs/summary`).then((r) => (r.ok ? r.json() : null)).then((d) => { community = d; render(); }).catch(() => {});
+
+// Arriving from a training spot (?route=<id>&mob=<id>&spot=<name>): that monster and spot are filled in for this session.
 const qs = new URLSearchParams(location.search);
-if (qs.get('mob') || qs.get('spot')) {
+if (qs.get('mob') || qs.get('spot') || qs.get('route')) {
   if (qs.get('spot')) { session.spot = qs.get('spot').slice(0, 60); $('exp-spot').value = session.spot; }
+  if (/^[a-z0-9-]{1,60}$/.test(qs.get('route') || '')) session.route = qs.get('route');
   if (qs.get('mob')) loadMobs().then((list) => { const m = list.find((x) => String(x.id) === qs.get('mob')); if (m) { session.mob = m; $('exp-mob').value = m.name; } save(); render(); });
   save();
 }

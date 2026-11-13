@@ -1,3 +1,4 @@
+import { addExpRun, expRunsSummary } from './exp-runs.js';
 import { handleEmail, handleSendMail } from './inbox.js';
 // GMS Hub vote API (Cloudflare Worker + D1).
 // GET  /votes        -> { "<siteId>": count, ... }
@@ -304,6 +305,20 @@ const api = {
     if (url.pathname === '/votes' && req.method === 'GET') {
       const { results } = await env.DB.prepare('SELECT site, count FROM votes').all();
       return json(Object.fromEntries(results.map((r) => [r.site, r.count])), cors, 200, 'public, max-age=30');
+    }
+
+    // Shared EXP tracker runs (exp-runs.js): stored only when a player presses the share button; read as per-spot medians.
+    if (url.pathname === '/exp-runs' && req.method === 'POST') {
+      if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
+      const r = await addExpRun(req, env);
+      if (r.status === 200) await env.DB.prepare("DELETE FROM snapshots WHERE key = 'exp-runs'").run();
+      return json(r.body, cors, r.status);
+    }
+    if (url.pathname === '/exp-runs/summary' && req.method === 'GET') {
+      const cached = await freshSnapshot(env, 'exp-runs', 30);
+      const data = cached || (await expRunsSummary(env));
+      if (!cached) await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('exp-runs',?,datetime('now'))").bind(JSON.stringify(data)).run();
+      return json(data, cors, 200, 'public, max-age=300');
     }
 
     if (url.pathname === '/vote' && req.method === 'POST') {
