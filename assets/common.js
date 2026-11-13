@@ -195,9 +195,8 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   });
 })();
 
-// Megaphone ticker above the header: the latest game megaphones scroll past; each one opens the megaphone page focused on
-// it. The list is written twice so the loop has no seam, and the speed follows its length. It holds still on hover or
-// focus, and does not move for reduced motion (then it scrolls by hand). The leaves switch does not stop it.
+// Megaphone ticker above the header: game megaphones scroll past as they come in; each one opens the megaphone page
+// focused on it. It holds still on hover or focus, and does not move for reduced motion (then it scrolls by hand). The leaves switch does not stop it.
 // Outside English the text is translated by the browser's on-device translator when it is already on this device (the
 // ticker never starts a download); Korean otherwise gets the plain reading of the trade shorthand.
 (() => {
@@ -238,80 +237,81 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
       return out;
     };
   })());
-  let lastId = 0, shown = [], pruneDue = false;
-  // The last megaphones seen are kept in this browser and drawn at once on the next page, then fresh ones are merged in:
-  // pushed over the presence socket (common.js above) the moment the collector stores them, or from the minute poll.
+  // A queue: megaphones roll by oldest first. New ones join the end of the line and scroll in right after what is
+  // showing; with nothing new, a few recent ones roll by again until something arrives. A long line rolls faster so the
+  // strip never falls far behind. The last megaphones are kept in this browser, so the next page starts with the newest
+  // at the right edge and megaphones that came in since then roll in next. New ones arrive pushed over the presence socket
+  // (common.js above) the moment the collector stores them, or from the minute poll.
   const TK_KEY = 'gms-ticker';
   const icon = () => box.querySelector('.mg-tk-icon')?.innerHTML || '';
-  const anim = () => run.getAnimations()[0];
-  const setW = () => run.firstChild?.scrollWidth || 0;
-  // Constant pace: the loop's length in px sets its duration, so adding items never changes the speed.
-  const pxPerSec = () => { const w = setW(); const dur = Math.max(40, Math.round(w / 60)); return { w, dur, v: w / dur }; };
-  const metrics = () => { const m = pxPerSec(); run.style.setProperty('--tk-x', `-${m.w}px`); run.style.setProperty('--tk-dur', `${m.dur}s`); return m; };
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let lastId = 0, kept = [], x = 0, last = 0, held = false, frame = 0;
+  run.innerHTML = '<div class="mg-tk-set"></div>';
+  const set = run.firstChild;
   async function itemsHtml(rows, fresh = false) {
     const read = await getReader();
     const texts = await Promise.all(rows.map(async (r) => { const original = noChannel(r.text, r.channel); return [original, read ? await read(original).catch(() => original) : original]; }));
     return rows.map((r, i) => `<a class="mg-tk-item mg-tk-${esc(r.color || 'Y')}${fresh ? ' mg-tk-new' : ''}" href="${box.dataset.href}?m=${Number(r.id)}" tabindex="-1"${texts[i][1] !== texts[i][0] ? ` title="${esc(texts[i][0])}"` : ''}>${icon()}${r.channel ? `<b>CH${r.channel}</b>` : ''}<time>${clock(r.seen)}</time><strong>${esc(r.nick)}</strong><span>${esc(short(texts[i][1]))}</span></a>`).join('');
   }
-  // Full draw: first paint, and the quiet rebuild at a loop boundary after many items were merged in.
-  async function draw(rows, at = 0) {
-    shown = rows; lastId = rows[0].id;
-    const items = await itemsHtml(rows);
-    run.innerHTML = `<div class="mg-tk-set">${items}</div><div class="mg-tk-set" aria-hidden="true">${items}</div>`;
-    const m = metrics();
+  const stopAt = () => Math.min(0, run.parentElement.clientWidth - set.scrollWidth);
+  // With nothing new coming in, the strip keeps rolling through a few recent megaphones again ("replay" items). A new
+  // megaphone skips ahead of any replay items not yet on screen, so it always comes in next.
+  let refilling = false;
+  async function replay() {
+    if (refilling || !kept.length) return;
+    refilling = true;
+    const html = await itemsHtml(kept.slice(-8));
+    set.insertAdjacentHTML('beforeend', html.replace(/class="mg-tk-item /g, 'class="mg-tk-item mg-tk-re '));
+    refilling = false;
+  }
+  function step(t) {
+    frame = 0;
+    const dt = Math.min(0.1, last ? (t - last) / 1000 : 0);
+    last = t;
+    const view = run.parentElement.clientWidth, ahead = x + set.scrollWidth - view; // px still waiting off the right edge
+    if (!held) x -= 60 * Math.min(3, 1 + Math.max(0, ahead) / (3 * view)) * dt;
+    if (ahead < view) replay();
+    // Items that have scrolled fully past the left edge are done; dropping them keeps the strip short.
+    while (set.children.length > 1 && x + set.firstElementChild.offsetWidth < 0) { x += set.firstElementChild.offsetWidth; set.firstElementChild.remove(); }
+    run.style.transform = `translateX(${x}px)`;
+    if (document.hidden) last = 0;
+    else frame = requestAnimationFrame(step);
+  }
+  const go = () => { if (!calm && !frame) frame = requestAnimationFrame(step); };
+  const settle = () => { x = calm ? 0 : stopAt(); run.style.transform = `translateX(${x}px)`; };
+  async function add(rows, fresh) {
+    const next = rows.filter((r) => r.id > lastId).sort((a, b) => a.id - b.id);
+    if (!next.length) return;
+    lastId = next[next.length - 1].id;
+    kept = kept.concat(next).slice(-20);
+    try { localStorage.setItem(TK_KEY, JSON.stringify(kept)); } catch (e) {}
+    const html = await itemsHtml(next, fresh);
+    const view = run.parentElement.clientWidth;
+    for (const el of [...set.querySelectorAll('.mg-tk-re')]) if (x + el.offsetLeft >= view) el.remove();
+    set.insertAdjacentHTML('beforeend', html);
     box.classList.add('ready');
-    const a = anim();
-    if (a && at) a.currentTime = at % (m.dur * 1000);
+    go();
   }
-  // Merge: new items go into both copies while the strip keeps rolling. The current pixel offset is kept, and
-  // if the strip was showing the second copy it is moved to the same place in the first, so nothing on screen moves.
-  async function merge(rows) {
-    const ids = new Set(shown.map((r) => r.id));
-    const add = rows.filter((r) => !ids.has(r.id)).sort((a, b) => a.id - b.id);
-    if (!add.length) return;
-    shown = [...add.slice().reverse(), ...shown].slice(0, 20); lastId = shown[0].id;
-    try { localStorage.setItem(TK_KEY, JSON.stringify(shown)); } catch (e) {}
-    const html = await itemsHtml(add, true);
-    const a = anim();
-    const before = pxPerSec();
-    let offset = a ? ((a.currentTime || 0) / 1000) * before.v : 0;
-    if (offset >= before.w) offset -= before.w;
-    // New items go in just past the right edge of what is on screen, so they scroll in within seconds instead of waiting
-    // behind every older item. If the seam between the two copies is on screen, they go to the end as before.
-    const target = offset + (run.parentElement?.clientWidth || 0);
-    const kids = [...run.firstChild.children], x0 = run.firstChild.offsetLeft;
-    const at = target < before.w ? kids.findIndex((k) => k.offsetLeft - x0 >= target) : -1;
-    for (const set of run.children) {
-      if (at >= 0) set.children[at].insertAdjacentHTML('beforebegin', html);
-      else set.insertAdjacentHTML('beforeend', html);
-    }
-    const m = metrics();
-    if (a) a.currentTime = (offset / m.v) * 1000;
-    if (run.firstChild.children.length > 36) pruneDue = true;
-  }
-  run.addEventListener('animationiteration', () => { if (pruneDue) { pruneDue = false; draw(shown); } });
   async function load(saved) {
-    let rows = [];
     if (saved) {
+      let rows = [];
       try { rows = JSON.parse(localStorage.getItem(TK_KEY) || '[]'); } catch (e) {}
       if (!rows.length) return;
-      let at = 0;
-      try {
-        const keep = JSON.parse(sessionStorage.getItem(TK_POS) || 'null');
-        if (keep && keep.id === rows[0].id && Date.now() - keep.at < 120000) at = keep.t + (Date.now() - keep.at);
-      } catch (e) {}
-      return draw(rows, at);
+      await add(rows, false);
+      // What was already seen stands still, newest at the right edge.
+      return settle();
     }
+    let rows = [];
     try { rows = (await (await fetch(`${api}/megaphones?limit=20`)).json()).rows || []; } catch (e) { return; }
-    if (!rows.length) return;
-    if (!shown.length) { try { localStorage.setItem(TK_KEY, JSON.stringify(rows)); } catch (e) {} return draw(rows); }
-    return merge(rows);
+    if (!lastId) { await add(rows, false); return settle(); }
+    return add(rows, true);
   }
-  const TK_POS = 'gms-ticker-pos';
-  addEventListener('pagehide', () => {
-    const a = run.getAnimations()[0];
-    if (a) try { sessionStorage.setItem(TK_POS, JSON.stringify({ id: lastId, t: a.currentTime, at: Date.now() })); } catch (e) {}
-  });
+  const hold = (on) => { held = on; if (!on) go(); };
+  box.addEventListener('mouseenter', () => hold(true));
+  box.addEventListener('mouseleave', () => hold(false));
+  box.addEventListener('focusin', () => hold(true));
+  box.addEventListener('focusout', () => hold(false));
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) go(); });
   // On the megaphone page itself a ticker item is focused in place instead of reloading the page.
   const samePage = location.pathname === new URL(box.dataset.href, location.href).pathname;
   box.addEventListener('click', (e) => {
@@ -324,7 +324,7 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
     }
   });
   load(true).then(() => load());
-  addEventListener('gms-megaphones', (e) => merge(e.detail));
+  addEventListener('gms-megaphones', (e) => add(e.detail, true));
   setInterval(() => document.visibilityState === 'visible' && load(), 60000);
 })();
 

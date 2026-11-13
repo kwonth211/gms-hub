@@ -1900,11 +1900,8 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mg-tk-label:hover { background: var(--accent-edge); color: #fff; }
 .mg-tk-label:focus-visible, .mg-tk-item:focus-visible { outline: 2px solid var(--tk-hi); outline-offset: -3px; }
 .mg-tk-track { flex: 1; min-width: 0; overflow: hidden; height: 100%; }
-.mg-tk-run { display: flex; width: max-content; height: 100%; }
-.mg-ticker.ready .mg-tk-run { animation: mg-tk var(--tk-dur, 60s) linear infinite; }
-.mg-ticker:hover .mg-tk-run, .mg-ticker:focus-within .mg-tk-run { animation-play-state: paused; }
-/* One set's width in px (--tk-x, set by common.js) so items can be added while it rolls without the loop jumping. */
-@keyframes mg-tk { from { transform: translateX(0); } to { transform: translateX(var(--tk-x, -50%)); } }
+.mg-tk-run { display: flex; width: max-content; height: 100%; will-change: transform; }
+/* Moved by common.js (a one-pass queue), not by a CSS loop. */
 .mg-tk-item.mg-tk-new { animation: mg-tk-in 0.6s ease-out; }
 @keyframes mg-tk-in { from { opacity: 0; } to { opacity: 1; } }
 .mg-tk-set { display: flex; height: 100%; }
@@ -1914,7 +1911,7 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mg-tk-item time { color: var(--tk-dim); font-variant-numeric: tabular-nums; }
 .mg-tk-item b { font-size: 0.7rem; color: var(--band); }
 .mg-tk-item strong { color: var(--tk-hi); }
-@media (prefers-reduced-motion: reduce) { .mg-ticker.ready .mg-tk-run { animation: none; } .mg-tk-track { overflow-x: auto; } .mg-tk-set[aria-hidden] { display: none; } }
+@media (prefers-reduced-motion: reduce) { .mg-tk-track { overflow-x: auto; } }
 @media (max-width: 480px) { .mg-ticker { font-size: 0.76rem; } .mg-tk-label { padding: 0 9px; } }
 .mg-tk-label .sprite { flex: none; }
 .mg-tk-item .sprite { flex: none; opacity: 0.9; }
@@ -2639,3 +2636,5 @@ body.exp-running .exp-stop { display: inline-flex; }
 
 /* Item rows open on a click anywhere in the row. */
 .mb-catalog tbody tr{cursor:pointer}
+/* Recent megaphones rolling by again while nothing new comes in: a little quieter than new ones. */
+.mg-tk-item.mg-tk-re { opacity: 0.72; }
