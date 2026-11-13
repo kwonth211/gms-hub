@@ -9,7 +9,7 @@ import { handleEmail, handleSendMail } from './inbox.js';
 // POST /listings {items: [{item, price (per item), qty (bundle size), sold, seller, channel, room}]} -> { stored }  (shop scanner; one row per listing)
 // POST /listings/fix {from: {item, price, seller, channel, room}, to: {item, price, qty, sold, seller}} -> { fixed }
 // GET  /listings/recent -> [{ item, price, qty, sold, seller, channel, room, seen }]
-// GET  /market/top -> { at, stats, items: [{ item, rank, move, avg, n, sold, change, spark: [7 daily medians] }] }  (stored every 15 min)
+// GET  /market/top -> { at, stats, items: [{ item, rank, move, avg, n, sold, change, spark: [7 daily medians] }] }  (stored every 30 min)
 // GET  /market/item?id= -> { item, listings: [...last 7 days], trend }
 // POST /alerts {endpoint, keys, item, price, name, lang} · GET /alerts?endpoint= · DELETE /alerts?endpoint=&item= · GET /alerts/hits?endpoint=
 //      (price alerts by Web Push; see src/alerts.js)
@@ -205,7 +205,7 @@ async function marketTop(env, only = null) {
   return { at: new Date(now).toISOString(), stats, items };
 }
 
-// The ranking is computed on a schedule (every 15 minutes) and stored, so the database work does not grow with visitors:
+// The ranking is computed on a schedule (every 30 minutes) and stored, so the database work does not grow with visitors:
 // every page view reads one stored row.
 async function refreshSnapshot(env) {
   const data = { ...(await marketTop(env)), version: await dataVersion(env) };
@@ -452,7 +452,7 @@ const api = {
     }
 
     if (url.pathname === '/market/top' && req.method === 'GET') {
-      const data = (await freshSnapshot(env, 'market', 15)) || (await refreshSnapshot(env));
+      const data = (await freshSnapshot(env, 'market', 30)) || (await refreshSnapshot(env));
       return json(data, cors, 200, 'public, max-age=60');
     }
 

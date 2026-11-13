@@ -58,10 +58,10 @@ export async function refreshItemMarket(env, ids, now = Date.now()) {
   return list.length;
 }
 
-// Distinct open shops across all items: one scan of the last day, kept 30 minutes.
+// Distinct open shops across all items: one scan of the last day, kept 2 hours.
 export async function openShops(env, current) {
   const kept = await env.DB.prepare("SELECT json, at FROM snapshots WHERE key = 'market-shops'").first().catch(() => null);
-  if (kept && Date.now() - Date.parse(`${kept.at.replace(" ", "T")}Z`) < 30 * 60000) return JSON.parse(kept.json);
+  if (kept && Date.now() - Date.parse(`${kept.at.replace(" ", "T")}Z`) < 120 * 60000) return JSON.parse(kept.json);
   const r = await env.DB.prepare("SELECT COUNT(DISTINCT seller || '|' || channel || '|' || room) AS n FROM listings WHERE last_seen >= ? AND last_seen <= ? AND sold = 0").bind(current, stamp(Date.now())).first();
   await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('market-shops',?,datetime('now'))").bind(JSON.stringify(r.n)).run();
   return r.n;
