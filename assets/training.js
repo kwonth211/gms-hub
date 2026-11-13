@@ -33,7 +33,7 @@ function show(userAction = false) {
     for (const key of ['job','goal','party']) if (fields[key].value && !['balanced','any'].includes(fields[key].value)) next.searchParams.set(key,fields[key].value);
     if(fields.advanced.checked) next.searchParams.set('advanced','1');
     history.replaceState(null,'',next);
-    track('training_search', { level: c.level, job: c.job || 'all', goal: c.goal, party: c.party, advanced: c.advanced ? 1 : 0, results: rows.length, result: rows.length ? 'ok' : 'empty', lang: document.documentElement.lang });
+    track('training_search', { search_term: `Lv${c.level} ${c.job || 'all'} ${c.goal} ${c.party}${c.advanced ? ' adv' : ''}`, level: c.level, job: c.job || 'all', goal: c.goal, party: c.party, advanced: c.advanced ? 1 : 0, results: rows.length, result: rows.length ? 'ok' : 'empty', lang: document.documentElement.lang });
   }
 }
 form.addEventListener('submit',e=>{e.preventDefault();if(form.reportValidity())show(true);});

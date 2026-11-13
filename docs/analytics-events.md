@@ -21,7 +21,7 @@
 | `recent_remove` | 최근 본 아이템을 개별 삭제하거나 모두 지웠을 때 | `count`, `page_type` |
 | `share_copy` | 공유 링크 복사 버튼을 눌렀을 때(성공·실패 모두) | `page_type`: `market`·`training`, `item_id` 또는 `level`/`job`, `result`: `ok`·`fail` |
 | `share_open` | `utm_source=share`가 붙은 주소로 페이지가 열렸을 때(세션 소스에도 `share / link`로 남음) | `page_type`, `content`: `market-item`·`training` |
-| `training_search` | 사냥터 페이지에서 사용자가 조건을 제출하거나 바꿨을 때. 첫 자동 렌더와 공유 링크 열기에는 발생하지 않음 | `level`, `job`(`all` 포함), `goal`, `party`, `advanced`(0/1), `results`, `result`: `ok`·`empty`, `lang` |
+| `training_search` | 사냥터 페이지에서 사용자가 조건을 제출하거나 바꿨을 때. 첫 자동 렌더와 공유 링크 열기에는 발생하지 않음 | `search_term`(`Lv42 archer exp solo` 꼴, GA4 검색어 측정기준으로 바로 보임), `level`, `job`(`all` 포함), `goal`, `party`, `advanced`(0/1), `results`, `result`: `ok`·`empty`, `lang` |
 | `home_resume_click` | 메인 "이어서 보기"에서 관심·최근 아이템을 눌렀을 때 | `kind`: `wishlist`·`recent`, `item_id` |
 | `monster_drop_click` | 몬스터 상세에서 드롭 아이템의 "아이템·시세 보기"를 눌렀을 때 | `mob_id`, `item_id` |
 | `monster_calc_click` | 몬스터 상세에서 몇 방 컷 계산기 버튼을 눌렀을 때 | `mob_id` |
