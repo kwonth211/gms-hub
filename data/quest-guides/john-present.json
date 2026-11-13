@@ -1,0 +1,134 @@
+{
+ "slug": "john-present",
+ "order": 7,
+ "icon": "scroll",
+ "level": {
+  "ko": "Lv 65",
+  "en": "Lv 65"
+ },
+ "title": {
+  "ko": "존의 선물 공략 (인내의 숲)",
+  "en": "John's presents (Forest of Patience)"
+ },
+ "h1": {
+  "ko": "존의 꽃바구니·선물·마지막 선물 공략: 깊은 인내의 숲 점프퀘",
+  "en": "John's Flower Basket, Present and Last Present: the Deep Forest of Patience"
+ },
+ "lead": {
+  "ko": "65레벨부터 리스항구의 존이 아내에게 줄 꽃을 부탁해요. 깊은 인내의 숲 점프맵에서 핑크·블루·화이트 비올라를 모아 오는 3단계이고, 60제 직업 장갑과 분홍 꽃 귀고리를 줘요. 경험치도 합쳐서 7만이 넘어요.",
+  "en": "From Lv 65, John in Lith Harbor wants flowers for his wife: pink, blue and white violas from the Deep Forest of Patience jump maps, three steps that pay a Lv 60 class glove, the Pink-Flowered Earrings and over 70,000 EXP."
+ },
+ "seoTitle": {
+  "ko": "글클메 존의 선물 퀘스트 공략: 깊은 인내의 숲·분홍 꽃 귀고리 | GMS Hub",
+  "en": "MapleStory Classic World John's Present Quests: Deep Forest of Patience, Pink-Flowered Earrings | GMS Hub"
+ },
+ "desc": {
+  "ko": "65레벨 리스항구 존 연계 3단계: 핑크 비올라 10·블루 비올라 20·화이트 비올라 30, 슬리피우드 신비로운 석상으로 들어가는 깊은 인내의 숲 점프맵, 보상 60제 직업 장갑과 분홍 꽃 귀고리.",
+  "en": "John's three Lv 65 quests: 10 pink, 20 blue and 30 white violas from the Deep Forest of Patience (via the Mysterious Statue in Sleepywood), for a Lv 60 class glove and the Pink-Flowered Earrings."
+ },
+ "card": {
+  "ko": "65레벨 점프퀘 3번으로 경험치 7만, 60제 장갑, 분홍 꽃 귀고리.",
+  "en": "Three Lv 65 jump quests for 77,700 EXP, a Lv 60 glove and the Pink-Flowered Earrings."
+ },
+ "reward": {
+  "ko": "60제 직업 장갑 · 분홍 꽃 귀고리",
+  "en": "Lv 60 class glove · Pink-Flowered Earrings"
+ },
+ "rewardItem": 1032018,
+ "updated": "2026-11-13",
+ "chains": [
+  {
+   "id": "john",
+   "title": {
+    "ko": "존의 꽃 (65레벨)",
+    "en": "John's flowers (Lv 65)"
+   },
+   "lead": {
+    "ko": "세 단계 모두 같은 점프맵에서 꽃을 모아 오는 퀘스트예요. 단계마다 필요한 꽃 색과 개수가 달라요.",
+    "en": "All three steps send you into the same jump maps for flowers; each wants a different colour and count."
+   },
+   "steps": [
+    {
+     "q": 10006,
+     "at": "john",
+     "go": "patience",
+     "hunt": [
+      "patience"
+     ],
+     "do": {
+      "ko": "핑크 비올라 10개를 가져다줘요. 슬리피우드의 신비로운 석상을 통해 깊은 인내의 숲으로 들어가요.",
+      "en": "Bring 10 Pink Violas. Enter the Deep Forest of Patience through the Mysterious Statue in Sleepywood."
+     }
+    },
+    {
+     "q": 10007,
+     "at": "john",
+     "go": "patience",
+     "hunt": [
+      "patience"
+     ],
+     "big": true,
+     "do": {
+      "ko": "블루 비올라 20개를 가져다주면 내 직업의 60제 장갑을 받아요.",
+      "en": "Bring 20 Blue Violas for the Lv 60 glove of your class."
+     }
+    },
+    {
+     "q": 10008,
+     "at": "john",
+     "go": "patience",
+     "hunt": [
+      "patience"
+     ],
+     "big": true,
+     "do": {
+      "ko": "화이트 비올라 30개를 가져다주면 분홍 꽃 귀고리를 받아요.",
+      "en": "Bring 30 White Violas for the Pink-Flowered Earrings."
+     },
+     "tip": {
+      "ko": "분홍 꽃 귀고리는 마법 방어력이 좋아요. 추억서리 영상 기준 35만 메소였어요.",
+      "en": "The earrings carry good magic defence; 350,000 mesos in the 추억서리 video."
+     }
+    }
+   ]
+  }
+ ],
+ "sources": [
+  {
+   "name": "추억서리 — 연계 퀘스트 총정리",
+   "url": "https://www.youtube.com/watch?v=fsS-0wV66x4",
+   "date": "2026-11-02"
+  }
+ ],
+ "npcs": {
+  "100": "존"
+ },
+ "itemNames": {
+  "4031042": {
+   "ko": "핑크 비올라",
+   "en": "Pink Viola"
+  },
+  "4031043": {
+   "ko": "블루 비올라",
+   "en": "Blue Viola"
+  },
+  "4031044": {
+   "ko": "화이트 비올라",
+   "en": "White Viola"
+  }
+ },
+ "itemNotes": {
+  "4031042": {
+   "ko": "슬리피우드의 신비로운 석상으로 들어가는 깊은 인내의 숲 점프맵의 꽃더미에서 모아요",
+   "en": "Gathered from the flower piles in the Deep Forest of Patience jump maps, entered through the Mysterious Statue in Sleepywood"
+  },
+  "4031043": {
+   "ko": "슬리피우드의 신비로운 석상으로 들어가는 깊은 인내의 숲 점프맵의 꽃더미에서 모아요",
+   "en": "Gathered from the flower piles in the Deep Forest of Patience jump maps, entered through the Mysterious Statue in Sleepywood"
+  },
+  "4031044": {
+   "ko": "슬리피우드의 신비로운 석상으로 들어가는 깊은 인내의 숲 점프맵의 꽃더미에서 모아요",
+   "en": "Gathered from the flower piles in the Deep Forest of Patience jump maps, entered through the Mysterious Statue in Sleepywood"
+  }
+ }
+}

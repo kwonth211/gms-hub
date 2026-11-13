@@ -7,7 +7,7 @@ import { spriteSvg, heroScene, spritePng, spriteDataPng } from './sprites.mjs';
 import { monsterIndex, monsterDetail, monsterPath, monsterName, mapPath, bossIndex } from './monster-pages.mjs';
 import { collectMaps, mapDetail, mapIndex, mapName } from './map-pages.mjs';
 import { collectQuests, questDetail, questIndex, questBestBody, questPath, areaName as questArea } from './quest-pages.mjs';
-import { gloveQuestData, gloveQuestBody } from './glove-quest.mjs';
+import { questGuideData, questGuideBody } from './quest-guide.mjs';
 import { EQ_CLASSES, equipPath, collectEquipment, equipmentIndexBody, equipmentClassBody } from './equipment-pages.mjs';
 import { rankBody } from './rank-page.mjs';
 import { megaphoneBody } from './megaphone-page.mjs';
@@ -532,11 +532,14 @@ for (const r of training.routes) r.mobs = r.mobIds.map((id) => { const m = MOB_B
 const MAPS = collectMaps(MONSTERS.monsters);
 const QUEST_RAW = readJson('data/quests-raw.json');
 const QUESTS = collectQuests(QUEST_RAW, { buildDate: BUILD_DATE });
-// The glove attack scroll quest guide: steps from the client's quest data, places and routes from the editorial file.
-const GLOVE_GUIDE = readJson('data/quest-guides/glove-attack.json');
-const GLOVE_DATA = gloveQuestData({ guide: GLOVE_GUIDE, raw: QUEST_RAW,
-  items: new Map((readJson('data/items.json').items || readJson('data/items.json')).map((i) => Array.isArray(i) ? [i[0], { ko: i[1], en: i[2] }] : [i.id, i])),
-  monsters: MONSTERS.monsters });
+// Quest guides (/quests/<slug>/), one per data/quest-guides/*.json: steps from the client's quest data, places, routes and
+// tips from the editorial file. The /quests/ page lists them above the quest database, and the header's quest tab opens it.
+const QG_ITEMS = new Map((readJson('data/items.json').items || readJson('data/items.json')).map((i) => Array.isArray(i) ? [i[0], { ko: i[1], en: i[2] }] : [i.id, i]));
+const QG_PLACES = readJson('data/quest-guides/_places.json').places;
+const QUEST_GUIDES = fs.readdirSync(path.join(root, 'data', 'quest-guides')).filter((f) => f.endsWith('.json') && !f.startsWith('_'))
+  .map((f) => { const g = readJson(`data/quest-guides/${f}`); return { ...g, places: { ...QG_PLACES, ...(g.places || {}) } }; }).sort((a, b) => (a.order || 99) - (b.order || 99))
+  .map((guide) => ({ guide, data: questGuideData({ guide, raw: QUEST_RAW, items: QG_ITEMS, monsters: MONSTERS.monsters }) }));
+const guideLabel = (g, lang) => g.title[lang === 'ko' ? 'ko' : 'en'];
 const DROP_INDEX = new Map();
 for (const m of MONSTERS.monsters) for (const d of m.drops) (DROP_INDEX.get(d.itemId) || DROP_INDEX.set(d.itemId, []).get(d.itemId)).push({ m, confidence: d.confidence });
 // Retain level-band URLs with conditional routes and detailed entry requirements.
@@ -683,6 +686,7 @@ function header(lang, pagePath, only) {
     ['/tools/market/', 'coin', t.navMarket],
     ['/tools/training/', 'sword', t.navTraining],
     ['/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monsters'],
+    ['/quests/', 'scroll', lang === 'ko' ? '퀘스트' : 'Quests'],
     ['/tools/exp/', 'clock', EXP[lang].nav],
     ['/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Megaphones'],
     guides.some((g) => g.lang === lang) && ['/guides/', 'book', t.navGuides]
@@ -696,7 +700,7 @@ function header(lang, pagePath, only) {
   // English labels that would break mid-word on a phone ("Calcul/ator") get a one-word form there.
   // The newest tab carries a small N so returning visitors notice it.
   const NEW_TAB = UPDATES.find((u) => tabs.some(([p]) => p === u.path.split('#')[0]))?.path.split('#')[0] || '/tools/exp/';
-  const SHORT_EN = { '/': 'Home', '/monsters/': 'Mobs', '/tools/training/': 'Spots', '/tools/scroll/': 'Scrolls', '/tools/drop-rate/': 'Odds', '/tools/damage/': 'Hits', '/tools/market/': 'Market', '/megaphone/': 'Megas', '/tools/exp/': 'EXP', '/guides/': 'Guides' };
+  const SHORT_EN = { '/': 'Home', '/monsters/': 'Mobs', '/tools/training/': 'Spots', '/tools/scroll/': 'Scrolls', '/tools/drop-rate/': 'Odds', '/tools/damage/': 'Hits', '/tools/market/': 'Market', '/megaphone/': 'Megas', '/tools/exp/': 'EXP', '/guides/': 'Guides', '/quests/': 'Quests' };
   const tabHtml = tabs
     .map(
       ([p, icon, label]) =>
@@ -723,7 +727,7 @@ function headerSearch(lang, tabs) {
     [ko ? '오늘의 시세 리포트' : "Today's price report", href(langPath(lang, '/tools/market/today/'))], [ko ? '상점 스캔' : 'Shop scan', href(langPath(lang, '/tools/scan/'))],
     [ko ? '캐릭터 랭킹' : 'Character ranking', href(langPath(lang, '/rank/'))],
     [ko ? '직업별 장비' : 'Gear by class', href(langPath(lang, '/equipment/'))], [ko ? '보스' : 'Bosses', href(langPath(lang, '/bosses/'))],
-    [ko ? '장공 퀘스트 공략 (사우나 가운·저주받은 인형)' : 'Gloves attack scroll quests (Sauna Robe, Cursed Dolls)', href(langPath(lang, '/quests/glove-attack/'))], [ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests', href(langPath(lang, '/quests/best-exp/'))], [ko ? '맵 도감' : 'Maps', href(langPath(lang, '/maps/'))],
+    ...QUEST_GUIDES.map(({ guide: g }) => [`${guideLabel(g, lang)}${ko ? ' 공략' : ''}`.replace(/ 공략 공략$/, ' 공략'), href(langPath(lang, `/quests/${g.slug}/`))]), [ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests', href(langPath(lang, '/quests/best-exp/'))], [ko ? '맵 도감' : 'Maps', href(langPath(lang, '/maps/'))],
     [ko ? '문의·협찬·후원' : 'Contact and support', href(langPath(lang, '/contact/'))]];
   return `<button type="button" class="hs-open" data-hs data-items="${esc(href('/assets/items.json'))}" data-mobs="${esc(href('/assets/mobs.json'))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-monsters="${esc(href(langPath(lang, '/monsters/')))}" data-pages="${esc(JSON.stringify(pages))}" aria-label="${ko ? '검색' : 'Search'}" title="${ko ? '검색 ( / )' : 'Search ( / )'}"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="hs-label">${ko ? '검색' : 'Search'}</span></button>`;
 }
@@ -737,7 +741,6 @@ function moreMenu(lang, moved = []) {
     ['/rank/', ko ? '캐릭터 랭킹' : 'Character ranking'],
     ['/equipment/', ko ? '직업별 장비' : 'Gear by class'],
     ['/bosses/', ko ? '보스' : 'Bosses'],
-    ['/quests/glove-attack/', ko ? '장공 퀘스트 공략' : 'Gloves attack scroll quests'],
     ['/quests/best-exp/', ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests'],
     ['/items/', ko ? '아이템 도감' : 'Item database'],
     ['/maps/', ko ? '맵 도감' : 'Map database'],
@@ -784,7 +787,7 @@ function footer(lang) {
 }
 
 const ADFIT_PAGES = new Set(['home', 'marketToday', 'exp', 'training', 'trBand', 'trClass', 'scroll', 'drop', 'price', 'scan', 'market', 'damage', 'guides', 'guide', 'monsters', 'monster', 'items', 'item',
-  'bosses', 'maps', 'map', 'quests', 'quest', 'questBest', 'gloveQuest', 'equipment', 'equipmentClass', 'rank', 'megaphone']);
+  'bosses', 'maps', 'map', 'quests', 'quest', 'questBest', 'questGuide', 'equipment', 'equipmentClass', 'rank', 'megaphone']);
 // AdFit counted only 5-9% of the end-of-page banner as viewed (most visitors never scroll that far), so a second slot sits
 // just under the page title: after the page head, after the home hero, or after a guide's first paragraph. Never beside
 // a form control or a button row.
@@ -2927,7 +2930,7 @@ for (const lang of LANGS) {
       lang, pageKey: 'quests', pagePath: '/quests/',
       title: lang === 'ko' ? '글클메 퀘스트 목록: 레벨·보상·필요 아이템 | GMS Hub' : 'MapleStory Classic World Quests: Levels, Rewards & Requirements | GMS Hub',
       desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드 퀘스트 ${QUESTS.length}개를 지역별로 정리했어요. 시작 레벨, 모아 올 아이템과 그 아이템을 떨어뜨리는 몬스터, 보상 EXP와 메소까지.` : `All ${QUESTS.length} MapleStory Classic World quests by area: start level, items to bring and who drops them, monsters to hunt, EXP and meso rewards.`,
-      body: questIndex({ lang, quests: QUESTS, link }),
+      body: questIndex({ lang, quests: QUESTS, link, guides: QUEST_GUIDES }),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '퀘스트' : 'Quests', '/quests/')]
     }));
     write(path.join(lang, 'megaphone', 'index.html'), page({
@@ -2944,14 +2947,16 @@ for (const lang of LANGS) {
       body: rankBody({ lang, link, classes: TR_CLASSES }),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '캐릭터 랭킹' : 'Character rankings', '/rank/')]
     }));
-    write(path.join(lang, 'quests', 'glove-attack', 'index.html'), page({
-      lang, pageKey: 'gloveQuest', pagePath: '/quests/glove-attack/',
-      title: lang === 'ko' ? '글클메 장공 퀘스트 공략: 사우나 가운부터 로웬 저주받은 인형·제인의 도전까지 | GMS Hub' : 'MapleStory Classic World Gloves Attack Scroll Quests: Sauna Robe, Rowen\'s Cursed Dolls, Jane\'s Challenge | GMS Hub',
-      desc: lang === 'ko' ? '장갑 공격력 주문서(장공)를 주는 퀘스트 전 단계: 사우나 가운 9단계, 요정 로웬의 저주받은 인형 50·70·100·150·200개, 제인의 도전. NPC 위치·필요 재료·몬스터·동선·지금 시세까지.' : 'Every step to the Gloves Attack Scroll in MapleStory Classic World: the Sauna Robe chain, Rowen the Fairy\'s Cursed Dolls and Jane\'s challenges, with NPC spots, items, monsters, routes and live prices.',
-      body: gloveQuestBody({ lang, guide: GLOVE_GUIDE, data: GLOVE_DATA, link, mobSprite, mobHref: (m) => link(monsterPath(m)), pageHead, apiBase: config.voteApi }),
-      modules: ['quest-route.js'],
-      ld: [breadcrumbLd(lang, lang === 'ko' ? '장공 퀘스트 공략' : 'Gloves attack scroll quests', '/quests/glove-attack/')]
-    }));
+    for (const { guide, data } of QUEST_GUIDES) {
+      const L = (o) => o[lang === 'ko' ? 'ko' : 'en'];
+      write(path.join(lang, 'quests', guide.slug, 'index.html'), page({
+        lang, pageKey: 'questGuide', pagePath: `/quests/${guide.slug}/`,
+        title: L(guide.seoTitle), desc: L(guide.desc),
+        body: questGuideBody({ lang, guide, data, link, mobSprite, mobHref: (m) => link(monsterPath(m)), pageHead, apiBase: config.voteApi }),
+        modules: ['quest-route.js'],
+        ld: [breadcrumbLd(lang, L(guide.title), `/quests/${guide.slug}/`)]
+      }));
+    }
     write(path.join(lang, 'quests', 'best-exp', 'index.html'), page({
       lang, pageKey: 'questBest', pagePath: '/quests/best-exp/',
       title: lang === 'ko' ? '글클메 경험치 퀘스트 추천: 레벨별 보상 EXP 순위 | GMS Hub' : 'MapleStory Classic World Best EXP Quests by Level | GMS Hub',
@@ -3151,7 +3156,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
   )
 ).concat(
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
-  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, {path:'/quests/glove-attack/'}, {path:'/rank/'}, {path:'/megaphone/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/bosses/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/quests/'}, ...QUESTS.filter(q=>!q.expired).map(q=>({path:questPath(q)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
   [{path:'/maps/'}, ...MAPS.filter(l=>l.availability==='open').map(l=>({path:mapPath(l)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),

@@ -1,0 +1,137 @@
+{
+ "note": "Places shared by every quest guide (data/quest-guides/*.json): id -> ko, en. A guide can add its own under \"places\".",
+ "places": {
+  "sleepywood": {
+   "ko": "슬리피우드",
+   "en": "Sleepywood"
+  },
+  "sauna": {
+   "ko": "슬리피우드 호텔 VIP 사우나",
+   "en": "Sleepywood Hotel · VIP Sauna"
+  },
+  "ellinia": {
+   "ko": "엘리니아",
+   "en": "Ellinia"
+  },
+  "ronnie": {
+   "ko": "북쪽 숲 나무 통로",
+   "en": "The Tree Tunnel, Forest Up North"
+  },
+  "curseeye": {
+   "ko": "나무 던전, 북쪽 숲 VIII·IX",
+   "en": "Tree Dungeon, Forest Up North VIII·IX"
+  },
+  "monkey": {
+   "ko": "원숭이 숲 · 원숭이 늪",
+   "en": "Monkey Forest · Monkey Swamp"
+  },
+  "henesys": {
+   "ko": "헤네시스",
+   "en": "Henesys"
+  },
+  "pigs": {
+   "ko": "헤네시스 서쪽 언덕 · 해변 주변 덤불 II",
+   "en": "A Hill West of Henesys · Thicket Around the Beach II"
+  },
+  "lith": {
+   "ko": "리스항구",
+   "en": "Lith Harbor"
+  },
+  "perion": {
+   "ko": "페리온",
+   "en": "Perion"
+  },
+  "eastrocky": {
+   "ko": "동쪽 바위산",
+   "en": "East Rocky Mountain"
+  },
+  "kerning": {
+   "ko": "커닝시티 · 지하철",
+   "en": "Kerning City · Subway"
+  },
+  "evil": {
+   "ko": "악의 숲",
+   "en": "The Forest of Evil"
+  },
+  "drakes": {
+   "ko": "슬리피우드 드레이크 사냥터 · 빛을 잃은 동굴",
+   "en": "Sleepywood Drake grounds · Cave of Lost Light"
+  },
+  "blue": {
+   "ko": "헤네시스 동쪽 파란 버섯 숲",
+   "en": "Blue Mushroom forest east of Henesys"
+  },
+  "ant": {
+   "ko": "개미굴 3·4",
+   "en": "Ant Tunnel III·IV"
+  },
+  "henesys-park": {
+   "ko": "헤네시스 공원",
+   "en": "Henesys Park"
+  },
+  "maya": {
+   "ko": "헤네시스 마을 · 마야",
+   "en": "Henesys · Maya"
+  },
+  "bruce": {
+   "ko": "헤네시스 마을 · 브루스",
+   "en": "Henesys · Bruce"
+  },
+  "teo": {
+   "ko": "리스항구 · 테오",
+   "en": "Lith Harbor · Teo"
+  },
+  "john": {
+   "ko": "리스항구 · 존",
+   "en": "Lith Harbor · John"
+  },
+  "perion-town": {
+   "ko": "페리온 마을",
+   "en": "Perion"
+  },
+  "ayan": {
+   "ko": "페리온 · 아얀",
+   "en": "Perion · Ayan"
+  },
+  "temple": {
+   "ko": "슬리피우드 · 크리슈라마",
+   "en": "Sleepywood · Chrishrama"
+  },
+  "patience": {
+   "ko": "깊은 인내의 숲 (점프맵)",
+   "en": "Deep Forest of Patience (jump quest)"
+  },
+  "subway": {
+   "ko": "커닝시티 지하철 입구 · 슈미",
+   "en": "Kerning City subway entrance · Shumi"
+  },
+  "construction": {
+   "ko": "지하철 공사장 B1·B2·B3",
+   "en": "Construction Site B1·B2·B3"
+  },
+  "kpq": {
+   "ko": "커닝시티 · 라케리스",
+   "en": "Kerning City · Lakelis"
+  },
+  "arwen": {
+   "ko": "엘리니아 · 요정 아르웬",
+   "en": "Ellinia · Arwen the Fairy"
+  },
+  "burnt": {
+   "ko": "불타버린 땅 1~5",
+   "en": "Burnt Land I–V"
+  },
+  "swamp": {
+   "ko": "커닝시티 늪지대",
+   "en": "The swamps around Kerning City"
+  },
+  "florina": {
+   "ko": "플로리나 비치 · 리엘",
+   "en": "Florina Beach · Riel"
+  },
+  "golems": {
+   "ko": "슬리피우드 · 골렘 사원",
+   "en": "Sleepywood · Golem temple"
+  }
+ }
+}

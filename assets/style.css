@@ -2470,3 +2470,8 @@ body.exp-running .exp-stop { display: inline-flex; }
 .upd-new { flex: none; font-size: 0.66rem; font-weight: 800; padding: 1px 6px; border-radius: 4px; background: var(--danger); color: var(--panel); }
 .upd-list a { color: var(--text); text-decoration: none; font-weight: 700; min-width: 0; }
 .upd-list a:hover { color: var(--accent-2); text-decoration: underline; }
+
+/* Quest guide cards on /quests/ */
+.qg-pics { display: flex; align-items: flex-end; gap: 10px; min-height: 48px; }
+.qg-pics img { object-fit: contain; }
+.tool-card .qg-meta { color: var(--muted); font-size: 0.82rem; font-weight: 600; }

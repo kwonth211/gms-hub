@@ -1,8 +1,8 @@
-// The glove attack quest guide as a quest log (/quests/glove-attack/, built by scripts/glove-quest.mjs): ticked steps
-// stay in this browser, the first unticked step is "up next", and the island map draws the walk from that step's NPC to
+// A quest guide as a quest log (/quests/<slug>/, built by scripts/quest-guide.mjs): ticked steps
+// stay in this browser, the first unticked step is "up next", and the road of stops shows the walk from that step's NPC to
 // the next stop with its hunting grounds marked. Item and reward prices come from the site's free-market medians.
 const D = JSON.parse(document.getElementById('gq-data').textContent);
-const KEY = 'gms-glove-quest';
+const KEY = D.key;
 const $ = (id) => document.getElementById(id);
 const fmt = (v) => Math.round(v).toLocaleString(D.lang === 'ko' ? 'ko-KR' : 'en-US');
 const fill = (s, v) => s.replace(/\{(\w+)\}/g, (_, k) => v[k]);
@@ -132,7 +132,7 @@ document.addEventListener('click', (e) => {
   for (const t of document.querySelectorAll('.gq-tab')) { t.classList.toggle('is-on', t === tab); t.setAttribute('aria-selected', String(t === tab)); }
   for (const p of document.querySelectorAll('.gq-mat-pane')) p.hidden = p.dataset.pane !== tab.dataset.tab;
 });
-const HAVE = 'gms-glove-quest-have';
+const HAVE = `${D.key}-have`;
 let have = new Set();
 try { have = new Set(JSON.parse(localStorage.getItem(HAVE) || '[]')); } catch (e) {}
 const paintHave = () => { for (const box of document.querySelectorAll('.gq-have')) { box.checked = have.has(Number(box.dataset.have)); box.closest('tr').classList.toggle('is-have', box.checked); } };

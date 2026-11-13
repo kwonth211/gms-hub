@@ -1,0 +1,97 @@
+{
+ "slug": "kpq-companionship",
+ "order": 8,
+ "icon": "scroll",
+ "level": {
+  "ko": "Lv 21",
+  "en": "Lv 21"
+ },
+ "title": {
+  "ko": "동료의 증명 공략 (커파 귀고리 60%)",
+  "en": "Proof of Companionship (KPQ earring 60%)"
+ },
+ "h1": {
+  "ko": "동료의 증명 공략: 커닝 파티퀘스트 첫 판 귀고리 주문서",
+  "en": "Proof of Companionship: the earring scroll from your first Kerning party quest"
+ },
+ "lead": {
+  "ko": "21레벨부터 커닝시티 라케리스에게 받는 한 번뿐인 퀘스트예요. 퀘스트를 받고 커닝 파티퀘스트에 들어가 마지막 킹 슬라임을 잡으면 귀고리 힘·민첩·지력·행운 60% 주문서 중 하나를 줘요.",
+  "en": "A one-time quest from Lakelis in Kerning City, from Lv 21: accept it, run the Kerning party quest and kill the King Slime at the end for a 60% earring STR, DEX, INT or LUK scroll."
+ },
+ "seoTitle": {
+  "ko": "글클메 동료의 증명 퀘스트 공략: 커닝 파티퀘스트 킹 슬라임·귀고리 60% | GMS Hub",
+  "en": "MapleStory Classic World Proof of Companionship: Kerning PQ King Slime, Earring 60% | GMS Hub"
+ },
+ "desc": {
+  "ko": "21레벨 커닝시티 라케리스 퀘스트. 4인 파티로 커닝 파티퀘스트를 끝까지 깨고 킹 슬라임을 잡으면 귀고리 60% 주문서. 첫 판에 꼭 받고 들어가는 이유.",
+  "en": "Lakelis's Lv 21 quest: clear the Kerning party quest with four players and kill the King Slime for a 60% earring scroll. Take it before your first run."
+ },
+ "card": {
+  "ko": "첫 커파 전에 받으면 킹 슬라임 한 번으로 귀고리 60%.",
+  "en": "Take it before your first Kerning PQ: one King Slime for a 60% earring scroll."
+ },
+ "reward": {
+  "ko": "귀고리 60% 주문서",
+  "en": "60% earring scroll"
+ },
+ "rewardItem": 2040301,
+ "updated": "2026-11-13",
+ "chains": [
+  {
+   "id": "kpq",
+   "title": {
+    "ko": "동료의 증명 (21레벨, 한 번만)",
+    "en": "Proof of Companionship (Lv 21, once)"
+   },
+   "lead": {
+    "ko": "커닝 파티퀘스트는 21레벨 이상 네 명이 같이 들어가요. 이 퀘스트는 마지막 보너스 전 킹 슬라임을 잡아야 깨져요.",
+    "en": "The Kerning party quest takes four players of Lv 21 or more. This quest only completes when the King Slime at the end is killed."
+   },
+   "steps": [
+    {
+     "q": 10311,
+     "at": "kpq",
+     "big": true,
+     "where": {
+      "ko": "커닝시티 하수구 입구 옆, 파티퀘스트를 여는 NPC예요.",
+      "en": "Next to the sewer entrance in Kerning City; he starts the party quest."
+     },
+     "do": {
+      "ko": "퀘스트를 받은 뒤 파티로 커닝 파티퀘스트에 들어가 끝까지 깨고 킹 슬라임을 잡아요. 다시 라케리스에게 말을 걸면 보상을 받아요.",
+      "en": "Accept it, then clear the Kerning party quest with your party and kill the King Slime; talk to Lakelis again for the scroll."
+     },
+     "tip": {
+      "ko": "킹 슬라임을 안 잡고 넘기는 파티도 있어요. 들어가기 전에 파티에게 꼭 말해 두세요.",
+      "en": "Some parties skip the King Slime; tell yours before you go in."
+     }
+    }
+   ]
+  }
+ ],
+ "sources": [
+  {
+   "name": "추억서리 — 뉴비 필수 꿀퀘 7개 (NPC 위치·가는 길)",
+   "url": "https://www.youtube.com/watch?v=PM42DLpygG4",
+   "date": "2026-10-25"
+  },
+  {
+   "name": "오소리 — 돈 되는 퀘스트 총정리",
+   "url": "https://www.youtube.com/watch?v=d5ImGXgF1xg",
+   "date": "2026-11-01"
+  },
+  {
+   "name": "쌀신 — 커닝시티 파티퀘스트 완전공략",
+   "url": "https://www.youtube.com/watch?v=BNNtl71H3Ls",
+   "date": "2026-10-20"
+  }
+ ],
+ "npcs": {
+  "800000": "라케리스"
+ },
+ "mobNames": {
+  "800003": {
+   "ko": "킹 슬라임 (커닝 파티퀘스트)",
+   "en": "King Slime (Kerning party quest)"
+  }
+ }
+}

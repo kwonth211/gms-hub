@@ -104,7 +104,7 @@ ${q.prereq.length || q.next.length ? `<section class="panel quest-chain">${q.pre
 </div>`;
 }
 
-export function questIndex({ lang, quests, link }) {
+export function questIndex({ lang, quests, link, guides = [] }) {
   const ko = lang === 'ko';
   const order = ['Maple Island', 'Lith Harbor', 'Henesys', 'Ellinia', 'Perion', 'Kerning City', 'Sleepywood', 'Florina Beach', 'Victoria Island', 'Warrior', 'Magician', 'Bowman', 'Thief', 'Citizenship', 'Crafting', 'Forgotten Hollow', 'Event'];
   const areas = [...new Set([...order, ...quests.map((q) => q.area)])].filter((a) => quests.some((q) => q.area === a));
@@ -112,8 +112,9 @@ export function questIndex({ lang, quests, link }) {
   return `<section class="page-head wrap"><h1>${ko ? '퀘스트' : 'Quests'}</h1>
 <p class="lead">${ko ? `글클메 퀘스트 ${live.length}개의 시작 레벨, 필요한 아이템과 몬스터, 보상 EXP·메소를 지역별로 정리했어요.` : `${live.length} Classic World quests by area: start level, what to bring or hunt, and the EXP and mesos they pay.`}</p>
 <p class="char-links"><a href="${link('/quests/best-exp/')}">${ko ? '레벨별 경험치 퀘스트' : 'Best EXP quests by level'}</a><a href="${link('/equipment/')}">${ko ? '장비 찾기' : 'Equipment finder'}</a></p>
-<nav class="band-nav" aria-label="${ko ? '지역' : 'Areas'}"><div>${areas.map((a) => `<a class="band-link" href="#area-${encodeURIComponent(a)}">${esc(areaName(a, lang))}</a>`).join('')}</div></nav></section>
+<nav class="band-nav" aria-label="${ko ? '지역' : 'Areas'}"><div>${guides.length ? `<a class="band-link" href="#guides">${ko ? '퀘스트 공략' : 'Quest guides'}</a>` : ''}${areas.map((a) => `<a class="band-link" href="#area-${encodeURIComponent(a)}">${esc(areaName(a, lang))}</a>`).join('')}</div></nav></section>
 <div class="wrap quest-page">
+${guides.length ? questGuideCards({ lang, guides, link }) : ''}
 ${areas
   .map((a) => {
     const list = quests.filter((q) => q.area === a);
@@ -125,6 +126,18 @@ ${areas
   .join('\n')}
 <p class="muted small">${ko ? '퀘스트 이름은 게임 클라이언트의 영어 이름이에요.' : 'Quest names are the game client’s own.'}</p>
 </div>`;
+}
+
+// The step-by-step quest guides (scripts/quest-guide.mjs) as cards: what the line gives, its level range, how many steps.
+function questGuideCards({ lang, guides, link }) {
+  const ko = lang === 'ko';
+  const L = (o) => (o ? o[ko ? 'ko' : 'en'] : '');
+  const cards = guides.map(({ guide: g, data }) => {
+    const steps = data.chains.flatMap((c) => c.steps);
+    const npc = steps[0]?.startNpc;
+    return `<a class="tool-card qg-card" href="${link(`/quests/${g.slug}/`)}"><span class="qg-pics">${g.rewardItem ? `<img src="https://maplestory.io/api/MCW/1/item/${g.rewardItem}/icon" alt="" width="32" height="32" loading="lazy">` : ''}${npc ? `<img src="https://maplestory.io/api/MCW/1/npc/${npc}/icon" alt="" height="44" loading="lazy">` : ''}</span><strong>${esc(L(g.title))}</strong><p>${esc(L(g.card))}</p><small class="qg-meta">${esc(L(g.level))}${ko ? ` · ${steps.length}단계` : ` · ${steps.length} steps`}${g.reward ? ` · ${esc(L(g.reward))}` : ''}</small><span>${ko ? '공략 보기' : 'Open the guide'}</span></a>`;
+  }).join('');
+  return `<section class="panel" id="guides"><h2><span>${ko ? '퀘스트 공략' : 'Quest guides'}</span><small class="muted">${ko ? '단계별 NPC 위치·재료·동선·시세' : 'NPC spots, items, routes and prices, step by step'}</small></h2><div class="tool-cards">${cards}</div></section>`;
 }
 
 // "Which quests are worth doing at my level": the biggest EXP payouts per 10-level band, from the same client data.

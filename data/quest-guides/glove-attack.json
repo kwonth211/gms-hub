@@ -1,104 +1,43 @@
 {
+ "slug": "glove-attack",
+ "storeKey": "gms-glove-quest",
+ "icon": "scroll",
+ "order": 1,
+ "level": {
+  "ko": "Lv 25–50",
+  "en": "Lv 25–50"
+ },
+ "title": {
+  "ko": "장공 퀘스트 공략",
+  "en": "Gloves attack scroll quests"
+ },
+ "h1": {
+  "ko": "글클메 장공 퀘스트 완전 공략",
+  "en": "Gloves Attack Scroll Quests: Complete Guide"
+ },
+ "lead": {
+  "ko": "사우나 가운(비밀의 책) 9단계 → 요정 로웬의 저주받은 인형 5단계 → 제인의 도전까지. 누구에게 무엇을 어디서 가져가는지, 동선과 지금 시세까지 한 번에. 진행한 단계는 체크해 두면 이 브라우저에 남아요.",
+  "en": "The Sauna Robe chain (9 steps) → Rowen the Fairy's Cursed Dolls (5) → Jane's challenges: who wants what, where it drops, the route and today's prices. Tick steps as you go; your progress stays in this browser."
+ },
+ "seoTitle": {
+  "ko": "글클메 장공 퀘스트 공략: 사우나 가운부터 로웬 저주받은 인형·제인의 도전까지 | GMS Hub",
+  "en": "MapleStory Classic World Gloves Attack Scroll Quests: Sauna Robe, Rowen's Cursed Dolls, Jane's Challenge | GMS Hub"
+ },
+ "desc": {
+  "ko": "장갑 공격력 주문서(장공)를 주는 퀘스트 전 단계: 사우나 가운 9단계, 요정 로웬의 저주받은 인형 50·70·100·150·200개, 제인의 도전. NPC 위치·필요 재료·몬스터·동선·지금 시세까지.",
+  "en": "Every step to the Gloves Attack Scroll in MapleStory Classic World: the Sauna Robe chain, Rowen the Fairy's Cursed Dolls and Jane's challenges, with NPC spots, items, monsters, routes and live prices."
+ },
+ "card": {
+  "ko": "사우나 가운 → 로웬 저주받은 인형 → 제인의 도전. 장공 60%를 주는 두 루트.",
+  "en": "Sauna Robe → Rowen's Cursed Dolls → Jane's challenges: the two routes to a 60% gloves attack scroll."
+ },
+ "reward": {
+  "ko": "장갑 공격력 주문서 60%",
+  "en": "Gloves Attack Scroll 60%"
+ },
+ "rewardItem": 2040801,
  "updated": "2026-11-13",
  "note": "Conditions, counts and rewards are read from the game client data (data/quests-raw.json) at build time; this file only holds the places, routes and tips, with the public sources they came from.",
- "places": {
-  "sleepywood": {
-   "ko": "슬리피우드",
-   "en": "Sleepywood",
-   "x": 330,
-   "y": 215
-  },
-  "sauna": {
-   "ko": "슬리피우드 호텔 VIP 사우나",
-   "en": "Sleepywood Hotel · VIP Sauna",
-   "x": 342,
-   "y": 232
-  },
-  "ellinia": {
-   "ko": "엘리니아",
-   "en": "Ellinia",
-   "x": 175,
-   "y": 95
-  },
-  "ronnie": {
-   "ko": "북쪽 숲 나무 통로",
-   "en": "The Tree Tunnel, Forest Up North",
-   "x": 205,
-   "y": 32
-  },
-  "curseeye": {
-   "ko": "나무 던전, 북쪽 숲 VIII·IX",
-   "en": "Tree Dungeon, Forest Up North VIII·IX",
-   "x": 262,
-   "y": 40
-  },
-  "monkey": {
-   "ko": "원숭이 숲 · 원숭이 늪",
-   "en": "Monkey Forest · Monkey Swamp",
-   "x": 92,
-   "y": 140
-  },
-  "henesys": {
-   "ko": "헤네시스",
-   "en": "Henesys",
-   "x": 150,
-   "y": 232
-  },
-  "pigs": {
-   "ko": "헤네시스 서쪽 언덕 · 해변 주변 덤불 II",
-   "en": "A Hill West of Henesys · Thicket Around the Beach II",
-   "x": 80,
-   "y": 262
-  },
-  "lith": {
-   "ko": "리스항구",
-   "en": "Lith Harbor",
-   "x": 118,
-   "y": 318
-  },
-  "perion": {
-   "ko": "페리온",
-   "en": "Perion",
-   "x": 440,
-   "y": 85
-  },
-  "eastrocky": {
-   "ko": "동쪽 바위산",
-   "en": "East Rocky Mountain",
-   "x": 520,
-   "y": 60
-  },
-  "kerning": {
-   "ko": "커닝시티 · 지하철",
-   "en": "Kerning City · Subway",
-   "x": 480,
-   "y": 240
-  },
-  "evil": {
-   "ko": "악의 숲",
-   "en": "The Forest of Evil",
-   "x": 62,
-   "y": 100
-  },
-  "drakes": {
-   "ko": "슬리피우드 드레이크 사냥터 · 빛을 잃은 동굴",
-   "en": "Sleepywood Drake grounds · Cave of Lost Light",
-   "x": 382,
-   "y": 265
-  },
-  "blue": {
-   "ko": "헤네시스 동쪽 파란 버섯 숲",
-   "en": "Blue Mushroom forest east of Henesys",
-   "x": 222,
-   "y": 255
-  },
-  "ant": {
-   "ko": "개미굴 3·4",
-   "en": "Ant Tunnel III·IV",
-   "x": 300,
-   "y": 280
-  }
- },
  "chains": [
   {
    "id": "sauna",
@@ -420,18 +359,6 @@
    "route": "bonus"
   }
  ],
- "diamond": {
-  "ko": [
-   "자유시장에서 사기 — 가장 빨라요(아래 실시간 시세).",
-   "다이아몬드의 원석을 제련 — 원석은 주황버섯·다크 엑스텀프·파이어보어·드레이크가 떨궈요. 제작(Arcforge) 6레벨에서 원석 1개를 1,200메소에 다이아몬드로 바꾼다고 정리돼 있어요(ms-classic.com, 게임 1.0.0 기준).",
-   "헤네시스의 루크(Luke) 19레벨 퀘스트 — 보석 8종 중 하나를 무작위로 줘서 다이아몬드가 나올 수 있어요(1/8)."
-  ],
-  "en": [
-   "Buy one on the free market — the quickest (live price below).",
-   "Refine Diamond Ore — the ore drops from Orange Mushrooms, Dark Axe Stumps, Fire Boars and Drakes; ms-classic.com (game 1.0.0) lists Arcforge level 6 turning one ore into a Diamond for 1,200 mesos.",
-   "Luke's level-19 quest in Henesys gives one of eight gems at random, so a Diamond is possible (1 in 8)."
-  ]
- },
  "sources": [
   {
    "name": "추억서리 — 뉴비 필수 꿀퀘 7개",
@@ -492,7 +419,11 @@
     2040801,
     2040805
    ],
-   "until": 10204
+   "until": 10204,
+   "tab": {
+    "ko": "① 로웬 루트 (장공까지)",
+    "en": "① Rowen route (to the scroll)"
+   }
   },
   {
    "id": "jane",
@@ -510,7 +441,47 @@
     2040805,
     2040806
    ],
-   "until": 10005
+   "until": 10005,
+   "tab": {
+    "ko": "② 제인 루트",
+    "en": "② Jane route"
+   }
   }
- ]
+ ],
+ "extras": [
+  {
+   "id": "diamond",
+   "item": 4020107,
+   "title": {
+    "ko": "다이아몬드 구하기",
+    "en": "Getting a Diamond"
+   },
+   "list": {
+    "ko": [
+     "자유시장에서 사기 — 가장 빨라요(아래 실시간 시세).",
+     "다이아몬드의 원석을 제련 — 원석은 주황버섯·다크 엑스텀프·파이어보어·드레이크가 떨궈요. 제작(Arcforge) 6레벨에서 원석 1개를 1,200메소에 다이아몬드로 바꾼다고 정리돼 있어요(ms-classic.com, 게임 1.0.0 기준).",
+     "헤네시스의 루크(Luke) 19레벨 퀘스트 — 보석 8종 중 하나를 무작위로 줘서 다이아몬드가 나올 수 있어요(1/8)."
+    ],
+    "en": [
+     "Buy one on the free market — the quickest (live price below).",
+     "Refine Diamond Ore — the ore drops from Orange Mushrooms, Dark Axe Stumps, Fire Boars and Drakes; ms-classic.com (game 1.0.0) lists Arcforge level 6 turning one ore into a Diamond for 1,200 mesos.",
+     "Luke's level-19 quest in Henesys gives one of eight gems at random, so a Diamond is possible (1 in 8)."
+    ]
+   }
+  }
+ ],
+ "itemNames": {
+  "4031030": {
+   "ko": "리나의 장어구이",
+   "en": "Rina's Unagi Special"
+  },
+  "4031031": {
+   "ko": "신선한 우유",
+   "en": "Fresh Milk"
+  },
+  "4031032": {
+   "ko": "비밀의 책",
+   "en": "Secret Book"
+  }
+ }
 }

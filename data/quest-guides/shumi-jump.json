@@ -1,0 +1,134 @@
+{
+ "slug": "shumi-jump",
+ "order": 5,
+ "icon": "scroll",
+ "level": {
+  "ko": "Lv 35",
+  "en": "Lv 35"
+ },
+ "title": {
+  "ko": "슈미 점프퀘 공략",
+  "en": "Shumi's jump quests"
+ },
+ "h1": {
+  "ko": "슈미의 잃어버린 돈 점프퀘 공략: 공사장 B1·B2·B3",
+  "en": "Shumi's Lost Money: Construction Site B1, B2 and B3"
+ },
+ "lead": {
+  "ko": "35레벨부터 커닝시티 지하철 앞의 슈미가 공사장에 떨어뜨린 동전·돈뭉치·돈주머니를 찾아 달래요. 사냥 없이 점프만 하면 되고, 세 번 합쳐 경험치 20,160과 마지막에 메소 1만, 마나 엘릭서 30개를 줘요.",
+  "en": "From Lv 35, Shumi by the Kerning City subway lost a coin, a roll of cash and a sack of cash in the construction site. No hunting, only jumping: 20,160 EXP over the three, and 10,000 mesos and 30 Mana Elixirs at the end."
+ },
+ "seoTitle": {
+  "ko": "글클메 슈미 점프퀘 공략: 공사장 B1·B2·B3 동전·돈뭉치·돈주머니 | GMS Hub",
+  "en": "MapleStory Classic World Shumi Jump Quests: Construction Site B1–B3 | GMS Hub"
+ },
+ "desc": {
+  "ko": "35레벨 슈미의 잃어버린 동전·돈뭉치·돈주머니. 지하철 매표소 티켓, 공사장 B1·B2·B3 점프맵 끝 보물상자, 보상(귀환 주문서·파란 포션·메소·마나 엘릭서)과 경험치.",
+  "en": "Shumi's three Lv 35 jump quests: the subway ticket, the treasure chests at the end of Construction Site B1, B2 and B3, and the rewards."
+ },
+ "card": {
+  "ko": "35레벨 점프만으로 경험치 2만. 공사장 B1→B2→B3 보물상자.",
+  "en": "Over 20,000 EXP at Lv 35 from jumping alone: chests in B1, B2 and B3."
+ },
+ "reward": {
+  "ko": "경험치 20,160 · 마나 엘릭서 30",
+  "en": "20,160 EXP · 30 Mana Elixirs"
+ },
+ "rewardItem": 2000006,
+ "updated": "2026-11-13",
+ "chains": [
+  {
+   "id": "shumi",
+   "title": {
+    "ko": "슈미의 잃어버린 돈 (35레벨)",
+    "en": "Shumi's lost money (Lv 35)"
+   },
+   "lead": {
+    "ko": "지하철 매표소에서 공사장 티켓을 사서 개찰구로 들어가요. 점프맵 맨 끝 보물상자를 열면 슈미의 물건이 나와요. B1을 끝내야 B2, B2를 끝내야 B3가 열려요.",
+    "en": "Buy a construction-site ticket at the subway ticket booth and go through the gate. Open the chest at the very end of the jump map for Shumi's item. B1 opens B2, and B2 opens B3."
+   },
+   "steps": [
+    {
+     "q": 10312,
+     "at": "subway",
+     "go": "construction",
+     "hunt": [
+      "construction"
+     ],
+     "do": {
+      "ko": "공사장 B1 점프맵을 지나 끝방 보물상자에서 슈미의 동전을 찾아와요. 보상은 마을 귀환 주문서 묶음이에요.",
+      "en": "Clear the B1 jump map and bring back Shumi's coin from the chest in the last room; the reward is a bundle of return scrolls."
+     }
+    },
+    {
+     "q": 10313,
+     "at": "subway",
+     "go": "construction",
+     "hunt": [
+      "construction"
+     ],
+     "do": {
+      "ko": "티켓을 다시 사서 B2 끝 보물상자에서 돈뭉치를 찾아와요. 보상은 파란 포션 30개예요.",
+      "en": "Buy another ticket and fetch the roll of cash from the end of B2; the reward is 30 Blue Potions."
+     }
+    },
+    {
+     "q": 10314,
+     "at": "subway",
+     "go": "construction",
+     "hunt": [
+      "construction"
+     ],
+     "big": true,
+     "do": {
+      "ko": "B3 끝 보물상자에서 돈주머니를 찾아오면 메소 1만과 마나 엘릭서 30개를 받아요.",
+      "en": "Fetch the sack of cash from the end of B3 for 10,000 mesos and 30 Mana Elixirs."
+     }
+    }
+   ]
+  }
+ ],
+ "sources": [
+  {
+   "name": "추억서리 — 뉴비 필수 꿀퀘 7개 (NPC 위치·가는 길)",
+   "url": "https://www.youtube.com/watch?v=PM42DLpygG4",
+   "date": "2026-10-25"
+  },
+  {
+   "name": "추억서리 — 연계 퀘스트 총정리",
+   "url": "https://www.youtube.com/watch?v=fsS-0wV66x4",
+   "date": "2026-11-02"
+  }
+ ],
+ "npcs": {
+  "403": "슈미"
+ },
+ "itemNames": {
+  "4031039": {
+   "ko": "슈미의 동전",
+   "en": "Shumi's Coin"
+  },
+  "4031040": {
+   "ko": "슈미의 돈뭉치",
+   "en": "Shumi's Roll of Cash"
+  },
+  "4031041": {
+   "ko": "슈미의 돈주머니",
+   "en": "Shumi's Sack of Cash"
+  }
+ },
+ "itemNotes": {
+  "4031039": {
+   "ko": "지하철 공사장 점프맵 끝 보물상자에서 나와요",
+   "en": "From the treasure chest at the end of the construction-site jump map"
+  },
+  "4031040": {
+   "ko": "지하철 공사장 점프맵 끝 보물상자에서 나와요",
+   "en": "From the treasure chest at the end of the construction-site jump map"
+  },
+  "4031041": {
+   "ko": "지하철 공사장 점프맵 끝 보물상자에서 나와요",
+   "en": "From the treasure chest at the end of the construction-site jump map"
+  }
+ }
+}

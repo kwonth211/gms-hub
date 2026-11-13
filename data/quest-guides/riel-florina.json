@@ -1,0 +1,103 @@
+{
+ "slug": "riel-florina",
+ "order": 9,
+ "icon": "scroll",
+ "level": {
+  "ko": "Lv 37",
+  "en": "Lv 37"
+ },
+ "title": {
+  "ko": "리엘의 플로리나 별미 공략",
+  "en": "Riel's Special Taste of Florina Beach"
+ },
+ "h1": {
+  "ko": "플로리나 비치 리엘 퀘스트 공략: 코코넛·바나나·집게발",
+  "en": "Riel's Special Taste of Florina Beach: coconuts, bananas and claws"
+ },
+ "lead": {
+  "ko": "37레벨부터 플로리나 비치의 리엘이 코코넛, 루팡의 바나나, 로랑·클랑의 집게발을 부탁해요. 4단계에 경험치가 29,000이 넘어서 37레벨에 아주 좋아요.",
+  "en": "From Lv 37, Riel on Florina Beach wants coconuts, Lupin bananas and Lorang and Clang claws. Four steps for over 29,000 EXP, a strong boost at 37."
+ },
+ "seoTitle": {
+  "ko": "글클메 리엘 플로리나 비치 퀘스트 공략: 코코넛·로랑·클랑 | GMS Hub",
+  "en": "MapleStory Classic World Riel's Florina Beach Quests: Coconuts, Lorangs and Clangs | GMS Hub"
+ },
+ "desc": {
+  "ko": "37레벨 플로리나 비치 리엘 4단계: 코코넛 열매(해변 오른쪽 야자수), 루팡의 바나나, 로랑·클랑의 집게발 개수와 사냥터, 경험치 29,240.",
+  "en": "Riel's four Lv 37 quests on Florina Beach: coconuts from the palms on the right of the beach, Lupin bananas, Lorang and Clang claws, and 29,240 EXP."
+ },
+ "card": {
+  "ko": "37레벨 해변 재료 4번으로 경험치 29,000.",
+  "en": "Four beach collections at Lv 37 for over 29,000 EXP."
+ },
+ "reward": {
+  "ko": "경험치 29,240 · 메소 15,210",
+  "en": "29,240 EXP · 15,210 mesos"
+ },
+ "rewardItem": 4000061,
+ "updated": "2026-11-13",
+ "chains": [
+  {
+   "id": "riel",
+   "title": {
+    "ko": "플로리나 비치의 별미 I~IV (37레벨)",
+    "en": "Special Taste of Florina Beach I–IV (Lv 37)"
+   },
+   "lead": {
+    "ko": "리스항구에서 플로리나 비치로 가서 리엘에게 받아요. 네 단계 모두 리엘에게 재료를 가져다주는 퀘스트예요.",
+    "en": "Travel from Lith Harbor to Florina Beach and talk to Riel; all four steps bring her ingredients."
+   },
+   "steps": [
+    {
+     "q": 10700,
+     "at": "florina",
+     "do": {
+      "ko": "코코넛 열매 10개를 가져다줘요. 해변 오른쪽 야자수에서 코코넛이 나와요.",
+      "en": "Bring 10 Coconuts; the palms on the right side of the beach give them."
+     }
+    },
+    {
+     "q": 10701,
+     "at": "florina",
+     "do": {
+      "ko": "코코넛 열매 15개, 루팡의 바나나 15개, 로랑의 집게발 30개를 가져다줘요.",
+      "en": "Bring 15 Coconuts, 15 Lupin's Bananas and 30 Lorang Claws."
+     }
+    },
+    {
+     "q": 10702,
+     "at": "florina",
+     "big": true,
+     "do": {
+      "ko": "코코넛 열매 30개, 루팡의 바나나 30개, 로랑·클랑의 집게발 60개씩을 가져다줘요.",
+      "en": "Bring 30 Coconuts, 30 Lupin's Bananas and 60 each of Lorang and Clang Claws."
+     }
+    },
+    {
+     "q": 10703,
+     "at": "florina",
+     "do": {
+      "ko": "네 가지 재료를 10개씩 가져다주면 끝나요.",
+      "en": "Bring 10 of each of the four to finish."
+     }
+    }
+   ]
+  }
+ ],
+ "sources": [
+  {
+   "name": "추억서리 — 연계 퀘스트 총정리",
+   "url": "https://www.youtube.com/watch?v=fsS-0wV66x4",
+   "date": "2026-11-02"
+  }
+ ],
+ "npcs": {
+  "802": "리엘"
+ },
+ "itemNotes": {
+  "4000061": {
+   "ko": "플로리나 비치 오른쪽 야자수(부술 수 있는 오브젝트)에서 나와요",
+   "en": "From the palm trees on the right of Florina Beach (breakable objects)"
+  }
+ }
+}

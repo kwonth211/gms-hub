@@ -1,0 +1,84 @@
+{
+ "slug": "arwen-glass-shoe",
+ "order": 6,
+ "icon": "scroll",
+ "level": {
+  "ko": "Lv 29",
+  "en": "Lv 29"
+ },
+ "title": {
+  "ko": "아르웬의 유리구두 공략",
+  "en": "Arwen and the Glass Shoe"
+ },
+ "h1": {
+  "ko": "아르웬과 유리구두 공략: 파이어보어 반복 퀘스트",
+  "en": "Arwen and the Glass Shoe: the repeatable Fire Boar quest"
+ },
+ "lead": {
+  "ko": "29레벨부터 엘리니아의 요정 아르웬이 파이어보어가 훔쳐 간 유리구두를 찾아 달래요. 유리구두 하나만 주면 요정의 날개나 얼음 조각을 주고, 유리구두를 또 주우면 또 깰 수 있어요.",
+  "en": "From Lv 29, Arwen the Fairy in Ellinia wants her Glass Shoe back from the Fire Boars. One shoe pays a Fairy Wing or a Piece of Ice, and every shoe you find later can be turned in again."
+ },
+ "seoTitle": {
+  "ko": "글클메 아르웬과 유리구두 퀘스트 공략: 파이어보어·요정의 날개·얼음 조각 | GMS Hub",
+  "en": "MapleStory Classic World Arwen and the Glass Shoe: Fire Boars, Fairy Wing, Piece of Ice | GMS Hub"
+ },
+ "desc": {
+  "ko": "29레벨 엘리니아 요정 아르웬 퀘스트. 파이어보어가 떨구는 아르웬의 유리구두 1개, 불타버린 땅 가는 길, 보상 요정의 날개·얼음 조각과 시세.",
+  "en": "Arwen's Lv 29 quest in Ellinia: one Glass Shoe from the Fire Boars, the way to the Burnt Lands, and the Fairy Wing or Piece of Ice reward with prices."
+ },
+ "card": {
+  "ko": "파이어보어 유리구두 하나로 요정의 날개나 얼음 조각. 반복 가능.",
+  "en": "One Fire Boar glass shoe for a Fairy Wing or Piece of Ice; repeatable."
+ },
+ "reward": {
+  "ko": "요정의 날개 또는 얼음 조각",
+  "en": "Fairy Wing or Piece of Ice"
+ },
+ "rewardItem": 4003005,
+ "updated": "2026-11-13",
+ "chains": [
+  {
+   "id": "arwen",
+   "title": {
+    "ko": "아르웬과 유리구두 (29레벨, 반복)",
+    "en": "Arwen and the Glass Shoe (Lv 29, repeatable)"
+   },
+   "lead": {
+    "ko": "한 단계짜리 반복 퀘스트예요. 보상은 요정의 날개와 얼음 조각 중 하나가 무작위로 나와요.",
+    "en": "A single repeatable step; the reward is a Fairy Wing or a Piece of Ice at random."
+   },
+   "steps": [
+    {
+     "q": 10200,
+     "at": "arwen",
+     "hunt": [
+      "burnt"
+     ],
+     "big": true,
+     "where": {
+      "ko": "엘리니아 중간쯤 왼쪽 나무집 아래에 있어요.",
+      "en": "Halfway up Ellinia, below the tree house on the left."
+     },
+     "do": {
+      "ko": "파이어보어가 떨구는 아르웬의 유리구두 1개를 가져다줘요. 파이어보어는 페리온 아래쪽 불타버린 땅 1~5에 많아요. 깊은 골짜기 두 맵을 지나 숨은 포탈로 들어가요.",
+      "en": "Bring one Arwen's Glass Shoe from the Fire Boars. They fill Burnt Land I–V below Perion: cross the two deep-valley maps and take the hidden portal."
+     },
+     "tip": {
+      "ko": "파이어보어의 송곳니는 마야의 두 번째 수집품 재료라 버리지 말고 모아 두세요.",
+      "en": "Keep the Fire Boar Teeth: Maya's second collection asks for them."
+     }
+    }
+   ]
+  }
+ ],
+ "sources": [
+  {
+   "name": "추억서리 — 뉴비 필수 꿀퀘 7개 (NPC 위치·가는 길)",
+   "url": "https://www.youtube.com/watch?v=PM42DLpygG4",
+   "date": "2026-10-25"
+  }
+ ],
+ "npcs": {
+  "304": "요정 아르웬"
+ }
+}

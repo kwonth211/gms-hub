@@ -1,0 +1,149 @@
+{
+ "slug": "ayan-alligators",
+ "order": 4,
+ "icon": "scroll",
+ "level": {
+  "ko": "Lv 10 · 48",
+  "en": "Lv 10 · 48"
+ },
+ "title": {
+  "ko": "아얀 악어 퇴치 공략 (망토 60%)",
+  "en": "Ayan's alligator quests (cape 60%)"
+ },
+ "h1": {
+  "ko": "브루스·아얀 연계와 악어 퇴치 공략: 직업 무기 10%·망토 60%",
+  "en": "Bruce and Ayan, and Taking Out the Alligators: a weapon 10% and a cape 60%"
+ },
+ "lead": {
+  "ko": "10레벨에 헤네시스 브루스와 페리온 아얀의 짧은 퀘스트를 끝내 두면, 48레벨에 아얀의 악어 퇴치 두 단계가 열려요. 직업 무기 10% 주문서 하나와 망토 60% 주문서 하나를 줘요.",
+  "en": "Do Bruce's and Ayan's short Lv 10 quests and Ayan opens two alligator hunts at 48: one class weapon 10% scroll and one 60% cape scroll."
+ },
+ "seoTitle": {
+  "ko": "글클메 아얀 악어 퇴치 퀘스트 공략: 망토 60% 주문서 | GMS Hub",
+  "en": "MapleStory Classic World Ayan's Alligator Quests: Cape 60% Scroll | GMS Hub"
+ },
+ "desc": {
+  "ko": "브루스의 버섯 연구·아얀의 나무기둥 이야기·딸 찾기(10~11레벨) 선행부터 48레벨 악어 퇴치 1·2(리게이터 100·주니어 네키 40, 크로코 120)까지. 보상 직업 무기 10%, 망토 힘·민첩·지력·행운 60%.",
+  "en": "From the Lv 10 prerequisites (Bruce's mushroom study, Ayan's stump story, the daughter errand) to the Lv 48 alligator hunts (100 Ligators and 40 Jr. Neckis, then 120 Crocos): a class weapon 10% scroll and a 60% cape scroll."
+ },
+ "card": {
+  "ko": "10레벨 선행 4개를 해 두면 48레벨에 직업 무기 10%와 망토 60% 주문서.",
+  "en": "Four Lv 10 prerequisites unlock two Lv 48 hunts: a class weapon 10% and a cape 60% scroll."
+ },
+ "reward": {
+  "ko": "망토 60% · 직업 무기 10%",
+  "en": "Cape 60% · class weapon 10%"
+ },
+ "rewardItem": 2041009,
+ "updated": "2026-11-13",
+ "chains": [
+  {
+   "id": "pre",
+   "title": {
+    "ko": "1부 · 브루스와 아얀 (10~11레벨) — 선행 퀘스트",
+    "en": "Part 1 · Bruce and Ayan (Lv 10–11) — prerequisites"
+   },
+   "lead": {
+    "ko": "보상은 작지만 48레벨 악어 퇴치의 선행이라 저레벨일 때 꼭 끝내 두세요. 버섯 연구와 나무기둥 이야기를 둘 다 끝내야 딸 찾기가 열려요.",
+    "en": "Small rewards, but they unlock the alligator hunts, so finish them while you are low level. Both the mushroom study and the stump story must be done before the daughter errand opens."
+   },
+   "steps": [
+    {
+     "q": 10123,
+     "at": "bruce",
+     "do": {
+      "ko": "스포아와 주황버섯을 20마리씩 잡고 버섯의 포자 10개, 주황버섯의 갓 10개를 브루스에게 줘요.",
+      "en": "Kill 20 Spores and 20 Orange Mushrooms and bring Bruce 10 spores and 10 caps."
+     }
+    },
+    {
+     "q": 10411,
+     "at": "ayan",
+     "do": {
+      "ko": "페리온 마을 오른쪽 인디언 텐트 옆의 아얀에게 받아요. 나무기둥 30마리를 잡고 돌아가요.",
+      "en": "Ayan stands by the tent on the right of Perion. Kill 30 Stumps and report back."
+     }
+    },
+    {
+     "q": 10124,
+     "at": "bruce",
+     "go": "ayan",
+     "do": {
+      "ko": "브루스가 준 물건을 페리온의 아얀에게 배달해요.",
+      "en": "Deliver Bruce's item to Ayan in Perion."
+     }
+    },
+    {
+     "q": 10125,
+     "at": "ayan",
+     "go": "bruce",
+     "do": {
+      "ko": "아얀이 준 물건을 헤네시스의 브루스에게 가져가면 1부가 끝나요.",
+      "en": "Take Ayan's item back to Bruce in Henesys."
+     }
+    }
+   ]
+  },
+  {
+   "id": "gators",
+   "title": {
+    "ko": "2부 · 악어 퇴치 (48레벨) — 직업 무기 10%, 망토 60%",
+    "en": "Part 2 · Taking Out the Alligators (Lv 48) — weapon 10%, cape 60%"
+   },
+   "lead": {
+    "ko": "48레벨이 되면 아얀에게 다시 가요. 커닝시티 늪지대의 악어 종류를 잡는 두 단계예요. 잡은 수는 퀘스트를 받은 뒤부터 세요.",
+    "en": "At 48, go back to Ayan: two hunts in the swamps around Kerning City. Kills count only after you accept."
+   },
+   "steps": [
+    {
+     "q": 10412,
+     "at": "ayan",
+     "hunt": [
+      "swamp"
+     ],
+     "do": {
+      "ko": "리게이터 100마리, 주니어 네키 40마리를 잡고 주니어 네키의 가죽 20개를 가져가요. 보상은 내 직업 무기 10% 주문서 중 하나를 골라요.",
+      "en": "Kill 100 Ligators and 40 Jr. Neckis and bring 20 Jr. Necki Skins. You choose a 10% weapon scroll for your class."
+     }
+    },
+    {
+     "q": 10413,
+     "at": "ayan",
+     "hunt": [
+      "swamp"
+     ],
+     "big": true,
+     "do": {
+      "ko": "크로코 120마리를 잡고 크로코의 가죽 50개를 가져가면 망토 힘·민첩·지력·행운 60% 중 하나를 받아요.",
+      "en": "Kill 120 Crocos and bring 50 Croco Skins for a 60% cape STR, DEX, INT or LUK scroll."
+     },
+     "tip": {
+      "ko": "망토 행운 60%가 가장 비싸요. 추억서리 영상 기준 28만 메소였어요.",
+      "en": "Cape LUK 60% sells best; 280,000 mesos in the 추억서리 video."
+     }
+    }
+   ]
+  }
+ ],
+ "sources": [
+  {
+   "name": "추억서리 — 연계 퀘스트 총정리",
+   "url": "https://www.youtube.com/watch?v=fsS-0wV66x4",
+   "date": "2026-11-02"
+  }
+ ],
+ "npcs": {
+  "206": "브루스",
+  "506": "아얀"
+ },
+ "itemNames": {
+  "4031076": {
+   "ko": "아얀의 장난감 칼",
+   "en": "Ayan's Toy Sword"
+  },
+  "4031077": {
+   "ko": "아얀의 편지",
+   "en": "Ayan's Letter"
+  }
+ }
+}
