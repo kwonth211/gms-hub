@@ -2548,6 +2548,23 @@ const headline = (p) => {
 };
 const priceOf = (i) => headline(itemPrices.prices[i.id]);
 const itemName = (lang, i) => (lang === 'ko' && i.ko ? i.ko : i.en);
+// Korean players search scrolls by shorthand ("장공 60%", "귀힘 60", "신이속 10%"), not by the client name
+// ("장갑 Attack 주문서: 중급"). Scroll pages lead with that shorthand in the title, heading and description; the
+// client name stays beside it. Tier percents follow the client: 하급 100%, 중급 60%, 상급 10%.
+const SCROLL_GEAR = { 모자: '투', 귀고리: '귀', 상의: '상', 전신: '전', 하의: '하', 신발: '신', 장갑: '장', 방패: '방패', 망토: '망', 한손검: '한검', 한손도끼: '한도',
+  한손둔기: '한둔', 단검: '단검', 완드: '완드', 스태프: '스태프', 양손검: '두검', 양손도끼: '두도', 양손둔기: '두둔', 창: '창', 폴암: '폴암', 활: '활', 석궁: '석궁', 클로: '아대', 펫: '펫' };
+const SCROLL_STAT = { Attack: ['공', '공격력'], 'Weapon Attack': ['공', '공격력'], 'Magic Attack': ['마', '마력'], STR: ['힘', '힘'], DEX: ['덱', '덱스'], INT: ['인', '인트'], LUK: ['럭', '럭'],
+  Accuracy: ['명', '명중률'], Evasion: ['회', '회피율'], Speed: ['이속', '이동속도'], Jump: ['점', '점프력'], DEF: ['방', '방어력'], HP: ['체', 'HP'], MP: ['엠', 'MP'],
+  'Crit. Damage': ['크뎀', '크리티컬 데미지'], 'Crit. Rate': ['크리', '크리티컬 확률'], 'Weapon Def.': ['방', '물리방어력'], 'Magic Def.': ['마방', '마법방어력'] };
+const SCROLL_TIER = { 하급: '100%', 중급: '60%', 상급: '10%', 혼돈: '혼돈' };
+function scrollAlias(i) {
+  const m = (i.ko || '').match(/^(.+?) (?:갑옷 |장비 )?(.+) 주문서: (하급|중급|상급|혼돈)$/);
+  if (!m || !SCROLL_GEAR[m[1]] || !SCROLL_STAT[m[2]]) return null;
+  const [sh, word] = SCROLL_STAT[m[2]], tier = SCROLL_TIER[m[3]];
+  return { short: `${SCROLL_GEAR[m[1]]}${sh} ${tier}`, long: `${m[1]} ${word} 주문서 ${tier}`, tierKo: m[3] };
+}
+// The name a Korean page leads with: the shorthand for scrolls, the client name otherwise.
+const itemSeoName = (lang, i) => { const a = lang === 'ko' && scrollAlias(i); return a ? a.short : itemName(lang, i); };
 const PRICED = itemsData.items.filter(priceOf);
 // Google crawled the one- and two-listing pages and left them out ("crawled, not indexed"): a single shop price is too thin
 // to stand as a page. Only items seen at least this often are indexable; the rest join automatically as scans pile up.
@@ -2687,6 +2704,8 @@ function itemDesc(lang, i) {
   const p = priceOf(i);
   const name = itemName(lang, i);
   if (!p) return DROP_INDEX.has(i.id) ? fill(t.descDrop, { name, info: itemInfoText(lang, i), n: DROP_INDEX.get(i.id).length }) : fill(t.descNone, { name, info: itemInfoText(lang, i) });
+  const a = lang === 'ko' && scrollAlias(i);
+  if (a) return `글클메 ${a.short}(${a.long}, ${i.ko}) 자유시장 시세: ${t.basis[p.basis]} 중앙값 ${mesoText(lang, p.median)} 메소, 최근 매물 ${p.n}건(${mesoText(lang, p.low)}~${mesoText(lang, p.high)}). 지금 파는 상점의 채널·방과 7일 시세 추이를 확인하세요.`;
   return fill(t.desc, { name, basis: t.basis[p.basis], median: mesoText(lang, p.median), n: p.n, low: mesoText(lang, p.low), high: mesoText(lang, p.high) });
 }
 
@@ -2776,7 +2795,7 @@ function itemBody(lang, i) {
   return `<section class="page-head wrap">
 <p class="crumbs"><a href="${href(langPath(lang, '/tools/market/'))}">${T[lang].navMarket}</a><span aria-hidden="true"> › </span><a href="${href(langPath(lang, '/items/'))}">${t.indexH1}</a></p>
 <span class="badge-game">${esc(T[lang].gameBadge)}</span>
-<h1 class="item-title">${itemIcon(i.id, 40)}<span>${esc(fill(dropOnly ? t.h1Drop : t.h1, { name }))}${lang === 'ko' && i.ko ? `<small class="en-name">${esc(i.en)}</small>` : ''}</span></h1>
+<h1 class="item-title">${itemIcon(i.id, 40)}<span>${esc(fill(dropOnly ? t.h1Drop : t.h1, { name: itemSeoName(lang, i) }))}${lang === 'ko' && scrollAlias(i) ? `<small class="en-name">${esc(scrollAlias(i).long)} · ${esc(i.ko)} · ${esc(i.en)}</small>` : lang === 'ko' && i.ko ? `<small class="en-name">${esc(i.en)}</small>` : ''}</span></h1>
 <p class="lead">${esc(dropOnly ? t.leadDrop : t.lead)}</p>
 </section>
 <div class="wrap item-page">
@@ -3200,12 +3219,14 @@ for (const lang of LANGS) {
         lang,
         pageKey: 'item',
         pagePath: itemPath(i),
-        title: priceOf(i)?.median ? fill(it.titlePrice, { name, median: mesoText(lang, priceOf(i).median), date: PRICES_DATE.slice(5).replace('-', '/') }) : fill(dropOnly ? it.titleDrop : it.title, { name }),
+        title: lang === 'ko' && scrollAlias(i) && priceOf(i)?.median
+          ? `글클메 ${scrollAlias(i).short} 시세 ${mesoText(lang, priceOf(i).median)} 메소 (${PRICES_DATE.slice(5).replace('-', '/')}) · ${scrollAlias(i).long} | GMS Hub`
+          : priceOf(i)?.median ? fill(it.titlePrice, { name, median: mesoText(lang, priceOf(i).median), date: PRICES_DATE.slice(5).replace('-', '/') }) : fill(dropOnly ? it.titleDrop : it.title, { name: itemSeoName(lang, i) }),
         desc: itemDesc(lang, i),
         body: itemBody(lang, i),
         modules: ['item.js'],
         noindex: !INDEXABLE.includes(i),
-        ld: [breadcrumbLd(lang, fill(dropOnly ? it.h1Drop : it.h1, { name }), itemPath(i))]
+        ld: [breadcrumbLd(lang, fill(dropOnly ? it.h1Drop : it.h1, { name: itemSeoName(lang, i) }), itemPath(i))]
       })
     );
   }
