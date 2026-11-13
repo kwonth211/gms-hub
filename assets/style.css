@@ -1269,7 +1269,7 @@ input.dm-filled { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset
 .share-status { margin:0; min-height:1.2em; font-size:.76rem; color:var(--accent-2); }
 .share-status:empty { display:none; }
 .mb-visit-note { background:var(--panel-2); border-radius:8px; padding:9px 11px; }
-.mb-item-page { display:inline-block; font-size:.8rem; margin:0 0 10px; }
+.mb-item-page { white-space:nowrap; text-decoration:none; }
 .tr-result-actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; }
 .tr-result-actions a { font-size:.9rem; }
 
