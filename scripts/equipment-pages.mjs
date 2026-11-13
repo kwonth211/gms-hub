@@ -125,3 +125,12 @@ ${filters(lang, [...WEAPONS, ...ARMOR].filter((s) => shared.some((e) => e.sub ==
 ${[...WEAPONS, ...ARMOR].filter((s) => shared.some((e) => e.sub === s)).map((s) => `<section class="eq-group" data-group="${esc(s)}"><h3>${esc(subName(s, lang))}</h3>${table(shared.filter((e) => e.sub === s), ctx)}</section>`).join('')}
 ${notes(lang, link)}</div>`;
 }
+
+// Plain-text fields for the spreadsheet downloads (scripts/downloads.mjs).
+export function equipmentCells(e, lang) {
+  const ko = lang === 'ko';
+  const jobs = e.job ? EQ_CLASSES.filter((c) => e.job & c.bit).map((c) => (ko ? c.ko : c.en)).join(', ') : (ko ? '공용' : 'All');
+  const stats = INC_ORDER.filter((k) => e.inc[k]).map((k) => `${INC_LABEL[lang][k] || k} +${e.inc[k]}`).join(', ');
+  const req = ['str', 'dex', 'int', 'luk'].filter((k) => e.req[k]).map((k) => `${k.toUpperCase()} ${e.req[k]}`).join(', ');
+  return { sub: subName(e.sub, lang), jobs, stats, req };
+}

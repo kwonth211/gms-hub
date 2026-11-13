@@ -3,6 +3,13 @@
  "updates": [
   {
    "date": "2026-11-13",
+   "path": "/downloads/",
+   "new": true,
+   "ko": "자료실 — 시세·확성기·랭킹·몬스터·퀘스트·장비를 엑셀로 받기",
+   "en": "Downloads: prices, megaphones, ranking, monsters, quests and gear as Excel files"
+  },
+  {
+   "date": "2026-11-13",
    "path": "/",
    "ko": "영어 검색 개선 — glove att 60, zhelm 같은 줄임말도 찾아요",
    "en": "Better English search: shorthand like glove att 60 or zhelm now works"

@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { spriteSvg, heroScene, spritePng, spriteDataPng } from './sprites.mjs';
 import { monsterIndex, monsterDetail, monsterPath, monsterName, mapPath, bossIndex } from './monster-pages.mjs';
+import { downloadSets, writeDownloads } from './downloads.mjs';
 import { collectMaps, mapDetail, mapIndex, mapName } from './map-pages.mjs';
 import { collectQuests, questDetail, questIndex, questBestBody, questPath, areaName as questArea } from './quest-pages.mjs';
 import { questGuideData, questGuideBody } from './quest-guide.mjs';
@@ -733,7 +734,7 @@ function headerSearch(lang, tabs) {
     ...publishedGuides.filter((g) => g.lang === lang || (!LANGS.includes(lang) && g.lang === 'en')).map((g) => [g.h1 || g.title, href(langPath(lang, guidePath(g)))]),
     [ko ? '오늘의 시세 리포트' : "Today's price report", href(langPath(lang, '/tools/market/today/'))], [ko ? '상점 스캔' : 'Shop scan', href(langPath(lang, '/tools/scan/'))],
     [ko ? '캐릭터 랭킹' : 'Character ranking', href(langPath(lang, '/rank/'))],
-    [ko ? '직업별 장비' : 'Gear by class', href(langPath(lang, '/equipment/'))], [ko ? '보스' : 'Bosses', href(langPath(lang, '/bosses/'))],
+    [ko ? '직업별 장비' : 'Gear by class', href(langPath(lang, '/equipment/'))], [ko ? '보스' : 'Bosses', href(langPath(lang, '/bosses/'))], [ko ? '자료실 (엑셀 다운로드)' : 'Downloads for Excel', href(langPath(lang, '/downloads/'))],
     ...QUEST_GUIDES.map(({ guide: g }) => [`${guideLabel(g, lang)}${ko ? ' 공략' : ''}`.replace(/ 공략 공략$/, ' 공략'), href(langPath(lang, `/quests/${g.slug}/`))]), [ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests', href(langPath(lang, '/quests/best-exp/'))], [ko ? '맵 도감' : 'Maps', href(langPath(lang, '/maps/'))],
     [ko ? '문의·협찬·후원' : 'Contact and support', href(langPath(lang, '/contact/'))]];
   return `<button type="button" class="hs-open" data-hs data-items="${esc(href('/assets/items.json'))}" data-mobs="${esc(href('/assets/mobs.json'))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-monsters="${esc(href(langPath(lang, '/monsters/')))}" data-pages="${esc(JSON.stringify(pages))}" aria-label="${ko ? '검색' : 'Search'}" title="${ko ? '검색 ( / )' : 'Search ( / )'}"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="hs-label">${ko ? '검색' : 'Search'}</span></button>`;
@@ -750,6 +751,7 @@ function moreMenu(lang, moved = []) {
     ['/bosses/', ko ? '보스' : 'Bosses'],
     ['/quests/best-exp/', ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests'],
     ['/items/', ko ? '아이템 도감' : 'Item database'],
+    ['/downloads/', ko ? '자료실 (엑셀 받기)' : 'Downloads for Excel'],
     ['/maps/', ko ? '맵 도감' : 'Map database'],
     ['/tools/scan/', ko ? '상점 스캔으로 올리기' : 'Upload a shop scan'],
     ['/about/', ko ? '사이트 소개' : 'About'],
@@ -778,8 +780,8 @@ function megaTicker(lang) {
 // and it only ever shows the real number of open pages.
 function presencePill(lang) {
   return lang === 'ko'
-    ? '<p class="presence" hidden><i class="pr-dot" aria-hidden="true"></i><span class="pr-live" translate="no">LIVE</span><b data-site>0</b>명<span class="pr-label"> 접속 중</span></p>'
-    : '<p class="presence" hidden><i class="pr-dot" aria-hidden="true"></i><span class="pr-live" translate="no">LIVE</span><b data-site>0</b> <span class="pr-label">online</span></p>';
+    ? '<p class="presence" hidden><i class="pr-dot" aria-hidden="true"></i><span class="pr-now">실시간</span><span class="pr-count"><b data-site>0</b>명</span><span class="pr-label"> 접속 중</span></p>'
+    : '<p class="presence" hidden><i class="pr-dot" aria-hidden="true"></i><span class="pr-now">Live</span><b data-site>0</b> <span class="pr-label">online</span></p>';
 }
 
 const DISCORD_ICON = (size = 18) => `<svg class="discord-ico" viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>`;
@@ -799,6 +801,49 @@ const ADFIT_PAGES = new Set(['home', 'marketToday', 'exp', 'training', 'trBand',
 // just under the page title: after the page head, after the home hero, or after a guide's first paragraph. Never beside
 // a form control or a button row.
 const AD_TOP = '<!--ad-top-->';
+// Spreadsheet downloads (scripts/downloads.mjs, assets/csv.js): a page with a matching dataset gets a small bar under its
+// heading with an Excel (CSV) file for that data and a link to the downloads page. "live:" sets are built in the browser
+// from the API snapshot the page already uses.
+const DL_BY_PAGE = { monsters: 'monsters', bosses: 'monsters', items: 'items', equipment: 'equipment', equipmentClass: 'equipment', maps: 'maps',
+  quests: 'quests', training: 'training', trBand: 'training', trClass: 'training', scroll: 'scrolls', drop: 'random-boxes',
+  market: 'live:market', price: 'live:market', marketToday: 'live:market', rank: 'live:rank', megaphone: 'live:mega' };
+const dlFile = (lang, key) => href(`/downloads/${key}-${lang === 'ko' ? 'ko' : 'en'}.csv`);
+const dlName = (lang, key) => `gms-hub-${key}-${lang === 'ko' ? 'ko' : 'en'}.csv`;
+function downloadBar(lang, pageKey) {
+  const key = DL_BY_PAGE[pageKey];
+  if (!key) return '';
+  const ko = lang === 'ko';
+  const icon = '<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M10 3v9m0 0l-4-4m4 4l4-4M4 15h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const btn = key.startsWith('live:')
+    ? `<button type="button" class="btn ghost small-btn dl-btn" data-dl-live="${key.slice(5)}" data-lang="${lang}">${icon}${ko ? '엑셀로 받기' : 'Download for Excel'}</button>`
+    : `<a class="btn ghost small-btn dl-btn" href="${dlFile(lang, key)}" download="${dlName(lang, key)}" data-dl="${key}">${icon}${ko ? '엑셀로 받기' : 'Download for Excel'}</a>`;
+  return `<div class="wrap dl-bar">${btn}<a class="dl-more" href="${href(langPath(lang, '/downloads/'))}">${ko ? '다른 자료도 받기' : 'All downloads'}</a></div>`;
+}
+function withDownload(body, lang, pageKey) {
+  const bar = downloadBar(lang, pageKey);
+  if (!bar) return body;
+  const re = /(<section class="(?:wrap )?(?:mb-)?page-head[\s\S]*?<\/section>)/;
+  return re.test(body) ? body.replace(re, `$1${bar}${AD_TOP}`) : bar + body;
+}
+function downloadsBody(lang, sets, counts) {
+  const ko = lang === 'ko';
+  const fileLang = ko ? 'ko' : 'en';
+  const card = (icon, title, desc, action, meta) => `<li class="dl-card">${spriteSvg(icon, 32)}<div><h3>${esc(title)}</h3><p>${esc(desc)}</p>${meta ? `<small class="muted">${meta}</small>` : ''}</div>${action}</li>`;
+  const icon = '<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M10 3v9m0 0l-4-4m4 4l4-4M4 15h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const live = [
+    ['market', 'coin', ko ? '자유시장 시세 (전체 아이템)' : 'Free Market prices (all items)', ko ? '아이템별 시세·최저가·매물 수·상점 수, 지난 7일 기준' : 'Price, lowest, listings and shops for every item over the last 7 days', ko ? '15분마다 갱신' : 'Updated every 15 minutes'],
+    ['mega', 'megaphone', ko ? '확성기 트렌드' : 'Megaphone trends', ko ? '지난 24시간 많이 불린 아이템과 사려는 사람이 많은 아이템' : 'Most called items and most wanted items in the last 24 hours', ko ? '3시간마다 갱신' : 'Updated every 3 hours'],
+    ['rank', 'crown', ko ? '캐릭터 랭킹 상위 1,000명' : 'Top 1,000 characters', ko ? '이름·레벨·직업·인기도·순위 (데이터: ClassicRank)' : 'Name, level, job, fame and rank (data: ClassicRank)', ko ? '1시간마다 갱신' : 'Updated hourly']
+  ].map(([k, ic, t, d, m]) => card(ic, t, d, `<button type="button" class="btn primary dl-btn" data-dl-live="${k}" data-lang="${lang}">${icon}${ko ? '받기' : 'Download'}</button>`, m)).join('');
+  const fixed = sets.map((s) => card(s.icon, s.title(lang), s.desc(lang), `<a class="btn primary dl-btn" href="${dlFile(lang, s.key)}" download="${dlName(lang, s.key)}" data-dl="${s.key}">${icon}${ko ? '받기' : 'Download'}</a>`,
+    `${ko ? `${counts[s.key].toLocaleString('ko-KR')}행` : `${counts[s.key].toLocaleString('en-US')} rows`} · ${ko ? '사이트 업데이트 때 갱신' : 'Updated with the site'} · ${BUILD_DATE}`)).join('');
+  return `${pageHead(lang, 'bag', ko ? '자료실: 엑셀로 받기' : 'Downloads for Excel', ko ? '사이트의 표를 엑셀 파일로 받아 두고 언제든 열어 보세요. 필터·정렬·내 메모를 붙여 쓰기 좋아요.' : 'Save the site\'s tables as files Excel opens, then filter, sort and add your own notes.')}
+<div class="wrap dl-page">
+<section class="panel"><h2>${ko ? '실시간 자료' : 'Live data'}</h2><p class="muted small">${ko ? '받는 순간의 최신 숫자로 파일을 만들어요.' : 'The file is made from the latest numbers when you click.'}</p><ul class="dl-list">${live}</ul></section>
+<section class="panel"><h2>${ko ? '도감·공략 자료' : 'Databases and guides'}</h2><ul class="dl-list">${fixed}</ul></section>
+<section class="panel dl-help"><h2>${ko ? '파일 여는 법' : 'Opening the files'}</h2><ul class="notes">${(ko ? ['받은 파일(.csv)을 더블클릭하면 엑셀에서 바로 열려요. 한글도 깨지지 않아요.', '구글 스프레드시트에서는 파일 → 가져오기 → 업로드로 열어요.', '맨 윗줄에서 데이터 → 필터를 켜면 레벨·직업별로 골라 볼 수 있어요.'] : ['Double-click the .csv file to open it in Excel.', 'In Google Sheets, use File → Import → Upload.', 'Turn on Data → Filter on the top row to sort and filter by level or class.']).map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>
+</div>`;
+}
 function withTopAd(body, ads) {
   let out = body.includes(AD_TOP) ? body : body.replace(/(<section class="(?:wrap )?(?:mb-)?page-head[\s\S]*?<\/section>)/, `$1${AD_TOP}`);
   out = out.replace(AD_TOP, ads ? adfitSlot('top') : '');
@@ -809,13 +854,14 @@ function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], module
   return `${head({ lang, title, desc, pagePath, ld, only, noindex })}
 <body data-page="${pageKey}" data-price-api="${esc(config.voteApi)}"${config.discord ? ` data-discord-url="${esc(config.discord)}"` : ''} data-tips="${esc(href('/assets/item-tips.json'))}" data-sprites="${esc(href('/assets/monsters/'))}">
 ${header(lang, pagePath, only)}
-<main>${ads && pageKey !== 'home' ? adfitRails() : ''}${withTopAd(body, ads)}${ads ? adfitSlot() : ''}</main>
+<main>${ads && pageKey !== 'home' ? adfitRails() : ''}${withTopAd(withDownload(body, lang, pageKey), ads)}${ads ? adfitSlot() : ''}</main>
 ${footer(lang)}
 <script src="${href('/assets/common.js')}" defer></script>
 <script type="module" src="${href(`/assets/header-search.js?v=${moduleVersion}`)}"></script>
 ${ads ? `<script src="${scriptSrc('adfit.js')}" defer></script>` : ''}
 ${scripts.map((s) => `<script src="${scriptSrc(s)}" defer></script>`).join('\n')}
 ${modules.map((s) => `<script type="module" src="${href(`/assets/${s}?v=${moduleVersion}`)}"></script>`).join('\n')}
+${DL_BY_PAGE[pageKey] || pageKey === 'downloads' ? `<script type="module" src="${href(`/assets/csv.js?v=${moduleVersion}`)}"></script>` : ''}
 <script type="module" src="${href(`/assets/item-tip.js?v=${moduleVersion}`)}"></script>
 </body>
 </html>`;
@@ -2663,6 +2709,8 @@ ${group(dropOnly, (a, b) => (a.lv || 0) - (b.lv || 0) || a.id - b.id).map(([cat,
 }
 
 const EN_PAGES = [];
+const DL_SETS = downloadSets({ monsters: MONSTERS.monsters, items: itemsData.items, equipment: EQUIPMENT, maps: MAPS, quests: QUESTS, training, scrolls, boxes, questArea });
+const DL_COUNTS = Object.fromEntries(writeDownloads(path.join(out, 'downloads'), DL_SETS).filter((d) => d.lang === 'ko').map((d) => [d.key, d.rows]));
 const write = (rel, content) => {
   if (rel.startsWith('en/') && rel.endsWith('.html')) EN_PAGES.push([rel, content]);
   const file = path.join(out, rel);
@@ -2880,6 +2928,13 @@ for (const lang of LANGS) {
     desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드 몬스터 ${MONSTERS.monsters.length}종의 체력, 경험치, 드롭 아이템, 출현 위치, 필요 명중을 검색하는 몬스터 도감.` : `Search ${MONSTERS.monsters.length} MapleStory Classic World monsters: HP, EXP, reported drops, map locations and the accuracy you need.`,
     body: monsterIndex({lang, data: MONSTERS, url: href}), modules: ['monsters.js'],
     ld: [breadcrumbLd(lang, monsterTitle, '/monsters/')]
+  }));
+  write(path.join(lang, 'downloads', 'index.html'), page({
+    lang, pageKey: 'downloads', pagePath: '/downloads/',
+    title: lang === 'ko' ? '글클메 자료실: 시세·몬스터·퀘스트·장비 엑셀 다운로드 | GMS Hub' : 'MapleStory Classic World Downloads: Prices, Monsters, Quests & Gear for Excel | GMS Hub',
+    desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드 자유시장 시세, 몬스터 도감, 퀘스트, 직업별 장비, 사냥터, 랭킹을 엑셀(CSV) 파일로 받아요.' : 'Download MapleStory Classic World market prices, monsters, quests, gear by class, training spots and rankings as Excel (CSV) files.',
+    body: downloadsBody(lang, DL_SETS, DL_COUNTS),
+    ld: [breadcrumbLd(lang, lang === 'ko' ? '자료실' : 'Downloads', '/downloads/')]
   }));
   write(path.join(lang, 'bosses', 'index.html'), page({
     lang, pageKey: 'bosses', pagePath: '/bosses/',
@@ -3160,7 +3215,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
 ).concat(
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
-  [{path:'/bosses/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/bosses/'},{path:'/downloads/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/quests/'}, ...QUESTS.filter(q=>!q.expired).map(q=>({path:questPath(q)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
   [{path:'/maps/'}, ...MAPS.filter(l=>l.availability==='open').map(l=>({path:mapPath(l)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [...new Set(guides.map((g) => g.lang)), ...LOCALES.map((l) => l.code)].map((l) => `<url><loc>${absUrl(langPath(l, '/guides/'))}</loc><lastmod>${guides.filter((g) => g.lang === (LANGS.includes(l) ? l : 'en')).map((g) => g.updated).sort().at(-1)}</lastmod></url>`),

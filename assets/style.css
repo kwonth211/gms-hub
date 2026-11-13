@@ -2505,3 +2505,20 @@ body.exp-running .exp-stop { display: inline-flex; }
 .tool-new { position: static; margin-left: auto; }
 @media (prefers-reduced-motion: reduce) { .tool-caret { transition: none; } }
 @media (max-width: 760px) { .tool-menu > summary { flex-direction: column; justify-content: center; } .tool-caret { display: none; } }
+
+/* Spreadsheet downloads: the bar under a page heading and the downloads page (scripts/downloads.mjs, assets/csv.js). */
+.dl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 4px; margin-bottom: 12px; }
+.dl-btn { display: inline-flex; align-items: center; gap: 6px; }
+.dl-btn:focus-visible, .dl-more:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.dl-more { font-size: .88rem; color: var(--text-2); }
+.dl-page { display: grid; gap: 16px; margin-bottom: 32px; }
+.dl-list { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+.dl-card { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-2); }
+.dl-card h3 { margin: 0 0 2px; font-size: 1rem; }
+.dl-card p { margin: 0; font-size: .9rem; color: var(--text-2); }
+.dl-card small { display: block; margin-top: 4px; }
+@media (max-width: 560px) { .dl-card { grid-template-columns: 28px minmax(0, 1fr); } .dl-card .dl-btn { grid-column: 1 / -1; justify-content: center; } }
+/* "실시간 6명": the word sits before the count in the header pill (2026-11-13). */
+.pr-now { font-weight: 800; color: var(--danger); }
+.dl-page .panel > h2 { margin-top: 0; }
+.pr-count { white-space: nowrap; }
