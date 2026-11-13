@@ -105,6 +105,9 @@ export async function handleMarketBatch(req, env, knownItems) {
     if (raw.length > 4000) return reply({ error: 'body too large' }, 413);
     let b; try { b = JSON.parse(raw); } catch { return reply({ error: 'invalid JSON' }, 400); }
     const str = (v, n = 120) => (typeof v === 'string' ? v.slice(0, n) : null);
+    // Heartbeats without an instance come from the switched-off old install in the admin's own Chrome; they would
+    // overwrite the real collector's status, so they are dropped.
+    if (!str(b.instance, 32)) return reply({ ok: true, ignored: true });
     const num = v => (Number.isFinite(Number(v)) ? Number(v) : null);
     const beat = { version: str(b.version, 16), instance: str(b.instance, 32), enabled: !!b.enabled, phase: str(b.phase, 24), shops: num(b.shops), rows: num(b.rows), item: str(b.item, 60),
       hidden: !!b.hidden, error: str(b.error, 200), runId: str(b.runId, 36), startedAt: num(b.startedAt), nextAt: num(b.nextAt), event: str(b.event, 24) };
