@@ -15,16 +15,16 @@
   "en": "Pia and the Blue Mushroom, and Pia's Present for a Friend"
  },
  "lead": {
-  "ko": "16레벨에 받는 피아와 파란 버섯은 투구 명중 주문서를 주는 첫 꿀퀘예요. 42레벨에 다시 가면 리나까지 이어지는 4단계 연계가 망토 주문서로 끝나요. 진행한 단계는 체크해 두면 이 브라우저에 남아요.",
-  "en": "Pia and the Blue Mushroom (Lv 16) pays a helmet accuracy scroll; at 42 she opens a four-step line through Rina that ends in a cape scroll. Tick steps as you go; your progress stays in this browser."
+  "ko": "16레벨 피아와 파란 버섯은 버섯 갓 40개로 투구 명중 주문서를 주는 첫 꿀퀘예요. 42레벨엔 피아 → 리나 → 피아로 이어지는 4단계가 망토 주문서 10%로 끝나요. 진행한 단계는 체크해 두면 이 브라우저에 남아요.",
+  "en": "Pia and the Blue Mushroom (Lv 16) trades 40 mushroom caps for a helmet accuracy scroll; at 42 a four-step line through Rina ends in a 10% cape scroll. Tick steps as you go; your progress stays in this browser."
  },
  "seoTitle": {
   "ko": "글클메 피아와 파란 버섯 퀘스트 공략: 투구 명중 주문서·망토 주문서 | GMS Hub",
   "en": "MapleStory Classic World Pia Quests: Blue Mushroom Caps and Pia's Gift | GMS Hub"
  },
  "desc": {
-  "ko": "헤네시스 공원 피아 퀘스트 전 단계: 16레벨 피아와 파란 버섯(초록·파란 버섯의 갓 20개씩, 투구 명중 주문서), 42레벨 친구 선물 연계(은·용의 가죽·나사, 리나의 부탁, 망토 주문서 10%). 재료 드롭 몬스터와 시세까지.",
-  "en": "Every Pia quest in Henesys Park: Pia and the Blue Mushroom at 16 (20 green and 20 blue mushroom caps for a helmet accuracy scroll) and the Lv 42 line through Rina that ends in a 10% cape scroll, with drops and prices."
+  "ko": "헤네시스 공원 피아 퀘스트 전 단계: 16레벨 피아와 파란 버섯(초록·파란 버섯의 갓 20개씩, 파란 버섯의 숲 가는 길), 42레벨 친구 선물 연계(은·용의 가죽·나사, 리나의 부탁). NPC 위치·사냥터·재료값과 손익까지.",
+  "en": "Every Pia quest in Henesys Park: Lv 16 caps for a helmet accuracy scroll (with the way to the Blue Mushroom forest) and the Lv 42 line through Rina for a 10% cape scroll, with NPC spots, hunting maps and costs."
  },
  "card": {
   "ko": "16레벨 버섯 갓 40개로 투구 명중 주문서. 42레벨엔 리나까지 이어지는 망토 주문서 연계.",
@@ -47,6 +47,16 @@
     "ko": "버섯 갓 두 종류를 20개씩 가져다주면 끝나는 한 단계 퀘스트예요. 보상은 투구 명중 주문서 100%·60%·10% 중 하나가 무작위로 나와요.",
     "en": "One step: 20 caps each of two mushrooms. The reward is one helmet accuracy scroll, 100%, 60% or 10%, at random."
    },
+   "notes": {
+    "ko": [
+     "같은 사냥터를 쓰는 퀘스트를 같이 받아 두면 한 번에 끝나요: 18레벨 촌장 스탄(알렉스 연계)도 초록·파란 버섯 25마리와 갓 15개씩을 달래요.",
+     "파란 버섯의 갓은 20레벨 제인과 버섯에도 15개 더 들어가요. 처음부터 35개를 모으면 숲을 두 번 안 가도 돼요."
+    ],
+    "en": [
+     "Take quests that share these maps together: Chief Stan at 18 (Alex's line) also wants 25 kills and 15 caps of both green and blue mushrooms.",
+     "Jane and the Mushroom (Lv 20) needs another 15 Blue Mushroom Caps; collect 35 now and you only visit the forest once."
+    ]
+   },
    "steps": [
     {
      "q": 10104,
@@ -55,16 +65,34 @@
       "blue"
      ],
      "where": {
-      "ko": "헤네시스 마을에서 공원 포탈로 들어가면 곰 인형을 든 아이가 피아예요.",
-      "en": "Enter the park portal in Henesys; Pia is the child holding a teddy bear."
+      "ko": "헤네시스 마을에서 공원 포탈로 들어가요. 공원 가운데 큰 나침반 집 앞, 곰 인형을 든 아이가 피아예요.",
+      "en": "Take the park portal in Henesys. Pia is the child with a teddy bear in front of the big compass house in the middle of the park."
+     },
+     "path": {
+      "ko": [
+       "헤네시스",
+       "동쪽 언덕",
+       "동쪽 풀숲",
+       "동쪽 숲",
+       "맨 위 왼쪽 숨은 포탈 (↑)",
+       "파란 버섯의 숲"
+      ],
+      "en": [
+       "Henesys",
+       "the hill east of town",
+       "the east grassland",
+       "the east forest",
+       "hidden portal, top left (press ↑)",
+       "Blue Mushroom forest"
+      ]
      },
      "do": {
-      "ko": "초록버섯의 갓 20개, 파란 버섯의 갓 20개를 모아 피아에게 줘요. 파란버섯은 헤네시스 동쪽 숲 맨 위 왼쪽 숨은 포탈 너머 파란 버섯의 숲에 가장 많아요. 초록버섯은 헤네시스 서쪽 사냥터에 많아요.",
-      "en": "Bring 20 Green Mushroom Caps and 20 Blue Mushroom Caps. Blue Mushrooms are thickest in the blue mushroom forest behind the hidden portal at the top left of the forest east of Henesys; Green Mushrooms are west of Henesys."
+      "ko": "초록버섯의 갓 20개, 파란 버섯의 갓 20개를 모아 피아에게 줘요. 파란버섯은 위 길로 가는 파란 버섯의 숲에 가장 많아요. 초록버섯은 헤네시스 사냥터 2를 지나 사냥터 3에 많아요.",
+      "en": "Bring 20 Green Mushroom Caps and 20 Blue Mushroom Caps. Blue Mushrooms fill the forest at the end of the route above; Green Mushrooms are thickest in Henesys Hunting Ground III, past Hunting Ground II."
      },
      "tip": {
-      "ko": "20레벨 제인과 버섯에도 파란 버섯의 갓 15개가 필요해요. 처음부터 35개 모아 두면 사냥터를 두 번 안 가도 돼요.",
-      "en": "Jane and the Mushroom (Lv 20) wants 15 Blue Mushroom Caps too; collect 35 now and you only visit the forest once."
+      "ko": "60%가 나오면 자유시장에서 2만 메소 안팎이에요 (추억서리 1편). 명중이 모자라는 직업은 직접 써도 좋아요.",
+      "en": "A 60% sells for about 20,000 mesos (추억서리 part 1); classes short on accuracy can use it themselves."
      }
     }
    ]
@@ -76,49 +104,83 @@
     "en": "Pia's Present for a Friend (Lv 42) — 10% cape scroll"
    },
    "lead": {
-    "ko": "16레벨 퀘스트를 끝냈다면 42레벨에 피아가 다시 불러요. 피아 → 리나 → 피아 순서로 4단계이고, 마지막에 망토 힘·민첩·지력·행운 10% 주문서 중 하나를 줘요. 재료값을 생각하면 남는 건 적지만 경험치가 3만 넘게 나와요.",
-    "en": "Finish the Lv 16 quest and Pia calls again at 42: four steps, Pia → Rina → Pia, ending in a 10% cape STR, DEX, INT or LUK scroll. The materials cost about what the scroll is worth, but the line pays over 30,000 EXP."
+    "ko": "16레벨 퀘스트를 끝냈다면 42레벨에 피아가 다시 불러요. 피아 → 리나 → 피아 순서로 4단계이고, 마지막에 망토 힘·민첩·지력·행운 10% 주문서 중 하나를 무작위로 줘요.",
+    "en": "Finish the Lv 16 quest and Pia calls again at 42: four steps, Pia → Rina → Pia, ending in a random 10% cape STR, DEX, INT or LUK scroll."
+   },
+   "notes": {
+    "ko": [
+     "돈으로는 손해예요: 재료를 다 사면 약 10만 메소인데 보상 망토 10%는 2~5만 메소예요 (추억서리 4편, 11월 6일 기준). 대신 경험치가 합쳐서 33,521이에요.",
+     "고대의 주문서는 50레벨 만지의 글라디우스에도 한 개 더 들어가요. 둘 다 할 거면 두 개 챙기세요."
+    ],
+    "en": [
+     "It loses money: buying everything costs about 100,000 mesos while a 10% cape scroll sells for 20,000–50,000 (추억서리 part 4, Nov 6). It does pay 33,521 EXP.",
+     "Manji's Lv 50 Gladius wants another Ancient Scroll; get two if you plan both."
+    ]
    },
    "steps": [
     {
      "q": 10119,
      "at": "henesys-park",
      "do": {
-      "ko": "은 15개, 용의 가죽 30개, 나사 30개를 피아에게 가져다줘요. 용의 가죽은 드레이크 종류가 떨궈요.",
-      "en": "Bring Pia 15 Silver, 30 Dragon Skins and 30 Screws. Drakes drop the skins."
+      "ko": "은 15개, 용의 가죽 30개, 나사 30개를 피아에게 가져다줘요. 용의 가죽은 드레이크 종류가 떨궈요. 개미굴 깊은 곳 빛을 잃은 터널 1에 드레이크가 많아요.",
+      "en": "Bring Pia 15 Silver, 30 Dragon Skins and 30 Screws. Drakes drop the skins; the first Cave of Lost Light, deep in the Ant Tunnel, is full of them."
+     },
+     "tip": {
+      "ko": "은은 재련 4레벨이면 은의 원석 5개로 1개를 만들어요. 사면 개당 1,400 메소 안팎이에요.",
+      "en": "At Refining level 4, five Silver Ores make one Silver; bought, it is about 1,400 mesos each."
      }
     },
     {
      "q": 10120,
      "at": "henesys-park",
-     "go": "henesys",
+     "go": "rina",
      "do": {
-      "ko": "피아가 리나에게 빌려준 빨간 망토 이야기를 해요. 헤네시스 마을의 리나에게 가서 말을 걸어요.",
-      "en": "Pia lent Rina her red cape; go and talk to Rina in Henesys."
+      "ko": "피아가 리나에게 빌려준 빨간 망토 이야기를 해요. 헤네시스 마을 왼쪽, 건초더미 옆 버섯집 앞의 리나에게 가요.",
+      "en": "Pia lent Rina her red cape. Go to Rina, in front of the mushroom house by the haystacks on the left of Henesys."
      }
     },
     {
      "q": 10121,
-     "at": "henesys",
+     "at": "rina",
      "big": true,
      "do": {
-      "ko": "리나에게 이상한 느낌의 약 30개, 고대의 주문서 1개, 흑수정 1개를 줘요. 이상한 느낌의 약은 레이스, 고대의 주문서는 다크 스톤골렘이 떨궈요.",
-      "en": "Give Rina 30 Weird Medicines, 1 Ancient Scroll and 1 Black Crystal. Wraiths drop the medicine and Dark Stone Golems the scroll."
-     }
+      "ko": "리나는 피아에게 빌린 것부터 갚으래요. 이상한 느낌의 약 30개, 고대의 주문서 1개, 흑수정 1개를 줘요.",
+      "en": "Rina wants what Pia borrowed first: 30 Weird Medicines, 1 Ancient Scroll and 1 Black Crystal."
+     },
+     "tips": [
+      {
+       "ko": "이상한 느낌의 약은 레이스가 떨궈요. 커닝 지하철 1호선 4구역에 레이스만 18마리쯤 나와요. 개당 55 메소 정도라 모자라면 사도 돼요.",
+       "en": "Wraiths drop the medicine; Kerning subway Line 1 Area 4 holds about 18 of them. It is about 55 mesos each if you would rather buy."
+      },
+      {
+       "ko": "고대의 주문서는 다크 스톤골렘이 떨궈요. 시세가 6만 메소 안팎으로 이 연계에서 제일 비싸요.",
+       "en": "Dark Stone Golems drop the Ancient Scroll; at about 60,000 mesos it is the priciest part of the line."
+      }
+     ]
     },
     {
      "q": 10122,
-     "at": "henesys",
+     "at": "rina",
      "go": "henesys-park",
      "do": {
-      "ko": "리나가 준 물건을 공원의 피아에게 전하면 망토 주문서를 받아요.",
-      "en": "Take what Rina gives you back to Pia in the park for the cape scroll."
+      "ko": "리나가 돌려준 빨간 망토를 공원의 피아에게 전하면 망토 주문서를 받아요.",
+      "en": "Carry the red cape Rina returns to Pia in the park for the cape scroll."
      }
     }
    ]
   }
  ],
  "sources": [
+  {
+   "name": "추억서리 — 레벨별 퀘스트 백과사전 1편 (10~18렙)",
+   "url": "https://www.youtube.com/watch?v=67j4LtkyK0g",
+   "date": "2026-11-01"
+  },
+  {
+   "name": "추억서리 — 레벨별 퀘스트 백과사전 4편 (41~65렙)",
+   "url": "https://www.youtube.com/watch?v=xnS5-RghmAk",
+   "date": "2026-11-07"
+  },
   {
    "name": "추억서리 — 뉴비 필수 꿀퀘 7개 (NPC 위치·가는 길)",
    "url": "https://www.youtube.com/watch?v=PM42DLpygG4",
@@ -128,6 +190,11 @@
    "name": "추억서리 — 연계 퀘스트 총정리",
    "url": "https://www.youtube.com/watch?v=fsS-0wV66x4",
    "date": "2026-11-02"
+  },
+  {
+   "name": "클라이언트 데이터 — 조건·처치 수·보상",
+   "url": "https://maplestory.io/",
+   "date": "2026-11-13"
   }
  ],
  "npcs": {
@@ -145,7 +212,7 @@
   },
   "4003000": {
    "ko": "몬스터가 떨구지 않아요 — 제작 재료라 자유시장에서 사는 게 빨라요",
-   "en": "No monster drops it — it is a crafting material; buying it on the free market is quickest"
+   "en": "No monster drops it — a crafting material; buying it is quickest"
   }
  },
  "itemNames": {

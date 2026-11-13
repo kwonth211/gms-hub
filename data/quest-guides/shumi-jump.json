@@ -1,6 +1,6 @@
 {
  "slug": "shumi-jump",
- "order": 5,
+ "order": 9,
  "icon": "scroll",
  "level": {
   "ko": "Lv 35",
@@ -15,16 +15,16 @@
   "en": "Shumi's Lost Money: Construction Site B1, B2 and B3"
  },
  "lead": {
-  "ko": "35레벨부터 커닝시티 지하철 앞의 슈미가 공사장에 떨어뜨린 동전·돈뭉치·돈주머니를 찾아 달래요. 사냥 없이 점프만 하면 되고, 세 번 합쳐 경험치 20,160과 마지막에 메소 1만, 마나 엘릭서 30개를 줘요.",
-  "en": "From Lv 35, Shumi by the Kerning City subway lost a coin, a roll of cash and a sack of cash in the construction site. No hunting, only jumping: 20,160 EXP over the three, and 10,000 mesos and 30 Mana Elixirs at the end."
+  "ko": "35레벨부터 커닝시티 지하철 입구 앞의 슈미가 공사장에 떨어뜨린 동전·돈뭉치·돈주머니를 찾아 달래요. 재료 없이 점프만 하면 되고, 세 번 합쳐 경험치 20,160에 마지막엔 메소 1만과 마나 엘릭서 30개를 줘요.",
+  "en": "From Lv 35, Shumi by the Kerning City subway entrance lost a coin, a roll of cash and a sack of cash in the construction site. No materials, only jumping: 20,160 EXP over the three, and 10,000 mesos and 30 Mana Elixirs at the end."
  },
  "seoTitle": {
-  "ko": "글클메 슈미 점프퀘 공략: 공사장 B1·B2·B3 동전·돈뭉치·돈주머니 | GMS Hub",
+  "ko": "글클메 슈미 점프퀘 공략: 공사장 B1·B2·B3 입장·주의할 몹·보상 | GMS Hub",
   "en": "MapleStory Classic World Shumi Jump Quests: Construction Site B1–B3 | GMS Hub"
  },
  "desc": {
-  "ko": "35레벨 슈미의 잃어버린 동전·돈뭉치·돈주머니. 지하철 매표소 티켓, 공사장 B1·B2·B3 점프맵 끝 보물상자, 보상(귀환 주문서·파란 포션·메소·마나 엘릭서)과 경험치.",
-  "en": "Shumi's three Lv 35 jump quests: the subway ticket, the treasure chests at the end of Construction Site B1, B2 and B3, and the rewards."
+  "ko": "35레벨 슈미의 잃어버린 동전·돈뭉치·돈주머니: 지하철 매표소 제이크에게 공사장 표 받기, B1·B2·B3 점프맵과 차량 기지 보물상자, 피해야 할 200레벨 몹, 못 쓰는 아이템, 보상.",
+  "en": "Shumi's three Lv 35 jump quests: getting the construction-site ticket from Jake, the B1, B2 and B3 jump maps and depot chests, the Lv 200 mobs to avoid, banned items and the rewards."
  },
  "card": {
   "ko": "35레벨 점프만으로 경험치 2만. 공사장 B1→B2→B3 보물상자.",
@@ -44,8 +44,20 @@
     "en": "Shumi's lost money (Lv 35)"
    },
    "lead": {
-    "ko": "지하철 매표소에서 공사장 티켓을 사서 개찰구로 들어가요. 점프맵 맨 끝 보물상자를 열면 슈미의 물건이 나와요. B1을 끝내야 B2, B2를 끝내야 B3가 열려요.",
-    "en": "Buy a construction-site ticket at the subway ticket booth and go through the gate. Open the chest at the very end of the jump map for Shumi's item. B1 opens B2, and B2 opens B3."
+    "ko": "커닝 지하철 매표소의 제이크에게 공사장 표를 받아 바로 옆 개찰구로 들어가요. 층마다 표가 따로 있어요. 발판을 타고 구역 두세 개를 지나면 끝에 차량 기지가 나오고, 거기 보물상자에 슈미의 돈이 있어요. B1을 끝내야 B2, B2를 끝내야 B3가 열려요.",
+    "en": "Get a construction-site ticket from Jake at the Kerning subway ticket booth and go through the gate beside him; each floor has its own ticket. Two or three jump zones lead to a subway depot whose treasure chest holds Shumi's money. B1 opens B2, and B2 opens B3."
+   },
+   "notes": {
+    "ko": [
+     "이동 스킬, 소환의 자루, 미스틱 도어, 순간이동의 돌은 못 써요.",
+     "B1에는 200레벨 슈퍼 주니어 네키와 슈퍼 스티지가, B3 1구역에는 슈퍼 스티지가 있어요. 닿지 않게 피해서 가세요.",
+     "B3 차량 기지에는 48레벨 레이스가 나와요."
+    ],
+    "en": [
+     "Movement skills, Summoning Sacks, Mystic Door and Teleport Rocks are blocked.",
+     "B1 has Lv 200 Super Jr. Neckis and Super Stirges, and B3 Area 1 has Super Stirges; do not touch them.",
+     "The B3 depot spawns Lv 48 Wraiths."
+    ]
    },
    "steps": [
     {
@@ -55,10 +67,40 @@
      "hunt": [
       "construction"
      ],
+     "where": {
+      "ko": "커닝시티 마을 아래쪽, 지하철 입구 바로 앞에 서 있어요.",
+      "en": "At the bottom of Kerning City, right in front of the subway entrance."
+     },
+     "path": {
+      "ko": [
+       "커닝시티",
+       "지하철 매표소 (제이크)",
+       "개찰구",
+       "공사장 B1 구역들",
+       "차량 기지 보물상자"
+      ],
+      "en": [
+       "Kerning City",
+       "subway ticket booth (Jake)",
+       "ticket gate",
+       "B1 jump zones",
+       "depot treasure chest"
+      ]
+     },
      "do": {
-      "ko": "공사장 B1 점프맵을 지나 끝방 보물상자에서 슈미의 동전을 찾아와요. 보상은 마을 귀환 주문서 묶음이에요.",
-      "en": "Clear the B1 jump map and bring back Shumi's coin from the chest in the last room; the reward is a bundle of return scrolls."
-     }
+      "ko": "B1 표로 들어가 점프맵을 지나 차량 기지 보물상자에서 슈미의 동전을 찾아와요. 보상은 귀환 주문서 23장(가까운 마을 귀환 5장, 마을별 귀환 3장씩)이에요.",
+      "en": "Enter with a B1 ticket, cross the jump maps and bring back Shumi's coin from the depot chest. The reward is 23 return scrolls: five nearest-town and three for each town."
+     },
+     "warn": {
+      "ko": "B1의 200레벨 슈퍼 몹에 닿으면 크게 다쳐요.",
+      "en": "Touching B1's Lv 200 super mobs hurts badly."
+     },
+     "videos": [
+      {
+       "name": "공사장 B1~B3 풀영상 (옛 메이플, 맵 동일)",
+       "url": "https://www.youtube.com/watch?v=zWxVJdNMKOk"
+      }
+     ]
     },
     {
      "q": 10313,
@@ -68,9 +110,15 @@
       "construction"
      ],
      "do": {
-      "ko": "티켓을 다시 사서 B2 끝 보물상자에서 돈뭉치를 찾아와요. 보상은 파란 포션 30개예요.",
-      "en": "Buy another ticket and fetch the roll of cash from the end of B2; the reward is 30 Blue Potions."
-     }
+      "ko": "B2 표를 받아 같은 방식으로 B2 끝 보물상자에서 돈뭉치를 찾아와요. 보상은 파란 포션 30개예요.",
+      "en": "Get a B2 ticket and fetch the roll of cash from the chest at the end of B2; the reward is 30 Blue Potions."
+     },
+     "videos": [
+      {
+       "name": "공사장 B1~B3 풀영상 (옛 메이플, 맵 동일)",
+       "url": "https://www.youtube.com/watch?v=zWxVJdNMKOk"
+      }
+     ]
     },
     {
      "q": 10314,
@@ -83,12 +131,27 @@
      "do": {
       "ko": "B3 끝 보물상자에서 돈주머니를 찾아오면 메소 1만과 마나 엘릭서 30개를 받아요.",
       "en": "Fetch the sack of cash from the end of B3 for 10,000 mesos and 30 Mana Elixirs."
-     }
+     },
+     "warn": {
+      "ko": "B3 1구역의 슈퍼 스티지와 차량 기지의 48레벨 레이스를 조심하세요.",
+      "en": "Watch for the Super Stirges in B3 Area 1 and the Lv 48 Wraiths in the depot."
+     },
+     "videos": [
+      {
+       "name": "공사장 B3 풀영상 (옛 메이플, 맵 동일)",
+       "url": "https://www.youtube.com/watch?v=SH51R3PbvU8"
+      }
+     ]
     }
    ]
   }
  ],
  "sources": [
+  {
+   "name": "추억서리 — 레벨별 퀘스트 백과사전 3편 (30~37렙)",
+   "url": "https://www.youtube.com/watch?v=X6q-n8r2FGU",
+   "date": "2026-11-05"
+  },
   {
    "name": "추억서리 — 뉴비 필수 꿀퀘 7개 (NPC 위치·가는 길)",
    "url": "https://www.youtube.com/watch?v=PM42DLpygG4",
@@ -98,6 +161,11 @@
    "name": "추억서리 — 연계 퀘스트 총정리",
    "url": "https://www.youtube.com/watch?v=fsS-0wV66x4",
    "date": "2026-11-02"
+  },
+  {
+   "name": "클라이언트 데이터 — 조건·처치 수·보상",
+   "url": "https://maplestory.io/",
+   "date": "2026-11-13"
   }
  ],
  "npcs": {
@@ -119,16 +187,16 @@
  },
  "itemNotes": {
   "4031039": {
-   "ko": "지하철 공사장 점프맵 끝 보물상자에서 나와요",
-   "en": "From the treasure chest at the end of the construction-site jump map"
+   "ko": "공사장 점프맵 끝 차량 기지의 보물상자에서 나와요",
+   "en": "From the treasure chest in the subway depot at the end of the construction-site jump map"
   },
   "4031040": {
-   "ko": "지하철 공사장 점프맵 끝 보물상자에서 나와요",
-   "en": "From the treasure chest at the end of the construction-site jump map"
+   "ko": "공사장 점프맵 끝 차량 기지의 보물상자에서 나와요",
+   "en": "From the treasure chest in the subway depot at the end of the construction-site jump map"
   },
   "4031041": {
-   "ko": "지하철 공사장 점프맵 끝 보물상자에서 나와요",
-   "en": "From the treasure chest at the end of the construction-site jump map"
+   "ko": "공사장 점프맵 끝 차량 기지의 보물상자에서 나와요",
+   "en": "From the treasure chest in the subway depot at the end of the construction-site jump map"
   }
  }
 }

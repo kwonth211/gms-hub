@@ -29,10 +29,14 @@ export function questGuideData({ guide, raw, items, monsters }) {
       const startGives = new Set(((q.rewardOnStart || {}).items || []).filter((i) => i.count > 0).map((i) => i.id));
       const bring = (done.items || []).map((i) => ({ id: i.id, count: i.count, ...itemName(i.id), note: guide.itemNotes?.[i.id] || null, handed: startGives.has(i.id), from: startGives.has(i.id) ? [] : droppers(i.id) }));
       const gets = (rw.items || []).filter((i) => i.count > 0).map((i) => ({ id: i.id, count: i.count, ...itemName(i.id), job: i.job ?? null, gender: i.gender ?? null }));
-      const pick = gets.some((g) => g.job != null) ? 'job' : gets.some((g) => g.gender != null) ? 'gender' : gets.length > 1 ? 'random' : 'all';
-      return { ...s, id: q.id, name: q.name, lv: start.levelMinimum || null, startNpc: start.npcId, endNpc: done.npcId,
+      // The client marks some single rewards with a gender flag; only differing flags mean "one by gender".
+      const pick = gets.some((g) => g.job != null) ? 'job' : new Set(gets.map((g) => String(g.gender))).size > 1 ? 'gender' 
+        // No random flag in the data: several rewards of the same count are one pick (Arwen 1/1, Rowen's ores 7/7);
+        // different counts (Shumi's return scrolls 5/3/3, potions plus scrolls) are all given.
+        : gets.length > 1 && new Set(gets.map((g) => g.count)).size === 1 ? 'random' : 'all';
+      return { ...s, pick: s.pick || pick, id: q.id, name: q.name, lv: start.levelMinimum || null, startNpc: start.npcId, endNpc: done.npcId,
         npcStart: npc(start.npcId), npcEnd: npc(done.npcId),
-        kills, bring, exp: rw.exp || 0, meso: rw.meso || 0, fame: rw.fame || 0, gets, pick,
+        kills, bring, exp: rw.exp || 0, meso: rw.meso || 0, fame: rw.fame || 0, gets,
         receive: [...startGives].map((id) => ({ id, ...itemName(id) })) };
     })
   }));
@@ -60,21 +64,24 @@ export function questGuideBody({ lang, guide, data, link, mobSprite, mobHref, pa
   const stepHtml = (s, i, chain) => {
     const kills = s.kills.map((k) => k.known ? `<li class="gq-need gq-kill"><img src="${mobSprite({ id: k.id })}" alt="" width="40" height="40" loading="lazy"><div translate="no"><b><a href="${mobHref({ id: k.id, en: k.en })}">${esc(ko ? k.ko : k.en)}</a> ×${n(k.count, lang)}</b> <small>Lv ${k.lv}</small><span>${k.maps.map(mapLink).join(' · ')}</span></div></li>` : `<li class="gq-need gq-kill"><div><b translate="no">${esc(ko ? k.ko : k.en)} ×${n(k.count, lang)}</b></div></li>`).join('');
     const bring = s.bring.map((b) => `<li class="gq-need gq-item" data-item="${b.id}" data-qty="${b.count}"${b.handed ? ' data-handed="1"' : ''}><img src="${icon(b.id)}" alt="" width="32" height="32" loading="lazy"><div><b translate="no">${esc(ko ? b.ko : b.en)} ×${n(b.count, lang)}</b>${b.handed ? `<span>${tr('퀘스트를 받을 때 NPC가 줘요', 'Given by the NPC when you accept')}</span>` : b.note ? `<span>${esc(L(b.note))}</span>` : b.from.length ? `<span translate="no">${b.from.map((m) => `<a href="${mobHref(m)}">${esc(ko ? m.ko : m.en)}</a> Lv${m.lv}${m.maps.length ? ` — ${m.maps.map(mapLink).join(', ')}` : ''}`).join('<br>')}</span>` : `<span>${tr('몬스터가 떨구지 않아요 — 자유시장 구매 또는 제작', 'No monster drops it — buy on the free market or craft it')}</span>`}<em class="gq-price" hidden></em></div></li>`).join('');
-    const gets = s.gets.length ? `<div class="gq-gets"><span>${s.pick === 'random' ? tr('다음 중 하나 (무작위)', 'One of these, at random') : s.pick === 'job' ? tr('직업에 맞는 하나', 'The one for your class') : s.pick === 'gender' ? tr('성별에 따라 하나', 'One by gender') : ''}</span>${s.gets.map((g) => `<a class="gq-get" data-item="${g.id}" href="${link(`/tools/market/?item=${g.id}`)}"><img src="${icon(g.id)}" alt="" width="28" height="28" loading="lazy"><span>${esc(ko ? g.ko : g.en)}${g.count > 1 ? ` ×${g.count}` : ''}</span><em class="gq-price" hidden></em></a>`).join('')}</div>` : '';
+    const gets = s.gets.length ? `<div class="gq-gets"><span>${s.pick === 'choose' ? tr('다음 중 하나를 골라요', 'Pick one of these') : s.pick === 'random' ? tr('다음 중 하나 (무작위)', 'One of these, at random') : s.pick === 'job' ? tr('직업에 맞는 하나', 'The one for your class') : s.pick === 'gender' ? tr('성별에 따라 하나', 'One by gender') : ''}</span>${s.gets.map((g) => `<a class="gq-get" data-item="${g.id}" href="${link(`/tools/market/?item=${g.id}`)}"><img src="${icon(g.id)}" alt="" width="28" height="28" loading="lazy"><span>${esc(ko ? g.ko : g.en)}${g.count > 1 ? ` ×${g.count}` : ''}</span><em class="gq-price" hidden></em></a>`).join('')}</div>` : '';
     const at = place(s.at), go = s.go ? place(s.go) : null;
     return `<li class="gq-step${s.big ? ' gq-big' : ''}" id="q-${s.id}" data-q="${s.id}" data-at="${esc(s.at)}"${s.go ? ` data-go="${esc(s.go)}"` : ''} data-hunt="${esc((s.hunt || []).join(' '))}" data-exp="${s.exp}" data-meso="${s.meso}">
 <div class="gq-step-head"><span class="gq-no">${i + 1}</span><span class="gq-npcs"><img src="${npcImg(s.startNpc)}" alt="${esc(npcName(s.npcStart, lang))}" loading="lazy">${s.endNpc !== s.startNpc ? `<i aria-hidden="true">→</i><img src="${npcImg(s.endNpc)}" alt="${esc(npcName(s.npcEnd, lang))}" loading="lazy">` : ''}</span><div class="gq-title"><h3 translate="no">${esc(s.name)}</h3><small translate="no">${s.lv ? `Lv ${s.lv}+ · ` : ''}${esc(npcName(s.npcStart, lang))}${s.endNpc !== s.startNpc ? ` → ${esc(npcName(s.npcEnd, lang))}` : ''}</small></div><span class="gq-state"><span class="gq-st-done">${tr('완료', 'Complete')}</span><span class="gq-st-now">${tr('진행 중', 'In progress')}</span></span><label class="gq-done"><input type="checkbox" data-done="${s.id}"><span>${tr('완료', 'Done')}</span></label></div>
 <div class="gq-step-body">
 <div class="gq-where"><div class="gq-lbl">${tr('어디서', 'Where')}</div><div><div translate="no">${esc(L(at))}</div>${s.where ? `<div>${esc(L(s.where))}</div>` : ''}</div>${go ? `<div class="gq-lbl">${tr('다음 목적지', 'Next stop')}</div><div translate="no">${esc(L(go))}</div>` : ''}</div>
+${s.path ? `<ol class="gq-path" aria-label="${tr('가는 길', 'Route')}" translate="no">${L(s.path).map((m) => `<li>${esc(m)}</li>`).join('')}</ol>` : ''}
 <p class="gq-do">${esc(L(s.do))}</p>
+${s.warn ? `<p class="gq-warn">${esc(L(s.warn))}</p>` : ''}
 ${s.receive.length ? `<p class="gq-receive"><span>${tr('받는 물건', 'You receive')}</span> <span translate="no">${s.receive.map((r) => `<img src="${icon(r.id)}" alt="" width="22" height="22" loading="lazy"> ${esc(ko ? r.ko : r.en)}`).join(', ')}</span></p>` : ''}
 ${kills || bring ? `<ul class="gq-needs">${kills}${bring}</ul>` : ''}
 <div class="gq-reward"><b>${tr('보상', 'Reward')}</b> <span translate="no">EXP ${n(s.exp, lang)}</span>${s.meso ? `<span>${n(s.meso, lang)} ${tr('메소', 'mesos')}</span>` : ''}${s.fame ? `<span><span>${tr('인기도', 'Fame')}</span> <span translate="no">+${s.fame}</span></span>` : ''}${gets}</div>
-${s.tip ? `<p class="gq-tip">${esc(L(s.tip))}</p>` : ''}
+${[s.tip, ...(s.tips || [])].filter(Boolean).map((t) => `<p class="gq-tip">${esc(L(t))}</p>`).join('')}
+${s.videos?.length ? `<p class="gq-videos"><span>${tr('영상으로 보기', 'Watch it')}</span> ${s.videos.map((v) => `<a href="${esc(v.url)}" target="_blank" rel="noopener" translate="no">${esc(v.name)}</a>`).join(' ')}</p>` : ''}
 </div></li>`;
   };
 
-  const parts = data.chains.map((c) => `<section class="gq-chain" id="chain-${c.id}"><h2>${esc(L(c.title))}</h2><p class="lead">${esc(L(c.lead))}</p><ol class="gq-steps">${c.steps.map((s, i) => stepHtml(s, i, c)).join('')}</ol></section>`).join('');
+  const parts = data.chains.map((c) => `<section class="gq-chain" id="chain-${c.id}"><h2>${esc(L(c.title))}</h2><p class="lead">${esc(L(c.lead))}</p>${c.notes ? `<ul class="gq-notes">${L(c.notes).map((t) => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}<ol class="gq-steps">${c.steps.map((s, i) => stepHtml(s, i, c)).join('')}</ol></section>`).join('');
   // Extra notes that several steps lean on (where to get a Diamond, and so on), each headed by an item and its price.
   const extras = (guide.extras || []).map((x) => `<section class="panel gq-diamond" id="${esc(x.id)}"><h2>${x.item ? `<img src="${icon(x.item)}" alt="" width="28" height="28"> ` : ''}${esc(L(x.title))}${x.item ? ` <em class="gq-price" data-item="${x.item}" hidden></em>` : ''}</h2><ol>${L(x.list).map((t) => `<li>${esc(t)}</li>`).join('')}</ol></section>`).join('');
 

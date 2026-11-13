@@ -1,6 +1,7 @@
 {
  "note": "Site updates shown on the home page (newest first). Add an entry with every new feature or visible improvement: date (KST), ko/en text, link path.",
  "updates": [
+  { "date": "2026-11-13", "path": "/quests/", "new": true, "ko": "퀘스트 공략 보강 — 맵별 가는 길·주의할 점·영상, 루크·인내의 숲 추가", "en": "Quest guides upgraded: map-by-map routes, warnings and videos, plus Luke and the Forest of Patience" },
   { "date": "2026-11-13", "path": "/quests/", "new": true, "ko": "퀘스트 탭 신설 — 피아·마야·아얀·슈미·아르웬·존·동료의 증명·리엘 공략 8개 추가", "en": "New Quests tab — eight new step-by-step guides: Pia, Maya, Ayan, Shumi, Arwen, John, Lakelis and Riel" },
   { "date": "2026-11-13", "path": "/quests/glove-attack/", "new": true, "ko": "장공 퀘스트 공략 — 로웬·제인 두 루트, NPC 위치·재료·동선·시세", "en": "Gloves attack scroll quests — the Rowen and Jane routes, NPCs, items, route and prices" },
   { "date": "2026-11-13", "path": "/tools/training/#rates", "ko": "사냥터 추천에 시간당 경험치·메소 실측 수치 46개 (출처 포함)", "en": "Training routes: 46 sourced EXP and meso per hour figures" },

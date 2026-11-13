@@ -1,6 +1,6 @@
 {
  "slug": "kpq-companionship",
- "order": 8,
+ "order": 4,
  "icon": "scroll",
  "level": {
   "ko": "Lv 21",
@@ -11,24 +11,24 @@
   "en": "Proof of Companionship (KPQ earring 60%)"
  },
  "h1": {
-  "ko": "동료의 증명 공략: 커닝 파티퀘스트 첫 판 귀고리 주문서",
-  "en": "Proof of Companionship: the earring scroll from your first Kerning party quest"
+  "ko": "동료의 증명 공략: 커닝 파티퀘스트 단계별 정답과 귀고리 60%",
+  "en": "Proof of Companionship: Kerning party quest stage by stage, and the 60% earring scroll"
  },
  "lead": {
-  "ko": "21레벨부터 커닝시티 라케리스에게 받는 한 번뿐인 퀘스트예요. 퀘스트를 받고 커닝 파티퀘스트에 들어가 마지막 킹 슬라임을 잡으면 귀고리 힘·민첩·지력·행운 60% 주문서 중 하나를 줘요.",
-  "en": "A one-time quest from Lakelis in Kerning City, from Lv 21: accept it, run the Kerning party quest and kill the King Slime at the end for a 60% earring STR, DEX, INT or LUK scroll."
+  "ko": "21레벨부터 커닝시티 라케리스에게 받는 한 번뿐인 퀘스트예요. 받고 나서 커닝 파티퀘스트를 끝까지 깨고 킹 슬라임을 잡으면 귀고리 힘·민첩·지력·행운 60% 주문서 중 하나를 줘요. 파티 구하는 법과 단계별 정답까지 정리했어요.",
+  "en": "A one-time quest from Lakelis in Kerning City, from Lv 21: accept it, clear the Kerning party quest and kill the King Slime for a 60% earring STR, DEX, INT or LUK scroll. How to find a party and every stage's solution are below."
  },
  "seoTitle": {
-  "ko": "글클메 동료의 증명 퀘스트 공략: 커닝 파티퀘스트 킹 슬라임·귀고리 60% | GMS Hub",
-  "en": "MapleStory Classic World Proof of Companionship: Kerning PQ King Slime, Earring 60% | GMS Hub"
+  "ko": "글클메 커닝 파티퀘스트 공략: 동료의 증명·단계별 정답·킹 슬라임 | GMS Hub",
+  "en": "MapleStory Classic World Kerning PQ Guide: Proof of Companionship, Stage Answers, King Slime | GMS Hub"
  },
  "desc": {
-  "ko": "21레벨 커닝시티 라케리스 퀘스트. 4인 파티로 커닝 파티퀘스트를 끝까지 깨고 킹 슬라임을 잡으면 귀고리 60% 주문서. 첫 판에 꼭 받고 들어가는 이유.",
-  "en": "Lakelis's Lv 21 quest: clear the Kerning party quest with four players and kill the King Slime for a 60% earring scroll. Take it before your first run."
+  "ko": "21레벨 라케리스 퀘스트 동료의 증명과 커닝 파티퀘스트 공략: 파티 구하는 말(J>KPQ), 1단계 문제 정답(10·15·21·25·30), 밧줄·발판·통 조합 순서, 킹 슬라임, 러시와 보너스.",
+  "en": "Lakelis's Lv 21 quest and the Kerning party quest: how to find a party (J>KPQ), stage 1 answers (10, 15, 21, 25, 30), rope, platform and barrel order, King Slime, rush versus bonus runs."
  },
  "card": {
-  "ko": "첫 커파 전에 받으면 킹 슬라임 한 번으로 귀고리 60%.",
-  "en": "Take it before your first Kerning PQ: one King Slime for a 60% earring scroll."
+  "ko": "첫 커파 전에 받으면 킹 슬라임 한 번으로 귀고리 60%. 단계별 정답 포함.",
+  "en": "Take it before your first Kerning PQ: one King Slime for a 60% earring scroll. Stage answers included."
  },
  "reward": {
   "ko": "귀고리 60% 주문서",
@@ -44,8 +44,24 @@
     "en": "Proof of Companionship (Lv 21, once)"
    },
    "lead": {
-    "ko": "커닝 파티퀘스트는 21레벨 이상 네 명이 같이 들어가요. 이 퀘스트는 마지막 보너스 전 킹 슬라임을 잡아야 깨져요.",
-    "en": "The Kerning party quest takes four players of Lv 21 or more. This quest only completes when the King Slime at the end is killed."
+    "ko": "커닝 파티퀘스트는 21레벨 이상 네 명이 같이 들어가요. 제한 시간은 30분이에요. 이 퀘스트는 마지막 단계에서 킹 슬라임이 잡혀야 깨져요.",
+    "en": "Four players of Lv 21 or more, 30 minutes on the clock. This quest only completes if the King Slime in the last stage dies."
+   },
+   "notes": {
+    "ko": [
+     "파티 구하기: 커닝시티에서 \"J>KPQ 27 도적 보너스\"처럼 레벨·직업·방식을 채팅에 쳐요. 파티를 모으는 쪽은 L>KPQ예요.",
+     "1단계: 파티장을 뺀 세 명이 클로토에게 말을 걸어 문제를 받아요. 답은 10·15·21·25·30 중 하나예요. 답만큼 리게이터를 잡아 쿠폰을 내면 통행증을 줘요. 쿠폰은 남에게 넘길 수 있으니 다 같이 잡아서 모자란 사람에게 몰아 주세요.",
+     "2단계(밧줄 4개 중 3개)·3단계(발판 5개 중 3개, 고양이 수가 번호)·4단계(통 6개 중 3개, 적힌 숫자가 번호): 세 명이 올라가요. 정답은 판마다 바뀌니 1-2-3, 1-2-4, 1-2-5… 순서로 앞의 두 명은 그대로 두고 마지막 사람만 옮겨요. 경우의 수는 밧줄 4, 발판 10, 통 20이에요.",
+     "마지막 단계: 커즈아이·주니어 네키와 맨 아래 킹 슬라임을 잡아 통행증 10장을 파티장에게 모아요. 킹 슬라임 내려찍기는 땅에 닿기 직전에 점프하면 피할 수 있어요.",
+     "보너스 방: 초록버섯·뿔버섯이 나와요. 러시 파티면 바로 넬라에게 말을 걸어 나가고, 보너스 파티면 층을 하나씩 맡아 남은 시간 동안 사냥해요."
+    ],
+    "en": [
+     "Finding a party: in Kerning City type your level, class and run type, e.g. \"J>KPQ 27 Rogue Bonus\". Leaders recruit with L>KPQ.",
+     "Stage 1: everyone but the leader talks to Cloto for a question. The answer is 10, 15, 21, 25 or 30; kill Ligators for that many coupons and trade them for a pass. Coupons can be passed around, so keep killing and feed whoever is short.",
+     "Stages 2 (three of four ropes), 3 (three of five platforms, numbered by the cats) and 4 (three of six barrels, by their numbers): three players stand on spots. The answer changes each run, so try 1-2-3, 1-2-4, 1-2-5 and so on, moving only the last player. There are 4, 10 and 20 combinations.",
+     "Final stage: kill the Curse Eyes, Jr. Neckis and the King Slime at the bottom and pool 10 passes with the leader. Jump just before his slam lands to dodge it.",
+     "Bonus room: Green and Horny Mushrooms. Rush parties leave at once through Nella; bonus parties split the floors and hunt out the clock."
+    ]
    },
    "steps": [
     {
@@ -53,22 +69,51 @@
      "at": "kpq",
      "big": true,
      "where": {
-      "ko": "커닝시티 하수구 입구 옆, 파티퀘스트를 여는 NPC예요.",
-      "en": "Next to the sewer entrance in Kerning City; he starts the party quest."
+      "ko": "커닝시티 마을 아래쪽, 하수구 파이프 세 개 옆에 있어요. 파티퀘스트를 여는 NPC예요.",
+      "en": "At the bottom of Kerning City, beside the three sewer pipes; he opens the party quest."
      },
      "do": {
-      "ko": "퀘스트를 받은 뒤 파티로 커닝 파티퀘스트에 들어가 끝까지 깨고 킹 슬라임을 잡아요. 다시 라케리스에게 말을 걸면 보상을 받아요.",
-      "en": "Accept it, then clear the Kerning party quest with your party and kill the King Slime; talk to Lakelis again for the scroll."
+      "ko": "먼저 이 퀘스트를 받고 파티로 커닝 파티퀘스트에 들어가 끝까지 깨요. 킹 슬라임이 잡히면 라케리스에게 다시 말을 걸어 보상을 받아요.",
+      "en": "Accept the quest first, then clear the Kerning party quest with your party. Once the King Slime dies, talk to Lakelis again for the scroll."
+     },
+     "warn": {
+      "ko": "저레벨 파티는 킹 슬라임을 안 잡고 위층 몹으로 통행증을 채우기도 해요. 그러면 이 퀘스트가 안 깨지니 들어가기 전에 꼭 말해 두세요.",
+      "en": "Low-level parties sometimes skip the King Slime and fill the passes from the upper floors, which leaves this quest unfinished. Say so before you go in."
      },
      "tip": {
-      "ko": "킹 슬라임을 안 잡고 넘기는 파티도 있어요. 들어가기 전에 파티에게 꼭 말해 두세요.",
-      "en": "Some parties skip the King Slime; tell yours before you go in."
-     }
+      "ko": "한 번만 받을 수 있으니 첫 판에 꼭 받고 들어가세요. 귀고리 지력 60%는 8만 메소 안팎에 팔렸어요 (추억서리 2편).",
+      "en": "You can only take it once, so take it before your first run. An earring INT 60% sold for about 80,000 (추억서리 part 2)."
+     },
+     "videos": [
+      {
+       "name": "슈미가 알려주는 글클메 커파 공략",
+       "url": "https://www.youtube.com/watch?v=LDaEvYw2nOQ"
+      },
+      {
+       "name": "쌀신 커닝 파티퀘스트 완전공략",
+       "url": "https://www.youtube.com/watch?v=BNNtl71H3Ls"
+      }
+     ]
     }
    ]
   }
  ],
  "sources": [
+  {
+   "name": "쌀신 — 커닝시티 파티퀘스트 완전공략",
+   "url": "https://www.youtube.com/watch?v=BNNtl71H3Ls",
+   "date": "2026-10-20"
+  },
+  {
+   "name": "헤네시스 꿀팁 — 슈미가 알려주는 글클메 커파 공략",
+   "url": "https://www.youtube.com/watch?v=LDaEvYw2nOQ",
+   "date": "2026-10-30"
+  },
+  {
+   "name": "추억서리 — 레벨별 퀘스트 백과사전 2편 (19~29렙)",
+   "url": "https://www.youtube.com/watch?v=yRAJUvKKOxE",
+   "date": "2026-11-02"
+  },
   {
    "name": "추억서리 — 뉴비 필수 꿀퀘 7개 (NPC 위치·가는 길)",
    "url": "https://www.youtube.com/watch?v=PM42DLpygG4",
@@ -80,9 +125,9 @@
    "date": "2026-11-01"
   },
   {
-   "name": "쌀신 — 커닝시티 파티퀘스트 완전공략",
-   "url": "https://www.youtube.com/watch?v=BNNtl71H3Ls",
-   "date": "2026-10-20"
+   "name": "클라이언트 데이터 — 조건·처치 수·보상",
+   "url": "https://maplestory.io/",
+   "date": "2026-11-13"
   }
  ],
  "npcs": {

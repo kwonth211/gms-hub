@@ -1,6 +1,6 @@
 {
  "slug": "maya-cape",
- "order": 3,
+ "order": 5,
  "icon": "scroll",
  "level": {
   "ko": "Lv 21 · 30 · 47 · 50",
@@ -23,8 +23,8 @@
   "en": "MapleStory Classic World Maya Quests: How to Get the Green Napoleon | GMS Hub"
  },
  "desc": {
-  "ko": "마야 연계 전 단계: 테오·소피아·만지 심부름(21레벨), 마야의 수집품 1~4(30·47레벨, 버섯 갓·돼지 리본·골렘 돌조각·다이아몬드), 보상 초록색 모험가의 망토. 만지의 글라디우스(50레벨)까지 재료·드롭·시세.",
-  "en": "Every step of Maya's line: the Lv 21 errands via Teo, Sophia and Manji, her four collections at 30 and 47 (caps, ribbons, golem rubble, a Diamond) and the Green Napoleon, plus Manji's Lv 50 Gladius, with drops and prices."
+  "ko": "마야 연계 전 단계: 테오·소피아·만지 심부름(21레벨, NPC 위치), 마야의 수집품 1~4(30·47레벨, 재료별 사냥터), 보상 초록색 모험가의 망토. 만지의 글라디우스(50레벨)까지 재료·손익.",
+  "en": "Every step of Maya's line: the Lv 21 errands via Teo, Sophia and Manji with NPC spots, her four collections at 30 and 47 with a map for each material, the Green Napoleon, and Manji's Lv 50 Gladius with costs."
  },
  "card": {
   "ko": "21레벨 심부름부터 47레벨 수집품까지 11단계. 끝에 초록색 모험가의 망토.",
@@ -45,14 +45,26 @@
     "en": "Maya part 1 · errands (Lv 21) — Brown Bamboo Hat"
    },
    "lead": {
-    "ko": "아픈 마야의 약을 구하러 리스항구 테오, 페리온 소피아와 만지를 오가는 심부름이에요. 사냥은 만지의 부탁 한 번뿐이고, 끝내면 갈색 삿갓을 받고 2부가 열려요.",
-    "en": "Errands for sick Maya between Teo in Lith Harbor and Sophia and Manji in Perion. Manji's request is the only hunt; finishing gives a Brown Bamboo Hat and opens part 2."
+    "ko": "오래 아팠던 마야의 약을 구하러 리스항구와 페리온을 한 바퀴 돌아요. 사냥은 만지의 부탁 한 번뿐이고, 끝내면 갈색 삿갓(25제)을 받고 2부와 50레벨 글라디우스가 열려요.",
+    "en": "Errands for sick Maya around Lith Harbor and Perion. Manji's request is the only hunt; finishing gives a Brown Bamboo Hat (Lv 25) and opens part 2 and the Lv 50 Gladius line."
+   },
+   "notes": {
+    "ko": [
+     "좀비버섯 사냥은 개미굴 3에서 해요. 20레벨 제인과 버섯(뿔버섯)과 23레벨 니오라 병원 퀘스트(좀비버섯·죽은 자의 부적 25개)도 같은 맵이라 같이 받아 두면 한 번에 끝나요."
+    ],
+    "en": [
+     "Hunt the Zombie Mushrooms in Ant Tunnel III. Jane and the Mushroom (Horny Mushrooms, Lv 20) and the Lv 23 Neora Hospital quest (Zombie Mushrooms, 25 charms) use the same map; take them together."
+    ]
    },
    "steps": [
     {
      "q": 10106,
      "at": "maya",
      "go": "teo",
+     "where": {
+      "ko": "헤네시스 마을 거리, 노란 버섯집 2층에 있어요.",
+      "en": "Henesys main street, upstairs in the yellow mushroom house."
+     },
      "do": {
       "ko": "마야에게 말을 걸면 리스항구의 테오를 찾아가라고 해요.",
       "en": "Maya sends you to Teo in Lith Harbor."
@@ -61,43 +73,73 @@
     {
      "q": 10107,
      "at": "teo",
-     "go": "perion-town",
+     "go": "sophia",
+     "where": {
+      "ko": "리스항구 오른쪽, 파란 지붕 하얀 건물 앞의 수염 난 선원이에요.",
+      "en": "The bearded sailor in front of the white, blue-roofed building on the right of Lith Harbor."
+     },
      "do": {
-      "ko": "테오가 페리온의 소피아를 찾아가라고 해요.",
-      "en": "Teo sends you on to Sophia in Perion."
+      "ko": "테오는 반짝이는 돌을 가져와야 약을 준대요. 페리온의 소피아를 찾아가요.",
+      "en": "Teo will trade the medicine only for a sparkling rock; go to Sophia in Perion."
      }
     },
     {
      "q": 10108,
-     "at": "perion-town",
+     "at": "sophia",
+     "go": "manji",
+     "where": {
+      "ko": "페리온 백화점 왼쪽 가게 주인 딸이에요.",
+      "en": "The shopkeeper's daughter in the left-hand shop of the Perion department store."
+     },
      "do": {
-      "ko": "소피아가 반짝이는 돌을 만들려면 만지에게 아콘의 피를 얻어 오라고 해요. 페리온의 만지에게 가요.",
-      "en": "Sophia needs Arcon's Blood for the sparkling rock; go to Manji in Perion."
+      "ko": "소피아는 반짝이는 돌 재료로 아콘의 피가 필요하대요. 페리온 자유시장 포탈 위 바위 꼭대기의 만지에게 가요.",
+      "en": "Sophia needs Arcon's Blood for the rock. Go to Manji on top of the rock above Perion's free-market portal."
      }
     },
     {
      "q": 10109,
-     "at": "perion-town",
+     "at": "manji",
      "hunt": [
       "ant"
      ],
      "big": true,
+     "path": {
+      "ko": [
+       "슬리피우드",
+       "개미굴 광장",
+       "개미굴 1",
+       "개미굴 2",
+       "개미굴 3"
+      ],
+      "en": [
+       "Sleepywood",
+       "Ant Tunnel Park",
+       "Ant Tunnel I",
+       "Ant Tunnel II",
+       "Ant Tunnel III"
+      ]
+     },
      "do": {
-      "ko": "좀비버섯을 잡고 죽은 자의 부적을 모아 만지에게 줘요. 좀비버섯은 슬리피우드 개미굴에 많아요. 잡은 수는 퀘스트를 받은 뒤부터 세요.",
-      "en": "Hunt Zombie Mushrooms in Sleepywood's Ant Tunnel and bring Manji the Charms of the Undead. Kills count only after you accept the quest."
+      "ko": "좀비버섯 75마리를 잡고 죽은 자의 부적 40개를 만지에게 줘요. 좀비버섯은 슬리피우드 아래 개미굴 3에 가장 많아요.",
+      "en": "Kill 75 Zombie Mushrooms and bring Manji 40 Charms of the Undead. Ant Tunnel III below Sleepywood has the most."
+     },
+     "warn": {
+      "ko": "잡은 수는 퀘스트를 받은 뒤부터 세요.",
+      "en": "Kills count only after you accept."
      }
     },
     {
      "q": 10110,
-     "at": "perion-town",
+     "at": "manji",
+     "go": "sophia",
      "do": {
-      "ko": "만지가 준 물건과 물컹물컹한 액체·나뭇잎·옥토퍼스의 다리 30개씩을 소피아에게 가져가요.",
-      "en": "Take Manji's item and 30 each of Squishy Liquid, Leaves and Octopus Legs to Sophia."
+      "ko": "만지가 준 아콘의 피와 물컹물컹한 액체·나뭇잎·옥토퍼스의 다리 30개씩을 소피아에게 가져가요. 액체는 슬라임, 나뭇잎은 나무기둥 종류, 옥토퍼스는 커닝시티 공사장에 있어요.",
+      "en": "Take Manji's Arcon's Blood and 30 each of Squishy Liquid, Leaves and Octopus Legs to Sophia. Slimes drop the liquid, stumps the leaves; Octopuses live by the Kerning City construction site."
      }
     },
     {
      "q": 10111,
-     "at": "perion-town",
+     "at": "sophia",
      "go": "teo",
      "do": {
       "ko": "소피아가 만든 반짝이는 돌을 리스항구의 테오에게 전해요.",
@@ -109,8 +151,8 @@
      "at": "teo",
      "go": "maya",
      "do": {
-      "ko": "테오가 만든 약을 헤네시스의 마야에게 전하면 1부가 끝나고 갈색 삿갓을 받아요.",
-      "en": "Deliver Teo's medicine to Maya in Henesys; part 1 ends with a Brown Bamboo Hat."
+      "ko": "테오가 준 이상한 약을 헤네시스의 마야에게 전하면 1부가 끝나고 갈색 삿갓을 받아요.",
+      "en": "Deliver Teo's Weird Medicine to Maya in Henesys; part 1 ends with a Brown Bamboo Hat."
      }
     }
    ]
@@ -123,32 +165,55 @@
     "en": "Maya part 2 · her collections (Lv 30 and 47) — Green Napoleon"
    },
    "lead": {
-    "ko": "마야의 수집품 네 번. 1·2번째는 30레벨, 3·4번째는 47레벨부터 받아요. 마지막엔 골렘 돌조각 100개와 다이아몬드가 필요하고, 보상은 초록색 모험가의 망토예요.",
-    "en": "Four collections for Maya: the first two from Lv 30, the last two from 47. The last wants 100 golem rubbles and a Diamond, and pays the Green Napoleon."
+    "ko": "마야의 수집품 네 번. 1·2번째는 30레벨, 3·4번째는 47레벨부터 받아요. 보상은 포션이지만 경험치가 4,780~11,400씩 나오고, 마지막에 초록색 모험가의 망토(50제, 민첩 3·명중 4)를 줘요.",
+    "en": "Four collections: the first two from Lv 30, the last two from 47. The rewards are potions but each pays 4,780 to 11,400 EXP, and the last gives the Green Napoleon (Lv 50, DEX 3, accuracy 4)."
+   },
+   "notes": {
+    "ko": [
+     "47레벨 수집품 두 개는 몹이 여섯 군데로 흩어져 있어요. 재료를 다 사도 2만 메소가 안 돼서 사는 게 훨씬 빨라요 (추억서리 4편, 11월 6일 기준). 망토 시세는 4만 5천 메소 안팎이에요.",
+     "식탁보는 31레벨 이카루스 풍선에도 30개 들어가요. 지하철에서 50개를 한 번에 모으세요."
+    ],
+    "en": [
+     "The two Lv 47 collections send you to six different maps; buying everything costs under 20,000 mesos, which is far quicker (추억서리 part 4, Nov 6). The cape sells for about 45,000.",
+     "Icarus's Lv 31 balloon needs 30 Tablecloths too; gather 50 in one subway trip."
+    ]
    },
    "steps": [
     {
      "q": 10115,
      "at": "maya",
      "do": {
-      "ko": "주황·초록·파란·뿔버섯의 갓을 20개씩 가져다줘요.",
-      "en": "Bring 20 caps each of Orange, Green, Blue and Horny Mushrooms."
+      "ko": "주황·초록·파란·뿔버섯의 갓을 20개씩 가져다줘요. 주황·초록은 헤네시스 주변, 파란버섯은 헤네시스 동쪽 파란 버섯의 숲, 뿔버섯은 개미굴에 많아요.",
+      "en": "Bring 20 caps each of Orange, Green, Blue and Horny Mushrooms: orange and green around Henesys, blue in the Blue Mushroom forest east of town, horny in the Ant Tunnel."
      }
     },
     {
      "q": 10116,
      "at": "maya",
+     "hunt": [
+      "kerning"
+     ],
      "do": {
       "ko": "돼지의 리본, 버블링의 큰 방울, 파이어보어의 송곳니, 식탁보를 20개씩 가져다줘요.",
       "en": "Bring 20 each of Pig's Ribbons, Bubbling's Huge Bubbles, Fire Boar Teeth and Tablecloths."
-     }
+     },
+     "tips": [
+      {
+       "ko": "식탁보가 제일 오래 걸려요. 주니어 레이스가 떨구고 커닝 지하철 2호선 1구역에 15마리쯤 나와요. 가는 길의 1호선 1구역에서 버블링 큰 방울도 챙기세요.",
+       "en": "Tablecloths take longest: Jr. Wraiths drop them, about 15 in Kerning subway Line 2 Area 1. Pick up Bubbling bubbles in Line 1 Area 1 on the way."
+      },
+      {
+       "ko": "파이어보어의 송곳니는 페리온 쪽 불타버린 땅에서 모아요. 한 맵에 13마리쯤 나와요. 돼지의 리본은 헤네시스 동쪽 숲 리본돼지가 떨궈요.",
+       "en": "Fire Boar Teeth come from the Burnt Lands by Perion, about 13 boars per map. Ribbon Pigs in the forest east of Henesys drop the ribbons."
+      }
+     ]
     },
     {
      "q": 10117,
      "at": "maya",
      "do": {
-      "ko": "아이언 호그의 철발굽, 루팡 인형, 콜드아이의 꼬리, 토티의 등껍질을 30개씩 가져다줘요.",
-      "en": "Bring 30 each of Iron Hog hooves, Lupin dolls, Cold Eye tails and Tortie shells."
+      "ko": "아이언 호그의 철발굽, 루팡 인형, 콜드아이의 꼬리, 토티의 등껍질을 30개씩 가져다줘요. 사는 게 빨라요.",
+      "en": "Bring 30 each of Iron Hog hooves, Lupin dolls, Cold Eye tails and Tortie shells. Buying is quicker."
      }
     },
     {
@@ -160,7 +225,7 @@
      "big": true,
      "do": {
       "ko": "스톤골렘의 돌조각 50개, 다크 스톤골렘의 돌조각 50개, 다이아몬드 1개를 주면 초록색 모험가의 망토를 받아요. 골렘은 슬리피우드 골렘 사원에 있어요.",
-      "en": "Bring 50 Stone Golem Rubbles, 50 Dark Stone Golem Rubbles and a Diamond for the Green Napoleon. The golems live in the golem temple near Sleepywood."
+      "en": "Bring 50 Stone Golem Rubbles, 50 Dark Stone Golem Rubbles and a Diamond for the Green Napoleon. The golems live in the golem temple by Sleepywood."
      }
     }
    ]
@@ -173,17 +238,27 @@
     "en": "Bonus · Manji's Gladius (Lv 50) — Hero's Gladius or Skull Earrings"
    },
    "lead": {
-    "ko": "마야 1부를 끝냈다면 50레벨에 페리온 만지가 낡은 글라디우스를 깨워 달라고 해요. 슬리피우드의 크리슈라마를 오가는 3단계예요.",
-    "en": "After part 1, Manji in Perion asks you at Lv 50 to reawaken his Old Gladius: three steps with Chrishrama in Sleepywood."
+    "ko": "마야 1부를 끝냈다면 50레벨에 만지가 발록에게서 자신을 구한 영웅의 칼, 낡은 글라디우스를 깨워 달래요. 슬리피우드 크리슈라마를 오가는 3단계예요.",
+    "en": "After part 1, Manji asks at Lv 50 to reawaken the Old Gladius of the hero who saved him from a Balrog: three steps with Chrishrama in Sleepywood."
+   },
+   "notes": {
+    "ko": [
+     "먼저 50레벨 사비트라마의 노화 방지 약(인내의 숲)을 끝내서 별의 돌을 받아 두세요.",
+     "돈으로는 손해예요: 재료를 사면 24만 메소쯤인데 보상은 둘 다 8만 메소 안팎이에요. 대신 세 단계 경험치가 38,700이에요 (추억서리 4편)."
+    ],
+    "en": [
+     "Finish Sabitrama's Lv 50 Anti-Aging Medicine (Forest of Patience) first for the Star Rock.",
+     "It loses money: the materials cost about 240,000 mesos and both rewards sell for about 80,000. The three steps pay 38,700 EXP (추억서리 part 4)."
+    ]
    },
    "steps": [
     {
      "q": 10402,
-     "at": "perion-town",
+     "at": "manji",
      "go": "temple",
      "do": {
-      "ko": "만지가 준 낡은 글라디우스를 슬리피우드의 크리슈라마에게 가져가요.",
-      "en": "Take Manji's Old Gladius to Chrishrama in Sleepywood."
+      "ko": "만지가 준 낡은 글라디우스를 슬리피우드 마을 위쪽의 크리슈라마에게 보여 줘요.",
+      "en": "Show Manji's Old Gladius to Chrishrama at the top of Sleepywood."
      }
     },
     {
@@ -193,15 +268,26 @@
      "do": {
       "ko": "별의 돌, 얼음 조각, 고대의 주문서, 불꽃 깃털을 하나씩 크리슈라마에게 줘요.",
       "en": "Give Chrishrama a Star Rock, a Piece of Ice, an Ancient Scroll and a Flaming Feather."
-     }
+     },
+     "tips": [
+      {
+       "ko": "얼음 조각은 2만 5천 메소 안팎이라 사는 게 편해요. 아르웬의 유리구두 보상으로도 반반 확률로 나와요.",
+       "en": "A Piece of Ice is about 25,000 mesos; Arwen's Glass Shoe also pays one half the time."
+      },
+      {
+       "ko": "불꽃 깃털은 레드 드레이크만 떨궈서 15만 메소가 넘어요. 고대의 주문서는 다크 스톤골렘이 떨궈요.",
+       "en": "Only Red Drakes drop the Flaming Feather (over 150,000); Dark Stone Golems drop the Ancient Scroll."
+      }
+     ]
     },
     {
      "q": 10404,
      "at": "temple",
-     "go": "perion-town",
+     "go": "manji",
+     "pick": "choose",
      "do": {
-      "ko": "크리슈라마가 준 물건을 만지에게 가져가면 영웅의 글라디우스나 해골 귀고리 중 하나를 골라요.",
-      "en": "Bring Chrishrama's item back to Manji and choose the Hero's Gladius or Skull Earrings."
+      "ko": "깨어난 글라디우스를 만지에게 가져가면 영웅의 글라디우스(전사 45제 한손검, 공격력 60)나 해골 귀고리 중 하나를 골라요.",
+      "en": "Bring the reawakened Gladius back to Manji and choose the Hero's Gladius (Lv 45 warrior one-handed sword, 60 attack) or the Skull Earrings."
      }
     }
    ]
@@ -209,14 +295,34 @@
  ],
  "sources": [
   {
+   "name": "추억서리 — 레벨별 퀘스트 백과사전 2편 (19~29렙)",
+   "url": "https://www.youtube.com/watch?v=yRAJUvKKOxE",
+   "date": "2026-11-02"
+  },
+  {
+   "name": "추억서리 — 레벨별 퀘스트 백과사전 3편 (30~37렙)",
+   "url": "https://www.youtube.com/watch?v=X6q-n8r2FGU",
+   "date": "2026-11-05"
+  },
+  {
+   "name": "추억서리 — 레벨별 퀘스트 백과사전 4편 (41~65렙)",
+   "url": "https://www.youtube.com/watch?v=xnS5-RghmAk",
+   "date": "2026-11-07"
+  },
+  {
    "name": "추억서리 — 연계 퀘스트 총정리",
    "url": "https://www.youtube.com/watch?v=fsS-0wV66x4",
    "date": "2026-11-02"
   },
   {
-   "name": "추억서리 — 뉴비 필수 꿀퀘 7개 (NPC 위치·가는 길)",
-   "url": "https://www.youtube.com/watch?v=PM42DLpygG4",
-   "date": "2026-10-25"
+   "name": "추억서리 — 장비 주는 퀘스트 총정리",
+   "url": "https://www.youtube.com/watch?v=f0CjO9qfsqU",
+   "date": "2026-11-03"
+  },
+  {
+   "name": "클라이언트 데이터 — 조건·처치 수·보상",
+   "url": "https://maplestory.io/",
+   "date": "2026-11-13"
   }
  ],
  "npcs": {
@@ -271,32 +377,18 @@
    },
    "list": {
     "ko": [
-     "자유시장에서 사기 — 가장 빨라요(아래 실시간 시세).",
-     "다이아몬드의 원석을 제련 — 원석은 주황버섯·다크 엑스텀프·파이어보어·드레이크가 떨궈요. 제작(Arcforge) 6레벨에서 원석 1개를 1,200메소에 다이아몬드로 바꾼다고 정리돼 있어요(ms-classic.com, 게임 1.0.0 기준).",
-     "헤네시스의 루크(Luke) 19레벨 퀘스트 — 보석 8종 중 하나를 무작위로 줘서 다이아몬드가 나올 수 있어요(1/8)."
+     "아크포징(제련) 6레벨이면 다이아몬드의 원석 1개와 1,200 메소로 만들 수 있어요.",
+     "원석은 다크 엑스텀프, 파이어보어 등이 떨군다는 제보가 많아요. 마야 2부에서 파이어보어를 잡을 때 같이 챙기세요.",
+     "제작 기술이 없으면 자유시장에서 사는 게 가장 빨라요 (추억서리 4편 기준 개당 2천 메소 안팎)."
     ],
     "en": [
-     "Buy one on the free market — the quickest (live price below).",
-     "Refine Diamond Ore — the ore drops from Orange Mushrooms, Dark Axe Stumps, Fire Boars and Drakes; ms-classic.com (game 1.0.0) lists Arcforge level 6 turning one ore into a Diamond for 1,200 mesos.",
-     "Luke's level-19 quest in Henesys gives one of eight gems at random, so a Diamond is possible (1 in 8)."
+     "At Arcforging (refining) level 6, one Diamond Ore plus 1,200 mesos makes a Diamond.",
+     "Players report the ore from Dark Axe Stumps and Fire Boars; pick it up while you hunt Fire Boars for Maya.",
+     "Without the skill, buy one on the free market (about 2,000 mesos in the 추억서리 part 4 video)."
     ]
    }
   }
  ],
- "itemNotes": {
-  "4020107": {
-   "ko": "몬스터가 떨구지 않아요 — 아래 다이아몬드 구하기 참고",
-   "en": "No monster drops it — see Getting a Diamond below"
-  },
-  "4020109": {
-   "ko": "슬리피우드 호텔 앞 사비트라마 퀘스트를 50레벨에 다시 받으면 줘요 (추억서리 연계 총정리 기준)",
-   "en": "Savitrama outside the Sleepywood hotel gives it when you return at Lv 50 (per the 추억서리 quest-line video)"
-  },
-  "4003004": {
-   "ko": "엘리니아 아르웬의 유리구두 퀘스트 보상 중 하나예요 · 자유시장에서도 팔아요",
-   "en": "One of the rewards of Arwen's Glass Shoe quest in Ellinia; also on the free market"
-  }
- },
  "itemNames": {
   "4031009": {
    "ko": "이상한 약",
@@ -313,6 +405,20 @@
   "4031027": {
    "ko": "깨어난 글라디우스",
    "en": "Reawakened Gladius"
+  }
+ },
+ "itemNotes": {
+  "4020107": {
+   "ko": "몬스터가 떨구지 않아요 — 아래 다이아몬드 구하기 참고",
+   "en": "No monster drops it — see Getting a Diamond below"
+  },
+  "4020109": {
+   "ko": "50레벨 사비트라마의 노화 방지 약(인내의 숲 5단계 두 뿌리 홍삼) 보상이에요",
+   "en": "The reward for Sabitrama's Lv 50 Anti-Aging Medicine (the Double-Rooted Red Ginseng at the top of the Forest of Patience)"
+  },
+  "4003004": {
+   "ko": "아르웬의 유리구두 보상 중 하나예요 · 자유시장 2만 5천 메소 안팎",
+   "en": "One of Arwen's Glass Shoe rewards; about 25,000 mesos on the free market"
   }
  }
 }

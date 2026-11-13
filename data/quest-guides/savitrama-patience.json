@@ -1,0 +1,187 @@
+{
+ "slug": "savitrama-patience",
+ "order": 7,
+ "icon": "scroll",
+ "level": {
+  "ko": "Lv 25 · 50",
+  "en": "Lv 25 · 50"
+ },
+ "title": {
+  "ko": "사비트라마 인내의 숲 공략",
+  "en": "Sabitrama's Forest of Patience"
+ },
+ "h1": {
+  "ko": "사비트라마 퀘스트 공략: 인내의 숲 핑크 안시리움과 두 뿌리 홍삼",
+  "en": "Sabitrama's Quests: the Pink Anthurium and Double-Rooted Red Ginseng in the Forest of Patience"
+ },
+ "lead": {
+  "ko": "25레벨 슬리피우드 사비트라마가 인내의 숲 끝의 핑크 안시리움을 부탁해요. 점프 퀘스트 1~5단계이고 보상은 전신 갑옷 방어력 주문서 60%나 10%예요. 50레벨엔 같은 숲에서 두 뿌리 홍삼을 캐서 별의 돌을 받아요. 별의 돌은 만지의 글라디우스 재료예요.",
+  "en": "At 25, Sabitrama in Sleepywood wants the Pink Anthurium at the end of the Forest of Patience: a five-step jump quest for a 60% or 10% full-armor defense scroll. At 50 the same forest gives the Double-Rooted Red Ginseng for a Star Rock, which Manji's Gladius needs."
+ },
+ "seoTitle": {
+  "ko": "글클메 인내의 숲 공략: 사비트라마 핑크 안시리움·두 뿌리 홍삼·별의 돌 | GMS Hub",
+  "en": "MapleStory Classic World Forest of Patience: Sabitrama, Pink Anthurium, Red Ginseng, Star Rock | GMS Hub"
+ },
+ "desc": {
+  "ko": "25레벨 사비트라마의 다이어트 약(인내의 숲 1~5단계, 엘리니아 셰인 입장)과 50레벨 노화 방지 약(두 뿌리 홍삼 → 별의 돌). 점프맵 규칙, 어려운 구간, 영상 공략.",
+  "en": "Sabitrama's Lv 25 Diet Medicine (Forest of Patience steps 1–5, entered through Shane in Ellinia) and Lv 50 Anti-Aging Medicine (Red Ginseng for a Star Rock), with the jump-map rules, the hard step and video walkthroughs."
+ },
+ "card": {
+  "ko": "25레벨 점프퀘로 전신 방어 주문서, 50레벨엔 글라디우스 재료 별의 돌.",
+  "en": "A Lv 25 jump quest for a full-armor defense scroll; at 50 the Star Rock for the Gladius."
+ },
+ "reward": {
+  "ko": "전신 방어 주문서 · 별의 돌",
+  "en": "Full-armor defense scroll · Star Rock"
+ },
+ "rewardItem": 2040501,
+ "updated": "2026-11-13",
+ "chains": [
+  {
+   "id": "fop",
+   "title": {
+    "ko": "인내의 숲 (25·50레벨)",
+    "en": "The Forest of Patience (Lv 25 and 50)"
+   },
+   "lead": {
+    "ko": "엘리니아의 셰인에게 입장료를 내면 인내의 숲으로 보내 줘요. 한 번 깨면 다음부터는 입장료가 없어요. 1단계부터 5단계까지 발판을 타고 올라가 맨 끝에서 약초를 캐요.",
+    "en": "Pay Shane in Ellinia and he sends you into the Forest of Patience; after your first clear it is free. Climb steps 1 to 5 and pick the herb at the very end."
+   },
+   "notes": {
+    "ko": [
+     "점프맵 안에서는 이동 속도와 점프가 기본값으로 고정되고 이동 스킬을 못 써요.",
+     "3단계가 가장 어려워요. 영상으로 길을 한 번 보고 들어가세요."
+    ],
+    "en": [
+     "Inside, speed and jump are fixed at default and movement skills do not work.",
+     "Step 3 is the hardest; watch the route once before you go in."
+    ]
+   },
+   "steps": [
+    {
+     "q": 10509,
+     "at": "savitrama",
+     "go": "shane",
+     "hunt": [
+      "fop"
+     ],
+     "pick": "random",
+     "where": {
+      "ko": "슬리피우드 마을 맨 위 간판 앞이에요. 왼쪽에 형 크리슈라마가 있어요.",
+      "en": "At the sign at the top of Sleepywood; her brother Chrishrama stands to the left."
+     },
+     "path": {
+      "ko": [
+       "슬리피우드 (퀘스트 받기)",
+       "엘리니아 셰인 (입장료)",
+       "인내의 숲 1~5단계",
+       "핑크 안시리움"
+      ],
+      "en": [
+       "Sleepywood (accept)",
+       "Shane in Ellinia (fee)",
+       "Forest of Patience steps 1–5",
+       "Pink Anthurium"
+      ]
+     },
+     "do": {
+      "ko": "엘리니아 마을 가운데쯤 나무 위 작은 집 앞의 셰인에게 말을 걸어 입장료를 내고 들어가요. 5단계 끝의 핑크 안시리움을 캐서 사비트라마에게 가져가요.",
+      "en": "Talk to Shane, by the small house up a tree in the middle of Ellinia, pay the fee and go in. Pick the Pink Anthurium at the end of step 5 and bring it to Sabitrama."
+     },
+     "tip": {
+      "ko": "보상은 전신 갑옷 방어력 주문서 60%와 10%가 반반이에요.",
+      "en": "The reward is a full-armor defense scroll, 60% or 10%, half and half."
+     },
+     "videos": [
+      {
+       "name": "글클메 인내의 숲 (까만개미)",
+       "url": "https://www.youtube.com/watch?v=Ke4eux52ZDU"
+      },
+      {
+       "name": "글클메 사비트라마 (용암갈매기)",
+       "url": "https://www.youtube.com/watch?v=Wn_jgjyQRW8"
+      },
+      {
+       "name": "인내의 숲 1~5단계 (옛 메이플, 맵 동일)",
+       "url": "https://www.youtube.com/watch?v=IMD2uHuDBos"
+      }
+     ]
+    },
+    {
+     "q": 10510,
+     "at": "savitrama",
+     "go": "shane",
+     "hunt": [
+      "fop"
+     ],
+     "pick": "all",
+     "big": true,
+     "do": {
+      "ko": "50레벨에 다시 받으면 이번엔 두 뿌리 홍삼을 캐 오래요. 셰인에게 가면 입장료 없이 들어가요. 5단계 꼭대기 약초에서 뿌리가 두 갈래인 홍삼을 캐 와요.",
+      "en": "At 50 she wants a Double-Rooted Red Ginseng. Shane lets you in free this time; dig it from the herb at the top of step 5."
+     },
+     "tip": {
+      "ko": "보상 별의 돌은 만지의 글라디우스(50레벨)에 바로 들어가요. 글라디우스를 할 거면 이걸 먼저 하세요.",
+      "en": "The Star Rock goes straight into Manji's Lv 50 Gladius; do this first if you plan that line."
+     },
+     "videos": [
+      {
+       "name": "글클메 인내의 숲 (까만개미)",
+       "url": "https://www.youtube.com/watch?v=Ke4eux52ZDU"
+      },
+      {
+       "name": "글클메 사비트라마 (용암갈매기)",
+       "url": "https://www.youtube.com/watch?v=Wn_jgjyQRW8"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "sources": [
+  {
+   "name": "추억서리 — 레벨별 퀘스트 백과사전 2편 (19~29렙)",
+   "url": "https://www.youtube.com/watch?v=yRAJUvKKOxE",
+   "date": "2026-11-02"
+  },
+  {
+   "name": "추억서리 — 레벨별 퀘스트 백과사전 4편 (41~65렙)",
+   "url": "https://www.youtube.com/watch?v=xnS5-RghmAk",
+   "date": "2026-11-07"
+  },
+  {
+   "name": "한식도시락 — 꼭 해야 하는 추천 퀘스트",
+   "url": "https://www.youtube.com/watch?v=6fmkWFIQGVk",
+   "date": "2026-10-23"
+  },
+  {
+   "name": "클라이언트 데이터 — 조건·처치 수·보상",
+   "url": "https://maplestory.io/",
+   "date": "2026-11-13"
+  }
+ ],
+ "npcs": {
+  "603": "사비트라마",
+  "602": "크리슈라마"
+ },
+ "itemNames": {
+  "4031025": {
+   "ko": "핑크 안시리움",
+   "en": "Pink Anthurium"
+  },
+  "4031026": {
+   "ko": "두 뿌리 홍삼",
+   "en": "Double-Rooted Red Ginseng"
+  }
+ },
+ "itemNotes": {
+  "4031025": {
+   "ko": "인내의 숲 5단계 끝의 약초에서 캐요",
+   "en": "Picked from the herb at the end of Forest of Patience step 5"
+  },
+  "4031026": {
+   "ko": "인내의 숲 5단계 꼭대기 약초에서 캐요 (50레벨 퀘스트 진행 중)",
+   "en": "Dug from the herb at the top of step 5 while the Lv 50 quest is active"
+  }
+ }
+}

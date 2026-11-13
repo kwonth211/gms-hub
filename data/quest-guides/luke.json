@@ -1,0 +1,164 @@
+{
+ "slug": "luke",
+ "order": 3,
+ "icon": "scroll",
+ "level": {
+  "ko": "Lv 19 · 46",
+  "en": "Lv 19 · 46"
+ },
+ "title": {
+  "ko": "경비병 루크 공략 (보석·크루세이더 헬름)",
+  "en": "Luke the Security Guy (gems, Crusader Helm)"
+ },
+ "h1": {
+  "ko": "경비병 루크 퀘스트 공략: 19레벨 보석 뽑기와 46레벨 브론즈 크루세이더 헬름",
+  "en": "Luke the Security Guy: a gem at 19 and the Bronze Crusader Helm at 46"
+ },
+ "lead": {
+  "ko": "헤네시스 던전 입구의 경비병 루크. 19레벨엔 주니어 네키·스티지와 샐러드로 보석 8종 중 하나를 주고, 46레벨엔 검은 깃털 등으로 전사 50제 투구를 줘요. 46레벨은 재료값이 보상보다 비싸니 손익부터 보고 정하세요.",
+  "en": "Luke guards the Henesys dungeon entrance. At 19 he trades Jr. Necki and Stirge drops and a Salad for one of eight gems; at 46 a Black Feather and more buy a Lv 50 warrior helm. The second costs more than it pays, so check the numbers first."
+ },
+ "seoTitle": {
+  "ko": "글클메 경비병 루크 퀘스트 공략: 보석 뽑기·브론즈 크루세이더 헬름·검은 깃털 | GMS Hub",
+  "en": "MapleStory Classic World Luke the Security Guy: Gems, Bronze Crusader Helm, Black Feather | GMS Hub"
+ },
+ "desc": {
+  "ko": "19레벨 경비병 루크(주니어 네키·스티지 20마리, 가죽·날개 10개, 샐러드 파는 곳)와 46레벨 여행 준비(검은 깃털 만드는 법, 오리할콘·나사·머리뼈·용의 가죽). 위치·사냥터·재료값.",
+  "en": "Luke at 19 (20 Jr. Neckis and Stirges, their skins and wings, where to buy a Salad) and at 46 (making the Black Feather, Orihalcon, Screws, skulls and skins), with spots, maps and costs."
+ },
+ "card": {
+  "ko": "19레벨 사냥 두 종류와 샐러드 하나로 보석 뽑기. 46레벨은 전사 50제 투구.",
+  "en": "Two hunts and a Salad at 19 for a random gem; a Lv 50 warrior helm at 46."
+ },
+ "reward": {
+  "ko": "보석 8종 중 하나 · 브론즈 크루세이더 헬름",
+  "en": "One of 8 gems · Bronze Crusader Helm"
+ },
+ "rewardItem": 4020107,
+ "updated": "2026-11-13",
+ "chains": [
+  {
+   "id": "luke1",
+   "title": {
+    "ko": "경비병 루크 (19레벨) — 보석 뽑기",
+    "en": "Luke the Security Guy (Lv 19) — a random gem"
+   },
+   "lead": {
+    "ko": "어머니 보양식을 만들고 싶은데 경비를 서느라 바쁘대요. 보상은 다이아몬드·가넷·토파즈 등 보석 8종 중 하나가 12.5%씩 나와요.",
+    "en": "He wants to cook for his mother but cannot leave his post. The reward is one of eight gems, Diamond, Garnet, Topaz and the rest, 12.5% each."
+   },
+   "steps": [
+    {
+     "q": 10113,
+     "at": "luke",
+     "hunt": [
+      "croco"
+     ],
+     "where": {
+      "ko": "헤네시스에서 던전으로 가는 길을 지나 던전 입구 맵 오른쪽 끝, 큰 나무 앞에 서 있어요.",
+      "en": "Past the road from Henesys to the dungeon, at the far right of the dungeon-entrance map, in front of a big tree."
+     },
+     "do": {
+      "ko": "주니어 네키 20마리를 잡고 가죽 10개, 스티지 20마리를 잡고 날개 10개, 그리고 샐러드 1개를 가져가요. 주니어 네키는 커닝시티 아래 위험한 크로코 1에 가장 많아요. 스티지는 개미굴 쪽 위험한 증기나 커닝 지하철 환승 구역에 많아요.",
+      "en": "Kill 20 Jr. Neckis for 10 skins and 20 Stirges for 10 wings, and bring a Salad. Jr. Neckis crowd Dangerous Croko I below Kerning City; Stirges live in the Dangerous Steam near the Ant Tunnel and the Kerning subway transfer area."
+     },
+     "warn": {
+      "ko": "잡은 수는 퀘스트를 받은 뒤부터 세요. 먼저 받고 사냥하세요.",
+      "en": "Kills count only after you accept, so take the quest first."
+     }
+    }
+   ]
+  },
+  {
+   "id": "luke2",
+   "title": {
+    "ko": "루크의 여행 준비 (46레벨) — 브론즈 크루세이더 헬름",
+    "en": "Luke's Wish to Travel (Lv 46) — Bronze Crusader Helm"
+   },
+   "lead": {
+    "ko": "경비병을 그만두고 모험을 떠난대요. 보상 브론즈 크루세이더 헬름은 전사 50제 모자(민첩 5·명중 5, 업그레이드 7번)예요.",
+    "en": "He is quitting to go adventuring. The Bronze Crusader Helm is a Lv 50 warrior hat (DEX 5, accuracy 5, seven upgrade slots)."
+   },
+   "notes": {
+    "ko": [
+     "재료 대부분은 다 사도 2만 메소 안팎이지만 검은 깃털 하나에 21만 메소쯤 들어요. 투구 시세는 4만 메소라 돈으로는 크게 손해예요 (추억서리 4편, 11월 6일 기준).",
+     "불꽃 깃털을 직접 먹었거나, 전사이거나, 퀘스트를 다 깨고 싶을 때만 하세요."
+    ],
+    "en": [
+     "Most materials cost about 20,000 mesos together, but the Black Feather runs about 210,000. The helm sells for about 40,000 (추억서리 part 4, Nov 6).",
+     "Do it only if you looted a Flaming Feather yourself, play a warrior, or want every quest done."
+    ]
+   },
+   "steps": [
+    {
+     "q": 10114,
+     "at": "luke",
+     "big": true,
+     "do": {
+      "ko": "검은 깃털 1개, 오리할콘 10개, 나사 20개, 드레이크의 머리뼈 30개, 용의 가죽 20개를 가져가요. 머리뼈와 가죽은 개미굴 깊은 곳 빛을 잃은 터널 1의 드레이크가 같이 떨궈요.",
+      "en": "Bring a Black Feather, 10 Orihalcon, 20 Screws, 30 Drake Skulls and 20 Dragon Skins. Drakes in the first Cave of Lost Light drop both skulls and skins."
+     },
+     "tips": [
+      {
+       "ko": "검은 깃털은 시장에 없는 퀘스트 아이템이에요. 엘리니아 마을 왼쪽 나무집 아래 발판의 요정 아르웬이 35레벨부터 만들어 줘요: 불꽃 깃털 + 달의 돌 + 흑수정 + 3만 메소.",
+       "en": "The Black Feather is a quest item you cannot buy. Arwen the Fairy, below the left tree house in Ellinia, makes it from Lv 35: a Flaming Feather, a Moon Rock, a Black Crystal and 30,000 mesos."
+      },
+      {
+       "ko": "불꽃 깃털은 레드 드레이크만 떨궈요. 페리온 위험한 골짜기 2에 10마리쯤 나오는 60레벨 몹이에요. 시세가 15만 메소를 넘고 매물도 적어요.",
+       "en": "Only Red Drakes drop the Flaming Feather: about ten Lv 60 drakes in Perion's second Dangerous Valley. It sells above 150,000 and listings are rare."
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "sources": [
+  {
+   "name": "추억서리 — 레벨별 퀘스트 백과사전 2편 (19~29렙)",
+   "url": "https://www.youtube.com/watch?v=yRAJUvKKOxE",
+   "date": "2026-11-02"
+  },
+  {
+   "name": "추억서리 — 레벨별 퀘스트 백과사전 4편 (41~65렙)",
+   "url": "https://www.youtube.com/watch?v=xnS5-RghmAk",
+   "date": "2026-11-07"
+  },
+  {
+   "name": "추억서리 — 장비 주는 퀘스트 총정리",
+   "url": "https://www.youtube.com/watch?v=f0CjO9qfsqU",
+   "date": "2026-11-03"
+  },
+  {
+   "name": "클라이언트 데이터 — 조건·처치 수·보상",
+   "url": "https://maplestory.io/",
+   "date": "2026-11-13"
+  }
+ ],
+ "npcs": {
+  "226": "루크"
+ },
+ "itemNotes": {
+  "2020000": {
+   "ko": "몬스터가 떨구지 않아요 — 헤네시스 마을회관 레이먼드, 커닝시티 시민회관 맥스, 플로리나 비치 발렌, 슬리피우드 던전 24시간 이동 상점에서 팔아요 (220 메소 안팎)",
+   "en": "No monster drops it — sold by Raymond (Henesys Town Hall), Max (Kerning Civic Center), Valen (Florina Beach) and the 24 Hr Mobile Store in the Sleepywood Dungeon, about 220 mesos"
+  },
+  "4010105": {
+   "ko": "몬스터가 떨구지 않아요 — 원석을 제련해서 만들거나 자유시장에서 사요",
+   "en": "No monster drops it — refine the ore or buy it on the free market"
+  },
+  "4003000": {
+   "ko": "몬스터가 떨구지 않아요 — 제작 재료라 자유시장에서 사는 게 빨라요",
+   "en": "No monster drops it — a crafting material; buying it is quickest"
+  },
+  "4031033": {
+   "ko": "엘리니아 요정 아르웬이 만들어 줘요 — 불꽃 깃털·달의 돌·흑수정·3만 메소",
+   "en": "Arwen the Fairy in Ellinia makes it: a Flaming Feather, a Moon Rock, a Black Crystal and 30,000 mesos"
+  }
+ },
+ "itemNames": {
+  "4031033": {
+   "ko": "검은 깃털",
+   "en": "Black Feather"
+  }
+ }
+}

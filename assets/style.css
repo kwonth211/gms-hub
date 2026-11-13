@@ -2475,3 +2475,17 @@ body.exp-running .exp-stop { display: inline-flex; }
 .qg-pics { display: flex; align-items: flex-end; gap: 10px; min-height: 48px; }
 .qg-pics img { object-fit: contain; }
 .tool-card .qg-meta { color: var(--muted); font-size: 0.82rem; font-weight: 600; }
+
+/* Quest guide: map-by-map route, warnings, chain notes and walkthrough videos */
+.gq-path { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 0; margin: 8px 0; padding: 0; list-style: none; font-size: 0.86rem; }
+.gq-path li { padding: 3px 9px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); }
+.gq-path li + li::before { content: ''; display: inline-block; width: 6px; height: 6px; margin: 0 9px 1px -15px; border-top: 2px solid var(--muted); border-right: 2px solid var(--muted); transform: rotate(45deg); }
+.gq-path li + li { margin-left: 14px; }
+.gq-warn { margin: 8px 0; padding: 8px 12px; border-left: 3px solid var(--danger, #d9534f); background: var(--panel-2); border-radius: 6px; font-size: 0.9rem; }
+.gq-warn::before { content: '⚠ '; }
+.gq-notes { margin: 6px 0 14px; padding-left: 20px; color: var(--muted); font-size: 0.92rem; }
+.gq-notes li { margin: 3px 0; }
+.gq-videos { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 0.86rem; margin: 8px 0 0; }
+.gq-videos > span { font-weight: 700; color: var(--accent-2); }
+.gq-videos a { padding: 2px 8px; border-radius: 6px; border: 1px solid var(--line); text-decoration: none; }
+.gq-videos a::before { content: '▶ '; font-size: 0.75em; }

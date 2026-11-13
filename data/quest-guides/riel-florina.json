@@ -1,6 +1,6 @@
 {
  "slug": "riel-florina",
- "order": 9,
+ "order": 10,
  "icon": "scroll",
  "level": {
   "ko": "Lv 37",
@@ -15,20 +15,20 @@
   "en": "Riel's Special Taste of Florina Beach: coconuts, bananas and claws"
  },
  "lead": {
-  "ko": "37레벨부터 플로리나 비치의 리엘이 코코넛, 루팡의 바나나, 로랑·클랑의 집게발을 부탁해요. 4단계에 경험치가 29,000이 넘어서 37레벨에 아주 좋아요.",
-  "en": "From Lv 37, Riel on Florina Beach wants coconuts, Lupin bananas and Lorang and Clang claws. Four steps for over 29,000 EXP, a strong boost at 37."
+  "ko": "37레벨부터 플로리나 비치의 리엘이 코코넛, 루팡의 바나나, 로랑·클랑의 집게발을 부탁해요. 4단계에 경험치 29,240과 메소 15,210을 줘서 37레벨에 아주 좋아요. 가는 법, 퀴즈 정답, 재료별 사냥터까지 정리했어요.",
+  "en": "From Lv 37, Riel on Florina Beach wants coconuts, Lupin bananas and Lorang and Clang claws. Four steps for 29,240 EXP and 15,210 mesos, a strong boost at 37. How to get there, the quiz answer and a map for each material are below."
  },
  "seoTitle": {
-  "ko": "글클메 리엘 플로리나 비치 퀘스트 공략: 코코넛·로랑·클랑 | GMS Hub",
-  "en": "MapleStory Classic World Riel's Florina Beach Quests: Coconuts, Lorangs and Clangs | GMS Hub"
+  "ko": "글클메 리엘 플로리나 비치 퀘스트 공략: 가는 법·코코넛·로랑·클랑·퀴즈 정답 | GMS Hub",
+  "en": "MapleStory Classic World Riel's Florina Beach Quests: Getting There, Coconuts, Lorangs, Clangs | GMS Hub"
  },
  "desc": {
-  "ko": "37레벨 플로리나 비치 리엘 4단계: 코코넛 열매(해변 오른쪽 야자수), 루팡의 바나나, 로랑·클랑의 집게발 개수와 사냥터, 경험치 29,240.",
-  "en": "Riel's four Lv 37 quests on Florina Beach: coconuts from the palms on the right of the beach, Lupin bananas, Lorang and Clang claws, and 29,240 EXP."
+  "ko": "37레벨 플로리나 비치 리엘 4단계: 리스항구 페이슨으로 가는 법, 코코넛 캐는 법, 퀴즈 정답, 루팡의 바나나 55개, 로랑(로랑로랑)·클랑(로랑과 클랑) 사냥터, 경험치 29,240.",
+  "en": "Riel's four Lv 37 quests: reaching Florina through Pason in Lith Harbor, picking coconuts, the quiz answer, 55 Lupin bananas, Lorang and Clang hunting maps, 29,240 EXP."
  },
  "card": {
-  "ko": "37레벨 해변 재료 4번으로 경험치 29,000.",
-  "en": "Four beach collections at Lv 37 for over 29,000 EXP."
+  "ko": "37레벨 해변 재료 4번으로 경험치 29,000, 메소 15,000.",
+  "en": "Four beach collections at Lv 37 for over 29,000 EXP and 15,000 mesos."
  },
  "reward": {
   "ko": "경험치 29,240 · 메소 15,210",
@@ -44,33 +44,75 @@
     "en": "Special Taste of Florina Beach I–IV (Lv 37)"
    },
    "lead": {
-    "ko": "리스항구에서 플로리나 비치로 가서 리엘에게 받아요. 네 단계 모두 리엘에게 재료를 가져다주는 퀘스트예요.",
-    "en": "Travel from Lith Harbor to Florina Beach and talk to Riel; all four steps bring her ingredients."
+    "ko": "리스항구 부두의 페이슨에게 말을 걸면 플로리나 비치로 보내 줘요. 돌아올 땐 해변의 페이슨에게 말을 걸면 원래 있던 곳으로 돌려보내 줘요. 리엘은 해변 가운데, 나무 발판 노점 옆에 있어요.",
+    "en": "Pason on the Lith Harbor pier sends you to Florina Beach; Pason on the beach sends you back where you came from. Riel stands in the middle of the beach beside the wooden stall."
+   },
+   "notes": {
+    "ko": [
+     "플로리나에서는 마을 귀환 주문서를 못 써요. 해변 상점 발렌이 포션(하얀 포션 350 메소)과 화살·표창을 팔아요.",
+     "루팡의 바나나는 합쳐서 55개가 들어가요. 32레벨 비밀의 책(로니)에서 원숭이 숲 루팡을 잡을 때 미리 모아 두면 다시 안 가도 돼요.",
+     "사냥터는 마을 동쪽 포탈부터 한 줄로 이어져요. 로랑은 두 번째 맵 로랑로랑(한 번에 32마리쯤), 클랑은 그다음 맵 로랑과 클랑(클랑 12마리쯤)이 가장 많아요."
+    ],
+    "en": [
+     "Return scrolls do not work on Florina Beach. Valen's shop on the beach sells potions (White Potion 350 mesos), arrows and stars.",
+     "The line needs 55 Lupin's Bananas; collect them early while hunting Lupins in the Monkey Forest for Ronnie at 32.",
+     "The hunting maps run east from the town portal in one line: Lorangs are thickest in Lorang Lorang (about 32), Clangs in Lorang and Clang (about 12)."
+    ]
    },
    "steps": [
     {
      "q": 10700,
      "at": "florina",
+     "path": {
+      "ko": [
+       "리스항구 부두 페이슨",
+       "플로리나 비치",
+       "해변 오른쪽 야자수"
+      ],
+      "en": [
+       "Pason, Lith Harbor pier",
+       "Florina Beach",
+       "palms on the right of the beach"
+      ]
+     },
      "do": {
-      "ko": "코코넛 열매 10개를 가져다줘요. 해변 오른쪽 야자수에서 코코넛이 나와요.",
-      "en": "Bring 10 Coconuts; the palms on the right side of the beach give them."
+      "ko": "코코넛 열매 10개를 가져다줘요. 몬스터가 아니라 해변 오른쪽 야자수의 코코넛을 때려서 얻어요.",
+      "en": "Bring 10 Coconuts. No monster drops them: hit the coconuts on the palms on the right side of the beach."
+     },
+     "tip": {
+      "ko": "평타 세 번에 한 개꼴로 떨어진다는 경험담이 있어요. 근처 몹이 달려오면 포션을 챙기세요.",
+      "en": "Players report about one coconut per three hits; keep potions handy when mobs wander in."
      }
     },
     {
      "q": 10701,
      "at": "florina",
+     "hunt": [
+      "lorang"
+     ],
      "do": {
       "ko": "코코넛 열매 15개, 루팡의 바나나 15개, 로랑의 집게발 30개를 가져다줘요.",
       "en": "Bring 15 Coconuts, 15 Lupin's Bananas and 30 Lorang Claws."
+     },
+     "tip": {
+      "ko": "이 퀘스트를 받을 때 리엘이 \"플로리나 비치에 안 나오는 몬스터\"를 물어봐요. 정답은 크로코예요.",
+      "en": "When you accept, Riel asks which monster is not found on Florina Beach. The answer is Croco."
      }
     },
     {
      "q": 10702,
      "at": "florina",
+     "hunt": [
+      "lorang"
+     ],
      "big": true,
      "do": {
-      "ko": "코코넛 열매 30개, 루팡의 바나나 30개, 로랑·클랑의 집게발 60개씩을 가져다줘요.",
-      "en": "Bring 30 Coconuts, 30 Lupin's Bananas and 60 each of Lorang and Clang Claws."
+      "ko": "코코넛 열매 30개, 루팡의 바나나 30개, 로랑의 집게발 60개, 클랑의 집게발 60개를 가져다줘요.",
+      "en": "Bring 30 Coconuts, 30 Lupin's Bananas, 60 Lorang Claws and 60 Clang Claws."
+     },
+     "warn": {
+      "ko": "클랑은 49레벨이라 37레벨엔 아파요.",
+      "en": "Clangs are Lv 49 and hit hard at 37."
      }
     },
     {
@@ -86,9 +128,24 @@
  ],
  "sources": [
   {
+   "name": "추억서리 — 레벨별 퀘스트 백과사전 3편 (30~37렙)",
+   "url": "https://www.youtube.com/watch?v=X6q-n8r2FGU",
+   "date": "2026-11-05"
+  },
+  {
+   "name": "추억서리 — 플로리나 비치 사냥터 미리보기",
+   "url": "https://www.youtube.com/watch?v=AXs-MlK5hF4",
+   "date": "2026-11-12"
+  },
+  {
    "name": "추억서리 — 연계 퀘스트 총정리",
    "url": "https://www.youtube.com/watch?v=fsS-0wV66x4",
    "date": "2026-11-02"
+  },
+  {
+   "name": "클라이언트 데이터 — 조건·처치 수·보상",
+   "url": "https://maplestory.io/",
+   "date": "2026-11-13"
   }
  ],
  "npcs": {
@@ -96,8 +153,8 @@
  },
  "itemNotes": {
   "4000061": {
-   "ko": "플로리나 비치 오른쪽 야자수(부술 수 있는 오브젝트)에서 나와요",
-   "en": "From the palm trees on the right of Florina Beach (breakable objects)"
+   "ko": "해변 오른쪽 야자수의 코코넛을 때려서 얻어요",
+   "en": "Hit the coconuts on the palms on the right side of the beach"
   }
  }
 }

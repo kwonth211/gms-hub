@@ -1,34 +1,34 @@
 {
  "slug": "john-present",
- "order": 7,
+ "order": 11,
  "icon": "scroll",
  "level": {
   "ko": "Lv 65",
   "en": "Lv 65"
  },
  "title": {
-  "ko": "존의 선물 공략 (인내의 숲)",
-  "en": "John's presents (Forest of Patience)"
+  "ko": "존의 선물 공략 (깊은 인내의 숲)",
+  "en": "John's presents (Deep Forest of Patience)"
  },
  "h1": {
   "ko": "존의 꽃바구니·선물·마지막 선물 공략: 깊은 인내의 숲 점프퀘",
   "en": "John's Flower Basket, Present and Last Present: the Deep Forest of Patience"
  },
  "lead": {
-  "ko": "65레벨부터 리스항구의 존이 아내에게 줄 꽃을 부탁해요. 깊은 인내의 숲 점프맵에서 핑크·블루·화이트 비올라를 모아 오는 3단계이고, 60제 직업 장갑과 분홍 꽃 귀고리를 줘요. 경험치도 합쳐서 7만이 넘어요.",
-  "en": "From Lv 65, John in Lith Harbor wants flowers for his wife: pink, blue and white violas from the Deep Forest of Patience jump maps, three steps that pay a Lv 60 class glove, the Pink-Flowered Earrings and over 70,000 EXP."
+  "ko": "65레벨부터 리스항구의 존이 아내와 어머니에게 줄 꽃을 부탁해요. 슬리피우드의 신비로운 석상으로 깊은 인내의 숲에 들어가 2·4·7단계 끝 꽃더미에서 비올라를 모아 오는 3단계예요. 재료값 없이 60제 직업 장갑, 분홍 꽃 귀고리, 경험치 77,700을 줘요.",
+  "en": "From Lv 65, John in Lith Harbor wants flowers for his wife and mother. The Mysterious Statue in Sleepywood leads into the Deep Forest of Patience; the violas sit at the ends of steps 2, 4 and 7. No material costs: a Lv 60 class glove, the Pink-Flowered Earrings and 77,700 EXP."
  },
  "seoTitle": {
-  "ko": "글클메 존의 선물 퀘스트 공략: 깊은 인내의 숲·분홍 꽃 귀고리 | GMS Hub",
+  "ko": "글클메 존의 선물 퀘스트 공략: 깊은 인내의 숲 2·4·7단계·분홍 꽃 귀고리 | GMS Hub",
   "en": "MapleStory Classic World John's Present Quests: Deep Forest of Patience, Pink-Flowered Earrings | GMS Hub"
  },
  "desc": {
-  "ko": "65레벨 리스항구 존 연계 3단계: 핑크 비올라 10·블루 비올라 20·화이트 비올라 30, 슬리피우드 신비로운 석상으로 들어가는 깊은 인내의 숲 점프맵, 보상 60제 직업 장갑과 분홍 꽃 귀고리.",
-  "en": "John's three Lv 65 quests: 10 pink, 20 blue and 30 white violas from the Deep Forest of Patience (via the Mysterious Statue in Sleepywood), for a Lv 60 class glove and the Pink-Flowered Earrings."
+  "ko": "65레벨 리스항구 존 연계 3단계: 슬리피우드 신비로운 석상 위치, 깊은 인내의 숲 2단계(핑크 비올라 10)·4단계(블루 20)·7단계(화이트 30), 점프맵 규칙, 보상 60제 직업 장갑과 분홍 꽃 귀고리.",
+  "en": "John's three Lv 65 quests: where the Mysterious Statue is, Deep Forest of Patience step 2 (10 pink violas), 4 (20 blue) and 7 (30 white), the jump-map rules, and the Lv 60 class glove and Pink-Flowered Earrings."
  },
  "card": {
-  "ko": "65레벨 점프퀘 3번으로 경험치 7만, 60제 장갑, 분홍 꽃 귀고리.",
-  "en": "Three Lv 65 jump quests for 77,700 EXP, a Lv 60 glove and the Pink-Flowered Earrings."
+  "ko": "65레벨 점프퀘 3번으로 경험치 7만, 60제 장갑, 분홍 꽃 귀고리. 재료값 0.",
+  "en": "Three Lv 65 jump quests for 77,700 EXP, a Lv 60 glove and the Pink-Flowered Earrings, with no material cost."
  },
  "reward": {
   "ko": "60제 직업 장갑 · 분홍 꽃 귀고리",
@@ -44,8 +44,20 @@
     "en": "John's flowers (Lv 65)"
    },
    "lead": {
-    "ko": "세 단계 모두 같은 점프맵에서 꽃을 모아 오는 퀘스트예요. 단계마다 필요한 꽃 색과 개수가 달라요.",
-    "en": "All three steps send you into the same jump maps for flowers; each wants a different colour and count."
+    "ko": "세 단계 모두 같은 점프맵에서 꽃을 모아 와요. 슬리피우드 마을 아래층, 노란 버섯집 사이에 서 있는 나무 석상(신비로운 석상)에게 말을 걸면 깊은 인내의 숲으로 들어가요.",
+    "en": "All three steps send you into the same jump maps. Talk to the Mysterious Statue, the wooden statue between the yellow mushroom houses on the lower floor of Sleepywood, to enter the Deep Forest of Patience."
+   },
+   "notes": {
+    "ko": [
+     "점프맵 안에서는 이동 속도와 점프가 기본값으로 고정되고 이동 스킬을 못 써요.",
+     "원래 45레벨 퀘스트였는데 출시 전에 65레벨로 올라갔어요. 꽃더미 하나에서 꽃이 몇 개 나오는지는 아직 확실한 자료가 없어요.",
+     "추억서리 4편 기준(11월 6일) 장갑은 15만~39만, 분홍 꽃 귀고리는 67만 메소예요. 재료값 없이 80만 메소가 넘어서 65레벨이 되면 가장 먼저 할 퀘스트로 꼽혀요."
+    ],
+    "en": [
+     "Inside, speed and jump are fixed at default and movement skills do not work.",
+     "It was a Lv 45 quest until it was raised to 65 before launch. How many flowers one pile gives is not yet confirmed.",
+     "In 추억서리 part 4 (Nov 6) the gloves sold for 150,000–390,000 and the earrings for 670,000: over 800,000 mesos for no materials, which is why it is the first thing to do at 65."
+    ]
    },
    "steps": [
     {
@@ -55,10 +67,36 @@
      "hunt": [
       "patience"
      ],
+     "where": {
+      "ko": "리스항구 가운데에 있는 어부예요.",
+      "en": "The fisherman in the middle of Lith Harbor."
+     },
+     "path": {
+      "ko": [
+       "슬리피우드 아래층 신비로운 석상",
+       "깊은 인내의 숲 1단계",
+       "2단계 끝 꽃더미"
+      ],
+      "en": [
+       "Mysterious Statue, lower Sleepywood",
+       "Deep Forest step 1",
+       "flower pile, end of step 2"
+      ]
+     },
      "do": {
-      "ko": "핑크 비올라 10개를 가져다줘요. 슬리피우드의 신비로운 석상을 통해 깊은 인내의 숲으로 들어가요.",
-      "en": "Bring 10 Pink Violas. Enter the Deep Forest of Patience through the Mysterious Statue in Sleepywood."
-     }
+      "ko": "핑크 비올라 10개를 가져다줘요. 2단계 끝 꽃더미에서 받아요.",
+      "en": "Bring 10 Pink Violas from the flower pile at the end of step 2."
+     },
+     "videos": [
+      {
+       "name": "존 퀘스트 끈기의 숲 1~7단계 (옛 메이플, 맵 동일)",
+       "url": "https://www.youtube.com/watch?v=SNbPOvV0MPg"
+      },
+      {
+       "name": "존의 분홍색 꽃 바구니 2단계",
+       "url": "https://www.youtube.com/watch?v=NA0EucMvVZE"
+      }
+     ]
     },
     {
      "q": 10007,
@@ -68,10 +106,28 @@
       "patience"
      ],
      "big": true,
+     "path": {
+      "ko": [
+       "신비로운 석상",
+       "1~3단계",
+       "4단계 끝 꽃더미"
+      ],
+      "en": [
+       "Mysterious Statue",
+       "steps 1–3",
+       "flower pile, end of step 4"
+      ]
+     },
      "do": {
-      "ko": "블루 비올라 20개를 가져다주면 내 직업의 60제 장갑을 받아요.",
-      "en": "Bring 20 Blue Violas for the Lv 60 glove of your class."
-     }
+      "ko": "블루 비올라 20개를 가져다주면 내 직업의 60제 장갑(크리티컬 확률 3%)을 받아요: 전사 다크 클렌치, 법사 다크 마누트, 궁수 다크 가너, 도적 스틸 파우.",
+      "en": "Bring 20 Blue Violas for your class's Lv 60 glove (3% critical rate): Dark Clench, Dark Manute, Dark Gauntlet or Steel Pow."
+     },
+     "videos": [
+      {
+       "name": "존 퀘스트 끈기의 숲 1~7단계 (옛 메이플, 맵 동일)",
+       "url": "https://www.youtube.com/watch?v=SNbPOvV0MPg"
+      }
+     ]
     },
     {
      "q": 10008,
@@ -81,23 +137,57 @@
       "patience"
      ],
      "big": true,
+     "pick": "all",
+     "path": {
+      "ko": [
+       "신비로운 석상",
+       "1~6단계",
+       "7단계 끝 꽃더미"
+      ],
+      "en": [
+       "Mysterious Statue",
+       "steps 1–6",
+       "flower pile, end of step 7"
+      ]
+     },
      "do": {
       "ko": "화이트 비올라 30개를 가져다주면 분홍 꽃 귀고리를 받아요.",
       "en": "Bring 30 White Violas for the Pink-Flowered Earrings."
      },
-     "tip": {
-      "ko": "분홍 꽃 귀고리는 마법 방어력이 좋아요. 추억서리 영상 기준 35만 메소였어요.",
-      "en": "The earrings carry good magic defence; 350,000 mesos in the 추억서리 video."
-     }
+     "warn": {
+      "ko": "7단계까지 올라가야 해서 가장 길어요. 중간에 떨어지면 처음부터 다시 올라가요.",
+      "en": "Step 7 is the longest climb; a fall sends you back down."
+     },
+     "videos": [
+      {
+       "name": "존 퀘스트 끈기의 숲 1~7단계 (옛 메이플, 맵 동일)",
+       "url": "https://www.youtube.com/watch?v=SNbPOvV0MPg"
+      }
+     ]
     }
    ]
   }
  ],
  "sources": [
   {
+   "name": "추억서리 — 레벨별 퀘스트 백과사전 4편 (41~65렙)",
+   "url": "https://www.youtube.com/watch?v=xnS5-RghmAk",
+   "date": "2026-11-07"
+  },
+  {
+   "name": "추억서리 — 장비 주는 퀘스트 총정리",
+   "url": "https://www.youtube.com/watch?v=f0CjO9qfsqU",
+   "date": "2026-11-03"
+  },
+  {
    "name": "추억서리 — 연계 퀘스트 총정리",
    "url": "https://www.youtube.com/watch?v=fsS-0wV66x4",
    "date": "2026-11-02"
+  },
+  {
+   "name": "클라이언트 데이터 — 조건·처치 수·보상",
+   "url": "https://maplestory.io/",
+   "date": "2026-11-13"
   }
  ],
  "npcs": {
@@ -119,16 +209,16 @@
  },
  "itemNotes": {
   "4031042": {
-   "ko": "슬리피우드의 신비로운 석상으로 들어가는 깊은 인내의 숲 점프맵의 꽃더미에서 모아요",
-   "en": "Gathered from the flower piles in the Deep Forest of Patience jump maps, entered through the Mysterious Statue in Sleepywood"
+   "ko": "깊은 인내의 숲 점프맵 끝의 꽃더미에서 받아요 (핑크 2단계, 블루 4단계, 화이트 7단계)",
+   "en": "From the flower pile at the end of the Deep Forest of Patience (pink: step 2, blue: step 4, white: step 7)"
   },
   "4031043": {
-   "ko": "슬리피우드의 신비로운 석상으로 들어가는 깊은 인내의 숲 점프맵의 꽃더미에서 모아요",
-   "en": "Gathered from the flower piles in the Deep Forest of Patience jump maps, entered through the Mysterious Statue in Sleepywood"
+   "ko": "깊은 인내의 숲 점프맵 끝의 꽃더미에서 받아요 (핑크 2단계, 블루 4단계, 화이트 7단계)",
+   "en": "From the flower pile at the end of the Deep Forest of Patience (pink: step 2, blue: step 4, white: step 7)"
   },
   "4031044": {
-   "ko": "슬리피우드의 신비로운 석상으로 들어가는 깊은 인내의 숲 점프맵의 꽃더미에서 모아요",
-   "en": "Gathered from the flower piles in the Deep Forest of Patience jump maps, entered through the Mysterious Statue in Sleepywood"
+   "ko": "깊은 인내의 숲 점프맵 끝의 꽃더미에서 받아요 (핑크 2단계, 블루 4단계, 화이트 7단계)",
+   "en": "From the flower pile at the end of the Deep Forest of Patience (pink: step 2, blue: step 4, white: step 7)"
   }
  }
 }

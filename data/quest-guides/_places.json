@@ -98,8 +98,8 @@
    "en": "Sleepywood · Chrishrama"
   },
   "patience": {
-   "ko": "깊은 인내의 숲 (점프맵)",
-   "en": "Deep Forest of Patience (jump quest)"
+   "ko": "깊은 인내의 숲 1~7단계",
+   "en": "Deep Forest of Patience, steps 1–7"
   },
   "subway": {
    "ko": "커닝시티 지하철 입구 · 슈미",
@@ -132,6 +132,50 @@
   "golems": {
    "ko": "슬리피우드 · 골렘 사원",
    "en": "Sleepywood · Golem temple"
+  },
+  "shane": {
+   "ko": "엘리니아 · 셰인",
+   "en": "Ellinia · Shane"
+  },
+  "savitrama": {
+   "ko": "슬리피우드 · 사비트라마",
+   "en": "Sleepywood · Sabitrama"
+  },
+  "fop": {
+   "ko": "인내의 숲 1~5단계",
+   "en": "Forest of Patience, steps 1–5"
+  },
+  "luke": {
+   "ko": "헤네시스 던전 입구 · 루크",
+   "en": "Henesys dungeon entrance · Luke"
+  },
+  "rina": {
+   "ko": "헤네시스 마을 · 리나",
+   "en": "Henesys · Rina"
+  },
+  "manji": {
+   "ko": "페리온 · 만지",
+   "en": "Perion · Manji"
+  },
+  "sophia": {
+   "ko": "페리온 백화점 · 소피아",
+   "en": "Perion department store · Sophia"
+  },
+  "stumps": {
+   "ko": "페리온 서쪽 길모퉁이",
+   "en": "West Street Corner of Perion"
+  },
+  "mushgarden": {
+   "ko": "헤네시스 서쪽 버섯 정원",
+   "en": "Mushroom garden west of Henesys"
+  },
+  "croco": {
+   "ko": "위험한 크로코 1·2 · 절망의 늪",
+   "en": "Dangerous Croko I·II · Swamp of Despair"
+  },
+  "lorang": {
+   "ko": "로랑로랑 · 로랑과 클랑",
+   "en": "Lorang Lorang · Lorang and Clang"
   }
  }
 }
