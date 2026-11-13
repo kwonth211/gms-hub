@@ -1,6 +1,6 @@
 import './collection-status.js';
 import { indexEntry, searchEntries } from './search-index.js';
-import { gearKeywords } from './item-sub.js';
+import { gearKeywords, gearTypes } from './item-sub.js';
 import { mountCharPanel } from './my-char.js';
 import { newMark } from './market-data.js';
 import { placeLabel } from './place.js';
@@ -186,7 +186,7 @@ function loadItems() {
       items = rows.map(([id, ko, en, cat, sub]) => ({ id, ko, en, cat, sub, name: korean ? ko || en : en }));
       itemEntries = items.map((it) => indexEntry({
         type: 'item', id: it.id, title: it.name, names: [it.ko, it.en, String(it.id)],
-        keywords: `아이템 item ${gearKeywords(it.cat, it.sub)}`, description: korean ? it.en : it.ko,
+        keywords: `아이템 item ${gearKeywords(it.cat, it.sub)}`, types: gearTypes(it.cat, it.sub), description: korean ? it.en : it.ko,
         href: `${searchPanel.dataset.market}?item=${it.id}`,
       }));
       return items;
@@ -771,4 +771,5 @@ mine?.addEventListener('click', (e) => {
   if (a) track('home_resume_click', { kind: a.dataset.kind, item_id: Number(a.dataset.item) });
 });
 renderMine();
+
 

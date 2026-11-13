@@ -2,7 +2,7 @@
 // Items open their market panel, monsters their page. Uses the same matcher as the home search (initials, abbreviations
 // like 장공, Korean or English names); the item and monster lists load the first time the sheet opens.
 import { indexEntry, searchEntries } from './search-index.js';
-import { gearKeywords } from './item-sub.js';
+import { gearKeywords, gearTypes } from './item-sub.js';
 
 const btn = document.querySelector('[data-hs]');
 if (btn) {
@@ -27,7 +27,7 @@ if (btn) {
     entries = [
       ...pageEntries,
       ...mobs.map(([id, mko, men, lv, , , , , , , , , aliases]) => indexEntry({ type: 'mob', id: `m${id}`, title: ko && mko ? mko : men, sub: `Lv. ${lv}`, href: `${btn.dataset.monsters}${id}/`, icon: `/assets/monsters/${id}.gif`, names: [mko, men, ...String(aliases || '').split(' ')] })),
-      ...items.map(([id, iko, ien, cat, isub]) => indexEntry({ type: 'item', id, title: ko && iko ? iko : ien, sub: ko && iko ? ien : '', href: `${btn.dataset.market}?item=${id}`, icon: `https://maplestory.io/api/MCW/1/item/${id}/icon`, names: [iko, ien, String(id)], keywords: gearKeywords(cat, isub) })),
+      ...items.map(([id, iko, ien, cat, isub]) => indexEntry({ type: 'item', id, title: ko && iko ? iko : ien, sub: ko && iko ? ien : '', href: `${btn.dataset.market}?item=${id}`, icon: `https://maplestory.io/api/MCW/1/item/${id}/icon`, names: [iko, ien, String(id)], keywords: gearKeywords(cat, isub), types: gearTypes(cat, isub) })),
     ];
     render();
   }));

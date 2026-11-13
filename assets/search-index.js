@@ -59,6 +59,8 @@ export function indexEntry(entry) {
     aliasNames: names.map(canonical),
     aliasText: canonical(`${names.join(' ')} ${keywords}`),
     initials: names.map((name) => normalize(initials(name))),
+    // Gear type words ("아대", "claw") from entry.types: a search for just the type ranks that gear with name matches.
+    typeNames: (entry.types || []).filter(Boolean).flatMap((t) => [normalize(t), canonical(t)]),
   };
 }
 
@@ -91,6 +93,7 @@ function searchCore(entries, query) {
     else if (initialQuery && entry.initials.some((name) => name.includes(flat))) score = 60;
     else if (text.includes(flat) || words.every((word) => text.includes(word))) score = 40;
     else if (aliasText.includes(alias) || aliasWords.every((word) => aliasText.includes(word))) score = 30;
+    if (score < 80 && entry.typeNames.length && (entry.typeNames.includes(flat) || entry.typeNames.includes(alias))) score = 80;
     if (score < 42 && variants.some((v) => names.some((name) => v.every((word) => name.includes(word))))) score = 42;
     return { entry, score, order };
   }).filter(({ score }) => score > 0)
