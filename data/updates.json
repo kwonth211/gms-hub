@@ -96,6 +96,240 @@
    "path": "/megaphone/",
    "ko": "확성기 트렌드 — 지금 뜨는 아이템, 사려는 사람이 많은 아이템",
    "en": "Megaphone trends — hot items and items more people are buying"
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/",
+   "ko": "상단 검색 — 어느 페이지에서나 검색 버튼이나 / 키로 아이템·몬스터·페이지 찾기",
+   "en": "Search from every page: the header button or / finds items, monsters and pages"
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/tools/market/today/",
+   "ko": "오늘의 시세 리포트 — 매일 밤 새로 정리되는 시세 요약",
+   "en": "Today's price report, rebuilt every night"
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/megaphone/",
+   "ko": "확성기 띠 — 모든 페이지 맨 위에 최신 확성기가 흘러가요",
+   "en": "A megaphone ticker across the top of every page"
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/tools/market/",
+   "ko": "시세에 직업 필터 — 내 직업이 쓸 수 있는 장비·무기·주문서·표창만 보기",
+   "en": "Class filter on the market: only gear, weapons, scrolls and stars your class can use"
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/tools/market/",
+   "ko": "시세 아이템 패널 — 착용 조건·능력치·NPC 가격·드롭 몬스터·퀘스트 보상",
+   "en": "Item panel: requirements, stats, NPC price, droppers and quest rewards"
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/monsters/",
+   "ko": "몬스터 도감 목록 보기 — 한 줄에 한 마리씩 빠르게 훑기",
+   "en": "Monster list view: one monster per row"
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/contact/",
+   "ko": "문의 페이지 — 버그 제보·협찬 문의·후원",
+   "en": "Contact page: bug reports, sponsorship and support"
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/tools/scan/",
+   "ko": "상점 스캔에 시세 비교 — 내 가격이 시세보다 얼마나 비싼지",
+   "en": "Shop scan compares each price with the market"
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/megaphone/",
+   "ko": "실시간 확성기 — 게임 확성기를 모아 보고 검색하기",
+   "en": "Live megaphones: every in-game megaphone, searchable"
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/rank/",
+   "ko": "캐릭터 랭킹 — 레벨 순위·직업 분포·내 캐릭터 찾기",
+   "en": "Character rankings: level ranks, class split and character lookup"
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/",
+   "ko": "단풍잎·도트 커서 — 사이트에 메이플 분위기 더하기 (더보기 메뉴에서 끄기)",
+   "en": "Maple charm: falling leaves and a pixel cursor (switch off in the More menu)"
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/tools/market/",
+   "ko": "인기 아이템 시간별 그래프와 실시간 순위 변동",
+   "en": "Hourly sparklines and live ranking moves for the top 10"
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/items/",
+   "ko": "아이템 미리보기 — 아이템 이름에 마우스를 올리면 능력치와 드롭 몬스터",
+   "en": "Item hover cards with stats and droppers on every page"
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/guides/hunter/",
+   "ko": "직업별 상세 가이드 — 파이터·페이지·스피어맨·어쌔신·시프·불독·썬콜·클레릭·헌터·사수 (30~70)",
+   "en": "Detailed 30–70 guides for all ten second jobs"
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/equipment/",
+   "ko": "직업별 장비 찾기와 레벨별 경험치 퀘스트",
+   "en": "Gear finder by class and level, and the best EXP quests by level"
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/bosses/",
+   "ko": "보스 페이지 — 보스별 위치·체력·드롭",
+   "en": "Bosses page: where they spawn, HP and drops"
+  },
+  {
+   "date": "2026-11-11",
+   "path": "/quests/",
+   "ko": "퀘스트 도감 — 퀘스트 343개의 조건·보상·필요 아이템 드롭 몬스터",
+   "en": "Quest database: 343 quests with requirements, rewards and who drops the items"
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/maps/",
+   "ko": "맵 도감 — 맵마다 몬스터·마릿수·한 바퀴 경험치·드롭",
+   "en": "Map database: monsters, spawn counts, EXP per clear and drops for every map"
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/items/",
+   "ko": "아이템 도감 — 몬스터가 떨구는 모든 아이템의 드롭 몬스터·사냥 맵·기본 능력치",
+   "en": "Item database: droppers, farm maps and base stats for every monster drop"
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/",
+   "ko": "내 캐릭터 저장 — 직업과 레벨을 저장하면 맞춤 사냥터를 바로 보여줘요",
+   "en": "Save my character: class and level for tailored training spots"
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/tools/training/",
+   "ko": "직업별 사냥터 페이지와 사냥 메모",
+   "en": "Training pages for each class, with hunting notes"
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/",
+   "ko": "새 디자인과 밤 모드 — 크림 종이 바탕, 메이플 주황 버튼",
+   "en": "New look with a night mode: cream paper and maple orange"
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/",
+   "ko": "중국어(번체)·일본어 버전 추가",
+   "en": "Traditional Chinese and Japanese versions of every page"
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/monsters/",
+   "ko": "몬스터 도감 — 체력·경험치·약점·드롭·출현 맵",
+   "en": "Monster database: HP, EXP, weaknesses, drops and spawn maps"
+  },
+  {
+   "date": "2026-11-10",
+   "path": "/tools/market/",
+   "ko": "시세 관심 목록과 최근 본 아이템, 공유 링크",
+   "en": "Market watchlist, recently viewed items and share links"
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/guides/",
+   "ko": "가이드 14편 영어판",
+   "en": "English versions of all 14 guides"
+  },
+  {
+   "date": "2026-11-09",
+   "path": "/",
+   "ko": "홈 검색 개선 — 귀힘·장공 같은 줄임말과 몬스터 별명",
+   "en": "Home search understands shorthand and monster nicknames"
+  },
+  {
+   "date": "2026-11-04",
+   "path": "/items/",
+   "ko": "아이템별 시세 페이지 — 매일 새로 반영",
+   "en": "A price page for every item, updated daily"
+  },
+  {
+   "date": "2026-11-03",
+   "path": "/tools/damage/",
+   "ko": "몇 방 컷 계산기 — 스탯창 화면 공유로 바로 계산",
+   "en": "Hits-to-kill calculator that reads your stat window"
+  },
+  {
+   "date": "2026-11-03",
+   "path": "/guides/leveling-30-70/",
+   "ko": "가이드 5편 — 30~70 사냥터, 전사·궁수·법사·도적 육성",
+   "en": "Five guides: 30–70 training and warrior, archer, mage and thief builds"
+  },
+  {
+   "date": "2026-11-02",
+   "path": "/tools/market/",
+   "ko": "실시간 시세 — 아이템 검색·가격 추이·어디서 살지",
+   "en": "Live market: item search, price trends and where to buy"
+  },
+  {
+   "date": "2026-11-02",
+   "path": "/tools/scan/",
+   "ko": "상점 스캔 — 게임 화면을 공유하면 상점 가격을 읽어 시세에 반영",
+   "en": "Shop scan: share your game window and shop prices feed the market"
+  },
+  {
+   "date": "2026-11-02",
+   "path": "/guides/kerning-party-quest/",
+   "ko": "커닝 파티퀘스트·2차 전직·거래 가이드",
+   "en": "Kerning PQ, 2nd job and trading guides"
+  },
+  {
+   "date": "2026-11-02",
+   "path": "/guides/",
+   "ko": "가이드 섹션 — 첫걸음부터 직업 선택·시민권·주문서 확률까지",
+   "en": "Guides: getting started, choosing a class, citizenship, scroll odds"
+  },
+  {
+   "date": "2026-10-31",
+   "path": "/",
+   "ko": "사이트 안 도구도 검색돼요, 휴대폰에서 모든 탭 보기",
+   "en": "Search finds the site's own tools; every tab fits on phones"
+  },
+  {
+   "date": "2026-10-30",
+   "path": "/tools/training/",
+   "ko": "레벨 구간별 사냥터 페이지",
+   "en": "Training pages by level band"
+  },
+  {
+   "date": "2026-10-29",
+   "path": "/",
+   "ko": "추천 많은 순으로 사이트 정렬",
+   "en": "Sites sorted by recommendations"
+  },
+  {
+   "date": "2026-10-28",
+   "path": "/",
+   "ko": "추천 버튼과 즐겨찾기 — 좋은 사이트에 추천, 자주 가는 곳은 별표",
+   "en": "Recommend and star the sites you use"
+  },
+  {
+   "date": "2026-10-28",
+   "path": "/",
+   "ko": "GMS Hub 오픈 — 글클메 사이트 모음, 목적별로 찾기",
+   "en": "GMS Hub opens: the Classic World site directory, by purpose"
   }
  ]
 }
