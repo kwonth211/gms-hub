@@ -3,7 +3,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { DatabaseSync } from "node:sqlite";
-import { marketCatalog, refreshItemMarket, archiveListings } from "../worker/src/market-browser.js";
+import { marketCatalog, refreshItemMarket, archiveListings, dailyHistory, dayRow, reconcileItemMarket } from "../worker/src/market-browser.js";
 import { megaphoneStats } from "../worker/src/megaphone.js";
 
 const DAY = 86400000,
@@ -11,7 +11,7 @@ const DAY = 86400000,
 
 function env() {
   const sqlite = new DatabaseSync(":memory:");
-  for (const file of ["schema.sql", "migrations/0001_market_batch.sql", "migrations/0014_item_market.sql"])
+  for (const file of ["schema.sql", "migrations/0001_market_batch.sql", "migrations/0014_item_market.sql", "migrations/0015_item_daily_rollup.sql"])
     sqlite.exec(fs.readFileSync(new URL("../worker/" + file, import.meta.url), "utf8"));
   let reads = 0;
   const stmt = (sql, args = []) => ({
@@ -63,20 +63,61 @@ test("a collector run refreshes only its items, and a summary older than a day s
   assert.equal(later.items.find((r) => r.item === 2).low, null);
 });
 
-test("retention keeps every old price as a daily row before deleting raw listings, in chunks that merge", async () => {
+test("retention keeps every old price as a daily row before deleting raw listings", async () => {
   const e = env();
   const old = 40 * DAY;
   for (let i = 0; i < 7; i++) add(e, { item: 5, price: 100 + i * 10, seller: "O" + i, age: old });
   add(e, { item: 5, price: 999, sold: 1, seller: "Sold", age: old });
   add(e, { item: 5, price: 1, seller: "Recent", age: DAY });
-  const n = await archiveListings(e, Date.now(), 30, 3);
+  const n = await archiveListings(e, Date.now(), 30);
   assert.equal(n, 8);
   assert.equal(e.sqlite.prepare("SELECT COUNT(*) n FROM listings").get().n, 1);
   const d = e.sqlite.prepare("SELECT * FROM item_daily").all();
   assert.equal(d.length, 1);
-  assert.equal(d[0].n, 8);
-  assert.equal(d[0].sold, 1);
-  assert.equal(d[0].low, 100);
+  assert.deepEqual({ ...d[0] }, { item: 5, day: stamp(Date.now() - old).slice(0, 10), low: 100, p25: 120, median: 130, p75: 150, high: 160, n: 7, sold: 1 });
+});
+
+test("retention never overwrites a day row written live", async () => {
+  const e = env();
+  add(e, { item: 5, price: 100, age: 40 * DAY });
+  const day = stamp(Date.now() - 40 * DAY).slice(0, 10);
+  e.sqlite.prepare("INSERT INTO item_daily (item,day,low,median,n,sold) VALUES (5,?,90,95,4,0)").run(day);
+  await archiveListings(e);
+  assert.deepEqual({ ...e.sqlite.prepare("SELECT low,median,n FROM item_daily").get() }, { low: 90, median: 95, n: 4 });
+  assert.equal(e.sqlite.prepare("SELECT COUNT(*) n FROM listings").get().n, 0);
+});
+
+test("a refresh keeps today's day row current and the item history reads it instead of raw listings", async () => {
+  const e = env();
+  for (const [p, s] of [[100, "A"], [300, "B"], [200, "C"]]) add(e, { item: 9, price: p, seller: s });
+  add(e, { item: 9, price: 50, seller: "D", sold: 1 });
+  await refreshItemMarket(e, [9]);
+  add(e, { item: 9, price: 400, seller: "E" });
+  await refreshItemMarket(e, [9]);
+  const today = stamp(Date.now()).slice(0, 10);
+  if (stamp(Date.now() - 1000).slice(0, 10) !== today) return; // ran across midnight UTC
+  const r = e.sqlite.prepare("SELECT * FROM item_daily WHERE item=9").get();
+  assert.deepEqual([r.low, r.median, r.high, r.n, r.sold], [100, 250, 400, 4, 1]);
+  assert.equal(e.sqlite.prepare("SELECT records FROM item_market WHERE item=9").get().records, 5);
+  e.resetReads();
+  const h = await dailyHistory(e, 9);
+  assert.deepEqual(h.at(-1), { day: today, median: 250, p25: 200, p75: 300, low: 100, high: 400, n: 4, typical: null });
+  assert.ok(e.reads() <= 2);
+  // The daily safety net re-summarises everything seen in the last day without changing a correct row.
+  assert.equal(await reconcileItemMarket(e), 1);
+  assert.equal(e.sqlite.prepare("SELECT n FROM item_daily WHERE item=9").get().n, 4);
+});
+
+test("migration 0015 backfills day rows with the same quartiles the live rollup computes", () => {
+  const db = new DatabaseSync(":memory:");
+  db.exec(fs.readFileSync(new URL("../worker/schema.sql", import.meta.url), "utf8"));
+  const prices = [5, 1, 9, 3, 7, 11];
+  prices.forEach((p, i) => db.prepare("INSERT INTO listings(item,price,sold,seller,channel,room,reporter,last_seen) VALUES(3,?,0,?,1,1,'t','2026-11-01 05:00:00')").run(p, "S" + i));
+  db.prepare("INSERT INTO listings(item,price,sold,seller,channel,room,reporter,last_seen) VALUES(3,2,1,'X',1,1,'t','2026-11-01 06:00:00')").run();
+  db.exec(fs.readFileSync(new URL("../worker/migrations/0015_item_daily_rollup.sql", import.meta.url), "utf8"));
+  const got = { ...db.prepare("SELECT * FROM item_daily").get() };
+  const want = dayRow(3, "2026-11-01", [...prices.map((price) => ({ price, sold: 0 })), { price: 2, sold: 1 }]);
+  assert.deepEqual(got, want);
 });
 
 test("a failed archive chunk deletes nothing", async () => {

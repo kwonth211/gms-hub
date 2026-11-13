@@ -38,24 +38,64 @@ const runAll = async (env, stmts) => {
   return out;
 };
 
-const marketUpsert = (env, m) =>
+// records = observations over the last 7 days, summed from item_daily (at most 7 small rows) instead of re-reading a
+// week of raw listings on every collector run. last keeps its old value when the item has nothing in the last day.
+// Unchanged rows are not rewritten (an unchanged upsert would still cost a write).
+const marketUpsert = (env, m, since) =>
   env.DB.prepare(`INSERT INTO item_market (item,open,records,median,low,sold_median,sold,shops,last,at)
-    VALUES (?,?,?,?,?,?,?,?,?,datetime('now')) ON CONFLICT (item) DO UPDATE SET open=excluded.open, records=excluded.records,
+    VALUES (?1,?2,COALESCE((SELECT SUM(n+sold) FROM item_daily WHERE item=?1 AND day>=?10),?3),?4,?5,?6,?7,?8,?9,datetime('now'))
+    ON CONFLICT (item) DO UPDATE SET open=excluded.open, records=excluded.records,
     median=excluded.median, low=excluded.low, sold_median=excluded.sold_median, sold=excluded.sold, shops=excluded.shops,
-    last=excluded.last, at=excluded.at`).bind(m.item, m.open, m.records, m.median, m.low, m.soldMedian, m.sold, m.shops, m.last);
+    last=COALESCE(excluded.last, item_market.last), at=excluded.at
+    WHERE excluded.open IS NOT item_market.open OR excluded.records IS NOT item_market.records OR excluded.median IS NOT item_market.median
+      OR excluded.low IS NOT item_market.low OR excluded.sold_median IS NOT item_market.sold_median OR excluded.sold IS NOT item_market.sold
+      OR excluded.shops IS NOT item_market.shops OR COALESCE(excluded.last, item_market.last) IS NOT item_market.last`)
+    .bind(m.item, m.open, m.records, m.median, m.low, m.soldMedian, m.sold, m.shops, m.last, since);
 
-// Called after a collector run: only the items in that run are re-read (through the (item,last_seen) index) and rewritten.
+// One item's day in item_daily: quartiles of the asking prices seen that day (same picks as the charts always used).
+export function dayRow(item, day, rs) {
+  const ps = rs.filter((r) => !r.sold).map((r) => r.price).sort((a, b) => a - b);
+  const q = (f) => (ps.length ? ps[Math.min(ps.length - 1, Math.floor(f * (ps.length - 1) + 0.5))] : null);
+  return { item, day, low: ps[0] ?? null, p25: q(0.25), median: median(ps), p75: q(0.75), high: ps.at(-1) ?? null, n: ps.length, sold: rs.length - ps.length };
+}
+// replace=true: today's row is recomputed from all of today's sightings. replace=false (retention, gap filling) never
+// touches a day that already has a row, so frozen past days are never overwritten with a partial view.
+const dailyUpsert = (env, d, replace) =>
+  env.DB.prepare(`INSERT INTO item_daily (item,day,low,p25,median,p75,high,n,sold) VALUES (?,?,?,?,?,?,?,?,?)
+    ON CONFLICT (item,day) DO ${replace ? `UPDATE SET low=excluded.low, p25=excluded.p25, median=excluded.median, p75=excluded.p75,
+      high=excluded.high, n=excluded.n, sold=excluded.sold
+      WHERE excluded.n IS NOT item_daily.n OR excluded.sold IS NOT item_daily.sold OR excluded.low IS NOT item_daily.low
+        OR excluded.p25 IS NOT item_daily.p25 OR excluded.median IS NOT item_daily.median OR excluded.p75 IS NOT item_daily.p75
+        OR excluded.high IS NOT item_daily.high` : "NOTHING"}`)
+    .bind(d.item, d.day, d.low, d.p25, d.median, d.p75, d.high, d.n, d.sold);
+
+// Called after every write of listings (collector run, player upload): only those items are re-read, and only their
+// last day of listings (through the (item,last_seen) index). One transaction updates today's daily row first, then the
+// summary row that sums the week from it. Ids go in as one JSON parameter (D1 allows 100 bound parameters a query).
 export async function refreshItemMarket(env, ids, now = Date.now()) {
   const list = [...new Set(ids)].filter(Number.isInteger);
   if (!list.length) return 0;
-  const since = stamp(now - 7 * DAY), current = stamp(now - DAY);
+  const current = stamp(now - DAY), today = stamp(now).slice(0, 10), week = stamp(now - 6 * DAY).slice(0, 10);
   const rows = await all(env,
-    `SELECT item,price,sold,seller,channel,room,last_seen AS seen FROM listings WHERE item IN (${list.map(() => "?").join(",")}) AND last_seen >= ? AND last_seen <= ?`,
-    [...list, since, stamp(now)]);
+    "SELECT item,price,sold,seller,channel,room,last_seen AS seen FROM listings WHERE item IN (SELECT value FROM json_each(?)) AND last_seen >= ? AND last_seen <= ?",
+    [JSON.stringify(list), current, stamp(now)]);
   const by = new Map(list.map((id) => [id, []]));
   for (const r of rows) by.get(r.item)?.push(r);
-  await runAll(env, [...by].map(([item, rs]) => marketUpsert(env, summarizeItem(item, rs, current))));
+  const stmts = [];
+  for (const [item, rs] of by) {
+    const todays = rs.filter((r) => r.seen >= today);
+    if (todays.length) stmts.push(dailyUpsert(env, dayRow(item, today, todays), true));
+  }
+  for (const [item, rs] of by) stmts.push(marketUpsert(env, summarizeItem(item, rs, current), week));
+  for (let i = 0; i < stmts.length; i += 100) await runAll(env, stmts.slice(i, i + 100));
   return list.length;
+}
+
+// Safety net, once a day: every item seen in the last day is re-summarised, in case a refresh after a write failed.
+export async function reconcileItemMarket(env, now = Date.now()) {
+  const ids = await all(env, "SELECT DISTINCT item FROM listings WHERE last_seen >= ? AND last_seen <= ?", [stamp(now - DAY), stamp(now)]);
+  for (let i = 0; i < ids.length; i += 60) await refreshItemMarket(env, ids.slice(i, i + 60).map((r) => r.item), now);
+  return ids.length;
 }
 
 // Distinct open shops across all items: one scan of the last day, kept 2 hours.
@@ -80,7 +120,7 @@ export async function marketCatalog(env) {
     const g = new Map();
     for (const r of rows) (g.get(r.item) || g.set(r.item, []).get(r.item)).push(r);
     sums = [...g].map(([item, rs]) => summarizeItem(item, rs, current));
-    for (let i = 0; i < sums.length; i += 50) await runAll(env, sums.slice(i, i + 50).map((m) => marketUpsert(env, m))).catch(() => null);
+    for (let i = 0; i < sums.length; i += 50) await runAll(env, sums.slice(i, i + 50).map((m) => marketUpsert(env, m, stamp(now - 6 * DAY).slice(0, 10)))).catch(() => null);
   }
   // A row last refreshed more than a day ago has no open listings left, whatever it said when it was written.
   for (const m of sums) if (!m.last || m.last < current) Object.assign(m, { open: 0, median: null, low: null, soldMedian: null, sold: 0, shops: 0 });
@@ -357,54 +397,46 @@ export async function marketHistory(env, p) {
   };
 }
 
-// Price history per day for the item panel, over everything kept (at most 120 days): the asking median, low and high of
-// the listings seen that day (a listing counts on the day it was last seen) and the reference "typical" price saved once
-// a day in item_summary_daily. Days without either are left out, so gaps in collection stay visible as gaps.
+// Price history per day for the item panel, over everything kept (at most 120 days): the asking median, quartiles,
+// low and high of each day from item_daily (one small row per day, kept current by every collector run) and the
+// reference "typical" price saved once a day in item_summary_daily. Days without either are left out, so gaps in
+// collection stay visible as gaps.
 export async function dailyHistory(env, item) {
-  const since = stamp(Date.now() - 120 * DAY);
+  const since = stamp(Date.now() - 120 * DAY).slice(0, 10);
   const [listed, typical] = await Promise.all([
-    all(env, "SELECT substr(last_seen,1,10) AS day, price FROM listings WHERE item=? AND sold=0 AND last_seen>=?", [item, since]),
-    all(env, "SELECT day, typical FROM item_summary_daily WHERE item=? AND day>=?", [item, since.slice(0, 10)]),
+    all(env, "SELECT day, low, p25, median, p75, high, n FROM item_daily WHERE item=? AND day>=? AND n>0", [item, since]),
+    all(env, "SELECT day, typical FROM item_summary_daily WHERE item=? AND day>=?", [item, since]),
   ]);
-  const byDay = new Map();
-  for (const r of listed) (byDay.get(r.day) || byDay.set(r.day, []).get(r.day)).push(r.price);
-  const days = new Set([...byDay.keys(), ...typical.map((r) => r.day)]);
+  const byDay = new Map(listed.map((r) => [r.day, r]));
   const typ = new Map(typical.map((r) => [r.day, r.typical]));
+  const days = new Set([...byDay.keys(), ...typ.keys()]);
   return [...days].sort().map((day) => {
-    const ps = (byDay.get(day) || []).sort((a, b) => a - b);
-    const q = (f) => (ps.length ? ps[Math.min(ps.length - 1, Math.floor(f * (ps.length - 1) + 0.5))] : null);
-    const mid = ps.length ? (ps.length % 2 ? ps[ps.length >> 1] : Math.round((ps[ps.length / 2 - 1] + ps[ps.length / 2]) / 2)) : null;
+    const r = byDay.get(day);
     // p25-p75 is the day's "typical range" band, as on MesoWatch.
-    return { day, median: mid, p25: q(0.25), p75: q(0.75), low: ps[0] ?? null, high: ps.at(-1) ?? null, n: ps.length, typical: typ.get(day) ?? null };
+    return { day, median: r?.median ?? null, p25: r?.p25 ?? null, p75: r?.p75 ?? null, low: r?.low ?? null, high: r?.high ?? null, n: r?.n ?? 0, typical: typ.get(day) ?? null };
   });
 }
 
-// Retention: listings not seen for 30 days are folded into item_daily (one row per item and day) and then deleted, in
-// one transaction per chunk, so no price history is lost and the hot table stays small. Runs once a day.
-export async function archiveListings(env, now = Date.now(), keepDays = 30, chunk = 500) {
+// Retention: listings not seen for 30 days are deleted one UTC day at a time. Their day rows normally exist already
+// (written live); any missing one is filled from the raw rows first (never overwriting), and the delete runs only after
+// every fill succeeded, so no price history is lost. Day ranges, not id lists, keep each query far below D1's
+// 100-parameter limit. Runs once a day; a backlog drains a few days per run.
+export async function archiveListings(env, now = Date.now(), keepDays = 30, maxDays = 5) {
   const cutoff = stamp(now - keepDays * DAY);
   let archived = 0;
-  for (let round = 0; round < 20; round++) {
-    const rows = await all(env, "SELECT id,item,price,sold,last_seen AS seen FROM listings WHERE last_seen < ? ORDER BY last_seen LIMIT ?", [cutoff, chunk]);
-    if (!rows.length) break;
+  for (let round = 0; round < maxDays; round++) {
+    const first = await env.DB.prepare("SELECT last_seen AS seen FROM listings WHERE last_seen < ? ORDER BY last_seen LIMIT 1").bind(cutoff).first();
+    if (!first) break;
+    const day = first.seen.slice(0, 10), from = `${day} 00:00:00`;
+    const next = stamp(Date.parse(`${day}T00:00:00Z`) + DAY);
+    const to = next < cutoff ? next : cutoff;
+    const rows = await all(env, "SELECT item,price,sold FROM listings WHERE last_seen >= ? AND last_seen < ?", [from, to]);
     const g = new Map();
-    for (const r of rows) {
-      const k = `${r.item}|${r.seen.slice(0, 10)}`;
-      (g.get(k) || g.set(k, []).get(k)).push(r);
-    }
-    const stmts = [...g.values()].map((rs) => {
-      const asks = rs.filter((r) => !r.sold).map((r) => r.price);
-      // Merge with a row an earlier chunk may already have written for the same item/day (count adds up; low keeps the minimum).
-      return env.DB.prepare(`INSERT INTO item_daily (item,day,low,median,n,sold) VALUES (?,?,?,?,?,?)
-        ON CONFLICT (item,day) DO UPDATE SET low=MIN(COALESCE(item_daily.low,excluded.low),COALESCE(excluded.low,item_daily.low)),
-        median=COALESCE(item_daily.median,excluded.median), n=item_daily.n+excluded.n, sold=item_daily.sold+excluded.sold`)
-        .bind(rs[0].item, rs[0].seen.slice(0, 10), asks.length ? Math.min(...asks) : null, median(asks), rs.length, rs.length - asks.length);
-    });
-    const ids = rows.map((r) => r.id);
-    stmts.push(env.DB.prepare(`DELETE FROM listings WHERE id IN (${ids.map(() => "?").join(",")})`).bind(...ids));
-    await runAll(env, stmts);
-    archived += rows.length;
-    if (rows.length < chunk) break;
+    for (const r of rows) (g.get(r.item) || g.set(r.item, []).get(r.item)).push(r);
+    const fills = [...g].map(([item, rs]) => dailyUpsert(env, dayRow(item, day, rs), false));
+    for (let i = 0; i < fills.length; i += 100) await runAll(env, fills.slice(i, i + 100));
+    const del = await env.DB.prepare("DELETE FROM listings WHERE last_seen >= ? AND last_seen < ?").bind(from, to).run();
+    archived += del?.meta?.changes ?? rows.length;
   }
   // Collector run receipts only matter for today's budget and a short audit trail.
   await env.DB.prepare("DELETE FROM market_batch_runs WHERE received_at < datetime('now','-30 days')").run().catch(() => null);

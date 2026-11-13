@@ -20,7 +20,7 @@ import { handleEmail, handleSendMail } from './inbox.js';
 // GET  /presence?p=<path> (WebSocket) -> messages { site, here }: open pages on the whole site and on this page
 // The shop scanner runs from the local dev server for now, so its origin may post scans too.
 import { handleMarketBatch, getCollectionStatus, collectorView } from './market-batch.js';
-import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoints, openShops, archiveListings } from './market-browser.js';
+import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoints, openShops, archiveListings, refreshItemMarket, reconcileItemMarket } from './market-browser.js';
 import { cachedPublicResponse } from './public-cache.js';
 import { Presence, handlePresence } from './presence.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
@@ -125,14 +125,35 @@ function rankAt(obs, end) {
 
 const HOUR = 3600000;
 
+// The ranking itself comes from item_market (one row per item, kept current by every collector run): the 24-hour
+// score is open asks + 3 x sales, the same weights rankAt uses. "An hour ago" is the order this function stored an
+// hour earlier (snapshot 'market-rank-hist'), so no 26-hour window of raw listings is re-read to rebuild it.
+async function rankBoard(env, now = Date.now()) {
+  const since = new Date(now - DAY).toISOString().slice(0, 19).replace('T', ' ');
+  const { results: rows } = await env.DB.prepare('SELECT item, open, sold FROM item_market WHERE last >= ?').bind(since).all();
+  const reports = await env.DB.prepare("SELECT item, kind FROM prices WHERE created_at >= ? AND kind != 'buying'").bind(since).all()
+    .then((r) => r.results).catch(() => []);
+  const score = new Map();
+  for (const r of rows) if (r.open + r.sold) score.set(r.item, r.open + 3 * r.sold);
+  for (const r of reports) score.set(r.item, (score.get(r.item) || 0) + (r.kind === 'sold' ? 3 : 1));
+  const order = [...score.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0]).map(([item]) => item);
+  const kept = await env.DB.prepare("SELECT json FROM snapshots WHERE key = 'market-rank-hist'").first().catch(() => null);
+  const hist = (kept ? JSON.parse(kept.json) : []).filter((h) => now - h.at < 3 * HOUR && h.at < now);
+  const old = hist.filter((h) => now - h.at >= HOUR).at(-1) || hist[0];
+  hist.push({ at: now, order: order.slice(0, 50) });
+  await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('market-rank-hist',?,datetime('now'))").bind(JSON.stringify(hist)).run().catch(() => null);
+  const sold = rows.reduce((n, r) => n + r.sold, 0) + reports.filter((r) => r.kind === 'sold').length;
+  return {
+    order,
+    before: old ? old.order : order,
+    stats: { listings: rows.reduce((n, r) => n + r.open + r.sold, 0) + reports.length, sold, items: score.size }
+  };
+}
+
 async function marketTop(env, only = null) {
   // Reads stay proportional to one day of activity: the ranking needs the last 25 hours of everything, and the 8-day history
   // is fetched only for the ten items that made the list (or the one item asked for).
   const recent = (sql, ...args) => env.DB.prepare(sql).bind(...args).all().then((r) => r.results);
-  const window = (hours, filter, ids) =>
-    `SELECT item, price, sold, last_seen AS t FROM listings WHERE last_seen >= datetime('now', '-${hours} hours') ${filter}
-     UNION ALL
-     SELECT item, price, kind = 'sold', created_at FROM prices WHERE kind != 'buying' AND created_at >= datetime('now', '-${hours} hours') ${filter}`;
   // Day-by-day history: each listing counts once on every day between its first and last sighting (see dailyPoints),
   // so a shop seen on Monday and again on Wednesday at the same price shows on all three days.
   // The same listings hour by hour for the last day feed the sparkline, which reads as a line long before a week fills in.
@@ -144,29 +165,24 @@ async function marketTop(env, only = null) {
     hourly = dailyPoints(listed, Date.now(), 24, HOUR).map(point).concat(reports);
     return dailyPoints(listed, Date.now(), 8).map(point).concat(reports);
   };
-  let results;
+  let results, board = null;
   if (only) results = await history('AND item = ?', only);
   else {
-    const day = await recent(window(26, ''));
-    const now0 = Date.now();
-    const dayObs = day.map((r) => ({ item: r.item, sold: !!r.sold, t: parseUtc(r.t) }));
-    const ids = [...new Set([...rankAt(dayObs, now0).slice(0, TOP_N), ...rankAt(dayObs, now0 - 3600000).slice(0, TOP_N)])];
+    board = await rankBoard(env);
+    const ids = board.order.slice(0, TOP_N);
     const marks = ids.map(() => '?').join(',') || 'NULL';
     results = ids.length ? await history(`AND item IN (${marks})`, ...ids) : [];
-    // Items outside the top ten still count for the ranking itself.
-    const seen = new Set(ids);
-    results = results.concat(day.filter((r) => !seen.has(r.item)));
   }
   const now = Date.now();
   const obs = results.map((r) => ({ item: r.item, price: r.price, sold: !!r.sold, t: parseUtc(r.t) }));
-  const ranked = only ? (obs.some((o) => o.t > now - DAY) ? [only] : []) : rankAt(obs, now).slice(0, TOP_N);
-  const before = rankAt(obs, now - 3600000);
+  const ranked = only ? (obs.some((o) => o.t > now - DAY) ? [only] : []) : board.order.slice(0, TOP_N);
+  const before = only ? rankAt(obs, now - 3600000) : board.before;
   const byItem = new Map();
   for (const o of obs) (byItem.get(o.item) || byItem.set(o.item, []).get(o.item)).push(o);
   const hourlyBy = new Map();
   for (const r of hourly) (hourlyBy.get(r.item) || hourlyBy.set(r.item, []).get(r.item)).push({ ...r, t: parseUtc(r.t) });
   const items = ranked.map((item, i) => {
-    const mine = byItem.get(item);
+    const mine = byItem.get(item) || [];
     const useSold = mine.some((o) => o.sold && o.t > now - DAY && o.t <= now);
     const window = (from, to) => trimmed(mine.filter((o) => o.sold === useSold && o.t > from && o.t <= to).map((o) => o.price));
     const day = window(now - DAY, now);
@@ -196,7 +212,7 @@ async function marketTop(env, only = null) {
     };
   });
   const day = obs.filter((o) => o.t > now - DAY);
-  const stats = {
+  const stats = board ? { ...board.stats } : {
     listings: day.length,
     sold: day.filter((o) => o.sold).length,
     items: new Set(day.map((o) => o.item)).size
@@ -254,7 +270,9 @@ const api = {
     // trend snapshot is refreshed once an hour. Both are read-heavy, so they are not run on every tick.
     const now = new Date();
     if (now.getUTCHours() === 16 && now.getUTCMinutes() < 15) ctx.waitUntil(pruneMegaphones(env).catch(() => null));
-    if (now.getUTCHours() === 16 && now.getUTCMinutes() < 15) ctx.waitUntil(archiveListings(env).catch(() => null));
+    // Retention first, then the safety-net re-summary of everything seen in the last day (one 1-day scan).
+    if (now.getUTCHours() === 16 && now.getUTCMinutes() < 15)
+      ctx.waitUntil(archiveListings(env).catch(() => null).then(() => reconcileItemMarket(env)).catch(() => null));
     // Four times a day (00, 06, 12, 18 UTC) the same snapshot also goes to the Discord trends channel.
     if (now.getUTCMinutes() < 15) ctx.waitUntil(megaphoneStats(env).then(async (d) => {
       await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('mega-stats',?,datetime('now'))").bind(JSON.stringify(d)).run();
@@ -343,12 +361,12 @@ const api = {
       // Player reports and scanned shops feed the same summary: a sold slot is a sale, an open slot an asking price.
       const marks = ids.map(() => '?').join(',');
       const { results } = await env.DB.prepare(
-        `SELECT item, price, kind, created_at FROM prices WHERE item IN (${marks}) AND created_at >= ${WINDOW}
+        `SELECT item, price, kind, created_at FROM prices WHERE item IN (SELECT value FROM json_each(?1)) AND created_at >= ${WINDOW}
          UNION ALL
-         SELECT item, price, CASE WHEN sold THEN 'sold' ELSE 'selling' END, last_seen FROM listings WHERE item IN (${marks}) AND last_seen >= ${WINDOW}
+         SELECT item, price, CASE WHEN sold THEN 'sold' ELSE 'selling' END, last_seen FROM listings WHERE item IN (SELECT value FROM json_each(?1)) AND last_seen >= ${WINDOW}
          ORDER BY created_at DESC`
       )
-        .bind(...ids, ...ids)
+        .bind(JSON.stringify(ids))
         .all();
       // Items nobody has scanned or reported yet fall back to the source site's reference price (basis 'typical').
       const { results: refs } = await env.DB.prepare(`SELECT item, typical, day, week, sales, at FROM item_summary WHERE item IN (${marks})`)
@@ -367,7 +385,7 @@ const api = {
         else if (mega) out[id] = { n: 0, median: mega.median, basis: 'mega', low: mega.p25, high: mega.p75, last: null, sold: null, selling: null, buying: null, typical, mega };
         else if (t) out[id] = { n: 0, median: t.typical, basis: 'typical', low: null, high: null, last: t.at, sold: null, selling: null, buying: null, typical, mega: null };
       }
-      return json(out, cors, 200, 'public, max-age=120');
+      return json(out, cors, 200, 'public, max-age=300');
     }
 
     if (url.pathname === '/prices/all' && req.method === 'GET') {
@@ -410,7 +428,7 @@ const api = {
         // Edge cache: data changes about hourly, so a minute (catalog five) saves repeat reads without visible lag.
         // The catalog itself is recomputed at most every 15 minutes (the collector uploads about that often), since each
         // recomputation reads the whole 7-day listings window.
-        return json(data, cors, 200, url.pathname === '/market/catalog' ? 'public, max-age=300' : 'public, max-age=60');
+        return json(data, cors, 200, ['/market/catalog', '/market/history'].includes(url.pathname) ? 'public, max-age=300' : 'public, max-age=60');
       } catch (e) {
         const invalid = e.message?.startsWith('bad ');
         return json({error: invalid ? e.message : 'market unavailable'}, cors, invalid ? 400 : 503);
@@ -459,7 +477,7 @@ const api = {
     if (url.pathname === '/market/item' && req.method === 'GET') {
       const item = Number(url.searchParams.get('id'));
       if (!Number.isInteger(item) || item < 1000000 || item > 9999999) return json({ error: 'bad item' }, cors, 400);
-      return json(await itemDetail(env, item), cors, 200, 'public, max-age=120');
+      return json(await itemDetail(env, item), cors, 200, 'public, max-age=300');
     }
 
     if (url.pathname === '/listings/recent' && req.method === 'GET') {
@@ -551,6 +569,7 @@ const api = {
       );
       await env.DB.batch(ok.map((r) => stmt.bind(r.item, r.price, r.qty || 1, r.sold ? 1 : 0, r.seller, r.channel, r.room, reporter,
         r.seller,r.item,r.price,r.channel,r.room,r.qty || 1,r.sold ? 1 : 0)));
+      await refreshItemMarket(env, ok.map((r) => r.item)).catch(() => null);
       return json({ stored: ok.length }, cors);
     }
 
