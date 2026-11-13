@@ -2,16 +2,16 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest.",
  "updates": [
   {
-   "id": "price-categories",
+   "id": "one-price",
    "version": "0.4.22",
    "level": "minor",
    "date": "2026-11-14",
-   "path": "/prices/scrolls/",
-   "ko": "분류별 시세표 — 주문서·무기·방어구·표창·소비·재료 시세를 한 표로",
-   "en": "Prices by category — scrolls, weapons, armor, stars, potions and materials in one table each",
+   "path": "/items/",
+   "ko": "아이템 시세 숫자 통일 — 아이템 페이지도 실시간 시세와 같은 값",
+   "en": "One price everywhere — item pages now match the live market",
    "desc": {
-    "ko": "분류마다 오늘 시세(중앙값), 매물 수, 가격 범위를 한 표에 모았어요.",
-    "en": "Each category lists today's median price, listing count and range in one table."
+    "ko": "아이템 페이지와 아이템 DB가 실시간 시세 목록과 같은 숫자(지금 판매 중 매물의 중앙값·최저가·건수)를 보여 줘요. 아이템 DB는 주문서·무기·방어구·소비·재료 시세로 나눠 바로 찾을 수 있어요.",
+    "en": "Item pages and the item DB now show the same numbers as the live market list: the median of what is for sale now, the lowest ask and the count. The item DB is split into scrolls, weapons, armor, consumables and materials."
    }
   },
   {

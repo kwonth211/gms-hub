@@ -32,5 +32,17 @@ Promise.all([
   if(history){const normalize=rs=>rs.map(r=>({...r,sold:!!r.sold,t:parseUtc(r.seen)}));mountMarketCharts(charts,normalize(history.rows),{lang:D.lang,now:Date.parse(history.asOf),profileRows:normalize(history.profile),persistent:true,truncated:history.truncated,profileTruncated:history.profileTruncated,limit:history.limit});}
   else charts.innerHTML=`<p class="muted">${T.failed}</p>`;
 });
+// The headline price is the live market list's number (median of what is for sale now); the build baked a copy, this
+// swaps in the current one. /market/catalog is edge-cached and shared with the market page.
+const nowMedian = document.querySelector('[data-now="median"]');
+if (nowMedian) fetch(`${D.api}/market/catalog`).then((r) => (r.ok ? r.json() : null)).then((c) => {
+  const r = c?.items?.find((x) => x.item === D.id);
+  if (!r || !(r.open > 0) || r.median == null) return;
+  nowMedian.textContent = nf.format(r.median);
+  const sub = document.querySelector('[data-now="sub"]');
+  if (sub) sub.textContent = T.nowSub.replace('{open}', r.open).replace('{low}', nf.format(r.low));
+  const note = sub?.nextElementSibling;
+  if (note) note.textContent = T.nowAsOf;
+}).catch(() => null);
 // From the static price page into the live market browser for the same item.
 document.querySelector('[data-market-link]')?.addEventListener('click', () => track('item_market_click', { item_id: D.id, page_type: 'item' }));

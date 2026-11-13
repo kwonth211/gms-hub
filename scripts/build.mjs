@@ -818,7 +818,7 @@ function footer(lang) {
 }
 
 const ADFIT_PAGES = new Set(['home', 'marketToday', 'exp', 'training', 'trBand', 'trClass', 'scroll', 'drop', 'price', 'scan', 'market', 'damage', 'guides', 'guide', 'monsters', 'monster', 'items', 'item',
-  'bosses', 'priceCat', 'maps', 'map', 'quests', 'quest', 'questBest', 'questGuide', 'equipment', 'equipmentClass', 'rank', 'megaphone']);
+  'bosses', 'maps', 'map', 'quests', 'quest', 'questBest', 'questGuide', 'equipment', 'equipmentClass', 'rank', 'megaphone']);
 // AdFit counted only 5-9% of the end-of-page banner as viewed (most visitors never scroll that far), so a second slot sits
 // just under the page title: after the page head, after the home hero, or after a guide's first paragraph. Never beside
 // a form control or a button row.
@@ -2547,6 +2547,13 @@ const headline = (p) => {
   return p[basis] ? { ...p, basis, median: p[basis].median } : p;
 };
 const priceOf = (i) => headline(itemPrices.prices[i.id]);
+// The live market list shows each item's median of the listings open right now, with the lowest ask and the count.
+// Item pages and the item DB show that same number (saved by fetch-item-prices.mjs from /market/catalog, refreshed in
+// the browser by assets/item.js), so a player never meets two different "prices" for one item. The 14-day summary
+// (priceOf) still decides which pages exist and are indexed.
+const NOW = itemPrices.now || {};
+const nowOf = (i) => { const r = NOW[i.id]; return r ? { median: r[0], low: r[1], open: r[2] } : null; };
+const shownMedian = (i) => nowOf(i)?.median ?? priceOf(i)?.median;
 const itemName = (lang, i) => (lang === 'ko' && i.ko ? i.ko : i.en);
 // Korean players search scrolls by shorthand ("장공 60%", "귀힘 60", "신이속 10%"), not by the client name
 // ("장갑 Attack 주문서: 중급"). Scroll pages lead with that shorthand in the title, heading and description; the
@@ -2598,6 +2605,8 @@ const IT = {
     title: '{name} 시세 · 가격 (글클메 자유시장) | GMS Hub',
     // With a price the title carries it, so the search result answers the question before the click.
     titlePrice: '{name} 시세 {median} 메소 ({date}) · 글클메 자유시장 | GMS Hub',
+    descNow: '{name} 글클메 자유시장 시세: 지금 판매 중 매물의 중앙값 {median} 메소 (판매 중 {open}건, 최저 {low}). 지금 파는 상점의 채널·방과 7일 추이도 보여 줘요.',
+    nowHeadline: '판매 중 중앙값', nowSub: '판매 중 {open}건 · 최저 {low}', nowAsOf: '{date} 기준 · 페이지를 열면 최신 값으로 바뀌어요', nowAsOfLive: '방금 받은 실시간 시세예요', openN: '판매 {n}건',
     desc: '{name} 글클메 자유시장 시세: {basis} 중앙값 {median} 메소 (최근 14일 매물 {n}건, {low}~{high}). 유저가 스캔한 상점 매물 기준이고, 7일 추이와 지금 파는 채널·방도 보여 줘요.',
     descNone: '{name} 글로벌 메이플 클래식 월드 아이템 정보 ({info}). 최근 14일 스캔 시세가 아직 없어요. 상점을 스캔하면 시세가 바로 쌓여요.',
     h1: '{name} 시세',
@@ -2625,7 +2634,7 @@ const IT = {
     method: '시세는 유저가 직접 스캔하거나 올린 매물만 모아 계산해요. 중앙값에서 5배 넘게 벗어난 가격은 빼고, 판매 완료 기록이 있으면 그 가격을, 없으면 판매 중 가격을 기준으로 보여 줘요. 실제 거래 가격은 다를 수 있어요.',
     loading: '매물을 불러오는 중이에요…', failed: '실시간 매물을 불러오지 못했어요.', noData: '최근 7일 매물이 없어요.', noOpen: '최근 24시간 안에 확인한 판매 매물이 없어요.',
     table: { price: '가격', qty: '묶음', seller: '판매자', where: '위치', seen: '본 시각' },
-    indexTitle: '글클메 아이템 DB: 시세·드롭 몬스터·능력치 {n}개 | GMS Hub',
+    indexTitle: '글클메 아이템 시세·DB: 주문서·무기·방어구·소비 시세 {n}개 | GMS Hub',
     indexDesc: '글로벌 메이플 클래식 월드 아이템 {n}개의 자유시장 시세, 드롭하는 몬스터, 기본 능력치를 분류별로 모았어요. 시세는 매일 갱신돼요.',
     indexH1: '아이템 DB',
     indexLead: '시세가 있는 아이템 {p}개와 몬스터가 드롭하는 아이템을 합쳐 {n}개예요. 아이템을 누르면 시세 추이, 드롭 몬스터, 능력치를 볼 수 있어요.',
@@ -2647,6 +2656,8 @@ const IT = {
   en: {
     title: '{name} Price – MapleStory Classic World Free Market | GMS Hub',
     titlePrice: '{name} Price: {median} mesos ({date}) – MapleStory Classic World | GMS Hub',
+    descNow: '{name} price in MapleStory Classic World: median of the listings for sale now {median} mesos ({open} for sale, lowest {low}). With the shops selling it now, their channels and rooms, and a 7-day trend.',
+    nowHeadline: 'Median of listings for sale', nowSub: '{open} for sale · lowest {low}', nowAsOf: 'As of {date} · updates to the latest when the page opens', nowAsOfLive: 'Live price, just loaded', openN: '{n} for sale',
     desc: '{name} price in MapleStory Classic World: {basis} median {median} mesos ({n} listings in 14 days, {low}–{high}). From Free Market shops players scanned, with a 7-day trend and where it is for sale now.',
     descNone: '{name} in MapleStory Classic World ({info}). No scanned price in the last 14 days yet; scanning a shop that sells it adds one right away.',
     h1: '{name} Price',
@@ -2704,7 +2715,8 @@ function itemDesc(lang, i) {
   const p = priceOf(i);
   const name = itemName(lang, i);
   if (!p) return DROP_INDEX.has(i.id) ? fill(t.descDrop, { name, info: itemInfoText(lang, i), n: DROP_INDEX.get(i.id).length }) : fill(t.descNone, { name, info: itemInfoText(lang, i) });
-  const a = lang === 'ko' && scrollAlias(i);
+  const a = lang === 'ko' && scrollAlias(i), now = nowOf(i);
+  if (now) return fill(t.descNow, { name: a ? `${a.short}(${a.long}, ${i.ko})` : name, median: mesoText(lang, now.median), open: now.open, low: mesoText(lang, now.low) });
   if (a) return `글클메 ${a.short}(${a.long}, ${i.ko}) 자유시장 시세: ${t.basis[p.basis]} 중앙값 ${mesoText(lang, p.median)} 메소, 최근 매물 ${p.n}건(${mesoText(lang, p.low)}~${mesoText(lang, p.high)}). 지금 파는 상점의 채널·방과 7일 시세 추이를 확인하세요.`;
   return fill(t.desc, { name, basis: t.basis[p.basis], median: mesoText(lang, p.median), n: p.n, low: mesoText(lang, p.low), high: mesoText(lang, p.high) });
 }
@@ -2763,12 +2775,10 @@ function relatedItems(i) {
 
 const itemLink = (lang, i) => {
   const p = priceOf(i);
-  return `<li><a href="${href(langPath(lang, itemPath(i)))}">${itemIcon(i.id, 24)}<span>${esc(itemName(lang, i))}</span><small>${p ? `${mesoText(lang, p.median)} · ${IT[lang].basis[p.basis]}` : itemInfoHtml(lang, i)}</small></a></li>`;
+  return `<li><a href="${href(langPath(lang, itemPath(i)))}">${itemIcon(i.id, 24)}<span>${esc(itemSeoName(lang, i))}</span><small>${p ? (nowOf(i) ? `${mesoText(lang, nowOf(i).median)} · ${fill(IT[lang].openN, { n: nowOf(i).open })}` : `${mesoText(lang, p.median)} · ${IT[lang].basis[p.basis]}`) : itemInfoHtml(lang, i)}</small></a></li>`;
 };
 
-// Price pages by category (/prices/<slug>/): every item of the kind with today's median, listing count and range, each
-// linked to its own page. They answer "글클메 주문서 시세"-style searches directly and give the item pages strong
-// internal links (Google left many of them out as unimportant). Rebuilt with the daily price fetch.
+// Categories for the priced part of the item DB, so "글클메 주문서 시세"-style searches find a heading that matches.
 const isScroll = (i) => i.cat === 'Use' && / 주문서|Scroll/.test(`${i.ko || ''} ${i.en}`);
 const isThrown = (i) => i.cat === 'Use' && /Thrown|Arrow|Bullet/.test(i.sub || '');
 const PRICE_CATS = [
@@ -2779,34 +2789,21 @@ const PRICE_CATS = [
   { slug: 'consumables', ko: '물약·소비', en: 'Potions and consumables', icon: 'bag', test: (i) => i.cat === 'Use' && !isScroll(i) && !isThrown(i) },
   { slug: 'materials', ko: '기타·재료', en: 'Materials and etc.', icon: 'coin', test: (i) => i.cat === 'Etc' || i.cat === 'Setup' }
 ].map((c) => ({ ...c, items: PRICED.filter((i) => c.test(i) && priceOf(i)?.n >= 1).sort((a, b) => priceOf(b).n - priceOf(a).n || priceOf(b).median - priceOf(a).median) }));
-const priceCatPath = (c) => `/prices/${c.slug}/`;
 const priceCatName = (lang, c) => (lang === 'ko' ? c.ko : c.en);
-function priceRows(lang, list) {
-  const ko = lang === 'ko';
-  return list.map((i) => {
-    const p = priceOf(i), a = ko && scrollAlias(i), href_ = ITEM_PAGE_IDS.has(i.id) ? href(langPath(lang, itemPath(i))) : href(langPath(lang, `/tools/market/?item=${i.id}`));
-    return `<tr><th scope="row"><a href="${href_}">${itemIcon(i.id, 28)}<span>${esc(a ? a.short : itemName(lang, i))}${a ? `<small>${esc(i.ko)}</small>` : ko && i.ko ? `<small>${esc(i.en)}</small>` : ''}</span></a></th>`
-      + `<td class="num">${mesoText(lang, p.median)}</td><td class="num">${p.n}</td><td class="num">${p.low != null ? `${mesoText(lang, p.low)}~${mesoText(lang, p.high)}` : '-'}</td></tr>`;
-  }).join('');
-}
-const priceTable = (lang, list) => { const ko = lang === 'ko'; return `<div class="table-wrap"><table class="data price-table"><thead><tr><th>${ko ? '아이템' : 'Item'}</th><th>${ko ? '시세(중앙값)' : 'Median'}</th><th>${ko ? '매물' : 'Listings'}</th><th>${ko ? '가격 범위' : 'Range'}</th></tr></thead><tbody>${priceRows(lang, list)}</tbody></table></div>`; };
-const priceCatLinks = (lang, current) => `<nav class="chips price-cats" aria-label="${lang === 'ko' ? '분류별 시세' : 'Prices by category'}">${PRICE_CATS.filter((c) => c.items.length).map((c) => `<a class="chip"${c === current ? ' aria-current="page"' : ''} href="${href(langPath(lang, priceCatPath(c)))}">${esc(priceCatName(lang, c))} ${lang === 'ko' ? '시세' : 'prices'} <small>${c.items.length}</small></a>`).join('')}</nav>`;
-function priceCatBody(lang, c) {
-  const ko = lang === 'ko', date = PRICES_DATE.slice(5).replace('-', '/');
-  return `${pageHead(lang, c.icon, ko ? `${c.ko} 시세` : `${c.en} prices`, ko ? `글로벌 메이플스토리 클래식 월드 자유시장의 ${c.ko} ${c.items.length}개, 오늘 시세를 한 표로 모았어요. 매물이 많은 순서이고 매일 갱신돼요.` : `Today's Free Market prices for ${c.items.length} ${c.en.toLowerCase()} in MapleStory Classic World, most-listed first, refreshed daily.`)}
-<div class="wrap price-page">${priceCatLinks(lang, c)}
-<section class="panel"><h2>${ko ? `${c.ko} 시세 ${c.items.length}개` : `${c.items.length} ${c.en.toLowerCase()}`} <small class="muted">${date} ${ko ? '기준' : ''}</small></h2>
-<p class="muted small">${ko ? '시세는 최근 14일 판매가 중앙값이에요. 아이템을 누르면 지금 파는 상점의 채널·방과 7일 추이가 나와요.' : 'Median asking price over the last 14 days. Open an item for today\'s shops, channels and rooms and a 7-day trend.'}</p>
-${priceTable(lang, c.items)}</section>
-<p><a class="btn" href="${href(langPath(lang, '/tools/market/'))}">${ko ? '실시간 시세에서 검색하기' : 'Search the live market'}</a></p></div>`;
-}
+
 function itemBody(lang, i) {
   const t = IT[lang];
   const p = priceOf(i);
   const name = itemName(lang, i);
   const nf = new Intl.NumberFormat(lang);
   const kinds = p ? ['sold', 'selling', 'buying'].filter((k) => p[k]).map((k) => `<li><span>${t.kinds[k]}</span><b>${nf.format(p[k].median)}</b><small>${fill(t.count, { n: p[k].n })}</small></li>`).join('') : '';
-  const price = p
+  const now = nowOf(i);
+  const price = p && now
+    ? `<p class="item-headline-label">${t.nowHeadline}</p>
+<p class="item-headline"><b data-now="median">${nf.format(now.median)}</b> <span>${t.unit}</span></p>
+<p class="muted" data-now="sub">${fill(t.nowSub, { open: now.open, low: nf.format(now.low) })}</p>
+<p class="muted note">${fill(t.nowAsOf, { date: PRICES_DATE })}</p>`
+    : p
     ? `<p class="item-headline-label">${fill(t.headline, { basis: t.basis[p.basis] })}</p>
 <p class="item-headline"><b>${nf.format(p.median)}</b> <span>${t.unit}</span></p>
 <p class="muted">${fill(t.count, { n: p.n })} · ${fill(t.range, { low: nf.format(p.low), high: nf.format(p.high) })}</p>
@@ -2850,7 +2847,7 @@ ${itemQuests(lang, i)}
 <p class="muted small">${t.method}</p>
 <p class="muted small">${t.external}: ${external}</p>
 </div>
-${jsonScript('it-data', { lang, id: i.id, api: config.voteApi, t: { loading: t.loading, failed: t.failed, noData: t.noData, noOpen: t.noOpen, table: t.table } })}`;
+${jsonScript('it-data', { lang, id: i.id, api: config.voteApi, t: { loading: t.loading, failed: t.failed, noData: t.noData, noOpen: t.noOpen, table: t.table, nowSub: t.nowSub, nowAsOf: t.nowAsOfLive } })}`;
 }
 
 function itemsIndexBody(lang) {
@@ -2861,10 +2858,11 @@ function itemsIndexBody(lang) {
     .filter(([, l]) => l.length);
   const section = (cat, list) => `<section class="panel"><h3>${t.cats[cat]} <small class="muted">${list.length}</small></h3><ul class="item-links">${list.map((i) => itemLink(lang, i)).join('')}</ul></section>`;
   const dropOnly = ITEM_PAGES.filter((i) => !priceOf(i));
-  return `${pageHead(lang, 'coin', t.indexH1, fill(t.indexLead, { n, p: PRICED.length }))}<div class="wrap">${priceCatLinks(lang, null)}</div>
+  return `${pageHead(lang, 'coin', t.indexH1, fill(t.indexLead, { n, p: PRICED.length }))}
 <div class="wrap item-page">
 <h2>${t.pricedH}</h2>
-${group(PRICED, (a, b) => priceOf(b).n - priceOf(a).n || a.id - b.id).map(([cat, list]) => section(cat, list)).join('\n')}
+<nav class="chips item-cats" aria-label="${lang === 'ko' ? '분류' : 'Categories'}">${PRICE_CATS.filter((c) => c.items.length).map((c) => `<a class="chip" href="#${c.slug}">${esc(priceCatName(lang, c))} <small>${c.items.length}</small></a>`).join('')}</nav>
+${PRICE_CATS.filter((c) => c.items.length).map((c) => `<section class="panel" id="${c.slug}"><h3>${esc(lang === 'ko' ? `${c.ko} 시세` : `${c.en} prices`)} <small class="muted">${c.items.length}</small></h3><ul class="item-links">${c.items.map((i) => itemLink(lang, i)).join('')}</ul></section>`).join('\n')}
 <h2>${t.dropH}</h2>
 ${group(dropOnly, (a, b) => (a.lv || 0) - (b.lv || 0) || a.id - b.id).map(([cat, list]) => section(cat, list)).join('\n')}
 <p class="muted small">${t.method}</p>
@@ -3244,16 +3242,6 @@ for (const lang of LANGS) {
   );
   // Only items with a recent price get a page. A page per item in the game (2,120 × 2 languages) was 99% of the site and
   // mostly a name with no price: the kind of mass-generated thin page that AdSense rejects as low-value content.
-  for (const c of PRICE_CATS.filter((c) => c.items.length)) {
-    const ko = lang === 'ko', top = c.items.slice(0, 3).map((i) => `${(ko && scrollAlias(i)?.short) || itemName(lang, i)} ${mesoText(lang, priceOf(i).median)}`).join(', ');
-    write(path.join(lang, 'prices', c.slug, 'index.html'), page({
-      lang, pageKey: 'priceCat', pagePath: priceCatPath(c),
-      title: ko ? `글클메 ${c.ko} 시세 ${c.items.length}개 · 오늘 자유시장 가격 (${PRICES_DATE.slice(5).replace('-', '/')}) | GMS Hub` : `MapleStory Classic World ${c.en} Prices Today: ${c.items.length} Items (${PRICES_DATE}) | GMS Hub`,
-      desc: ko ? `글로벌 메이플스토리 클래식 월드 ${c.ko} 시세 ${c.items.length}개를 한눈에: ${top} 등. 매물 수와 가격 범위, 지금 파는 상점까지 매일 갱신돼요.` : `Today's MapleStory Classic World ${c.en.toLowerCase()} prices for ${c.items.length} items: ${top} and more, with listing counts, ranges and where to buy. Updated daily.`,
-      body: priceCatBody(lang, c),
-      ld: [breadcrumbLd(lang, ko ? `${c.ko} 시세` : `${c.en} prices`, priceCatPath(c))]
-    }));
-  }
   for (const i of ITEM_PAGES) {
     const name = itemName(lang, i);
     const dropOnly = !priceOf(i);
@@ -3264,8 +3252,8 @@ for (const lang of LANGS) {
         pageKey: 'item',
         pagePath: itemPath(i),
         title: lang === 'ko' && scrollAlias(i) && priceOf(i)?.median
-          ? `글클메 ${scrollAlias(i).short} 시세 ${mesoText(lang, priceOf(i).median)} 메소 (${PRICES_DATE.slice(5).replace('-', '/')}) · ${scrollAlias(i).long} | GMS Hub`
-          : priceOf(i)?.median ? fill(it.titlePrice, { name, median: mesoText(lang, priceOf(i).median), date: PRICES_DATE.slice(5).replace('-', '/') }) : fill(dropOnly ? it.titleDrop : it.title, { name: itemSeoName(lang, i) }),
+          ? `글클메 ${scrollAlias(i).short} 시세 ${mesoText(lang, shownMedian(i))} 메소 (${PRICES_DATE.slice(5).replace('-', '/')}) · ${scrollAlias(i).long} | GMS Hub`
+          : priceOf(i)?.median ? fill(it.titlePrice, { name, median: mesoText(lang, shownMedian(i)), date: PRICES_DATE.slice(5).replace('-', '/') }) : fill(dropOnly ? it.titleDrop : it.title, { name: itemSeoName(lang, i) }),
         desc: itemDesc(lang, i),
         body: itemBody(lang, i),
         modules: ['item.js'],
@@ -3412,7 +3400,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
 ).concat(
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/forgotten-hollow/'}, {path:'/updates/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
-  [{path:'/bosses/'}, ...PRICE_CATS.filter((c) => c.items.length).map((c) => ({ path: priceCatPath(c) }))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/bosses/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/quests/'}, ...QUESTS.filter(q=>!q.expired).map(q=>({path:questPath(q)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
   [{path:'/maps/'}, ...MAPS.filter(l=>l.availability==='open').map(l=>({path:mapPath(l)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [...new Set(guides.map((g) => g.lang)), ...LOCALES.map((l) => l.code)].map((l) => `<url><loc>${absUrl(langPath(l, '/guides/'))}</loc><lastmod>${guides.filter((g) => g.lang === (LANGS.includes(l) ? l : 'en')).map((g) => g.updated).sort().at(-1)}</lastmod></url>`),
