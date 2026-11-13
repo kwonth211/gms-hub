@@ -20,10 +20,10 @@ export function selectRoutes(rows, { level = null, band = null, job = '', goal =
 // name, link and date, so readers can check the conditions themselves.
 export function publicRates(r, evidence) {
   return (r.rates || []).map(x => {
-    if (x.src && typeof x.src === 'object') return x; // already public
+    if (x.src && typeof x.src === 'object') return { ...x, src: null }; // already public
     const s = evidence?.sources.find(e => e.id === x.src);
     return { exp: x.exp ?? null, mesos: x.mesos ?? null, level: x.level || '', job: x.job || '', party: x.party, basis: x.basis, note: x.note || null,
-      src: s ? { name: s.author || s.id, url: s.url, date: s.checked || '' } : null };
+      src: null };
   });
 }
 export function publicTrainingData(data, evidence = null) {
@@ -53,7 +53,7 @@ export function rateLines(rates, lang, tx = (s) => s) {
     const basis = lang === 'ko' ? BASIS.ko[x.basis] : tx(BASIS.en[x.basis]);
     const src = x.src ? `<a href="${esc(x.src.url)}" target="_blank" rel="noopener">${esc(x.src.name)}${x.src.date ? ` · ${esc(x.src.date.slice(5).replace('-', '/'))}` : ''}</a>` : '';
     const note = x.note ? esc(lang === 'ko' ? x.note.ko : x.note.en) : '';
-    return `<li class="tr-rate tr-rate-${esc(x.basis)}"><div class="tr-rate-n">${nums}</div><div class="tr-rate-who">${who}<div class="tr-rp tr-rp-basis">${basis}</div></div>${src ? `<div class="tr-rate-src" translate="no">${src}</div>` : ''}${note ? `<small>${note}</small>` : ''}</li>`;
+    return `<li class="tr-rate tr-rate-${esc(x.basis)}"><div class="tr-rate-n">${nums}</div><div class="tr-rate-who">${who}<div class="tr-rp tr-rp-basis">${basis}</div></div>${note ? `<small>${note}</small>` : ''}</li>`;
   }).join('');
 }
 // `prefix` is the page's own language path (/zh, /ja…); derived locales render with English text but must link to their own pages.
@@ -76,7 +76,7 @@ export function routeCards(rows, lang = 'ko', prefix = `/${lang}`) {
     const rates = r.rates || [];
     const best = bestRate(rates);
     const badge = best ? `<span class="tr-rate-badge tr-rate-${esc(best.basis)}" translate="no">${best.exp != null ? `${rateNum(best.exp, lang)} exp/h` : `${rateNum(best.mesos, lang)} ${tr('메소','mesos')}/h`}</span>` : '';
-    const rateBlock = rates.length ? `<div class="tr-rates"><h4>${tr('시간당 경험치·메소 (출처 있는 수치만)','EXP and mesos an hour (sourced figures only)')}</h4><ul>${rateLines(rates, lang, tx)}</ul></div>` : '';
+    const rateBlock = rates.length ? `<div class="tr-rates"><h4>${tr('시간당 경험치·메소','EXP and mesos an hour')}</h4><ul>${rateLines(rates, lang, tx)}</ul></div>` : '';
     return `<details class="tr-row" id="route-${esc(r.id)}" data-route="${esc(r.id)}">
 <summary><span class="tr-lv"><b>Lv. ${r.level.min}–${r.level.max}</b>${bar}</span><span class="tr-name"><strong>${esc(r.title[lang])}</strong>${badge}<span class="tr-who">${who.map(w => `<span>${w}</span>`).join('')}</span></span><span class="tr-mobs">${mobs}</span><span class="tr-acc">${acc != null ? `<span><span class="sr-only">${tr('필요 명중','Accuracy')} </span>${acc}</span>` : '<span>–</span>'}<small>${acc != null ? tr(`Lv. ${r.level.min} 기준`, `at Lv. ${r.level.min}`) : ''}</small></span></summary>
 <div class="tr-detail"><p>${esc(r.summary[lang])}</p>${rateBlock}<dl>${item(tr('진입 기준','Before moving'),r.entry)}${item(tr('물약과 비용','Supplies and costs'),r.cost)}${item(tr('가는 길과 동선','Access and rotation'),r.route)}${item(tr('옮길 때','When to move'),r.exit)}${item(tr('자리 없을 때','Alternative'),r.alternative)}</dl></div></details>`;

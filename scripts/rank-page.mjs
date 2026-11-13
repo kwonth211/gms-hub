@@ -14,7 +14,7 @@ export function rankBody({ lang, link, classes }) {
     .map(([job, key]) => { const c = classes.find((x) => x.job === key); return [job, { job: key, guide: c?.guide ? link(`/guides/${c.guide}/`) : null }]; }));
   return `<section class="page-head wrap"><h1>${ko ? '글클메 캐릭터 랭킹' : 'Character rankings'}</h1>
 <p class="lead">${ko ? '윈디아(클래식 월드) 레벨 순위 상위 1,000명과 직업 분포예요. 내 캐릭터를 검색하면 순위와 함께 내 레벨·직업에 맞는 사냥터와 가이드로 바로 이어 드려요.' : 'The top 1,000 characters on Windia (Classic World) by level, and which classes they play. Look up your character for its rank, then go straight to training spots and the guide for your level and class.'}</p>
-<p class="muted small rank-source">${ko ? `랭킹 데이터 출처: ${SOURCE} · 1시간마다 갱신` : `Ranking data: ${SOURCE} · refreshed hourly`}</p></section>
+<p class="muted small rank-source">${ko ? '1시간마다 갱신' : 'Refreshed hourly'}</p></section>
 <div class="wrap rank-page" id="rank-page" data-train="${esc(link('/tools/training/'))}" data-jobs="${esc(JSON.stringify(jobLinks))}">
 <dl class="rank-stats" id="rank-stats" aria-live="polite"></dl>
 <form class="panel rank-find" id="rank-find" role="search">

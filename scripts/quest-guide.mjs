@@ -139,7 +139,7 @@ ${tabs.map(table).join('')}
 
   const sources = `<section class="gq-sources"><h2>${tr('정리에 쓴 자료', 'Sources')}</h2><p class="muted small">${tr('퀘스트 조건·처치 수·보상은 게임 클라이언트 데이터에서 그대로 가져왔고, NPC 위치·가는 길·팁은 아래 공략을 교차 확인했어요.', 'Conditions, kill counts and rewards are read straight from the game client data; NPC spots, routes and tips were cross-checked against these guides.')}</p><ul>${guide.sources.map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener" translate="no">${esc(s.name)}</a> <small>${esc(s.date)}</small></li>`).join('')}</ul></section>`;
 
-  return `${head}<div class="wrap gq-page">${summary}<div class="gq-cols">${list}<div class="gq-right">${now}<div class="gq-main">${parts}</div></div></div>${shopping}${extras}${sources}</div>
+  return `${head}<div class="wrap gq-page">${summary}<div class="gq-cols">${list}<div class="gq-right">${now}<div class="gq-main">${parts}</div></div></div>${shopping}${extras}</div>
 <script id="gq-data" type="application/json">${JSON.stringify({ lang, key: guide.storeKey || `gms-quest-${guide.slug}`, api: apiBase, places: guide.places, prices: data.priceIds,
     chains: data.chains.map((c) => ({ id: c.id, title: L(c.title).split(/ — /)[0], steps: c.steps.map((s) => s.id) })),
     steps: all.map((s) => ({ id: s.id, name: s.name, at: s.at, go: s.go || null, hunt: s.hunt || [], exp: s.exp, do: L(s.do),

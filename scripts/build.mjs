@@ -120,7 +120,7 @@ const T = {
     level: '내 레벨',
     showSpots: '찾기',
     trResultTitle: '{lv}레벨 추천 사냥터',
-    trNone: '이 레벨을 추천 구간에 넣은 출처가 없어요.',
+    trNone: '이 레벨을 추천 구간에 넣은 자료가 없어요.',
     agree: '{n}곳 추천',
     higher: '내 레벨보다 {d} 높음',
     expHr: '최대 경험치/시간',
@@ -187,11 +187,11 @@ const T = {
     boxUpcoming: '예정 확률',
     boxSearch: '아이템 이름 검색',
     monsterHeading: '몬스터 드롭률',
-    monsterNote: '넥슨 공식 확률 페이지에는 랜덤박스 확률만 있고 몬스터 드롭률은 없어요. 그래서 여기에는 출처가 확인된 드롭률만 올려요.',
+    monsterNote: '넥슨 공식 확률 페이지에는 랜덤박스 확률만 있고 몬스터 드롭률은 없어요. 그래서 여기에는 확인된 드롭률만 올려요.',
     dbHeading: '몬스터 드롭률 데이터',
     dbLead: '행을 누르면 계산기에 바로 들어가요.',
     dbSearch: '몬스터나 아이템 이름 검색',
-    dbEmpty: '아직 출처가 확인된 드롭률이 없어요. 몬스터별 드롭 목록은 사이트 모음의 DB 사이트에서 볼 수 있어요.',
+    dbEmpty: '아직 확인된 드롭률이 없어요. 몬스터별 드롭 목록은 사이트 모음의 DB 사이트에서 볼 수 있어요.',
     colMob: '몬스터',
     colItem: '아이템',
     colRate: '드롭률',
@@ -251,7 +251,7 @@ const T = {
 <h2>1. 서비스 성격</h2>
 <p>사이트는 글로벌 메이플스토리 클래식 월드 관련 외부 사이트 링크와 계산 도구를 무료로 제공하는 <strong>비공식 팬 사이트</strong>예요. 넥슨(NEXON)이 운영하거나 보증하는 서비스가 아니에요.</p>
 <h2>2. 정보의 정확성</h2>
-<p>사이트의 설명과 숫자는 표시된 출처와 확인 날짜를 기준으로 해요. 게임 업데이트나 출처 변경으로 실제와 달라질 수 있고, 계산기 결과는 입력값과 공개된 확률에 따른 이론값이에요. 사이트 정보를 근거로 한 거래나 게임 내 결정의 결과에 대해 책임지지 않아요.</p>
+<p>사이트의 설명과 숫자는 확인한 시점을 기준으로 해요. 게임 업데이트로 실제와 달라질 수 있고, 계산기 결과는 입력값과 공개된 확률에 따른 이론값이에요. 사이트 정보를 근거로 한 거래나 게임 내 결정의 결과에 대해 책임지지 않아요.</p>
 <h2>3. 외부 링크</h2>
 <p>수록한 외부 사이트는 각 운영자가 관리해요. 링크를 수록한 것은 해당 사이트의 내용, 안전성, 개인정보 처리를 보증한다는 뜻이 아니에요. 현금 거래 사이트는 수록하지 않아요.</p>
 <h2>4. 추천 기능</h2>
@@ -464,7 +464,7 @@ const T = {
 <h2>1. What the site is</h2>
 <p>The site is a free, <strong>unofficial fan site</strong> offering links to Global MapleStory Classic World resources and calculators. It is not operated or endorsed by NEXON.</p>
 <h2>2. Accuracy</h2>
-<p>Descriptions and numbers are based on the sources and check dates shown. They may change with game updates or source revisions, and calculator results are theoretical values from your inputs and published rates. We are not responsible for trades or in-game decisions made on the basis of this information.</p>
+<p>Descriptions and numbers reflect the time they were checked. They may change with game updates, and calculator results are theoretical values from your inputs and published rates. We are not responsible for trades or in-game decisions made on the basis of this information.</p>
 <h2>3. External links</h2>
 <p>Listed sites are run by their own operators. Listing a link does not vouch for its content, safety or privacy practices. We do not list real-money trading sites.</p>
 <h2>4. Recommendations</h2>
@@ -684,8 +684,8 @@ function header(lang, pagePath, only) {
   // the "more" menu and in the header search, so nothing is lost, just out of the way.
   const tabs = [
     ['/tools/market/', 'coin', t.navMarket],
+    ['/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Megaphones'],
     ['/tools/training/', 'sword', t.navTraining],
-    ['/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monsters'],
     ['/quests/', 'scroll', lang === 'ko' ? '퀘스트' : 'Quests'],
     guides.some((g) => g.lang === lang) && ['/guides/', 'book', t.navGuides]
   ].filter(Boolean);
@@ -697,9 +697,9 @@ function header(lang, pagePath, only) {
     ['/tools/drop-rate/', 'bag', t.navDrop],
     ['/tools/damage/', 'hammer', DMG[lang].h1]
   ];
-  // The megaphone page left the tabs when the live-viewer pill squeezed them (2026-11-13); the ticker above the header
-  // already opens it, and it stays in the "more" menu and the search.
-  const moved = [['/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Megaphones'], ['/', 'star', t.navLinks]];
+  // Live megaphones are a main feature and keep a tab; the monster database moved to the "more" menu (2026-11-13, user
+  // request) so the tabs fit beside the live-viewer pill. Monsters stay one search away.
+  const moved = [['/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monsters'], ['/', 'star', t.navLinks]];
   // English labels that would break mid-word on a phone ("Calcul/ator") get a one-word form there.
   // The newest tab carries a small N so returning visitors notice it.
   const NEW_TAB = UPDATES.find((u) => [...tabs, ...toolItems].some(([p]) => p === u.path.split('#')[0]))?.path.split('#')[0] || '/quests/';
@@ -887,7 +887,7 @@ function siteCard(lang, s) {
   const feats = s.features[lang].map((f) => `<li>${esc(f)}</li>`).join('');
   const unverified = s.checked === false ? `<p class="stat-line"><strong>${lang === 'ko' ? '접속·본문 미확인' : 'Access and content not yet verified'}</strong></p>` : '';
   const stat = s.stat
-    ? `<p class="stat-line"><strong>${esc(s.stat[lang])}</strong> <span>${t.statSource}: ${esc(s.stat.source)} · ${esc(s.stat.date)}</span></p>`
+    ? `<p class="stat-line"><strong>${esc(s.stat[lang])}</strong></p>`
     : '';
   const search = `${s.name} ${s.nameEn || ''} ${host(s.url)} ${s.desc.ko} ${s.desc.en} ${s.features.ko.join(' ')} ${s.features.en.join(' ')}`.toLowerCase();
   return `<article class="site-card" data-url="${esc(s.url)}" data-id="${siteId(s.url)}" data-search="${esc(search)}">
@@ -1018,9 +1018,7 @@ function homeBody(lang) {
   const faq = sites.faq
     .map(
       (f) =>
-        `<details><summary>${esc(f.q[lang])}</summary><p>${esc(f.a[lang])}</p>${
-          f.sources.length ? `<p class="src">${t.sourcesLabel}: ${f.sources.map((u) => srcLink(u)).join(' · ')}</p>` : ''
-        }</details>`
+        `<details><summary>${esc(f.q[lang])}</summary><p>${esc(f.a[lang])}</p></details>`
     )
     .join('');
   const tool = (p, icon, title, desc) =>
@@ -1173,11 +1171,11 @@ function ratesTable(lang) {
   const party = { ko: { solo: '솔로', party: '파티' }, en: { solo: 'solo', party: 'party' } };
   const rows = training.routes.flatMap((r) => (r.rates || []).map((x) => ({ r, x }))).sort((a, b) => a.r.level.min - b.r.level.min || order[a.x.basis] - order[b.x.basis]);
   const cell = (x) => [x.x.exp != null && `${rateNum(x.x.exp, lang)}`, x.x.mesos != null && `${tr('메소 ', 'mesos ')}${rateNum(x.x.mesos, lang)}`];
-  return `<section class="panel tr-rate-table-wrap" id="rates"><h2>${tr('사냥터별 시간당 경험치·메소 (출처 있는 수치)', 'EXP and mesos an hour by map (sourced figures)')}</h2>
+  return `<section class="panel tr-rate-table-wrap" id="rates"><h2>${tr('사냥터별 시간당 경험치·메소', 'EXP and mesos an hour by map')}</h2>
 <p class="muted">${tr('유튜브 실측 영상과 커뮤니티 후기에서 직접 재거나 계산한 수치만 모았어요. 직업·레벨·파티 인원·장비에 따라 달라지니 조건을 꼭 같이 보세요. 참고로 출시 첫 주 전체 유저 평균은 시간당 메소 약 2.1만이었어요(Maple Math, 962시간 트래커 집계).', 'Only figures measured or calculated in YouTube videos and community posts. They depend on class, level, party size and gear, so read the conditions. For scale, launch-week trackers averaged about 21k mesos an hour across all players (Maple Math, 962 tracked hours).')}</p>
-<div class="tr-rate-scroll"><table class="tr-rate-table"><thead><tr><th>${tr('레벨', 'Level')}</th><th>${tr('사냥터', 'Map')}</th><th>${tr('경험치/시간', 'EXP/h')}</th><th>${tr('메소/시간', 'Mesos/h')}</th><th>${tr('조건', 'Conditions')}</th><th>${tr('근거', 'Source')}</th></tr></thead><tbody>${rows.map(({ r, x }) => {
+<div class="tr-rate-scroll"><table class="tr-rate-table"><thead><tr><th>${tr('레벨', 'Level')}</th><th>${tr('사냥터', 'Map')}</th><th>${tr('경험치/시간', 'EXP/h')}</th><th>${tr('메소/시간', 'Mesos/h')}</th><th>${tr('조건', 'Conditions')}</th></tr></thead><tbody>${rows.map(({ r, x }) => {
     const who = [x.level && `<div class="tr-rp" translate="no">Lv ${esc(x.level)}</div>`, x.job && `<div class="tr-rp">${esc(jobNames[lang][x.job])}</div>`, `<div class="tr-rp">${party[lang][x.party]}</div>`].filter(Boolean).join('');
-    return `<tr class="tr-rate-${esc(x.basis)}"><td translate="no">${r.level.min}–${r.level.max}</td><td><a href="#route-${esc(r.id)}">${esc(r.title[lang])}</a></td><td translate="no">${x.exp != null ? rateNum(x.exp, lang) : '—'}</td><td translate="no">${x.mesos != null ? rateNum(x.mesos, lang) : '—'}</td><td><div class="tr-rate-who">${who}<div class="tr-rp tr-rp-basis">${basis[lang][x.basis]}</div></div>${x.note ? `<small>${esc(lang === 'ko' ? x.note.ko : x.note.en)}</small>` : ''}</td><td translate="no">${x.src ? `<a href="${esc(x.src.url)}" target="_blank" rel="noopener">${esc(x.src.name)}</a><small>${esc(x.src.date)}</small>` : ''}</td></tr>`;
+    return `<tr class="tr-rate-${esc(x.basis)}"><td translate="no">${r.level.min}–${r.level.max}</td><td><a href="#route-${esc(r.id)}">${esc(r.title[lang])}</a></td><td translate="no">${x.exp != null ? rateNum(x.exp, lang) : '—'}</td><td translate="no">${x.mesos != null ? rateNum(x.mesos, lang) : '—'}</td><td><div class="tr-rate-who">${who}<div class="tr-rp tr-rp-basis">${basis[lang][x.basis]}</div></div>${x.note ? `<small>${esc(lang === 'ko' ? x.note.ko : x.note.en)}</small>` : ''}</td></tr>`;
   }).join('')}</tbody></table></div>
 <p class="muted small">${tr('실측 = 영상에서 10분 이상 직접 잰 값 · 계산 = 젠 수와 처치 속도로 계산한 값 · 모델 추정 = NiaMeowDB 상한 모델(실제는 더 낮음) · 커뮤니티 = 게시판 후기.', 'Measured = timed in the video for 10+ minutes · calculated = from spawn counts and kill speed · model = NiaMeowDB ceiling (real rates are lower) · community = forum posts.')}</p></section>`;
 }
@@ -1301,7 +1299,6 @@ function scrollBody(lang) {
 <h2>${t.ladderTable}</h2>
 <div class="table-wrap"><table class="data"><thead><tr><th>${t.colLadder}</th>${scrolls.tiers.map((s) => `<th>${esc(tierName(lang, s))}</th>`).join('')}<th>${t.colExpected}</th></tr></thead><tbody>${ladderRows}</tbody></table></div>
 <ul class="notes"><li>${esc(scrolls.disputed[lang])}</li><li>${esc(scrolls.unknown[lang])}</li></ul>
-<p class="src">${t.sourcesLabel}: ${scrolls.sources.map((s) => `${srcLink(s.url, s.name)}${s.date ? ` (${s.date})` : ''}`).join(' · ')}</p>
 </section>
 ${scrollGuide(lang)}
 </div>
@@ -1382,7 +1379,7 @@ const PR = {
       ['meowdb', '유저가 직접 제보한 가격의 최근 14일 중앙값이에요. 한국어 화면을 지원해요.']
     ],
     reportNote: '올린 가격은 누가 올렸는지 알 수 없게 저장돼요(접속 주소는 되돌릴 수 없는 값으로만 바꿔 도배를 막는 데 써요). 중앙값에서 5배 넘게 벗어난 가격은 오타로 보고 빼요.',
-    sourceNote: '아이템 이름은 글로벌 메이플스토리 클래식 월드 게임 데이터에 들어 있는 공식 한국어·영어 이름이에요(maplestory.io 제공). 캐릭터 외형, 퀘스트 아이템, 캐시 아이템은 거래가 안 돼서 뺐어요. 사이트마다 시세가 다를 수 있으니 비싼 물건은 두세 곳을 같이 보세요.',
+    sourceNote: '아이템 이름은 글로벌 메이플스토리 클래식 월드 게임 데이터에 들어 있는 공식 한국어·영어 이름이에요. 캐릭터 외형, 퀘스트 아이템, 캐시 아이템은 거래가 안 돼서 뺐어요. 사이트마다 시세가 다를 수 있으니 비싼 물건은 두세 곳을 같이 보세요.',
     tradingLink: '거래글 약어와 메소 빚 규칙은 <a href="{href}">거래와 메소 가이드</a>에 정리했어요.'
   },
   en: {
@@ -1435,7 +1432,7 @@ const PR = {
       ['meowdb', '14-day median of player-reported prices.']
     ],
     reportNote: 'Reports are stored anonymously (your connection address is only kept as a one-way hash to stop spam). Prices more than 5x away from the median are treated as typos and left out.',
-    sourceNote: 'Item names come from the MapleStory Classic World game data (via maplestory.io). Hair, faces, quest items and cash items are left out because they cannot be traded. Trackers can disagree, so check two or three before a big trade.',
+    sourceNote: 'Item names come from the MapleStory Classic World game data. Hair, faces, quest items and cash items are left out because they cannot be traded. Trackers can disagree, so check two or three before a big trade.',
     tradingLink: ''
   }
 };
@@ -1967,10 +1964,10 @@ function dropBody(lang) {
     ? drops.entries
         .map(
           (d) => `<tr data-rate="${esc(d.rate)}" data-search="${esc(`${d.monster} ${d.item}`.toLowerCase())}" tabindex="0">
-<td>${esc(d.monster)}</td><td>${esc(d.item)}</td><td>${esc(d.rate)}%</td><td>${d.source ? srcLink(d.source) : '—'}</td><td>${esc(d.note || '')}</td></tr>`
+<td>${esc(d.monster)}</td><td>${esc(d.item)}</td><td>${esc(d.rate)}%</td><td>${esc(d.note || '')}</td></tr>`
         )
         .join('')
-    : `<tr><td colspan="5" class="muted">${t.dbEmpty}</td></tr>`;
+    : `<tr><td colspan="4" class="muted">${t.dbEmpty}</td></tr>`;
   return `${pageHead(lang, 'bag', t.dropH1, t.dropLead)}
 <div class="wrap">
 ${dropFinder(lang)}
@@ -2008,11 +2005,10 @@ ${tb.phase === 'upcoming' && bx.effective ? `<p class="muted small">${esc(bx.eff
       .join('')}</tbody></table></div>`
   )
   .join('')}
-<p class="src">${t.sourcesLabel}: ${srcLink(bx.url, `${t.boxPost} (${bx.name})`)}</p>
 </div>`
   )
   .join('')}
-<p class="muted small">${esc(boxes.note[lang])} · ${srcLink(boxes.source, 'nexon.com')} · ${t.dataUpdated}: ${esc(boxes.updated)}</p>
+<p class="muted small">${esc(boxes.note[lang])} · ${t.dataUpdated}: ${esc(boxes.updated)}</p>
 </section>
 <section>
 <h2>${t.monsterHeading}</h2>
@@ -2020,10 +2016,10 @@ ${tb.phase === 'upcoming' && bx.effective ? `<p class="muted small">${esc(bx.eff
 ${drops.entries.length
   ? `<p class="muted">${esc(t.dbLead)}</p>
 <input id="db-search" class="search-small" type="search" placeholder="${esc(t.dbSearch)}" aria-label="${esc(t.dbSearch)}">
-<div class="table-wrap"><table class="data clickable" id="drop-db"><thead><tr><th>${t.colMob}</th><th>${t.colItem}</th><th>${t.colRate}</th><th>${t.colSource}</th><th>${t.colNote}</th></tr></thead><tbody>${rows}</tbody></table></div>
+<div class="table-wrap"><table class="data clickable" id="drop-db"><thead><tr><th>${t.colMob}</th><th>${t.colItem}</th><th>${t.colRate}</th><th>${t.colNote}</th></tr></thead><tbody>${rows}</tbody></table></div>
 <p class="muted small">${t.dataUpdated}: ${esc(drops.updated)}</p>`
   : // An empty table read as a broken feature; until a sourced rate exists, point to where drop lists live and to the calculator.
-    `<p>${lang === 'ko' ? `아직 출처가 확인된 몬스터 드롭률은 없어요. 대신 <a href="${href(langPath(lang, '/monsters/'))}">몬스터 도감</a>에서 몬스터 ${MONSTERS.monsters.length}종의 드롭 아이템 목록을 볼 수 있어요. 다른 곳에서 확인한 확률을 위 계산기에 넣으면 몇 마리를 잡아야 하는지 바로 나와요.` : `No sourced monster drop rates yet. The <a href="${href(langPath(lang, '/monsters/'))}">monster database</a> lists the reported drops of ${MONSTERS.monsters.length} monsters; put a rate you trust into the calculator above to see how many kills it takes.`}</p>
+    `<p>${lang === 'ko' ? `아직 확인된 몬스터 드롭률은 없어요. 대신 <a href="${href(langPath(lang, '/monsters/'))}">몬스터 도감</a>에서 몬스터 ${MONSTERS.monsters.length}종의 드롭 아이템 목록을 볼 수 있어요. 다른 곳에서 확인한 확률을 위 계산기에 넣으면 몇 마리를 잡아야 하는지 바로 나와요.` : `No sourced monster drop rates yet. The <a href="${href(langPath(lang, '/monsters/'))}">monster database</a> lists the reported drops of ${MONSTERS.monsters.length} monsters; put a rate you trust into the calculator above to see how many kills it takes.`}</p>
 <h3>${lang === 'ko' ? '파밍하러 많이 가는 몬스터의 드롭 목록' : 'Drop lists of monsters players farm'}</h3>
 <ul class="monster-routes">${MONSTERS.monsters.filter((m) => MONSTER_NOTES.notes[m.id]?.drops?.length).sort((a, b) => a.lv - b.lv).slice(0, 12).map((m) => `<li><a href="${href(langPath(lang, monsterPath(m)))}#monster-drops"><img class="mob-sprite" src="${href(`/assets/monsters/${m.id}.gif`)}" width="32" height="32" alt="" loading="lazy"><strong>${esc(monsterName(m, lang))}</strong><small>Lv. ${m.lv}</small></a></li>`).join('')}</ul>`}
 </section>

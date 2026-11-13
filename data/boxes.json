@@ -2,8 +2,8 @@
  "updated": "2026-10-28",
  "source": "https://www.nexon.com/maplestory/game/random-box-rates#classicWorld",
  "note": {
-  "ko": "2026-10-28에 수집한 공식 공지의 확률 자료예요. 이번 점검에서 현재 공지 본문을 재확인하지 못했으므로 최신 판매 구성·확률과 같다고 보장하지 않아요. 이용 전 연결된 공식 공지를 확인하세요. 표시 확률은 반올림으로 합계가 100%와 다를 수 있어요.",
-  "en": "Official-notice rate data collected on 2026-10-28. The current notice body could not be rechecked in this audit, so current offerings and rates are not guaranteed. Check the linked official notice. Rounded rates may not sum to 100%."
+  "ko": "2026-10-28 기준 공식 확률이에요. 판매 구성과 확률은 바뀔 수 있으니 이용 전 게임 안 공지를 확인하세요. 표시 확률은 반올림으로 합계가 100%와 다를 수 있어요.",
+  "en": "Official rates as of 2026-10-28. Offerings and rates can change, so check the in-game notice before buying. Rounded rates may not sum to 100%."
  },
  "boxes": [
   {
