@@ -309,22 +309,6 @@
      }
     },
     {
-     "exp": [
-      60000,
-      69000
-     ],
-     "mesos": null,
-     "level": "21~30",
-     "job": "",
-     "party": "party",
-     "basis": "report",
-     "src": "maplemath-kpq",
-     "note": {
-      "ko": "러시·보너스 모두 약 6만, 한 유저는 러시 6.9만 vs 보너스 6.3만; 60k면 21→22 약 25분",
-      "en": "About 60k either way; one player 69k rush vs 63k bonus; at 60k, 21→22 takes ~25 min"
-     }
-    },
-    {
      "exp": 60000,
      "mesos": null,
      "level": "27~29",
@@ -348,6 +332,48 @@
      "note": {
       "ko": "보너스 맵 솔로(파티 완료 후 혼자 남기), 20~25분 뒤 퇴장",
       "en": "Bonus map solo after the party leaves; kicked after 20–25 min"
+     }
+    },
+    {
+     "exp": 40000,
+     "mesos": null,
+     "level": "21~24",
+     "job": "assassin",
+     "party": "party",
+     "basis": "measured",
+     "src": "omer-1-30",
+     "note": {
+      "ko": "로그, 20대 초반 커파",
+      "en": "Rogue, KPQ in the low 20s"
+     }
+    },
+    {
+     "exp": 60000,
+     "mesos": null,
+     "level": "25~29",
+     "job": "assassin",
+     "party": "party",
+     "basis": "measured",
+     "src": "omer-1-30",
+     "note": {
+      "ko": "로그, 20대 후반 커파; 보너스 솔로는 8만+",
+      "en": "Rogue, KPQ in the high 20s; bonus solo 80k+"
+     }
+    },
+    {
+     "exp": [
+      60000,
+      69000
+     ],
+     "mesos": null,
+     "level": "21~30",
+     "job": "",
+     "party": "party",
+     "basis": "report",
+     "src": "maplemath-kpq",
+     "note": {
+      "ko": "러시·보너스 모두 약 6만, 한 유저는 러시 6.9만 vs 보너스 6.3만; 60k면 21→22 약 25분",
+      "en": "About 60k either way; one player 69k rush vs 63k bonus; at 60k, 21→22 takes ~25 min"
      }
     }
    ]
@@ -572,6 +598,24 @@
    "mobIds": [
     19,
     21
+   ],
+   "rates": [
+    {
+     "exp": null,
+     "mesos": [
+      25000,
+      50000
+     ],
+     "level": "30+",
+     "job": "cleric",
+     "party": "solo",
+     "basis": "measured",
+     "src": "cider-classic-guide",
+     "note": {
+      "ko": "클레릭, 1~2타; 물약 소비에 따라 다름",
+      "en": "Cleric one- or two-shotting; varies with potion use"
+     }
+    }
    ]
   },
   {
@@ -685,6 +729,19 @@
     32
    ],
    "rates": [
+    {
+     "exp": 120000,
+     "mesos": null,
+     "level": "40",
+     "job": "cleric",
+     "party": "solo",
+     "basis": "measured",
+     "src": "cider-classic-guide",
+     "note": {
+      "ko": "지하철 B2(1호선 2구역) 힐 사냥 솔로 1분 2,000; 2인 1,500 · 3~4인 1,200/분",
+      "en": "Heal-training subway B2 (Line 1 Area 2) solo 2,000/min; duo 1,500, 3–4 players 1,200/min"
+     }
+    },
     {
      "exp": null,
      "mesos": 99000,
@@ -967,6 +1024,27 @@
     35,
     20,
     22
+   ],
+   "rates": [
+    {
+     "exp": [
+      138000,
+      144000
+     ],
+     "mesos": [
+      70000,
+      100000
+     ],
+     "level": "40~45",
+     "job": "",
+     "party": "solo",
+     "basis": "measured",
+     "src": "jinsil-west-rocky",
+     "note": {
+      "ko": "10분 실측 분당 2,380; 메소 시간당 최소 7만, 장비 잘 뜨면 10만; 원숭이숲·콜드아이 파티(분당 2,100~2,300, 메소 1~3만)보다 나음",
+      "en": "10-min test 2,380/min; at least 70k mesos an hour, up to 100k with gear drops; beats Monkey Forest / Cold Eye parties (2,100–2,300/min, 10–30k mesos)"
+     }
+    }
    ]
   },
   {
@@ -1028,6 +1106,19 @@
     23
    ],
    "rates": [
+    {
+     "exp": 90000,
+     "mesos": null,
+     "level": "35~37",
+     "job": "spear",
+     "party": "solo",
+     "basis": "measured",
+     "src": "chueok-evileye-35-40",
+     "note": {
+      "ko": "스피어맨 확정 1킬 기준 1분 1,500 실측; 메소 마리당 50~60, 커즈아이굴보다 잘 모임; 이블아이 물방 10",
+      "en": "Spearman one-shotting: 1,500/min measured; 50–60 mesos a kill, better than Curse Eyes; Evil Eye has 10 defense"
+     }
+    },
     {
      "exp": 75000,
      "mesos": null,
@@ -1332,22 +1423,6 @@
    ],
    "rates": [
     {
-     "exp": [
-      200000,
-      240000
-     ],
-     "mesos": null,
-     "level": "",
-     "job": "",
-     "party": "party",
-     "basis": "community",
-     "src": "dc-wraith-party",
-     "note": {
-      "ko": "\"2확컷끼리 빡사하면 20~24만\"",
-      "en": "\"20–24만 with a party of two-shotters\""
-     }
-    },
-    {
      "exp": null,
      "mesos": [
       110000,
@@ -1361,6 +1436,22 @@
      "note": {
       "ko": "크리티컬 리커버리 어쌔신, 레이스류 맵 순메소; 40~50대도 5만+",
       "en": "Assassin with Critical Recovery on wraith maps, net; 50k+ even in the 40s–50s"
+     }
+    },
+    {
+     "exp": [
+      200000,
+      240000
+     ],
+     "mesos": null,
+     "level": "",
+     "job": "",
+     "party": "party",
+     "basis": "community",
+     "src": "dc-wraith-party",
+     "note": {
+      "ko": "\"2확컷끼리 빡사하면 20~24만\"",
+      "en": "\"20–24만 with a party of two-shotters\""
      }
     },
     {
@@ -1436,6 +1527,27 @@
    },
    "mobIds": [
     37
+   ],
+   "rates": [
+    {
+     "exp": [
+      126000,
+      138000
+     ],
+     "mesos": [
+      10000,
+      30000
+     ],
+     "level": "40~45",
+     "job": "",
+     "party": "party",
+     "basis": "measured",
+     "src": "jinsil-west-rocky",
+     "note": {
+      "ko": "원숭이숲 콜드아이 파티: 분당 평균 2,100, 최대 2,300; 물약값 커서 메소는 적음",
+      "en": "Monkey Forest Cold Eye party: average 2,100/min, up to 2,300; potion-heavy, so little meso"
+     }
+    }
    ]
   },
   {
@@ -1682,6 +1794,19 @@
    ],
    "rates": [
     {
+     "exp": 265000,
+     "mesos": 80000,
+     "level": "75",
+     "job": "",
+     "party": "party",
+     "basis": "measured",
+     "src": "samool-spawn-party",
+     "note": {
+      "ko": "페리온 발굴지 새 맵, 강한 파티 기준; 젠이 느린 대신 마리당 경험치 큼",
+      "en": "New Perion excavation map with a strong party; slow spawns but big EXP per kill"
+     }
+    },
+    {
      "exp": 296000,
      "mesos": null,
      "level": "63+",
@@ -1871,6 +1996,21 @@
    "mobIds": [
     35,
     38
+   ],
+   "rates": [
+    {
+     "exp": 110000,
+     "mesos": 70000,
+     "level": "55",
+     "job": "assassin",
+     "party": "solo",
+     "basis": "measured",
+     "src": "cm3-36-70",
+     "note": {
+      "ko": "원숭이숲 2, Lv55 어쌔신 테스트: 경험치는 낮지만 메소는 가장 많이 남음",
+      "en": "Monkey Forest II, Lv55 assassin test: lower EXP but the most mesos kept"
+     }
+    }
    ]
   },
   {
@@ -2030,7 +2170,35 @@
     "en": "Without a party, test the one-hit condition at the Evil Eye cave."
    },
    "advanced": false,
-   "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님."
+   "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
+   "rates": [
+    {
+     "exp": 75000,
+     "mesos": null,
+     "level": "30~35",
+     "job": "mage",
+     "party": "party",
+     "basis": "report",
+     "src": "voyage-ligator-party",
+     "note": {
+      "ko": "10/30 법사 원킬 2번 자리 10분 25,000 환산(젠 조정 전)",
+      "en": "Mage one-shotting at spot 2, 25,000 per 10 min scaled (before the spawn change)"
+     }
+    },
+    {
+     "exp": 112000,
+     "mesos": null,
+     "level": "30~33",
+     "job": "",
+     "party": "party",
+     "basis": "report",
+     "src": "voyage-ligator-party",
+     "note": {
+      "ko": "11/1 투킬 파티 트래커 평균 분당 1,863(젠 조정 후); 30분 제한·클리어 상자 없음",
+      "en": "Two-shot party, tracker average 1,863/min (after the spawn change); 30-min limit, no clear box"
+     }
+    }
+   ]
   },
   {
    "id": "excavation2",
@@ -2985,19 +3153,6 @@
    ],
    "rates": [
     {
-     "exp": 159000,
-     "mesos": null,
-     "level": "50~55",
-     "job": "spear",
-     "party": "party",
-     "basis": "calc",
-     "src": "chueok-spearman-50-70",
-     "note": {
-      "ko": "4인 1인당 2,040/분 + 파티 보너스; 50레벨 4.5시간/렙",
-      "en": "4-person party per person 2,040/min plus party bonus; ~4.5 h per level at 50"
-     }
-    },
-    {
      "exp": 27000,
      "mesos": 80000,
      "level": "28",
@@ -3008,6 +3163,19 @@
      "note": {
       "ko": "뿔버섯 나무꾼(파티 밖): 실측 2.7만 exp(최대 3.9만) + 알바비 8만(수수료 후 7.6만)+드랍",
       "en": "Horny Mushroom \"woodcutter\" outside the party: 27k EXP (max 39k) + 80k wage (76k after fee) + drops"
+     }
+    },
+    {
+     "exp": 159000,
+     "mesos": null,
+     "level": "50~55",
+     "job": "spear",
+     "party": "party",
+     "basis": "calc",
+     "src": "chueok-spearman-50-70",
+     "note": {
+      "ko": "4인 1인당 2,040/분 + 파티 보너스; 50레벨 4.5시간/렙",
+      "en": "4-person party per person 2,040/min plus party bonus; ~4.5 h per level at 50"
      }
     }
    ]
