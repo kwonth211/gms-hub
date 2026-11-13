@@ -62,7 +62,7 @@ export function indexEntry(entry) {
   };
 }
 
-export function searchEntries(entries, query) {
+function searchCore(entries, query) {
   const flat = normalize(query);
   if (!flat) return [];
   const words = String(query).trim().split(/\s+/u).map(normalize).filter(Boolean);
@@ -96,4 +96,41 @@ export function searchEntries(entries, query) {
   }).filter(({ score }) => score > 0)
     .sort((a, b) => b.score - a.score || a.order - b.order)
     .map(({ entry, score }) => ({ ...entry, score }));
+}
+
+// English players type gear shorthand ("glove att 60", "zhelm", "gfa", "helm str"). Latin queries are also tried with those
+// words spelled out; tier percents map to the Classic tiers (100% Lesser, 60% Intermediate, 10% Greater). Results of both
+// spellings are merged, keeping the best score per entry, so a literal name match is never lost.
+const EN_WHOLE = { zhelm: 'zakum helmet', zhelmet: 'zakum helmet', zakhelm: 'zakum helmet', steelies: 'steely', steelys: 'steely',
+  ilbis: 'ilbi', gfa: 'gloves attack', gfatt: 'gloves attack', gma: 'gloves magic attack', gfma: 'gloves magic attack',
+  pelix: 'power elixir', pelixir: 'power elixir', elix: 'elixir', melix: 'mana elixir' };
+const EN_WORD = { glove: 'gloves', earrings: 'earring', ear: 'earring', ears: 'earring', helm: 'hat', top: 'topwear',
+  bottom: 'bottomwear', bot: 'bottomwear', pants: 'bottomwear', shoe: 'shoes', boots: 'shoes', ova: 'overall', att: 'attack',
+  atk: 'attack', attk: 'attack', wa: 'attack', matt: 'magic attack', matk: 'magic attack', acc: 'accuracy', avoid: 'evasion',
+  avoidability: 'evasion', eva: 'evasion', spd: 'speed', jmp: 'jump', zak: 'zakum', '1h': 'one-handed', '2h': 'two-handed',
+  '100': 'lesser', '60': 'intermediate', '10': 'greater', ...EN_WHOLE };
+export function englishQuery(query) {
+  const raw = String(query).trim().toLowerCase();
+  if (!raw || !/^[a-z0-9%.\s-]+$/.test(raw)) return null;
+  const words = raw.replace(/%/g, '').replace(/([a-z])(\d)/g, '$1 $2').replace(/(\d)([a-z])/g, '$1 $2').split(/\s+/).filter(Boolean);
+  const out = words.map((w) => EN_WORD[w] || w).join(' ');
+  return out === raw ? null : out;
+}
+
+export function searchEntries(entries, query) {
+  const base = searchCore(entries, query);
+  const en = englishQuery(query);
+  if (!en) return base;
+  const best = new Map();
+  for (const hit of [...base, ...searchCore(entries, en)]) {
+    const key = `${hit.type}|${hit.id}`;
+    if (!best.has(key) || best.get(key).score < hit.score) best.set(key, hit);
+  }
+  // Among equal scores, names holding the typed words as whole words come first ("ear int 60": INT before "intermediate").
+  const words = en.split(/\s+/).map((w) => w.replace(/[^\p{L}\p{N}]+/gu, ' ').trim()).filter(Boolean);
+  const whole = (hit) => words.filter((w) => hit.wordNames?.some((n) => `${n} `.includes(` ${w} `))).length;
+  const order = new Map(entries.map((e, i) => [`${e.type}|${e.id}`, i]));
+  return [...best.values()].map((hit) => ({ hit, w: whole(hit) }))
+    .sort((a, b) => b.hit.score - a.hit.score || b.w - a.w || order.get(`${a.hit.type}|${a.hit.id}`) - order.get(`${b.hit.type}|${b.hit.id}`))
+    .map(({ hit }) => hit);
 }

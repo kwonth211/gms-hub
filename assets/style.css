@@ -2489,3 +2489,19 @@ body.exp-running .exp-stop { display: inline-flex; }
 .gq-videos > span { font-weight: 700; color: var(--accent-2); }
 .gq-videos a { padding: 2px 8px; border-radius: 6px; border: 1px solid var(--line); text-decoration: none; }
 .gq-videos a::before { content: '▶ '; font-size: 0.75em; }
+
+/* Calculators tab: one header tab that opens the EXP tracker and the three calculators (assets/common.js places the list). */
+.tool-menu { flex: none; display: flex; }
+.tool-menu > summary { list-style: none; cursor: pointer; }
+.tool-menu > summary::-webkit-details-marker { display: none; }
+.tool-menu > summary:focus-visible, .tool-opt:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.tool-menu[open] > summary { color: var(--text); background: var(--panel-2); border-color: var(--line); }
+.tool-caret { width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid currentColor; opacity: .7; transition: transform .15s; }
+.tool-menu[open] .tool-caret { transform: rotate(180deg); }
+.tool-list { position: fixed; z-index: 60; display: grid; min-width: 200px; padding: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 4px 0 var(--line-strong); }
+.tool-opt { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; color: var(--text); text-decoration: none; font-size: .92rem; font-weight: 700; white-space: nowrap; }
+.tool-opt:hover { background: var(--veil); }
+.tool-opt[aria-current] { color: var(--accent); }
+.tool-new { position: static; margin-left: auto; }
+@media (prefers-reduced-motion: reduce) { .tool-caret { transition: none; } }
+@media (max-width: 760px) { .tool-menu > summary { flex-direction: column; justify-content: center; } .tool-caret { display: none; } }

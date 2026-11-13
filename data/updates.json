@@ -1,14 +1,74 @@
 {
  "note": "Site updates shown on the home page (newest first). Add an entry with every new feature or visible improvement: date (KST), ko/en text, link path.",
  "updates": [
-  { "date": "2026-11-13", "path": "/quests/", "new": true, "ko": "퀘스트 공략 보강 — 맵별 가는 길·주의할 점·영상, 루크·인내의 숲 추가", "en": "Quest guides upgraded: map-by-map routes, warnings and videos, plus Luke and the Forest of Patience" },
-  { "date": "2026-11-13", "path": "/quests/", "new": true, "ko": "퀘스트 탭 신설 — 피아·마야·아얀·슈미·아르웬·존·동료의 증명·리엘 공략 8개 추가", "en": "New Quests tab — eight new step-by-step guides: Pia, Maya, Ayan, Shumi, Arwen, John, Lakelis and Riel" },
-  { "date": "2026-11-13", "path": "/quests/glove-attack/", "new": true, "ko": "장공 퀘스트 공략 — 로웬·제인 두 루트, NPC 위치·재료·동선·시세", "en": "Gloves attack scroll quests — the Rowen and Jane routes, NPCs, items, route and prices" },
-  { "date": "2026-11-13", "path": "/tools/training/#rates", "ko": "사냥터 추천에 시간당 경험치·메소 실측 수치 46개 (출처 포함)", "en": "Training routes: 46 sourced EXP and meso per hour figures" },
-  { "date": "2026-11-13", "path": "/megaphone/", "ko": "실시간 확성기가 새로고침 없이 바로 들어와요", "en": "Live megaphones arrive without a refresh" },
-  { "date": "2026-11-13", "path": "/discord-bot/", "ko": "디스코드 봇 — 시세·몬스터·사냥터 검색, 확성기 알림", "en": "Discord bot — prices, monsters, training spots and megaphone alerts" },
-  { "date": "2026-11-12", "path": "/tools/exp/", "ko": "경험치 측정기 — 화면 공유로 시간당 경험치·레벨업까지 남은 시간", "en": "EXP tracker — EXP per hour and time to level from your screen" },
-  { "date": "2026-11-12", "path": "/tools/market/", "ko": "시세 아이템 패널 개편 — 가격 분포·추이·관련 확성기", "en": "Market item panel — price spread, history and related megaphones" },
-  { "date": "2026-11-12", "path": "/megaphone/", "ko": "확성기 트렌드 — 지금 뜨는 아이템, 사려는 사람이 많은 아이템", "en": "Megaphone trends — hot items and items more people are buying" }
+  {
+   "date": "2026-11-13",
+   "path": "/",
+   "ko": "영어 검색 개선 — glove att 60, zhelm 같은 줄임말도 찾아요",
+   "en": "Better English search: shorthand like glove att 60 or zhelm now works"
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/tools/scroll/",
+   "ko": "헤더에 계산기 탭 — 경험치 측정기·주문서·확률·몇 방 컷 계산기를 한 곳에서",
+   "en": "New Tools tab in the header: the EXP tracker and all calculators in one dropdown"
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/quests/",
+   "new": true,
+   "ko": "퀘스트 공략 보강 — 맵별 가는 길·주의할 점·영상, 루크·인내의 숲 추가",
+   "en": "Quest guides upgraded: map-by-map routes, warnings and videos, plus Luke and the Forest of Patience"
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/quests/",
+   "new": true,
+   "ko": "퀘스트 탭 신설 — 피아·마야·아얀·슈미·아르웬·존·동료의 증명·리엘 공략 8개 추가",
+   "en": "New Quests tab — eight new step-by-step guides: Pia, Maya, Ayan, Shumi, Arwen, John, Lakelis and Riel"
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/quests/glove-attack/",
+   "new": true,
+   "ko": "장공 퀘스트 공략 — 로웬·제인 두 루트, NPC 위치·재료·동선·시세",
+   "en": "Gloves attack scroll quests — the Rowen and Jane routes, NPCs, items, route and prices"
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/tools/training/#rates",
+   "ko": "사냥터 추천에 시간당 경험치·메소 실측 수치 46개 (출처 포함)",
+   "en": "Training routes: 46 sourced EXP and meso per hour figures"
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/megaphone/",
+   "ko": "실시간 확성기가 새로고침 없이 바로 들어와요",
+   "en": "Live megaphones arrive without a refresh"
+  },
+  {
+   "date": "2026-11-13",
+   "path": "/discord-bot/",
+   "ko": "디스코드 봇 — 시세·몬스터·사냥터 검색, 확성기 알림",
+   "en": "Discord bot — prices, monsters, training spots and megaphone alerts"
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/tools/exp/",
+   "ko": "경험치 측정기 — 화면 공유로 시간당 경험치·레벨업까지 남은 시간",
+   "en": "EXP tracker — EXP per hour and time to level from your screen"
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/tools/market/",
+   "ko": "시세 아이템 패널 개편 — 가격 분포·추이·관련 확성기",
+   "en": "Market item panel — price spread, history and related megaphones"
+  },
+  {
+   "date": "2026-11-12",
+   "path": "/megaphone/",
+   "ko": "확성기 트렌드 — 지금 뜨는 아이템, 사려는 사람이 많은 아이템",
+   "en": "Megaphone trends — hot items and items more people are buying"
+  }
  ]
 }

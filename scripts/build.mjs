@@ -687,19 +687,21 @@ function header(lang, pagePath, only) {
     ['/tools/training/', 'sword', t.navTraining],
     ['/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monsters'],
     ['/quests/', 'scroll', lang === 'ko' ? '퀘스트' : 'Quests'],
-    ['/tools/exp/', 'clock', EXP[lang].nav],
     ['/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Megaphones'],
     guides.some((g) => g.lang === lang) && ['/guides/', 'book', t.navGuides]
   ].filter(Boolean);
-  const moved = [
-    ['/', 'star', t.navLinks],
+  // Calculators and the EXP tracker share one header tab that opens a dropdown (2026-11-13, user request), instead of
+  // one sitting in the tabs and three hidden in the "more" menu.
+  const toolItems = [
+    ['/tools/exp/', 'clock', EXP[lang].nav],
     ['/tools/scroll/', 'scroll', t.navScroll],
     ['/tools/drop-rate/', 'bag', t.navDrop],
     ['/tools/damage/', 'hammer', DMG[lang].h1]
   ];
+  const moved = [['/', 'star', t.navLinks]];
   // English labels that would break mid-word on a phone ("Calcul/ator") get a one-word form there.
   // The newest tab carries a small N so returning visitors notice it.
-  const NEW_TAB = UPDATES.find((u) => tabs.some(([p]) => p === u.path.split('#')[0]))?.path.split('#')[0] || '/tools/exp/';
+  const NEW_TAB = UPDATES.find((u) => [...tabs, ...toolItems].some(([p]) => p === u.path.split('#')[0]))?.path.split('#')[0] || '/quests/';
   const SHORT_EN = { '/': 'Home', '/monsters/': 'Mobs', '/tools/training/': 'Spots', '/tools/scroll/': 'Scrolls', '/tools/drop-rate/': 'Odds', '/tools/damage/': 'Hits', '/tools/market/': 'Market', '/megaphone/': 'Megas', '/tools/exp/': 'EXP', '/guides/': 'Guides', '/quests/': 'Quests' };
   const tabHtml = tabs
     .map(
@@ -707,11 +709,15 @@ function header(lang, pagePath, only) {
         `<a class="tab" href="${href(langPath(lang, p))}"${(p === pagePath || (p !== '/' && pagePath?.startsWith(p))) ? ' aria-current="page"' : ''}${lang === 'ko' ? '' : ` title="${esc(label)}"`}>${p === NEW_TAB ? `<span class="tab-ico">${spriteSvg(icon, 20)}<span class="tab-new" title="${lang === 'ko' ? '새 기능' : 'New'}">N</span></span>` : spriteSvg(icon, 20)}${lang === 'ko' ? `<span>${label}</span>` : `<span class="tab-full">${label}</span><span class="tab-short" aria-hidden="true">${SHORT_EN[p]}</span>`}</a>`
     )
     .join('');
+  const toolLabel = lang === 'ko' ? '계산기' : 'Tools';
+  const toolOn = toolItems.some(([p]) => pagePath?.startsWith(p));
+  const toolNew = toolItems.some(([p]) => p === NEW_TAB);
+  const toolMenu = `<details class="tool-menu"><summary class="tab"${toolOn ? ' aria-current="page"' : ''}${lang === 'ko' ? '' : ` title="${esc(toolLabel)}"`}>${toolNew ? `<span class="tab-ico">${spriteSvg('hammer', 20)}<span class="tab-new">N</span></span>` : spriteSvg('hammer', 20)}${lang === 'ko' ? `<span>${toolLabel}</span>` : `<span class="tab-full">${toolLabel}</span><span class="tab-short" aria-hidden="true">Tools</span>`}<span class="tool-caret" aria-hidden="true"></span></summary><div class="tool-list">${toolItems.map(([p, icon, label]) => `<a class="tool-opt" href="${href(langPath(lang, p))}"${pagePath?.startsWith(p) ? ' aria-current="page"' : ''}>${spriteSvg(icon, 20)}<span>${esc(label)}</span>${p === NEW_TAB ? '<span class="tab-new tool-new">N</span>' : ''}</a>`).join('')}</div></details>`;
   return `${megaTicker(lang)}<header class="site-header"><div class="wrap header-inner">
 <a class="brand" href="${href(langPath(lang, '/'))}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>${esc(t.gameName)}</small></span></a>
-<nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}</nav>
+<nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}${toolMenu}</nav>
 ${presencePill(lang)}
-${headerSearch(lang, [...tabs, ...moved])}
+${headerSearch(lang, [...tabs, ...toolItems, ...moved])}
 ${config.discord ? `<a class="theme-toggle discord-link" href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="header" aria-label="Discord" title="Discord">${DISCORD_ICON(20)}</a>` : ''}<button type="button" class="theme-toggle" data-theme-toggle>${THEME_ICON}<span class="sr-only">${lang === 'ko' ? '낮과 밤 화면 바꾸기' : 'Switch day or night theme'}</span></button>
 <details class="lang-menu"><summary class="lang-current" aria-label="Language"><span class="lang-full" translate="no">${LANG_NAMES[lang]}</span><span class="lang-code" translate="no" aria-hidden="true">${lang.toUpperCase()}</span></summary><div class="lang-list">${(only ? [lang, ...ALL_LANGS.filter((l) => l !== lang)] : ALL_LANGS).map((l) => `<a class="lang-opt" href="${href(langPath(l, only && l !== lang ? '/' : pagePath || '/'))}" data-lang="${l}" hreflang="${HREFLANG[l]}" lang="${HREFLANG[l]}"${l === lang ? ' aria-current="true"' : ''}>${LANG_NAMES[l]}</a>`).join('')}</div></details>
 ${moreMenu(lang, moved)}

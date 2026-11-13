@@ -85,3 +85,14 @@ test('a short Latin query inside another word ranks below real word matches', ()
   const top = sourceItems.find((s) => s.id === results('mp')[0].id).en;
   assert.match(top, /\bMP\b/);
 });
+
+test('English shorthand finds scrolls and common item nicknames', () => {
+  const name = (q) => results(q)[0]?.title && sourceItems.find((it) => it.id === results(q)[0].id)?.en;
+  assert.equal(name('glove att 60'), 'Gloves Attack Scroll: Intermediate');
+  assert.equal(name('gfa60'), 'Gloves Attack Scroll: Intermediate');
+  assert.equal(name('GFA 10%'), 'Gloves Attack Scroll: Greater');
+  assert.equal(name('ear int 60'), 'Earring INT Scroll: Intermediate');
+  assert.equal(name('zhelm'), 'Zakum Helmet');
+  assert.equal(name('steelies'), 'Steely Throwing Knives');
+  assert.equal(name('work gloves'), 'Work Gloves');
+});

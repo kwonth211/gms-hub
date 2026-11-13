@@ -1,9 +1,25 @@
 // The language menu is a <details>; close it on an outside click or Escape.
 document.addEventListener('click', (e) => {
-  document.querySelectorAll('.lang-menu[open], .more-menu[open]').forEach((d) => d.contains(e.target) || d.removeAttribute('open'));
+  document.querySelectorAll('.lang-menu[open], .more-menu[open], .tool-menu[open]').forEach((d) => d.contains(e.target) || d.removeAttribute('open'));
 });
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') document.querySelectorAll('.lang-menu[open], .more-menu[open]').forEach((d) => d.removeAttribute('open'));
+  if (e.key === 'Escape') document.querySelectorAll('.lang-menu[open], .more-menu[open], .tool-menu[open]').forEach((d) => d.removeAttribute('open'));
+});
+
+// The calculators tab sits inside the scrolling tab strip, which would clip an absolute dropdown, so its list is placed
+// with fixed coordinates under the tab when it opens, and closes when the page scrolls or resizes.
+document.querySelectorAll('.tool-menu').forEach((menu) => {
+  const list = menu.querySelector('.tool-list');
+  const place = () => {
+    const r = menu.querySelector('summary').getBoundingClientRect();
+    const w = Math.max(list.offsetWidth, 200);
+    list.style.top = `${Math.round(r.bottom + 6)}px`;
+    list.style.left = `${Math.round(Math.max(8, Math.min(r.left, innerWidth - w - 8)))}px`;
+  };
+  menu.addEventListener('toggle', () => { if (menu.open) place(); });
+  const close = () => menu.open && menu.removeAttribute('open');
+  addEventListener('scroll', close, { passive: true });
+  addEventListener('resize', close);
 });
 
 // Remember the language a visitor picks so the root page sends them back to it.
