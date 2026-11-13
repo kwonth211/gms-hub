@@ -2,6 +2,17 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content.",
  "updates": [
   {
+   "id": "market-search-gear-type",
+   "date": "2026-11-13",
+   "path": "/tools/market/",
+   "ko": "시세 검색 개선 — 아대·폴암처럼 무기 종류로도 찾고 '공격려' 오타도 찾아요",
+   "en": "Market search: find gear by type (claw, pole arm) and common typos",
+   "desc": {
+    "ko": "아대·폴암·모자처럼 무기·장비 종류를 검색하면 이름에 그 단어가 없는 장비(가니어, 스틸 티탄즈 등)도 함께 나와요. '공격려·방어려'처럼 마지막 글자를 잘못 친 검색도 찾아요.",
+    "en": "Searching a gear type such as claw, pole arm or hat now also lists gear whose names do not contain that word, like Garnier or Steel Titans."
+   }
+  },
+  {
    "id": "exp-tracker-2",
    "date": "2026-11-13",
    "path": "/tools/exp/",
