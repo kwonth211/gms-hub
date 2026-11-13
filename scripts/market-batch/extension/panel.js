@@ -1,8 +1,8 @@
 (() => {
   if (document.getElementById('gms-batch-test')) return;
-  const box = document.createElement('section'); box.id = 'gms-batch-test'; box.dataset.version = '0.7.1';
+  const box = document.createElement('section'); box.id = 'gms-batch-test'; box.dataset.version = '0.7.5';
   Object.assign(box.style, { position: 'fixed', right: '16px', bottom: '16px', zIndex: '2147483647', width: '320px', padding: '16px', background: '#17202d', color: '#fff', border: '2px solid #f59e0b', borderRadius: '12px', font: '14px/1.6 system-ui', boxShadow: '0 4px 24px #0008' });
-  const title = document.createElement('strong'); title.textContent = 'GMS 시세 자동 수집 v0.7.1';
+  const title = document.createElement('strong'); title.textContent = 'GMS 시세 자동 수집 v0.7.5';
   const note = document.createElement('p'); note.textContent = '별도 수집 창에서 최대 150건씩 저장합니다. 창을 최소화하지 마세요. 15분 간격 · 하루 최대 10,000건 · AI 호출 없음';
   const status = document.createElement('p'); status.setAttribute('role', 'status');
   const history = document.createElement('p'); history.style.fontSize = '12px';
@@ -14,7 +14,7 @@
   function render(s) {
     state = s;
     box.dataset.workerVersion = s.version || 'unknown';
-    const compatible = s.version === '0.7.1';
+    const compatible = s.version === '0.7.5';
     const progress = s.run?.progress;
     const phase = { loading: '페이지 여는 중', collecting: '수집 중', uploading: 'DB 저장 중' }[s.run?.phase] || '실행 중';
     const active = s.run ? `${phase} · ${progress?.shops || 0}곳 · ${progress?.rows || 0}건${progress?.hidden ? ' · 수집 창이 가려져 느림 — 창을 보이게 두세요' : ''}` : s.pending ? 'DB 저장 대기' : s.retryAt ? (s.waitReason === 'daily_budget' ? '일일 한도 도달 · 초기화 대기' : s.waitReason ? '수집 간격 대기' : '로딩 지연 · 자동 복구 대기') : s.error ? '수집 중단 · 확인 필요' : '대기 중';

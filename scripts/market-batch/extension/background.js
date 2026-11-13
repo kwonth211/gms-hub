@@ -17,7 +17,7 @@ async function beat(event, force = false, gap = 45000) {
   if (!GMS_BATCH_CONFIG.token || (!force && Date.now() - lastBeatAt < gap)) return;
   lastBeatAt = Date.now();
   const s = await get();
-  const body = { version: '0.7.1', instance: GMS_BATCH_CONFIG.name || 'chrome', event, enabled: !!s.enabled, phase: s.run?.phase || (s.pending ? 'pending' : 'idle'), shops: s.run?.progress?.shops ?? null,
+  const body = { version: '0.7.5', instance: GMS_BATCH_CONFIG.name || 'chrome', event, enabled: !!s.enabled, phase: s.run?.phase || (s.pending ? 'pending' : 'idle'), shops: s.run?.progress?.shops ?? null,
     rows: s.run?.progress?.rows ?? null, item: s.run?.progress?.item ?? null, hidden: !!s.run?.progress?.hidden, error: s.error || null, runId: s.run?.runId || null,
     startedAt: s.run?.startedAt || null, nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
   fetch(ENDPOINT + '?heartbeat=1', { method: 'POST', headers: { Authorization: `Bearer ${GMS_BATCH_CONFIG.token}`, 'Content-Type': 'application/json' },
@@ -33,7 +33,7 @@ async function recycleWindow(s) {
 async function broadcast() {
   const s = await get();
   // No secret is ever included in content-script messages or the public DOM.
-  return { ...s, version: '0.7.1', nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
+  return { ...s, version: '0.7.5', nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
 }
 async function ensureAlarms() {
   const s = await get();
@@ -81,8 +81,10 @@ async function launch(mode, trigger) {
     const localNext = Math.max((s.lastAttemptAt || 0) + INTERVAL, s.lastSuccessAt ? Date.parse(s.lastSuccessAt) + INTERVAL : 0);
     let response, policy;
     try {
-      // The name tells the server this is the dedicated collector browser; an install without one is told to switch off.
-      response = await fetch(ENDPOINT + '?preflight=1&instance=' + encodeURIComponent(GMS_BATCH_CONFIG.name || ''), { headers: { Authorization: `Bearer ${GMS_BATCH_CONFIG.token}` }, signal: AbortSignal.timeout(25000) });
+      // `instance` tells the server this is current code (0.7.1+, the dedicated collector browser); an older install left
+      // in the admin's own Chrome sends none and is told to switch off. Never empty: the browser can serve a stale cached
+      // copy of config.private.js without the name.
+      response = await fetch(ENDPOINT + '?preflight=1&instance=' + encodeURIComponent(GMS_BATCH_CONFIG.name || 'collector'), { headers: { Authorization: `Bearer ${GMS_BATCH_CONFIG.token}` }, signal: AbortSignal.timeout(25000) });
       if (!response.ok) throw new Error(String(response.status));
       policy = await response.json();
       if (!policy.policy || typeof policy.ready !== 'boolean') throw new Error('invalid policy');
@@ -217,6 +219,9 @@ async function message(m, sender) {
   if (m.type === 'focus') {
     const s = await get();
     if (s.run?.runId !== m.runId || s.run.tabId !== sender.tab.id || !s.run.summaryDue) throw new Error('실행 불일치');
+    // The dedicated collector browser (autoStart) never takes focus: it runs with occluded-window backgrounding off, so
+    // its covered window still paints, and pulling it forward put it over the admin's game every three hours.
+    if (GMS_BATCH_CONFIG.autoStart) return { ok: true };
     // Bring the collector window forward only for the list scroll, then give focus back to the window the user had.
     if (m.on) {
       const last = await chrome.windows.getLastFocused().catch(() => null);
@@ -283,11 +288,14 @@ chrome.alarms.onAlarm.addListener(alarm => enqueue(async () => {
   }
   const s = await get(); if (alarm.name === SCHEDULE && s.enabled) await launch('production', 'alarm');
 }).catch(async e => stop(e.message || '배치 실행 오류. 예약을 중지했습니다.')));
-chrome.runtime.onStartup.addListener(() => enqueue(ensureAlarms));
 // A dedicated collector browser (scripts/market-batch/collector.sh) sets autoStart in its config, so collection is on
-// from the first launch and after every extension reload, with nobody pressing the panel button.
-chrome.runtime.onInstalled.addListener(() => enqueue(async () => {
+// from the first launch, after every extension reload and after every browser start, with nobody pressing the panel
+// button. (onInstalled alone was not enough: a browser restart that loads the unpacked extension may not fire it.)
+const autoStart = () => enqueue(async () => {
   if (GMS_BATCH_CONFIG.autoStart && GMS_BATCH_CONFIG.token) { const s = await get(); if (!s.enabled && !s.pending) { s.enabled = true; s.error = null; s.retryAt = null; s.waitReason = null; await put(s); } }
   await ensureAlarms();
-}));
-enqueue(ensureAlarms);
+});
+chrome.runtime.onStartup.addListener(autoStart);
+chrome.runtime.onInstalled.addListener(autoStart);
+// Also on every service-worker start: in a headless browser started with no window neither event above reliably fires.
+autoStart();
