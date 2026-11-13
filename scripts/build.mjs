@@ -1068,10 +1068,17 @@ function heroNew(lang) {
   const ko = lang === 'ko';
   return `<p class="hero-new"><span class="hero-new-tag">NEW</span>${UPDATES.slice(0, 3).map((u) => `<a href="${href(langPath(lang, u.path))}">${esc((ko ? u.ko : u.en).split(' — ')[0])}</a>`).join('')}<a class="hero-new-all" href="#updates">${ko ? '업데이트 소식' : "What's new"}</a></p>`;
 }
+// Every update, newest first, eight to a page (assets/home.js turns the pages; without scripts the whole list shows).
+// Anything from the last three days (KST, rebuilt nightly) carries NEW.
+const UPD_PER_PAGE = 8;
 function updatesSection(lang) {
   const ko = lang === 'ko';
+  const today = new Date(Date.now() + 9 * 3600000);
+  const since = new Date(today.getTime() - 2 * 86400000).toISOString().slice(0, 10);
+  const pages = Math.ceil(UPDATES.length / UPD_PER_PAGE);
+  const pager = pages > 1 ? `<nav class="upd-pager" aria-label="${ko ? '업데이트 소식 페이지' : 'Update pages'}" hidden><button type="button" class="upd-prev" data-upd-step="-1">${ko ? '이전' : 'Newer'}</button><span class="upd-pages">${Array.from({ length: pages }, (_, i) => `<button type="button" data-upd-page="${i + 1}"${i === 0 ? ' aria-current="page"' : ''}>${i + 1}</button>`).join('')}</span><button type="button" class="upd-next" data-upd-step="1">${ko ? '다음' : 'Older'}</button></nav>` : '';
   return `<section class="wrap home-updates" id="updates"><div class="home-updates-head"><h2>${ko ? '업데이트 소식' : "What's new"}</h2><span class="muted small">${ko ? '새 기능과 개선 사항' : 'New features and improvements'}</span></div>
-<ol class="upd-list">${UPDATES.slice(0, 8).map((u, i) => `<li><time datetime="${u.date}" translate="no">${updDate(lang, u.date)}</time>${i < 3 ? '<span class="upd-new" translate="no">NEW</span>' : ''}<a href="${href(langPath(lang, u.path))}">${esc(ko ? u.ko : u.en)}</a></li>`).join('')}</ol></section>`;
+<ol class="upd-list" data-per-page="${UPD_PER_PAGE}">${UPDATES.map((u, i) => `<li data-upd-page="${Math.floor(i / UPD_PER_PAGE) + 1}"><time datetime="${u.date}" translate="no">${updDate(lang, u.date)}</time>${u.date >= since ? '<span class="upd-new" translate="no">NEW</span>' : ''}<a href="${href(langPath(lang, u.path))}">${esc(ko ? u.ko : u.en)}</a></li>`).join('')}</ol>${pager}</section>`;
 }
 
 function homeBody(lang) {
