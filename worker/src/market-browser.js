@@ -62,11 +62,21 @@ export async function marketCatalog(env) {
     })
     .sort((a, b) => b.open - a.open || a.item - b.item);
   const open = rows.filter((r) => !r.sold && r.seen >= current);
-  const recorded = await all(
-    env,
-    "SELECT DISTINCT item FROM listings WHERE last_seen>=? UNION SELECT DISTINCT item FROM prices WHERE created_at>=?",
-    [stamp(now - 30 * DAY), stamp(now - 30 * DAY)],
-  );
+  // The 30-day "ever recorded" id list only grows and scans the whole window, so it is kept six hours in snapshots
+  // instead of being recomputed with every catalog refresh.
+  const kept = await env.DB.prepare("SELECT json, at FROM snapshots WHERE key = 'market-recorded'").first();
+  let recorded = kept && Date.now() - Date.parse(`${kept.at.replace(" ", "T")}Z`) < 6 * 3600000 ? JSON.parse(kept.json) : null;
+  if (!recorded) {
+    recorded = await all(
+      env,
+      "SELECT DISTINCT item FROM listings WHERE last_seen>=? UNION SELECT DISTINCT item FROM prices WHERE created_at>=?",
+      [stamp(now - 30 * DAY), stamp(now - 30 * DAY)],
+    );
+    await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('market-recorded',?,datetime('now'))").bind(JSON.stringify(recorded)).run();
+  }
+  const fresh = new Set(rows.map((r) => r.item));
+  for (const r of recorded) fresh.delete(r.item);
+  for (const item of fresh) recorded.push({ item });
   return {
     asOf: new Date(now).toISOString(),
     windowDays: 7,

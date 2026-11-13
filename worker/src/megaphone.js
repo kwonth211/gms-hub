@@ -1,5 +1,5 @@
 // In-game megaphones. The admin collector posts what it reads from a shared game window; the public page polls the
-// newest rows. color is the background band the line was drawn on (Y gold, P pink, C cyan, N none). Writes need MEGAPHONE_TOKEN; rows older than 30 days are dropped by the schedule.
+// newest rows. color is the background band the line was drawn on (Y gold, P pink, C cyan, N none). Writes need MEGAPHONE_TOKEN; rows older than 2 days are dropped by the schedule (prices outlive them in listings and snapshots).
 // At ingest the text is parsed once: the item it names, whether it sells or buys, and the asking price (see parseMegaphone).
 const reply = (body, status = 200, headers = {}) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store', ...headers } });
 const KINDS = new Set(['super', 'item', 'double', 'mega']);
@@ -71,7 +71,7 @@ export async function listMegaphones(env, params) {
   return { rows: results, at: new Date().toISOString() };
 }
 
-export const pruneMegaphones = (env) => env.DB.prepare("DELETE FROM megaphones WHERE seen_at < datetime('now', '-30 days')").run();
+export const pruneMegaphones = (env) => env.DB.prepare("DELETE FROM megaphones WHERE seen_at < datetime('now', '-2 days')").run();
 
 // Asking prices from megaphones for the price summaries: selling megaphones of the last 7 days, outliers past 5x the
 // median dropped, with the middle half of the spread. Meant for consumables, scrolls and cash items, whose megaphone
@@ -79,7 +79,7 @@ export const pruneMegaphones = (env) => env.DB.prepare("DELETE FROM megaphones W
 export async function megaphoneAsks(env, ids) {
   if (!ids.length) return {};
   const marks = ids.map(() => '?').join(',');
-  const { results } = await env.DB.prepare(`SELECT item, price FROM megaphones WHERE item IN (${marks}) AND intent = 'sell' AND price IS NOT NULL AND seen_at >= datetime('now', '-7 days')`).bind(...ids).all();
+  const { results } = await env.DB.prepare(`SELECT item, price FROM megaphones WHERE item IN (${marks}) AND intent = 'sell' AND price IS NOT NULL AND seen_at >= datetime('now', '-2 days')`).bind(...ids).all();
   const by = new Map();
   for (const r of results) (by.get(r.item) || by.set(r.item, []).get(r.item)).push(r.price);
   const out = {};
