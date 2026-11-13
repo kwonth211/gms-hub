@@ -1,3 +1,4 @@
+import { refreshItemMarket } from './market-browser.js';
 // Authenticated, idempotent ingestion for the private deterministic collector.
 const reply = (body, status = 200, headers = {}) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store', ...headers } });
 const limits = env => ({
@@ -111,6 +112,13 @@ export async function handleMarketBatch(req, env, knownItems) {
     const num = v => (Number.isFinite(Number(v)) ? Number(v) : null);
     const beat = { version: str(b.version, 16), instance: str(b.instance, 32), enabled: !!b.enabled, phase: str(b.phase, 24), shops: num(b.shops), rows: num(b.rows), item: str(b.item, 60),
       hidden: !!b.hidden, error: str(b.error, 200), runId: str(b.runId, 36), startedAt: num(b.startedAt), nextAt: num(b.nextAt), event: str(b.event, 24) };
+    // Progress beats arrive every few seconds; only a change of run, phase, event or error (or two quiet minutes) is
+    // worth a database write.
+    const prev = await env.DB.prepare("SELECT json, at FROM snapshots WHERE key = 'collector'").first().catch(() => null);
+    const old = prev ? JSON.parse(prev.json) : null;
+    const age = prev ? Date.now() - Date.parse(prev.at.replace(' ', 'T') + 'Z') : Infinity;
+    const same = old && ['runId', 'phase', 'event', 'error', 'enabled', 'hidden', 'instance'].every((k) => old[k] === beat[k]);
+    if (same && age < 120000) return reply({ ok: true, skipped: true });
     await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('collector',?,datetime('now'))").bind(JSON.stringify(beat)).run();
     return reply({ ok: true });
   }
@@ -163,6 +171,8 @@ export async function handleMarketBatch(req, env, knownItems) {
     const changed = results.slice(1).filter(r => r.meta.changes > 0).length;
     const summary = validSummary(body.summary, known);
     const summaryReceipt = summary ? await storeSummary(env, summary).catch(() => ({ stored: 0, skipped: 'error' })) : null;
+    // Keep the per-item market summary current for just the items this run saw.
+    await refreshItemMarket(env, body.rows.map((r) => r.item)).catch(() => null);
     return reply({ ok: true, duplicate: false, accepted: body.rows.length, summary: summaryReceipt,
       listingsChanged: changed, observationsAdded: changed, historyStorage: 'listing_history',
       rowsRead: results.reduce((n,r) => n + (r.meta.rows_read || 0), 0),

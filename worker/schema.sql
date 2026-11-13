@@ -35,3 +35,25 @@ CREATE TABLE IF NOT EXISTS megaphones (
   hash TEXT NOT NULL UNIQUE
 );
 CREATE INDEX IF NOT EXISTS megaphones_seen ON megaphones (seen_at);
+CREATE TABLE IF NOT EXISTS item_market (
+  item INTEGER PRIMARY KEY,
+  open INTEGER NOT NULL,
+  records INTEGER NOT NULL,
+  median INTEGER,
+  low INTEGER,
+  sold_median INTEGER,
+  sold INTEGER NOT NULL,
+  shops INTEGER NOT NULL,
+  last TEXT,
+  at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS item_daily (
+  item INTEGER NOT NULL,
+  day TEXT NOT NULL,
+  low INTEGER,
+  median INTEGER,
+  n INTEGER NOT NULL,
+  sold INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (item, day)
+) WITHOUT ROWID;

@@ -12,56 +12,99 @@ const all = (env, sql, args = []) =>
     .bind(...args)
     .all()
     .then((r) => r.results);
+// Summary of one item's listings: open = asking within the last day, records = everything in the 7-day window.
+export function summarizeItem(item, rs, current) {
+  const open = rs.filter((r) => !r.sold && r.seen >= current),
+    sold = rs.filter((r) => r.sold && r.seen >= current);
+  return {
+    item,
+    open: open.length,
+    records: rs.length,
+    median: median(open.map((r) => r.price)),
+    low: open.length ? Math.min(...open.map((r) => r.price)) : null,
+    soldMedian: median(sold.map((r) => r.price)),
+    sold: sold.length,
+    shops: new Set(open.map((r) => JSON.stringify([r.seller, r.channel, r.room]))).size,
+    last: rs.reduce((a, r) => (r.seen > a ? r.seen : a), "") || null,
+  };
+}
+
+// D1 runs a batch as one transaction; the test double may not have batch(), so fall back to running in order.
+const runAll = async (env, stmts) => {
+  if (!stmts.length) return [];
+  if (typeof env.DB.batch === "function") return env.DB.batch(stmts);
+  const out = [];
+  for (const st of stmts) out.push(await st.run());
+  return out;
+};
+
+const marketUpsert = (env, m) =>
+  env.DB.prepare(`INSERT INTO item_market (item,open,records,median,low,sold_median,sold,shops,last,at)
+    VALUES (?,?,?,?,?,?,?,?,?,datetime('now')) ON CONFLICT (item) DO UPDATE SET open=excluded.open, records=excluded.records,
+    median=excluded.median, low=excluded.low, sold_median=excluded.sold_median, sold=excluded.sold, shops=excluded.shops,
+    last=excluded.last, at=excluded.at`).bind(m.item, m.open, m.records, m.median, m.low, m.soldMedian, m.sold, m.shops, m.last);
+
+// Called after a collector run: only the items in that run are re-read (through the (item,last_seen) index) and rewritten.
+export async function refreshItemMarket(env, ids, now = Date.now()) {
+  const list = [...new Set(ids)].filter(Number.isInteger);
+  if (!list.length) return 0;
+  const since = stamp(now - 7 * DAY), current = stamp(now - DAY);
+  const rows = await all(env,
+    `SELECT item,price,sold,seller,channel,room,last_seen AS seen FROM listings WHERE item IN (${list.map(() => "?").join(",")}) AND last_seen >= ? AND last_seen <= ?`,
+    [...list, since, stamp(now)]);
+  const by = new Map(list.map((id) => [id, []]));
+  for (const r of rows) by.get(r.item)?.push(r);
+  await runAll(env, [...by].map(([item, rs]) => marketUpsert(env, summarizeItem(item, rs, current))));
+  return list.length;
+}
+
+// Distinct open shops across all items: one scan of the last day, kept 30 minutes.
+export async function openShops(env, current) {
+  const kept = await env.DB.prepare("SELECT json, at FROM snapshots WHERE key = 'market-shops'").first().catch(() => null);
+  if (kept && Date.now() - Date.parse(`${kept.at.replace(" ", "T")}Z`) < 30 * 60000) return JSON.parse(kept.json);
+  const r = await env.DB.prepare("SELECT COUNT(DISTINCT seller || '|' || channel || '|' || room) AS n FROM listings WHERE last_seen >= ? AND last_seen <= ? AND sold = 0").bind(current, stamp(Date.now())).first();
+  await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('market-shops',?,datetime('now'))").bind(JSON.stringify(r.n)).run();
+  return r.n;
+}
+
 export async function marketCatalog(env) {
   const now = Date.now(),
     since = stamp(now - 7 * DAY),
     current = stamp(now - DAY),
     end = stamp(now);
-  const rows = await all(
-    env,
-    "SELECT item,price,sold,seller,channel,room,last_seen AS seen FROM listings WHERE last_seen >= ? AND last_seen <= ?",
-    [since, end],
-  );
+  let sums = await all(env, "SELECT item,open,records,median,low,sold_median AS soldMedian,sold,shops,last FROM item_market WHERE last >= ? AND last <= ?", [since, end]).catch(() => null);
+  let rows = null;
+  if (!sums || !sums.length) {
+    // First run (empty table): one full scan fills item_market; after that the collector keeps it current.
+    rows = await all(env, "SELECT item,price,sold,seller,channel,room,last_seen AS seen FROM listings WHERE last_seen >= ? AND last_seen <= ?", [since, end]);
+    const g = new Map();
+    for (const r of rows) (g.get(r.item) || g.set(r.item, []).get(r.item)).push(r);
+    sums = [...g].map(([item, rs]) => summarizeItem(item, rs, current));
+    for (let i = 0; i < sums.length; i += 50) await runAll(env, sums.slice(i, i + 50).map((m) => marketUpsert(env, m))).catch(() => null);
+  }
+  // A row last refreshed more than a day ago has no open listings left, whatever it said when it was written.
+  for (const m of sums) if (!m.last || m.last < current) Object.assign(m, { open: 0, median: null, low: null, soldMedian: null, sold: 0, shops: 0 });
   const reports = await all(
     env,
     "SELECT item,COUNT(*) AS reports FROM prices WHERE created_at >= ? AND created_at <= ? GROUP BY item",
     [since, end],
   );
-  const groups = new Map();
-  for (const r of rows) {
-    if (!groups.has(r.item)) groups.set(r.item, []);
-    groups.get(r.item).push(r);
-  }
-  for (const r of reports) if (!groups.has(r.item)) groups.set(r.item, []);
+  const groups = new Map(sums.map((m) => [m.item, m]));
+  for (const r of reports) if (!groups.has(r.item)) groups.set(r.item, null);
   const reportCounts = new Map(reports.map((r) => [r.item, r.reports]));
   // Reference prices cover items with no scans of our own, so the catalogue lists (nearly) every traded item.
   const refs = await all(env, "SELECT item, typical, day, week, sales FROM item_summary", []).catch(() => []);
   const refBy = new Map(refs.map((r) => [r.item, r]));
-  for (const r of refs) if (!groups.has(r.item)) groups.set(r.item, []);
+  for (const r of refs) if (!groups.has(r.item)) groups.set(r.item, null);
   const items = [...groups]
-    .map(([item, rs]) => {
-      const open = rs.filter((r) => !r.sold && r.seen >= current),
-        sold = rs.filter((r) => r.sold && r.seen >= current);
-      return {
-        item,
-        open: open.length,
-        records: rs.length,
-        reports: reportCounts.get(item) || 0,
-        median: median(open.map((r) => r.price)),
-        low: open.length ? Math.min(...open.map((r) => r.price)) : null,
-        soldMedian: median(sold.map((r) => r.price)),
-        sold: sold.length,
-        shops: new Set(
-          open.map((r) => JSON.stringify([r.seller, r.channel, r.room])),
-        ).size,
-        last: rs.reduce((a, r) => (r.seen > a ? r.seen : a), "") || null,
-        typical: refBy.get(item)?.typical ?? null,
-        typicalDay: refBy.get(item)?.day ?? null,
-        sales: refBy.get(item)?.sales ?? null,
-      };
-    })
+    .map(([item, m]) => ({
+      ...(m || { item, open: 0, records: 0, median: null, low: null, soldMedian: null, sold: 0, shops: 0, last: null }),
+      reports: reportCounts.get(item) || 0,
+      typical: refBy.get(item)?.typical ?? null,
+      typicalDay: refBy.get(item)?.day ?? null,
+      sales: refBy.get(item)?.sales ?? null,
+    }))
     .sort((a, b) => b.open - a.open || a.item - b.item);
-  const open = rows.filter((r) => !r.sold && r.seen >= current);
   // The 30-day "ever recorded" id list only grows and scans the whole window, so it is kept six hours in snapshots
   // instead of being recomputed with every catalog refresh.
   const kept = await env.DB.prepare("SELECT json, at FROM snapshots WHERE key = 'market-recorded'").first();
@@ -74,7 +117,7 @@ export async function marketCatalog(env) {
     );
     await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('market-recorded',?,datetime('now'))").bind(JSON.stringify(recorded)).run();
   }
-  const fresh = new Set(rows.map((r) => r.item));
+  const fresh = new Set(sums.map((m) => m.item));
   for (const r of recorded) fresh.delete(r.item);
   for (const item of fresh) recorded.push({ item });
   return {
@@ -83,12 +126,10 @@ export async function marketCatalog(env) {
     items,
     recordedIds: recorded.map((r) => r.item),
     stats: {
-      open: open.length,
-      shops: new Set(
-        open.map((r) => JSON.stringify([r.seller, r.channel, r.room])),
-      ).size,
+      open: sums.reduce((n, m) => n + m.open, 0),
+      shops: await openShops(env, current),
       items: items.length,
-      records: rows.length,
+      records: sums.reduce((n, m) => n + m.records, 0),
     },
   };
 }
@@ -336,4 +377,36 @@ export async function dailyHistory(env, item) {
     // p25-p75 is the day's "typical range" band, as on MesoWatch.
     return { day, median: mid, p25: q(0.25), p75: q(0.75), low: ps[0] ?? null, high: ps.at(-1) ?? null, n: ps.length, typical: typ.get(day) ?? null };
   });
+}
+
+// Retention: listings not seen for 30 days are folded into item_daily (one row per item and day) and then deleted, in
+// one transaction per chunk, so no price history is lost and the hot table stays small. Runs once a day.
+export async function archiveListings(env, now = Date.now(), keepDays = 30, chunk = 500) {
+  const cutoff = stamp(now - keepDays * DAY);
+  let archived = 0;
+  for (let round = 0; round < 20; round++) {
+    const rows = await all(env, "SELECT id,item,price,sold,last_seen AS seen FROM listings WHERE last_seen < ? ORDER BY last_seen LIMIT ?", [cutoff, chunk]);
+    if (!rows.length) break;
+    const g = new Map();
+    for (const r of rows) {
+      const k = `${r.item}|${r.seen.slice(0, 10)}`;
+      (g.get(k) || g.set(k, []).get(k)).push(r);
+    }
+    const stmts = [...g.values()].map((rs) => {
+      const asks = rs.filter((r) => !r.sold).map((r) => r.price);
+      // Merge with a row an earlier chunk may already have written for the same item/day (count adds up; low keeps the minimum).
+      return env.DB.prepare(`INSERT INTO item_daily (item,day,low,median,n,sold) VALUES (?,?,?,?,?,?)
+        ON CONFLICT (item,day) DO UPDATE SET low=MIN(COALESCE(item_daily.low,excluded.low),COALESCE(excluded.low,item_daily.low)),
+        median=COALESCE(item_daily.median,excluded.median), n=item_daily.n+excluded.n, sold=item_daily.sold+excluded.sold`)
+        .bind(rs[0].item, rs[0].seen.slice(0, 10), asks.length ? Math.min(...asks) : null, median(asks), rs.length, rs.length - asks.length);
+    });
+    const ids = rows.map((r) => r.id);
+    stmts.push(env.DB.prepare(`DELETE FROM listings WHERE id IN (${ids.map(() => "?").join(",")})`).bind(...ids));
+    await runAll(env, stmts);
+    archived += rows.length;
+    if (rows.length < chunk) break;
+  }
+  // Collector run receipts only matter for today's budget and a short audit trail.
+  await env.DB.prepare("DELETE FROM market_batch_runs WHERE received_at < datetime('now','-30 days')").run().catch(() => null);
+  return archived;
 }

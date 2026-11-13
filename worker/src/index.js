@@ -20,7 +20,7 @@ import { handleEmail, handleSendMail } from './inbox.js';
 // GET  /presence?p=<path> (WebSocket) -> messages { site, here }: open pages on the whole site and on this page
 // The shop scanner runs from the local dev server for now, so its origin may post scans too.
 import { handleMarketBatch, getCollectionStatus, collectorView } from './market-batch.js';
-import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoints } from './market-browser.js';
+import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoints, openShops, archiveListings } from './market-browser.js';
 import { cachedPublicResponse } from './public-cache.js';
 import { Presence, handlePresence } from './presence.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
@@ -201,10 +201,7 @@ async function marketTop(env, only = null) {
     sold: day.filter((o) => o.sold).length,
     items: new Set(day.map((o) => o.item)).size
   };
-  const shops = await env.DB.prepare(
-    "SELECT COUNT(DISTINCT seller || '|' || channel || '|' || room) AS n FROM listings WHERE last_seen >= datetime('now', '-1 day')"
-  ).first();
-  stats.shops = shops.n;
+  stats.shops = await openShops(env, new Date(now - DAY).toISOString().slice(0, 19).replace('T', ' '));
   return { at: new Date(now).toISOString(), stats, items };
 }
 
@@ -257,6 +254,7 @@ const api = {
     // trend snapshot is refreshed once an hour. Both are read-heavy, so they are not run on every tick.
     const now = new Date();
     if (now.getUTCHours() === 16 && now.getUTCMinutes() < 15) ctx.waitUntil(pruneMegaphones(env).catch(() => null));
+    if (now.getUTCHours() === 16 && now.getUTCMinutes() < 15) ctx.waitUntil(archiveListings(env).catch(() => null));
     // Four times a day (00, 06, 12, 18 UTC) the same snapshot also goes to the Discord trends channel.
     if (now.getUTCMinutes() < 15) ctx.waitUntil(megaphoneStats(env).then(async (d) => {
       await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('mega-stats',?,datetime('now'))").bind(JSON.stringify(d)).run();
@@ -385,7 +383,8 @@ const api = {
       for (const r of results) (byItem.get(r.item) || byItem.set(r.item, []).get(r.item)).push(r);
       const out = {};
       for (const [item, rows] of byItem) out[item] = summarize(rows);
-      return json(out, cors, 200, 'public, max-age=3600');
+      // Read by the site build only (item pages bake it); six hours of staleness is fine and keeps the 14-day scan rare.
+      return json(out, cors, 200, 'public, max-age=21600');
     }
 
     if (url.pathname === '/prices/recent' && req.method === 'GET') {

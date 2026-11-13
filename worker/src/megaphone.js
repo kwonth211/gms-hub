@@ -97,22 +97,34 @@ export async function megaphoneAsks(env, ids) {
 // Pattern content for the home and megaphone pages (snapshot every three hours by the schedule, to keep D1 reads small): the items named most in the last 24
 // hours with their change against the day before, how many sell vs buy, the busiest callers today, and megaphones per
 // hour over the last day. Only what was read from the game; names and ids are resolved by the pages.
-export async function megaphoneStats(env) {
-  const [day, prev, hourly, callers, total] = await Promise.all([
-    env.DB.prepare("SELECT item, COUNT(*) n, SUM(intent='sell') sell, SUM(intent='buy') buy FROM megaphones WHERE item IS NOT NULL AND seen_at >= datetime('now','-1 day') GROUP BY item ORDER BY n DESC LIMIT 40").all(),
-    env.DB.prepare("SELECT item, COUNT(*) n FROM megaphones WHERE item IS NOT NULL AND seen_at >= datetime('now','-2 day') AND seen_at < datetime('now','-1 day') GROUP BY item").all(),
-    env.DB.prepare("SELECT strftime('%Y-%m-%dT%H', seen_at) h, COUNT(*) n FROM megaphones WHERE seen_at >= datetime('now','-1 day') GROUP BY h ORDER BY h").all(),
-    env.DB.prepare("SELECT nick, COUNT(*) n, COUNT(DISTINCT item) items FROM megaphones WHERE seen_at >= datetime('now','-1 day') GROUP BY nick ORDER BY n DESC LIMIT 10").all(),
-    env.DB.prepare("SELECT COUNT(*) n, COUNT(DISTINCT nick) nicks, SUM(item IS NOT NULL) withItem FROM megaphones WHERE seen_at >= datetime('now','-1 day')").first(),
-  ]);
-  const before = new Map(prev.results.map((r) => [r.item, r.n]));
+export async function megaphoneStats(env, now = Date.now()) {
+  // The table only holds about two days (pruned daily), so one read of it replaces five separate scans.
+  const { results } = await env.DB.prepare("SELECT seen_at AS t, nick, item, intent FROM megaphones WHERE seen_at >= datetime('now','-2 day')").all();
+  const iso = (ms) => new Date(ms).toISOString().slice(0, 19).replace('T', ' ');
+  const dayAgo = iso(now - 86400000);
+  const items = new Map(), before = new Map(), hours = new Map(), callers = new Map(), nicks = new Set();
+  let n = 0, withItem = 0;
+  for (const r of results) {
+    if (r.t < dayAgo) { if (r.item != null) before.set(r.item, (before.get(r.item) || 0) + 1); continue; }
+    n++; nicks.add(r.nick);
+    const h = r.t.slice(0, 13).replace(' ', 'T');
+    hours.set(h, (hours.get(h) || 0) + 1);
+    const c = callers.get(r.nick) || { nick: r.nick, n: 0, set: new Set() };
+    c.n++; if (r.item != null) c.set.add(r.item); callers.set(r.nick, c);
+    if (r.item == null) continue;
+    withItem++;
+    const it = items.get(r.item) || { item: r.item, n: 0, sell: 0, buy: 0 };
+    it.n++; if (r.intent === 'sell') it.sell++; if (r.intent === 'buy') it.buy++;
+    items.set(r.item, it);
+  }
+  const day = [...items.values()].sort((a, b) => b.n - a.n || a.item - b.item).slice(0, 40);
   return {
-    at: new Date().toISOString(),
-    today: total,
-    items: day.results.map((r) => ({ ...r, before: before.get(r.item) || 0 })),
+    at: new Date(now).toISOString(),
+    today: { n, nicks: nicks.size, withItem },
+    items: day.map((r) => ({ ...r, before: before.get(r.item) || 0 })),
     // Items more wanted than offered (at least 3 buyers): a demand signal the shops cannot show.
-    wanted: day.results.filter((r) => r.buy >= 3 && r.buy > r.sell).sort((a, b) => b.buy - a.buy).slice(0, 10),
-    hourly: hourly.results,
-    callers: callers.results,
+    wanted: day.filter((r) => r.buy >= 3 && r.buy > r.sell).sort((a, b) => b.buy - a.buy).slice(0, 10),
+    hourly: [...hours].sort((a, b) => a[0].localeCompare(b[0])).map(([h, c]) => ({ h, n: c })),
+    callers: [...callers.values()].sort((a, b) => b.n - a.n).slice(0, 10).map((c) => ({ nick: c.nick, n: c.n, items: c.set.size })),
   };
 }
