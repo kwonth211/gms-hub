@@ -106,29 +106,3 @@ document.addEventListener('click', async (e) => {
     setTimeout(() => { span.textContent = label; }, 4000);
   } finally { btn.disabled = false; }
 });
-
-// Put the button at the top right of the page's main table or list. If a heading sits right above that block, the button
-// joins the heading's line; otherwise it gets its own right-aligned row just above the block.
-function place() {
-  for (const bar of document.querySelectorAll('.dl-bar[data-xl-anchor]')) {
-    const sel = bar.dataset.xlAnchor;
-    let target = null;
-    for (const one of sel ? sel.split(/,\s*/) : []) { target = document.querySelector(one); if (target) break; }
-    if (!target) continue;
-    const block = target.closest('.table-wrap') || target;
-    const btn = bar.firstElementChild;
-    const head = block.previousElementSibling;
-    if (head && /^H[23]$/.test(head.tagName)) {
-      head.classList.add('dl-head');
-      btn.classList.add('dl-btn-inline');
-      head.append(btn);
-    } else {
-      const row = document.createElement('div');
-      row.className = 'dl-tools';
-      row.append(btn);
-      block.before(row);
-    }
-    bar.remove();
-  }
-}
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', place); else place();

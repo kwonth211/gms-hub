@@ -811,12 +811,33 @@ const XL_LIVE_SHEETS = {
   mega: { ko: '많이 불린 아이템과 시세 · 사려는 사람이 많은 아이템 · 시간대별 확성기', en: 'Most called items with prices · Most wanted · Megaphones by hour' },
   rank: { ko: '상위 1,000명 · 직업별 인원과 평균 레벨 · 레벨 구간별 인원', en: 'Top 1,000 · Players and average level by job · Players by level range' }
 };
-// Where the button sits: at the top right of the page's main table or list (assets/xlsx-live.js moves it there; first
-// selector that exists wins). Without a match it stays under the heading, aligned right.
-const XL_ANCHOR = { market: '#mb-browser', price: '.table-wrap, .panel', marketToday: '.mt-table', megaphone: '.mega-trends:not([hidden]), .mg-feed-panel', rank: '.rank-table-panel',
-  training: '.tr-route-list', trBand: '.tr-route-list', trClass: '.tr-route-list', monsters: '#monster-grid', bosses: '.boss-table', items: '.item-page > .panel',
-  equipment: '.eq-table', equipmentClass: '.eq-table', maps: 'main .table-wrap', quests: 'main .table-wrap', questBest: '.quest-best', questGuide: '.gq-cols',
-  scroll: '#sc-compare', drop: '.box-table' };
+// Where the button sits: at the top right of the page's main table or list, placed when the page is built so nothing moves
+// while it loads. Each entry is a run of markers found in order in the page body; the block starts at the last one's tag
+// (a table's wrapper if it has one). A heading right above the block takes the button on its own line; otherwise the
+// button gets a right-aligned row above the block. No match: it stays under the page heading, aligned right.
+const XL_ANCHOR = { market: ['<section class="panel mb-browser"'], marketToday: ['mt-table'], megaphone: ['class="panel mega-trends'], rank: ['rank-table-panel'],
+  training: ['<section id="tr-result"'], trBand: ['class="tr-route-list'], trClass: ['class="tr-route-list'], monsters: ['id="monster-grid"'], bosses: ['boss-table'],
+  items: ['item-page', '<section class="panel"'], equipment: ['<form class="panel eq-filters"'], equipmentClass: ['<form class="panel eq-filters"'], maps: ['map-page', '<section class="panel"'],
+  quests: ['<section class="panel" id="area-'], questBest: ['<section class="panel" id="lv-'], questGuide: ['class="gq-cols'], scroll: ['id="sc-compare"'], drop: ['<nav class="chips box-tabs"'] };
+function placeAt(body, markers, btn) {
+  let at = 0;
+  for (const m of markers) { at = body.indexOf(m, at); if (at < 0) return null; }
+  let start = body.lastIndexOf('<', at);
+  // A table inside <div class="table-wrap"> starts at the wrapper.
+  const wrap = body.lastIndexOf('<div class="table-wrap">', start);
+  if (wrap >= 0 && /^<div class="table-wrap">\s*$/.test(body.slice(wrap, start))) start = wrap;
+  const before = body.slice(0, start);
+  // Only the heading that ends right where the block starts: search back from the end for the last <h2/<h3 opening.
+  const end = before.match(/<\/(h[23])>\s*$/);
+  const hStart = end ? before.lastIndexOf(`<${end[1]}`) : -1;
+  if (end && hStart >= 0) {
+    const tag = end[1], open = before.indexOf('>', hStart), attrs = before.slice(hStart + tag.length + 1, open);
+    const inner = before.slice(open + 1, before.length - end[0].length);
+    const cls = /class="/.test(attrs) ? attrs.replace(/class="/, 'class="dl-head ') : `${attrs} class="dl-head"`;
+    return `${body.slice(0, hStart)}<${tag}${cls}>${inner}${btn.replace('class="dl-btn', 'class="dl-btn dl-btn-inline')}</${tag}>${body.slice(start)}`;
+  }
+  return `${before}<div class="dl-tools">${btn}</div>${body.slice(start)}`;
+}
 const xlKey = (pageKey, pagePath) => (pageKey === 'questGuide' ? `quest-${pagePath.split('/').filter(Boolean).pop()}` : XL_BY_PAGE[pageKey]);
 const sheetList = (names, ko) => (names.length > 6 ? `${names.slice(0, 4).join(' · ')} ${ko ? `외 ${names.length - 4}개 시트` : `and ${names.length - 4} more sheets`}` : names.join(' · '));
 function downloadBar(lang, pageKey, pagePath) {
@@ -827,15 +848,18 @@ function downloadBar(lang, pageKey, pagePath) {
   const label = `${icon}<span>${ko ? '엑셀로 받기' : 'Download Excel'}</span>`;
   if (key.startsWith('live:')) {
     const k = key.slice(5);
-    return `<div class="wrap dl-bar" data-xl-anchor="${esc(XL_ANCHOR[pageKey] || '')}"><button type="button" class="dl-btn" data-xl-live="${k}" data-lang="${lang}" title="${esc(XL_LIVE_SHEETS[k][ko ? 'ko' : 'en'])}">${label}</button></div>`;
+    return `<button type="button" class="dl-btn" data-xl-live="${k}" data-lang="${lang}" title="${esc(XL_LIVE_SHEETS[k][ko ? 'ko' : 'en'])}">${label}</button>`;
   }
   const book = WORKBOOKS[key];
   if (!book) return '';
-  return `<div class="wrap dl-bar" data-xl-anchor="${esc(XL_ANCHOR[pageKey] || '')}"><a class="dl-btn" href="${href(`/xlsx/${book.files[fileLang]}`)}" download="gms-hub-${key}-${fileLang}.xlsx" data-xl="${key}" title="${esc(sheetList(book.sheets[fileLang], ko))}">${label}</a></div>`;
+  return `<a class="dl-btn" href="${href(`/xlsx/${book.files[fileLang]}`)}" download="gms-hub-${key}-${fileLang}.xlsx" data-xl="${key}" title="${esc(sheetList(book.sheets[fileLang], ko))}">${label}</a>`;
 }
 function withDownload(body, lang, pageKey, pagePath) {
-  const bar = downloadBar(lang, pageKey, pagePath);
-  if (!bar) return body;
+  const btn = downloadBar(lang, pageKey, pagePath);
+  if (!btn) return body;
+  const placed = XL_ANCHOR[pageKey] && placeAt(body, XL_ANCHOR[pageKey], btn);
+  if (placed) return placed;
+  const bar = `<div class="wrap dl-bar">${btn}</div>`;
   const re = /(<section class="(?:wrap )?(?:mb-)?page-head[\s\S]*?<\/section>)/;
   return re.test(body) ? body.replace(re, `$1${bar}${AD_TOP}`) : bar + body;
 }
