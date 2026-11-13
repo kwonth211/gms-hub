@@ -1099,8 +1099,8 @@
         "en": "How do scrolls work?"
       },
       "a": {
-        "ko": "계산기에는 자료에 기재된 등급별 성공률을 기본값으로 넣었어요. 현재 아이템 툴팁과 대조해 사용하세요. 실패 시 슬롯 처리처럼 검증하지 못한 규칙은 확정하지 않고, 시도 횟수를 직접 입력하는 모델로 계산해요.",
-        "en": "The calculator uses sourced preset rates; compare them with the current item tooltip. Unverified behavior such as slot use on failure is not assumed. The model uses a specified number of attempts."
+        "ko": "계산기에는 자료에 기재된 등급별 성공률을 기본값으로 넣었어요. 현재 아이템 툴팁과 대조해 사용하세요. 시도 횟수를 직접 넣어 계산해요.",
+        "en": "The calculator uses sourced preset rates; compare them with the current item tooltip. The model uses a specified number of attempts."
       },
       "sources": [
         "https://ms-classic.com/guides/scroll-tiers-lesser-intermediate-greater-explained",

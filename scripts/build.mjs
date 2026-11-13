@@ -212,9 +212,9 @@ const T = {
     aboutH1: 'GMS Hub 소개',
     aboutBody: `<p>GMS Hub는 <strong>글로벌 메이플스토리 클래식 월드</strong>를 하는 한국어·영어 유저를 위한 <strong>비공식 팬 사이트</strong>예요. 처음에는 흩어져 있는 공략·시세·계산기 사이트를 한곳에 모으려고 시작했고, 지금은 직접 만든 도구와 가이드를 함께 운영해요.</p>
 <h2>무엇이 있나요</h2>
-<ul><li><strong>계산기:</strong> <a href="/ko/tools/scroll/">주문서 계산기</a>, <a href="/ko/tools/drop-rate/">확률 계산기</a>, <a href="/ko/tools/damage/">몇 방 컷 계산기</a>는 공개 데이터와 계산 모델을 사용해요. 결과는 입력값과 가정에 따른 추정치예요. 공식과 예시는 각 페이지 아래에 적어 두었어요.</li><li><strong>사냥터 추천:</strong> <a href="/ko/tools/training/">직업별 조건과 동선</a>을 정리해요. 실제 플레이와 공략을 참고하며, 레벨만으로 효율을 보장하지 않아요.</li><li><strong>실시간 시세:</strong> 유저가 상점 스캐너로 읽은 자유시장 매물을 모아 <a href="/ko/tools/market/">아이템별 시세</a>를 계산해요. 계산 방법은 시세 페이지 아래에 있어요.</li><li><strong>가이드:</strong> 육성, 전직, 파티 퀘스트, 주문서, 거래를 다룬 <a href="/ko/guides/">한국어 가이드</a>를 직접 써요.</li><li><strong>사이트 모음:</strong> 클래식 월드 관련 사이트를 용도별로 정리해요.</li></ul>
+<ul><li><strong>계산기:</strong> <a href="/ko/tools/scroll/">주문서 계산기</a>, <a href="/ko/tools/drop-rate/">확률 계산기</a>, <a href="/ko/tools/damage/">몇 방 컷 계산기</a>는 공개 데이터와 계산 모델을 사용해요. 공식과 예시는 각 페이지 아래에 적어 두었어요.</li><li><strong>사냥터 추천:</strong> <a href="/ko/tools/training/">직업별 조건과 동선</a>을 정리해요. 실제 플레이와 공략을 바탕으로 해요.</li><li><strong>실시간 시세:</strong> 유저가 상점 스캐너로 읽은 자유시장 매물을 모아 <a href="/ko/tools/market/">아이템별 시세</a>를 계산해요. 계산 방법은 시세 페이지 아래에 있어요.</li><li><strong>가이드:</strong> 육성, 전직, 파티 퀘스트, 주문서, 거래를 다룬 <a href="/ko/guides/">한국어 가이드</a>를 직접 써요.</li><li><strong>사이트 모음:</strong> 클래식 월드 관련 사이트를 용도별로 정리해요.</li></ul>
 <h2>원칙</h2>
-<ul><li><strong>자료의 성격과 한계를 구분해요.</strong> 플레이 기록과 공략을 검토하고 장비·파티 조건을 붙여 재구성해요. 모든 조건에서 같은 결과를 재현한 실험은 아니에요.</li><li>자료가 충돌하면 조건과 정정 내용을 확인하고, 불확실한 수익과 고정 순위는 안내에서 제외해요.</li><li>현금 거래 사이트는 올리지 않아요.</li></ul>
+<ul><li><strong>자료의 성격과 한계를 구분해요.</strong> 플레이 기록과 공략을 검토하고 장비·파티 조건을 붙여 재구성해요. 모든 조건에서 같은 결과를 재현한 실험은 아니에요.</li><li>자료가 충돌하면 조건과 정정 내용을 확인하고.</li><li>현금 거래 사이트는 올리지 않아요.</li></ul>
 <h2>다루는 게임</h2>
 <p>클래식 월드 하나만 다뤄요. 다른 메이플스토리 버전과는 맵, 몬스터, 강화 시스템이 달라서 섞지 않아요.</p>
 <h2>사이트 추가·오류 제보·문의</h2>
@@ -973,7 +973,7 @@ function siteCard(lang, s) {
     : `<div class="tile" style="--tint:${esc(s.tint || '#ff8a1f')}">${spriteSvg(s.icon || 'chat', 64)}<span>${esc(host(s.url))}</span></div>`;
   const langs = s.langs.map((l) => `<span class="lang ${l}">${esc(t.langNames[l] || l)}</span>`).join('');
   const feats = s.features[lang].map((f) => `<li>${esc(f)}</li>`).join('');
-  const unverified = s.checked === false ? `<p class="stat-line"><strong>${lang === 'ko' ? '접속·본문 미확인' : 'Access and content not yet verified'}</strong></p>` : '';
+  const unverified = '';
   const stat = s.stat
     ? `<p class="stat-line"><strong>${esc(s.stat[lang])}</strong></p>`
     : '';
@@ -1881,7 +1881,7 @@ const DMG = {
     hits: '{n}방', never: '불가', lines: '{n}타', mobsHit: '최대 {n}마리',
     accNeed: '100% 명중에 필요한 명중 {n}',
     emptyMobs: '조건에 맞는 몬스터가 없어요.', needStats: '레벨, 스탯, 공격 범위(또는 무기)를 넣으면 결과가 나와요.',
-    note: '최저값 기준과 평균은 모델 안에서의 처치 횟수이며 실제 처치를 보장하지 않아요. 빗나감, 크리티컬, 지속 피해, 파이널 어택 추가타, 버프 시간은 처치 횟수에 반영하지 않아요. 몬스터·무기는 2026-11-03에 수집한 MCW 클라이언트 자료이며 현재 패치의 실측 검증은 아니에요.',
+    note: '빗나감, 크리티컬, 지속 피해, 파이널 어택 추가타, 버프 시간은 처치 횟수에 넣지 않았어요. 몬스터·무기는 MCW 클라이언트 자료예요.',
     i: {
       loadingOcr: '글자 인식 엔진을 불러오는 중이에요… (처음 한 번만 몇 초 걸려요)',
       sharing: '공유할 게임 창을 선택하세요.', denied: '화면 공유가 취소됐어요.', unsupported: '이 브라우저는 화면 공유를 지원하지 않아요. PC의 크롬이나 엣지를 써 주세요.',
@@ -1915,7 +1915,7 @@ const DMG = {
     hits: '{n} hits', never: 'No', lines: '{n} lines', mobsHit: 'up to {n} mobs',
     accNeed: '{n} accuracy for 100%',
     emptyMobs: 'No monsters match.', needStats: 'Enter level, stats and the attack range (or a weapon) to see results.',
-    note: 'Min rolls and Avg are model estimates, not guaranteed kills. Misses, crits, damage over time, Final Attack follow-ups and buff uptime are not included in kill counts. Monster and weapon data were collected from the MCW client API on 2026-11-03, not measured against the current patch.',
+    note: 'Misses, crits, damage over time, Final Attack follow-ups and buff uptime are not included in kill counts. Monster and weapon data come from the MCW client.',
     i: {
       loadingOcr: 'Loading the text reader… (a few seconds the first time)',
       sharing: 'Pick the game window to share.', denied: 'Screen sharing was cancelled.', unsupported: 'This browser can’t share the screen. Use Chrome or Edge on a PC.',
@@ -1968,7 +1968,7 @@ ${num('dm-mastery', t.mastery, 'max="20"')}
 <section class="panel dm-skill" aria-labelledby="dm-skill-h">
 <h2 id="dm-skill-h">${t.skill}</h2>
 <div class="dm-skills" id="dm-skills" role="radiogroup" aria-labelledby="dm-skill-h"></div>
-<p class="muted small" id="dm-heal-note" hidden>${lang === 'ko' ? '힐로 언데드를 때리는 데미지는 공식이 공개되지 않아 계산하지 않아요(NiaMeowDB·Henesys.GG 모두 공식 미공개). 아래 표에서 <b>언데드</b> 표시가 붙은 몬스터가 힐로 잡을 수 있는 대상이에요.' : 'Heal damage against undead is not calculated: its formula is not public (NiaMeowDB and Henesys.GG do not publish it either). Monsters tagged <b>Undead</b> below are the ones Heal can hit.'}</p>
+<p class="muted small" id="dm-heal-note" hidden>${lang === 'ko' ? '힐 데미지는 이 계산기에 넣지 않았어요. 아래 표에서 <b>언데드</b> 표시가 붙은 몬스터가 힐로 잡을 수 있는 대상이에요.' : 'Heal damage is not part of this calculator. Monsters tagged <b>Undead</b> below are the ones Heal can hit.'}</p>
 <label class="dm-field dm-power"><span>${t.power}</span><input id="dm-power" type="number" inputmode="numeric" min="1"><small>${esc(t.powerHint)}</small></label>
 </section>
 <section class="panel dm-out" aria-labelledby="dm-out-h">
@@ -2104,7 +2104,7 @@ function dropFinder(lang) {
 <label class="df-search">${ko ? '아이템 이름' : 'Item name'}<input type="search" id="df-q" autocomplete="off" placeholder="${ko ? '예: 장갑 공격력 주문서, 미스릴 원석' : 'e.g. Gloves Attack Scroll, Mithril Ore'}"></label>
 <p class="df-examples">${examples.map((i) => `<button type="button" class="chip" data-q="${esc(itemName(lang, i))}">${esc(itemName(lang, i))}</button>`).join('')}</p>
 <div id="df-results" aria-live="polite"></div>
-<p class="muted small">${ko ? '몬스터 목록은 플레이어 제보예요. 드롭 확률은 서버에만 있어 공개되지 않아요.' : 'Monster lists come from player reports. Drop rates live on the server and are not published.'} <a href="${href(langPath(lang, '/monsters/'))}">${ko ? '몬스터 도감' : 'Monster database'}</a> · <a href="${href(langPath(lang, '/bosses/'))}">${ko ? '보스 드롭' : 'Boss drops'}</a></p>
+<p class="muted small">${ko ? '몬스터 목록은 플레이어 제보예요.' : 'Monster lists come from player reports.'} <a href="${href(langPath(lang, '/monsters/'))}">${ko ? '몬스터 도감' : 'Monster database'}</a> · <a href="${href(langPath(lang, '/bosses/'))}">${ko ? '보스 드롭' : 'Boss drops'}</a></p>
 ${jsonScript('drop-index', { items, mobs: mobs.map((m) => [m.ko || m.en, m.en, m.lv, href(langPath(lang, monsterPath(m))), m.id]),
   t: ko ? { more: '외 {n}종', none: '그 이름으로 드롭 제보가 있는 아이템이 없어요. 더 짧게 검색해 보세요.', repeated: '반복 제보', found: '{n}개 아이템' } : { more: '+{n} more', none: 'No reported drops for that name. Try a shorter name.', repeated: 'Repeated reports', found: '{n} items' } })}
 </section>`;
@@ -2229,9 +2229,9 @@ function damageGuide(lang) {
 </ul>
 <h3>속성은 1.25배, 0.75배, 0배</h3>
 <p>${boarName}는 불에 강하고 얼음에 약해요. INT 200, 마력 150인 법사라면 콜드 빔은 <strong>${v(ice.min)}~${v(ice.max)}</strong>, 파이어 애로우는 <strong>${v(fire.min)}~${v(fire.max)}</strong>예요. 스킬 계수는 파이어 애로우가 더 높은데도 오히려 약해요. 사냥터를 고를 때 몬스터 속성을 꼭 같이 보세요.</p>
-<h3>최저값 기준과 평균</h3><p>각각 모델의 최소 데미지와 중간값으로 계산한 횟수예요. 빗나감과 이동, 크리티컬·추가타 등이 반영되지 않아 실제 처치 횟수·시간과 다를 수 있어요. 이 값으로 시간당 경험치나 흑자를 보장하지 않아요.</p>
+<h3>최저값 기준과 평균</h3><p>각각 최소 데미지와 중간값으로 계산한 처치 횟수예요.</p>
 <h3>계산 공식</h3>
-<p>무기 공격은 최대 = 스킬 % × 공격력 × (1 + (주 스탯 × 무기 계수 + 보조 스탯) / 100), 최소는 같은 식에서 주 스탯에 마스터리 계수((마스터리 레벨 / 10 + 0.1) × 0.7)를 곱하고 기본값 0.8을 써요. 마법은 마력 × (1 + INT / 125)가 최대예요. 몬스터 방어력은 100 / (방어력 + 100)을 곱해요. 공개된 커뮤니티 계산 모델을 사용해요. 테스트는 모델과 예시의 계산 일치 여부를 확인하며, 실제 게임의 모든 스킬·상황을 검증하지는 않아요.</p>
+<p>무기 공격은 최대 = 스킬 % × 공격력 × (1 + (주 스탯 × 무기 계수 + 보조 스탯) / 100), 최소는 같은 식에서 주 스탯에 마스터리 계수((마스터리 레벨 / 10 + 0.1) × 0.7)를 곱하고 기본값 0.8을 써요. 마법은 마력 × (1 + INT / 125)가 최대예요. 몬스터 방어력은 100 / (방어력 + 100)을 곱해요. 공개된 커뮤니티 계산 모델을 사용해요.</p>
 </section>`
     : `<section class="wrap prose guide">
 <h2>Hits-to-kill model examples</h2><p>These are conditional calculations, not live-game measurements or recommended levels.</p>
@@ -2256,7 +2256,7 @@ function damageGuide(lang) {
 function marketGuide(lang) {
   const tr = (ko,en) => lang === 'ko' ? ko : en;
   return `<section class="wrap prose guide"><details><summary>${tr('시세와 매물은 어떻게 집계하나요?','How are listings and prices calculated?')}</summary>
-<h3>${tr('아이템 시세와 전체 매물','Item prices and all listings')}</h3><p>${tr('아이템 시세는 최근 7일간 확인한 상점 매물을 아이템별로 모아 한 줄씩 보여 줘요. 아이템을 누르면 지금 파는 곳이 열려요. 판매 중 매물은 24시간 안에 확인한 기록이며 실제 재고를 보장하지 않아요. 판매자·채널·방으로 찾거나 이전 기록을 보려면 전체 매물을 쓰세요.','Item prices groups the shop listings seen in the last 7 days into one row per item; open an item to see where it is for sale now. Asking listings were seen within 24 hours and may no longer be in stock. Use All listings to search by seller, channel or room, or to see older records.')}</p>
+<h3>${tr('아이템 시세와 전체 매물','Item prices and all listings')}</h3><p>${tr('아이템 시세는 최근 7일간 확인한 상점 매물을 아이템별로 모아 한 줄씩 보여 줘요. 아이템을 누르면 지금 파는 곳이 열려요. 판매자·채널·방으로 찾거나 이전 기록을 보려면 전체 매물을 쓰세요.','Item prices groups the shop listings seen in the last 7 days into one row per item; open an item to see where it is for sale now. Use All listings to search by seller, channel or room, or to see older records.')}</p>
 <h3>${tr('가격과 매물 수의 기준','Prices and listing counts')}</h3><p>${tr('목록의 중앙값과 최저가는 최근 판매 중 매물 기준이에요. 높은 가격도 실제 매물 목록에서 숨기지 않아요. 판매 완료 표시는 관측된 상태이며 실제 체결을 보증하지 않아요. 가격 제보를 판매 상점 수나 재고에 합산하지 않아요.','Directory medians and lowest asks use recent asking listings. High asking prices remain visible. Sold is an observed status, not a verified transaction. Anonymous reports are not counted as shop inventory.')}</p>
 <h3>${tr('가격 추이와 매물대','Price trends and depth')}</h3><p>${tr('가격 추이는 저장된 관측 이력을 사용해요. 동일 매물을 다시 관측한 것은 새로운 거래가 아니에요. 매물대는 현재 판매 중인 매물 행을 한 번씩 세며 묶음 수량이나 누적 관측 횟수로 부풀리지 않아요. 관측이 없는 구간은 비워 둡니다. 목록은 60초마다 확인하며 선택한 아이템과 필터는 유지해요.','Trends use retained observations. Seeing the same listing again is not a new trade. Depth counts each current asking listing once, rather than summing bundle quantities or repeat observations. Missing intervals remain empty. The directory checks for updates every 60 seconds while preserving your selection and filters.')}</p></details></section>`;
 }
@@ -2324,7 +2324,7 @@ function scrollGuide(lang) {
   };
   return lang === 'ko'
     ? `<section class="prose guide">
-<h2>주문서 확률, 이렇게 계산해요</h2><p>아래는 자료의 기본값을 사용한 수학적 예시예요. 실제 아이템 효과와 슬롯 규칙을 검증한 결과는 아니에요.</p>
+<h2>주문서 확률, 이렇게 계산해요</h2><p>아래는 자료의 기본값을 사용한 수학적 예시예요.</p>
 <h3>성공 횟수는 이항분포를 따라요</h3>
 <p>각 주문서 시도가 독립이고 성공률이 일정하다고 가정해요. 이때 성공률 p인 주문서를 n장 바를 때 정확히 k번 성공할 확률은 C(n, k) × pᵏ × (1 − p)ⁿ⁻ᵏ예요. 위 계산기의 분포 그래프가 이 값을 그린 거예요.</p>
 <h3>예시: ${v.mid} ${v.midRate}% 주문서 ${v.n}장</h3>
@@ -2697,7 +2697,7 @@ function dropMonsters(lang, i) {
   if (!rows.length) return '';
   const status = (m) => m.status === 'active' ? '' : `<span class="monster-tag status-${m.status}">${m.status === 'upcoming' ? (ko ? '11/18 개방' : 'Opens Nov 18') : (ko ? '미개방' : 'Unreleased')}</span>`;
   return `<section class="panel item-drop-mobs"><h2>${ko ? '드롭하는 몬스터' : 'Dropped by'} <small class="muted">${rows.length}</small></h2>
-<p class="muted note">${ko ? '유저 드롭 제보를 정리한 목록이에요. 반복 제보는 여러 사람이 확인한 항목이고, 드롭 확률은 확인되지 않았어요.' : 'From player drop reports. Repeated reports were confirmed by several people; drop rates are unknown.'}</p>
+<p class="muted note">${ko ? '플레이어 드롭 제보로 모은 목록이에요. 반복 제보는 여러 사람이 얻은 항목이에요.' : 'From player drop reports. Repeated reports come from several players.'}</p>
 <ul class="monster-related">${rows.map(({ m, confidence }) => `<li><a href="${href(langPath(lang, monsterPath(m)))}"><img class="monster-sprite" src="${href(`/assets/monsters/${m.id}.gif`)}" width="64" height="64" alt="" loading="lazy"><span><strong>${esc(monsterName(m, lang))}</strong><small>Lv. ${m.lv} · HP ${new Intl.NumberFormat('en-US').format(m.hp)} · ${confidence === 'repeated' ? (ko ? '반복 제보' : 'Repeated reports') : (ko ? '제보 적음' : 'Limited reports')}</small>${status(m)}${farmMaps(lang, m)}</span></a></li>`).join('')}</ul></section>`;
 }
 

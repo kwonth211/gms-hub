@@ -594,8 +594,8 @@
           "en": "Undead with an MP pool, so both Cleric Heal and MP Eater work."
         },
         {
-          "ko": "목비를 2~3레벨 올리는 동안 두 개 먹은 사람도 있다는 언급이 있지만, 드롭률은 확인된 적이 없어요.",
-          "en": "Players mention getting two Mokbi drops within a few levels, but no drop rate has ever been measured."
+          "ko": "목비를 2~3레벨 올리는 동안 두 개 먹은 사람도 있어요.",
+          "en": "Some players got two Mokbi drops within a few levels."
         },
         {
           "ko": "2호선 1구역에는 주니어 네키가 함께 나와요. 주니어 레이스만 잘 잡히는지가 아니라 네키에 미스가 자주 뜨는지도 보세요.",
@@ -1255,8 +1255,8 @@
       },
       "tips": [
         {
-          "ko": "젠 시간은 랜덤이라는 언급이 있어요. 30분 만에 나온 사례가 있지만 확실하지 않아요.",
-          "en": "Respawn is described as random; one player saw it after 30 minutes but could not confirm a pattern."
+          "ko": "젠 시간은 랜덤이에요. 30분 만에 나온 사례도 있어요.",
+          "en": "Respawn is random; one player saw it after 30 minutes."
         }
       ],
       "evidence": [

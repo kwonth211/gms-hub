@@ -116,10 +116,10 @@
  ],
  "disputed": {
   "ko": "무기 공격력(+1/+2/+4/+5)과 완드·스태프 마력(+2/+4/+8/+10) 상승치는 게임 클라이언트의 주문서 데이터로 확인했어요. 예전에 자료마다 달랐던 값이에요.",
-  "en": "Weapon ATT (+1/+2/+4/+5) and wand/staff Magic ATT (+2/+4/+8/+10) gains are taken from the scrolls' own data in the game client; sources used to disagree on them."
+  "en": "Weapon ATT (+1/+2/+4/+5) and wand/staff Magic ATT (+2/+4/+8/+10) gains are taken from the scrolls' own data in the game client."
  },
  "unknown": {
-  "ko": "실패한 주문서가 업그레이드 가능 횟수를 차감하는지는 클라이언트 데이터에 기록이 없어 확인되지 않았어요. 그래서 이 계산기는 '바를 주문서 개수' 기준으로 계산해요.",
-  "en": "Whether a failed scroll uses an upgrade slot is not recorded in the client data, so this calculator works from the number of scrolls you apply."
+  "ko": "이 계산기는 '바를 주문서 개수' 기준으로 계산해요.",
+  "en": "This calculator works from the number of scrolls you apply."
  }
 }

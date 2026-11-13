@@ -502,7 +502,7 @@ function setView(next, keepPage = false) {
           )
         : tr(
             "기본은 최근 24시간에 판매 중으로 확인된 매물이에요. 상태를 ‘전체 기록’으로 바꾸면 7·30일 기록을 모두 페이지별로 볼 수 있어요. 표시 가격은 판매자가 부른 가격이며 실제 거래가가 아니에요.",
-            "By default: listings seen for sale in the last 24 hours. Switch Status to “All records” to page through 7 or 30 days. Prices are what sellers ask, not confirmed trades.",
+            "By default: listings seen for sale in the last 24 hours. Switch Status to “All records” to page through 7 or 30 days.",
           );
   syncURL();
   renderMine();
@@ -672,7 +672,7 @@ async function showShop(seller, channel, room, shopPage = 1) {
   shopContext = { seller, channel, room, page: shopPage };
   const dialog = $("mb-shop");
   $("mb-shop-body").innerHTML =
-    `<header class="mk-head"><div><h2 id="mb-shop-title">${esc(seller)}</h2><p>CH ${channel} · ${placeLabel(Number(room), ko)}</p></div><button class="btn ghost small-btn" data-close-shop aria-label="${tr("상점 닫기", "Close shop")}">×</button></header><p class="muted note">${tr("이 위치의 상점에서 우리 DB에 확인된 판매 매물이에요. 전체 재고를 뜻하지는 않아요.", "Asking listings recorded in our database for this shop and location, not guaranteed complete inventory.")}</p><p id="mb-shop-count"></p><div id="mb-shop-rows">${T.loading}</div><div id="mb-shop-pages" class="mb-pagination"></div>`;
+    `<header class="mk-head"><div><h2 id="mb-shop-title">${esc(seller)}</h2><p>CH ${channel} · ${placeLabel(Number(room), ko)}</p></div><button class="btn ghost small-btn" data-close-shop aria-label="${tr("상점 닫기", "Close shop")}">×</button></header><p class="muted note">${tr("이 위치의 상점에서 확인한 판매 매물이에요.", "Asking listings recorded for this shop and location.")}</p><p id="mb-shop-count"></p><div id="mb-shop-rows">${T.loading}</div><div id="mb-shop-pages" class="mb-pagination"></div>`;
   dialog.setAttribute("aria-labelledby", "mb-shop-title");
   if (!dialog.open) dialog.showModal();
   try {

@@ -151,7 +151,7 @@
    },
    "cost": {
     "ko": "물약 절약을 위한 비교 후보예요. 장비·회복 아이템에 따라 순손익은 달라져요.",
-    "en": "Compare supply use against harder targets; positive net income is not guaranteed."
+    "en": "A candidate for saving potions; net income depends on your gear and recovery items."
    },
    "exit": {
     "ko": "현재 층에서 공격 대기 시간이 길어지면 파티 사냥이나 커닝 파퀘와 비교해요.",
@@ -657,7 +657,7 @@
     "en": "Choose a long platform in Swamp of Despair I/II and clear both directions."
    },
    "cost": {
-    "ko": "접촉을 줄이는 목적이에요. MP 물약까지 없어지는 사냥터라는 뜻은 아니에요.",
+    "ko": "접촉을 줄이는 목적이에요.",
     "en": "The aim is fewer contact hits, not zero MP cost."
    },
    "exit": {
@@ -1914,7 +1914,7 @@
     "en": "Wild Kargo · Cold Eye"
    },
    "summary": {
-    "ko": "71 파이터의 실제 사냥을 바탕으로 한 조건부 후보예요. 이후 레벨의 효율은 자동으로 보장되지 않아요.",
+    "ko": "71 파이터의 실제 사냥을 바탕으로 한 조건부 후보예요.",
     "en": "A conditional option based on level-71 Fighter footage, not a proven efficiency range up to 100."
    },
    "entry": {
@@ -2050,8 +2050,8 @@
     "en": "Reach Sanctuary Entrance deeper in Sleepywood and compare attacks while maintaining room to control contact."
    },
    "cost": {
-    "ko": "스틸의 제어와 버프를 활용하더라도 흑자가 보장되지는 않아요. 실제 회복제 사용량으로 판단하세요.",
-    "en": "Steal control and buffs do not guarantee profit; measure consumed recovery items."
+    "ko": "실제 회복제 사용량으로 판단하세요.",
+    "en": "Judge it by the recovery items you actually use."
    },
    "exit": {
     "ko": "기존 동선보다 비용이나 처치 시간이 커지면 돌아가요. 76 이후 레벨별 효율은 별도 비교가 필요해요.",

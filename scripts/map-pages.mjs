@@ -70,7 +70,7 @@ ${statusTag(l, ko)}
 <div class="table-wrap"><table class="data"><thead><tr><th>${ko ? '몬스터' : 'Monster'}</th><th>${ko ? '레벨' : 'Level'}</th><th>HP</th><th>EXP</th><th>${ko ? '출현 지점' : 'Spawns'}</th><th>${ko ? '확정 명중' : 'Sure-hit accuracy'}</th></tr></thead><tbody>${rows}</tbody></table></div>
 <p class="muted note">${ko ? '확정 명중은 몬스터와 같은 레벨일 때 빗나가지 않는 데 필요한 명중이에요. 몇 방 컷 계산기와 같은 공식이에요.' : 'Sure-hit accuracy is what you need at the monster’s own level to never miss, from the same formula as the hits-to-kill calculator.'}</p></section>
 <section class="panel"><h2>${ko ? '이 맵에서 얻는 드롭' : 'Drops on this map'}</h2>
-<p class="muted note">${ko ? '유저 드롭 제보 기준이고, 드롭 확률은 확인되지 않았어요.' : 'From player drop reports; drop rates are unknown.'}</p>${dropList}</section>
+<p class="muted note">${ko ? '플레이어 드롭 제보로 모은 목록이에요.' : 'From player drop reports.'}</p>${dropList}</section>
 ${routeList ? `<section class="panel"><h2>${ko ? '이 맵 몬스터가 나오는 사냥 경로' : 'Training routes with these monsters'}</h2>${routeList}</section>` : ''}
 ${nearby.length ? `<section class="panel"><h2>${ko ? '같은 지역의 비슷한 맵' : 'Similar maps nearby'}</h2><ul class="monster-routes">${nearby.map((x) => `<li><a href="${link(mapPath(x))}"><strong>${esc(mapName(x, lang))}</strong><small>Lv. ${x.minLv}–${x.maxLv}</small></a></li>`).join('')}</ul></section>` : ''}
 <p class="muted small">${ko ? '출현 지점과 능력치는 게임 클라이언트 데이터, 드롭은 유저 제보를 정리했어요.' : 'Spawn points and stats come from the game client data; drops are player reports.'}</p>
