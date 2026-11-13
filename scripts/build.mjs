@@ -1558,7 +1558,11 @@ const EXP = {
     lead: '메이플 창을 공유하고 시작을 누르면 EXP를 자동으로 읽어요. 시간당 경험치, 다음 레벨까지 남은 시간, 잡은 마릿수가 사냥하는 동안 바로 보여요.',
     start: '메이플 창 공유하고 시작', stop: '정지', reset: '새로 측정',
     checks: { share: '화면 공유', bar: '상태바 인식', read: 'EXP 읽기' },
-    stats: { now: '지금 EXP', rate: '시간당 경험치', pct: '시간당 %', next: '다음 레벨까지', gained: '이번 측정 획득', time: '측정 시간' },
+    stats: { now: '지금 EXP', rate: '시간당 경험치', recent: '최근 5분 속도', pct: '시간당 %', next: '다음 레벨까지', gained: '이번 측정 획득', time: '측정 시간', best: '내 최고 기록 대비' },
+    demo: '예시로 먼저 보기', demoOff: '예시 끄기', demoNote: '예시 화면이에요. 40분 동안 사냥한 기록을 넣어 봤어요. 실제로 재려면 위의 시작 버튼을 누르세요.',
+    pip: '미니 창 띄우기', spotLabel: '사냥터 메모', spotPh: '예: 개미굴 2, 파티 3명', alertLabel: 'EXP가 3분 넘게 안 오르면 소리로 알리기',
+    log: { heading: '사냥 기록', help: '정지하거나 새로 측정할 때 3분 넘게 잰 기록이 여기에 남아요. 같은 몬스터 기록끼리 최고 기록과 비교해요. 이 브라우저에만 저장돼요.',
+      cols: ['날짜', '측정 시간', '시간당 경험치', '시간당 %', '얻은 경험치', '몬스터', '사냥터 메모', ''], empty: '아직 남은 기록이 없어요.', del: '삭제', excel: '엑셀로 받기', clear: '기록 전체 삭제', clearAsk: '사냥 기록을 모두 지울까요?' },
     skipIdle: '쉬는 시간 빼기 (2분 넘게 EXP가 안 오르면 제외)',
     mobLabel: '사냥하는 몬스터', mobPh: '몬스터 이름 (예: 스티지)', mobHelp: '고르면 잡은 마릿수를 계산해요.',
     manualHeading: '직접 입력', manualHelp: '화면 공유 없이 쓰는 방법이에요. 사냥 시작할 때 상태바의 EXP와 퍼센트를 넣고 한 번, 사냥 끝나고 다시 넣고 한 번 누르면 그 사이 얻은 경험치로 계산해요. 중간에 몇 번 더 넣어도 돼요.',
@@ -1573,7 +1577,9 @@ const EXP = {
       readOk: 'EXP {exp} ({pct}%)', readFail: '숫자를 못 읽었어요. 잠시 뒤 다시 읽어요. {text}',
       idle: '쉬는 시간 {m}분은 뺐어요', levelsUp: '레벨업 {n}번 포함',
       kills: '{mob} 약 {n}마리', killsPerHour: '시간당 약 {n}마리',
-      resetAsk: '지금 기록을 지우고 새로 측정할까요?', manualOk: '기록했어요.', manualFirstOk: '시작값을 기록했어요. 사냥이 끝나면 그때 EXP를 넣고 다시 눌러 주세요.', manualFirst: '시작값 기록', manualNext: '지금 값 기록', manualBad: 'EXP와 퍼센트(소수점 두 자리)를 확인해 주세요.'
+      resetAsk: '지금 기록을 지우고 새로 측정할까요?', manualOk: '기록했어요.', manualFirstOk: '시작값을 기록했어요. 사냥이 끝나면 그때 EXP를 넣고 다시 눌러 주세요.', manualFirst: '시작값 기록', manualNext: '지금 값 기록', manualBad: 'EXP와 퍼센트(소수점 두 자리)를 확인해 주세요.',
+      stalled: 'EXP가 {m}분째 안 올라요. 죽었거나 접속이 끊겼는지 확인해 보세요.', levelUp: '레벨 업! 다음 레벨도 이어서 재요.', logged: '사냥 기록에 남겼어요.',
+      pipNo: '이 브라우저는 미니 창을 지원하지 않아요. PC 크롬이나 엣지 최신 버전에서 돼요.', bestNone: '같은 몬스터로 재면 비교해요', bestVs: '{pct}% (최고 {best})', perHourShort: '/시간'
     }
   },
   en: {
@@ -1584,7 +1590,11 @@ const EXP = {
     lead: 'Share your MapleStory window, press start, and the page reads your EXP by itself. EXP per hour, time to the next level and kills show while you train.',
     start: 'Share the game window and start', stop: 'Stop', reset: 'New session',
     checks: { share: 'Screen share', bar: 'Status bar', read: 'EXP reading' },
-    stats: { now: 'EXP now', rate: 'EXP per hour', pct: 'Percent per hour', next: 'Next level in', gained: 'Gained this session', time: 'Time tracked' },
+    stats: { now: 'EXP now', rate: 'EXP per hour', recent: 'Last 5 minutes', pct: 'Percent per hour', next: 'Next level in', gained: 'Gained this session', time: 'Time tracked', best: 'Against your best' },
+    demo: 'See an example first', demoOff: 'Close the example', demoNote: 'This is an example: 40 minutes of training. To measure your own, press start above.',
+    pip: 'Pop-out mini window', spotLabel: 'Spot note', spotPh: 'e.g. Ant Tunnel 2, party of 3', alertLabel: 'Beep when EXP stops for 3 minutes',
+    log: { heading: 'Training log', help: 'Sessions over 3 minutes are kept here when you stop or start a new one. Runs on the same monster are compared with your best. Saved only in this browser.',
+      cols: ['Date', 'Time', 'EXP per hour', '% per hour', 'EXP gained', 'Monster', 'Spot note', ''], empty: 'No sessions kept yet.', del: 'Delete', excel: 'Download Excel', clear: 'Clear the log', clearAsk: 'Delete the whole training log?' },
     skipIdle: 'Skip idle time (no EXP gain for over 2 minutes)',
     mobLabel: 'Monster you are training on', mobPh: 'Monster name (e.g. Stirge)', mobHelp: 'Pick one to count kills.',
     manualHeading: 'Type it in', manualHelp: 'The way without screen sharing. Enter the EXP and percent from the status bar when you start training and press once, then again when you finish: the gain in between is what gets calculated. Extra entries along the way are fine.',
@@ -1599,7 +1609,9 @@ const EXP = {
       readOk: 'EXP {exp} ({pct}%)', readFail: 'Could not read the numbers; trying again shortly. {text}',
       idle: '{m} idle minutes left out', levelsUp: 'includes {n} level-up(s)',
       kills: 'about {n} {mob}', killsPerHour: 'about {n} an hour',
-      resetAsk: 'Clear this session and start a new one?', manualOk: 'Saved.', manualFirstOk: 'Starting value saved. When you finish training, enter the EXP again and press once more.', manualFirst: 'Save starting value', manualNext: 'Save current value', manualBad: 'Check the EXP and the percent (two decimals).'
+      resetAsk: 'Clear this session and start a new one?', manualOk: 'Saved.', manualFirstOk: 'Starting value saved. When you finish training, enter the EXP again and press once more.', manualFirst: 'Save starting value', manualNext: 'Save current value', manualBad: 'Check the EXP and the percent (two decimals).',
+      stalled: 'EXP has not moved for {m} minutes. Check whether you died or disconnected.', levelUp: 'Level up! The next level carries on.', logged: 'Saved to your training log.',
+      pipNo: 'This browser has no mini window. It works in recent Chrome or Edge on a computer.', bestNone: 'Train on the same monster to compare', bestVs: '{pct}% (best {best})', perHourShort: '/h'
     }
   }
 };
@@ -1609,27 +1621,36 @@ function expBody(lang) {
   return `${pageHead(lang, 'clock', t.h1, t.lead)}
 <div class="wrap exp-page">
 <section class="panel exp-control">
-<div class="exp-buttons"><button type="button" class="btn exp-start" id="exp-start">▶ ${esc(t.start)}</button><button type="button" class="btn ghost exp-stop" id="exp-stop">■ ${esc(t.stop)}</button></div>
+<div class="exp-buttons"><button type="button" class="btn exp-start" id="exp-start">▶ ${esc(t.start)}</button><button type="button" class="btn ghost exp-stop" id="exp-stop">■ ${esc(t.stop)}</button><button type="button" class="btn ghost small-btn" id="exp-pip">${esc(t.pip)}</button><button type="button" class="btn ghost small-btn" id="exp-demo" data-on="${esc(t.demo)}" data-off="${esc(t.demoOff)}">${esc(t.demo)}</button></div>
+<p id="exp-demo-note" class="exp-demo-note" hidden>${esc(t.demoNote)}</p>
 <p id="exp-status" class="exp-status" role="status" aria-live="polite"></p>
 <form id="exp-manual" class="exp-manual-form"><strong>${esc(t.manualHeading)}</strong><label>${esc(t.manualExp)} <input id="exp-m-exp" inputmode="numeric" placeholder="83,631" required></label><label>${esc(t.manualPct)} <input id="exp-m-pct" inputmode="decimal" placeholder="68.13" required></label><button class="btn ghost small-btn" type="submit" id="exp-m-save">${esc(t.manualSave)}</button><small class="muted">${esc(t.manualHelp)}</small></form>
 <ol class="scan-checks exp-checks" aria-live="polite">${['share', 'bar', 'read'].map((k) => `<li id="exp-check-${k}" data-state="wait"><span class="dot" aria-hidden="true"></span><strong>${esc(t.checks[k])}</strong><small>${esc(t.i.wait)}</small></li>`).join('')}</ol>
 </section>
 <section class="panel exp-board">
-<dl class="exp-stats">${stat('rate', 'exp-rate')}${stat('next', 'exp-next')}${stat('pct', 'exp-pct')}${stat('gained', 'exp-gained')}${stat('time', 'exp-time')}${stat('now', 'exp-now')}</dl>
+<dl class="exp-stats">${stat('rate', 'exp-rate')}${stat('recent', 'exp-recent')}${stat('next', 'exp-next')}${stat('pct', 'exp-pct')}${stat('gained', 'exp-gained')}${stat('time', 'exp-time')}${stat('now', 'exp-now')}${stat('best', 'exp-best')}</dl>
 <p class="muted small exp-notes"><span id="exp-idle"></span> <span id="exp-levels"></span></p>
 <svg class="exp-chart" id="exp-chart" viewBox="0 0 600 150" role="img" aria-label="${esc(t.stats.gained)}" hidden></svg>
 <p id="exp-empty" class="muted">${esc(t.empty)}</p>
 <div class="exp-options">
 <label class="exp-check"><input type="checkbox" id="exp-skip-idle" checked> ${esc(t.skipIdle)}</label>
+<label class="exp-check"><input type="checkbox" id="exp-alert"> ${esc(t.alertLabel)}</label>
+<label class="exp-mob-label">${esc(t.spotLabel)} <input id="exp-spot" placeholder="${esc(t.spotPh)}" autocomplete="off" maxlength="60"></label>
 <label class="exp-mob-label">${esc(t.mobLabel)} <input id="exp-mob" list="exp-mob-list" placeholder="${esc(t.mobPh)}" autocomplete="off"><datalist id="exp-mob-list"></datalist><small class="muted">${esc(t.mobHelp)}</small></label>
 <p id="exp-mob-out" class="exp-mob-out"></p>
 <button type="button" class="btn ghost small-btn" id="exp-reset" hidden>${esc(t.reset)}</button>
 </div>
 </section>
+<section class="panel exp-log"><h2 class="dl-head">${esc(t.log.heading)}<button type="button" class="dl-btn dl-btn-inline" id="exp-log-xl"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M10 3v9m0 0l-4-4m4 4l4-4M4 15h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>${esc(t.log.excel)}</span></button></h2>
+<p class="muted small">${esc(t.log.help)}</p>
+<div class="table-wrap"><table class="data exp-log-table"><thead><tr>${t.log.cols.map((c) => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody id="exp-log-body"></tbody></table></div>
+<p id="exp-log-empty" class="muted">${esc(t.log.empty)}</p>
+<button type="button" class="btn ghost small-btn" id="exp-log-clear" hidden>${esc(t.log.clear)}</button>
+</section>
 <ol class="scan-steps">${t.how.map(([h, d], n) => `<li><b>${n + 1}</b><strong>${esc(h)}</strong><span>${esc(d)}</span></li>`).join('')}</ol>
 <p class="muted small">${esc(t.privacy)}</p>
 </div>
-${jsonScript('exp-data', { lang, t: { ...t.i, stats: t.stats }, mobsUrl: href('/assets/mobs.json') })}`;
+${jsonScript('exp-data', { lang, t: { ...t.i, stats: t.stats, log: t.log }, mobsUrl: href('/assets/mobs.json') })}`;
 }
 
 const SCAN = {

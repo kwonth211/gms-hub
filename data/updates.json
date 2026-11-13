@@ -3,6 +3,13 @@
  "updates": [
   {
    "date": "2026-11-13",
+   "path": "/tools/exp/",
+   "new": true,
+   "ko": "경험치 측정기 강화 — 최근 5분 속도·미니 창·사냥 기록·내 최고 기록 비교·멈춤 알림·예시 보기",
+   "en": "EXP tracker upgrade: last 5 minutes, mini window, training log, compare with your best, stall alert, example"
+  },
+  {
+   "date": "2026-11-13",
    "path": "/forgotten-hollow/",
    "new": true,
    "ko": "포가튼 할로우 공략 — 가는 법·구역별 사냥터·몬스터·퀘스트·보스 한 페이지",

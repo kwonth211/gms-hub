@@ -3,6 +3,7 @@
 // session's gain. Nothing leaves this computer: frames are read in the page and only the numbers are kept, in this
 // browser (localStorage), so a reload keeps the session. Without screen sharing the two numbers can be typed by hand.
 import { findGauges, expTextBox, readExpText, parseExp, sameReading, summarize, levelTotal } from './exp-reader.js';
+import { xlsx } from './xlsx.js';
 
 const D = JSON.parse(document.getElementById('exp-data').textContent);
 const t = D.t;
@@ -11,6 +12,10 @@ const $ = (id) => document.getElementById(id);
 const fill = (s, v) => String(s).replace(/\{(\w+)\}/g, (_, k) => v[k] ?? '');
 const nf = new Intl.NumberFormat(D.lang);
 const KEY = 'gms-exp-session';
+const LOG_KEY = 'gms-exp-log';
+const STALL_MS = 180000;
+const RECENT_MS = 300000;
+const BASE_TITLE = document.title;
 const TICK_MS = 5000;
 const HEARTBEAT_MS = 60000;
 const TESSERACT_URL = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
@@ -18,11 +23,15 @@ const TESSERACT_URL = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tess
 let session = load() || fresh();
 let stream = null, video = null, timer = null, reading = false, pending = null, lastSampleAt = 0;
 let mobs = null;
+let demoOn = false, realSession = null, pipWin = null, lastGainAt = 0, stallWarned = false;
+let log = loadLog();
 const learned = new Map(Object.entries(session.learned || {}));
 
 function fresh() { return { samples: [], startedAt: null, mob: null, learned: {}, skipIdle: true }; }
 function load() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && Array.isArray(s.samples) ? s : null; } catch { return null; } }
-function save() { session.learned = Object.fromEntries(learned); try { localStorage.setItem(KEY, JSON.stringify(session)); } catch {} }
+function loadLog() { try { const l = JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); return Array.isArray(l) ? l : []; } catch { return []; } }
+function saveLog() { try { localStorage.setItem(LOG_KEY, JSON.stringify(log.slice(0, 100))); } catch {} }
+function save() { if (demoOn) return; session.learned = Object.fromEntries(learned); try { localStorage.setItem(KEY, JSON.stringify(session)); } catch {} }
 
 // ---------- reading ----------
 let ocrWorker = null;
@@ -82,7 +91,10 @@ function accept(r) {
     const changed = r.exp !== last.exp || r.pct !== last.pct;
     if (!changed && now - lastSampleAt < HEARTBEAT_MS) return;
   }
+  if (last && (r.exp !== last.exp || r.pct !== last.pct)) { lastGainAt = now; stallWarned = false; }
+  if (last && r.exp < last.exp && r.pct < last.pct) say(t.levelUp);
   session.samples.push({ t: now, exp: r.exp, pct: r.pct });
+  if (!lastGainAt) lastGainAt = now;
   if (session.samples.length > 2000) session.samples.splice(0, session.samples.length - 2000);
   session.startedAt ||= now;
   lastSampleAt = now;
@@ -90,7 +102,26 @@ function accept(r) {
   render();
 }
 
+function stallCheck() {
+  if (!stream || !lastGainAt) return;
+  const quiet = Date.now() - lastGainAt;
+  if (quiet < STALL_MS) return;
+  say(fill(t.stalled, { m: Math.floor(quiet / 60000) }));
+  if (stallWarned) return;
+  stallWarned = true;
+  document.title = `⚠ ${BASE_TITLE}`;
+  if ($('exp-alert').checked) beep();
+}
+function beep() {
+  try {
+    const a = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.35].forEach((at) => { const o = a.createOscillator(), g = a.createGain(); o.frequency.value = 880; g.gain.value = 0.15; o.connect(g); g.connect(a.destination); o.start(a.currentTime + at); o.stop(a.currentTime + at + 0.2); });
+    setTimeout(() => a.close(), 1200);
+  } catch {}
+}
+
 async function tick() {
+  stallCheck();
   if (!stream || reading) return;
   reading = true;
   try { accept(await readOnce(frame())); } catch (e) { check('read', 'fail', t.readFail.replace('{text}', '')); } finally { reading = false; }
@@ -106,6 +137,7 @@ function check(key, state, text) {
 
 async function start() {
   if (!navigator.mediaDevices?.getDisplayMedia) return say(t.unsupported);
+  if (demoOn) toggleDemo();
   try {
     stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 5 }, audio: false });
   } catch { return say(t.denied); }
@@ -118,6 +150,7 @@ async function start() {
   say(t.watching);
   track('exp_start');
   pending = null;
+  lastGainAt = Date.now(); stallWarned = false;
   timer = setInterval(tick, TICK_MS);
   setTimeout(tick, 800);
 }
@@ -131,7 +164,54 @@ function stop() {
   say(t.stopped);
   const s = summarize(session.samples, { skipIdle: session.skipIdle });
   track('exp_stop', { minutes: s ? Math.round(s.active / 60000) : 0, samples: session.samples.length });
+  keepInLog();
+  document.title = BASE_TITLE;
   render();
+}
+
+// ---------- training log ----------
+// A finished session (3+ active minutes with EXP gained) is kept: date, time, rates, monster and the spot note. Stopping
+// twice updates the same row instead of adding another.
+function keepInLog() {
+  if (demoOn) return;
+  const s = summarize(session.samples, { skipIdle: session.skipIdle });
+  if (!s || s.active < 180000 || !s.gained || !s.perHour) return;
+  const row = { id: session.samples[0].t, at: s.last.t, mins: Math.round(s.active / 60000), perHour: Math.round(s.perHour), pctPerHour: s.pctPerHour ? +s.pctPerHour.toFixed(1) : null,
+    gained: s.gained, mob: session.mob ? { id: session.mob.id, name: session.mob.name } : null, spot: session.spot || '' };
+  const i = log.findIndex((x) => x.id === row.id);
+  if (i >= 0) log[i] = { ...row, spot: log[i].spot || row.spot }; else log.unshift(row);
+  saveLog();
+  say(t.logged);
+  renderLog();
+}
+function bestFor(mob, exceptId) {
+  if (!mob) return null;
+  const same = (demoOn ? demoLog() : log).filter((x) => x.mob?.id === mob.id && x.id !== exceptId);
+  return same.length ? Math.max(...same.map((x) => x.perHour)) : null;
+}
+function renderLog() {
+  const body = $('exp-log-body');
+  const rows = demoOn ? demoLog() : log;
+  const when = (ms) => new Date(ms).toLocaleString(D.lang, { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  body.innerHTML = rows.map((x) => `<tr data-id="${x.id}"><td>${when(x.at)}</td><td>${dur(x.mins * 60000)}</td><td><b>${big(x.perHour)}</b></td><td>${x.pctPerHour != null ? `${x.pctPerHour}%` : '—'}</td><td>${big(x.gained)}</td><td>${x.mob ? escHtml(x.mob.name) : '—'}</td>
+<td><input class="exp-log-spot" value="${escHtml(x.spot || '')}" maxlength="60" aria-label="${escHtml(t.log.cols[6])}"${demoOn ? ' disabled' : ''}></td><td><button type="button" class="btn ghost small-btn exp-log-del"${demoOn ? ' disabled' : ''}>${escHtml(t.log.del)}</button></td></tr>`).join('');
+  $('exp-log-empty').hidden = rows.length > 0;
+  $('exp-log-clear').hidden = demoOn || !rows.length;
+}
+const escHtml = (v) => String(v).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+
+function logWorkbook() {
+  const L = (k, e) => (ko ? k : e);
+  const rows = (demoOn ? demoLog() : log).map((x) => [new Date(x.at).toLocaleString('sv-SE').slice(0, 16), x.mins, x.perHour, x.pctPerHour, x.gained, x.mob?.name || '', x.spot || '']);
+  const byMob = new Map();
+  for (const x of demoOn ? demoLog() : log) { if (!x.mob) continue; const e = byMob.get(x.mob.name) || byMob.set(x.mob.name, { n: 0, mins: 0, best: 0, sum: 0 }).get(x.mob.name); e.n++; e.mins += x.mins; e.best = Math.max(e.best, x.perHour); e.sum += x.perHour * x.mins; }
+  return xlsx({ title: 'GMS Hub', sheets: [
+    { name: L('사냥 기록', 'Training log'), title: L('내 사냥 기록', 'My training log'), note: `GMS Hub ${L('경험치 측정기', 'EXP tracker')} · ${new Date().toLocaleDateString('sv-SE')}`,
+      cols: [{ h: L('날짜', 'Date') }, { h: L('측정 시간(분)', 'Minutes'), t: 'int' }, { h: L('시간당 경험치', 'EXP per hour'), t: 'int' }, { h: L('시간당 %', '% per hour'), t: 'num' }, { h: L('얻은 경험치', 'EXP gained'), t: 'int' }, { h: L('몬스터', 'Monster') }, { h: L('사냥터 메모', 'Spot note'), t: 'wrap' }], rows },
+    { name: L('몬스터별 정리', 'By monster'), title: L('몬스터별 내 효율', 'My rates by monster'), note: L('평균은 측정 시간으로 가중한 값이에요.', 'Averages are weighted by time.'),
+      cols: [{ h: L('몬스터', 'Monster') }, { h: L('측정 횟수', 'Sessions'), t: 'int' }, { h: L('총 시간(분)', 'Minutes'), t: 'int' }, { h: L('평균 시간당 경험치', 'Average EXP/h'), t: 'int' }, { h: L('최고 시간당 경험치', 'Best EXP/h'), t: 'int' }],
+      rows: [...byMob].map(([name, e]) => [name, e.n, e.mins, Math.round(e.sum / Math.max(1, e.mins)), e.best]).sort((a, b) => b[4] - a[4]) }
+  ].filter((sh) => sh.rows.length) });
 }
 
 function say(msg) { $('exp-status').textContent = msg; }
@@ -160,7 +240,18 @@ function render() {
   $('exp-time').textContent = s ? dur(s.active) : '—';
   $('exp-idle').textContent = s && s.idle > 0 ? fill(t.idle, { m: Math.round(s.idle / 60000) }) : '';
   $('exp-levels').textContent = s?.levels ? fill(t.levelsUp, { n: s.levels }) : '';
-  $('exp-reset').hidden = !session.samples.length;
+  $('exp-reset').hidden = !session.samples.length || demoOn;
+  // Last 5 minutes: the sample just before the window plus those in it, idle included, so a stall shows as a drop.
+  const now = demoOn ? (session.samples.at(-1)?.t || Date.now()) : Date.now();
+  const cut = session.samples.findIndex((p) => p.t >= now - RECENT_MS);
+  const recentPts = cut < 0 ? [] : session.samples.slice(Math.max(0, cut - 1));
+  const rs = recentPts.length >= 2 && recentPts.at(-1).t - recentPts[0].t >= 60000 ? summarize(recentPts, { now, skipIdle: false }) : null;
+  $('exp-recent').textContent = rs?.perHour != null ? big(rs.perHour) : '—';
+  const best = bestFor(session.mob, session.samples[0]?.t);
+  $('exp-best').textContent = !session.mob ? '—' : best && two && s?.perHour ? fill(t.bestVs, { pct: Math.round((s.perHour / best) * 100), best: big(best) }) : t.bestNone;
+  $('exp-best').classList.toggle('exp-best-text', !best || !two);
+  if (stream && two && s?.perHour) document.title = `${stallWarned ? '⚠ ' : ''}${big(s.perHour)}${t.perHourShort} · ${BASE_TITLE}`;
+  renderPip(s, rs);
   renderMob(s);
   renderChart();
   $('exp-empty').hidden = session.samples.length > 0;
@@ -211,12 +302,96 @@ async function loadMobs() {
   return mobs;
 }
 
+// ---------- example session ----------
+// A made-up 40-minute session (one 4-minute break, one level-up) so a first-time visitor sees what the page gives
+// before sharing a screen. It never touches the saved session or log.
+function demoSamples() {
+  const out = [], total = 61200, t0 = Date.now() - 40 * 60000;
+  let exp = Math.round(total * 0.62), tt = t0, lvTotal = total;
+  for (let i = 0; i <= 80; i++) {
+    tt = t0 + i * 30000;
+    if (i > 40 && i <= 48) { if (i === 48) out.push({ t: tt, exp, pct: +(exp / lvTotal * 100).toFixed(2) }); continue; }
+    exp += 520 + ((i * 37) % 160);
+    if (exp >= lvTotal) { exp -= lvTotal; lvTotal = Math.round(lvTotal * 1.08); }
+    out.push({ t: tt, exp, pct: Math.max(0.01, +(exp / lvTotal * 100).toFixed(2)) });
+  }
+  return out;
+}
+function demoLog() {
+  const d = Date.now(), name = ko ? '스티지' : 'Stirge';
+  return [{ id: 1, at: d - 864e5, mins: 52, perHour: 58200, pctPerHour: 95.1, gained: 50440, mob: { id: 17, name }, spot: ko ? '환승 구역' : 'Transfer Area' },
+    { id: 2, at: d - 2 * 864e5, mins: 35, perHour: 61800, pctPerHour: 101.0, gained: 36050, mob: { id: 17, name }, spot: ko ? '위험한 증기' : 'Dangerous Steam' }];
+}
+function toggleDemo() {
+  demoOn = !demoOn;
+  if (demoOn) { realSession = session; session = { ...fresh(), samples: demoSamples(), mob: { id: 17, name: ko ? '스티지' : 'Stirge', exp: 23 } }; track('exp_demo'); }
+  else { session = realSession || fresh(); realSession = null; }
+  $('exp-demo').textContent = demoOn ? $('exp-demo').dataset.off : $('exp-demo').dataset.on;
+  $('exp-demo-note').hidden = !demoOn;
+  document.body.classList.toggle('exp-demo', demoOn);
+  render(); renderLog();
+}
+
+// ---------- mini window ----------
+// Document Picture-in-Picture keeps a small always-on-top window over the game with the live numbers.
+async function openPip() {
+  if (!window.documentPictureInPicture) return say(t.pipNo);
+  try {
+    pipWin = await documentPictureInPicture.requestWindow({ width: 300, height: 190 });
+  } catch { return say(t.pipNo); }
+  const css = `body{margin:0;font:14px/1.3 system-ui,-apple-system,"Malgun Gothic",sans-serif;background:#1d1a16;color:#f6efe4}
+.p{padding:12px 14px;display:grid;gap:6px}.r{display:flex;justify-content:space-between;gap:10px}.k{color:#bfb2a0;font-size:12px}
+.v{font-weight:800;font-variant-numeric:tabular-nums}.big{font-size:26px;color:#ffb347}.warn{color:#ff7a6b;font-size:12px}`;
+  pipWin.document.head.innerHTML = `<meta charset="utf-8"><title>GMS Hub</title><style>${css}</style>`;
+  pipWin.document.body.innerHTML = '<div class="p" id="pip"></div>';
+  pipWin.addEventListener('pagehide', () => { pipWin = null; });
+  track('exp_pip');
+  render();
+}
+function renderPip(s, rs) {
+  const box = pipWin?.document.getElementById('pip');
+  if (!box) return;
+  const row = (k, v) => `<div class="r"><span class="k">${escHtml(k)}</span><span class="v">${escHtml(v)}</span></div>`;
+  box.innerHTML = `<div class="r"><span class="k">${escHtml(t.stats.rate)}</span></div><div class="v big">${s?.perHour && session.samples.length >= 2 ? big(s.perHour) : '—'}</div>
+${row(t.stats.recent, rs?.perHour != null ? big(rs.perHour) : '—')}${row(t.stats.next, s ? dur(s.toLevelMs) : '—')}${row(t.stats.time, s ? dur(s.active) : '—')}${stallWarned ? `<div class="warn">${escHtml(fill(t.stalled, { m: Math.floor((Date.now() - lastGainAt) / 60000) }))}</div>` : ''}`;
+}
+
 // ---------- wiring ----------
+$('exp-pip').addEventListener('click', openPip);
+$('exp-demo').addEventListener('click', toggleDemo);
+$('exp-spot').value = session.spot || '';
+$('exp-spot').addEventListener('change', (e) => { session.spot = e.target.value.trim(); save(); });
+$('exp-alert').checked = !!session.alert;
+$('exp-alert').addEventListener('change', (e) => { session.alert = e.target.checked; save(); if (e.target.checked) beep(); });
+$('exp-log-body').addEventListener('change', (e) => {
+  const inp = e.target.closest('.exp-log-spot'); if (!inp || demoOn) return;
+  const row = log.find((x) => String(x.id) === inp.closest('tr').dataset.id); if (row) { row.spot = inp.value.trim(); saveLog(); }
+});
+$('exp-log-body').addEventListener('click', (e) => {
+  const b = e.target.closest('.exp-log-del'); if (!b || demoOn) return;
+  log = log.filter((x) => String(x.id) !== b.closest('tr').dataset.id); saveLog(); renderLog(); render();
+});
+$('exp-log-clear').addEventListener('click', () => { if (!confirm(t.log.clearAsk)) return; log = []; saveLog(); renderLog(); render(); });
+$('exp-log-xl').addEventListener('click', () => {
+  const bytes = logWorkbook();
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })), download: `gms-hub-exp-log-${new Date().toLocaleDateString('sv-SE')}.xlsx` });
+  document.body.append(a); a.click(); a.remove();
+  track('excel_download', { set: 'exp-log', live: true });
+});
+// Arriving from a training spot (?mob=<id>&spot=<name>): that monster and spot are filled in for this session.
+const qs = new URLSearchParams(location.search);
+if (qs.get('mob') || qs.get('spot')) {
+  if (qs.get('spot')) { session.spot = qs.get('spot').slice(0, 60); $('exp-spot').value = session.spot; }
+  if (qs.get('mob')) loadMobs().then((list) => { const m = list.find((x) => String(x.id) === qs.get('mob')); if (m) { session.mob = m; $('exp-mob').value = m.name; } save(); render(); });
+  save();
+}
 $('exp-start').addEventListener('click', start);
 $('exp-stop').addEventListener('click', stop);
 $('exp-reset').addEventListener('click', () => {
   if (!confirm(t.resetAsk)) return;
-  session = fresh();
+  keepInLog();
+  const keep = { spot: session.spot, alert: session.alert, mob: session.mob };
+  session = { ...fresh(), ...keep };
   pending = null;
   save();
   render();
@@ -253,3 +428,4 @@ if (demo) {
   im.src = demo;
 }
 render();
+renderLog();

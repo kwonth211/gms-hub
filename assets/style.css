@@ -2539,3 +2539,13 @@ body.exp-running .exp-stop { display: inline-flex; }
 .fh-promo b { color: var(--accent); }
 .fh-promo small { color: var(--muted); line-height: 1.45; }
 @media (prefers-reduced-motion: reduce) { .fh-promo { transition: none; } }
+/* EXP tracker additions: example banner, against-your-best text, training log, link from training spots. */
+.exp-demo-note { margin: 0; padding: 8px 12px; border-radius: 8px; background: var(--accent-soft); border: 1px solid var(--accent-line); font-size: .88rem; }
+.exp-stat dd.exp-best-text { font-size: .95rem; font-weight: 700; color: var(--text-2); }
+.exp-log { display: grid; gap: 10px; }
+.exp-log > h2 { margin: 0; }
+.exp-log-table td { vertical-align: middle; }
+.exp-log-spot { width: 100%; min-width: 120px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--text); font: inherit; font-size: .88rem; }
+.exp-log-spot:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.tr-exp-link { margin: 8px 0 0; font-size: .9rem; font-weight: 700; }
+#exp-best { font-size: 1.05rem; }
