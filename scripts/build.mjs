@@ -217,7 +217,7 @@ const T = {
 <h2>다루는 게임</h2>
 <p>클래식 월드 하나만 다뤄요. 다른 메이플스토리 버전과는 맵, 몬스터, 강화 시스템이 달라서 섞지 않아요.</p>
 <h2>사이트 추가·오류 제보·문의</h2>
-<p>이메일 <a href="mailto:kwonth211@gmail.com">kwonth211@gmail.com</a> 또는 <a href="{issues}" target="_blank" rel="noopener">GitHub 이슈</a>로 알려주세요. 사이트 운영자가 설명 수정이나 삭제를 원할 때도 같은 곳으로 연락하면 돼요.</p>
+<p>이메일 <a href="mailto:contact@gms-hub.com">contact@gms-hub.com</a> 또는 <a href="{issues}" target="_blank" rel="noopener">GitHub 이슈</a>로 알려주세요. 사이트 운영자가 설명 수정이나 삭제를 원할 때도 같은 곳으로 연락하면 돼요.</p>
 <h2>면책</h2>
 <p>GMS Hub는 넥슨(NEXON)과 관련이 없어요. MapleStory는 NEXON Korea Corporation의 상표예요. 사이트 썸네일은 각 사이트 화면을 축소한 미리보기이며, 사이트 내용은 각 운영자에게 책임이 있어요. 아이콘과 배너 그림은 GMS Hub가 직접 그린 것이에요.</p>`,
     privacyTitle: '개인정보처리방침 | GMS Hub',
@@ -243,7 +243,7 @@ const T = {
 <h2>변경</h2>
 <p>이 방침이 바뀌면 이 페이지에 바로 반영하고 시행일을 고쳐 적어요.</p>
 <h2>문의</h2>
-<p>이메일 <a href="mailto:kwonth211@gmail.com">kwonth211@gmail.com</a> 또는 <a href="{issues}" target="_blank" rel="noopener">GitHub 이슈</a>로 연락해 주세요.</p>
+<p>이메일 <a href="mailto:contact@gms-hub.com">contact@gms-hub.com</a> 또는 <a href="{issues}" target="_blank" rel="noopener">GitHub 이슈</a>로 연락해 주세요.</p>
 <p class="muted">시행일: 2026-10-30</p>`,
     termsTitle: '이용약관 | GMS Hub',
     termsDesc: 'GMS Hub 이용약관: 서비스 성격, 외부 링크, 정보의 정확성, 권리와 책임.',
@@ -264,7 +264,7 @@ const T = {
 <h2>7. 약관 변경</h2>
 <p>약관이 바뀌면 이 페이지에 반영하고 시행일을 고쳐 적어요.</p>
 <h2>8. 문의</h2>
-<p>이메일 <a href="mailto:kwonth211@gmail.com">kwonth211@gmail.com</a> 또는 <a href="{issues}" target="_blank" rel="noopener">GitHub 이슈</a></p>
+<p>이메일 <a href="mailto:contact@gms-hub.com">contact@gms-hub.com</a> 또는 <a href="{issues}" target="_blank" rel="noopener">GitHub 이슈</a></p>
 <p class="muted">시행일: 2026-10-30</p>`,
     terms: '이용약관',
     contact: '문의',
@@ -430,7 +430,7 @@ const T = {
 <h2>Which game</h2>
 <p>Classic World only. Other MapleStory versions have different maps, monsters and upgrade systems, so we keep them out.</p>
 <h2>Suggest a site, report an error or contact us</h2>
-<p>Email <a href="mailto:kwonth211@gmail.com">kwonth211@gmail.com</a> or open a <a href="{issues}" target="_blank" rel="noopener">GitHub issue</a>. Site operators who want their listing changed or removed can use the same channels.</p>
+<p>Email <a href="mailto:contact@gms-hub.com">contact@gms-hub.com</a> or open a <a href="{issues}" target="_blank" rel="noopener">GitHub issue</a>. Site operators who want their listing changed or removed can use the same channels.</p>
 <h2>Disclaimer</h2>
 <p>GMS Hub is not affiliated with NEXON. MapleStory is a trademark of NEXON Korea Corporation. Site thumbnails are scaled-down previews of each site, whose content is the responsibility of its operators. Icons and banner art are drawn by GMS Hub.</p>`,
     privacyTitle: 'Privacy Policy | GMS Hub',
@@ -456,7 +456,7 @@ const T = {
 <h2>Changes</h2>
 <p>If this policy changes, we update this page and the effective date below.</p>
 <h2>Contact</h2>
-<p>Email <a href="mailto:kwonth211@gmail.com">kwonth211@gmail.com</a> or open a <a href="{issues}" target="_blank" rel="noopener">GitHub issue</a>.</p>
+<p>Email <a href="mailto:contact@gms-hub.com">contact@gms-hub.com</a> or open a <a href="{issues}" target="_blank" rel="noopener">GitHub issue</a>.</p>
 <p class="muted">Effective: 2026-10-30</p>`,
     termsTitle: 'Terms of Use | GMS Hub',
     termsDesc: 'GMS Hub terms of use: what the site is, external links, accuracy, rights and responsibilities.',
@@ -477,7 +477,7 @@ const T = {
 <h2>7. Changes</h2>
 <p>If these terms change, we update this page and the effective date below.</p>
 <h2>8. Contact</h2>
-<p>Email <a href="mailto:kwonth211@gmail.com">kwonth211@gmail.com</a> or open a <a href="{issues}" target="_blank" rel="noopener">GitHub issue</a></p>
+<p>Email <a href="mailto:contact@gms-hub.com">contact@gms-hub.com</a> or open a <a href="{issues}" target="_blank" rel="noopener">GitHub issue</a></p>
 <p class="muted">Effective: 2026-10-30</p>`,
     terms: 'Terms',
     contact: 'Contact',
@@ -570,7 +570,7 @@ const classPath = (c) => `/tools/training/class/${c.slug}/`;
 PAGES.push(...TR_CLASSES.map((cls) => ({ key: 'trClass', path: classPath(cls), cls })));
 
 const issuesUrl = `https://github.com/${config.github.owner}/${config.github.repo}/issues`;
-const CONTACT_EMAIL = 'kwonth211@gmail.com';
+const CONTACT_EMAIL = 'contact@gms-hub.com';
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const href = (p) => `${config.basePath}${p}`;
 const absUrl = (p) => `${config.baseUrl}${config.basePath}${p}`;

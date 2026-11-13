@@ -1,3 +1,4 @@
+import { handleEmail } from './inbox.js';
 // GMS Hub vote API (Cloudflare Worker + D1).
 // GET  /votes        -> { "<siteId>": count, ... }
 // POST /vote {site}  -> { site, count, counted }  (one vote per visitor per site; visitors are salted IP hashes)
@@ -574,6 +575,7 @@ const api = {
 
 export default {
   scheduled: api.scheduled,
+  email: handleEmail,
   // The live viewer count is a WebSocket upgrade, so it skips the public response cache.
   fetch: (req, env, ctx) => ['/presence', '/chat'].includes(new URL(req.url).pathname) ? handlePresence(req, env) : cachedPublicResponse(req, () => api.fetch(req, env, ctx), ctx)
 };
