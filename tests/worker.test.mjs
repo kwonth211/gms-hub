@@ -195,3 +195,30 @@ test('megaphones need the token, dedupe repeats within ten minutes and list newe
   const list = await (await worker.fetch(new Request('https://test.invalid/megaphones'), env)).json();
   assert.equal(list.rows.length, 2); assert.equal(list.rows[0].nick, 'suinosora'); assert.equal(list.rows[1].color, 'Y');
 });
+
+test('price summaries are cached per item, so overlapping id lists only read the items not seen yet', async () => {
+  const env = environment();
+  for (const item of [4000000, 4000001]) for (const price of [100, 110, 120])
+    env.sqlite.prepare("INSERT INTO prices (item, price, kind, reporter) VALUES (?, ?, 'selling', 'test')").run(item, price);
+  const store = new Map();
+  globalThis.caches = { default: {
+    async match(req) { const v = store.get(new URL(req.url).href); return v ? new Response(v) : undefined; },
+    async put(req, res) { store.set(new URL(req.url).href, await res.text()); },
+  } };
+  try {
+    const listingReads = [];
+    const prepare = env.DB.prepare.bind(env.DB);
+    env.DB.prepare = (sql, args) => { if (args && sql.includes('FROM listings')) listingReads.push(sql); return prepare(sql, args); };
+    const get = async (ids) => (await worker.fetch(new Request('https://test.invalid/prices?ids=' + ids), env)).json();
+    const a = await get('4000000');
+    assert.equal(a['4000000'].median, 110);
+    assert.equal(listingReads.length, 1);
+    const b = await get('4000001,4000000,4999999');
+    assert.equal(b['4000000'].median, 110);
+    assert.equal(b['4000001'].median, 110);
+    assert.equal(b['4999999'], undefined);
+    assert.equal(listingReads.length, 2, 'only the uncached items were read');
+    await get('4999999,4000001');
+    assert.equal(listingReads.length, 2, 'items with nothing to show are cached too');
+  } finally { delete globalThis.caches; }
+});

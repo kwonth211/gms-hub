@@ -86,7 +86,7 @@ test('hourly 50-row policy rejects old 500-row clients and exposes read-only pre
  assert.equal((await post(e,batch(51))).status,400);assert.equal(count(e,'market_batch_runs'),0);
  assert.equal((await post(e,batch(50))).status,200);
  const before=e.sqlite.prepare('SELECT total_changes() AS n').get().n;
- const req=new Request('https://test/internal/market-batch?preflight=1',{headers:{Authorization:'Bearer test-token'}});
+ const req=new Request('https://test/internal/market-batch?preflight=1&instance=test',{headers:{Authorization:'Bearer test-token'}});
  const s=await (await handleMarketBatch(req,e,known)).json();
  assert.equal(s.ready,false);assert.equal(s.reason,'cooldown');assert.equal(s.maxRows,50);assert.ok(!s.runs);
  assert.equal(e.sqlite.prepare('SELECT total_changes() AS n').get().n,before);

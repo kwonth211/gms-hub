@@ -261,6 +261,63 @@ async function itemDetail(env, item) {
     asOf: new Date().toISOString(), limit: 400, truncated: results.length > 400 };
 }
 
+// Price summaries for a list of items (14 days of shop scans and reports, with reference and megaphone fallbacks).
+async function pricesFor(env, ids) {
+  // Player reports and scanned shops feed the same summary: a sold slot is a sale, an open slot an asking price.
+  const { results } = await env.DB.prepare(
+    `SELECT item, price, kind, created_at FROM prices WHERE item IN (SELECT value FROM json_each(?1)) AND created_at >= ${WINDOW}
+     UNION ALL
+     SELECT item, price, CASE WHEN sold THEN 'sold' ELSE 'selling' END, last_seen FROM listings WHERE item IN (SELECT value FROM json_each(?1)) AND last_seen >= ${WINDOW}
+     ORDER BY created_at DESC`
+  )
+    .bind(JSON.stringify(ids))
+    .all();
+  // Items nobody has scanned or reported yet fall back to the source site's reference price (basis 'typical').
+  const { results: refs } = await env.DB.prepare(`SELECT item, typical, day, week, sales, at FROM item_summary WHERE item IN (SELECT value FROM json_each(?))`)
+    .bind(JSON.stringify(ids)).all().catch(() => ({ results: [] }));
+  const ref = new Map(refs.map((r) => [r.item, r]));
+  // Megaphone asking prices stand in for consumables, scrolls and cash items that no shop scan covers (scrolled
+  // equipment sells in megaphones at prices unrelated to clean shop copies, so Equip never takes them).
+  const [asks, cats] = await Promise.all([megaphoneAsks(env, ids).catch(() => ({})), itemCategories().catch(() => new Map())]);
+  const out = {};
+  for (const id of ids) {
+    const rows = results.filter((r) => r.item === id);
+    const t = ref.get(id);
+    const typical = t ? { price: t.typical, day: t.day, week: t.week, sales: t.sales, at: t.at } : null;
+    const mega = cats.get(id) !== 'Equip' && asks[id]?.n >= 5 && asks[id].p75 <= asks[id].p25 * 2 ? asks[id] : null;
+    if (rows.length) out[id] = { ...summarize(rows), typical, mega };
+    else if (mega) out[id] = { n: 0, median: mega.median, basis: 'mega', low: mega.p25, high: mega.p75, last: null, sold: null, selling: null, buying: null, typical, mega };
+    else if (t) out[id] = { n: 0, median: t.typical, basis: 'typical', low: null, high: null, last: t.at, sold: null, selling: null, buying: null, typical, mega: null };
+  }
+  return out;
+}
+
+// /prices is cached per item, not per id list: a page asking for 30 items and another asking for 3 of them share the
+// same entries, so database reads follow the number of distinct items looked at in five minutes, not the number of
+// visitors or of id combinations. Items with nothing to show are cached too (as null), so they are not re-read either.
+const PRICE_TTL = 300;
+async function cachedPrices(env, ids, origin, ctx) {
+  const cache = globalThis.caches?.default;
+  if (!cache) return pricesFor(env, ids);
+  const key = (id) => new Request(`${origin}/__price-item/${id}`);
+  const hits = await Promise.all(ids.map((id) => cache.match(key(id)).then((r) => (r ? r.json() : undefined)).catch(() => undefined)));
+  const found = new Map();
+  const miss = [];
+  ids.forEach((id, i) => (hits[i] && 'v' in hits[i] ? found.set(id, hits[i].v) : miss.push(id)));
+  if (miss.length) {
+    const fresh = await pricesFor(env, miss);
+    const puts = miss.map((id) => {
+      found.set(id, fresh[id] ?? null);
+      return cache.put(key(id), new Response(JSON.stringify({ v: fresh[id] ?? null }),
+        { headers: { 'Content-Type': 'application/json', 'Cache-Control': `public, max-age=${PRICE_TTL}` } })).catch(() => {});
+    });
+    if (ctx?.waitUntil) ctx.waitUntil(Promise.all(puts)); else await Promise.all(puts);
+  }
+  const out = {};
+  for (const id of ids) if (found.get(id)) out[id] = found.get(id);
+  return out;
+}
+
 const api = {
   async scheduled(event, env, ctx) {
     // The home top-10 snapshot reads the whole 8-day listings window, so it is remade hourly, not every tick.
@@ -358,33 +415,7 @@ const api = {
     if (url.pathname === '/prices' && req.method === 'GET') {
       const ids = [...new Set((url.searchParams.get('ids') || '').split(',').map(Number).filter((n) => Number.isInteger(n) && n > 0))].slice(0, 60);
       if (!ids.length) return json({}, cors);
-      // Player reports and scanned shops feed the same summary: a sold slot is a sale, an open slot an asking price.
-      const marks = ids.map(() => '?').join(',');
-      const { results } = await env.DB.prepare(
-        `SELECT item, price, kind, created_at FROM prices WHERE item IN (SELECT value FROM json_each(?1)) AND created_at >= ${WINDOW}
-         UNION ALL
-         SELECT item, price, CASE WHEN sold THEN 'sold' ELSE 'selling' END, last_seen FROM listings WHERE item IN (SELECT value FROM json_each(?1)) AND last_seen >= ${WINDOW}
-         ORDER BY created_at DESC`
-      )
-        .bind(JSON.stringify(ids))
-        .all();
-      // Items nobody has scanned or reported yet fall back to the source site's reference price (basis 'typical').
-      const { results: refs } = await env.DB.prepare(`SELECT item, typical, day, week, sales, at FROM item_summary WHERE item IN (${marks})`)
-        .bind(...ids).all().catch(() => ({ results: [] }));
-      const ref = new Map(refs.map((r) => [r.item, r]));
-      // Megaphone asking prices stand in for consumables, scrolls and cash items that no shop scan covers (scrolled
-      // equipment sells in megaphones at prices unrelated to clean shop copies, so Equip never takes them).
-      const [asks, cats] = await Promise.all([megaphoneAsks(env, ids).catch(() => ({})), itemCategories().catch(() => new Map())]);
-      const out = {};
-      for (const id of ids) {
-        const rows = results.filter((r) => r.item === id);
-        const t = ref.get(id);
-        const typical = t ? { price: t.typical, day: t.day, week: t.week, sales: t.sales, at: t.at } : null;
-        const mega = cats.get(id) !== 'Equip' && asks[id]?.n >= 5 && asks[id].p75 <= asks[id].p25 * 2 ? asks[id] : null;
-        if (rows.length) out[id] = { ...summarize(rows), typical, mega };
-        else if (mega) out[id] = { n: 0, median: mega.median, basis: 'mega', low: mega.p25, high: mega.p75, last: null, sold: null, selling: null, buying: null, typical, mega };
-        else if (t) out[id] = { n: 0, median: t.typical, basis: 'typical', low: null, high: null, last: t.at, sold: null, selling: null, buying: null, typical, mega: null };
-      }
+      const out = await cachedPrices(env, ids, url.origin, ctx);
       return json(out, cors, 200, 'public, max-age=300');
     }
 

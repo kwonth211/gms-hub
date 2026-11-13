@@ -78,8 +78,7 @@ export const pruneMegaphones = (env) => env.DB.prepare("DELETE FROM megaphones W
 // prices match shop prices; scrolled equipment is a different market and the caller leaves it out.
 export async function megaphoneAsks(env, ids) {
   if (!ids.length) return {};
-  const marks = ids.map(() => '?').join(',');
-  const { results } = await env.DB.prepare(`SELECT item, price FROM megaphones WHERE item IN (${marks}) AND intent = 'sell' AND price IS NOT NULL AND seen_at >= datetime('now', '-2 days')`).bind(...ids).all();
+  const { results } = await env.DB.prepare(`SELECT item, price FROM megaphones WHERE item IN (SELECT value FROM json_each(?)) AND intent = 'sell' AND price IS NOT NULL AND seen_at >= datetime('now', '-2 days')`).bind(JSON.stringify(ids)).all();
   const by = new Map();
   for (const r of results) (by.get(r.item) || by.set(r.item, []).get(r.item)).push(r.price);
   const out = {};
