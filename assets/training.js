@@ -20,6 +20,7 @@ if (saved && !params.has('lv') && !params.has('job')) {
 }
 const criteria = () => ({ level: Math.max(1, Math.min(100, Number(fields.lv.value) || 20)), job: fields.job.value, goal: fields.goal.value, party: fields.party.value, advanced: fields.advanced.checked });
 // `userAction` separates the automatic first render (and a shared link opening) from a visitor changing the conditions.
+let lastTerm = '';
 function show(userAction = false) {
   const c = criteria();
   const rows = selectRoutes(data.routes, c);
@@ -33,7 +34,11 @@ function show(userAction = false) {
     for (const key of ['job','goal','party']) if (fields[key].value && !['balanced','any'].includes(fields[key].value)) next.searchParams.set(key,fields[key].value);
     if(fields.advanced.checked) next.searchParams.set('advanced','1');
     history.replaceState(null,'',next);
-    track('training_search', { search_term: `Lv${c.level} ${c.job || 'all'} ${c.goal} ${c.party}${c.advanced ? ' adv' : ''}`, level: c.level, job: c.job || 'all', goal: c.goal, party: c.party, advanced: c.advanced ? 1 : 0, results: rows.length, result: rows.length ? 'ok' : 'empty', lang: document.documentElement.lang });
+    // Enter fires both submit and change; send one event per distinct condition set.
+    const term = `Lv${c.level} ${c.job || 'all'} ${c.goal} ${c.party}${c.advanced ? ' adv' : ''}`;
+    if (term === lastTerm) return;
+    lastTerm = term;
+    track('training_search', { search_term: term, level: c.level, job: c.job || 'all', goal: c.goal, party: c.party, advanced: c.advanced ? 1 : 0, results: rows.length, result: rows.length ? 'ok' : 'empty', lang: document.documentElement.lang });
   }
 }
 form.addEventListener('submit',e=>{e.preventDefault();if(form.reportValidity())show(true);});
