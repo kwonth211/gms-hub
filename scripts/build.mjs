@@ -747,6 +747,7 @@ function headerSearch(lang, tabs) {
 function moreMenu(lang, moved = []) {
   const ko = lang === 'ko';
   const links = [
+    ['/forgotten-hollow/', ko ? '포가튼 할로우 공략' : 'Forgotten Hollow guide'],
     ...moved.map(([p, , label]) => [p, label]),
     ['/rank/', ko ? '캐릭터 랭킹' : 'Character ranking'],
     ['/equipment/', ko ? '직업별 장비' : 'Gear by class'],
@@ -1052,7 +1053,7 @@ ${collectionStatus(lang)}
 // "what's new" list further down. Every new feature or visible improvement gets an entry.
 const UPDATES = readJson('data/updates.json').updates;
 const updDate = (lang, d) => (lang === 'ko' ? `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}` : d.slice(5).replace('-', '/'));
-// Forgotten Hollow promo strip (home, training, quests) until the end of November: the update's guide at /forgotten-hollow/.
+// Forgotten Hollow promo strip (training, quests) until the end of November: the update's guide at /forgotten-hollow/.
 const FH_PROMO_UNTIL = '2026-11-30';
 function fhPromo(lang) {
   const today = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
@@ -1199,7 +1200,6 @@ ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이�
 </div>
 <p class="search-help" id="search-help">${lang === 'ko' ? '한글·영문·초성·줄임말로 검색하세요. 예: 귀힘, 미스릴, 좀비 루팡, 사냥터' : 'Search by name or keyword. Try Gloves Attack, Mithril, Zombie Lupin or training.'}</p>
 ${heroNew(lang)}
-${fhPromo(lang)}
 <dl class="hero-stats"><div data-market-stat="listings" hidden><dt>${lang === 'ko' ? '24시간 매물' : 'Listings, 24h'}</dt><dd>0</dd></div><div data-market-stat="shops" hidden><dt>${lang === 'ko' ? '24시간 확인한 상점' : 'Shops checked, 24h'}</dt><dd>0</dd></div>${lang === 'ko'
   ? `<div><dt>${t.statSites}</dt><dd>${SITE_COUNT}</dd></div><div><dt>${t.statCats}</dt><dd>${cats.length}</dd></div>`
   : `<div><dt>Monsters</dt><dd>${MONSTERS.monsters.filter((m) => m.status !== 'unplaced').length}</dd></div><div><dt>Quests</dt><dd>${QUESTS.length}</dd></div><div><dt>Maps</dt><dd>${MAPS.filter((l) => l.availability === 'open').length}</dd></div>`}</dl>

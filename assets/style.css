@@ -75,11 +75,6 @@
   --portrait-2: #cfe6d6;
   --portrait-ink: #2f6b4b;
   color-scheme: light;
-  --fh-promo-bg: #0f1c1d;
-  --fh-promo-line: #33594f;
-  --fh-promo-text: #e3f1ea;
-  --fh-promo-muted: #9fbcb1;
-  --fh-promo-glow: #63e6c6;
 }
 :root:lang(en) { --up: var(--ok); --down: var(--danger); }
 
@@ -2534,13 +2529,13 @@ body.exp-running .exp-stop { display: inline-flex; }
 .fh-link-note a:hover { background: var(--accent-band); }
 .fh-link-note a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
-/* Forgotten Hollow promo strip: a slice of the cave on the home, training and quests pages until the end of November */
-.fh-promo { display: flex; align-items: center; gap: 12px; margin: 12px 0; padding: 10px 16px; border-radius: var(--radius); background: var(--fh-promo-bg); border: 1px solid var(--fh-promo-line); color: var(--fh-promo-text); text-decoration: none; transition: border-color 0.2s, transform 0.2s; }
-.fh-promo:hover { border-color: var(--fh-promo-glow); transform: translateY(-1px); }
+/* Forgotten Hollow promo strip on the training and quests pages until the end of November, in the site's own colours */
+.fh-promo { display: flex; align-items: center; gap: 12px; margin: 12px 0; padding: 10px 16px; border-radius: var(--radius); background: var(--panel); border: 1px solid var(--line-strong); color: var(--text); text-decoration: none; transition: border-color 0.2s, transform 0.2s; }
+.fh-promo:hover { border-color: var(--accent-fill); transform: translateY(-1px); }
 .fh-promo:active { transform: translateY(1px); }
 .fh-promo:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .fh-promo img { flex: none; image-rendering: pixelated; object-fit: contain; }
 .fh-promo span { display: grid; gap: 2px; min-width: 0; }
-.fh-promo b { color: var(--fh-promo-glow); }
-.fh-promo small { color: var(--fh-promo-muted); line-height: 1.45; }
+.fh-promo b { color: var(--accent); }
+.fh-promo small { color: var(--muted); line-height: 1.45; }
 @media (prefers-reduced-motion: reduce) { .fh-promo { transition: none; } }
