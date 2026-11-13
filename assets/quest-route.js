@@ -14,50 +14,28 @@ let current = null;
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...done])); } catch (e) {} };
 const stepEl = (id) => document.querySelector(`.gq-step[data-q="${id}"]`);
 
-// ---------- map ----------
-// Every step is one leg: from the NPC to the next stop (or its first hunting ground). Finished legs stay on the map as a
-// grey trail of footprints, the current leg is drawn bright with a marker walking it, later legs are not shown yet.
-const NS = 'http://www.w3.org/2000/svg';
-const pt = (id) => { const p = D.places[id]; return p ? { x: p.x * D.sx, y: p.y * D.sy } : null; };
-const legPath = (a, b) => { const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2 - Math.max(30, Math.abs(a.x - b.x) * 0.18); return `M${a.x} ${a.y} Q${mx} ${my} ${b.x} ${b.y}`; };
-const legOf = (s) => { const to = s.go || s.hunt[0]; return to && to !== s.at ? [s.at, to] : null; };
-function drawMap(step) {
-  const trail = document.getElementById('gq-trail');
-  trail.textContent = '';
-  for (const g of document.querySelectorAll('.gq-place')) g.classList.remove('is-at', 'is-go', 'is-hunt', 'is-visited');
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  for (const s of D.steps) {
-    if (!done.has(s.id) || s.id === step?.id) continue;
-    for (const id of [s.at, s.go, ...s.hunt]) if (id) document.querySelector(`.gq-place[data-place="${id}"]`)?.classList.add('is-visited');
-    const leg = legOf(s);
-    if (!leg) continue;
-    const path = document.createElementNS(NS, 'path');
-    path.setAttribute('d', legPath(pt(leg[0]), pt(leg[1])));
-    path.setAttribute('class', 'gq-leg-done');
-    trail.append(path);
-  }
-  if (!step) return;
-  document.querySelector(`.gq-place[data-place="${step.at}"]`)?.classList.add('is-at');
-  for (const h of step.hunt) document.querySelector(`.gq-place[data-place="${h}"]`)?.classList.add('is-hunt');
-  if (step.go) document.querySelector(`.gq-place[data-place="${step.go}"]`)?.classList.add('is-go');
-  const leg = legOf(step);
-  if (!leg) return;
-  const d = legPath(pt(leg[0]), pt(leg[1]));
-  const path = document.createElementNS(NS, 'path');
-  path.setAttribute('d', d);
-  path.setAttribute('class', 'gq-leg-now');
-  path.setAttribute('marker-end', 'url(#gq-arrow)');
-  trail.append(path);
-  if (!reduce) {
-    const walker = document.createElementNS(NS, 'circle');
-    walker.setAttribute('r', '8');
-    walker.setAttribute('class', 'gq-walker');
-    const move = document.createElementNS(NS, 'animateMotion');
-    move.setAttribute('dur', '2.6s'); move.setAttribute('repeatCount', 'indefinite'); move.setAttribute('path', d);
-    walker.append(move);
-    trail.append(walker);
-  }
+// ---------- road ----------
+// The picked part drawn as a one-way road: a stop per step with its place, NPC and what to bring. The road behind you
+// is grey and every passed stop carries a check; the current stop has the bobbing "!" and your marker; hunting grounds
+// hang under their stop as small flags.
+const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const placeName = (id) => (D.places[id] ? D.places[id][D.lang === 'ko' ? 'ko' : 'en'] : '');
+function drawRoad(step) {
+  const chain = D.chains.find((c) => c.steps.includes(step.id));
+  document.getElementById('gq-road-title').textContent = chain.title;
+  const road = document.getElementById('gq-road');
+  road.innerHTML = chain.steps.map((id, i) => {
+    const s = D.steps.find((x) => x.id === id);
+    const state = id === step.id ? 'is-now' : done.has(id) ? 'is-past' : 'is-ahead';
+    return `<li class="gq-stop ${state}${s.big ? ' is-big' : ''}" data-pick="${id}">
+<div class="gq-stop-pin">${id === step.id ? `<span class="gq-stop-bang">!</span><span class="gq-me"></span>` : ''}<span class="gq-stop-dot">${done.has(id) && id !== step.id ? '✓' : i + 1}</span></div>
+<div class="gq-stop-card"><b>${esc(placeName(s.at))}</b><span>${esc(s.npc)}${s.end ? ` → ${esc(s.end)}` : ''}</span>
+${s.need.length ? `<ul>${s.need.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}
+${s.hunt.length ? `<div class="gq-stop-flags">${s.hunt.map((h) => `<i>${esc(D.t.hunt)} · ${esc(placeName(h))}</i>`).join('')}</div>` : ''}</div></li>`;
+  }).join('');
+  road.querySelector('.is-now')?.scrollIntoView({ block: 'nearest', inline: 'center' });
 }
+document.addEventListener('click', (e) => { const st = e.target.closest('.gq-stop'); if (st) select(Number(st.dataset.pick)); });
 
 // ---------- state ----------
 function render() {
@@ -73,9 +51,7 @@ function render() {
   for (const c of document.querySelectorAll('.gq-chain')) c.classList.toggle('has-sel', !!c.querySelector(`.gq-step[data-q="${current}"]`));
   for (const b of document.querySelectorAll('.gq-pick')) { const id = Number(b.dataset.pick); b.classList.toggle('is-done', done.has(id)); b.classList.toggle('is-sel', id === current); }
   const step = steps.find((s) => s.id === current);
-  $('gq-now-title').textContent = step.name;
-  $('gq-now-text').textContent = step.do;
-  drawMap(step);
+  drawRoad(step);
   const d = steps.filter((s) => done.has(s.id));
   const exp = d.reduce((a, s) => a + s.exp, 0);
   $('gq-bar').style.transform = `scaleX(${d.length / steps.length})`;

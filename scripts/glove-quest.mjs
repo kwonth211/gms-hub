@@ -126,15 +126,18 @@ ${Object.entries(guide.places).map(([id, p]) => `<g class="gq-place${towns.inclu
   // The quest list on the left: every step by part, with its number, name and NPC; picking one shows it on the right.
   const short = (c) => L(c.title).split(/ — | \(/)[0];
   const list = `<aside class="gq-list panel" aria-label="${tr('퀘스트 목록', 'Quest list')}">${data.chains.map((c) => `<div class="gq-list-group"><h4>${esc(short(c))}</h4><ol>${c.steps.map((s, i) => `<li><button type="button" class="gq-pick" data-pick="${s.id}"><span class="gq-pick-no">${i + 1}</span><span class="gq-pick-name"><b translate="no">${esc(s.name)}</b><small translate="no">${esc(npcName(s.npcStart, lang))}${s.lv ? ` · Lv ${s.lv}` : ''}</small></span>${s.big ? '<span class="gq-pick-star" aria-hidden="true">★</span>' : ''}</button></li>`).join('')}</ol></div>`).join('')}</aside>`;
-  const now = `<section class="gq-world panel" id="gq-world">${svg}
-<div class="gq-now" id="gq-now" aria-live="polite"><span class="gq-now-label">${tr('진행 중인 퀘스트', 'Current quest')}</span><strong id="gq-now-title">${esc(all[0].name)}</strong><p id="gq-now-text">${esc(L(all[0].do))}</p>
-<div class="gq-now-actions"><button type="button" class="btn ghost small-btn" id="gq-prev">${tr('이전', 'Back')}</button><button type="button" class="btn small-btn" id="gq-next">${tr('완료하고 다음', 'Done, next')}</button></div></div>
-<ul class="gq-legend"><li><i class="gq-l-at"></i>${tr('퀘스트 NPC', 'Quest NPC')}</li><li><i class="gq-l-go"></i>${tr('다음 목적지', 'Next stop')}</li><li><i class="gq-l-hunt"></i>${tr('사냥터', 'Hunting ground')}</li><li><i class="gq-l-done"></i>${tr('지나온 길', 'Path so far')}</li></ul></section>`;
+  // The route as a one-way road: one stop per step of the picked part, drawn by assets/quest-route.js.
+  const now = `<section class="gq-world panel" id="gq-world"><div class="gq-road-head"><strong id="gq-road-title"></strong><div class="gq-now-actions"><button type="button" class="btn ghost small-btn" id="gq-prev">${tr('이전', 'Back')}</button><button type="button" class="btn small-btn" id="gq-next">${tr('완료하고 다음', 'Done, next')}</button></div></div>
+<div class="gq-road-scroll"><ol class="gq-road" id="gq-road"></ol></div></section>`;
 
   const sources = `<section class="gq-sources"><h2>${tr('정리에 쓴 자료', 'Sources')}</h2><p class="muted small">${tr('퀘스트 조건·처치 수·보상은 게임 클라이언트 데이터에서 그대로 가져왔고, NPC 위치·가는 길·팁은 아래 공략을 교차 확인했어요.', 'Conditions, kill counts and rewards are read straight from the game client data; NPC spots, routes and tips were cross-checked against these guides.')}</p><ul>${guide.sources.map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener" translate="no">${esc(s.name)}</a> <small>${esc(s.date)}</small></li>`).join('')}</ul></section>`;
 
   return `${head}<div class="wrap gq-page">${summary}<div class="gq-cols">${list}<div class="gq-right">${now}<div class="gq-main">${parts}</div></div></div>${diamond}${shopping}${sources}</div>
 <script id="gq-data" type="application/json">${JSON.stringify({ lang, api: apiBase, places: guide.places, sx: 1000 / 600, sy: 560 / 340, prices: data.priceIds, ev: { a: 2040801, m: 2040805 },
-    steps: all.map((s) => ({ id: s.id, name: s.name, at: s.at, go: s.go || null, hunt: s.hunt || [], exp: s.exp, do: L(s.do) })),
-    t: { none: tr('체크한 단계가 없어요', 'No steps ticked yet'), prog: tr('{d}/{n}단계 · 경험치 {e}', '{d} of {n} steps · {e} EXP'), all: tr('모든 단계를 끝냈어요!', 'Every step is done!'), ev: tr('장공 {a} · 장마 {m} 반반', 'Attack {a} · Magic {m}, 50:50'), mesos: tr('메소', 'mesos') } }).replace(/</g, '\\u003c')}</script>`;
+    chains: data.chains.map((c) => ({ id: c.id, title: L(c.title).split(/ — /)[0], steps: c.steps.map((s) => s.id) })),
+    steps: all.map((s) => ({ id: s.id, name: s.name, at: s.at, go: s.go || null, hunt: s.hunt || [], exp: s.exp, do: L(s.do),
+      npc: npcName(s.npcStart, lang), end: s.endNpc !== s.startNpc ? npcName(s.npcEnd, lang) : '',
+      need: [...s.kills.map((k) => `${ko ? k.ko : k.en} ×${k.count}`), ...s.bring.filter((b) => !b.handed).map((b) => `${ko ? b.ko : b.en} ×${b.count}`)],
+      big: !!s.big })),
+    t: { kill: tr('처치', 'kill'), hunt: tr('사냥터', 'Hunt'), talk: tr('대화', 'Talk to'), here: tr('지금', 'Now'), none: tr('체크한 단계가 없어요', 'No steps ticked yet'), prog: tr('{d}/{n}단계 · 경험치 {e}', '{d} of {n} steps · {e} EXP'), all: tr('모든 단계를 끝냈어요!', 'Every step is done!'), ev: tr('장공 {a} · 장마 {m} 반반', 'Attack {a} · Magic {m}, 50:50'), mesos: tr('메소', 'mesos') } }).replace(/</g, '\\u003c')}</script>`;
 }

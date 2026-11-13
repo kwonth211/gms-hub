@@ -2384,3 +2384,35 @@ body.exp-running .exp-stop { display: inline-flex; }
 .gq-right .gq-now { width: min(260px, 36%); padding: 10px 12px; }
 .gq-right .gq-now p { display: none; }
 .gq-right .gq-now strong { font-size: 1rem; }
+/* The route as a one-way road: stops along a dirt road, grey behind you, the current stop lit with "!" and your marker. */
+.gq-world { padding: 14px 16px 6px; background: linear-gradient(180deg, #e9f6dc, #f7f1dc); }
+.gq-road-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.gq-road-head strong { font-size: 1.05rem; color: #3d2a12; }
+.gq-road-scroll { overflow-x: auto; padding: 46px 6px 12px; scroll-snap-type: x proximity; }
+.gq-road { list-style: none; margin: 0; padding: 0; display: flex; min-width: max-content; }
+.gq-stop { position: relative; width: 168px; flex: none; scroll-snap-align: center; cursor: pointer; }
+.gq-stop::before { content: ''; position: absolute; top: 19px; left: 0; right: 0; height: 12px; background: #c99a5b; border-top: 3px solid #a7783f; border-bottom: 3px solid #a7783f; }
+.gq-stop:first-child::before { left: 50%; border-radius: 6px 0 0 6px; }
+.gq-stop:last-child::before { right: 50%; }
+.gq-stop.is-past::before, .gq-stop.is-now::before { background: #b9b9b9; border-color: #9a9a9a; }
+.gq-stop.is-now::before { background: linear-gradient(90deg, #b9b9b9 50%, #c99a5b 50%); }
+.gq-stop-pin { position: relative; height: 50px; display: grid; place-items: center; }
+.gq-stop-dot { position: relative; z-index: 1; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 1.05rem; background: #fff7d6; color: #5b3a00; border: 3px solid #8a5a00; }
+.gq-stop.is-past .gq-stop-dot { background: #a8a8a8; color: #fff; border-color: #7a7a7a; }
+.gq-stop.is-now .gq-stop-dot { width: 48px; height: 48px; background: #ffd400; border-color: #8a5a00; box-shadow: 0 0 0 6px rgba(255, 212, 0, 0.35); }
+.gq-stop.is-big .gq-stop-dot::after { content: '★'; position: absolute; right: -8px; top: -8px; font-size: 0.85rem; color: #e0a800; }
+.gq-stop-bang { position: absolute; top: -44px; left: 50%; translate: -50% 0; width: 34px; height: 34px; border-radius: 10px; background: #ffd400; border: 3px solid #8a5a00; color: #8a5a00; font-weight: 900; font-size: 1.2rem; display: grid; place-items: center; animation: gq-bob 1.1s ease-in-out infinite; }
+.gq-me { position: absolute; z-index: 2; left: calc(50% - 64px); top: 9px; width: 22px; height: 22px; border-radius: 50%; background: #e5482f; border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); animation: gq-walk 1.6s ease-out infinite alternate; }
+@keyframes gq-walk { from { transform: translateX(0); } to { transform: translateX(28px); } }
+.gq-stop-card { margin: 8px 6px 0; padding: 8px 10px; border-radius: 12px; background: #fffdf5; border: 2px solid #e6d7b0; color: #2a2116; display: grid; gap: 3px; font-size: 0.82rem; }
+.gq-stop-card b { font-size: 0.92rem; line-height: 1.3; }
+.gq-stop-card > span { color: #6b5a40; }
+.gq-stop-card ul { list-style: none; margin: 2px 0 0; padding: 0; display: grid; gap: 2px; }
+.gq-stop-card ul li { padding: 2px 6px; border-radius: 6px; background: #fff1c9; font-weight: 700; }
+.gq-stop-flags { display: grid; gap: 2px; }
+.gq-stop-flags i { font-style: normal; font-size: 0.76rem; color: #a8380f; font-weight: 700; }
+.gq-stop.is-now .gq-stop-card { border-color: #f0a33a; box-shadow: 0 0 0 3px rgba(240, 163, 58, 0.3); }
+.gq-stop.is-past .gq-stop-card { filter: grayscale(1); opacity: 0.6; }
+.gq-stop.is-past .gq-stop-card b { text-decoration: line-through; }
+.gq-stop:hover .gq-stop-card { border-color: #c99a5b; }
+@media (prefers-reduced-motion: reduce) { .gq-stop-bang, .gq-me { animation: none; } }
