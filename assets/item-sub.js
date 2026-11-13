@@ -11,3 +11,7 @@ export function subLabel(cat, sub, lang) {
   if (cat === 'Use' && GEAR[sub] && !['Pet'].includes(sub)) return `${GEAR[sub]} 주문서`;
   return GEAR[sub] || OTHER[sub] || sub;
 }
+
+// Search keywords for a piece of gear: its type in Korean and English ("아대 Claw"), so a type search finds gear whose
+// names do not say it (가니어, Steel Titans). Scrolls already carry the gear word in their names.
+export const gearKeywords = (cat, sub) => (cat === 'Equip' && sub ? `${subLabel(cat, sub, 'ko')} ${sub}` : '');

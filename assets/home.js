@@ -1,5 +1,6 @@
 import './collection-status.js';
 import { indexEntry, searchEntries } from './search-index.js';
+import { gearKeywords } from './item-sub.js';
 import { mountCharPanel } from './my-char.js';
 import { newMark } from './market-data.js';
 import { placeLabel } from './place.js';
@@ -182,10 +183,10 @@ function loadItems() {
     }))
     .then((rows) => {
       if (!Array.isArray(rows) || !rows.length || rows.some((row) => !Array.isArray(row) || !Number.isInteger(row[0]) || typeof row[2] !== 'string')) throw new Error('Invalid item index');
-      items = rows.map(([id, ko, en]) => ({ id, ko, en, name: korean ? ko || en : en }));
+      items = rows.map(([id, ko, en, cat, sub]) => ({ id, ko, en, cat, sub, name: korean ? ko || en : en }));
       itemEntries = items.map((it) => indexEntry({
         type: 'item', id: it.id, title: it.name, names: [it.ko, it.en, String(it.id)],
-        keywords: '아이템 item', description: korean ? it.en : it.ko,
+        keywords: `아이템 item ${gearKeywords(it.cat, it.sub)}`, description: korean ? it.en : it.ko,
         href: `${searchPanel.dataset.market}?item=${it.id}`,
       }));
       return items;

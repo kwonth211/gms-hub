@@ -1,5 +1,5 @@
 import { indexEntry, searchEntries } from "./search-index.js";
-import { subLabel } from "./item-sub.js";
+import { gearKeywords } from "./item-sub.js";
 export function categoryOf(it) {
   if (it.cat === "Cash") return "cash";
   if (Math.floor(it.id / 10000) === 204) return "scroll";
@@ -26,7 +26,7 @@ export function makeMarketIndex(rows, lang) {
       title: it.name,
       names: [ko, en, String(id)],
       // Gear type words ("아대", "Claw", "폴암") so a type search finds gear whose names do not say it (가니어, Steel Titans).
-      keywords: cat === "Equip" && sub ? `${subLabel(cat, sub, "ko")} ${sub}` : "",
+      keywords: gearKeywords(cat, sub),
       it,
     });
     return it;

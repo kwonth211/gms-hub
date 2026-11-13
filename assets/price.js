@@ -1,4 +1,5 @@
 import { indexEntry, searchEntries } from './search-index.js';
+import { gearKeywords } from './item-sub.js';
 
 const i18n = JSON.parse(document.getElementById('i18n').textContent);
 const input = document.getElementById('pr-q');
@@ -243,7 +244,7 @@ fetch(i18n.itemsUrl)
   .then((rows) => {
     items = prepare(rows);
     byId = new Map(items.map((it) => [it.id, it]));
-    entries = items.map((it) => indexEntry({ type: 'item', id: it.id, title: it.name, names: [it.ko, it.en, String(it.id)], it }));
+    entries = items.map((it) => indexEntry({ type: 'item', id: it.id, title: it.name, names: [it.ko, it.en, String(it.id)], keywords: gearKeywords(it.cat, it.sub), it }));
     items.forEach((it) => twins.set(it.en.toLowerCase(), (twins.get(it.en.toLowerCase()) || 0) + 1));
     render();
   })
