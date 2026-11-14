@@ -196,8 +196,12 @@ test('monster drops get item database pages with droppers, farm maps and stats',
   const html=read('dist/en/items/1002003-red-headband/index.html');
   assert.match(html,/<title>Red Headband: Who Drops It, Stats &amp; Where to Farm/);
   assert.ok(html.includes('Dropped by')&&html.includes('farm-maps')&&html.includes('Weapon defense'));
-  assert.ok(!html.includes('content="noindex'),'live-map drop should be indexable');
-  assert.ok(read('dist/sitemap.xml').includes('/en/items/1002003-red-headband/'));
+  // Item pages stay for visitors but only data/item-index-keep.json items are in search (2026-11-15).
+  const keep=new Set(JSON.parse(fs.readFileSync(new URL('data/item-index-keep.json',root),'utf8')).ids);
+  assert.equal(!html.includes('content="noindex'),keep.has(1002003));
+  assert.equal(read('dist/sitemap.xml').includes('/en/items/1002003-red-headband/'),keep.has(1002003));
+  const sm=read('dist/sitemap.xml'), inSm=(sm.match(/<loc>[^<]*\/en\/items\/\d+-/g)||[]).length;
+  assert.ok(inSm<=keep.size,`sitemap lists ${inSm} English item pages`);
   // Map names are proper names: derived locales keep them as written instead of minting a translation key per map.
   assert.ok(read('dist/ja/items/1002003-red-headband/index.html').includes('translate="no"'));
   const ko=read('dist/ko/items/1002003-red-headband/index.html');

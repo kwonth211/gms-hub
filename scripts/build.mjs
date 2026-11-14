@@ -2575,7 +2575,7 @@ function guidesIndexBody(lang) {
 fs.rmSync(out, { recursive: true, force: true });
 // ---------- item pages ----------
 // One page per item, so "<item> 시세" searches land on that item. Prices come from data/item-prices.json (player scans only,
-// refreshed by scripts/fetch-item-prices.mjs before each build); items with fewer than MIN_INDEX_LISTINGS recent listings stay noindex.
+// refreshed by scripts/fetch-item-prices.mjs before each build); which ones stay in search is data/item-index-keep.json.
 const itemPrices = fs.existsSync(path.join(root, 'data/item-prices.json')) ? readJson('data/item-prices.json') : { updated: '', prices: {} };
 const PRICES_DATE = (itemPrices.updated || BUILD_DATE).slice(0, 10);
 const itemSlug = (i) => `${i.id}-${i.en.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`.replace(/-$/, '');
@@ -2616,17 +2616,17 @@ function scrollAlias(i) {
 // The name a Korean page leads with: the shorthand for scrolls, the client name otherwise.
 const itemSeoName = (lang, i) => { const a = lang === 'ko' && scrollAlias(i); return a ? a.short : itemName(lang, i); };
 const PRICED = itemsData.items.filter(priceOf);
-// Google crawled the one- and two-listing pages and left them out ("crawled, not indexed"): a single shop price is too thin
-// to stand as a page. Only items seen at least this often are indexable; the rest join automatically as scans pile up.
-const MIN_INDEX_LISTINGS = 3;
 // Items a monster drops also get a page (who drops it, where those monsters live, base stats): "who drops X" is how
-// players, English-speaking ones above all, search for an item. Those count as indexable when a dropper is on a live map.
+// players, English-speaking ones above all, search for an item.
 const ITEM_DETAILS = readJson('data/item-details.json').items;
 const EQUIPMENT = collectEquipment({ items: itemsData.items, details: ITEM_DETAILS, dropIndex: DROP_INDEX, quests: QUESTS });
 const ITEM_PAGES = itemsData.items.filter((i) => priceOf(i) || DROP_INDEX.has(i.id));
 const ITEM_PAGE_IDS = new Set(ITEM_PAGES.map((i) => i.id));
-const liveDrop = (i) => (DROP_INDEX.get(i.id) || []).some(({ m }) => m.status === 'active');
-const INDEXABLE = ITEM_PAGES.filter((i) => (priceOf(i)?.n || 0) >= MIN_INDEX_LISTINGS || liveDrop(i));
+const ITEMS_BY_ID = new Map(itemsData.items.map((i) => [i.id, i]));
+// Only the items in data/item-index-keep.json stay in search; the rest are noindex and out of the sitemap (2026-11-15,
+// user request before the AdSense resubmit: ~1,800 near-identical item pages made the site read as mass-generated).
+const ITEM_INDEX_KEEP = new Set(readJson('data/item-index-keep.json').ids);
+const INDEXABLE = ITEM_PAGES.filter((i) => ITEM_INDEX_KEEP.has(i.id));
 const WEAPON_SUB = /Wand|Staff|Bow|Claw|Dagger|Spear|Pole ?Arm|Sword|Axe|Blunt|BW/;
 // What each training route drops, for the route table: every reported drop of its monsters (quest items left out), the
 // ones with a market price first (dearest first), then equipment and scrolls, then the rest. A price needs 3+ listings.
@@ -3203,14 +3203,16 @@ for (const lang of LANGS) {
       lang, pageKey: 'megaphone', pagePath: '/megaphone/', modules: ['megaphone.js', 'mega-trends.js'],
       title: lang === 'ko' ? '글클메 실시간 확성기: 고확·팝니다·삽니다 모아 보기 | GMS Hub' : 'MapleStory Classic World Live Megaphones: Super Megaphones, Buying & Selling | GMS Hub',
       desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드 게임 확성기를 실시간으로 모아 보여 줘요. 고확과 일반 확성기 구분, 팝니다·삽니다·채널 필터, 시세 비교, 귓말 복사까지.' : 'Live MapleStory Classic World megaphones: super and regular megaphones apart, buying and selling filters, market price comparison and a one-tap whisper command.',
-      body: megaphoneBody({ lang, itemsUrl: href('/assets/items.json'), marketUrl: href(langPath(lang, '/tools/market/')) }),
+      body: megaphoneBody({ lang, itemsUrl: href('/assets/items.json'), marketUrl: href(langPath(lang, '/tools/market/')), snapshot: readJson('data/mega-snapshot.json'),
+        itemName: (id) => { const i = ITEMS_BY_ID.get(id); return i ? itemName(lang, i) : `#${id}`; },
+        itemHref: (id) => (ITEM_PAGE_IDS.has(id) ? link(itemPath(ITEMS_BY_ID.get(id))) : href(langPath(lang, `/tools/market/?item=${id}`))) }),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '실시간 확성기' : 'Live megaphones', '/megaphone/')]
     }));
     write(path.join(lang, 'rank', 'index.html'), page({
       lang, pageKey: 'rank', pagePath: '/rank/', modules: ['rank.js'],
       title: lang === 'ko' ? '글클메 캐릭터 랭킹: 레벨 순위·직업 분포·내 캐릭터 찾기 | GMS Hub' : 'MapleStory Classic World Rankings: Top 1,000, Class Breakdown & Character Lookup | GMS Hub',
       desc: lang === 'ko' ? '윈디아(클래식 월드) 레벨 순위 상위 1,000명, 상위권 직업·레벨 분포, 내 캐릭터 순위 찾기. 찾은 캐릭터의 레벨·직업에 맞는 사냥터와 가이드로 바로 이어져요.' : 'Top 1,000 Windia (MapleStory Classic World) characters by level, which classes they play, and a character lookup that links your rank to training spots and the guide for your class.',
-      body: rankBody({ lang, link, classes: TR_CLASSES }),
+      body: rankBody({ lang, link, classes: TR_CLASSES, snapshot: readJson('data/rank-snapshot.json') }),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '캐릭터 랭킹' : 'Character rankings', '/rank/')]
     }));
     for (const { guide, data } of QUEST_GUIDES) {
