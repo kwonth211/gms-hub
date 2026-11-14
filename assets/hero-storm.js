@@ -87,6 +87,7 @@ export function mountHeroStorm(hero) {
   const hint = document.createElement('span'); hint.className = 'hero-toy-hint'; hint.textContent = words[0];
   hero.append(hint); canvas.setAttribute('aria-label', words[1]);
   let originX = 0, originY = 0, pointer = null, pressed = false, pointerId = null, propPointerId = null;
+  let heldProp = null;
   let heldSince = 0, influence = 0, burstAt = -10, burstX = 0, burstY = 0;
   function coordinates(event) {
     return { x: Math.max(20, Math.min(width - 20, event.clientX + window.scrollX - originX)),
@@ -106,7 +107,16 @@ export function mountHeroStorm(hero) {
   }
   function move(event) {
     if (!canRun() || event.pointerType === 'touch' || (pointerId !== null && event.pointerId !== pointerId)) return;
-    if (propPointerId !== null) return;
+    if (propPointerId !== null) {
+      if (event.pointerId !== propPointerId) return;
+      if (heldProp) {
+        const p = heldProp;
+        p.tx = Math.max(p.minX, Math.min(p.maxX, event.clientX + window.scrollX - p.grabX - p.home.left));
+        p.ty = Math.max(p.minY, Math.min(0, event.clientY + window.scrollY - p.grabY - p.home.top));
+      }
+      if (event.buttons === 0) release(event);
+      return;
+    }
     if (!pressed && (isControl(event) || propAt(event))) { pointer = null; return; }
     pointer = coordinates(event);
     if (pressed && pointerId !== null && event.buttons === 0) release();
@@ -114,9 +124,15 @@ export function mountHeroStorm(hero) {
   function press(event) {
     if (!canRun() || event.pointerType === 'touch' || event.button !== 0 || pressed || propPointerId !== null || isControl(event)) return;
     event.preventDefault();
+    hero.dataset.toyInput = 'pointer';
     const prop = propAt(event, true);
     if (prop) {
-      pointer = null; propPointerId = event.pointerId; prop.react(true);
+      pointer = null; propPointerId = event.pointerId;
+      if (prop.kind === 'coin') prop.react(true);
+      else {
+        startDrag(prop, event);
+        canvas.setPointerCapture(propPointerId);
+      }
       return;
     }
     canvas.focus({ preventScroll: true });
@@ -128,7 +144,18 @@ export function mountHeroStorm(hero) {
   }
   function release(event) {
     if (propPointerId !== null) {
-      if (!event || event.pointerId === propPointerId) { propPointerId = null; pointer = null; }
+      if (!event || event.pointerId === propPointerId) {
+        const oldId = propPointerId; propPointerId = null; pointer = null;
+        if (heldProp) {
+          const p = heldProp; heldProp = null;
+          p.state = 'falling'; p.released = time; p.bounces = 0;
+          // A simple click still gives a playful hop; a dragged monster keeps its measured momentum.
+          if (Math.abs(p.dy) < 5 && Math.abs(p.dx - p.tx) < 5) p.vy = -340;
+          p.vx = Math.max(-600, Math.min(600, p.vx)); p.vy = Math.max(-500, Math.min(600, p.vy));
+          p.art.dataset.dragState = 'falling'; delete hero.dataset.monsterHeld;
+        }
+        if (canvas.hasPointerCapture(oldId)) canvas.releasePointerCapture(oldId);
+      }
       return;
     }
     if (event && pointerId !== null && event.pointerId !== pointerId) return;
@@ -145,7 +172,11 @@ export function mountHeroStorm(hero) {
     if (oldId !== null && canvas.hasPointerCapture(oldId)) canvas.releasePointerCapture(oldId);
   }
   function resetToy() {
-    pressed = false; propPointerId = null; pointer = null; influence = 0; burstAt = -10;
+    const oldPropId = propPointerId; propPointerId = null;
+    if (heldProp) { heldProp.stop(); heldProp = null; }
+    delete hero.dataset.monsterHeld;
+    if (oldPropId !== null && canvas.hasPointerCapture(oldPropId)) canvas.releasePointerCapture(oldPropId);
+    pressed = false; pointer = null; influence = 0; burstAt = -10;
     canvas.setAttribute('aria-pressed', 'false');
     const oldId = pointerId; pointerId = null;
     if (oldId !== null && canvas.hasPointerCapture(oldId)) canvas.releasePointerCapture(oldId);
@@ -155,7 +186,7 @@ export function mountHeroStorm(hero) {
   const keyDown = event => {
     if (![' ', 'Enter'].includes(event.key) || !canRun()) return;
     event.preventDefault();
-    if (event.repeat || pressed) return;
+    if (event.repeat || pressed || propPointerId !== null) return;
     pointer = { x: width / 2, y: height * .42 }; pressed = true; heldSince = time;
     canvas.setAttribute('aria-pressed', 'true');
   };
@@ -171,22 +202,31 @@ export function mountHeroStorm(hero) {
   canvas.addEventListener('blur', resetToy);
   window.addEventListener('pointerup', release); window.addEventListener('pointercancel', resetToy);
   window.addEventListener('blur', resetToy);
+  const keyboardMode = event => { if (['Tab', ' ', 'Enter'].includes(event.key)) hero.dataset.toyInput = 'keyboard'; };
+  window.addEventListener('keydown', keyboardMode);
 
   // The hero routes each pointer gesture to exactly one target: a live sprite, or the leaves.
-  // Browser-managed transforms animate the six existing SVG sprites; no extra frame loop.
-  const propNames = ({ ko: ['주황버섯 점프', '슬라임 점프', '메소 동전 튕기기'],
-    en: ['Bounce the mushroom', 'Bounce the slime', 'Flip the meso coin'],
+  // Coins use browser-managed transforms; dragged monsters share the existing capped canvas loop.
+  const propNames = ({ ko: ['주황버섯 잡아 끌기 · Enter로 점프', '슬라임 잡아 끌기 · Enter로 점프', '메소 동전 튕기기'],
+    en: ['Drag the mushroom · Enter to bounce', 'Drag the slime · Enter to bounce', 'Flip the meso coin'],
     ja: ['キノコをジャンプ', 'スライムをジャンプ', 'メルコインを弾く'],
     zh: ['讓菇菇跳躍', '讓史萊姆跳躍', '彈起楓幣'] })[lang] || ['Bounce the mushroom', 'Bounce the slime', 'Flip the meso coin'];
+  const scene = hero.querySelector('.hero-scene');
+  const propStage = scene?.cloneNode(false);
+  if (propStage) { propStage.setAttribute('class', 'hero-prop-stage'); hero.append(propStage); }
   const props = [...hero.querySelectorAll('[data-hero-prop]')].map(node => {
     const kind = node.dataset.heroProp, art = node.querySelector('.hero-prop-art');
     const button = document.createElement('button'); button.type = 'button'; button.className = 'hero-prop-hit';
     button.setAttribute('aria-label', propNames[['mushroom', 'slime', 'coin'].indexOf(kind)]);
-    button.hidden = true; hero.append(button);
-    const prop = { node, art, button, kind, visible: false, animation: null };
+    button.hidden = true; button.dataset.kind = kind; hero.append(button);
+    const prop = { node, art, button, kind, parent: node.parentNode, next: node.nextSibling, visible: false, animation: null, state: 'idle', dx: 0, dy: 0, vx: 0, vy: 0 };
     const stop = () => {
       const animation = prop.animation; prop.animation = null; animation?.cancel();
       delete art.dataset.reaction; delete button.dataset.reaction;
+      prop.state = 'idle'; prop.dx = prop.dy = prop.vx = prop.vy = 0;
+      art.style.transform = ''; art.style.animationPlayState = ''; button.style.transform = '';
+      delete art.dataset.dragState;
+      if (propStage && node.parentNode === propStage) prop.parent.insertBefore(node, prop.next?.parentNode === prop.parent ? prop.next : null);
     };
     const react = (strong = false) => {
       if (!canRun() || !prop.visible || (!strong && prop.animation)) return;
@@ -215,7 +255,7 @@ export function mountHeroStorm(hero) {
       animation.onfinish = () => { if (prop.animation === animation) stop(); };
     };
     // Pointer presses are routed once by the hero; native keyboard clicks stay accessible.
-    const click = event => { if (!event?.detail) { pointer = null; react(true); } };
+    const click = event => { if (!event?.detail && !heldProp) { pointer = null; react(true); } };
     button.addEventListener('click', click);
     prop.react = react;
     prop.stop = stop;
@@ -226,11 +266,56 @@ export function mountHeroStorm(hero) {
     for (const prop of props) {
       const r = prop.node.getBoundingClientRect(), w = Math.max(44, r.width), h = Math.max(44, r.height);
       const x = r.left + (r.width - w) / 2, y = r.top + (r.height - h) / 2;
+      prop.heroBox = { left: box.left + window.scrollX, top: box.top + window.scrollY, width: box.width, height: box.height, safeLeft: copy.right + window.scrollX + 8 };
+      const matrix = prop.node.getScreenCTM(); prop.scale = Math.hypot(matrix.a, matrix.b) || 1;
       prop.box = { left: r.left + window.scrollX, top: r.top + window.scrollY, width: r.width, height: r.height };
       prop.visible = x >= copy.right + 8 && x >= box.left && x + w <= box.left + box.width
         && y >= box.top && y + h <= box.top + box.height;
       prop.button.style.left = `${x - box.left}px`; prop.button.style.top = `${y - box.top}px`;
       prop.button.style.width = `${w}px`; prop.button.style.height = `${h}px`;
+    }
+  }
+  function startDrag(p, event) {
+    if (p.state === 'idle') {
+      p.stop();
+      p.art.style.animationPlayState = 'paused';
+      if (propStage) propStage.append(p.node);
+      // Read once when grabbing. All following motion uses cached bounds and transform writes only.
+      const r = p.art.getBoundingClientRect();
+      p.home = { left: r.left + window.scrollX, top: r.top + window.scrollY, width: r.width, height: r.height };
+      const b = p.heroBox;
+      p.minX = b.safeLeft - p.home.left; p.maxX = b.left + b.width - 12 - p.home.left - r.width;
+      p.minY = b.top + 12 - p.home.top;
+    }
+    p.grabX = event.clientX + window.scrollX - p.home.left - p.dx;
+    p.grabY = event.clientY + window.scrollY - p.home.top - p.dy;
+    p.tx = p.dx; p.ty = p.dy; p.vx = p.vy = 0; p.state = 'held'; heldProp = p;
+    p.art.dataset.dragState = 'held'; hero.dataset.monsterHeld = 'true';
+  }
+  function stepProps(dt) {
+    for (const p of props) {
+      if (p.state === 'idle') continue;
+      if (p.state === 'held') {
+        const x = mix(p.dx, p.tx, Math.min(1, dt * 26)), y = mix(p.dy, p.ty, Math.min(1, dt * 26));
+        p.vx = mix(p.vx, (x - p.dx) / dt, .45); p.vy = mix(p.vy, (y - p.dy) / dt, .45);
+        p.dx = x; p.dy = y;
+      } else if (p.state === 'falling') {
+        p.vy += 1450 * dt; p.dx += p.vx * dt; p.dy += p.vy * dt; p.vx *= Math.exp(-1.5 * dt);
+        if (p.dx < p.minX || p.dx > p.maxX) { p.dx = Math.max(p.minX, Math.min(p.maxX, p.dx)); p.vx *= -.4; }
+        if (p.dy < p.minY) { p.dy = p.minY; p.vy = Math.abs(p.vy) * .35; }
+        if (p.dy >= 0 && p.vy > 0) {
+          p.dy = 0; p.vy *= p.kind === 'slime' ? -.58 : -.45; p.bounces++;
+          if (Math.abs(p.vy) < 75 || p.bounces >= 3) p.state = 'home';
+        }
+        if (time - p.released > 2.5) p.state = 'home';
+      } else {
+        p.dx *= Math.exp(-8 * dt); p.dy *= Math.exp(-8 * dt);
+        if (Math.abs(p.dx) + Math.abs(p.dy) < .4) { p.stop(); continue; }
+      }
+      // The node's SVG scale converts CSS screen pixels to local sprite units.
+      const tilt = p.state === 'held' ? Math.max(-8, Math.min(8, p.vx / 80)) : 0;
+      p.art.style.transform = `translate(${(p.dx / p.scale).toFixed(2)}px, ${(p.dy / p.scale).toFixed(2)}px) rotate(${tilt.toFixed(1)}deg)`;
+      p.button.style.transform = `translate(${p.dx.toFixed(2)}px, ${p.dy.toFixed(2)}px)`;
     }
   }
   function syncProps(active) {
@@ -245,6 +330,7 @@ export function mountHeroStorm(hero) {
     if (width < 160) return;
     const phase = t % 11.5, gather = smooth((phase - 1.05) / 2.3), release = smooth((phase - 7.35) / 2.2);
     const active = canRun(), sinceBurst = t - burstAt;
+    if (active) stepProps(dt);
     influence = mix(influence, active && (pointer || sinceBurst < 2) ? 1 : 0, Math.min(1, dt * 9));
     const hold = gather * (1 - release), x = width / 2, y = height * .42 + Math.sin(t * .9) * 3;
     const cell = radius / 8.5;
@@ -403,7 +489,10 @@ export function mountHeroStorm(hero) {
     hero.removeEventListener('pointerleave', exitPointer); canvas.removeEventListener('lostpointercapture', release);
     canvas.removeEventListener('keydown', keyDown); canvas.removeEventListener('keyup', keyUp); canvas.removeEventListener('blur', resetToy);
     window.removeEventListener('pointerup', release); window.removeEventListener('pointercancel', resetToy); window.removeEventListener('blur', resetToy);
+    window.removeEventListener('keydown', keyboardMode);
+    delete hero.dataset.toyInput; delete hero.dataset.monsterHeld;
     props.forEach(prop => prop.dispose());
+    propStage?.remove();
     canvas.remove(); hint.remove();
   };
 }

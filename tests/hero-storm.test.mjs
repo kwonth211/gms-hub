@@ -15,14 +15,14 @@ function setup({ reduced = false, mobile = false, cores = 8, cost = 1, withProps
   const heroEvents = {}, children = [];
   const propNodes = withProps ? ['mushroom', 'slime', 'coin', 'coin'].map((kind, index) => {
     const animations = [];
-    const art = { dataset: {}, getBoundingClientRect: () => ({ left: index === 3 ? 200 : 750 + index * 100, top: 400, width: 48, height: 52 }), animate: (frames, options) => {
+    const art = { dataset: {}, style: {}, getBoundingClientRect: () => ({ left: index === 3 ? 200 : 750 + index * 100, top: 400, width: 48, height: 52 }), animate: (frames, options) => {
       const animation = { frames, options, cancelled: false, cancel() { this.cancelled = true; } };
       animations.push(animation); return animation;
     } };
-    return { dataset: { heroProp: kind }, art, animations, querySelector: () => art,
+    return { getScreenCTM: () => ({ a: 4, b: 0 }), dataset: { heroProp: kind }, art, animations, querySelector: () => art,
       getBoundingClientRect: () => ({ left: index === 3 ? 200 : 750 + index * 100, top: 400, width: 48, height: 52 }) };
   }) : [];
-  const hero = { querySelectorAll: () => propNodes, querySelector: s => s === '.hero-card' ? card : null, insertBefore: el => { canvas = el; },
+  const hero = { dataset: {}, querySelectorAll: () => propNodes, querySelector: s => s === '.hero-card' ? card : null, insertBefore: el => { canvas = el; },
     append: (...els) => children.push(...els), addEventListener: (name, fn) => { heroEvents[name] = fn; }, removeEventListener: name => { delete heroEvents[name]; },
     getBoundingClientRect: () => ({ left: 0, top: 100, width: mobile ? 390 : 1280, height: 500 }) };
   const html = { dataset: {} };
@@ -53,7 +53,7 @@ function setup({ reduced = false, mobile = false, cores = 8, cost = 1, withProps
   const dispose = env.mountHeroStorm(hero);
   const tick = () => { for (const [key, fn] of [...timers]) { timers.delete(key); fn(); }
     for (const [key, fn] of [...raf]) { raf.delete(key); fn(clock += 40); } };
-  return { raf, timers, observers, media, doc, html, canvas, tick, dispose, windowEvents, heroEvents, children, propNodes, window: env.window,
+  return { raf, timers, observers, media, doc, html, canvas, tick, dispose, windowEvents, heroEvents, children, propNodes, hero, window: env.window,
     visible: value => observers.intersection([{ isIntersecting: value }]),
     visibility: hidden => { doc.hidden = hidden; documentEvents.visibilitychange(); } };
 }
@@ -194,7 +194,7 @@ test('pointer routing gives live monsters and coins priority, background starts 
   for (let i = 0; i < 3; i++) {
     const event = { ...mouse(), clientX: 774 + i * 100, clientY: 426 };
     s.heroEvents.pointerdown(event);
-    assert.equal(s.propNodes[i].art.dataset.reaction, i === 2 ? 'spin' : 'hop');
+    assert.equal(i === 2 ? s.propNodes[i].art.dataset.reaction : s.propNodes[i].art.dataset.dragState, i === 2 ? 'spin' : 'held');
     assert.equal(s.canvas.attributes['aria-pressed'], 'false');
     s.heroEvents.pointermove(mouse()); assert.equal(s.canvas.attributes['aria-pressed'], 'false');
     s.windowEvents.pointerup(event);
@@ -215,4 +215,47 @@ test('pointer routing gives live monsters and coins priority, background starts 
   s.heroEvents.pointerdown({ ...mouse(), target: { closest: selector => selector === '.hero-prop-hit' ? null : {} }, preventDefault: () => { prevented = true; } });
   assert.equal(prevented, false); assert.equal(s.canvas.attributes['aria-pressed'], 'false');
   s.dispose(); assert.equal(Object.keys(s.heroEvents).length, 0);
+});
+
+
+test('dragging a monster follows the pointer, bounces on release, and settles without extra loops or layout reads', () => {
+  const s = setup({ withProps: true }); s.visible(true); s.tick();
+  const art = s.propNodes[1].art, originalBounds = art.getBoundingClientRect;
+  let reads = 0; art.getBoundingClientRect = () => { reads++; return originalBounds(); };
+  const down = { ...mouse(), clientX: 874, clientY: 426 };
+  s.heroEvents.pointerdown(down);
+  assert.equal(art.dataset.dragState, 'held'); assert.equal(s.hero.dataset.toyInput, 'pointer');
+  const count = reads;
+  s.heroEvents.pointermove({ ...down, clientX: 1074, clientY: 210 }); run(s, 30);
+  assert.match(art.style.transform, /translate\(50\.00px, -54\.00px\)/);
+  assert.equal(reads, count); assert.equal(s.canvas.attributes['aria-pressed'], 'false');
+  assert.equal(s.raf.size + s.timers.size, 1);
+  s.windowEvents.pointerup(down); assert.equal(art.dataset.dragState, 'falling');
+  let last = -54, previousDirection = 0, bounces = 0;
+  for (let i = 0; i < 150; i++) {
+    s.tick();
+    const match = /translate\([^,]+, ([^p]+)px/.exec(art.style.transform);
+    if (!match) break;
+    const y = Number(match[1]), direction = Math.sign(y - last);
+    if (previousDirection > 0 && direction < 0) bounces++;
+    if (direction) previousDirection = direction;
+    last = y;
+  }
+  assert.ok(bounces >= 2, `observed ${bounces} bounces`);
+  run(s, 100); assert.equal(art.style.transform, ''); assert.equal(art.dataset.dragState, undefined);
+  assert.equal(reads, count); assert.equal(s.raf.size + s.timers.size, 1);
+  s.windowEvents.keydown({ key: 'Tab' }); assert.equal(s.hero.dataset.toyInput, 'keyboard');
+  s.dispose();
+});
+
+test('hidden tabs and pointer cancellation release held monsters and remove their transform', () => {
+  const s = setup({ withProps: true }); s.visible(true); s.tick();
+  const event = { ...mouse(), clientX: 874, clientY: 426 }, art = s.propNodes[1].art;
+  for (const interrupt of [() => s.windowEvents.pointercancel(), () => s.visibility(true)]) {
+    s.heroEvents.pointerdown(event); s.heroEvents.pointermove({ ...event, clientY: 220 }); run(s, 15);
+    assert.equal(art.dataset.dragState, 'held'); interrupt();
+    assert.equal(art.dataset.dragState, undefined); assert.equal(art.style.transform, '');
+    assert.equal(s.canvas.hasPointerCapture(event.pointerId), false); s.visibility(false);
+  }
+  s.dispose();
 });
