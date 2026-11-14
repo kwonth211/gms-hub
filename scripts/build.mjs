@@ -825,6 +825,10 @@ const ADFIT_PAGES = new Set(['home', 'marketToday', 'exp', 'training', 'trBand',
 // just under the page title: after the page head, after the home hero, or after a guide's first paragraph. Never beside
 // a form control or a button row.
 const AD_TOP = '<!--ad-top-->';
+// Home is ~12,000px tall, so its end-of-page banner sat where nobody scrolls. The end units sit after the first block instead.
+const AD_MID = '<!--ad-mid-->';
+// Side rails show from this viewport width. Between it and 1599px the page content narrows a little to make room.
+const RAIL_MIN = 1440;
 // Excel downloads (scripts/workbooks.mjs, assets/xlsx-live.js): every menu with data gets an "엑셀로 받기" button under its
 // heading. Static menus link a workbook built with the site; live menus (prices, megaphones, ranking) build theirs in the
 // browser from the API snapshot the page already uses. The line under the button says what the sheets hold.
@@ -893,12 +897,15 @@ function withTopAd(body, ads) {
   out = out.replace(AD_TOP, ads ? adfitSlot('top') : '');
   return out.split(AD_TOP).join('');
 }
+function withMidAd(body, ads) {
+  return body.split(AD_MID).join(ads ? adfitSlot('mid') : '');
+}
 function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], modules = [], ld = [], only, noindex }) {
   const ads = ADFIT_PAGES.has(pageKey) && !noindex && Object.values(config.adfit || {}).some(Boolean);
   return `${head({ lang, title, desc, pagePath, ld, only, noindex })}
-<body data-page="${pageKey}" data-price-api="${esc(config.voteApi)}"${config.discord ? ` data-discord-url="${esc(config.discord)}"` : ''} data-tips="${esc(href('/assets/item-tips.json'))}" data-sprites="${esc(href('/assets/monsters/'))}">
+<body data-page="${pageKey}"${ads && (config.adfit?.railLeft || config.adfit?.railRight) ? ' data-rails' : ''} data-price-api="${esc(config.voteApi)}"${config.discord ? ` data-discord-url="${esc(config.discord)}"` : ''} data-tips="${esc(href('/assets/item-tips.json'))}" data-sprites="${esc(href('/assets/monsters/'))}">
 ${header(lang, pagePath, only)}
-<main>${ads && pageKey !== 'home' ? adfitRails() : ''}${withTopAd(withDownload(body, lang, pageKey, pagePath), ads)}${ads ? adfitSlot() : ''}</main>
+<main>${ads && pageKey !== 'home' ? adfitRails() : ''}${withMidAd(withTopAd(withDownload(body, lang, pageKey, pagePath), ads), ads)}${ads && !body.includes(AD_MID) ? adfitSlot() : ''}</main>
 ${footer(lang)}
 <script src="${scriptSrc('analytics.js')}" defer></script>
 <script src="${scriptSrc('common.js')}" defer></script>
@@ -1261,7 +1268,9 @@ ${jsonScript('home-classes', TR_CLASSES.map((c) => ({ slug: c.slug, job: c.job, 
   href: href(langPath(lang, classPath(c))), keywords: `${c.ko} ${c.en} ${jobNames.ko[c.job]} ${jobNames.en[c.job]}` })))}
 <section class="wrap my-char" id="my-char" data-finder="${esc(href(langPath(lang, '/tools/training/')))}" hidden></section>
 ${updatesSection(lang)}
-${body.join('\n')}
+${body[0]}
+${AD_MID}
+${body.slice(1).join('\n')}
 <section class="wrap faq">
 <h2>${t.faqHeading}</h2>
 ${faq}
@@ -2488,9 +2497,9 @@ const adfitIns = (unit, w, h, minWidth = 0, maxWidth = 99999) =>
 function adfitSlot(where = 'end') {
   const { railLeft, railRight } = config.adfit || {};
   const { mobile, pc } = where === 'top' ? { mobile: config.adfit?.topMobile, pc: config.adfit?.topPc } : config.adfit || {};
+  // The end slot leaves wide screens to the side rails; the top and home-middle slots show at every width.
   if (!mobile && !pc) return '';
-  // The end slot leaves wide screens to the side rails; the top slot shows at every width.
-  const maxWidth = where === 'end' && (railLeft || railRight) ? 1599 : 99999;
+  const maxWidth = where === 'end' && (railLeft || railRight) ? RAIL_MIN - 1 : 99999;
   return `<aside class="ad-slot${where === 'top' ? ' ad-slot-top' : ''}" data-ad-placement aria-label="Advertisement"><span class="ad-label">ADVERTISEMENT</span>
 ${adfitIns(mobile, 320, 100, 320, pc ? 759 : maxWidth)}${adfitIns(pc, 728, 90, 760, maxWidth)}</aside>`;
 }
@@ -2501,7 +2510,7 @@ function adfitRails() {
   const { railLeft, railRight } = config.adfit || {};
   if (!railLeft && !railRight) return '';
   const rail = (unit, side) =>
-    unit ? `<div class="ad-rail ad-rail-${side}" data-ad-placement><span class="ad-label">ADVERTISEMENT</span>${adfitIns(unit, 160, 600, 1600)}</div>` : '';
+    unit ? `<div class="ad-rail ad-rail-${side}" data-ad-placement><span class="ad-label">ADVERTISEMENT</span>${adfitIns(unit, 160, 600, RAIL_MIN)}</div>` : '';
   return `<aside class="ad-rails" aria-label="Advertisement">${rail(railLeft, 'left')}${rail(railRight, 'right')}
 </aside>`;
 }

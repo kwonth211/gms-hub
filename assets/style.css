@@ -802,9 +802,16 @@ select:focus-visible, button:focus-visible, input:focus-visible { outline: 2px s
 .ad-label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 0.75rem; text-align: center; }
 .ad-rails { position: relative; height: 0; }
 .ad-rail { position: absolute; top: 24px; width: 160px; }
-.ad-rail-left { right: calc(50% + 600px + 32px); }
-.ad-rail-right { left: calc(50% + 600px + 32px); }
-@media (max-width: 1599px) { .ad-rails { display: none; } }
+/* --content is the page column width: 1200px, narrowed between 1440px and 1599px so a 160px rail fits each side.
+   Rails sit 8px outside the column (the column's own 16px padding keeps 24px between ad and text). */
+body[data-rails] { --content: 1200px; }
+.ad-rail-left { right: calc(50% + var(--content, 1200px) / 2 + 8px); }
+.ad-rail-right { left: calc(50% + var(--content, 1200px) / 2 + 8px); }
+@media (max-width: 1439px) { .ad-rails { display: none; } }
+@media (min-width: 1440px) and (max-width: 1599px) {
+  body[data-rails] { --content: calc(100vw - 2 * (160px + 8px + 16px)); }
+  body[data-rails] main .wrap, body[data-rails] main .ad-slot { max-width: var(--content); }
+}
 
 .mk-head > div { min-width: 0; flex: 1; }
 .mk-head > button { flex: none; margin-left: auto; }
@@ -1848,8 +1855,9 @@ html[data-charm='off'] .charm-leaves { display: none; }
 .mb-filter-box .mb-list-controls { margin: 0; padding: 0 12px 12px; }
 .mb-filter-box[hidden] { display: none; }
 .mk-foot { margin: 18px 0 0; }
-/* On a phone the item name gets its own line; the star, link and close buttons wrap under it instead of squeezing it. */
-@media (max-width: 600px) {
+/* On a phone, and where the detail panel sits beside the list in a column under ~1600px (narrower still when the side
+   ad rails take room), the item name gets its own line; the star, link and close buttons wrap under it instead of squeezing it. */
+@media (max-width: 600px), (min-width: 1051px) and (max-width: 1599px) {
   .mb-detail .mk-head { flex-wrap: wrap; }
   .mb-detail .mk-head > div { flex-basis: calc(100% - 52px); }
 }

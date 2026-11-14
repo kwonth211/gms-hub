@@ -32,7 +32,7 @@
   window.addEventListener('resize', () => {
     const available = document.documentElement.clientWidth;
     for (const unit of active) {
-      if (available < Number(unit.dataset.adWidth) || (unit.closest('.ad-rail') && available < 1600)) unit.remove();
+      if (available < Number(unit.dataset.adWidth) || (unit.closest('.ad-rail') && available < Number(unit.dataset.min))) unit.remove();
     }
     clean();
   }, { passive: true });
