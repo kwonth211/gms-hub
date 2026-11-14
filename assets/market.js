@@ -174,6 +174,16 @@ function visitNote(id) {
     ? `지난 확인(${since}) 이후 판매가 중앙값 ${money(d.from)} → ${money(d.to)} (${pct}) · 24시간 판매 중 매물 기준`
     : `${tx("Since your last look")} (${since}): ${tx("asking median {from} → {to} ({pct}) · 24h open listings", { from: money(d.from), to: money(d.to), pct })}`}</p>`;
 }
+// Every settled search (not each keystroke) is counted, so the briefing can list what people look up most.
+let searchTimer = 0, lastSearch = "";
+function searched(term, results) {
+  clearTimeout(searchTimer);
+  if (!term || term === lastSearch || (/[\uac00-\ud7a3]/.test(term) && /[\u3131-\u318e]$/.test(term))) return;
+  searchTimer = setTimeout(() => {
+    lastSearch = term;
+    track("market_search", { search_term: term.slice(0, 40), results, view, lang: D.lang });
+  }, 1500);
+}
 function noResults(term) {
   clearTimeout(noResultTimer);
   // A Korean word still being typed ends in a bare consonant or vowel ("망ㅌ"); that is not a failed search.
@@ -290,6 +300,7 @@ function renderDirectory() {
         .join("")}</tbody></table></div>`
     : categoryMiss() || `<div class="market-empty"><strong>${tr("표시할 아이템이 없어요.", "No matching items.")}</strong><p>${$("mb-favorites").checked ? tr("별표를 눌러 관심 아이템을 저장해 보세요.", "Use the star to save items to your wishlist.") : T.noMatches}</p>${$("mk-q").value.trim() && document.body.dataset.discordUrl ? `<p><a href="${document.body.dataset.discordUrl}" target="_blank" rel="noopener" data-discord="market-empty">${tr("찾는 아이템 시세를 디스코드에서 물어보기", "Ask for this item's price on Discord")}</a></p>` : ""}${$("mk-q").value.trim() ? `<p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="listings">${tr("전체 매물에서 찾기", "Search all listings instead")}</button></p>` : ""}</div>`;
   if (!rows.length && !$("mb-favorites").checked) noResults($("mk-q").value.trim());
+  if (!$("mb-favorites").checked) searched($("mk-q").value.trim(), rows.length);
   $("mb-pagination").innerHTML = pager({ page, pages }, "main");
   $("mb-results").setAttribute("aria-busy", "false");
   renderMine();
@@ -438,6 +449,7 @@ async function renderRecords() {
       ko ? `${ago(data.asOf)} 기준` : `${tx("as of")} ${ago(data.asOf)}`,
     ].filter(Boolean).join(" · ");
     if (!data.total && $("mk-q").value.trim()) noResults($("mk-q").value.trim());
+    searched($("mk-q").value.trim(), data.total);
     $("mb-results").innerHTML =
       target === "reports"
         ? data.rows.length
