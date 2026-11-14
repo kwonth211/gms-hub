@@ -599,7 +599,8 @@ a.band-link:hover { border-color: var(--accent); }
 .market-panel h3 small { font-weight: 400; color: var(--muted); font-size: 0.75rem; margin-left: 6px; }
 .market-grid:has(.market-top[hidden]) { grid-template-columns: 1fr; }
 /* Both lists hold their loaded height while the data is on its way, so the sections below don't jump (CLS). */
-.rank-list, .recent-list { min-height: 280px; }
+.rank-list { min-height: 280px; }
+.recent-list { min-height: 640px; }
 .rank-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); }
 .rank-list li a { display: grid; grid-template-columns: 22px 30px 26px minmax(0, 1fr) auto 112px 56px; align-items: center; gap: 10px; min-height: 46px; padding: 5px 4px; border-bottom: 1px solid var(--line); color: var(--text); text-decoration: none; }
 .rank-list li a:hover { background: var(--panel-2); }
@@ -2717,3 +2718,13 @@ body.exp-running .exp-stop { display: inline-flex; }
 
 /* Before the first list arrives, hold room for it so the footer and ads below do not jump when it fills in. */
 #mb-results[aria-busy="true"]:has(> p:only-child) { min-height: 60vh; }
+
+/* Home "just listed" feed: a LIVE badge, a thin bar that fills until the next refresh, and new rows that glow as they drop in. */
+.recent-head { display: flex; align-items: center; gap: 8px; }
+.live-badge { display: inline-flex; align-items: center; gap: 5px; padding: 1px 7px; border-radius: 999px; background: #e5484d; color: #fff; font-size: 0.66rem; font-weight: 800; letter-spacing: .06em; }
+.live-badge i { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: live-blink 1.4s ease-in-out infinite; }
+@keyframes live-blink { 50% { opacity: .25; } }
+.live-next { height: 2px; margin: -2px 0 6px; border-radius: 2px; background: linear-gradient(90deg, var(--accent) calc(var(--p, 0) * 100%), var(--line) 0); opacity: .7; transition: background .9s linear; }
+.recent-list li.fresh a { background: color-mix(in srgb, var(--accent) 14%, transparent); box-shadow: inset 3px 0 0 var(--accent); transition: background 1.5s ease, box-shadow 1.5s ease; }
+.recent-list li a { transition: background 1.5s ease, box-shadow 1.5s ease; }
+@media (prefers-reduced-motion: reduce) { .live-badge i { animation: none; } }

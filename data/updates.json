@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest.",
  "updates": [
   {
+   "id": "home-live-feed",
+   "version": "0.4.33",
+   "level": "patch",
+   "date": "2026-11-14",
+   "path": "/",
+   "ko": "방금 올라온 매물 — 실시간으로 한 줄씩 들어오는 LIVE 피드, 15개로 늘림",
+   "en": "Just listed — a LIVE feed where new listings drop in one by one, now 15 rows",
+   "desc": {
+    "ko": "홈의 방금 올라온 매물이 15개로 길어지고, 새 매물이 위에서 한 줄씩 빛나며 들어와요. 몇 초 전에 올라왔는지 초 단위로 바뀌고, 다음 갱신까지 남은 시간이 얇은 막대로 보여요. 실시간 시세 전체 보기는 이제 전체 매물로 바로 가요.",
+    "en": "The home page's newest listings now show 15 rows, and new ones drop in at the top one by one with a glow. Times tick by the second, a thin bar shows the next refresh, and \"see all\" opens all listings."
+   }
+  },
+  {
    "id": "market-search-typing",
    "version": "0.4.32",
    "level": "patch",

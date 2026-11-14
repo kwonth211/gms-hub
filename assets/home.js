@@ -530,7 +530,7 @@ if (voteApi) {
 // Live Free Market section: realtime-search style top 10 (average price, change, 7-day sparkline) and the newest listings,
 // refreshed every minute while the tab is visible.
 const live = document.getElementById('live-market');
-const LIVE_ROWS = 5;
+const LIVE_ROWS = 15;
 const LIVE_REFRESH_MS = 60000;
 const lang = document.documentElement.lang;
 const liveRtf = new Intl.RelativeTimeFormat(lang, { numeric: 'auto', style: 'short' });
@@ -556,7 +556,8 @@ function ago(utc) {
   // A megaphone-based price has no last sale time.
   if (!utc) return '';
   const s = Math.max(0, (Date.now() - Date.parse(`${utc.replace(' ', 'T')}Z`)) / 1000);
-  if (s < 60) return liveRtf.format(0, 'second');
+  if (s < 10) return liveRtf.format(0, 'second');
+  if (s < 60) return liveRtf.format(-Math.floor(s), 'second');
   if (s < 3600) return liveRtf.format(-Math.floor(s / 60), 'minute');
   if (s < 86400) return liveRtf.format(-Math.floor(s / 3600), 'hour');
   return liveRtf.format(-Math.floor(s / 86400), 'day');
@@ -668,44 +669,80 @@ function renderTop(top, byId) {
   return rows.length;
 }
 
-// Listings already on screen, so a refresh can light up only the ones that just arrived.
-let seenRows = null;
+// The newest listings, kept long (LIVE_ROWS) and fed in like a live feed: listings that arrived since the last refresh
+// (and on the first draw the newest few) drop in one at a time at the top, spread over the time until the next refresh,
+// while the oldest row slides out. "12초 전" ticks every second, and a thin bar shows when the next refresh comes.
 const rowKey = (r) => `${r.item}|${r.seller}|${r.price}|${r.seen}`;
+let shownRows = null, pendingRows = [], dripTimer = 0, liveById = null;
+const FIRST_DRIP = 4;
 
-function renderRecent(rows, byId) {
-  const shown = rows.filter((r) => byId.has(r.item)).slice(0, LIVE_ROWS);
-  const fresh = seenRows ? shown.filter((r) => !seenRows.has(rowKey(r))).length : 0;
-  const before = seenRows;
-  seenRows = new Set(shown.map(rowKey));
-  document.getElementById('live-rows').innerHTML = shown
-    .map((r) => {
-      const it = byId.get(r.item);
-      const isNew = before && !before.has(rowKey(r));
-      return `<li class="${r.sold ? 'sold' : ''}${isNew ? ' fresh' : ''}"><a href="${live.dataset.price}?q=${encodeURIComponent(it.name)}">
+function recentRow(r, it, fresh) {
+  return `<li class="${r.sold ? 'sold' : ''}${fresh ? ' fresh' : ''}" data-key="${escHtml(rowKey(r))}"><a href="${live.dataset.price}?q=${encodeURIComponent(it.name)}">
 <img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="26" height="26" loading="lazy">
 <span class="name">${newMark(r.seen)}${escHtml(it.name)}${r.sold ? `<span class="tag">${escHtml(liveText.sold)}</span>` : ''}</span>
 <span class="price">${mesos(r.price)}${r.qty > 1 ? ` <small>×${r.qty}</small>` : ''}</span>
 <span class="meta">${escHtml(r.seller)} · CH ${r.channel} · ${placeLabel(r.room, korean)}</span>
 <span class="ago" data-seen="${escHtml(r.seen)}">${ago(r.seen)}</span></a></li>`;
-    })
-    .join('');
-  const note = document.getElementById('live-fresh');
-  if (note && fresh) {
-    note.textContent = liveText.fresh.replace('{n}', fresh);
-    note.hidden = false;
-    clearTimeout(renderRecent.t);
-    renderRecent.t = setTimeout(() => (note.hidden = true), 8000);
-  }
-  return shown.length;
 }
 
-// "3 minutes ago" keeps counting between refreshes instead of freezing at the time the list was drawn.
+// Put one waiting listing on top of the list: it slides in and glows, the last row leaves.
+function dripOne() {
+  const list = document.getElementById('live-rows');
+  const r = pendingRows.pop();
+  if (!r || !list) return;
+  shownRows.unshift(r);
+  list.querySelector('.market-empty')?.remove();
+  list.insertAdjacentHTML('afterbegin', recentRow(r, liveById.get(r.item), true));
+  const li = list.firstElementChild;
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    li.animate([{ opacity: 0, transform: 'translateY(-14px)' }, { opacity: 1, transform: 'none' }], { duration: 450, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  }
+  setTimeout(() => li.classList.remove('fresh'), 6000);
+  while (shownRows.length > LIVE_ROWS) { shownRows.pop(); list.lastElementChild?.remove(); }
+  const note = document.getElementById('live-fresh');
+  if (note) { note.textContent = liveText.fresh.replace('{n}', 1); note.hidden = false; clearTimeout(dripOne.t); dripOne.t = setTimeout(() => (note.hidden = true), 4000); }
+}
+function scheduleDrip(span) {
+  clearInterval(dripTimer);
+  if (!pendingRows.length) return;
+  const gap = Math.max(900, Math.min(8000, span / (pendingRows.length + 1)));
+  dripOne();
+  dripTimer = setInterval(() => { if (!pendingRows.length) return clearInterval(dripTimer); if (!document.hidden) dripOne(); }, gap);
+}
+
+function renderRecent(rows, byId) {
+  liveById = byId;
+  const all = rows.filter((r) => byId.has(r.item)).slice(0, LIVE_ROWS + 10);
+  const list = document.getElementById('live-rows');
+  if (!shownRows) {
+    // First draw: everything but the newest few, which then arrive one by one in the next seconds.
+    const drip = all.length > LIVE_ROWS / 2 ? Math.min(FIRST_DRIP, all.length - 1) : 0;
+    shownRows = all.slice(drip, drip + LIVE_ROWS);
+    pendingRows = all.slice(0, drip);
+    list.innerHTML = shownRows.map((r) => recentRow(r, byId.get(r.item), false)).join('');
+    if (pendingRows.length) setTimeout(() => scheduleDrip(6000), 700);
+    return all.length;
+  }
+  // Later refreshes: only listings not yet on screen or waiting, oldest first at the end of the queue.
+  const known = new Set([...shownRows, ...pendingRows].map(rowKey));
+  const fresh = all.filter((r) => !known.has(rowKey(r)));
+  if (fresh.length) {
+    pendingRows = [...fresh, ...pendingRows].slice(0, LIVE_ROWS);
+    scheduleDrip(LIVE_REFRESH_MS * 0.8);
+  }
+  return shownRows.length + pendingRows.length;
+}
+
+// "12초 전" ticks every second, and the bar under the title fills up until the next refresh.
+let lastRefresh = Date.now();
 setInterval(() => {
   if (document.hidden) return;
   document.querySelectorAll('#live-rows .ago[data-seen]').forEach((el) => (el.textContent = ago(el.dataset.seen)));
   const first = document.querySelector('#live-rows .ago[data-seen]');
   if (first) document.getElementById('live-updated').textContent = liveText.updated.replace('{t}', ago(first.dataset.seen));
-}, 20000);
+  const bar = document.getElementById('live-next');
+  if (bar) bar.style.setProperty('--p', Math.min(1, (Date.now() - lastRefresh) / LIVE_REFRESH_MS).toFixed(3));
+}, 1000);
 
 // ?preview=market shows the section with made-up numbers (clearly labelled) so it can be reviewed before real scans exist.
 const PREVIEW = new URLSearchParams(location.search).get('preview') === 'market';
@@ -748,6 +785,7 @@ async function refreshLive() {
       el.querySelector('dd').textContent = Number(n || 0).toLocaleString(lang);
       el.hidden = !n;
     });
+    lastRefresh = Date.now();
     const listed = recent ? renderRecent(recent, byId) : 0;
     if (!listed) document.getElementById('live-rows').innerHTML = `<li class="market-empty">${escHtml(liveText.empty)}</li>`;
     if (recent?.length) document.getElementById('live-updated').textContent = liveText.updated.replace('{t}', ago(recent[0].seen));

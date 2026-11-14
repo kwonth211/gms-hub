@@ -1086,9 +1086,10 @@ ${collectionStatus(lang)}
 <ol class="rank-list" id="rank-list"></ol>
 </div>
 <div class="market-panel market-recent">
-<h3>${t.recent}</h3>
+<h3 class="recent-head"><span class="live-badge"><i aria-hidden="true"></i>LIVE</span>${t.recent}</h3>
+<div class="live-next" id="live-next" aria-hidden="true"></div>
 <ol class="recent-list" id="live-rows"><li class="market-empty">${t.empty}</li></ol>
-<a class="market-more" href="${href(langPath(lang, '/tools/market/'))}">${t.more}</a>
+<a class="market-more" href="${href(langPath(lang, '/tools/market/'))}?view=listings">${t.more}</a>
 </div>
 </div>
 <div class="spark-tip" id="spark-tip" role="tooltip" hidden></div>
