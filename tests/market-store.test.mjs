@@ -150,3 +150,9 @@ test("megaphone stats come from one pass with the same shape as before", async (
   assert.equal(later.today.n, 6);
   assert.equal(e.reads(), 7, "6 megaphones of the last day + the stored hours");
 });
+
+test("megaphone prices: OCR-split decimals and stat numbers", async () => {
+  const { parseMegaphone } = await import("../worker/src/megaphone.js");
+  for (const [t, p] of [["S> GFA 1 .9m or Best Of", 1900000], ["S> GFA 60% 1 .95m !", 1950000], ["S> C/o 1.7M", 1700000], ["S> 13M DEX glove 2m", 2000000], ["S> 380k ea", 380000]])
+    assert.equal(parseMegaphone(t).price, p, t);
+});

@@ -10,11 +10,12 @@ const SELL = /(^|[^a-z])(s\s?>|wts|selling|sell(?:ing)?|s:)/i;
 const BUY = /(^|[^a-z])(b\s?>|wtb|buying|buy(?:ing)?|b:)/i;
 // "132K", "4m", "1.5b", "380k ea". A number glued to a stat word ("13M DEX", "+5 ATT") is a stat, not a price, and amounts
 // outside 500 mesos to 300 million are OCR slips (no item trades there).
-const PRICE = /(?<![+\d])(\d+(?:[.,]\d+)?)\s?(k|m|mil|b)\b(?!\s?(?:att|atk|atck|matk|m\.?att|dex|str|int|luk|acc|avoid|spd|speed|jump|hp|mp|def|slot|crit))/i;
+const PRICE = /(?<![+\d.])(\d+(?:[.,]\d+)?)\s?(k|m|mil|b)\b(?!\s?(?:att|atk|atck|matk|m\.?att|dex|str|int|luk|acc|avoid|spd|speed|jump|hp|mp|def|slot|crit))/i;
 export function parseMegaphone(text, names) {
   const s = SELL.exec(text), b = BUY.exec(text);
   const intent = s && (!b || s.index <= b.index) ? 'sell' : b ? 'buy' : null;
-  const m = PRICE.exec(text);
+  // OCR often splits a decimal: "1 .9m" is 1.9m, not 9m.
+  const m = PRICE.exec(text.replace(/(\d)\s+([.,]\d)/g, '$1$2'));
   const raw = m ? Math.round(Number(m[1].replace(',', '.')) * { k: 1e3, m: 1e6, mil: 1e6, b: 1e9 }[m[2].toLowerCase()]) : null;
   const price = raw && raw >= 500 && raw <= 3e8 ? raw : null;
   let item = null;
