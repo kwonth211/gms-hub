@@ -28,7 +28,7 @@ jobs:
       - run: node scripts/fetch-item-prices.mjs
       - run: node scripts/fetch-market-report.mjs
       - name: Build and verify content publication rules
-        run: node --test tests/content.test.mjs tests/monsters.test.mjs tests/collection-status.test.mjs tests/product-analytics.test.mjs
+        run: node --test tests/content.test.mjs tests/monsters.test.mjs tests/collection-status.test.mjs tests/product-analytics.test.mjs tests/hero-storm.test.mjs
       # Pages whose content differs from the live site, for IndexNow (Naver, Bing) once this deploy is live.
       - name: List changed pages
         run: |

@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const source = fs.readFileSync(new URL('../assets/hero-storm.js', import.meta.url), 'utf8').replace('export function mountHeroStorm', 'function mountHeroStorm');
-function setup({ reduced = false, mobile = false, cores = 8, cost = 1 } = {}) {
+function setup({ reduced = false, mobile = false, cores = 8, cost = 1, withProps = false } = {}) {
   const raf = new Map(), timers = new Map(), observers = {}, media = {}, documentEvents = {}, windowEvents = {};
   let id = 0, clock = 0, canvas;
   const noop = () => {};
@@ -13,7 +13,16 @@ function setup({ reduced = false, mobile = false, cores = 8, cost = 1 } = {}) {
   });
   const card = { getBoundingClientRect: () => ({ right: 650 }) };
   const heroEvents = {}, children = [];
-  const hero = { querySelector: s => s === '.hero-card' ? card : null, insertBefore: el => { canvas = el; },
+  const propNodes = withProps ? ['mushroom', 'slime', 'coin', 'coin'].map((kind, index) => {
+    const animations = [];
+    const art = { dataset: {}, animate: (frames, options) => {
+      const animation = { frames, options, cancelled: false, cancel() { this.cancelled = true; } };
+      animations.push(animation); return animation;
+    } };
+    return { dataset: { heroProp: kind }, art, animations, querySelector: () => art,
+      getBoundingClientRect: () => ({ left: index === 3 ? 200 : 750 + index * 100, top: 400, width: 48, height: 52 }) };
+  }) : [];
+  const hero = { querySelectorAll: () => propNodes, querySelector: s => s === '.hero-card' ? card : null, insertBefore: el => { canvas = el; },
     append: (...els) => children.push(...els), addEventListener: (name, fn) => { heroEvents[name] = fn; }, removeEventListener: name => { delete heroEvents[name]; },
     getBoundingClientRect: () => ({ left: 0, top: 100, width: mobile ? 390 : 1280, height: 500 }) };
   const html = { dataset: {} };
@@ -44,7 +53,7 @@ function setup({ reduced = false, mobile = false, cores = 8, cost = 1 } = {}) {
   const dispose = env.mountHeroStorm(hero);
   const tick = () => { for (const [key, fn] of [...timers]) { timers.delete(key); fn(); }
     for (const [key, fn] of [...raf]) { raf.delete(key); fn(clock += 40); } };
-  return { raf, timers, observers, media, doc, html, canvas, tick, dispose, windowEvents, heroEvents, children, window: env.window,
+  return { raf, timers, observers, media, doc, html, canvas, tick, dispose, windowEvents, heroEvents, children, propNodes, window: env.window,
     visible: value => observers.intersection([{ isIntersecting: value }]),
     visibility: hidden => { doc.hidden = hidden; documentEvents.visibilitychange(); } };
 }
@@ -153,4 +162,28 @@ test('back-forward cache departure cancels work and return schedules a fresh lay
   const s = setup(); s.visible(true); s.tick(); s.windowEvents.pagehide();
   assert.equal(s.raf.size + s.timers.size, 0);
   s.windowEvents.pageshow(); s.tick(); assert.equal(s.raf.size, 1);
+});
+
+
+test('scene props keep hidden sprites unclickable, replace reactions on repeat clicks and cancel when paused', () => {
+  const s = setup({ withProps: true }); s.visible(true); s.tick();
+  const buttons = s.children.filter(e => e.className === 'hero-prop-hit');
+  assert.deepEqual(buttons.map(b => b.hidden), [false, false, false, true]);
+  for (let i = 0; i < 3; i++) {
+    const node = s.propNodes[i], button = buttons[i];
+    button.events.pointerenter(); assert.equal(node.art.dataset.reaction, 'hello');
+    button.events.click(); assert.equal(node.animations[0].cancelled, true);
+    assert.equal(node.art.dataset.reaction, i === 2 ? 'spin' : 'hop');
+    button.events.click(); assert.equal(node.animations[1].cancelled, true);
+    node.animations[2].onfinish(); assert.equal(node.art.dataset.reaction, undefined);
+    button.events.click();
+  }
+  buttons[3].events.click(); assert.equal(s.propNodes[3].animations.length, 0);
+  assert.equal(s.raf.size + s.timers.size, 1);
+  s.visible(false);
+  assert.ok(buttons.every(b => b.hidden)); assert.ok(s.propNodes.every(p => !p.art.dataset.reaction));
+  assert.ok(s.propNodes.every(p => p.animations.every(a => a.cancelled)));
+  s.visible(true); buttons[0].events.click(); s.windowEvents.pagehide();
+  assert.equal(s.propNodes[0].art.dataset.reaction, undefined);
+  s.dispose(); assert.ok(buttons.every(b => b.removed && Object.keys(b.events).length === 0));
 });

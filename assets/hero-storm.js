@@ -147,6 +147,71 @@ export function mountHeroStorm(hero) {
   window.addEventListener('pointerup', release); window.addEventListener('pointercancel', resetToy);
   window.addEventListener('blur', resetToy);
 
+  // Hit areas sit above the leaf canvas, but only in the unobstructed scenery.
+  // Browser-managed transforms animate the six existing SVG sprites; no extra frame loop.
+  const propNames = ({ ko: ['주황버섯 점프', '슬라임 점프', '메소 동전 튕기기'],
+    en: ['Bounce the mushroom', 'Bounce the slime', 'Flip the meso coin'],
+    ja: ['キノコをジャンプ', 'スライムをジャンプ', 'メルコインを弾く'],
+    zh: ['讓菇菇跳躍', '讓史萊姆跳躍', '彈起楓幣'] })[lang] || ['Bounce the mushroom', 'Bounce the slime', 'Flip the meso coin'];
+  const props = [...hero.querySelectorAll('[data-hero-prop]')].map(node => {
+    const kind = node.dataset.heroProp, art = node.querySelector('.hero-prop-art');
+    const button = document.createElement('button'); button.type = 'button'; button.className = 'hero-prop-hit';
+    button.setAttribute('aria-label', propNames[['mushroom', 'slime', 'coin'].indexOf(kind)]);
+    button.hidden = true; hero.append(button);
+    const prop = { node, art, button, kind, visible: false, animation: null };
+    const stop = () => {
+      const animation = prop.animation; prop.animation = null; animation?.cancel();
+      delete art.dataset.reaction; delete button.dataset.reaction;
+    };
+    const react = (strong = false) => {
+      if (!canRun() || !prop.visible || (!strong && prop.animation)) return;
+      stop();
+      const coin = kind === 'coin', high = kind === 'slime' ? 16 : 12;
+      const frames = !strong ? [
+        { transform: 'translateY(0) scale(1)' },
+        { transform: coin ? 'translateY(-3px) scaleX(.55)' : 'translateY(-2px) scale(1.12, .88)' },
+        { transform: 'translateY(0) scale(1)' },
+      ] : coin ? [
+        { transform: 'translateY(0) scaleX(1)' },
+        { transform: 'translateY(-12px) scaleX(.08)' },
+        { transform: 'translateY(-18px) scaleX(1)' },
+        { transform: 'translateY(-12px) scaleX(.08)' },
+        { transform: 'translateY(0) scaleX(1)' },
+      ] : [
+        { transform: 'translateY(0) scale(1, 1)', offset: 0 },
+        { transform: 'translateY(1px) scale(1.22, .72)', offset: .15 },
+        { transform: `translateY(-${high}px) scale(.85, 1.16)`, offset: .44 },
+        { transform: 'translateY(0) scale(1.16, .83)', offset: .78 },
+        { transform: 'translateY(0) scale(1, 1)', offset: 1 },
+      ];
+      art.dataset.reaction = button.dataset.reaction = strong ? coin ? 'spin' : 'hop' : 'hello';
+      const animation = art.animate(frames, { duration: strong ? 760 : 340, easing: 'ease-in-out' });
+      prop.animation = animation;
+      animation.onfinish = () => { if (prop.animation === animation) stop(); };
+    };
+    const hover = () => react(), click = () => react(true);
+    button.addEventListener('pointerenter', hover); button.addEventListener('click', click);
+    prop.stop = stop;
+    prop.dispose = () => { stop(); button.removeEventListener('pointerenter', hover); button.removeEventListener('click', click); button.remove(); };
+    return prop;
+  });
+  function layoutProps(box, copy) {
+    for (const prop of props) {
+      const r = prop.node.getBoundingClientRect(), w = Math.max(44, r.width), h = Math.max(44, r.height);
+      const x = r.left + (r.width - w) / 2, y = r.top + (r.height - h) / 2;
+      prop.visible = x >= copy.right + 8 && x >= box.left && x + w <= box.left + box.width
+        && y >= box.top && y + h <= box.top + box.height;
+      prop.button.style.left = `${x - box.left}px`; prop.button.style.top = `${y - box.top}px`;
+      prop.button.style.width = `${w}px`; prop.button.style.height = `${h}px`;
+    }
+  }
+  function syncProps(active) {
+    for (const prop of props) {
+      prop.button.hidden = !active || !prop.visible;
+      if (!active) prop.stop();
+    }
+  }
+
   function draw(t, dt = 1 / 30) {
     ctx.clearRect(0, 0, width, height);
     if (width < 160) return;
@@ -261,6 +326,7 @@ export function mountHeroStorm(hero) {
   function sync() {
     cancel();
     if (disposed) return;
+    syncProps(canRun());
     hint.hidden = !canRun(); canvas.tabIndex = canRun() ? 0 : -1;
     if (!canRun()) resetToy();
     if (document.hidden || away) report('hidden');
@@ -286,6 +352,7 @@ export function mountHeroStorm(hero) {
     canvas.width = Math.max(1, Math.round(width * dpr)); canvas.height = Math.max(1, Math.round(height * dpr));
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); radius = Math.min(110, width * .29, height * .23);
     resetToy();
+    props.forEach(prop => prop.stop()); layoutProps(box, copy);
     sync();
   }
   function requestLayout() { if (!layoutId && !disposed) layoutId = requestAnimationFrame(layout); }
@@ -294,7 +361,7 @@ export function mountHeroStorm(hero) {
   intersection.observe(hero);
   document.addEventListener('visibilitychange', sync);
   reduced.addEventListener('change', sync); narrow.addEventListener('change', requestLayout);
-  const leave = () => { away = true; resetToy(); cancel(); cancelAnimationFrame(layoutId); layoutId = 0; };
+  const leave = () => { away = true; resetToy(); syncProps(false); cancel(); cancelAnimationFrame(layoutId); layoutId = 0; };
   const enter = () => { away = false; requestLayout(); };
   window.addEventListener('pagehide', leave); window.addEventListener('pageshow', enter);
   layout();
@@ -308,6 +375,7 @@ export function mountHeroStorm(hero) {
     canvas.removeEventListener('pointerleave', exitPointer); canvas.removeEventListener('lostpointercapture', release);
     canvas.removeEventListener('keydown', keyDown); canvas.removeEventListener('keyup', keyUp); canvas.removeEventListener('blur', resetToy);
     window.removeEventListener('pointerup', release); window.removeEventListener('pointercancel', resetToy); window.removeEventListener('blur', resetToy);
+    props.forEach(prop => prop.dispose());
     canvas.remove(); hint.remove();
   };
 }

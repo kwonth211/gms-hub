@@ -291,7 +291,10 @@ export function heroScene() {
     // Recolour only this scene's trees; shared icons and game characters keep their own palette.
     if (name === 'tree') rects = rects.replaceAll('#123d22', 'var(--autumn-tree-edge)')
       .replaceAll('#2f9e4f', 'var(--autumn-tree-shade)').replaceAll('#5cc46a', 'var(--autumn-tree-light)');
-    return `<g class="${cls}" transform="translate(${x} ${y}) scale(${scale})">${rects}</g>`;
+    const toy = ['mushroom', 'slime', 'coin'].includes(name);
+    return toy
+      ? `<g data-hero-prop="${name}" transform="translate(${x} ${y}) scale(${scale})"><g class="hero-prop-art ${cls}">${rects}</g></g>`
+      : `<g class="${cls}" transform="translate(${x} ${y}) scale(${scale})">${rects}</g>`;
   };
   const cloud = (x, y, s) =>
     `<g transform="translate(${x} ${y}) scale(${s})" fill="#ffe0b4" opacity=".22"><rect x="2" y="0" width="6" height="1"/><rect x="1" y="1" width="10" height="1"/><rect x="0" y="2" width="14" height="2"/><rect x="1" y="4" width="12" height="1"/></g>`;
