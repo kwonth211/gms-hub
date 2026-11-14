@@ -241,10 +241,27 @@ function shake() { const it = $('fg-item'); if (!it) return; it.classList.remove
 // Small synthesized sounds (no audio files): a rising hum for the charge, a bright chime for success, a dull thud for a
 // failure, a crash for a destroyed item.
 let actx;
+// The game's own scroll sounds for the results (assets/sounds, from the client); the charge stays synthesized.
+const SFX = { ok: 'scroll-success', jackpot: 'scroll-success', fail: 'scroll-fail', boom: 'scroll-boom' };
+const sfx = {};
+function loadSfx() {
+  for (const name of new Set(Object.values(SFX))) {
+    if (sfx[name]) continue;
+    sfx[name] = fetch(new URL(`./sounds/${name}.mp3`, import.meta.url)).then((r) => r.arrayBuffer()).then((b) => actx.decodeAudioData(b)).catch(() => null);
+  }
+}
+function playSfx(kind, vol = 0.9) {
+  const p = sfx[SFX[kind]];
+  if (!p) return false;
+  p.then((buf) => { if (!buf || muted) return; const src = actx.createBufferSource(), g = actx.createGain(); g.gain.value = vol; src.buffer = buf; src.connect(g); g.connect(actx.destination); src.start(); });
+  return true;
+}
 function sound(kind, dur = 600, tense = false) {
   if (muted) return;
   try {
     actx ||= new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    loadSfx();
     const t = actx.currentTime, out = actx.createGain(); out.gain.value = 0.16; out.connect(actx.destination);
     const tone = (f, start, dur, type = 'sine', vol = 1, f2) => {
       const o = actx.createOscillator(), g = actx.createGain(); o.type = type; o.frequency.setValueAtTime(f, t + start);
@@ -268,6 +285,7 @@ function sound(kind, dur = 600, tense = false) {
         noise(0, d, 0.12, 1800);
       }
     }
+    else if (SFX[kind] && playSfx(kind)) { if (kind === 'jackpot') { [1568, 1976, 2349, 3136].forEach((f, i) => tone(f, 0.25 + i * 0.07, 0.8, 'sine', 0.35)); noise(0.2, 0.3, 0.2, 7000); } }
     else if (kind === 'jackpot') { [784, 988, 1175, 1568, 1976, 2349].forEach((f, i) => tone(f, i * 0.06, 0.6, 'triangle', 0.75)); [1568, 1976, 2349].forEach((f) => tone(f, 0.42, 1.1, 'sine', 0.4)); noise(0, 0.25, 0.25, 6000); }
     else if (kind === 'ok') { [880, 1175, 1568, 2093].forEach((f, i) => tone(f, i * 0.07, 0.5, 'triangle', 0.7)); tone(2637, 0.3, 0.7, 'sine', 0.35); noise(0, 0.15, 0.2, 7000); }
     else if (kind === 'fail') { tone(196, 0, 0.35, 'sawtooth', 0.25, 98); noise(0, 0.35, 0.5, 900); }
