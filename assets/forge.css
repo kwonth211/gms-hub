@@ -223,3 +223,10 @@ body.fg-dragging { cursor: grabbing; }
   .fg-item, .fg-circle, .fg-sky i,
   .fg-stage.fx-boom, .fg-stage.fx-boom .fg-item, .fg-stage.fx-tense, .fg-stage.fx-tense .fg-item img, .fg-stage.fx-rare { animation: none; }
 }
+
+/* Empty workbench: the stage shows with a blank slot until gear is picked. */
+.fg-item-empty { border: 3px dashed rgba(255,215,90,.55); background: rgba(255,255,255,.04); }
+.fg-item-empty::before, .fg-item-empty::after { display: none; }
+.fg-item-empty span { font-size: 2.4rem; font-weight: 800; color: rgba(255,230,160,.6); }
+.fg-stage.is-empty .fg-drop-hint { opacity: 1; font-size: .85rem; }
+.fg-anvil.is-idle .fg-tip { opacity: .6; }

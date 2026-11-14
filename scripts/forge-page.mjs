@@ -43,7 +43,17 @@ export function forgeBody({ lang, jsonScript, dataUrl }) {
 <label class="fg-check"><input type="checkbox" id="fg-ok" checked> ${tr('지금 얻을 수 있는 장비만', 'Only gear you can get now')}</label>
 <ul class="fg-list" id="fg-equip-list" aria-live="polite"></ul></aside>
 <section class="fg-center" aria-labelledby="fg-anvil-h"><h2 id="fg-anvil-h" class="sr-only">${tr('작업대', 'Workbench')}</h2>
-<div class="fg-anvil" id="fg-anvil" aria-live="polite"><p class="fg-empty">${tr('왼쪽 선반에서 장비를 골라 작업대에 올려요.', 'Pick gear from the shelf to put it on the workbench.')}</p></div>
+<div class="fg-anvil is-idle" id="fg-anvil" aria-live="polite"><div class="fg-win-title"><span class="fg-win-dot" aria-hidden="true"></span>${tr('주문서 강화', 'Scroll enhancement')}<span class="fg-win-sub">${tr('장비 없음', 'No gear')}</span></div>
+<div class="fg-stage is-empty">
+<div class="fg-sky" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+<svg class="fg-circle" viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="92"/><circle cx="100" cy="100" r="78"/><path d="M100 12 L176 144 L24 144 Z"/><path d="M100 188 L24 56 L176 56 Z"/><circle cx="100" cy="100" r="40"/></svg>
+<div class="fg-pedestal" aria-hidden="true"></div>
+<div class="fg-item fg-item-empty" aria-hidden="true"><span>?</span></div>
+<p class="fg-drop-hint">${tr('왼쪽 선반에서 장비를 골라 작업대에 올려요.', 'Pick gear from the shelf to put it on the workbench.')}</p></div>
+<div class="fg-tip"><h3>${tr('장비를 올려 주세요', 'Put gear on the bench')}</h3>
+<p class="fg-req">${tr('착용 레벨', 'Req. level')} : —</p>
+<ul class="fg-stats"><li>—</li></ul>
+<p class="fg-slots">${tr('업그레이드 가능 횟수', 'Upgrades available')} : <b>—</b></p></div></div>
 <div class="fg-log" id="fg-log" hidden></div></section>
 <aside class="fg-shelf fg-scrolls" aria-labelledby="fg-sc-h"><h2 id="fg-sc-h">${tr('주문서 선반', 'Scroll shelf')}</h2><div id="fg-scroll-list"></div></aside>
 </div>

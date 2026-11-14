@@ -52,6 +52,7 @@ const statLines = () => STAT_ORDER.filter((k) => (item.inc[k] || 0) + (state.add
 function renderAnvil() {
   if (!item) return;
   const done = state.destroyed;
+  $('fg-anvil').classList.remove('is-idle');
   $('fg-anvil').innerHTML = `<div class="fg-win-title"><span class="fg-win-dot" aria-hidden="true"></span>${esc(T.winTitle)}<span class="fg-win-sub">${esc(item.name)}</span></div>
 <div class="fg-stage${done ? ' is-broken' : ''}" id="fg-stage" data-drop>
 <div class="fg-sky" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
