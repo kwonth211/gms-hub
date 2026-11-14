@@ -27,7 +27,7 @@ import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
 import { validRoom } from '../../assets/place.js';
 import { trendsToDiscord } from './discord.js';
 import { discordInteractions } from './discord-bot.js';
-import { notifyMegaphones } from './discord-alerts.js';
+import { notifyMegaphones, notifyListings } from './discord-alerts.js';
 import { postMegaphones, listMegaphones, pruneMegaphones, megaphoneAsks, megaphoneStats } from './megaphone.js';
 import { createAlert, listAlerts, deleteAlert, takeHits, checkAlerts } from './alerts.js';
 export { Presence };
@@ -343,7 +343,9 @@ const api = {
     const origin = req.headers.get('Origin') || '';
     const cors = corsHeaders(origin);
     // Private extension service worker uses a narrowly scoped ingestion token, never public CORS.
-    if (url.pathname === '/internal/market-batch') return handleMarketBatch(req, env, knownItems);
+    if (url.pathname === '/internal/market-batch') return handleMarketBatch(req, env, knownItems, (rows) => {
+      if (rows.length && ctx?.waitUntil) ctx.waitUntil(itemLabel().then((nameOf) => notifyListings(env, rows, nameOf)).catch(() => null));
+    });
     if (url.pathname === '/internal/mail/send' && req.method === 'POST') return handleSendMail(req, env);
     // The collector page runs on gms-hub.com (or localhost while testing) and sends the admin key, so it needs CORS.
     // Discord slash commands (signed by Discord; see discord-bot.js). Prices come from this worker's own summary.
@@ -605,6 +607,7 @@ const api = {
       await env.DB.batch(ok.map((r) => stmt.bind(r.item, r.price, r.qty || 1, r.sold ? 1 : 0, r.seller, r.channel, r.room, reporter,
         r.seller,r.item,r.price,r.channel,r.room,r.qty || 1,r.sold ? 1 : 0)));
       await refreshItemMarket(env, ok.map((r) => r.item)).catch(() => null);
+      if (ctx?.waitUntil) ctx.waitUntil(itemLabel().then((nameOf) => notifyListings(env, ok, nameOf)).catch(() => null));
       return json({ stored: ok.length }, cors);
     }
 

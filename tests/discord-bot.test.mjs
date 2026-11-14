@@ -59,10 +59,11 @@ test('command definitions fit Discord limits and the built bot data has what the
 
 // ----- /alert and /feedback: a small sqlite-backed D1 stand-in and a recorded Discord API -----
 import { DatabaseSync } from 'node:sqlite';
-import { notifyMegaphones } from '../worker/src/discord-alerts.js';
+import { notifyMegaphones, notifyListings, parseAmount } from '../worker/src/discord-alerts.js';
 function botEnv() {
   const sqlite = new DatabaseSync(':memory:');
   sqlite.exec(fs.readFileSync(new URL('../worker/migrations/0011_discord_alerts.sql', import.meta.url), 'utf8'));
+  sqlite.exec(fs.readFileSync(new URL('../worker/migrations/0016_discord_price_alerts.sql', import.meta.url), 'utf8'));
   const DB = { prepare(sql, args = []) {
     return { bind: (...v) => DB.prepare(sql, v), all: async () => ({ results: sqlite.prepare(sql).all(...args) }),
       run: async () => ({ meta: { changes: Number(sqlite.prepare(sql).run(...args).changes) } }) };
@@ -122,5 +123,44 @@ test('/feedback lands in the feedback channel without mentions, once a minute pe
     assert.deepEqual(calls[0].body.allowed_mentions, { parse: [] });
     assert.match((await cmd(env, 'feedback', null, [{ name: 'text', value: 'again again' }], { id: '55', username: 'neo' })).data.content, /1분 뒤/);
     assert.equal(calls.length, 1);
+  });
+});
+
+test('amounts are read the way players write them', () => {
+  for (const [t, n] of [['3m', 3e6], ['2.5M', 2.5e6], ['500k', 5e5], ['1,200,000', 1.2e6], ['300만', 3e6], ['1억2천만', 1.2e8], ['5천', 5000], ['abc', null], ['', null]])
+    assert.equal(parseAmount(t), n, t);
+});
+
+test('/alert add with a price: a cheaper shop listing or megaphone notifies, the same one not again, a cheaper one at once', async () => {
+  const env = botEnv();
+  await withDiscord(async (calls) => {
+    const r = await cmd(env, 'alert', 'add', [{ name: 'item', value: '2070005' }, { name: 'price', value: '300만' }]);
+    assert.match(r.data.content, /3M 이하 알림을 켰어요/);
+    assert.match(calls.at(-1).body.content, /3M 이하\*\*로 상점 매물이나 확성기/);
+    assert.match((await cmd(env, 'alert', 'list', [])).data.content, /누가 팔 때 · 3M 이하/);
+    assert.match((await cmd(env, 'alert', 'add', [{ name: 'item', value: '2070005' }, { name: 'price', value: 'cheap' }])).data.content, /가격을 알아보지 못했어요/);
+    calls.length = 0;
+    const shop = (price, seller = 'Shop') => ({ item: 2070005, price, seller, channel: 4, room: 12 });
+    assert.equal(await notifyListings(env, [shop(3500000)], () => 'Steely'), 0, 'too expensive');
+    assert.equal(await notifyListings(env, [shop(3500000), shop(2800000, 'Cheap'), shop(2900000)], () => 'Steely'), 1);
+    assert.match(calls[0].body.content, /Steely\*\* 상점 매물 \*\*2\.8M\*\* \(알림 3M 이하\)[\s\S]*CH 4 · 12번 방 · 판매자 \*\*Cheap\*\*/);
+    assert.equal(await notifyListings(env, [shop(2800000, 'Cheap')], () => 'Steely'), 0, 'same price again is quiet');
+    assert.equal(await notifyListings(env, [shop(2500000, 'Cheaper')], () => 'Steely'), 1, 'a lower price is news');
+    // Megaphones: only a selling megaphone with a price under the alert counts.
+    const mega = { item: 2070005, intent: 'sell', nick: 'Eugy', channel: 3, text: 'S> steely 2m' };
+    assert.equal(await notifyMegaphones(env, [{ ...mega, price: null }, { ...mega, intent: 'buy', price: 1000000 }], () => 'Steely'), 0);
+    assert.equal(await notifyMegaphones(env, [{ ...mega, price: 2000000 }], () => 'Steely'), 1);
+    assert.match(calls.at(-1).body.content, /팝니다 \*\*2M\*\* \(알림 3M 이하\)/);
+  });
+});
+
+test('a buy alert with a price waits for a buyer offering at least that much', async () => {
+  const env = botEnv();
+  await withDiscord(async () => {
+    await cmd(env, 'alert', 'add', [{ name: 'item', value: '2070005' }, { name: 'when', value: 'buy' }, { name: 'price', value: '5m' }]);
+    const mega = { item: 2070005, intent: 'buy', nick: 'B', channel: 1, text: 'B> steely' };
+    assert.equal(await notifyListings(env, [{ item: 2070005, price: 100, seller: 'S', channel: 1, room: 1 }], () => 'Steely'), 0);
+    assert.equal(await notifyMegaphones(env, [{ ...mega, price: 4000000 }, { ...mega, intent: 'sell', price: 6000000 }], () => 'Steely'), 0);
+    assert.equal(await notifyMegaphones(env, [{ ...mega, price: 5500000 }], () => 'Steely'), 1);
   });
 });

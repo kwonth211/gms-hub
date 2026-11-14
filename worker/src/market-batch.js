@@ -85,7 +85,7 @@ export async function storeSummary(env, summary, now = Date.now(), force = false
   return { stored: results[0].meta.changes, daily: results[1].meta.changes };
 }
 
-export async function handleMarketBatch(req, env, knownItems) {
+export async function handleMarketBatch(req, env, knownItems, onListings) {
   if (!env.MARKET_BATCH_TOKEN) return reply({ error: 'collector not configured' }, 503);
   const auth = req.headers.get('Authorization') || '';
   if (auth.length > 256 || await digest(auth) !== await digest(`Bearer ${env.MARKET_BATCH_TOKEN}`)) return reply({ error: 'unauthorized' }, 401);
@@ -173,6 +173,8 @@ export async function handleMarketBatch(req, env, knownItems) {
     const summaryReceipt = summary ? await storeSummary(env, summary).catch(() => ({ stored: 0, skipped: 'error' })) : null;
     // Keep the per-item market summary current for just the items this run saw.
     await refreshItemMarket(env, body.rows.map((r) => r.item)).catch(() => null);
+    // New or re-seen listings go to the Discord price alerts (the caller runs it after the reply).
+    if (onListings) onListings(body.rows.filter((_, i) => results[i + 1].meta.changes > 0));
     return reply({ ok: true, duplicate: false, accepted: body.rows.length, summary: summaryReceipt,
       listingsChanged: changed, observationsAdded: changed, historyStorage: 'listing_history',
       rowsRead: results.reduce((n,r) => n + (r.meta.rows_read || 0), 0),

@@ -5,7 +5,7 @@
 // site. /alert and /feedback act through the bot token (discord-alerts.js). Commands are registered by
 // scripts/discord-commands.mjs.
 import { searchEntries, indexEntry } from '../../assets/search-index.js';
-import { addAlert, listAlerts, removeAlert, sendDm, relayFeedback, MAX_ALERTS } from './discord-alerts.js';
+import { addAlert, listAlerts, removeAlert, sendDm, relayFeedback, parseAmount, priceLabel, MAX_ALERTS } from './discord-alerts.js';
 
 const SITE = 'https://gms-hub.com';
 const BOT_DATA = `${SITE}/assets/bot.json`;
@@ -54,11 +54,12 @@ export const COMMANDS = [
     options: [{ type: 4, name: 'level', name_localizations: { ko: '레벨' }, description: 'Your level (1-200)', description_localizations: { ko: '내 레벨 (1-200)' }, required: true, min_value: 1, max_value: 200 },
       { type: 3, name: 'class', name_localizations: { ko: '직업' }, description: 'Your class', description_localizations: { ko: '내 직업' }, required: false,
         choices: Object.entries(JOBS).map(([value, [ko, en]]) => ({ name: en, name_localizations: { ko }, value })) }] },
-  { name: 'alert', name_localizations: { ko: '알림' }, description: 'Get a DM when a megaphone names an item', description_localizations: { ko: '확성기에 아이템이 뜨면 DM으로 알림' },
+  { name: 'alert', name_localizations: { ko: '알림' }, description: 'Get a DM when an item is sold at your price or named in a megaphone', description_localizations: { ko: '원하는 가격에 매물이나 확성기가 뜨면 DM으로 알림' },
     options: [
       { type: 1, name: 'add', name_localizations: { ko: '추가' }, description: 'Watch an item', description_localizations: { ko: '아이템 알림 추가' }, options: [{ type: 3, name: 'item', name_localizations: { ko: '아이템' }, description: 'Item name', description_localizations: { ko: '아이템 이름' }, required: true, autocomplete: true },
         { type: 3, name: 'when', name_localizations: { ko: '조건' }, description: 'Which megaphones (default: both)', description_localizations: { ko: '어떤 확성기 (기본: 둘 다)' }, required: false,
-          choices: [{ name: 'Someone is selling it', name_localizations: { ko: '누가 팔 때' }, value: 'sell' }, { name: 'Someone wants to buy it', name_localizations: { ko: '누가 살 때' }, value: 'buy' }, { name: 'Both', name_localizations: { ko: '둘 다' }, value: 'any' }] }] },
+          choices: [{ name: 'Someone is selling it', name_localizations: { ko: '누가 팔 때' }, value: 'sell' }, { name: 'Someone wants to buy it', name_localizations: { ko: '누가 살 때' }, value: 'buy' }, { name: 'Both', name_localizations: { ko: '둘 다' }, value: 'any' }] },
+        { type: 3, name: 'price', name_localizations: { ko: '가격' }, description: 'Only at this price or cheaper (e.g. 3m, 500k); buy alerts: at least this', description_localizations: { ko: '이 가격 이하일 때만 (예: 300만, 3m). 살 때 알림은 이 가격 이상' }, required: false, max_length: 20 }] },
       { type: 1, name: 'list', name_localizations: { ko: '목록' }, description: 'Your alerts', description_localizations: { ko: '내 알림 목록' } },
       { type: 1, name: 'remove', name_localizations: { ko: '삭제' }, description: 'Stop watching an item', description_localizations: { ko: '아이템 알림 삭제' }, options: [{ type: 3, name: 'item', name_localizations: { ko: '아이템' }, description: 'Item name', description_localizations: { ko: '아이템 이름' }, required: true, autocomplete: true }] }] },
   { name: 'feedback', name_localizations: { ko: '건의' }, description: 'Send feedback or a bug report to GMS Hub', description_localizations: { ko: 'GMS Hub에 건의나 오류 제보 보내기' },
@@ -144,17 +145,26 @@ export async function handleInteraction(i, { prices, discord, fetcher, env }) {
     if (sub?.name === 'list') {
       const rows = await listAlerts(env, user.id);
       const WHEN = { sell: tr('누가 팔 때', 'selling'), buy: tr('누가 살 때', 'buying'), any: tr('둘 다', 'both') };
-      return hidden(rows.length ? `${tr('내 알림', 'Your alerts')} (${rows.length}/${MAX_ALERTS})\n${rows.map((r) => `- ${d.itemById.has(r.item) ? label(d.itemById.get(r.item)) : r.item} · ${WHEN[r.intent]}`).join('\n')}`
+      return hidden(rows.length ? `${tr('내 알림', 'Your alerts')} (${rows.length}/${MAX_ALERTS})\n${rows.map((r) => `- ${d.itemById.has(r.item) ? label(d.itemById.get(r.item)) : r.item} · ${WHEN[r.intent]}${r.price != null ? ` · ${priceLabel(r.price, r.intent, ko)}` : ''}`).join('\n')}`
         : tr('설정한 알림이 없어요. `/알림 추가`로 아이템을 넣어 보세요.', 'No alerts yet. Add one with `/alert add`.'));
     }
     const item = pick(d, 'price', opt.item?.value);
     if (!item) return hidden(tr('그 이름의 아이템을 찾지 못했어요. 입력할 때 뜨는 목록에서 골라 주세요.', 'No item by that name. Pick one from the suggestions while typing.'));
     if (sub?.name === 'remove') return hidden((await removeAlert(env, user.id, item.id)) ? tr(`${label(item)} 알림을 지웠어요.`, `Stopped watching ${label(item)}.`) : tr('그 아이템에는 알림이 없어요.', 'You had no alert for that item.'));
-    const intent = ['sell', 'buy'].includes(opt.when?.value) ? opt.when.value : 'any';
-    const r = await addAlert(env, user.id, item.id, intent, lang);
+    const rawPrice = String(opt.price?.value ?? '').trim(), price = rawPrice ? parseAmount(rawPrice) : null;
+    if (rawPrice && price == null) return hidden(tr('가격을 알아보지 못했어요. 300만, 3m, 500k, 1,200,000 처럼 적어 주세요.', 'Could not read that price. Write it like 3m, 500k or 1,200,000.'));
+    // A price on its own means "tell me when someone sells it this cheap".
+    const intent = ['sell', 'buy'].includes(opt.when?.value) ? opt.when.value : price != null ? 'sell' : 'any';
+    const r = await addAlert(env, user.id, item.id, intent, lang, price);
     if (r.full) return hidden(tr(`알림은 ${MAX_ALERTS}개까지예요. \`/알림 삭제\`로 하나를 지워 주세요.`, `You can watch up to ${MAX_ALERTS} items. Remove one with \`/alert remove\`.`));
-    const ok = r.channel && await sendDm(env, r.channel, tr(`🔔 **${label(item)}** 알림을 켰어요. 게임 확성기에 이 아이템이 뜨면 여기로 알려 드려요.`, `🔔 Watching **${label(item)}**. When a game megaphone names it, you get a message here.`));
-    return hidden(ok ? tr(`${label(item)} 알림을 켰어요. DM으로 알려 드릴게요.`, `Watching ${label(item)}. Notices arrive by DM.`)
+    const cond = price != null ? priceLabel(price, intent, ko) : '';
+    const now = price != null && prices ? (await prices(item.id).catch(() => ({})))?.[item.id] : null;
+    const nowLine = now?.median ? tr(`\n지금 시세: ${money(now.median)}${now.low ? ` (최저 ${money(now.low)})` : ''}`, `\nPrice now: ${money(now.median)}${now.low ? ` (lowest ${money(now.low)})` : ''}`) : '';
+    const what = price != null
+      ? tr(`**${cond}**로 ${intent === 'buy' ? '사겠다는 확성기' : '상점 매물이나 확성기'}가 뜨면 여기로 알려 드려요.`, `When ${intent === 'buy' ? 'a buyer offers' : 'a shop or megaphone sells it for'} **${cond}**, you get a message here.`)
+      : tr('게임 확성기에 이 아이템이 뜨면 여기로 알려 드려요.', 'When a game megaphone names it, you get a message here.');
+    const ok = r.channel && await sendDm(env, r.channel, tr(`🔔 **${label(item)}** 알림을 켰어요. ${what}${nowLine}`, `🔔 Watching **${label(item)}**. ${what}${nowLine}`));
+    return hidden(ok ? tr(`${label(item)}${cond ? ` ${cond}` : ''} 알림을 켰어요. DM으로 알려 드릴게요.${nowLine}`, `Watching ${label(item)}${cond ? ` at ${cond}` : ''}. Notices arrive by DM.${nowLine}`)
       : tr(`${label(item)} 알림을 저장했지만 DM을 보낼 수 없어요. GMS Hub 디스코드에 들어오면 받을 수 있어요: ${discord || ''}\n들어온 뒤 \`/알림 추가\`를 한 번 더 해 주세요.`, `Saved, but I cannot DM you. Join the GMS Hub Discord to receive notices: ${discord || ''}\nThen run \`/alert add\` once more.`));
   }
   if (name === 'feedback') {

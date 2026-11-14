@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest.",
  "updates": [
   {
+   "id": "discord-price-alert",
+   "version": "0.4.26",
+   "level": "minor",
+   "date": "2026-11-14",
+   "path": "/discord-bot/",
+   "ko": "디스코드 가격 알림 — 원하는 가격 이하 매물·확성기가 뜨면 DM",
+   "en": "Discord price alerts — a DM when an item is listed at your price",
+   "desc": {
+    "ko": "디스코드에서 /알림 추가로 아이템과 가격(예: 300만)을 넣으면, 상점 매물이나 확성기에 그 가격 이하가 뜰 때 바로 DM으로 알려 줘요. 더 싼 매물이 나오면 또 알려 주고, 같은 매물은 반복하지 않아요. 시세 화면의 🔔 가격 알림 버튼에서도 안내해요.",
+    "en": "In Discord, /alert add with an item and a price (e.g. 3m) sends you a DM as soon as a shop or megaphone sells it at that price or less. A cheaper listing alerts you again; the same one does not repeat. The 🔔 Price alert button on the market shows how."
+   }
+  },
+  {
    "id": "map-view",
    "version": "0.4.25",
    "level": "minor",
