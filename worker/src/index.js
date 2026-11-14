@@ -297,7 +297,7 @@ async function pricesFor(env, ids) {
 // /prices is cached per item, not per id list: a page asking for 30 items and another asking for 3 of them share the
 // same entries, so database reads follow the number of distinct items looked at in five minutes, not the number of
 // visitors or of id combinations. Items with nothing to show are cached too (as null), so they are not re-read either.
-const PRICE_TTL = 300;
+const PRICE_TTL = 1800; // 30 min: a 14-day summary barely moves in that time, and each miss re-reads hundreds of raw rows (was 5 min: ~4.5M reads/day)
 async function cachedPrices(env, ids, origin, ctx) {
   const cache = globalThis.caches?.default;
   if (!cache) return pricesFor(env, ids);
