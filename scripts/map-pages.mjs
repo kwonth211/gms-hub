@@ -28,7 +28,45 @@ export const regionName = (r, lang) => (lang === 'ko' ? regionKo[r] || r : r);
 const statusTag = (l, ko) =>
   l.availability === 'open' ? '' : `<span class="monster-tag status-upcoming">${l.availability === 'upcoming' ? (ko ? '11/18 개방 예정' : 'Opens Nov 18') : ko ? '미개방 지역' : 'Unreleased area'}</span>`;
 
-export function mapDetail({ lang, l, maps, url, itemUrl, routes, accuracy, notes }) {
+// The map itself: the rendered picture (assets/maps/<id>.webp) and a diagram drawn from the client coordinates
+// (data/map-layouts.json): platforms, ropes and ladders, and every monster spawn point coloured by monster. Also how
+// many height levels the monsters stand on, which is what makes a map "flat" (one level) or a climb.
+const SPAWN_COLORS = 6;
+export function spawnLevels(spawns, gap = 60) {
+  const ys = [...new Set(spawns.map((s) => s[2]))].sort((a, b) => a - b);
+  let levels = 0, last = -Infinity;
+  for (const y of ys) { if (y - last > gap) levels++; last = y; }
+  return levels;
+}
+function mapView({ lang, l, lay, url }) {
+  if (!lay) return '';
+  const ko = lang === 'ko';
+  const [x0, y0, w, h] = lay.bounds;
+  const pad = Math.round(Math.max(w, h) * 0.02);
+  const sw = Math.max(2, Math.round(Math.max(w, h) / 350)), r = Math.max(6, Math.round(Math.max(w, h) / 110));
+  const order = l.mobs.map(({ m }) => m.id);
+  const color = (id) => `ms${Math.max(0, order.indexOf(id)) % SPAWN_COLORS}`;
+  const byId = new Map(l.mobs.map(({ m }) => [m.id, m]));
+  const lines = lay.fh.filter(([a, b, c, d]) => a !== c || b !== d).map(([a, b, c, d]) => `<line x1="${a}" y1="${b}" x2="${c}" y2="${d}"/>`).join('');
+  const ropes = lay.ropes.map(([x, a, b, ladder]) => `<line class="${ladder ? 'ladder' : 'rope'}" x1="${x}" y1="${a}" x2="${x}" y2="${b}"/>`).join('');
+  const dots = lay.spawns.map(([id, x, y]) => `<circle class="${color(id)}" cx="${x}" cy="${y - r}" r="${r}"><title>${esc(byId.get(id) ? monsterName(byId.get(id), lang) : `#${id}`)}</title></circle>`).join('');
+  const counts = new Map();
+  for (const [id] of lay.spawns) counts.set(id, (counts.get(id) || 0) + 1);
+  const legend = order.filter((id) => counts.has(id)).map((id) => `<li><i class="${color(id)}" aria-hidden="true"></i><img src="${url(`/assets/monsters/${id}.gif`)}" width="28" height="28" alt="" loading="lazy"><span>${esc(monsterName(byId.get(id), lang))}</span><small>${counts.get(id)}${ko ? '곳' : ''}</small></li>`).join('');
+  const levels = spawnLevels(lay.spawns);
+  const pic = lay.picture
+    ? `<figure class="map-pic"><img src="${url(`/assets/maps/${l.id}.webp`)}" width="${lay.picture[0]}" height="${lay.picture[1]}" alt="${esc(ko ? `${mapName(l, lang)} 맵 화면` : `${mapName(l, lang)} map`)}" loading="lazy" decoding="async"><figcaption>${ko ? '실제 맵 화면' : 'The map in game'}</figcaption></figure>`
+    : '';
+  return `<section class="panel map-view" id="map-view"><h2>${ko ? '맵 지도' : 'Map'}</h2>
+<dl class="map-facts">${levels ? `<div><dt>${ko ? '몬스터가 서는 층' : 'Floors with monsters'}</dt><dd>${levels}${ko ? '층' : ''}</dd><small>${levels === 1 ? (ko ? '한 줄로 쭉 이어진 일자맵이에요' : 'One floor: a flat map') : ko ? '높이가 다른 발판에 나뉘어 나와요' : 'Spawns spread over platforms at different heights'}</small></div>` : ''}
+<div><dt>${ko ? '맵 크기' : 'Map size'}</dt><dd>${nf(w)} × ${nf(h)}</dd><small>${ko ? '게임 좌표 기준 가로 × 세로' : 'Width × height in game units'}</small></div>
+<div><dt>${ko ? '로프·사다리' : 'Ropes & ladders'}</dt><dd>${lay.ropes.length}</dd></div></dl>
+<div class="map-figs">${pic}<figure class="map-diagram"><svg viewBox="${x0 - pad} ${y0 - pad} ${w + 2 * pad} ${h + 2 * pad}" role="img" aria-label="${esc(ko ? `${mapName(l, lang)} 발판과 몬스터 출현 지점` : `${mapName(l, lang)} platforms and spawn points`)}" preserveAspectRatio="xMidYMid meet"><g class="fh" stroke-width="${sw}">${lines}</g><g class="ropes" stroke-width="${sw}">${ropes}</g><g class="spawns">${dots}</g></svg><figcaption>${ko ? '발판(선)·로프(점선)·몬스터 출현 지점(점), 게임 좌표 그대로' : 'Platforms (lines), ropes (dashed) and spawn points (dots), in game coordinates'}</figcaption></figure></div>
+${legend ? `<ul class="map-legend">${legend}</ul>` : ''}
+</section>`;
+}
+
+export function mapDetail({ lang, l, maps, url, itemUrl, routes, accuracy, notes, layout }) {
   const ko = lang === 'ko';
   const link = (p) => url(`/${lang}${p}`);
   const name = mapName(l, lang);
@@ -66,6 +104,7 @@ ${statusTag(l, ko)}
 <div><dt>${ko ? '몬스터 종류' : 'Monster types'}</dt><dd>${l.mobs.length}</dd></div>
 <div><dt>${ko ? '한 바퀴 EXP' : 'EXP per full clear'}</dt><dd>${nf(l.clearExp)}</dd><small>${ko ? '모든 출현 지점을 한 번씩 잡았을 때, 파티·버프 제외' : 'Every spawn point killed once, before party or buff bonuses'}</small></div>
 </dl>
+${mapView({ lang, l, lay: layout, url })}
 <section class="panel"><h2>${ko ? '나오는 몬스터' : 'Monsters on this map'}</h2>
 <div class="table-wrap"><table class="data"><thead><tr><th>${ko ? '몬스터' : 'Monster'}</th><th>${ko ? '레벨' : 'Level'}</th><th>HP</th><th>EXP</th><th>${ko ? '출현 지점' : 'Spawns'}</th><th>${ko ? '확정 명중' : 'Sure-hit accuracy'}</th></tr></thead><tbody>${rows}</tbody></table></div>
 <p class="muted note">${ko ? '확정 명중은 몬스터와 같은 레벨일 때 빗나가지 않는 데 필요한 명중이에요. 몇 방 컷 계산기와 같은 공식이에요.' : 'Sure-hit accuracy is what you need at the monster’s own level to never miss, from the same formula as the hits-to-kill calculator.'}</p></section>

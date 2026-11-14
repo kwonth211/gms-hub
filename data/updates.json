@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest.",
  "updates": [
   {
+   "id": "map-view",
+   "version": "0.4.25",
+   "level": "minor",
+   "date": "2026-11-14",
+   "path": "/maps/",
+   "ko": "맵 도감에 맵 지도 — 실제 맵 화면과 몬스터 출현 지점 위치",
+   "en": "Maps now show the map — the in-game picture and where every monster spawns",
+   "desc": {
+    "ko": "맵 페이지마다 실제 맵 화면과, 발판·로프·몬스터 출현 지점을 게임 좌표 그대로 그린 지도가 나와요. 몬스터가 몇 층에 나뉘어 나오는지(일자맵인지)와 맵 크기도 함께 보여 줘요.",
+    "en": "Every map page now shows the map as it looks in game, next to a diagram of its platforms, ropes and every monster spawn point in game coordinates, plus how many floors the monsters stand on (one floor = a flat map) and the map size."
+   }
+  },
+  {
    "id": "npc-sell",
    "version": "0.4.24",
    "level": "minor",

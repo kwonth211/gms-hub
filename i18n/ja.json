@@ -4531,5 +4531,18 @@
  "market": "相場",
  "NPC sell price check": "NPC買取価格の比較",
  "NPC sell price check — see which items an NPC shop pays more for": "NPC買取価格の比較 — NPCの方が高く買い取るアイテムがひと目で分かります",
- "Under an item's price you now see what an NPC shop pays for it and how that compares with the market. Items an NPC buys for at least {n0}% of the market price get an 'NPC pays more' tag and are gathered under the 'Better sold to NPC' category.": "アイテム相場の下にNPCショップの買取価格と相場に対する割合が表示されます。NPCが相場の{n0}%以上で買い取るアイテムには「NPCの方が高い」タグが付き、「NPCに売るほうが得」分類でまとめて見られます。"
+ "Under an item's price you now see what an NPC shop pays for it and how that compares with the market. Items an NPC buys for at least {n0}% of the market price get an 'NPC pays more' tag and are gathered under the 'Better sold to NPC' category.": "アイテム相場の下にNPCショップの買取価格と相場に対する割合が表示されます。NPCが相場の{n0}%以上で買い取るアイテムには「NPCの方が高い」タグが付き、「NPCに売るほうが得」分類でまとめて見られます。",
+ "Floors with monsters": "モンスターがいる階層",
+ "Map size": "マップサイズ",
+ "Platforms (lines), ropes (dashed) and spawn points (dots), in game coordinates": "足場（線）・ロープ（点線）・モンスター出現地点（点）をゲーム座標のまま表示",
+ "Ropes & ladders": "ロープ・はしご",
+ "Spawns spread over platforms at different heights": "高さの違う足場に分かれて出現します",
+ "One floor: a flat map": "一直線の平坦マップです",
+ "The map in game": "ゲーム内の実際のマップ",
+ "Width × height in game units": "ゲーム座標での幅 × 高さ",
+ "{e0} map": "{e0} マップ",
+ "{e0} platforms and spawn points": "{e0} の足場とモンスター出現地点",
+ "Every map page now shows the map as it looks in game, next to a diagram of its platforms, ropes and every monster spawn point in game coordinates, plus how many floors the monsters stand on (one floor = a flat map) and the map size.": "各マップページに、ゲーム内の実際のマップと、足場・ロープ・すべてのモンスター出現地点をゲーム座標のまま描いた図が表示されます。モンスターが何階層に分かれているか（1階層なら一直線マップ）とマップサイズも表示します。",
+ "Maps now show the map": "マップ図鑑にマップ表示",
+ "Maps now show the map — the in-game picture and where every monster spawns": "マップ図鑑にマップ表示 — ゲーム内の実際の画面とモンスター出現位置"
 }

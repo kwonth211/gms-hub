@@ -4531,5 +4531,18 @@
  "market": "市价",
  "NPC sell price check": "NPC商店收购价对比",
  "NPC sell price check — see which items an NPC shop pays more for": "NPC商店收购价对比 — 一眼看出哪些物品卖给NPC更划算",
- "Under an item's price you now see what an NPC shop pays for it and how that compares with the market. Items an NPC buys for at least {n0}% of the market price get an 'NPC pays more' tag and are gathered under the 'Better sold to NPC' category.": "物品价格下方会显示NPC商店收购价及其占市价的比例。NPC收购价达到市价 {n0}% 以上的物品会标上“NPC收购更高”，并可在“卖给NPC更划算”分类中集中查看。"
+ "Under an item's price you now see what an NPC shop pays for it and how that compares with the market. Items an NPC buys for at least {n0}% of the market price get an 'NPC pays more' tag and are gathered under the 'Better sold to NPC' category.": "物品价格下方会显示NPC商店收购价及其占市价的比例。NPC收购价达到市价 {n0}% 以上的物品会标上“NPC收购更高”，并可在“卖给NPC更划算”分类中集中查看。",
+ "Floors with monsters": "有怪物的层数",
+ "Map size": "地图大小",
+ "Platforms (lines), ropes (dashed) and spawn points (dots), in game coordinates": "平台（线）、绳索（虚线）与怪物出现点（圆点），按游戏坐标绘制",
+ "Ropes & ladders": "绳索与梯子",
+ "Spawns spread over platforms at different heights": "怪物分布在不同高度的平台上",
+ "One floor: a flat map": "只有一层的平地图",
+ "The map in game": "游戏内实际地图",
+ "Width × height in game units": "游戏坐标下的宽 × 高",
+ "{e0} map": "{e0} 地图",
+ "{e0} platforms and spawn points": "{e0} 的平台与怪物出现点",
+ "Every map page now shows the map as it looks in game, next to a diagram of its platforms, ropes and every monster spawn point in game coordinates, plus how many floors the monsters stand on (one floor = a flat map) and the map size.": "每个地图页面都会显示游戏内的实际地图，并附上按游戏坐标绘制的平台、绳索和每个怪物出现点的示意图，同时显示怪物分布在几层（一层即平地图）以及地图大小。",
+ "Maps now show the map": "地图图鉴新增地图",
+ "Maps now show the map — the in-game picture and where every monster spawns": "地图图鉴新增地图 — 游戏内实际画面与每个怪物的出现位置"
 }

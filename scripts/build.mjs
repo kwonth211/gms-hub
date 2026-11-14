@@ -532,6 +532,8 @@ for (const r of training.routes) r.rates = publicRates(r, editorialEvidence);
 for (const r of training.routes) r.mobs = r.mobIds.map((id) => { const m = MOB_BY_ID.get(id); return { id, ko: m.ko || m.en, en: m.en, lv: m.lv, hp: m.hp, acc: dmgAccNeed(r.level.min, m) }; });
 // Which monsters drop an item, for the item pages.
 const MAPS = collectMaps(MONSTERS.monsters);
+// Map pictures and coordinates (scripts/fetch-map-layouts.py); a map without them simply has no map section.
+const MAP_LAYOUTS = fs.existsSync(path.join(root, 'data/map-layouts.json')) ? readJson('data/map-layouts.json').maps : {};
 const QUEST_RAW = readJson('data/quests-raw.json');
 const QUESTS = collectQuests(QUEST_RAW, { buildDate: BUILD_DATE });
 // Quest guides (/quests/<slug>/), one per data/quest-guides/*.json: steps from the client's quest data, places, routes and
@@ -3128,7 +3130,7 @@ for (const lang of LANGS) {
       lang, pageKey: 'map', pagePath: mapPath(l),
       title: lang === 'ko' ? `글클메 ${name}: 몬스터·레벨·드롭 | GMS Hub` : `${name}: MapleStory Classic World map, monsters & drops | GMS Hub`,
       desc: lang === 'ko' ? `${name} (Lv. ${l.minLv}~${l.maxLv}): 나오는 몬스터 ${l.mobs.length}종, 출현 지점 ${l.total}곳, 한 바퀴 EXP, 확정 명중과 드롭 아이템을 정리했어요.` : `${name} (levels ${l.minLv}–${l.maxLv}): ${l.mobs.length} monster types, ${l.total} spawn points, EXP per full clear, sure-hit accuracy and drops.`,
-      body: mapDetail({ lang, l, maps: MAPS, url: href, itemUrl: monsterItemUrl, notes: MONSTER_NOTES.notes, accuracy: (lv, m) => dmgAccNeed(lv, m),
+      body: mapDetail({ lang, l, maps: MAPS, url: href, itemUrl: monsterItemUrl, notes: MONSTER_NOTES.notes, layout: MAP_LAYOUTS[l.id], accuracy: (lv, m) => dmgAccNeed(lv, m),
         routes: training.routes.filter((r) => r.mobIds.some((id) => l.mobs.some(({ m }) => m.id === id))) }),
       noindex: l.availability !== 'open',
       ld: [breadcrumbLd(lang, name, mapPath(l))]
