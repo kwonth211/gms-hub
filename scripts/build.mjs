@@ -636,10 +636,11 @@ function head({ lang, title, desc, pagePath, noindex, ld = [], only }) {
     ? `<meta name="google-adsense-account" content="${esc(config.adsenseClient)}">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${esc(config.adsenseClient)}" crossorigin="anonymous"></script>`
     : '';
-  // Analytics load after the page has (GA 1.2s after load, Clarity 2.5s): their queues (dataLayer, clarity.q) hold
-  // anything sent before, so nothing is lost, and the first paint no longer waits behind 200KB of tag scripts.
+  // GA loads at once (async, so it never blocks the first paint): delaying it until 1.2 s after load (11/13) dropped every
+  // visitor who left sooner, and GA users fell below Cloudflare's count. Clarity still waits 2.5 s after load; its queue
+  // (clarity.q) holds anything sent before.
   const ga = config.gaMeasurementId
-    ? `<script>addEventListener('load',function(){setTimeout(function(){var s=document.createElement('script');s.async=1;s.src='https://www.googletagmanager.com/gtag/js?id=${esc(config.gaMeasurementId)}';document.head.appendChild(s)},1200)})</script>
+    ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${esc(config.gaMeasurementId)}"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());
 // Operator, local and automated visits are tagged internal (GA4 "Internal traffic" filter): localhost, or any browser that once opened ?internal=1.
 var gmsInternal=/^(localhost|127\\.0\\.0\\.1|\\[::1\\])$/.test(location.hostname);try{if(/[?&]internal=1(&|$)/.test(location.search))localStorage.setItem('gmshub_internal','1');gmsInternal=gmsInternal||localStorage.getItem('gmshub_internal')==='1'}catch(e){}
