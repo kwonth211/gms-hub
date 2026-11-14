@@ -4515,5 +4515,21 @@
  "● Read stats from screen": "● 画面からステータスを読み取る",
  "● Scan shops from my screen": "● 自分の画面からショップをスキャン",
  "● Share your MapleStory window": "● MapleStoryのウィンドウを共有",
- "👍 {t0}Upvote": "👍 {t0}おすすめ"
+ "👍 {t0}Upvote": "👍 {t0}おすすめ",
+ "An NPC shop pays {n0}% of the market price; selling there saves the listing": "NPCショップの買取価格は相場の{n0}%です。出品の手間を考えるとNPCに売るほうが得です",
+ "Better sold to NPC": "NPCに売るほうが得",
+ "Better sold to an NPC": "NPCに売るほうが得",
+ "Listing below this earns less than an NPC": "これより安く出品するならNPCに売るほうが得です",
+ "Market server speed-up": "相場サーバーの性能改善",
+ "Market server speed-up — faster prices and charts that hold up under heavy traffic": "相場サーバーの性能改善 — 相場とグラフが速くなり、混雑しても止まりません",
+ "NPC buys for": "NPC買取価格",
+ "NPC pays more": "NPCの方が高い",
+ "The market list, live ranking and item price charts now read from pre-computed summaries. Pages stay fast as listings pile up and visitors grow, and past prices are kept day by day, so older charts no longer disappear.": "相場一覧、リアルタイムランキング、アイテム相場グラフは事前に計算した集計から直接読み込むようになりました。出品が増えても訪問者が増えても遅くならず、過去の相場は日ごとに保存されるため古いグラフも消えません。",
+ "{n0}% of market": "相場の{n0}%",
+ "An NPC shop pays {n0}% more than the market ({n1} {n2} · NPC {n3})": "NPCショップが相場より{n0}%高く買い取ります（{n1} {n2} · NPC {n3}）",
+ "asking price": "出品価格",
+ "market": "相場",
+ "NPC sell price check": "NPC買取価格の比較",
+ "NPC sell price check — see which items an NPC shop pays more for": "NPC買取価格の比較 — NPCの方が高く買い取るアイテムがひと目で分かります",
+ "Under an item's price you now see what an NPC shop pays for it and how that compares with the market. Items an NPC buys for at least {n0}% of the market price get an 'NPC pays more' tag and are gathered under the 'Better sold to NPC' category.": "アイテム相場の下にNPCショップの買取価格と相場に対する割合が表示されます。NPCが相場の{n0}%以上で買い取るアイテムには「NPCの方が高い」タグが付き、「NPCに売るほうが得」分類でまとめて見られます。"
 }

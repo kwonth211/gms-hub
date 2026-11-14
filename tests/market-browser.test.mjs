@@ -268,3 +268,18 @@ test("public routes return validation errors and page metadata instead of silent
     400,
   );
 });
+
+test("the NPC filter keeps items an NPC shop buys for at least 90% of the market price, best deal first", () => {
+  const items = makeMarketIndex([[4000001, "부적", "Charm", "Etc", "", 0], [4000002, "석판", "Slate", "Etc", "", 0], [4000003, "원석", "Ore", "Etc", "", 0], [4000004, "뿔", "Horn", "Etc", "", 0]], "ko");
+  const summaries = [
+    { item: 4000001, open: 3, median: 20, low: 18 },
+    { item: 4000002, open: 0, median: null, typical: 100 },
+    { item: 4000003, open: 9, median: 1000, low: 900 },
+    { item: 4000004, open: 1, median: 50, low: 50 },
+  ];
+  const sell = { 4000001: 24, 4000002: 92, 4000003: 10 };
+  const rows = catalogRows(items, summaries, { category: "npc", npcSell: (id) => sell[id] || 0 });
+  assert.deepEqual(rows.map((r) => r.id), [4000001, 4000002]);
+  assert.equal(catalogRows(items, summaries, { category: "npc" }).length, 0, "no NPC prices, nothing claimed");
+  assert.equal(catalogRows(items, summaries).length, 4, "other views unchanged");
+});

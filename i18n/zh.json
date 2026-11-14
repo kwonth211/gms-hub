@@ -4515,5 +4515,21 @@
  "● Read stats from screen": "● 從畫面讀取能力值",
  "● Scan shops from my screen": "● 從我的畫面掃描商店",
  "● Share your MapleStory window": "● 分享你的 MapleStory 視窗",
- "👍 {t0}Upvote": "👍 {t0}推薦"
+ "👍 {t0}Upvote": "👍 {t0}推薦",
+ "An NPC shop pays {n0}% of the market price; selling there saves the listing": "NPC商店收购价为市价的 {n0}%，直接卖给NPC省去上架的麻烦",
+ "Better sold to NPC": "卖给NPC更划算",
+ "Better sold to an NPC": "卖给NPC更划算",
+ "Listing below this earns less than an NPC": "低于此价格上架，不如直接卖给NPC",
+ "Market server speed-up": "行情服务器性能改进",
+ "Market server speed-up — faster prices and charts that hold up under heavy traffic": "行情服务器性能改进 — 价格与图表更快，人多时也不会卡住",
+ "NPC buys for": "NPC收购价",
+ "NPC pays more": "NPC收购更高",
+ "The market list, live ranking and item price charts now read from pre-computed summaries. Pages stay fast as listings pile up and visitors grow, and past prices are kept day by day, so older charts no longer disappear.": "行情列表、实时排行和物品价格图表现在直接读取预先计算的汇总。即使商品越来越多、访客增加，页面也不会变慢或卡住；过去的价格按天保存，旧图表不会再消失。",
+ "{n0}% of market": "市价的 {n0}%",
+ "An NPC shop pays {n0}% more than the market ({n1} {n2} · NPC {n3})": "NPC商店比市价多给 {n0}%（{n1} {n2} · NPC {n3}）",
+ "asking price": "出售价",
+ "market": "市价",
+ "NPC sell price check": "NPC商店收购价对比",
+ "NPC sell price check — see which items an NPC shop pays more for": "NPC商店收购价对比 — 一眼看出哪些物品卖给NPC更划算",
+ "Under an item's price you now see what an NPC shop pays for it and how that compares with the market. Items an NPC buys for at least {n0}% of the market price get an 'NPC pays more' tag and are gathered under the 'Better sold to NPC' category.": "物品价格下方会显示NPC商店收购价及其占市价的比例。NPC收购价达到市价 {n0}% 以上的物品会标上“NPC收购更高”，并可在“卖给NPC更划算”分类中集中查看。"
 }

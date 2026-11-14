@@ -8,6 +8,11 @@ export function categoryOf(it) {
     return it.id >= 1300000 && it.id < 1800000 ? "weapon" : "equip";
   return "other";
 }
+// The market price an item is compared with: today's asking median, else the reference (typical) price.
+export const refPrice = (r) => r?.median ?? r?.typical ?? null;
+// An NPC shop pays at least 90% of the market price: listing it is barely worth the shop slot and the wait.
+export const NPC_EDGE = 0.9;
+export const npcBetter = (sell, price) => !!(sell && price && sell >= price * NPC_EDGE);
 export function makeMarketIndex(rows, lang) {
   return rows.map(([id, ko, en, cat, sub, lv]) => {
     const it = {
@@ -44,8 +49,11 @@ export function matchingIds(items, q) {
 export function catalogRows(
   items,
   summaries,
-  { query = "", category = "all", sort = "active", favorites = null } = {},
+  { query = "", category = "all", sort = "active", favorites = null, npcSell = null } = {},
 ) {
+  // "npc" is not a kind of item but a filter: items an NPC shop buys for at least 90% of the market price,
+  // the best deals first. It needs the NPC prices (npcSell: id -> mesos).
+  const npc = category === "npc";
   const byId = new Map(summaries.map((r) => [r.item, r])),
     matches = matchingIds(items, query),
     ids = matches ? new Set(matches) : null;
@@ -53,7 +61,7 @@ export function catalogRows(
     .filter(
       (it) =>
         (ids ? ids.has(it.id) : favorites ? favorites.has(it.id) : byId.has(it.id)) &&
-        (category === "all" || it.category === category) &&
+        (category === "all" || npc || it.category === category) &&
         (!favorites || favorites.has(it.id)),
     )
     .map((it) => ({
@@ -81,5 +89,10 @@ export function catalogRows(
       rising: (a, b) => (b.typicalDay ?? -Infinity) - (a.typicalDay ?? -Infinity),
       falling: (a, b) => (a.typicalDay ?? Infinity) - (b.typicalDay ?? Infinity),
     }[sort] || ((a, b) => b.open - a.open);
+  if (npc) {
+    const sell = (r) => (npcSell ? npcSell(r.id) : 0);
+    return rows.filter((r) => npcBetter(sell(r), refPrice(r)))
+      .sort((a, b) => sell(b) / refPrice(b) - sell(a) / refPrice(a) || a.id - b.id);
+  }
   return rows.sort((a, b) => compare(a, b) || a.id - b.id);
 }

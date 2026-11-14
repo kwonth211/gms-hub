@@ -2638,3 +2638,11 @@ body.exp-running .exp-stop { display: inline-flex; }
 .mb-catalog tbody tr{cursor:pointer}
 /* Recent megaphones rolling by again while nothing new comes in: a little quieter than new ones. */
 .mg-tk-item.mg-tk-re { opacity: 0.72; }
+
+/* NPC shop price under the price headline, and the "NPC pays more" tag in the item list. */
+.mb-npc { margin: 6px 0 0; font-size: 0.86rem; color: var(--text-2); display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; }
+.mb-npc b { font-variant-numeric: tabular-nums; }
+.mb-npc small { width: 100%; color: var(--muted); font-size: 0.76rem; }
+.mb-npc.good { padding: 8px 10px; border-radius: 10px; background: var(--ok-soft); border: 1px solid var(--ok-line); color: var(--text); }
+.mb-npc.good b { color: var(--ok); }
+.mb-npc-tag { display: inline-block; margin-left: 2px; padding: 0 5px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; line-height: 1.5; color: var(--ok); background: var(--ok-soft); border: 1px solid var(--ok-line); white-space: nowrap; }

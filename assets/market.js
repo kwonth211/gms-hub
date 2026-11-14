@@ -1,7 +1,7 @@
 import './collection-status.js';
 import { DAY, parseUtc, newMark } from "./market-data.js";
 import { KERNING, placeLabel } from "./place.js";
-import { makeMarketIndex, catalogRows, matchingIds } from "./market-catalog.js";
+import { makeMarketIndex, catalogRows, matchingIds, refPrice, npcBetter } from "./market-catalog.js";
 import { mountMarketCharts } from "./market-charts.js";
 import { intentOf, priceOf as megaPrice } from "./mega-text.js";
 import { WISHLIST_KEY, RECENT_KEY, SEEN_KEY, WISHLIST_MAX, readList, addRecent, removeRecent, toggleWishlist, snapshot, visitDelta, pruneSeen } from "./market-memory.js";
@@ -103,6 +103,7 @@ const categories = {
   stars: tr("표창", "Stars"),
   cash: tr("캐시", "Cash"),
   other: tr("소비·기타", "Use & other"),
+  npc: tr("NPC 판매 이득", "Better sold to NPC"),
 };
 // API answers are kept for a minute and shared, so an item opened again (or prefetched on hover) shows at once. The
 // API answers from the US, so every saved round trip is half a second or more.
@@ -243,7 +244,7 @@ function restoreFilters(p) {
     const el = $(id);
     if (el.tagName === "SELECT" ? [...el.options].some((o) => o.value === v) : /^[A-Za-z0-9]{0,13}$/.test(v)) el.value = v;
   }
-  if (p.get("cat") && ["scroll", "weapon", "equip", "stars", "cash", "other"].includes(p.get("cat"))) {
+  if (p.get("cat") && ["scroll", "weapon", "equip", "stars", "cash", "other", "npc"].includes(p.get("cat"))) {
     category = p.get("cat");
     document.querySelectorAll("[data-category]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.category === category));
   }
@@ -270,6 +271,7 @@ function renderDirectory() {
     category,
     sort: $("mb-item-sort").value,
     favorites: $("mb-favorites").checked ? favorites : null,
+    npcSell,
   }).filter(classOk);
   const pages = Math.ceil(rows.length / 40);
   page = Math.max(1, Math.min(page, pages || 1));
@@ -283,7 +285,7 @@ function renderDirectory() {
         .slice(start, start + 40)
         .map(
           (r) =>
-            `<tr class="${r.id === selected ? "selected" : ""}"><td>${starButton(r.id)}</td><td>${itemLink(r.id)}<small>${categories[r.category]}${r.reports ? ` · ${tr("가격 제보", "Reports")} ${r.reports}` : ""}</small></td><td class="mb-src">${dropIcons(r.id)}</td><td class="num">${r.median == null && r.typical ? `${money(r.typical)}<small>${tr("대표 시세", "Typical")}</small>` : `${money(r.median)}<small>${tr("최저", "Low")} ${money(r.low)}</small>`}</td><td class="mb-move-cell">${moveBadge(r.typicalDay)}</td><td><strong>${r.open}</strong><small>${r.sales ? `${tr("거래", "Traded")} ${money(r.sales)}` : `${tr("기록", "Records")} ${r.records || 0}`}</small></td><td>${r.last ? newMark(r.last) : ""}${when(r.last)}</td></tr>`,
+            `<tr class="${r.id === selected ? "selected" : ""}"><td>${starButton(r.id)}</td><td>${itemLink(r.id)}<small>${categories[r.category]}${r.reports ? ` · ${tr("가격 제보", "Reports")} ${r.reports}` : ""}${npcBetter(npcSell(r.id), refPrice(r)) ? ` <span class="mb-npc-tag" title="${esc(npcNote(r.id, refPrice(r)))}">${tr("NPC 이득", "NPC pays more")}</span>` : ""}</small></td><td class="mb-src">${dropIcons(r.id)}</td><td class="num">${r.median == null && r.typical ? `${money(r.typical)}<small>${tr("대표 시세", "Typical")}</small>` : `${money(r.median)}<small>${tr("최저", "Low")} ${money(r.low)}</small>`}</td><td class="mb-move-cell">${moveBadge(r.typicalDay)}</td><td><strong>${r.open}</strong><small>${r.sales ? `${tr("거래", "Traded")} ${money(r.sales)}` : `${tr("기록", "Records")} ${r.records || 0}`}</small></td><td>${r.last ? newMark(r.last) : ""}${when(r.last)}</td></tr>`,
         )
         .join("")}</tbody></table></div>`
     : categoryMiss() || `<div class="market-empty"><strong>${tr("표시할 아이템이 없어요.", "No matching items.")}</strong><p>${$("mb-favorites").checked ? tr("별표를 눌러 관심 아이템을 저장해 보세요.", "Use the star to save items to your wishlist.") : T.noMatches}</p>${$("mk-q").value.trim() && document.body.dataset.discordUrl ? `<p><a href="${document.body.dataset.discordUrl}" target="_blank" rel="noopener" data-discord="market-empty">${tr("찾는 아이템 시세를 디스코드에서 물어보기", "Ask for this item's price on Discord")}</a></p>` : ""}${$("mk-q").value.trim() ? `<p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="listings">${tr("전체 매물에서 찾기", "Search all listings instead")}</button></p>` : ""}</div>`;
@@ -346,7 +348,7 @@ function filteredIds() {
       (it) =>
         recorded.has(it.id) &&
         (!matches || matches.includes(it.id)) &&
-        (category === "all" || category === it.category) &&
+        (category === "all" || category === it.category || (category === "npc" && npcBetter(npcSell(it.id), refPrice(catalog?.items.find((r) => r.item === it.id))))) &&
         classOk(it),
     )
     .map((it) => it.id);
@@ -459,7 +461,7 @@ async function renderRecords() {
 function renderSummary() {
   const box = $("mb-summary"), q = $("mk-q").value.trim();
   const rows = view === "listings" && q && catalog
-    ? catalogRows(items, catalog.items, { query: q, category, sort: "active", favorites: null }).filter((r) => (r.median != null || r.typical) && classOk(r)).slice(0, 4)
+    ? catalogRows(items, catalog.items, { query: q, category, sort: "active", favorites: null, npcSell }).filter((r) => (r.median != null || r.typical) && classOk(r)).slice(0, 4)
     : [];
   box.hidden = !rows.length;
   box.innerHTML = rows.map((r) => `<a class="mb-sum" href="?item=${r.id}" data-item="${r.id}" data-source="summary">${icon(r.id, 28)}<span class="mb-sum-name">${esc(itemName(r.id))}</span><strong>${money(r.median ?? r.typical)}</strong><small>${r.median != null ? `${tr("최저", "Low")} ${money(r.low)} · ${tr(`판매 ${r.open}건`, `${r.open} for sale`)}` : tr("대표 시세", "Typical")}</small></a>`).join("");
@@ -937,6 +939,32 @@ $("mb-shop").addEventListener("click", (e) => {
 // monsters that drop it (the same data file as the hover cards, loaded once).
 let tipsData = null, tips = null;
 const loadTips = () => (tipsData ||= fetch(document.body.dataset.tips).then((r) => r.json()).then((d) => (tips = d)).catch(() => null));
+// What an NPC shop pays for one (game data; 0 when unknown or not loaded yet), and how that compares with the market.
+const npcSell = (id) => tips?.items?.[id]?.[9] || 0;
+// basis: which market price was compared (today's asking median or the reference "typical" price), named in the text.
+function npcNote(id, price, basis = "") {
+  const sell = npcSell(id);
+  if (!sell || !price) return "";
+  const pct = Math.round(((sell - price) / price) * 100);
+  const what = basis || tr("시세", "market");
+  return sell >= price
+    ? tr(`NPC 상점이 시세보다 ${pct}% 더 줘요 (${what} ${nf.format(price)} · NPC ${nf.format(sell)})`, `An NPC shop pays ${pct}% more than the market (${what} ${nf.format(price)} · NPC ${nf.format(sell)})`)
+    : tr(`NPC 상점가가 시세의 ${Math.round((sell / price) * 100)}%예요. 올려 두는 수고를 생각하면 NPC가 나아요`, `An NPC shop pays ${Math.round((sell / price) * 100)}% of the market price; selling there saves the listing`);
+}
+// The NPC price under the price headline: always shown as the floor not to list below, and called out when an NPC
+// shop pays about as much as players do (the market price is the catalog's, as in the list).
+function npcLine(id, fallback) {
+  const sell = npcSell(id);
+  if (!sell) return "";
+  const c = catalog?.items.find((r) => r.item === id);
+  const price = refPrice(c) ?? fallback;
+  const basis = c?.median != null ? tr("판매가 중앙값", "asking median") : c?.typical ? tr("대표 시세", "typical price") : tr("판매가", "asking price");
+  if (npcBetter(sell, price)) return `<p class="mb-npc good"><b>${tr("NPC에 파는 게 이득", "Better sold to an NPC")}</b> ${esc(npcNote(id, price, basis))}</p>`;
+  const pct = price ? (sell / price) * 100 : null;
+  // Far below the market (scrolls, gear) the NPC price is a footnote; near it, it is the floor not to list below.
+  if (pct == null || pct < 10) return `<p class="mb-npc">${tr("상점 판매가", "NPC buys for")} <b>${nf.format(sell)}</b> ${tr("메소", "mesos")}</p>`;
+  return `<p class="mb-npc">${tr("상점 판매가", "NPC buys for")} <b>${nf.format(sell)}</b> ${tr("메소", "mesos")} · ${tr(`시세의 ${Math.round(pct)}%`, `${Math.round(pct)}% of market`)}<small>${tr("이보다 싸게 올리면 NPC에 파는 게 나아요", "Listing below this earns less than an NPC")}</small></p>`;
+}
 // Up to three monster sprites that drop an item, for the catalog's source column (like the hover cards' drop list).
 const dropIcons = (id) => {
   const t = tips?.items?.[id];
@@ -991,7 +1019,8 @@ async function fillItemInfo(id) {
   // Stats apply to throwing stars and bullets too, not just equipment.
   const st = Object.entries(inc || {}).map(([k, v]) => `${TIP_INC[k] ? TIP_INC[k]() : esc(k)} +${v}`).join(" · ");
   if (st) facts.push(st);
-  if (sell) facts.push(`${tr("상점 판매가", "Sells to NPC for")} ${nf.format(sell)} ${tr("메소", "mesos")}`);
+  // The NPC price sits under the price headline (npcLine); draw it there now if prices arrived before this data.
+  if (sell && priceData && !$("mb-history")?.querySelector(".mb-npc")) renderDaily();
   const mobs = (drops || []).filter((m) => data.mobs[m]);
   const mobLink = (m) => `/${D.lang}/monsters/${m}/`;
   const sprites = document.body.dataset.sprites;
@@ -1065,7 +1094,7 @@ ${dayTicks.map((s, i) => `<text class="ax" x="${[L, (L + W - R) / 2, W - R][i]}"
 <p class="mb-hist-legend"><span class="k ask"></span>${tr("매물", "Listing")} <span class="k band"></span>${tr("보통 가격대", "Typical range")} <span class="k med"></span>${tr("하루 중앙값", "Daily median")}${pts.some((r) => r.p > hi || r.p < lo) ? ` <span>▲▼ ${tr("범위 밖 가격", "off the scale")}</span>` : ""}</p>`;
   } else chart = `<p class="muted note">${tr("아직 기록이 적어서 추이를 그리기 어려워요. 매일 쌓이면 여기에 그려져요.", "Too few records for a trend yet; it fills in as days add up.")}</p>`;
   const ranges = [[7, tr("7일", "7d")], [30, tr("30일", "30d")], ["all", tr("전체", "All")]];
-  box.innerHTML = `${head}${dist}<div class="mb-hist-head"><h3>${tr("가격 추이", "Price history")}</h3><div class="mb-hist-range" role="group">${ranges.map(([v, l]) => `<button type="button" data-hist-range="${v}" aria-pressed="${histRange === v}">${l}</button>`).join("")}</div></div>${chart}`;
+  box.innerHTML = `${head}${npcLine(selected, open.length ? quant(open, 0.5) : lastDay?.median ?? megaAsk?.median ?? null)}${dist}<div class="mb-hist-head"><h3>${tr("가격 추이", "Price history")}</h3><div class="mb-hist-range" role="group">${ranges.map(([v, l]) => `<button type="button" data-hist-range="${v}" aria-pressed="${histRange === v}">${l}</button>`).join("")}</div></div>${chart}`;
 }
 
 document.addEventListener("click", (e) => {

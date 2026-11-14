@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest.",
  "updates": [
   {
+   "id": "npc-sell",
+   "version": "0.4.24",
+   "level": "minor",
+   "date": "2026-11-14",
+   "path": "/tools/market/?cat=npc",
+   "ko": "NPC 상점 판매가 비교 — 시장보다 NPC가 더 쳐주는 템을 한눈에",
+   "en": "NPC sell price check — see which items an NPC shop pays more for",
+   "desc": {
+    "ko": "아이템 시세 아래에 NPC 상점 판매가와 시세 대비 비율이 나와요. NPC가 시세의 90% 이상을 주는 템은 'NPC 이득' 표시가 붙고, 시세의 'NPC 판매 이득' 분류에서 모아 볼 수 있어요. 잡템은 시장에 올리지 말고 NPC에 파세요.",
+    "en": "Under an item's price you now see what an NPC shop pays for it and how that compares with the market. Items an NPC buys for at least 90% of the market price get an 'NPC pays more' tag and are gathered under the 'Better sold to NPC' category."
+   }
+  },
+  {
    "id": "market-speed",
    "version": "0.4.23",
    "level": "patch",
