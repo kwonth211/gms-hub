@@ -79,7 +79,7 @@ async function loadItems() {
 async function knownItems() { await loadItems(); return itemIds; }
 async function itemNames() { await loadItems(); return itemNamesMap; }
 async function itemCategories() { await loadItems(); return itemCats; }
-async function itemLabel() { await loadItems().catch(() => null); return (id) => itemLabels?.get(id); }
+async function itemLabel() { await loadItems().catch(() => null); return (id, lang) => (lang === 'ko' ? itemKo : itemLabels)?.get(id); }
 
 const median = (xs) => {
   const s = [...xs].sort((a, b) => a - b);

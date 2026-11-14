@@ -81,7 +81,7 @@ export async function notifyMegaphones(env, rows, nameOf) {
     const row = named.filter((r) => r.item === a.item && (a.intent === 'any' || r.intent === a.intent || (a.price != null && a.intent === 'sell' && r.intent !== 'buy')) && fits(a, r.intent, r.price))
       .sort((x, y) => (a.intent === 'buy' ? (y.price || 0) - (x.price || 0) : (x.price || Infinity) - (y.price || Infinity)))[0];
     if (!row || !due(a, row.price)) continue;
-    const ko = a.locale === 'ko', name = nameOf(a.item) || `#${a.item}`;
+    const ko = a.locale === 'ko', name = nameOf(a.item, a.locale) || `#${a.item}`;
     const what = row.intent === 'sell' ? (ko ? '팝니다' : 'selling') : row.intent === 'buy' ? (ko ? '삽니다' : 'buying') : (ko ? '확성기' : 'megaphone');
     const head = `🔔 **${name}** · ${what}${row.price ? ` **${short(row.price)}**` : ''}${a.price != null ? ` (${ko ? '알림' : 'alert'} ${priceLabel(a.price, a.intent, ko)})` : ''}`;
     const content = `${head}\n${row.channel ? `CH ${row.channel} · ` : ''}**${row.nick}** ${code(row.text)}\n${ko ? '귓속말' : 'Whisper'}: ${code(`/w ${row.nick} `)}\n<${marketUrl(a)}>`;
@@ -101,7 +101,7 @@ export async function notifyListings(env, rows, nameOf) {
     if (sent >= 10) break;
     const row = priced.filter((r) => r.item === a.item && r.price <= a.price).sort((x, y) => x.price - y.price)[0];
     if (!row || !due(a, row.price)) continue;
-    const ko = a.locale === 'ko', name = nameOf(a.item) || `#${a.item}`;
+    const ko = a.locale === 'ko', name = nameOf(a.item, a.locale) || `#${a.item}`;
     const content = `🔔 **${name}** ${ko ? '상점 매물' : 'in a shop for'} **${short(row.price)}** (${ko ? '알림' : 'alert'} ${priceLabel(a.price, a.intent, ko)})\n`
       + `${ko ? '자유시장' : 'Free Market'} CH ${row.channel}${row.room != null ? ` · ${ko ? `${row.room}번 방` : `room ${row.room}`}` : ''} · ${ko ? '판매자' : 'seller'} **${row.seller}**\n<${marketUrl(a)}>`;
     if (await deliver(env, a, content, row.price)) sent++;
