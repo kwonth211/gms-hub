@@ -769,6 +769,7 @@
  "Clangs are Lv {n0} and hit hard at {n1}.": "クランは Lv {n0} で、{n1} レベルでは痛いです。",
  "Clangs need {n0} accuracy. {e0} Fighters can start at {n1}; other warriors at {n2} with accuracy-scrolled hats and DEX-rolled level-{n3} armor. Clangs have high defense, so some Assassins prefer other maps.": "クランは命中{n0}が必要です。{e0}のファイターは{n1}から、他の戦士は{n2}で命中の書を貼った帽子とDEX付きの{n3}レベル防具で合わせてから行きましょう。クランは防御が高く、アサシンは他のマップの方が楽という意見もあります。",
  "Class": "職業",
+ "Class and levelling guides": "職業・育成ガイド",
  "Class family": "職業系統",
  "Class filter on the market": "相場の職業フィルター",
  "Class filter on the market: only gear, weapons, scrolls and stars your class can use": "相場に職業フィルター：自分の職業が使える装備・武器・書・手裏剣だけ",

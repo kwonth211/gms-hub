@@ -769,6 +769,7 @@
  "Clangs are Lv {n0} and hit hard at {n1}.": "克朗是 Lv {n0}，{n1} 级时打得很痛。",
  "Clangs need {n0} accuracy. {e0} Fighters can start at {n1}; other warriors at {n2} with accuracy-scrolled hats and DEX-rolled level-{n3} armor. Clangs have high defense, so some Assassins prefer other maps.": "克朗需要命中{n0}。{e0}战士{n1}级即可开始；其他战士在{n2}级用命中卷轴强化的帽子和带敏捷的{n3}级防具补足。克朗防御高，部分刺客更喜欢其他地图。",
  "Class": "職業",
+ "Class and levelling guides": "职业·升级攻略",
  "Class family": "職業系",
  "Class filter on the market": "市場職業篩選",
  "Class filter on the market: only gear, weapons, scrolls and stars your class can use": "市場職業篩選：只看你的職業能用的裝備、武器、卷軸與飛鏢",

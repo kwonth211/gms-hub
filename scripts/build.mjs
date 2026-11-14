@@ -712,11 +712,21 @@ function header(lang, pagePath, only) {
     ['/tools/market/', 'coin', t.navMarket],
     ['/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Megaphones'],
     ['/tools/training/', 'sword', t.navTraining],
-    ['/quests/', 'scroll', lang === 'ko' ? '퀘스트' : 'Quests'],
-    guides.some((g) => g.lang === lang) && ['/guides/', 'book', t.navGuides]
+    ['/quests/', 'scroll', lang === 'ko' ? '퀘스트' : 'Quests']
   ].filter(Boolean);
   // Calculators and the EXP tracker share one header tab that opens a dropdown (2026-11-13, user request), instead of
   // one sitting in the tabs and three hidden in the "more" menu.
+  // Guides open a dropdown too (2026-11-14, user request): the guide index plus the guide-like pages that used to crowd
+  // the "more" menu (skill builds, Forgotten Hollow, best EXP quests, gear by class, bosses).
+  const ko = lang === 'ko';
+  const guideItems = [
+    guides.some((g) => g.lang === lang) && ['/guides/', 'book', ko ? '직업·육성 가이드' : 'Class and levelling guides'],
+    ['/skills/', 'star', ko ? '스킬트리 정석' : 'Skill builds'],
+    ['/forgotten-hollow/', 'tree', ko ? '포가튼 할로우 공략' : 'Forgotten Hollow guide'],
+    ['/quests/best-exp/', 'scroll', ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests'],
+    ['/equipment/', 'bag', ko ? '직업별 장비' : 'Gear by class'],
+    ['/bosses/', 'crown', ko ? '보스' : 'Bosses']
+  ].filter(Boolean);
   const toolItems = [
     ['/tools/exp/', 'clock', EXP[lang].nav],
     ['/tools/scroll/', 'scroll', t.navScroll],
@@ -728,7 +738,7 @@ function header(lang, pagePath, only) {
   const moved = [['/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monsters'], ['/', 'star', t.navLinks]];
   // English labels that would break mid-word on a phone ("Calcul/ator") get a one-word form there.
   // The newest tab carries a small N so returning visitors notice it.
-  const NEW_TAB = UPDATES.find((u) => [...tabs, ...toolItems].some(([p]) => p === u.path.split('#')[0]))?.path.split('#')[0] || '/quests/';
+  const NEW_TAB = UPDATES.find((u) => [...tabs, ...toolItems, ...guideItems].some(([p]) => p === u.path.split('#')[0]))?.path.split('#')[0] || '/quests/';
   const SHORT_EN = { '/': 'Home', '/monsters/': 'Mobs', '/tools/training/': 'Spots', '/tools/scroll/': 'Scrolls', '/tools/drop-rate/': 'Odds', '/tools/damage/': 'Hits', '/tools/market/': 'Market', '/megaphone/': 'Megas', '/tools/exp/': 'EXP', '/guides/': 'Guides', '/quests/': 'Quests' };
   const tabHtml = tabs
     .map(
@@ -736,15 +746,18 @@ function header(lang, pagePath, only) {
         `<a class="tab" href="${href(langPath(lang, p))}"${(p === pagePath || (p !== '/' && pagePath?.startsWith(p))) ? ' aria-current="page"' : ''}${lang === 'ko' ? '' : ` title="${esc(label)}"`}>${p === NEW_TAB ? `<span class="tab-ico">${spriteSvg(icon, 20)}<span class="tab-new" title="${lang === 'ko' ? '새 기능' : 'New'}">N</span></span>` : spriteSvg(icon, 20)}${lang === 'ko' ? `<span>${label}</span>` : `<span class="tab-full">${label}</span><span class="tab-short" aria-hidden="true">${SHORT_EN[p]}</span>`}</a>`
     )
     .join('');
-  const toolLabel = lang === 'ko' ? '계산기' : 'Tools';
-  const toolOn = toolItems.some(([p]) => pagePath?.startsWith(p));
-  const toolNew = toolItems.some(([p]) => p === NEW_TAB);
-  const toolMenu = `<details class="tool-menu"><summary class="tab"${toolOn ? ' aria-current="page"' : ''}${lang === 'ko' ? '' : ` title="${esc(toolLabel)}"`}>${toolNew ? `<span class="tab-ico">${spriteSvg('hammer', 20)}<span class="tab-new">N</span></span>` : spriteSvg('hammer', 20)}${lang === 'ko' ? `<span>${toolLabel}</span>` : `<span class="tab-full">${toolLabel}</span><span class="tab-short" aria-hidden="true">Tools</span>`}<span class="tool-caret" aria-hidden="true"></span></summary><div class="tool-list">${toolItems.map(([p, icon, label]) => `<a class="tool-opt" href="${href(langPath(lang, p))}"${pagePath?.startsWith(p) ? ' aria-current="page"' : ''}>${spriteSvg(icon, 20)}<span>${esc(label)}</span>${p === NEW_TAB ? '<span class="tab-new tool-new">N</span>' : ''}</a>`).join('')}</div></details>`;
+  const dropMenu = (items, icon, label, shortEn) => {
+    const on = items.some(([p]) => p === '/guides/' ? pagePath?.startsWith('/guides/') : pagePath?.startsWith(p));
+    const isNew = items.some(([p]) => p === NEW_TAB);
+    return `<details class="tool-menu"><summary class="tab"${on ? ' aria-current="page"' : ''}${ko ? '' : ` title="${esc(label)}"`}>${isNew ? `<span class="tab-ico">${spriteSvg(icon, 20)}<span class="tab-new">N</span></span>` : spriteSvg(icon, 20)}${ko ? `<span>${label}</span>` : `<span class="tab-full">${label}</span><span class="tab-short" aria-hidden="true">${shortEn}</span>`}<span class="tool-caret" aria-hidden="true"></span></summary><div class="tool-list">${items.map(([p, ic, l]) => `<a class="tool-opt" href="${href(langPath(lang, p))}"${pagePath?.startsWith(p) ? ' aria-current="page"' : ''}>${spriteSvg(ic, 20)}<span>${esc(l)}</span>${p === NEW_TAB ? '<span class="tab-new tool-new">N</span>' : ''}</a>`).join('')}</div></details>`;
+  };
+  const guideMenu = dropMenu(guideItems, 'book', ko ? '가이드' : t.navGuides, 'Guides');
+  const toolMenu = dropMenu(toolItems, 'hammer', ko ? '계산기' : 'Tools', 'Tools');
   return `${megaTicker(lang)}<header class="site-header"><div class="wrap header-inner">
 <a class="brand" href="${href(langPath(lang, '/'))}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>${esc(t.gameName)}</small></span></a>
-<nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}${toolMenu}</nav>
+<nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}${guideMenu}${toolMenu}</nav>
 ${presencePill(lang)}
-${headerSearch(lang, [...tabs, ...toolItems, ...moved])}
+${headerSearch(lang, [...tabs, ...guideItems, ...toolItems, ...moved])}
 ${config.discord ? `<a class="theme-toggle discord-link" href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="header" aria-label="Discord" title="Discord">${DISCORD_ICON(20)}</a>` : ''}<button type="button" class="theme-toggle" data-theme-toggle>${THEME_ICON}<span class="sr-only">${lang === 'ko' ? '낮과 밤 화면 바꾸기' : 'Switch day or night theme'}</span></button>
 <details class="lang-menu"><summary class="lang-current" aria-label="Language"><span class="lang-full" translate="no">${LANG_NAMES[lang]}</span><span class="lang-code" translate="no" aria-hidden="true">${lang.toUpperCase()}</span></summary><div class="lang-list">${(only ? [lang, ...ALL_LANGS.filter((l) => l !== lang)] : ALL_LANGS).map((l) => `<a class="lang-opt" href="${href(langPath(l, only && l !== lang ? '/' : pagePath || '/'))}" data-lang="${l}" hreflang="${HREFLANG[l]}" lang="${HREFLANG[l]}"${l === lang ? ' aria-current="true"' : ''}>${LANG_NAMES[l]}</a>`).join('')}</div></details>
 ${moreMenu(lang, moved)}
@@ -772,14 +785,9 @@ function headerSearch(lang, tabs) {
 function moreMenu(lang, moved = []) {
   const ko = lang === 'ko';
   const links = [
-    ['/skills/', ko ? '스킬트리 정석' : 'Skill builds'],
-    ['/forgotten-hollow/', ko ? '포가튼 할로우 공략' : 'Forgotten Hollow guide'],
     ['/updates/', ko ? '패치노트' : 'Patch notes'],
     ...moved.map(([p, , label]) => [p, label]),
     ['/rank/', ko ? '캐릭터 랭킹' : 'Character ranking'],
-    ['/equipment/', ko ? '직업별 장비' : 'Gear by class'],
-    ['/bosses/', ko ? '보스' : 'Bosses'],
-    ['/quests/best-exp/', ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests'],
     ['/items/', ko ? '아이템 도감' : 'Item database'],
     ['/maps/', ko ? '맵 도감' : 'Map database'],
     ['/tools/scan/', ko ? '상점 스캔으로 올리기' : 'Upload a shop scan'],
