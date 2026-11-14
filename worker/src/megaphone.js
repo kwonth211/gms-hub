@@ -93,17 +93,24 @@ export async function megaphoneAsks(env, ids) {
   return out;
 }
 
-// Pattern content for the home and megaphone pages (snapshot every three hours by the schedule, to keep D1 reads small): the items named most in the last 24
+// Pattern content for the home and megaphone pages (snapshot hourly by the schedule, to keep D1 reads small): the items named most in the last 24
 // hours with their change against the day before, how many sell vs buy, the busiest callers today, and megaphones per
 // hour over the last day. Only what was read from the game; names and ids are resolved by the pages.
 export async function megaphoneStats(env, now = Date.now()) {
-  // The table only holds about two days (pruned daily), so one read of it replaces five separate scans.
-  const { results } = await env.DB.prepare("SELECT seen_at AS t, nick, item, intent FROM megaphones WHERE seen_at >= datetime('now','-2 day')").all();
+  // Today's numbers need the last 24 hours row by row; "before" (the 24 hours before that) only needs per-item counts,
+  // which never change once an hour is over. Those are kept per hour in the snapshot 'mega-hours', so an hourly run reads
+  // one day of megaphones instead of two. Without a recent, complete store it reads both days once and starts one.
   const iso = (ms) => new Date(ms).toISOString().slice(0, 19).replace('T', ' ');
-  const dayAgo = iso(now - 86400000);
+  const hourOf = (t) => t.slice(0, 13);
+  const dayAgo = iso(now - 86400000), twoDays = iso(now - 2 * 86400000);
+  const kept = await env.DB.prepare("SELECT json, at FROM snapshots WHERE key = 'mega-hours'").first().then((r) => r && { ...JSON.parse(r.json), at: r.at }).catch(() => null);
+  const covered = kept && kept.from <= hourOf(twoDays) && now - Date.parse(`${kept.at.replace(' ', 'T')}Z`) < 23 * 3600000;
+  const { results } = await env.DB.prepare("SELECT seen_at AS t, nick, item, intent FROM megaphones WHERE seen_at >= ?").bind(covered ? dayAgo : twoDays).all();
   const items = new Map(), before = new Map(), hours = new Map(), callers = new Map(), nicks = new Set();
+  const hourItems = {};
   let n = 0, withItem = 0;
   for (const r of results) {
+    if (r.item != null) { const h = (hourItems[hourOf(r.t)] ||= {}); h[r.item] = (h[r.item] || 0) + 1; }
     if (r.t < dayAgo) { if (r.item != null) before.set(r.item, (before.get(r.item) || 0) + 1); continue; }
     n++; nicks.add(r.nick);
     const h = r.t.slice(0, 13).replace(' ', 'T');
@@ -116,6 +123,18 @@ export async function megaphoneStats(env, now = Date.now()) {
     it.n++; if (r.intent === 'sell') it.sell++; if (r.intent === 'buy') it.buy++;
     items.set(r.item, it);
   }
+  // Hours read in full replace stored ones; the first, partly read hour keeps what an earlier run stored for it.
+  const first = hourOf(covered ? dayAgo : twoDays);
+  const store = {};
+  for (const [h, v] of Object.entries(covered ? kept.hours : {})) if (h >= hourOf(twoDays)) store[h] = v;
+  for (const [h, v] of Object.entries(hourItems)) if (h > first || !store[h]) store[h] = v;
+  if (covered) {
+    // Hour-grained: the 24 hours before the last 24, by whole hours.
+    for (const [h, v] of Object.entries(store)) if (h >= hourOf(twoDays) && h < hourOf(dayAgo))
+      for (const [item, c] of Object.entries(v)) before.set(Number(item), (before.get(Number(item)) || 0) + c);
+  }
+  const from = covered ? kept.from : hourOf(iso(now - 2 * 86400000 + 3600000));
+  await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('mega-hours',?,datetime('now'))").bind(JSON.stringify({ from, hours: store })).run().catch(() => null);
   const day = [...items.values()].sort((a, b) => b.n - a.n || a.item - b.item).slice(0, 40);
   return {
     at: new Date(now).toISOString(),

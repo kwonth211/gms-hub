@@ -143,4 +143,10 @@ test("megaphone stats come from one pass with the same shape as before", async (
   assert.equal(s.wanted[0].item, 7);
   assert.deepEqual(s.callers[0], { nick: "A", n: 4, items: 1 });
   assert.equal(s.hourly.reduce((n, h) => n + h.n, 0), 6);
+  // An hour later the day before comes from the stored hourly counts: only the last 24 hours are read again.
+  e.resetReads();
+  const later = await megaphoneStats(e, Date.now() + 3600000);
+  assert.deepEqual(later.items[0], { item: 7, n: 5, sell: 1, buy: 4, before: 1 });
+  assert.equal(later.today.n, 6);
+  assert.equal(e.reads(), 7, "6 megaphones of the last day + the stored hours");
 });
