@@ -169,15 +169,12 @@ h2 { font-size: 1.35rem; margin: 48px 0 16px; }
   --autumn-ground: #3f3027; --autumn-grass: #916b3e;
 }
 .hero-storm { position: absolute; pointer-events: none; contain: strict; }
-.hero-play { position: absolute; z-index: 2; display: grid; justify-items: center; gap: 9px; padding: 0 10px; text-align: center; color: #fff2d8; font-size: .78rem; }
-.hero-play-status { padding: 5px 12px; border-radius: 8px; background: #382a25df; line-height: 1.5; }
-.hero-play-toggle { min-height: 36px; padding: 6px 18px; border: 1px solid #ffdb95; border-radius: 999px; background: #fff1d9; color: #613913; font: inherit; font-weight: 800; box-shadow: 0 3px 0 #573826; cursor: pointer; }
-.hero-play-toggle:hover { background: #ffd391; }
-.hero-play-leaf { position: absolute; z-index: 2; width: 52px; height: 52px; padding: 10px; transform: translate(-50%, -50%); border: 2px solid #ffe9af; border-radius: 50%; background: #513320e8; box-shadow: 0 0 0 5px #ffd26c33; cursor: pointer; }
-.hero-play-leaf svg { width: 100%; height: 100%; fill: #ffdc80; shape-rendering: crispEdges; pointer-events: none; }
-.hero-play-toggle:focus-visible, .hero-play-leaf:focus-visible { outline: 3px solid #fff; outline-offset: 5px; }
-.hero-play[hidden], .hero-play-leaf[hidden] { display: none; }
-@media (max-width: 760px), (prefers-reduced-motion: reduce) { .hero-play, .hero-play-leaf { display: none; } }
+.hero-storm[data-motion='playing'] { pointer-events: auto; cursor: grab; z-index: 2; user-select: none; }
+.hero-storm[aria-pressed='true'] { cursor: grabbing; }
+.hero-storm:focus-visible { outline: 2px solid #ffe2a1; outline-offset: -8px; border-radius: 24px; }
+.hero-toy-hint { position: absolute; z-index: 2; pointer-events: none; text-align: center; color: #fff2d8; text-shadow: 0 1px 4px #24180e; font-size: .78rem; letter-spacing: .03em; }
+.hero-toy-hint[hidden] { display: none; }
+@media (max-width: 760px), (prefers-reduced-motion: reduce) { .hero-toy-hint { display: none; } }
 .hero-scene .bob { animation: bob 2.4s ease-in-out infinite; }
 .hero-scene .bob2 { animation: bob 1.9s ease-in-out infinite 0.4s; }
 .hero-scene .bob3 { animation: bob 2.8s ease-in-out infinite 0.9s; }

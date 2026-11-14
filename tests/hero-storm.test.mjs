@@ -19,8 +19,10 @@ function setup({ reduced = false, mobile = false, cores = 8, cost = 1 } = {}) {
   const html = { dataset: {} };
   const doc = { hidden: false, documentElement: html, querySelector: () => null,
     createElement: () => {
-      const events = {}, attributes = {};
+      const events = {}, attributes = {}; let captured = null;
       const el = { style: {}, dataset: {}, events, attributes, children: [], getContext: () => context,
+        getBoundingClientRect: () => ({ left: 679, top: 110 }),
+        setPointerCapture: id => { captured = id; }, hasPointerCapture: id => captured === id, releasePointerCapture: () => { captured = null; },
         append: (...els) => el.children.push(...els), setAttribute: (key, value) => { attributes[key] = value; }, remove: () => { el.removed = true; },
         addEventListener: (name, fn) => { events[name] = fn; }, removeEventListener: name => { delete events[name]; }, focus: () => { doc.activeElement = el; } };
       return el;
@@ -62,47 +64,57 @@ test('banner pauses offscreen and in hidden tabs, but keeps playing with falling
   s.dispose(); assert.equal(s.raf.size + s.timers.size, 0); assert.equal(Object.keys(s.observers).length, 0);
 });
 
-test('five leaves complete one round, retain keyboard focus and can restart without extra loops', () => {
-  const s = setup(); s.visible(true); s.tick();
-  const [play, target] = s.children, [status, toggle] = play.children;
-  assert.equal(target.hidden, true);
-  toggle.events.click(); assert.equal(target.hidden, false);
-  const positions = [];
-  s.doc.activeElement = target;
-  for (let i = 0; i < 5; i++) {
-    positions.push(target.style.left + target.style.top);
-    target.events.click();
-    assert.equal(play.dataset.score, String(i + 1));
+const mouse = (x = 280, y = 200, buttons = 1) => ({ pointerId: 7, pointerType: 'mouse', button: 0, buttons,
+  clientX: 679 + x, clientY: 110 + y });
+const run = (s, n) => { for (let i = 0; i < n; i++) s.tick(); };
+
+test('holding gathers existing leaves, release scatters, with one capped loop and no game controls', () => {
+  for (const cores of [4, 8]) {
+    const s = setup({ cores }); s.visible(true); run(s, 5);
+    assert.equal(s.children.length, 1); assert.equal(s.children[0].className, 'hero-toy-hint');
+    s.canvas.events.pointerdown(mouse()); run(s, 85);
+    const held = JSON.parse(s.canvas.dataset.performance);
+    assert.equal(held.interaction, 'gathering'); assert.ok(held.spreadPx < 30, JSON.stringify(held));
+    assert.equal(s.canvas.attributes['aria-pressed'], 'true');
+    s.windowEvents.pointerup(mouse()); run(s, 20);
+    const released = JSON.parse(s.canvas.dataset.performance);
+    assert.equal(released.interaction, 'scattering'); assert.ok(released.spreadPx > held.spreadPx * 2, JSON.stringify(released));
+    assert.equal(released.particles, cores === 4 ? 72 : 144);
+    assert.equal(s.raf.size + s.timers.size, 1); assert.equal(s.canvas.attributes['aria-pressed'], 'false');
+    s.dispose(); assert.equal(Object.keys(s.canvas.events).length, 0); assert.equal(Object.keys(s.windowEvents).length, 0);
+    assert.ok(s.children.every(e => e.removed));
   }
-  assert.equal(new Set(positions).size, 5);
-  assert.equal(target.hidden, true); assert.equal(s.doc.activeElement, toggle);
-  assert.match(status.textContent, /All 5/);
-  target.events.click(); assert.equal(play.dataset.score, '5');
-  assert.equal(s.raf.size + s.timers.size, 1);
-  toggle.events.click(); assert.equal(play.dataset.score, '0'); assert.equal(target.hidden, false);
-  toggle.events.click(); assert.equal(target.hidden, true);
-  s.dispose(); assert.equal(Object.keys(s.heroEvents).length, 0); assert.ok(s.children.every(e => e.removed));
 });
 
-test('pointer bursts stay bounded and hidden/reduced-motion views cannot collect', () => {
-  for (const cores of [4, 8]) {
-    const s = setup({ cores }); s.visible(true);
-    const [play, target] = s.children, toggle = play.children[1]; toggle.events.click();
-    for (let i = 0; i < 100; i++) {
-      s.heroEvents.pointermove({ pointerType: 'mouse', clientX: 800 + i % 50, clientY: 260, target: { closest: () => null } });
-      if (i % 6 === 0) { target.events.pointerenter(); if (target.hidden) toggle.events.click(); }
-      s.tick();
-    }
-    const p = JSON.parse(s.canvas.dataset.performance);
-    assert.ok(p.interactionParticles <= (cores === 4 ? 24 : 48));
-    s.visibility(true); const before = play.dataset.score; target.events.click();
-    assert.equal(play.dataset.score, before); assert.equal(play.hidden, true);
-    assert.equal(s.raf.size + s.timers.size, 0);
-    s.visibility(false);
-    const reduced = s.media['(prefers-reduced-motion: reduce)']; reduced.matches = true; reduced.change();
-    assert.equal(play.hidden, true); assert.equal(target.hidden, true);
-    assert.equal(JSON.parse(s.canvas.dataset.performance).interactionParticles, 0);
-    s.dispose();
+test('capture follows dragging, unrelated pointers cannot release, and interruptions cannot leave it held', () => {
+  const s = setup(); s.visible(true); s.tick();
+  s.canvas.events.pointerdown(mouse());
+  s.canvas.events.pointermove(mouse(100, 140)); run(s, 90);
+  assert.ok(JSON.parse(s.canvas.dataset.performance).spreadPx < 30);
+  s.windowEvents.pointerup({ ...mouse(), pointerId: 9 }); assert.equal(s.canvas.attributes['aria-pressed'], 'true');
+  s.windowEvents.pointercancel(); assert.equal(s.canvas.attributes['aria-pressed'], 'false');
+  s.canvas.events.pointerdown(mouse()); s.visibility(true);
+  assert.equal(s.canvas.attributes['aria-pressed'], 'false'); assert.equal(s.raf.size + s.timers.size, 0);
+  s.visibility(false); s.canvas.events.pointerdown(mouse()); s.windowEvents.blur();
+  assert.equal(s.canvas.attributes['aria-pressed'], 'false');
+  s.canvas.events.pointerdown(mouse()); s.canvas.events.lostpointercapture(mouse());
+  assert.equal(s.canvas.attributes['aria-pressed'], 'false');
+  s.canvas.events.pointerdown(mouse()); s.windowEvents.pagehide();
+  assert.equal(s.canvas.attributes['aria-pressed'], 'false'); s.dispose();
+});
+
+test('keyboard hold/release works, while mobile, touch and reduced motion never activate the toy', () => {
+  const s = setup(); s.visible(true); s.tick();
+  let prevented = 0; const key = { key: ' ', preventDefault: () => prevented++ };
+  s.canvas.events.keydown(key); run(s, 85); assert.ok(JSON.parse(s.canvas.dataset.performance).spreadPx < 30);
+  s.canvas.events.keyup(key); assert.equal(s.canvas.attributes['aria-pressed'], 'false'); assert.equal(prevented, 2);
+  s.canvas.events.pointerdown({ ...mouse(), pointerType: 'touch' }); assert.equal(s.canvas.attributes['aria-pressed'], 'false');
+  s.dispose();
+  for (const option of [{ mobile: true }, { reduced: true }]) {
+    const disabled = setup(option); disabled.visible(true);
+    disabled.canvas.events.pointerdown(mouse()); disabled.canvas.events.keydown(key);
+    assert.equal(disabled.canvas.attributes['aria-pressed'], 'false'); assert.equal(disabled.canvas.tabIndex, -1);
+    assert.equal(disabled.children[0].hidden, true); assert.equal(disabled.raf.size + disabled.timers.size, 0); disabled.dispose();
   }
 });
 
