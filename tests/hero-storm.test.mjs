@@ -15,7 +15,7 @@ function setup({ reduced = false, mobile = false, cores = 8, cost = 1, withProps
   const heroEvents = {}, children = [];
   const propNodes = withProps ? ['mushroom', 'slime', 'coin', 'coin'].map((kind, index) => {
     const animations = [];
-    const art = { dataset: {}, animate: (frames, options) => {
+    const art = { dataset: {}, getBoundingClientRect: () => ({ left: index === 3 ? 200 : 750 + index * 100, top: 400, width: 48, height: 52 }), animate: (frames, options) => {
       const animation = { frames, options, cancelled: false, cancel() { this.cancelled = true; } };
       animations.push(animation); return animation;
     } };
@@ -74,14 +74,14 @@ test('banner pauses offscreen and in hidden tabs, but keeps playing with falling
 });
 
 const mouse = (x = 280, y = 200, buttons = 1) => ({ pointerId: 7, pointerType: 'mouse', button: 0, buttons,
-  clientX: 679 + x, clientY: 110 + y });
+  clientX: 679 + x, clientY: 110 + y, preventDefault() {} });
 const run = (s, n) => { for (let i = 0; i < n; i++) s.tick(); };
 
 test('holding gathers existing leaves, release scatters, with one capped loop and no game controls', () => {
   for (const cores of [4, 8]) {
     const s = setup({ cores }); s.visible(true); run(s, 5);
     assert.equal(s.children.length, 1); assert.equal(s.children[0].className, 'hero-toy-hint');
-    s.canvas.events.pointerdown(mouse()); run(s, 85);
+    s.heroEvents.pointerdown(mouse()); run(s, 85);
     const held = JSON.parse(s.canvas.dataset.performance);
     assert.equal(held.interaction, 'gathering'); assert.ok(held.spreadPx < 30, JSON.stringify(held));
     assert.equal(s.canvas.attributes['aria-pressed'], 'true');
@@ -97,18 +97,18 @@ test('holding gathers existing leaves, release scatters, with one capped loop an
 
 test('capture follows dragging, unrelated pointers cannot release, and interruptions cannot leave it held', () => {
   const s = setup(); s.visible(true); s.tick();
-  s.canvas.events.pointerdown(mouse());
-  s.canvas.events.pointermove(mouse(100, 140)); run(s, 90);
+  s.heroEvents.pointerdown(mouse());
+  s.heroEvents.pointermove(mouse(100, 140)); run(s, 90);
   assert.ok(JSON.parse(s.canvas.dataset.performance).spreadPx < 30);
   s.windowEvents.pointerup({ ...mouse(), pointerId: 9 }); assert.equal(s.canvas.attributes['aria-pressed'], 'true');
   s.windowEvents.pointercancel(); assert.equal(s.canvas.attributes['aria-pressed'], 'false');
-  s.canvas.events.pointerdown(mouse()); s.visibility(true);
+  s.heroEvents.pointerdown(mouse()); s.visibility(true);
   assert.equal(s.canvas.attributes['aria-pressed'], 'false'); assert.equal(s.raf.size + s.timers.size, 0);
-  s.visibility(false); s.canvas.events.pointerdown(mouse()); s.windowEvents.blur();
+  s.visibility(false); s.heroEvents.pointerdown(mouse()); s.windowEvents.blur();
   assert.equal(s.canvas.attributes['aria-pressed'], 'false');
-  s.canvas.events.pointerdown(mouse()); s.canvas.events.lostpointercapture(mouse());
+  s.heroEvents.pointerdown(mouse()); s.canvas.events.lostpointercapture(mouse());
   assert.equal(s.canvas.attributes['aria-pressed'], 'false');
-  s.canvas.events.pointerdown(mouse()); s.windowEvents.pagehide();
+  s.heroEvents.pointerdown(mouse()); s.windowEvents.pagehide();
   assert.equal(s.canvas.attributes['aria-pressed'], 'false'); s.dispose();
 });
 
@@ -117,11 +117,11 @@ test('keyboard hold/release works, while mobile, touch and reduced motion never 
   let prevented = 0; const key = { key: ' ', preventDefault: () => prevented++ };
   s.canvas.events.keydown(key); run(s, 85); assert.ok(JSON.parse(s.canvas.dataset.performance).spreadPx < 30);
   s.canvas.events.keyup(key); assert.equal(s.canvas.attributes['aria-pressed'], 'false'); assert.equal(prevented, 2);
-  s.canvas.events.pointerdown({ ...mouse(), pointerType: 'touch' }); assert.equal(s.canvas.attributes['aria-pressed'], 'false');
+  s.heroEvents.pointerdown({ ...mouse(), pointerType: 'touch' }); assert.equal(s.canvas.attributes['aria-pressed'], 'false');
   s.dispose();
   for (const option of [{ mobile: true }, { reduced: true }]) {
     const disabled = setup(option); disabled.visible(true);
-    disabled.canvas.events.pointerdown(mouse()); disabled.canvas.events.keydown(key);
+    disabled.heroEvents.pointerdown(mouse()); disabled.canvas.events.keydown(key);
     assert.equal(disabled.canvas.attributes['aria-pressed'], 'false'); assert.equal(disabled.canvas.tabIndex, -1);
     assert.equal(disabled.children[0].hidden, true); assert.equal(disabled.raf.size + disabled.timers.size, 0); disabled.dispose();
   }
@@ -171,7 +171,7 @@ test('scene props keep hidden sprites unclickable, replace reactions on repeat c
   assert.deepEqual(buttons.map(b => b.hidden), [false, false, false, true]);
   for (let i = 0; i < 3; i++) {
     const node = s.propNodes[i], button = buttons[i];
-    button.events.pointerenter(); assert.equal(node.art.dataset.reaction, 'hello');
+    button.events.click();
     button.events.click(); assert.equal(node.animations[0].cancelled, true);
     assert.equal(node.art.dataset.reaction, i === 2 ? 'spin' : 'hop');
     button.events.click(); assert.equal(node.animations[1].cancelled, true);
@@ -186,4 +186,33 @@ test('scene props keep hidden sprites unclickable, replace reactions on repeat c
   s.visible(true); buttons[0].events.click(); s.windowEvents.pagehide();
   assert.equal(s.propNodes[0].art.dataset.reaction, undefined);
   s.dispose(); assert.ok(buttons.every(b => b.removed && Object.keys(b.events).length === 0));
+});
+
+
+test('pointer routing gives live monsters and coins priority, background starts leaves, and controls stay untouched', () => {
+  const s = setup({ withProps: true }); s.visible(true); s.tick();
+  for (let i = 0; i < 3; i++) {
+    const event = { ...mouse(), clientX: 774 + i * 100, clientY: 426 };
+    s.heroEvents.pointerdown(event);
+    assert.equal(s.propNodes[i].art.dataset.reaction, i === 2 ? 'spin' : 'hop');
+    assert.equal(s.canvas.attributes['aria-pressed'], 'false');
+    s.heroEvents.pointermove(mouse()); assert.equal(s.canvas.attributes['aria-pressed'], 'false');
+    s.windowEvents.pointerup(event);
+    const before = s.propNodes[i].animations.length;
+    s.children[i + 1].events.click({ detail: 1 }); // The following native click must not start it twice.
+    assert.equal(s.propNodes[i].animations.length, before);
+  }
+  // Track the visual sprite even while it is airborne, outside the old button box.
+  s.propNodes[0].art.getBoundingClientRect = () => ({ left: 750, top: 320, width: 48, height: 52 });
+  const airborne = { ...mouse(), clientX: 774, clientY: 340 };
+  s.heroEvents.pointerdown(airborne); assert.equal(s.canvas.attributes['aria-pressed'], 'false');
+  s.windowEvents.pointerup(airborne);
+  const background = { ...mouse(), clientX: 1220, clientY: 590 };
+  s.heroEvents.pointerdown(background); assert.equal(s.canvas.attributes['aria-pressed'], 'true');
+  s.windowEvents.pointerup(background); assert.equal(s.canvas.attributes['aria-pressed'], 'false');
+  // Search controls must not get pointer capture or have their native behavior cancelled.
+  let prevented = false;
+  s.heroEvents.pointerdown({ ...mouse(), target: { closest: selector => selector === '.hero-prop-hit' ? null : {} }, preventDefault: () => { prevented = true; } });
+  assert.equal(prevented, false); assert.equal(s.canvas.attributes['aria-pressed'], 'false');
+  s.dispose(); assert.equal(Object.keys(s.heroEvents).length, 0);
 });

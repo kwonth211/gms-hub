@@ -86,19 +86,40 @@ export function mountHeroStorm(hero) {
   })[lang] || ['Hold to gather · release to scatter', 'Maple toy. Hold Space or Enter to gather, release to scatter.'];
   const hint = document.createElement('span'); hint.className = 'hero-toy-hint'; hint.textContent = words[0];
   hero.append(hint); canvas.setAttribute('aria-label', words[1]);
-  let originX = 0, originY = 0, pointer = null, pressed = false, pointerId = null;
+  let originX = 0, originY = 0, pointer = null, pressed = false, pointerId = null, propPointerId = null;
   let heldSince = 0, influence = 0, burstAt = -10, burstX = 0, burstY = 0;
   function coordinates(event) {
     return { x: Math.max(20, Math.min(width - 20, event.clientX + window.scrollX - originX)),
       y: Math.max(20, Math.min(height - 20, event.clientY + window.scrollY - originY)) };
   }
+  const isControl = event => !event.target?.closest?.('.hero-prop-hit')
+    && !!event.target?.closest?.('.hero-card, a, button, input, select, textarea, summary, [contenteditable]');
+  function propAt(event, live = false) {
+    const x = event.clientX + window.scrollX, y = event.clientY + window.scrollY;
+    // Re-read moving sprite bounds on press only. Pointer movement uses cached rectangles.
+    return props.find(prop => {
+      if (!prop.visible) return false;
+      const r = live ? prop.art.getBoundingClientRect() : null;
+      const box = r ? { left: r.left + window.scrollX, top: r.top + window.scrollY, width: r.width, height: r.height } : prop.box;
+      return box && x >= box.left - 5 && x <= box.left + box.width + 5 && y >= box.top - 5 && y <= box.top + box.height + 5;
+    });
+  }
   function move(event) {
     if (!canRun() || event.pointerType === 'touch' || (pointerId !== null && event.pointerId !== pointerId)) return;
+    if (propPointerId !== null) return;
+    if (!pressed && (isControl(event) || propAt(event))) { pointer = null; return; }
     pointer = coordinates(event);
     if (pressed && pointerId !== null && event.buttons === 0) release();
   }
   function press(event) {
-    if (!canRun() || event.pointerType === 'touch' || event.button !== 0 || pressed) return;
+    if (!canRun() || event.pointerType === 'touch' || event.button !== 0 || pressed || propPointerId !== null || isControl(event)) return;
+    event.preventDefault();
+    const prop = propAt(event, true);
+    if (prop) {
+      pointer = null; propPointerId = event.pointerId; prop.react(true);
+      return;
+    }
+    canvas.focus({ preventScroll: true });
     // Re-read once on press in case content above the hero shifted after loading.
     const box = canvas.getBoundingClientRect(); originX = box.left + window.scrollX; originY = box.top + window.scrollY;
     pointer = coordinates(event); pointerId = event.pointerId;
@@ -106,6 +127,10 @@ export function mountHeroStorm(hero) {
     canvas.setAttribute('aria-pressed', 'true');
   }
   function release(event) {
+    if (propPointerId !== null) {
+      if (!event || event.pointerId === propPointerId) { propPointerId = null; pointer = null; }
+      return;
+    }
     if (event && pointerId !== null && event.pointerId !== pointerId) return;
     if (!pressed) return;
     const charge = Math.min(1, (time - heldSince) / 1.5);
@@ -120,7 +145,7 @@ export function mountHeroStorm(hero) {
     if (oldId !== null && canvas.hasPointerCapture(oldId)) canvas.releasePointerCapture(oldId);
   }
   function resetToy() {
-    pressed = false; pointer = null; influence = 0; burstAt = -10;
+    pressed = false; propPointerId = null; pointer = null; influence = 0; burstAt = -10;
     canvas.setAttribute('aria-pressed', 'false');
     const oldId = pointerId; pointerId = null;
     if (oldId !== null && canvas.hasPointerCapture(oldId)) canvas.releasePointerCapture(oldId);
@@ -138,16 +163,16 @@ export function mountHeroStorm(hero) {
     if (![' ', 'Enter'].includes(event.key) || pointerId !== null) return;
     event.preventDefault(); release(); pointer = null;
   };
-  canvas.addEventListener('pointermove', move, { passive: true });
-  canvas.addEventListener('pointerdown', press);
-  canvas.addEventListener('pointerleave', exitPointer);
+  hero.addEventListener('pointermove', move, { passive: true });
+  hero.addEventListener('pointerdown', press);
+  hero.addEventListener('pointerleave', exitPointer);
   canvas.addEventListener('lostpointercapture', release);
   canvas.addEventListener('keydown', keyDown); canvas.addEventListener('keyup', keyUp);
   canvas.addEventListener('blur', resetToy);
   window.addEventListener('pointerup', release); window.addEventListener('pointercancel', resetToy);
   window.addEventListener('blur', resetToy);
 
-  // Hit areas sit above the leaf canvas, but only in the unobstructed scenery.
+  // The hero routes each pointer gesture to exactly one target: a live sprite, or the leaves.
   // Browser-managed transforms animate the six existing SVG sprites; no extra frame loop.
   const propNames = ({ ko: ['주황버섯 점프', '슬라임 점프', '메소 동전 튕기기'],
     en: ['Bounce the mushroom', 'Bounce the slime', 'Flip the meso coin'],
@@ -189,16 +214,19 @@ export function mountHeroStorm(hero) {
       prop.animation = animation;
       animation.onfinish = () => { if (prop.animation === animation) stop(); };
     };
-    const hover = () => react(), click = () => react(true);
-    button.addEventListener('pointerenter', hover); button.addEventListener('click', click);
+    // Pointer presses are routed once by the hero; native keyboard clicks stay accessible.
+    const click = event => { if (!event?.detail) { pointer = null; react(true); } };
+    button.addEventListener('click', click);
+    prop.react = react;
     prop.stop = stop;
-    prop.dispose = () => { stop(); button.removeEventListener('pointerenter', hover); button.removeEventListener('click', click); button.remove(); };
+    prop.dispose = () => { stop(); button.removeEventListener('click', click); button.remove(); };
     return prop;
   });
   function layoutProps(box, copy) {
     for (const prop of props) {
       const r = prop.node.getBoundingClientRect(), w = Math.max(44, r.width), h = Math.max(44, r.height);
       const x = r.left + (r.width - w) / 2, y = r.top + (r.height - h) / 2;
+      prop.box = { left: r.left + window.scrollX, top: r.top + window.scrollY, width: r.width, height: r.height };
       prop.visible = x >= copy.right + 8 && x >= box.left && x + w <= box.left + box.width
         && y >= box.top && y + h <= box.top + box.height;
       prop.button.style.left = `${x - box.left}px`; prop.button.style.top = `${y - box.top}px`;
@@ -371,8 +399,8 @@ export function mountHeroStorm(hero) {
     document.removeEventListener('visibilitychange', sync); reduced.removeEventListener('change', sync);
     narrow.removeEventListener('change', requestLayout); window.removeEventListener('pagehide', leave); window.removeEventListener('pageshow', enter);
     resetToy();
-    canvas.removeEventListener('pointermove', move); canvas.removeEventListener('pointerdown', press);
-    canvas.removeEventListener('pointerleave', exitPointer); canvas.removeEventListener('lostpointercapture', release);
+    hero.removeEventListener('pointermove', move); hero.removeEventListener('pointerdown', press);
+    hero.removeEventListener('pointerleave', exitPointer); canvas.removeEventListener('lostpointercapture', release);
     canvas.removeEventListener('keydown', keyDown); canvas.removeEventListener('keyup', keyUp); canvas.removeEventListener('blur', resetToy);
     window.removeEventListener('pointerup', release); window.removeEventListener('pointercancel', resetToy); window.removeEventListener('blur', resetToy);
     props.forEach(prop => prop.dispose());
