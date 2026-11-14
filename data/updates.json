@@ -19,12 +19,12 @@
    "version": "0.4.26",
    "level": "minor",
    "date": "2026-11-14",
-   "path": "/discord-bot/",
+   "path": "/tools/market/",
    "ko": "디스코드 가격 알림 — 원하는 가격 이하 매물·확성기가 뜨면 DM",
    "en": "Discord price alerts — a DM when an item is listed at your price",
    "desc": {
-    "ko": "디스코드에서 /알림 추가로 아이템과 가격(예: 300만)을 넣으면, 상점 매물이나 확성기에 그 가격 이하가 뜰 때 바로 DM으로 알려 줘요. 더 싼 매물이 나오면 또 알려 주고, 같은 매물은 반복하지 않아요. 시세 화면의 🔔 가격 알림 버튼에서도 안내해요.",
-    "en": "In Discord, /alert add with an item and a price (e.g. 3m) sends you a DM as soon as a shop or megaphone sells it at that price or less. A cheaper listing alerts you again; the same one does not repeat. The 🔔 Price alert button on the market shows how."
+    "ko": "시세에서 아이템을 열고 🔔 가격 알림에 가격(예: 300만)을 넣은 뒤 '디스코드로 알림 받기'를 누르면 끝이에요. 디스코드 승인 한 번이면 상점 매물이나 확성기에 그 가격 이하가 뜰 때 DM으로 알려 줘요. 더 싼 매물이 나오면 또 알려 주고, 같은 매물은 반복하지 않아요. 디스코드 안에서 /알림 추가로도 설정할 수 있어요.",
+    "en": "Open an item on the market, enter a price (e.g. 3m) under 🔔 Price alert and press 'Get it on Discord'. After one approval on Discord you get a DM as soon as a shop or megaphone sells it at that price or less. A cheaper listing alerts you again; the same one does not repeat. /alert add in Discord works too."
    }
   },
   {

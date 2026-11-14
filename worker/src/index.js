@@ -28,6 +28,7 @@ import { validRoom } from '../../assets/place.js';
 import { trendsToDiscord } from './discord.js';
 import { discordInteractions } from './discord-bot.js';
 import { notifyMegaphones, notifyListings } from './discord-alerts.js';
+import { oauthStart, oauthCallback } from './discord-oauth.js';
 import { postMegaphones, listMegaphones, pruneMegaphones, megaphoneAsks, megaphoneStats } from './megaphone.js';
 import { createAlert, listAlerts, deleteAlert, takeHits, checkAlerts } from './alerts.js';
 export { Presence };
@@ -62,7 +63,7 @@ const WINDOW = "datetime('now', '-14 days')";
 const ITEMS_URL = 'https://gms-hub.com/assets/items.json';
 
 // Tradeable item ids, loaded from the site's own item index once per worker instance, so a forged scan cannot invent items.
-let itemIds = null, itemNamesMap = null, itemCats = null, itemLabels = null;
+let itemIds = null, itemNamesMap = null, itemCats = null, itemLabels = null, itemKo = null;
 async function loadItems() {
   if (itemIds) return;
   const r = await fetch(ITEMS_URL, { cf: { cacheTtl: 3600 } });
@@ -73,6 +74,7 @@ async function loadItems() {
   itemNamesMap = new Map(rows.map((row) => [String(row[2]).toLowerCase(), row[0]]));
   itemCats = new Map(rows.map((row) => [row[0], row[3]]));
   itemLabels = new Map(rows.map((row) => [row[0], String(row[2])]));
+  itemKo = new Map(rows.map((row) => [row[0], String(row[1] || row[2])]));
 }
 async function knownItems() { await loadItems(); return itemIds; }
 async function itemNames() { await loadItems(); return itemNamesMap; }
@@ -349,6 +351,12 @@ const api = {
     if (url.pathname === '/internal/mail/send' && req.method === 'POST') return handleSendMail(req, env);
     // The collector page runs on gms-hub.com (or localhost while testing) and sends the admin key, so it needs CORS.
     // Discord slash commands (signed by Discord; see discord-bot.js). Prices come from this worker's own summary.
+    // Price alerts set on the website through "Log in with Discord" (see discord-oauth.js).
+    if (url.pathname === '/discord/oauth/start' && req.method === 'GET') return oauthStart(url, env, async (id) => (await knownItems().catch(() => null))?.has(id));
+    if (url.pathname === '/discord/oauth' && req.method === 'GET') {
+      await loadItems().catch(() => null);
+      return oauthCallback(url, env, (id, lang) => (lang === 'ko' ? itemKo : itemLabels)?.get(id));
+    }
     if (url.pathname === '/discord/interactions' && req.method === 'POST') {
       return discordInteractions(req, env, { env, discord: env.DISCORD_INVITE,
         prices: (id) => api.fetch(new Request(`https://internal.invalid/prices?ids=${id}`), env, ctx).then((r) => r.json()) });

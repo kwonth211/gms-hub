@@ -21,6 +21,10 @@ DISCORD_PUBLIC_KEY = "d680698602135c2a47f7054d1ec72b69ab810f0b8965de527a74375a32
 DISCORD_INVITE = "https://discord.gg/kVmXpHSKq"
 # /feedback posts into this channel of the GMS Hub server (needs the DISCORD_BOT_TOKEN secret, as do /alert DMs).
 DISCORD_FEEDBACK_CHANNEL = "1570460324203602010"
+# Website price alerts log in with Discord (src/discord-oauth.js): the application (client) id and the server people join.
+# The client secret is the DISCORD_CLIENT_SECRET secret; the redirect URI <worker>/discord/oauth is set on the Developer Portal.
+DISCORD_APP_ID = "1570465541343150292"
+DISCORD_GUILD_ID = "1570460084230955018"
 
 # Email Service: send as contact@gms-hub.com (src/inbox.js handleSendMail).
 [[send_email]]

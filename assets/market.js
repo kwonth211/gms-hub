@@ -583,6 +583,7 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
  <div id="mb-detail-charts" role="tabpanel" aria-label="${tr("가격 추이와 매물대", "Trends and depth")}"><div id="mk-charts"><p>${T.loading}</p></div></div>`;
   $("md-sort").value = detailState.sort;
   $("md-state").value = detailState.state;
+  discordResult(id);
   detailPanels();
   if (!FIXED && window.matchMedia("(max-width:1050px)").matches) $("mk-detail").scrollIntoView({behavior:"smooth",block:"start"});
   loadDetailRows();
@@ -1131,9 +1132,10 @@ async function openAlert(id) {
   box.hidden = false;
   const open = (priceData?.profile || []).map((r) => r.price).filter((p) => p > 0).sort((a, b) => a - b);
   const suggest = open.length >= 4 ? quant(open, 0.25) : open[0] || "";
-  // The Discord bot sends the same alert by DM (/알림 추가 with a price): works on every phone, no browser permission.
+  // Discord DM alerts: "Log in with Discord" on the worker saves the alert, joins the GMS Hub server and DMs a confirmation,
+  // then comes back here with ?dalert= (see discordResult). Works on every phone, no browser permission.
   const invite = document.body.dataset.discordUrl;
-  const viaDiscord = invite ? `<p class="note">${tr("<b>디스코드로 받기</b>: 디스코드에 들어와서 아무 채널에", "<b>Get it on Discord</b>: join the GMS Hub Discord and type")} <code>${tr("/알림 추가", "/alert add")}</code> ${tr(`→ 아이템 <b>${esc(itemName(id))}</b>${suggest ? `, 가격 <b>${kmoney(suggest)}</b>` : ""} 을 넣으면, 그 가격 이하 매물이나 확성기가 뜰 때 DM으로 알려 드려요.`, `→ item <b>${esc(itemName(id))}</b>${suggest ? `, price <b>${kmoney(suggest)}</b>` : ""} in any channel. A DM arrives when a shop or megaphone sells it at that price or less.`)} <a class="btn small-btn" href="${esc(invite)}" target="_blank" rel="noopener" data-discord="price-alert">${tr("디스코드 열기", "Open Discord")}</a></p>` : "";
+  const viaDiscord = invite ? `<form class="mb-alert-form" data-discord-alert="${id}"><label>${tr("이 가격 이하로 올라오면 <b>디스코드 DM</b>으로 알려 주기", "<b>DM me on Discord</b> when it is listed at or under")} <input name="price" value="${suggest ? kmoney(suggest) : ""}" placeholder="${tr("예: 300만", "e.g. 3m")}" required></label><button class="btn small-btn" type="submit">${tr("디스코드로 알림 받기", "Get it on Discord")}</button><small class="muted">${tr("디스코드 승인을 한 번 누르면 끝나요. 상점 매물과 확성기를 보고, 더 싼 매물이 나오면 다시 알려 드려요.", "One tap to approve on Discord. Shop listings and megaphones are watched; a cheaper one alerts you again.")}</small><span class="share-status" role="status"></span></form>` : "";
   const supported = D.alerts && "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
   if (!supported) {
     box.innerHTML = viaDiscord || `<p class="muted note">${tr("이 브라우저는 알림을 지원하지 않아요. 아이폰은 사이트를 홈 화면에 추가한 뒤 그 앱에서 켤 수 있어요.", "This browser cannot show alerts. On iPhone, add the site to your home screen and turn alerts on from there.")}</p>`;
@@ -1156,8 +1158,48 @@ document.addEventListener("click", async (e) => {
     $("mb-alert").innerHTML = `<p class="muted note">${tr("알림을 껐어요.", "Alert turned off.")}</p>`;
   }
 });
+// "300만", "3m", "500k", "1,200,000" → mesos.
+const amount = (t) => {
+  const m = String(t).toLowerCase().replace(/[,\s]|메소/g, "").match(/^(\d+(?:\.\d+)?)(억|만|천|k|m|b)?$/);
+  return m ? Math.round(+m[1] * ({ 억: 1e8, 만: 1e4, 천: 1e3, k: 1e3, m: 1e6, b: 1e9 }[m[2]] || 1)) : NaN;
+};
+document.addEventListener("submit", (e) => {
+  const form = e.target.closest("[data-discord-alert]");
+  if (!form) return;
+  e.preventDefault();
+  const price = amount(form.price.value), id = Number(form.dataset.discordAlert);
+  if (!(price > 0)) { form.querySelector(".share-status").textContent = tr("가격을 300만, 3m, 1200000 처럼 적어 주세요.", "Write the price like 3m, 500k or 1200000."); return; }
+  const back = new URL(location.href);
+  back.searchParams.set("item", id);
+  back.searchParams.delete("dalert");
+  window.track?.("discord_click", { place: "price-alert", item_id: id });
+  location.href = `${D.api}/discord/oauth/start?${new URLSearchParams({ item: id, price, intent: "sell", lang: D.lang === "ko" ? "ko" : "en", ret: back.pathname + back.search })}`;
+});
+// Back from Discord: ?dalert=ok|nodm|full|cancel|off|fail and the item, shown once in the item's alert box.
+let discordReturn = (() => {
+  const p = new URLSearchParams(location.search), v = p.get("dalert");
+  if (!v) return null;
+  p.delete("dalert");
+  history.replaceState(null, "", location.pathname + (p.toString() ? `?${p}` : "") + location.hash);
+  return { v, item: Number(p.get("item")) };
+})();
+function discordResult(id) {
+  if (!discordReturn || discordReturn.item !== id || !$("mb-alert")) return;
+  const v = discordReturn.v, invite = document.body.dataset.discordUrl || "";
+  discordReturn = null;
+  const msg = {
+    ok: tr("✅ 알림을 켰어요. 디스코드 DM을 확인해 보세요. GMS Hub 디스코드에도 들어와 있어요.", "✅ Alert on. Check your Discord DMs; you are also in the GMS Hub Discord now."),
+    nodm: tr("알림은 저장했지만 DM을 보내지 못했어요. 디스코드 설정 > 개인정보 보호에서 서버 멤버의 DM을 허용하면 그때부터 받아요.", "Saved, but the DM did not go through. Allow direct messages from server members in Discord's privacy settings to receive alerts."),
+    full: tr("디스코드 알림은 10개까지예요. 디스코드에서 /알림 삭제로 하나를 지워 주세요.", "You can have up to 10 Discord alerts. Remove one with /alert remove in Discord."),
+    cancel: tr("디스코드 승인을 취소했어요.", "You cancelled on Discord."),
+    off: tr("디스코드 로그인 알림을 준비하고 있어요. 지금은 디스코드에서 <code>/알림 추가</code>로 받을 수 있어요.", "Discord login alerts are almost ready. For now use <code>/alert add</code> in Discord."),
+  }[v] || tr("알림을 켜지 못했어요. 잠시 뒤 다시 시도해 주세요.", "Could not turn the alert on. Please try again.");
+  const box = $("mb-alert");
+  box.hidden = false;
+  box.innerHTML = `<p class="note">${msg}${v === "off" && invite ? ` <a href="${esc(invite)}" target="_blank" rel="noopener" data-discord="price-alert">${tr("디스코드 열기", "Open Discord")}</a>` : ""}</p>`;
+}
 document.addEventListener("submit", async (e) => {
-  const form = e.target.closest(".mb-alert-form");
+  const form = e.target.closest(".mb-alert-form:not([data-discord-alert])");
   if (!form) return;
   e.preventDefault();
   const status = form.querySelector(".share-status");
