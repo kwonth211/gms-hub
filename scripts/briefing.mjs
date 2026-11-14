@@ -46,7 +46,7 @@ async function getJson(url) { try { const r = await fetch(url, { signal: AbortSi
 // ---------- traffic (Cloudflare Web Analytics, sampled) ----------
 const kind = (p) => {
   p = p.replace(/^\/(ko|en|zh|ja)/, '') || '/';
-  for (const [re, name] of [[/^\/$/, '홈'], [/^\/tools\/market\/today/, '시세 리포트'], [/^\/tools\/market/, '실시간 시세'], [/^\/megaphone/, '실시간 확성기'], [/^\/tools\/exp/, '경험치 측정기'], [/^\/tools\/training/, '사냥터 추천'], [/^\/tools\/scroll/, '주문서 계산기'], [/^\/tools\/drop-rate/, '확률 계산기'], [/^\/tools\/damage/, '몇 방 컷'], [/^\/tools\/price/, '가격 검색'], [/^\/tools\//, '기타 도구'], [/^\/monsters\/[^/]+/, '몬스터 상세'], [/^\/monsters/, '몬스터 목록'], [/^\/items\//, '아이템'], [/^\/maps\//, '맵'], [/^\/quests\//, '퀘스트'], [/^\/guides\//, '가이드'], [/^\/equipment/, '장비'], [/^\/bosses/, '보스']]) if (re.test(p)) return name;
+  for (const [re, name] of [[/^\/$/, '홈'], [/^\/skills/, '스킬트리'], [/^\/forgotten-hollow/, '포가튼 할로우'], [/^\/updates/, '패치노트'], [/^\/tools\/market\/today/, '시세 리포트'], [/^\/tools\/market/, '실시간 시세'], [/^\/megaphone/, '실시간 확성기'], [/^\/tools\/exp/, '경험치 측정기'], [/^\/tools\/training/, '사냥터 추천'], [/^\/tools\/scroll/, '주문서 계산기'], [/^\/tools\/drop-rate/, '확률 계산기'], [/^\/tools\/damage/, '몇 방 컷'], [/^\/tools\/price/, '가격 검색'], [/^\/tools\//, '기타 도구'], [/^\/monsters\/[^/]+/, '몬스터 상세'], [/^\/monsters/, '몬스터 목록'], [/^\/items\//, '아이템'], [/^\/maps\//, '맵'], [/^\/quests\//, '퀘스트'], [/^\/guides\//, '가이드'], [/^\/equipment/, '장비'], [/^\/bosses/, '보스']]) if (re.test(p)) return name;
   return '기타';
 };
 async function rum(since, until, dims) {
@@ -69,7 +69,7 @@ async function traffic() {
   const topPaths = paths.filter((r) => r[1]).sort((a, b) => b[1] - a[1]).slice(0, 10);
   const risers = paths.filter((r) => r[1] - r[2] >= 3).sort((a, b) => (b[1] - b[2]) - (a[1] - a[2])).slice(0, 5);
   const fallers = paths.filter((r) => r[2] - r[1] >= 3).sort((a, b) => (b[2] - b[1]) - (a[2] - a[1])).slice(0, 5);
-  const CORE = ['실시간 시세', '사냥터 추천', '몬스터 상세', '실시간 확성기', '경험치 측정기', '시세 리포트', '아이템', '퀘스트', '가이드', '몇 방 컷'];
+  const CORE = ['실시간 시세', '스킬트리', '사냥터 추천', '몬스터 상세', '실시간 확성기', '경험치 측정기', '시세 리포트', '아이템', '퀘스트', '가이드', '몇 방 컷'];
   const cats = [...new Set([...CORE, ...Object.keys(byPage), ...Object.keys(yPage)])].map((k) => [k, byPage[k] || 0, yPage[k] || 0]).sort((a, b) => b[1] - a[1] || b[2] - a[2]);
   const langs = {}; for (const r of today) { const l = /^\/(ko|en|zh|ja)/.exec(r.dimensions.requestPath)?.[1] || 'root'; langs[l] = (langs[l] || 0) + r.count; }
   const hours = await rum(iso(dayStart), iso(now), 'datetimeHour');

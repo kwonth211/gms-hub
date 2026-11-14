@@ -5,6 +5,11 @@ import { POOLS, levelsAt, spAt } from './skill-tree.js';
 // Sentences come from hidden templates in the page, so they are translated with it (zh/ja too).
 const tpl = (key, vars) => (document.querySelector(`[data-tpl="${key}"]`)?.textContent || '').replace(/%(\w)/g, (_, k) => vars[k] ?? '');
 
+// Every interaction is counted with the class, job and build it happened on (GA4 event dimensions page_type,
+// ui_area = class, ui_label = job, ui_value = what was chosen), so the briefing can tell which jobs people study.
+const track = (name, p) => window.track?.(name, { page_type: 'skills', ...p });
+const jobOf = (el) => el.closest('[data-job-panel]')?.querySelector('.sk-job-name')?.childNodes[0]?.textContent.trim() || '1st';
+
 // ---------- class picker (with #warrior style links) ----------
 const classes = [...document.querySelectorAll('.sk-class')];
 const picks = [...document.querySelectorAll('[data-pick]')];
@@ -14,7 +19,7 @@ function showClass(id, scroll) {
   for (const p of picks) p.toggleAttribute('aria-current', p.dataset.pick === id);
   if (scroll) document.querySelector('.sk-body')?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
 }
-for (const p of picks) p.addEventListener('click', (e) => { e.preventDefault(); history.replaceState(null, '', `#${p.dataset.pick}`); showClass(p.dataset.pick, true); });
+for (const p of picks) p.addEventListener('click', (e) => { e.preventDefault(); history.replaceState(null, '', `#${p.dataset.pick}`); showClass(p.dataset.pick, true); track('skills_class', { ui_area: p.dataset.pick, ui_value: p.dataset.pick }); });
 
 // ---------- 2nd job tabs ----------
 for (const cls of classes) {
@@ -24,7 +29,7 @@ for (const cls of classes) {
     for (const b of btns) b.setAttribute('aria-selected', String(b.dataset.job === job));
     for (const p of panels) p.hidden = p.dataset.jobPanel !== job;
   };
-  btns.forEach((b) => b.addEventListener('click', () => show(b.dataset.job)));
+  btns.forEach((b) => b.addEventListener('click', (e) => { show(b.dataset.job); if (e.isTrusted) track('skills_job', { ui_area: cls.id, ui_label: b.textContent.trim(), ui_value: b.dataset.job }); }));
   if (btns[0]) show(btns[0].dataset.job);
 }
 
@@ -35,6 +40,7 @@ const fromHash = () => {
   if (job) document.querySelector(`#${cls} [data-job="${job}"]`)?.click();
 };
 fromHash();
+if (location.hash) track('skills_deeplink', { ui_value: location.hash.slice(1, 40) });
 addEventListener('hashchange', fromHash);
 
 // ---------- one skill window: builds + level slider ----------
@@ -81,18 +87,20 @@ for (const el of document.querySelectorAll('.sk-tree')) {
   }
 
   input.addEventListener('input', () => render(Number(input.value)));
+  input.addEventListener('change', () => track('skills_level', { ui_area: el.closest('.sk-class')?.id, ui_label: jobOf(el), ui_value: `${build.id}:${input.value}` }));
   for (const b of el.querySelectorAll('[data-build]')) {
     b.addEventListener('click', () => {
       build = data.builds.find((x) => x.id === b.dataset.build);
       for (const o of el.querySelectorAll('[data-build]')) o.setAttribute('aria-selected', String(o === b));
       for (const p of el.querySelectorAll('[data-build-panel]')) p.hidden = p.dataset.buildPanel !== build.id;
       render(Number(input.value));
+      track('skills_build', { ui_area: el.closest('.sk-class')?.id, ui_label: jobOf(el), ui_value: build.id });
     });
   }
   // Clicking a step jumps the slider to the level where that step finishes.
   for (const li of el.querySelectorAll('[data-step-at]')) {
     li.tabIndex = 0;
-    const go = () => { input.value = li.dataset.stepAt; render(Number(input.value)); };
+    const go = () => { input.value = li.dataset.stepAt; render(Number(input.value)); track('skills_step', { ui_area: el.closest('.sk-class')?.id, ui_label: jobOf(el), ui_value: `${build.id}:${li.dataset.stepAt}` }); };
     li.addEventListener('click', go);
     li.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
   }
