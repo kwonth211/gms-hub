@@ -75,11 +75,101 @@ export function mountHeroStorm(hero) {
   const canRun = () => !disposed && !away && inView && !document.hidden
     && !reduced.matches && !narrow.matches && !overloaded && width >= 160;
 
+  // The little game shares the existing capped frame loop; pointer events only update coordinates.
+  const lang = (document.documentElement.lang || 'en').split('-')[0];
+  const words = ({
+    ko: ['단풍 모으기', '그만하기', '한 번 더', '마우스를 움직여 가을 바람을 만들어 보세요', '반짝이는 단풍에 마우스를 올려보세요', '단풍 5개 완성! 가을의 기운을 모았어요', '황금 단풍 모으기'],
+    en: ['Collect leaves', 'Stop', 'Play again', 'Move your mouse to stir the autumn breeze', 'Move over the glowing leaf to collect it', 'All 5 collected! Autumn magic unlocked', 'Collect golden leaf'],
+    ja: ['もみじ集め', 'やめる', 'もう一度', 'マウスを動かして秋風を起こそう', '光るもみじにマウスを重ねよう', '5枚達成！秋の魔法を集めたよ', '金色のもみじを集める'],
+    zh: ['收集楓葉', '停止', '再玩一次', '移動滑鼠，掀起一陣秋風', '將滑鼠移到發光的楓葉上', '集齊5片！秋日魔法完成', '收集金色楓葉'],
+  })[lang] || ['Collect leaves', 'Stop', 'Play again', 'Move your mouse to stir the autumn breeze', 'Move over the glowing leaf to collect it', 'All 5 collected! Autumn magic unlocked', 'Collect golden leaf'];
+  const play = document.createElement('div'); play.className = 'hero-play';
+  const status = document.createElement('span'); status.className = 'hero-play-status';
+  status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
+  const toggle = document.createElement('button'); toggle.type = 'button'; toggle.className = 'hero-play-toggle';
+  const target = document.createElement('button'); target.type = 'button'; target.className = 'hero-play-leaf'; target.hidden = true;
+  target.innerHTML = `<svg viewBox="0 0 17 17" aria-hidden="true" focusable="false">${cells.map(([x, y]) => `<rect x="${x + 8}" y="${y + 8}" width="1" height="1"/>`).join('')}</svg>`;
+  play.append(status, toggle); hero.append(play, target);
+  const spots = [[.72, .24], [.23, .55], [.66, .60], [.29, .22], [.5, .4]];
+  let playing = false, score = 0, originX = 0, originY = 0, canvasLeft = 0, canvasTop = 0;
+  let pointer = null, lastPointer = null, driftX = 0, driftY = 0, celebration = -10;
+  const sparks = [];
+  function labelGame() {
+    toggle.textContent = playing ? words[1] : score === 5 ? words[2] : words[0];
+    toggle.setAttribute('aria-pressed', String(playing));
+    status.textContent = playing ? `${score} / 5 · ${words[4]}` : score === 5 ? words[5] : words[3];
+    target.hidden = !playing || !canRun();
+    if (playing) {
+      const [x, y] = spots[score];
+      target.style.left = `${canvasLeft + width * x}px`; target.style.top = `${canvasTop + height * y}px`;
+      target.setAttribute('aria-label', `${words[6]} ${score + 1} / 5`);
+    }
+    play.dataset.score = String(score);
+  }
+  function burst(x, y, amount = 16) {
+    const limit = count > 72 ? 48 : 24;
+    for (let i = 0; i < amount; i++) {
+      const a = i * 2.399;
+      sparks.push({ x, y, vx: Math.cos(a) * 65, vy: Math.sin(a) * 65 - 22, born: time, life: .8, angle: a, image: leaves[i % 4], size: 9 + i % 6 });
+    }
+    if (sparks.length > limit) sparks.splice(0, sparks.length - limit);
+  }
+  function collect() {
+    if (!playing || !canRun()) return;
+    const [x, y] = spots[score]; burst(width * x, height * y);
+    score++;
+    if (score === 5) {
+      playing = false; celebration = time; burst(width / 2, height * .42, 30);
+      if (document.activeElement === target) toggle.focus({ preventScroll: true });
+    }
+    labelGame();
+  }
+  function toggleGame() {
+    if (!canRun()) return;
+    playing = !playing; score = 0; labelGame();
+  }
+  function move(event) {
+    if (!canRun() || event.pointerType === 'touch' || event.target.closest?.('.hero-card')) { pointer = null; return; }
+    const x = event.clientX + window.scrollX - originX, y = event.clientY + window.scrollY - originY;
+    pointer = x >= 0 && x <= width && y >= 0 && y <= height ? { x, y } : null;
+  }
+  const clearPointer = () => { pointer = lastPointer = null; };
+  hero.addEventListener('pointermove', move, { passive: true });
+  hero.addEventListener('pointerleave', clearPointer);
+  toggle.addEventListener('click', toggleGame);
+  target.addEventListener('pointerenter', collect); target.addEventListener('click', collect);
+  labelGame();
+
+  function drawPlay() {
+    if (pointer && (!lastPointer || Math.hypot(pointer.x - lastPointer.x, pointer.y - lastPointer.y) > 5)) {
+      const limit = count > 72 ? 48 : 24;
+      if (sparks.length >= limit) sparks.shift();
+      sparks.push({ ...pointer, vx: -12, vy: -22, born: time, life: .65, angle: time * 3, image: leaves[frameCount % 4], size: 10 });
+      lastPointer = pointer;
+    }
+    if (!pointer) lastPointer = null;
+    for (let i = sparks.length - 1; i >= 0; i--) {
+      const p = sparks[i], age = time - p.born;
+      if (age >= p.life) { sparks.splice(i, 1); continue; }
+      ctx.save(); ctx.globalAlpha = (1 - age / p.life) * .9;
+      ctx.translate(p.x + p.vx * age, p.y + p.vy * age + 30 * age * age); ctx.rotate(p.angle + age * 2);
+      ctx.drawImage(p.image, -p.size / 2, -p.size / 2, p.size, p.size); ctx.restore();
+    }
+    const age = time - celebration;
+    if (age >= 0 && age < 1.2) {
+      ctx.globalAlpha = (1 - age / 1.2) * .65; ctx.strokeStyle = '#ffe2a1'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(width / 2, height * .42, radius * (.6 + age * 1.7), 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
   function draw(t) {
     ctx.clearRect(0, 0, width, height);
     if (width < 160) return;
     const phase = t % 11.5, gather = smooth((phase - 1.05) / 2.3), release = smooth((phase - 7.35) / 2.2);
-    const hold = gather * (1 - release), x = width / 2, y = height * .42 + Math.sin(t * .9) * 3;
+    driftX = mix(driftX, pointer ? (pointer.x / width - .5) * 22 : 0, .12);
+    driftY = mix(driftY, pointer ? (pointer.y / height - .5) * 14 : 0, .12);
+    const hold = gather * (1 - release), x = width / 2 + driftX, y = height * .42 + Math.sin(t * .9) * 3 + driftY;
     const cell = radius / 8.5;
     ctx.drawImage(glow, x - radius * 1.9, y - radius * 1.9, radius * 3.8, radius * 3.8);
     for (let band = 0; band < 3; band++) {
@@ -120,6 +210,7 @@ export function mountHeroStorm(hero) {
       ctx.beginPath(); ctx.arc(x, y, radius * (.75 + wave * 1.9), 0, Math.PI * 2); ctx.stroke();
     }
     ctx.globalAlpha = 1;
+    drawPlay();
   }
   function cancel() {
     clearTimeout(timer); cancelAnimationFrame(frameId); timer = frameId = 0; previous = 0;
@@ -130,7 +221,7 @@ export function mountHeroStorm(hero) {
       const sorted = [...samples].sort((a, b) => a - b);
       canvas.dataset.performance = JSON.stringify({ frames: frameCount, particles: count, fpsCap: fps,
         meanMs: +(totalMs / (frameCount || 1)).toFixed(2), p95Ms: +(sorted[Math.floor(sorted.length * .95)] || 0).toFixed(2), maxMs: +maxMs.toFixed(2),
-        backingWidth: canvas.width, backingHeight: canvas.height });
+        backingWidth: canvas.width, backingHeight: canvas.height, interactionParticles: sparks.length });
     }
   }
   function frame(now) {
@@ -150,6 +241,8 @@ export function mountHeroStorm(hero) {
   function sync() {
     cancel();
     if (disposed) return;
+    play.hidden = !canRun(); target.hidden = !playing || !canRun();
+    if (!canRun()) { clearPointer(); sparks.length = 0; driftX = driftY = 0; celebration = -10; }
     if (document.hidden || away) report('hidden');
     else if (!inView) report('offscreen');
     else if (canRun()) { report('playing'); frameId = requestAnimationFrame(frame); }
@@ -165,10 +258,14 @@ export function mountHeroStorm(hero) {
     width = Math.min(560, free); height = Math.min(480, box.height);
     canvas.style.left = `${left + (free - width) / 2}px`;
     canvas.style.top = `${Math.max(0, (box.height - height) / 2)}px`;
+    canvasLeft = left + (free - width) / 2; canvasTop = Math.max(0, (box.height - height) / 2);
+    originX = box.left + window.scrollX + canvasLeft; originY = box.top + window.scrollY + canvasTop;
+    play.style.left = `${canvasLeft}px`; play.style.top = `${canvasTop + height * .81}px`; play.style.width = `${width}px`;
     canvas.style.width = `${width}px`; canvas.style.height = `${height}px`;
     const dpr = Math.min(devicePixelRatio || 1, constrained || narrow.matches ? 1 : 1.5);
     canvas.width = Math.max(1, Math.round(width * dpr)); canvas.height = Math.max(1, Math.round(height * dpr));
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); radius = Math.min(110, width * .29, height * .23);
+    labelGame();
     sync();
   }
   function requestLayout() { if (!layoutId && !disposed) layoutId = requestAnimationFrame(layout); }
@@ -186,7 +283,9 @@ export function mountHeroStorm(hero) {
     resize.disconnect(); intersection.disconnect();
     document.removeEventListener('visibilitychange', sync); reduced.removeEventListener('change', sync);
     narrow.removeEventListener('change', requestLayout); window.removeEventListener('pagehide', leave); window.removeEventListener('pageshow', enter);
-    canvas.remove();
+    hero.removeEventListener('pointermove', move); hero.removeEventListener('pointerleave', clearPointer);
+    toggle.removeEventListener('click', toggleGame); target.removeEventListener('pointerenter', collect); target.removeEventListener('click', collect);
+    canvas.remove(); play.remove(); target.remove();
   };
 }
 
