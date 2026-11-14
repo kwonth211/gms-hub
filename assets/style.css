@@ -2259,6 +2259,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 .tr-rate-calc .tr-rp-basis, .tr-rate-model .tr-rp-basis { color: var(--muted); }
 .tr-rate-src a { font-size: 0.8rem; white-space: nowrap; }
 .tr-rate small { grid-column: 1 / -1; color: var(--muted); }
+.tr-rate-table-wrap { margin-top: 32px; }
 .tr-rate-table-wrap h2 { margin-top: 0; }
 .tr-rate-scroll { overflow-x: auto; }
 .tr-rate-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
