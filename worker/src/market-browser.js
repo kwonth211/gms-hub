@@ -261,7 +261,7 @@ export async function browseListings(env, p) {
         ? "price ASC, last_seen DESC, id DESC"
         : sort === "high"
           ? "price DESC, last_seen DESC, id DESC"
-          : "last_seen DESC, id DESC";
+          : "first_seen DESC, id DESC";
   // The total is only for the pager, and counting scans the whole window (5-15k index rows a call: the biggest read on
   // the account once the market page got busy). Counts for plain views (no seller, price or since filter) are kept
   // for ten minutes in the snapshots table; filtered views count live, their windows are small.
@@ -278,7 +278,10 @@ export async function browseListings(env, p) {
   }
   const rows = await all(
     env,
-    "SELECT id,item,price,qty,sold,seller,channel,room,first_seen AS firstSeen,last_seen AS seen FROM listings WHERE " +
+    "SELECT id,item,price,qty,sold,seller,channel,room,first_seen AS firstSeen,last_seen AS seen FROM listings " +
+      // Newest first walks the first_seen index from the top and stops after one page; with an item filter the item index is cheaper.
+      (sort === "recent" && !p.get("item") && !p.get("ids") ? "INDEXED BY listings_first " : "") +
+      "WHERE " +
       sqlWhere +
       " ORDER BY " +
       order +
