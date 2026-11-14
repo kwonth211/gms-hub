@@ -1103,8 +1103,7 @@
         "en": "The calculator uses sourced preset rates; compare them with the current item tooltip. The model uses a specified number of attempts."
       },
       "sources": [
-        "https://ms-classic.com/guides/scroll-tiers-lesser-intermediate-greater-explained",
-        "https://mapleclassic.wiki/wiki/Scrolling"
+        "https://ms-classic.com/guides/scroll-tiers-lesser-intermediate-greater-explained"
       ]
     },
     {
