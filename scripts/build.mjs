@@ -3596,7 +3596,7 @@ write('assets/shop-glyphs.json', fs.readFileSync(path.join(root, 'data/shop-glyp
   const price = (id) => { const i = BY.get(id); const v = i && shownMedian(i); return v ? Math.round(v) : null; };
   write('assets/forge-data.json', JSON.stringify({
     scrolls: F.scrolls.map((x) => { const i = BY.get(x.id); const a = i && scrollAlias(i); return [x.id, a ? a.long : i?.ko || x.ko || '', i?.en || x.en, a ? a.short : '', x.cat, x.success, x.destroy, x.inc, price(x.id)]; }),
-    equips: F.equips.map((x) => { const i = BY.get(x.id); return [x.id, i?.ko || x.ko || '', i?.en || x.en, x.cat, x.lv, x.slots, x.inc, OK.has(x.id) ? 1 : 0, price(x.id)]; })
+    equips: F.equips.map((x) => { const i = BY.get(x.id); return [x.id, i?.ko || x.ko || '', i?.en || x.en, x.cat, x.lv, x.slots, x.inc, OK.has(x.id) ? 1 : 0, price(x.id), [x.req.STR, x.req.DEX, x.req.INT, x.req.LUK]]; })
   }));
 }
 write('assets/mobs.json', JSON.stringify(MOBS.map((m) => [m.id, m.ko || '', m.en, m.lv, m.hp, m.wdef, m.mdef, m.eva, m.el || '', m.undead ? 1 : 0, m.boss ? 1 : 0, m.mp, m.aka.join(' '), m.status || ''])));

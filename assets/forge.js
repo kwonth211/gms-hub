@@ -25,7 +25,7 @@ const load = async () => {
   const d = await (await fetch(root.dataset.url)).json();
   data = {
     scrolls: d.scrolls.map(([id, k, e, short, c, success, destroy, inc, price]) => ({ id, name: ko ? short || k || e : e, full: ko ? k || e : e, cat: c, success, destroy, inc, price })),
-    equips: d.equips.map(([id, k, e, c, lv, slots, inc, ok, price]) => ({ id, name: ko ? k || e : e, cat: c, lv, slots, inc, ok: !!ok, price }))
+    equips: d.equips.map(([id, k, e, c, lv, slots, inc, ok, price, req]) => ({ id, name: ko ? k || e : e, cat: c, lv, slots, inc, ok: !!ok, price, req: req || [0, 0, 0, 0] }))
   };
 };
 
@@ -55,7 +55,7 @@ function renderAnvil() {
   $('fg-anvil').innerHTML = `<div class="fg-stage${done ? ' is-broken' : ''}" id="fg-stage" data-drop>
 <canvas class="fg-fx" id="fg-fx" aria-hidden="true"></canvas>
 <div class="fg-rays" aria-hidden="true"></div><div class="fg-glow" aria-hidden="true"></div>
-<div class="fg-item" id="fg-item"><img src="${icon(item.id)}" alt="" width="64" height="64"></div>
+<div class="fg-item" id="fg-item" tabindex="0" data-hover-tip><img src="${icon(item.id)}" alt="" width="64" height="64"></div>
 <p class="fg-banner" id="fg-banner" aria-live="assertive"></p><p class="fg-gain" id="fg-gain" aria-hidden="true"></p>
 <p class="fg-drop-hint">${esc(T.dropHere)}</p></div>
 <div class="fg-tip" role="group" aria-label="${esc(item.name)}">
@@ -130,7 +130,7 @@ async function apply(scrollId, auto = false, from = null) {
   state.log.push({ id: s.id, name: s.name, r, inc: s.inc, price: s.price });
   if (state.ups > state.best) { state.best = state.ups; try { localStorage.setItem(`fg-best-${item.id}`, String(state.best)); } catch {} }
   renderAnvil();
-  play(r);
+  play(r, s.success < 60);
   renderLog();
   track('forge_apply', { item_id: String(item.id), ui_label: String(s.id), ui_value: r, ui_area: auto ? 'auto' : 'single' });
   await wait(auto ? 650 : 900);
@@ -188,15 +188,20 @@ function charge(s, auto, fromImg) {
     fly.animate([{ transform: 'translate(0,0) scale(1) rotate(0)', opacity: 1 }, { transform: `translate(${dx * 0.5}px, ${dy * 0.5 - 70}px) scale(1.6) rotate(-20deg)`, opacity: 1, offset: 0.55 },
       { transform: `translate(${dx}px, ${dy}px) scale(.5) rotate(10deg)`, opacity: 0 }], { duration: auto ? 380 : 520, easing: 'cubic-bezier(.3,.7,.4,1)' }).finished.then(() => fly.remove(), () => fly.remove());
   }
-  stage.classList.remove('fx-ok', 'fx-fail', 'fx-boom');
+  stage.classList.remove('fx-ok', 'fx-fail', 'fx-boom', 'fx-rare');
   stage.classList.add('fx-charge');
   const [x, y] = center();
   // Motes drawn in toward the item while it charges.
-  burst(Array.from({ length: calm ? 0 : 26 }, () => { const a = rand(0, 7), d = rand(70, 130); return { kind: 'dot', x: x + Math.cos(a) * d, y: y + Math.sin(a) * d, vx: -Math.cos(a) * d / 26, vy: -Math.sin(a) * d / 26, g: 0, drag: 1, rot: 0, vr: 0, size: rand(1.5, 3), color: s.destroy ? '#ff8a6b' : '#ffe9a6', life: 26, fade: 10 }; }));
-  sound('charge');
-  return wait(auto ? 420 : 640).then(() => stage.classList.remove('fx-charge'));
+  for (let w = 0; w < (s.success < 60 && !auto ? 3 : 1); w++) setTimeout(() => burst(Array.from({ length: calm ? 0 : 26 }, () => { const a = rand(0, 7), d = rand(70, 130); return { kind: 'dot', x: x + Math.cos(a) * d, y: y + Math.sin(a) * d, vx: -Math.cos(a) * d / 26, vy: -Math.sin(a) * d / 26, g: 0, drag: 1, rot: 0, vr: 0, size: rand(1.5, 3), color: s.destroy ? '#ff8a6b' : '#ffe9a6', life: 26, fade: 10 }; })), w * 480);
+  // The lower the odds, the longer the wait: 100% is quick, 60% takes a breath, 10% and Chaos get a heartbeat that
+  // speeds up, the item trembling harder, then a moment of silence before the result.
+  const dur = auto ? (s.success >= 100 ? 300 : 520) : s.success >= 100 ? 450 : s.success >= 60 ? 950 : 1700;
+  stage.style.setProperty('--fg-charge', `${dur}ms`);
+  stage.classList.toggle('fx-tense', s.success < 60 && !auto);
+  sound('charge', dur, s.success < 60 && !auto);
+  return wait(dur).then(() => { stage.classList.remove('fx-charge', 'fx-tense'); return wait(s.success < 60 && !auto ? 180 : 60); });
 }
-function play(r) {
+function play(r, rare = false) {
   const stage = $('fg-stage'); if (!stage) return;
   stage.classList.add(r === 'ok' ? 'fx-ok' : r === 'boom' ? 'fx-boom' : 'fx-fail');
   sizeFx();
@@ -209,6 +214,7 @@ function play(r) {
       { kind: 'ring', x, y, vx: 0, vy: 0, g: 0, drag: 1, rot: 0, vr: 0, size: 10, grow: 5.5, color: '#fff3c4', life: 30, fade: 30 },
       { kind: 'ring', x, y, vx: 0, vy: 0, g: 0, drag: 1, rot: 0, vr: 0, size: 4, grow: 3.4, color: '#ffc94d', life: 38, fade: 38 },
       ...Array.from({ length: 46 }, () => { const a = rand(0, 7), v = rand(2.5, 7.5); return { kind: Math.random() < 0.55 ? 'star' : 'dot', x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1.5, g: 0.09, drag: 0.965, rot: rand(0, 6), vr: rand(-0.2, 0.2), size: rand(2.5, 6.5), color: ['#fff3c4', '#ffd75a', '#ffb93d', '#ffffff', '#9fe7ff'][Math.floor(rand(0, 5))], life: Math.floor(rand(40, 70)), fade: 22 }; }),
+      ...Array.from({ length: rare ? 60 : 0 }, () => { const a = rand(0, 7), v = rand(5, 11); return { kind: 'star', x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 2, g: 0.12, drag: 0.96, rot: rand(0, 6), vr: rand(-0.3, 0.3), size: rand(4, 9), color: ['#ffffff', '#ffe27a', '#ff9de2', '#9fe7ff', '#b6ff9f'][Math.floor(rand(0, 5))], life: Math.floor(rand(60, 95)), fade: 30 }; }),
       ...Array.from({ length: 18 }, () => ({ kind: 'star', x: x + rand(-60, 60), y: y + rand(10, 50), vx: rand(-0.3, 0.3), vy: rand(-2.6, -1.2), g: -0.01, drag: 0.99, rot: 0, vr: 0.05, size: rand(2, 4), color: '#fff7d6', life: Math.floor(rand(50, 85)), fade: 30 }))
     ]);
   } else if (r === 'fail') {
@@ -222,7 +228,8 @@ function play(r) {
       ...Array.from({ length: 16 }, () => ({ kind: 'smoke', x: x + rand(-20, 20), y: y + rand(-10, 10), vx: rand(-1.2, 1.2), vy: rand(-1.2, -0.2), g: 0, drag: 0.97, rot: 0, vr: 0, size: rand(12, 24), color: 'rgba(60,40,40,0.6)', life: Math.floor(rand(50, 80)), fade: 40 }))
     ]);
   }
-  sound(r);
+  if (r === 'ok' && rare) stage.classList.add('fx-rare');
+  sound(r === 'ok' && rare ? 'jackpot' : r);
 }
 function banner(text, kind) {
   const b = $('fg-banner'); if (!b) return;
@@ -234,7 +241,7 @@ function shake() { const it = $('fg-item'); if (!it) return; it.classList.remove
 // Small synthesized sounds (no audio files): a rising hum for the charge, a bright chime for success, a dull thud for a
 // failure, a crash for a destroyed item.
 let actx;
-function sound(kind) {
+function sound(kind, dur = 600, tense = false) {
   if (muted) return;
   try {
     actx ||= new (window.AudioContext || window.webkitAudioContext)();
@@ -251,12 +258,68 @@ function sound(kind) {
       const src = actx.createBufferSource(), f = actx.createBiquadFilter(), g = actx.createGain(); f.type = 'lowpass'; f.frequency.value = freq; g.gain.value = vol;
       src.buffer = buf; src.connect(f); f.connect(g); g.connect(out); src.start(t + start);
     };
-    if (kind === 'charge') tone(220, 0, 0.6, 'triangle', 0.35, 520);
-    else if (kind === 'ok') { [880, 1175, 1568, 2093].forEach((f, i) => tone(f, i * 0.07, 0.5, 'triangle', 0.7)); tone(2637, 0.3, 0.7, 'sine', 0.35); }
+    if (kind === 'charge') {
+      const d = dur / 1000;
+      tone(180, 0, d, 'triangle', 0.3, tense ? 900 : 560);
+      if (tense) {
+        // Heartbeat: thumps that come faster toward the end.
+        let at = 0.05, gap = 0.42;
+        while (at < d - 0.05) { tone(70, at, 0.13, 'sine', 1.1, 45); tone(62, at + 0.14, 0.12, 'sine', 0.8, 40); at += gap; gap = Math.max(0.2, gap * 0.78); }
+        noise(0, d, 0.12, 1800);
+      }
+    }
+    else if (kind === 'jackpot') { [784, 988, 1175, 1568, 1976, 2349].forEach((f, i) => tone(f, i * 0.06, 0.6, 'triangle', 0.75)); [1568, 1976, 2349].forEach((f) => tone(f, 0.42, 1.1, 'sine', 0.4)); noise(0, 0.25, 0.25, 6000); }
+    else if (kind === 'ok') { [880, 1175, 1568, 2093].forEach((f, i) => tone(f, i * 0.07, 0.5, 'triangle', 0.7)); tone(2637, 0.3, 0.7, 'sine', 0.35); noise(0, 0.15, 0.2, 7000); }
     else if (kind === 'fail') { tone(196, 0, 0.35, 'sawtooth', 0.25, 98); noise(0, 0.35, 0.5, 900); }
     else if (kind === 'boom') { noise(0, 0.7, 1.2, 2400); tone(110, 0, 0.6, 'square', 0.3, 40); }
   } catch {}
 }
+
+
+// ---------- hover tooltip, like the game's item tooltip ----------
+// Name with (+N), required level and stats, every stat with what the scrolls added, upgrades left, passes and fails.
+function tipHtml(e, st) {
+  const add = st?.add || {}, ups = st?.ups || 0;
+  const reqs = ['STR', 'DEX', 'INT', 'LUK'].map((k, i) => [k, e.req[i]]).filter(([, v]) => v);
+  const lines = STAT_ORDER.filter((k) => (e.inc[k] || 0) + (add[k] || 0)).map((k) => {
+    const b = e.inc[k] || 0, a = add[k] || 0;
+    return `<li class="${a ? 'up' : ''}"><span>${esc(T.stat[k])}</span><b>+${b + a}</b>${a ? `<em>(${esc(T.base)} ${b} <i>+${a}</i>)</em>` : ''}</li>`;
+  }).join('');
+  const gains = Object.entries(add).filter(([, v]) => v);
+  const tries = st ? st.log.length : 0;
+  const passed = st ? st.log.filter((l) => l.r === 'ok').length : 0;
+  return `<div class="fg-ht-head"><img src="${icon(e.id)}" alt="" width="44" height="44"><div><b class="${ups ? 'gold' : ''}">${esc(e.name)}${ups ? ` (+${ups})` : ''}</b><small>${esc(T.cat[catKey(e.cat)] || '')}</small></div></div>
+<p class="fg-ht-req">${esc(T.reqLv)} : ${e.lv}${reqs.map(([k, v]) => ` · ${esc(T.reqStat)} ${k} ${v}`).join('')}</p>
+<ul class="fg-ht-stats">${lines || '<li><span>—</span></li>'}</ul>
+<p class="fg-ht-slots">${esc(T.slots)} : <b>${st ? (st.destroyed ? 0 : st.slots) : e.slots}</b></p>
+${gains.length ? `<p class="fg-ht-gain">${esc(T.fromScrolls)}: ${gains.map(([k, v]) => `<b>${esc(T.stat[k])} +${v}</b>`).join(', ')}</p>` : ''}
+${tries ? `<p class="fg-ht-try">${esc(T.tries.replace('{ok}', passed).replace('{fail}', tries - passed))}</p>` : ''}
+${st?.destroyed ? `<p class="fg-ht-dead">${esc(T.destroyed)}</p>` : ''}`;
+}
+const hover = document.createElement('div');
+hover.className = 'fg-hover'; hover.setAttribute('role', 'tooltip'); hover.hidden = true;
+document.body.appendChild(hover);
+function showTip(e, st, x, y) {
+  hover.innerHTML = tipHtml(e, st); hover.hidden = false;
+  const w = hover.offsetWidth, h = hover.offsetHeight;
+  const left = Math.min(innerWidth - w - 8, x + 18), top = Math.min(innerHeight - h - 8, Math.max(8, y + 18));
+  hover.style.transform = `translate(${Math.max(8, left)}px, ${top}px)`;
+}
+const hideTip = () => { hover.hidden = true; };
+root.addEventListener('pointermove', (ev) => {
+  if (drag?.ghost || ev.pointerType === 'touch') return hideTip();
+  const onItem = ev.target.closest('[data-hover-tip]');
+  const onEquip = ev.target.closest('[data-equip]');
+  if (onItem && item) showTip(item, state, ev.clientX, ev.clientY);
+  else if (onEquip) { const e = data.equips.find((x) => x.id === Number(onEquip.dataset.equip)); if (e) showTip(e, item?.id === e.id ? state : null, ev.clientX, ev.clientY); }
+  else hideTip();
+});
+root.addEventListener('pointerleave', hideTip);
+root.addEventListener('focusin', (ev) => {
+  const t = ev.target.closest?.('[data-hover-tip]');
+  if (t && item) { const r = t.getBoundingClientRect(); showTip(item, state, r.right, r.top); }
+});
+root.addEventListener('focusout', hideTip);
 
 // ---------- drag and drop (pointer events, so touch works too) ----------
 let drag = null;

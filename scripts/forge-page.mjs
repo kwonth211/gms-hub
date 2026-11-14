@@ -20,7 +20,7 @@ export function forgeStrings(lang) {
     used: tr('바른 주문서', 'Scrolls used'), cost: tr('주문서 값', 'Scroll cost'), rate: tr('성공', 'Success'), best: tr('이 장비 최고 기록', 'Best on this gear'),
     dropHere: tr('여기에 주문서를 놓으세요', 'Drop a scroll here'), mesos: tr('메소', 'mesos'), market: tr('시세 보기', 'Market price'),
     shown: tr('개 중 {n}개 표시', 'shown'), more: tr('검색어를 더 넣으면 더 찾을 수 있어요', 'Type more to narrow it down'),
-    gearValue: tr('장비 시세', 'Gear price'), times: tr('회', 'x'), share: tr('결과 링크 복사', 'Copy result link'), copied: tr('복사했어요', 'Copied'),
+    gearValue: tr('장비 시세', 'Gear price'), fromScrolls: tr('주문서로 오른 능력치', 'Gained from scrolls'), tries: tr('성공 {ok} · 실패 {fail}', '{ok} passed · {fail} failed'), reqStat: tr('요구', 'REQ'), base: tr('기본', 'base'), times: tr('회', 'x'), share: tr('결과 링크 복사', 'Copy result link'), copied: tr('복사했어요', 'Copied'),
     stat: { STR: 'STR', DEX: 'DEX', INT: 'INT', LUK: 'LUK', MHP: 'HP', MMP: 'MP', PAD: tr('공격력', 'Weapon ATT'), MAD: tr('마력', 'Magic ATT'), PDD: tr('물리 방어력', 'Weapon DEF'),
       MDD: tr('마법 방어력', 'Magic DEF'), ACC: tr('명중률', 'Accuracy'), EVA: tr('회피율', 'Avoidability'), Speed: tr('이동속도', 'Speed'), Jump: tr('점프력', 'Jump'), CRT: tr('크리티컬 확률', 'Crit. rate'), CRD: tr('크리티컬 데미지', 'Crit. damage') },
     cat: { 100: tr('모자', 'Hat'), 103: tr('귀고리', 'Earrings'), 104: tr('상의', 'Top'), 105: tr('전신', 'Overall'), 106: tr('하의', 'Bottom'), 107: tr('신발', 'Shoes'),
