@@ -487,7 +487,11 @@ const api = {
     }
 
     if (url.pathname === '/megaphones' && req.method === 'GET') {
-      return json(await listMegaphones(env, url.searchParams), cors, 200, url.searchParams.get('item') ? 'public, max-age=120' : 'public, max-age=5');
+      // The plain latest list (header ticker on every page, first load of the megaphone page) is one shared URL: 30 s keeps
+      // it to two reads a minute per data centre however many tabs are open; new megaphones are pushed over the socket.
+      // ?after=<id> catch-ups are per tab but only read the rows newer than that id.
+      const mp = url.searchParams;
+      return json(await listMegaphones(env, mp), cors, 200, mp.get('item') ? 'public, max-age=120' : mp.get('after') ? 'public, max-age=5' : 'public, max-age=30');
     }
 
     if (url.pathname === '/rank' && req.method === 'GET') {
