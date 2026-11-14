@@ -215,14 +215,14 @@ test('map pages turn monster spawns around: monsters, spawn counts, full-clear E
   assert.match(read('dist/ko/maps/10001081/index.html'),/<title>글클메 파란버섯 숲/);
 });
 
-test('quest pages show requirements, rewards and who drops the items to bring',()=>{
-  const html=read('dist/en/quests/10104/index.html');
-  assert.match(html,/<title>Pia and the Blue Mushroom: MapleStory Classic World quest/);
-  assert.ok(html.includes('Blue Mushroom Cap')||html.includes('Blue Mushroom'),'item to bring');
-  assert.ok(html.includes('quest-drop'),'drop hint for items to bring');
-  assert.ok(html.includes('<b>813</b>'),'EXP reward');
-  assert.ok(read('dist/sitemap.xml').includes('/en/quests/10104/'));
-  assert.ok(read('dist/en/quests/index.html').includes('/en/quests/10104/'));
+test('bare quest pages are gone: old URLs forward to the guide or the quest list, and only guides are linked',()=>{
+  const guided=read('dist/en/quests/10104/index.html'), bare=read('dist/en/quests/1001/index.html');
+  assert.match(guided,/noindex/); assert.match(guided,/location\.replace\("\/en\/quests\/pia\/"\)/);
+  assert.match(bare,/location\.replace\("\/en\/quests\/"\)/);
+  const sm=read('dist/sitemap.xml');
+  assert.ok(!/\/quests\/\d+\//.test(sm),'no per-quest URLs in the sitemap');
+  const idx=read('dist/en/quests/index.html');
+  assert.ok(!/href="\/en\/quests\/\d+\/"/.test(idx)); assert.ok(idx.includes('href="/en/quests/pia/"'));
 });
 test('bosses page lists every field boss with its spawn map and says respawn times are not in the data',()=>{
   const en=read('dist/en/bosses/index.html'), ko=read('dist/ko/bosses/index.html');

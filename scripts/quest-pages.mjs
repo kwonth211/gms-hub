@@ -5,7 +5,13 @@
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const nf = (n) => new Intl.NumberFormat('en-US').format(n);
 
-export const questPath = (q) => `/quests/${q.id}/`;
+// Only quests covered by a step-by-step guide have a page to go to (the guide); the bare per-quest pages were dropped on
+// 2026-11-15 (user request: ~340 thin template pages ahead of the AdSense review). Everywhere else a quest is plain text.
+let GUIDE_OF = new Map();
+export const setQuestGuides = (map) => { GUIDE_OF = map; };
+export const questPath = (q) => (GUIDE_OF.has(q.id) ? `/quests/${GUIDE_OF.get(q.id)}/` : null);
+// A quest's name, linked to its guide when it has one.
+export const questName = (q, link, attrs = '') => { const p = questPath(q); return p ? `<a href="${link(p)}"${attrs}>${esc(q.name)}</a>` : `<span${attrs}>${esc(q.name)}</span>`; };
 const AREA_KO = {
   'Maple Island': '메이플 아일랜드', 'Lith Harbor': '리스항구', Henesys: '헤네시스', Ellinia: '엘리니아', Perion: '페리온', 'Kerning City': '커닝시티',
   Sleepywood: '슬리피우드', 'Florina Beach': '플로리나 비치', 'Victoria Island': '빅토리아 아일랜드', 'Forgotten Hollow': '포가튼 할로우',
@@ -66,7 +72,7 @@ export function questDetail({ lang, q, quests, npcs, items, mobs, drops, link, i
   };
   const questLink = (id) => {
     const x = byId.get(id);
-    return x ? `<li><a href="${link(questPath(x))}">${esc(x.name)}</a><small>${x.lv ? `Lv. ${x.lv}` : ''}</small></li>` : '';
+    return x ? `<li>${questName(x, link)}<small>${x.lv ? `Lv. ${x.lv}` : ''}</small></li>` : '';
   };
   const jobs = jobsLabel(q.jobs, lang);
   const facts = [
@@ -121,7 +127,7 @@ ${areas
     const list = quests.filter((q) => q.area === a);
     return `<section class="panel" id="area-${encodeURIComponent(a)}"><h2><span>${esc(areaName(a, lang))}</span><small class="muted">${list.length}</small></h2>
 <div class="table-wrap"><table class="data"><thead><tr><th>${ko ? '퀘스트' : 'Quest'}</th><th>${ko ? '레벨' : 'Level'}</th><th>EXP</th><th>${ko ? '메소' : 'Mesos'}</th></tr></thead><tbody>${list
-      .map((q) => `<tr${q.expired ? ' class="muted"' : ''}><th scope="row"><a href="${link(questPath(q))}">${esc(q.name)}</a></th><td>${q.lv || '–'}</td><td>${q.exp ? nf(q.exp) : '–'}</td><td>${q.meso ? nf(q.meso) : '–'}</td></tr>`)
+      .map((q) => `<tr${q.expired ? ' class="muted"' : ''}><th scope="row">${questName(q, link)}</th><td>${q.lv || '–'}</td><td>${q.exp ? nf(q.exp) : '–'}</td><td>${q.meso ? nf(q.meso) : '–'}</td></tr>`)
       .join('')}</tbody></table></div></section>`;
   })
   .join('\n')}
@@ -162,7 +168,7 @@ export function questBestBody({ lang, quests, link }) {
     if (!list.length) return '';
     const label = b >= 200 ? (ko ? `${a}레벨 이상` : `Level ${a}+`) : (ko ? `${a}~${b}레벨` : `Level ${a}–${b}`);
     return `<section class="panel" id="lv-${a}"><h2>${label}</h2><div class="table-wrap"><table class="data quest-best"><thead><tr><th scope="col">${ko ? '퀘스트' : 'Quest'}</th><th scope="col">${ko ? '시작' : 'Starts'}</th><th scope="col">EXP</th><th scope="col">${ko ? '메소' : 'Mesos'}</th><th scope="col">${ko ? '할 일' : 'What you do'}</th></tr></thead><tbody>${list
-      .map((q) => `<tr><th scope="row"><a href="${link(questPath(q))}" translate="no">${esc(q.name)}</a><small>${esc(areaName(q.area, lang))}</small>${jobsLabel(q.jobs, lang) && jobsLabel(q.jobs, lang) !== areaName(q.area, lang) ? `<small>${esc(jobsLabel(q.jobs, lang))}</small>` : ''}</th><td class="num">Lv. ${q.lv || 1}</td><td class="num"><b>${nf(q.exp)}</b></td><td class="num">${q.meso ? nf(q.meso) : '—'}</td><td>${task(q)}</td></tr>`)
+      .map((q) => `<tr><th scope="row">${questName(q, link, ' translate="no"')}<small>${esc(areaName(q.area, lang))}</small>${jobsLabel(q.jobs, lang) && jobsLabel(q.jobs, lang) !== areaName(q.area, lang) ? `<small>${esc(jobsLabel(q.jobs, lang))}</small>` : ''}</th><td class="num">Lv. ${q.lv || 1}</td><td class="num"><b>${nf(q.exp)}</b></td><td class="num">${q.meso ? nf(q.meso) : '—'}</td><td>${task(q)}</td></tr>`)
       .join('')}</tbody></table></div></section>`;
   }).join('');
   return `<section class="page-head wrap"><h1>${ko ? '레벨별 경험치 많이 주는 퀘스트' : 'Best EXP quests by level'}</h1>

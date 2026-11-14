@@ -7,7 +7,7 @@ import { spriteSvg, heroScene, spritePng, spriteDataPng } from './sprites.mjs';
 import { monsterIndex, monsterDetail, monsterPath, monsterName, mapPath, bossIndex } from './monster-pages.mjs';
 import { buildWorkbooks } from './workbooks.mjs';
 import { collectMaps, mapDetail, mapIndex, mapName } from './map-pages.mjs';
-import { collectQuests, questDetail, questIndex, questBestBody, questPath, areaName as questArea } from './quest-pages.mjs';
+import { collectQuests, questIndex, questBestBody, questPath, questName, setQuestGuides, areaName as questArea } from './quest-pages.mjs';
 import { questGuideData, questGuideBody } from './quest-guide.mjs';
 import { fhBody } from './forgotten-hollow.mjs';
 import { skillsBody } from './skill-pages.mjs';
@@ -547,6 +547,8 @@ const QG_PLACES = readJson('data/quest-guides/_places.json').places;
 const QUEST_GUIDES = fs.readdirSync(path.join(root, 'data', 'quest-guides')).filter((f) => f.endsWith('.json') && !f.startsWith('_'))
   .map((f) => { const g = readJson(`data/quest-guides/${f}`); return { ...g, places: { ...QG_PLACES, ...(g.places || {}) } }; }).sort((a, b) => (a.order || 99) - (b.order || 99))
   .map((guide) => ({ guide, data: questGuideData({ guide, raw: QUEST_RAW, items: QG_ITEMS, monsters: MONSTERS.monsters }) }));
+// A quest covered by a guide links to that guide; other quests have no page of their own.
+setQuestGuides(new Map(QUEST_GUIDES.flatMap(({ guide, data }) => data.chains.flatMap((c) => c.steps.map((st) => [st.id, guide.slug]))).reverse()));
 const guideLabel = (g, lang) => g.title[lang === 'ko' ? 'ko' : 'en'];
 const DROP_INDEX = new Map();
 for (const m of MONSTERS.monsters) for (const d of m.drops) (DROP_INDEX.get(d.itemId) || DROP_INDEX.set(d.itemId, []).get(d.itemId)).push({ m, confidence: d.confidence });
@@ -2819,7 +2821,7 @@ function itemQuests(lang, i) {
   const need = QUESTS.filter((q) => !q.expired && q.bring.some((x) => x.id === i.id));
   const give = QUESTS.filter((q) => !q.expired && q.gets.some((x) => x.id === i.id));
   if (!need.length && !give.length) return '';
-  const list = (qs) => `<ul class="monster-routes">${qs.slice(0, 12).map((q) => `<li><a href="${href(langPath(lang, questPath(q)))}"><strong>${esc(q.name)}</strong><small>${q.lv ? `<span>Lv. ${q.lv}</span>` : ''}<span>${esc(questArea(q.area, lang))}</span></small></a></li>`).join('')}</ul>`;
+  const list = (qs) => `<ul class="monster-routes">${qs.slice(0, 12).map((q) => { const inner = `<strong>${esc(q.name)}</strong><small>${q.lv ? `<span>Lv. ${q.lv}</span>` : ''}<span>${esc(questArea(q.area, lang))}</span></small>`; return `<li>${questPath(q) ? `<a href="${href(langPath(lang, questPath(q)))}">${inner}</a>` : `<span>${inner}</span>`}</li>`; }).join('')}</ul>`;
   return `<section class="panel">${need.length ? `<h2>${ko ? '이 아이템이 필요한 퀘스트' : 'Quests that need it'} <small class="muted">${need.length}</small></h2>${list(need)}` : ''}${give.length ? `<h2>${ko ? '보상으로 주는 퀘스트' : 'Quest rewards'} <small class="muted">${give.length}</small></h2>${list(give)}` : ''}</section>`;
 }
 
@@ -3281,15 +3283,10 @@ for (const lang of LANGS) {
         ld: [breadcrumbLd(lang, lang === 'ko' ? `${name} 장비` : `${name} equipment`, equipPath(c))]
       }));
     }
+    // The old per-quest URLs (/quests/<id>/) forward to the quest's guide, or to the quest list (noindex, no ads).
     for (const q of QUESTS) {
-      write(path.join(lang, 'quests', String(q.id), 'index.html'), page({
-        lang, pageKey: 'quest', pagePath: questPath(q),
-        title: lang === 'ko' ? `글클메 퀘스트 ${q.name}: 조건·보상 | GMS Hub` : `${q.name}: MapleStory Classic World quest, requirements & rewards | GMS Hub`,
-        desc: lang === 'ko' ? `${q.name} (${questArea(q.area, lang)}${q.lv ? `, Lv. ${q.lv}` : ''}) 퀘스트의 시작 NPC, 모아 올 아이템과 잡을 몬스터, 보상${q.exp ? ` EXP ${q.exp}` : ''}${q.meso ? `, 메소 ${q.meso}` : ''}을 정리했어요.` : `${q.name}: who starts it, items to bring and who drops them, monsters to hunt, and the rewards, in MapleStory Classic World.`,
-        body: questDetail({ lang, q, quests: QUESTS, npcs: QUEST_RAW.npcs, items, mobs, drops: DROP_INDEX, link, itemHref, mobHref, mobSprite }),
-        noindex: q.expired,
-        ld: [breadcrumbLd(lang, q.name, questPath(q))]
-      }));
+      const to = langPath(lang, questPath(q) || '/quests/'), url = absUrl(to);
+      write(path.join(lang, 'quests', String(q.id), 'index.html'), `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><title>GMS Hub</title><meta name="robots" content="noindex"><link rel="canonical" href="${url}"><meta http-equiv="refresh" content="0; url=${url}"></head><body><a href="${url}">${url}</a><script>location.replace(${JSON.stringify(to)})</script></body></html>`);
     }
   }
 
@@ -3475,7 +3472,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/forgotten-hollow/'}, {path:'/skills/'}, {path:'/tools/forge/'}, {path:'/updates/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/bosses/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
-  [{path:'/quests/'}, ...QUESTS.filter(q=>!q.expired).map(q=>({path:questPath(q)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
+  [{path:'/quests/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
   [{path:'/maps/'}, ...MAPS.filter(l=>l.availability==='open').map(l=>({path:mapPath(l)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [...new Set(guides.map((g) => g.lang)), ...LOCALES.map((l) => l.code)].map((l) => `<url><loc>${absUrl(langPath(l, '/guides/'))}</loc><lastmod>${guides.filter((g) => g.lang === (LANGS.includes(l) ? l : 'en')).map((g) => g.updated).sort().at(-1)}</lastmod></url>`),
   publishedGuides.flatMap((g) => [g.lang, ...(g.lang === 'en' ? LOCALES.map((l) => l.code) : [])].map((l) => `<url><loc>${absUrl(langPath(l, guidePath(g)))}</loc><lastmod>${g.updated}</lastmod></url>`)),
@@ -3657,9 +3654,9 @@ write('assets/bot.json', JSON.stringify({
   }
   // Which quests give each item (for the market's item panel): path, client name and level, at most six.
   const questsOf = {};
-  for (const q of QUESTS) if (!q.expired) for (const g of q.gets) if (tips[g.id]) (questsOf[g.id] ||= []).length < 6 && questsOf[g.id].push([questPath(q), q.name, q.lv]);
+  for (const q of QUESTS) if (!q.expired) for (const g of q.gets) if (tips[g.id]) (questsOf[g.id] ||= []).length < 6 && questsOf[g.id].push([questPath(q), q.name, q.lv]); // path null: no guide
   write('assets/item-tips.json', JSON.stringify({ mobs, items: tips, quests: questsOf }));
 }
 
 
-console.log(`Built ${PAGES.length * LANGS.length} pages + ${MONSTERS.monsters.length * LANGS.length} monster pages + ${MAPS.length * LANGS.length} map pages + ${QUESTS.length * LANGS.length} quest pages + ${ITEM_PAGES.length * LANGS.length} item pages, ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);
+console.log(`Built ${PAGES.length * LANGS.length} pages + ${MONSTERS.monsters.length * LANGS.length} monster pages + ${MAPS.length * LANGS.length} map pages + ${ITEM_PAGES.length * LANGS.length} item pages, ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);

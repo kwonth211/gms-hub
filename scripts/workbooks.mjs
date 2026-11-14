@@ -70,7 +70,7 @@ export function buildWorkbooks({ out, langs, abs, buildDate, monsters, items, eq
     const todo = (q) => [...q.hunt.map((h) => `${mobById.has(h.id) ? nm(mobById.get(h.id)) : `#${h.id}`} ${h.count}${L('마리', '')}`), ...q.bring.map((b) => `${itemName(b.id)} ${b.count}${L('개', '')}`)].join(', ');
     const qCols = [{ h: L('시작 레벨', 'Level'), t: 'int' }, { h: L('퀘스트', 'Quest') }, { h: L('지역', 'Area') }, { h: L('시작 NPC', 'Start NPC') }, { h: L('할 일', 'To do'), t: 'wrap' }, { h: L('경험치', 'EXP'), t: 'int' }, { h: L('메소', 'Mesos'), t: 'int' },
       { h: L('보상 아이템', 'Reward items'), t: 'wrap' }, { h: L('완료', 'Done'), t: 'check' }, { h: L('사이트', 'Site'), t: 'link' }];
-    const qRow = (q) => [q.lv || null, q.name, areaName(q.area, lang), npc(q.startNpc), todo(q), q.exp || null, q.meso || null, q.gets.map((g) => `${itemName(g.id)}${g.count > 1 ? ` ×${g.count}` : ''}`).join(', '), null, link(L('공략', 'Guide'), questPath(q))];
+    const qRow = (q) => [q.lv || null, q.name, areaName(q.area, lang), npc(q.startNpc), todo(q), q.exp || null, q.meso || null, q.gets.map((g) => `${itemName(g.id)}${g.count > 1 ? ` ×${g.count}` : ''}`).join(', '), null, questPath(q) ? link(L('공략', 'Guide'), questPath(q)) : null];
     const bringRows = [];
     const need = new Map();
     for (const q of live) for (const b of q.bring) (need.get(b.id) || need.set(b.id, []).get(b.id)).push({ q, count: b.count });
