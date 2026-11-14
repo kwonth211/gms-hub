@@ -87,7 +87,7 @@ export function mountHeroStorm(hero) {
   const hint = document.createElement('span'); hint.className = 'hero-toy-hint'; hint.textContent = words[0];
   hero.append(hint); canvas.setAttribute('aria-label', words[1]);
   let originX = 0, originY = 0, pointer = null, pressed = false, pointerId = null, propPointerId = null;
-  let heldProp = null;
+  let heldProp = null, physicsSession = false, collisionsEnabled = true, collisionPairs = 0, propContacts = 0;
   let heldSince = 0, influence = 0, burstAt = -10, burstX = 0, burstY = 0;
   function coordinates(event) {
     return { x: Math.max(20, Math.min(width - 20, event.clientX + window.scrollX - originX)),
@@ -112,7 +112,7 @@ export function mountHeroStorm(hero) {
       if (heldProp) {
         const p = heldProp;
         p.tx = Math.max(p.minX, Math.min(p.maxX, event.clientX + window.scrollX - p.grabX - p.home.left));
-        p.ty = Math.max(p.minY, Math.min(0, event.clientY + window.scrollY - p.grabY - p.home.top));
+        p.ty = Math.max(p.minY, Math.min(p.floor, event.clientY + window.scrollY - p.grabY - p.home.top));
       }
       if (event.buttons === 0) release(event);
       return;
@@ -128,11 +128,8 @@ export function mountHeroStorm(hero) {
     const prop = propAt(event, true);
     if (prop) {
       pointer = null; propPointerId = event.pointerId;
-      if (prop.kind === 'coin') prop.react(true);
-      else {
-        startDrag(prop, event);
-        canvas.setPointerCapture(propPointerId);
-      }
+      startDrag(prop, event);
+      canvas.setPointerCapture(propPointerId);
       return;
     }
     canvas.focus({ preventScroll: true });
@@ -206,56 +203,33 @@ export function mountHeroStorm(hero) {
   window.addEventListener('keydown', keyboardMode);
 
   // The hero routes each pointer gesture to exactly one target: a live sprite, or the leaves.
-  // Coins use browser-managed transforms; dragged monsters share the existing capped canvas loop.
-  const propNames = ({ ko: ['주황버섯 잡아 끌기 · Enter로 점프', '슬라임 잡아 끌기 · Enter로 점프', '메소 동전 튕기기'],
-    en: ['Drag the mushroom · Enter to bounce', 'Drag the slime · Enter to bounce', 'Flip the meso coin'],
+  // At most six bodies share the existing loop. Cached circles replace a physics library.
+  const propNames = ({ ko: ['주황버섯 잡아 끌기 · Enter로 점프', '슬라임 잡아 끌기 · Enter로 점프', '메소 동전 잡아 끌기 · Enter로 튕기기'],
+    en: ['Drag the mushroom · Enter to bounce', 'Drag the slime · Enter to bounce', 'Drag the meso coin · Enter to flip'],
     ja: ['キノコをジャンプ', 'スライムをジャンプ', 'メルコインを弾く'],
-    zh: ['讓菇菇跳躍', '讓史萊姆跳躍', '彈起楓幣'] })[lang] || ['Bounce the mushroom', 'Bounce the slime', 'Flip the meso coin'];
+    zh: ['讓菇菇跳躍', '讓史萊姆跳躍', '彈起楓幣'] })[lang] || ['Bounce the mushroom', 'Bounce the slime', 'Drag the meso coin · Enter to flip'];
   const scene = hero.querySelector('.hero-scene');
   const propStage = scene?.cloneNode(false);
   if (propStage) { propStage.setAttribute('class', 'hero-prop-stage'); hero.append(propStage); }
-  const props = [...hero.querySelectorAll('[data-hero-prop]')].map(node => {
+  const props = [...hero.querySelectorAll('[data-hero-prop]')].slice(0, 6).map(node => {
     const kind = node.dataset.heroProp, art = node.querySelector('.hero-prop-art');
     const button = document.createElement('button'); button.type = 'button'; button.className = 'hero-prop-hit';
     button.setAttribute('aria-label', propNames[['mushroom', 'slime', 'coin'].indexOf(kind)]);
     button.hidden = true; button.dataset.kind = kind; hero.append(button);
-    const prop = { node, art, button, kind, parent: node.parentNode, next: node.nextSibling, visible: false, animation: null, state: 'idle', dx: 0, dy: 0, vx: 0, vy: 0 };
+    const prop = { node, art, button, kind, parent: node.parentNode, next: node.nextSibling, visible: false, state: 'idle', dx: 0, dy: 0, vx: 0, vy: 0 };
     const stop = () => {
-      const animation = prop.animation; prop.animation = null; animation?.cancel();
       delete art.dataset.reaction; delete button.dataset.reaction;
       prop.state = 'idle'; prop.dx = prop.dy = prop.vx = prop.vy = 0;
-      art.style.transform = ''; art.style.animationPlayState = ''; button.style.transform = '';
+      art.style.transform = ''; art.style.animationPlayState = physicsSession ? 'paused' : ''; button.style.transform = '';
       delete art.dataset.dragState;
       if (propStage && node.parentNode === propStage) prop.parent.insertBefore(node, prop.next?.parentNode === prop.parent ? prop.next : null);
     };
-    const react = (strong = false) => {
-      if (!canRun() || !prop.visible || (!strong && prop.animation)) return;
-      stop();
-      const coin = kind === 'coin', high = kind === 'slime' ? 16 : 12;
-      const frames = !strong ? [
-        { transform: 'translateY(0) scale(1)' },
-        { transform: coin ? 'translateY(-3px) scaleX(.55)' : 'translateY(-2px) scale(1.12, .88)' },
-        { transform: 'translateY(0) scale(1)' },
-      ] : coin ? [
-        { transform: 'translateY(0) scaleX(1)' },
-        { transform: 'translateY(-12px) scaleX(.08)' },
-        { transform: 'translateY(-18px) scaleX(1)' },
-        { transform: 'translateY(-12px) scaleX(.08)' },
-        { transform: 'translateY(0) scaleX(1)' },
-      ] : [
-        { transform: 'translateY(0) scale(1, 1)', offset: 0 },
-        { transform: 'translateY(1px) scale(1.22, .72)', offset: .15 },
-        { transform: `translateY(-${high}px) scale(.85, 1.16)`, offset: .44 },
-        { transform: 'translateY(0) scale(1.16, .83)', offset: .78 },
-        { transform: 'translateY(0) scale(1, 1)', offset: 1 },
-      ];
-      art.dataset.reaction = button.dataset.reaction = strong ? coin ? 'spin' : 'hop' : 'hello';
-      const animation = art.animate(frames, { duration: strong ? 760 : 340, easing: 'ease-in-out' });
-      prop.animation = animation;
-      animation.onfinish = () => { if (prop.animation === animation) stop(); };
+    const react = () => {
+      if (!canRun() || !prop.visible) return;
+      preparePhysics(); wake(prop); prop.vy = -340; prop.released = time; prop.bounces = 0;
     };
     // Pointer presses are routed once by the hero; native keyboard clicks stay accessible.
-    const click = event => { if (!event?.detail && !heldProp) { pointer = null; react(true); } };
+    const click = event => { if (!event?.detail && !heldProp) { pointer = null; react(); } };
     button.addEventListener('click', click);
     prop.react = react;
     prop.stop = stop;
@@ -276,49 +250,119 @@ export function mountHeroStorm(hero) {
     }
   }
   function startDrag(p, event) {
-    if (p.state === 'idle') {
-      p.stop();
-      p.art.style.animationPlayState = 'paused';
-      if (propStage) propStage.append(p.node);
-      // Read once when grabbing. All following motion uses cached bounds and transform writes only.
-      const r = p.art.getBoundingClientRect();
-      p.home = { left: r.left + window.scrollX, top: r.top + window.scrollY, width: r.width, height: r.height };
-      const b = p.heroBox;
-      p.minX = b.safeLeft - p.home.left; p.maxX = b.left + b.width - 12 - p.home.left - r.width;
-      p.minY = b.top + 12 - p.home.top;
-    }
+    preparePhysics(); wake(p);
     p.grabX = event.clientX + window.scrollX - p.home.left - p.dx;
     p.grabY = event.clientY + window.scrollY - p.home.top - p.dy;
     p.tx = p.dx; p.ty = p.dy; p.vx = p.vy = 0; p.state = 'held'; heldProp = p;
     p.art.dataset.dragState = 'held'; hero.dataset.monsterHeld = 'true';
   }
+  function preparePhysics() {
+    if (physicsSession) return;
+    physicsSession = true;
+    // Freeze ambient bobbing and take one geometry snapshot at the start of play.
+    for (const p of props) {
+      if (!p.visible) continue;
+      p.art.style.animationPlayState = 'paused';
+      const r = p.art.getBoundingClientRect();
+      p.home = { left: r.left + window.scrollX, top: r.top + window.scrollY, width: r.width, height: r.height };
+      p.radius = Math.max(r.width, r.height) * .42;
+      p.mass = p.kind === 'coin' ? .4 : p.kind === 'slime' ? 1 : 1.35;
+      const b = p.heroBox;
+      p.minX = b.safeLeft - p.home.left; p.maxX = b.left + b.width - 12 - p.home.left - r.width;
+      p.minY = b.top + 12 - p.home.top;
+    }
+    const ground = Math.max(...props.filter(p => p.visible && p.kind !== 'coin').map(p => p.home.top + p.home.height), 0);
+    for (const p of props) if (p.visible) p.floor = Math.max(0, ground - p.home.top - p.home.height);
+  }
+  function wake(p) {
+    if (p.state !== 'idle') { p.state = 'falling'; return; }
+    p.state = 'falling'; p.released = time; p.bounces = 0;
+    if (propStage) propStage.append(p.node);
+    p.art.dataset.dragState = 'falling';
+    if (p.kind === 'coin') p.art.dataset.reaction = p.button.dataset.reaction = 'spin';
+  }
+  function collideProps() {
+    if (!collisionsEnabled) return;
+    for (let i = 0; i < props.length; i++) {
+      const a = props[i]; if (!a.visible || a.state === 'home') continue;
+      for (let j = i + 1; j < props.length; j++) {
+        const b = props[j];
+        if (!b.visible || b.state === 'home' || (a.state === 'idle' && b.state === 'idle')) continue;
+        collisionPairs++;
+        const dx = b.home.left + b.dx + b.home.width / 2 - a.home.left - a.dx - a.home.width / 2;
+        const dy = b.home.top + b.dy + b.home.height / 2 - a.home.top - a.dy - a.home.height / 2;
+        const radius = a.radius + b.radius, distance2 = dx * dx + dy * dy;
+        if (distance2 >= radius * radius) continue;
+        const distance = Math.sqrt(distance2), nx = distance > .01 ? dx / distance : 1, ny = distance > .01 ? dy / distance : 0;
+        const overlap = radius - distance;
+        const relative = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+        if (overlap < .5 && relative >= 0) continue;
+        if (a.state === 'idle') wake(a);
+        if (b.state === 'idle') wake(b);
+        const ia = a.state === 'held' ? 0 : 1 / a.mass, ib = b.state === 'held' ? 0 : 1 / b.mass, sum = ia + ib;
+        if (!sum) continue;
+        const correction = Math.max(0, overlap - .25) * .85 / sum;
+        a.dx -= nx * correction * ia; a.dy -= ny * correction * ia;
+        b.dx += nx * correction * ib; b.dy += ny * correction * ib;
+        if (relative < 0) {
+          const impulse = Math.min(500, -1.55 * relative / sum);
+          a.vx -= impulse * nx * ia; a.vy -= impulse * ny * ia;
+          b.vx += impulse * nx * ib; b.vy += impulse * ny * ib;
+        }
+        propContacts++;
+      }
+    }
+  }
   function stepProps(dt) {
+    collisionPairs = 0;
+    if (!physicsSession) return;
+    // Three small steps maximum: even a fast flick cannot jump across a whole coin.
+    const steps = Math.min(3, Math.max(1, Math.ceil(dt * 60))), h = dt / steps;
+    for (let step = 0; step < steps; step++) {
+      for (const p of props) {
+        if (p.state === 'idle') continue;
+        if (p.state === 'held') {
+          const dx = Math.max(-1100 * h, Math.min(1100 * h, (p.tx - p.dx) * Math.min(1, h * 26)));
+          const dy = Math.max(-1100 * h, Math.min(1100 * h, (p.ty - p.dy) * Math.min(1, h * 26)));
+          p.vx = mix(p.vx, dx / h, .3); p.vy = mix(p.vy, dy / h, .3);
+          p.dx += dx; p.dy += dy;
+        } else if (p.state === 'falling') {
+          p.vx = Math.max(-650, Math.min(650, p.vx)); p.vy = Math.max(-650, Math.min(850, p.vy + 1450 * h));
+          p.dx += p.vx * h; p.dy += p.vy * h; p.vx *= Math.exp(-1.5 * h);
+          if (p.dx < p.minX || p.dx > p.maxX) { p.dx = Math.max(p.minX, Math.min(p.maxX, p.dx)); p.vx *= -.4; }
+          if (p.dy < p.minY) { p.dy = p.minY; p.vy = Math.abs(p.vy) * .35; }
+          if (p.dy >= p.floor && p.vy > 0) {
+            p.dy = p.floor;
+            if (p.vy > 90) p.bounces++;
+            p.vy *= p.kind === 'coin' ? -.65 : p.kind === 'slime' ? -.58 : -.45;
+            if (Math.abs(p.vy) < 75) p.vy = 0;
+            if ((p.vy === 0 || p.bounces >= 3) && Math.abs(p.vx) < 30 && time - p.released > .35) p.state = 'home';
+          }
+          if (time - p.released > 2.5) p.state = 'home';
+        } else {
+          p.dx *= Math.exp(-8 * h); p.dy *= Math.exp(-8 * h);
+          if (Math.abs(p.dx) + Math.abs(p.dy) < .4) p.stop();
+        }
+      }
+      collideProps();
+    }
+    // Write transforms once per rendered frame, only for moving objects. No per-frame layout reads.
+    let moving = 0;
     for (const p of props) {
       if (p.state === 'idle') continue;
-      if (p.state === 'held') {
-        const x = mix(p.dx, p.tx, Math.min(1, dt * 26)), y = mix(p.dy, p.ty, Math.min(1, dt * 26));
-        p.vx = mix(p.vx, (x - p.dx) / dt, .45); p.vy = mix(p.vy, (y - p.dy) / dt, .45);
-        p.dx = x; p.dy = y;
-      } else if (p.state === 'falling') {
-        p.vy += 1450 * dt; p.dx += p.vx * dt; p.dy += p.vy * dt; p.vx *= Math.exp(-1.5 * dt);
-        if (p.dx < p.minX || p.dx > p.maxX) { p.dx = Math.max(p.minX, Math.min(p.maxX, p.dx)); p.vx *= -.4; }
-        if (p.dy < p.minY) { p.dy = p.minY; p.vy = Math.abs(p.vy) * .35; }
-        if (p.dy >= 0 && p.vy > 0) {
-          p.dy = 0; p.vy *= p.kind === 'slime' ? -.58 : -.45; p.bounces++;
-          if (Math.abs(p.vy) < 75 || p.bounces >= 3) p.state = 'home';
-        }
-        if (time - p.released > 2.5) p.state = 'home';
-      } else {
-        p.dx *= Math.exp(-8 * dt); p.dy *= Math.exp(-8 * dt);
-        if (Math.abs(p.dx) + Math.abs(p.dy) < .4) { p.stop(); continue; }
-      }
-      // The node's SVG scale converts CSS screen pixels to local sprite units.
+      moving++;
       const tilt = p.state === 'held' ? Math.max(-8, Math.min(8, p.vx / 80)) : 0;
-      p.art.style.transform = `translate(${(p.dx / p.scale).toFixed(2)}px, ${(p.dy / p.scale).toFixed(2)}px) rotate(${tilt.toFixed(1)}deg)`;
+      const spin = p.kind === 'coin' && p.state === 'falling' ? .15 + Math.abs(Math.cos((time - p.released) * 12)) * .85 : 1;
+      p.art.style.transform = `translate(${(p.dx / p.scale).toFixed(2)}px, ${(p.dy / p.scale).toFixed(2)}px) rotate(${tilt.toFixed(1)}deg) scaleX(${spin.toFixed(2)})`;
       p.button.style.transform = `translate(${p.dx.toFixed(2)}px, ${p.dy.toFixed(2)}px)`;
+    }
+    if (!moving) {
+      physicsSession = false;
+      for (const p of props) p.art.style.animationPlayState = '';
     }
   }
   function syncProps(active) {
+    if (!active) physicsSession = false;
     for (const prop of props) {
       prop.button.hidden = !active || !prop.visible;
       if (!active) prop.stop();
@@ -419,6 +463,7 @@ export function mountHeroStorm(hero) {
       canvas.dataset.performance = JSON.stringify({ frames: frameCount, particles: count, fpsCap: fps,
         meanMs: +(totalMs / (frameCount || 1)).toFixed(2), p95Ms: +(sorted[Math.floor(sorted.length * .95)] || 0).toFixed(2), maxMs: +maxMs.toFixed(2),
         backingWidth: canvas.width, backingHeight: canvas.height,
+        collisionPairs, propContacts, collisionsEnabled, activeProps: props.filter(p => p.state !== 'idle').length,
         interaction: pressed ? 'gathering' : time - burstAt < 2 ? 'scattering' : pointer ? 'stirring' : 'idle',
         spreadPx: +Math.sqrt(particles.slice(0, count).reduce((sum, p) => sum + ((p.x ?? 0) - (pointer?.x ?? burstX)) ** 2 + ((p.y ?? 0) - (pointer?.y ?? burstY)) ** 2, 0) / count).toFixed(1) });
     }
@@ -432,7 +477,8 @@ export function mountHeroStorm(hero) {
     frameCount++; totalMs += cost; maxMs = Math.max(maxMs, cost);
     if (profile) { samples.push(cost); if (samples.length > 180) samples.shift(); }
     slowFrames = cost > 6 ? slowFrames + 1 : Math.max(0, slowFrames - 1);
-    if (slowFrames >= 12 && count > 72) { count = 72; fps = 24; slowFrames = 0; }
+    if (slowFrames >= 12) collisionsEnabled = false;
+    if (slowFrames >= 12 && count > 72) { count = 72; fps = 24; collisionsEnabled = false; slowFrames = 0; }
     else if (slowFrames >= 24) { overloaded = true; sync(); return; }
     if (now - lastReport >= 1000) { report('playing'); lastReport = now; }
     timer = setTimeout(() => { timer = 0; frameId = requestAnimationFrame(frame); }, Math.max(0, 1000 / fps - cost));
@@ -466,7 +512,7 @@ export function mountHeroStorm(hero) {
     canvas.width = Math.max(1, Math.round(width * dpr)); canvas.height = Math.max(1, Math.round(height * dpr));
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); radius = Math.min(110, width * .29, height * .23);
     resetToy();
-    props.forEach(prop => prop.stop()); layoutProps(box, copy);
+    physicsSession = false; props.forEach(prop => prop.stop()); layoutProps(box, copy);
     sync();
   }
   function requestLayout() { if (!layoutId && !disposed) layoutId = requestAnimationFrame(layout); }
@@ -491,7 +537,7 @@ export function mountHeroStorm(hero) {
     window.removeEventListener('pointerup', release); window.removeEventListener('pointercancel', resetToy); window.removeEventListener('blur', resetToy);
     window.removeEventListener('keydown', keyboardMode);
     delete hero.dataset.toyInput; delete hero.dataset.monsterHeld;
-    props.forEach(prop => prop.dispose());
+    physicsSession = false; props.forEach(prop => prop.dispose());
     propStage?.remove();
     canvas.remove(); hint.remove();
   };

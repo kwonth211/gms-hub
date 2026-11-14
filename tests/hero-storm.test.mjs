@@ -165,29 +165,23 @@ test('back-forward cache departure cancels work and return schedules a fresh lay
 });
 
 
-test('scene props keep hidden sprites unclickable, replace reactions on repeat clicks and cancel when paused', () => {
+test('scene props keep hidden sprites unclickable and repeated keyboard clicks reuse the same physics loop', () => {
   const s = setup({ withProps: true }); s.visible(true); s.tick();
   const buttons = s.children.filter(e => e.className === 'hero-prop-hit');
   assert.deepEqual(buttons.map(b => b.hidden), [false, false, false, true]);
   for (let i = 0; i < 3; i++) {
-    const node = s.propNodes[i], button = buttons[i];
-    button.events.click();
-    button.events.click(); assert.equal(node.animations[0].cancelled, true);
-    assert.equal(node.art.dataset.reaction, i === 2 ? 'spin' : 'hop');
-    button.events.click(); assert.equal(node.animations[1].cancelled, true);
-    node.animations[2].onfinish(); assert.equal(node.art.dataset.reaction, undefined);
-    button.events.click();
+    for (let j = 0; j < 8; j++) buttons[i].events.click();
+    assert.equal(s.propNodes[i].art.dataset.dragState, 'falling');
+    assert.equal(s.propNodes[i].animations.length, 0);
   }
-  buttons[3].events.click(); assert.equal(s.propNodes[3].animations.length, 0);
+  buttons[3].events.click(); assert.equal(s.propNodes[3].art.dataset.dragState, undefined);
   assert.equal(s.raf.size + s.timers.size, 1);
   s.visible(false);
-  assert.ok(buttons.every(b => b.hidden)); assert.ok(s.propNodes.every(p => !p.art.dataset.reaction));
-  assert.ok(s.propNodes.every(p => p.animations.every(a => a.cancelled)));
+  assert.ok(buttons.every(b => b.hidden)); assert.ok(s.propNodes.every(p => !p.art.dataset.dragState));
   s.visible(true); buttons[0].events.click(); s.windowEvents.pagehide();
-  assert.equal(s.propNodes[0].art.dataset.reaction, undefined);
+  assert.equal(s.propNodes[0].art.dataset.dragState, undefined);
   s.dispose(); assert.ok(buttons.every(b => b.removed && Object.keys(b.events).length === 0));
 });
-
 
 test('pointer routing gives live monsters and coins priority, background starts leaves, and controls stay untouched', () => {
   const s = setup({ withProps: true }); s.visible(true); s.tick();
@@ -258,4 +252,39 @@ test('hidden tabs and pointer cancellation release held monsters and remove thei
     assert.equal(s.canvas.hasPointerCapture(event.pointerId), false); s.visibility(false);
   }
   s.dispose();
+});
+
+
+test('monster impacts wake another monster and coin without layout reads, then all bodies settle', () => {
+  const s = setup({ withProps: true }); s.visible(true); s.tick();
+  let reads = 0;
+  for (const p of s.propNodes) { const original = p.art.getBoundingClientRect; p.art.getBoundingClientRect = () => { reads++; return original(); }; }
+  const down = { ...mouse(), clientX: 774, clientY: 426 };
+  s.heroEvents.pointerdown(down); const before = reads;
+  s.heroEvents.pointermove({ ...down, clientX: 935 });
+  let monsterHit = false, coinHit = false;
+  for (let i = 0; i < 35; i++) {
+    s.tick(); monsterHit ||= s.propNodes[1].art.dataset.dragState === 'falling'; coinHit ||= s.propNodes[2].art.dataset.dragState === 'falling';
+  }
+  assert.ok(monsterHit); assert.ok(coinHit);
+  const report = JSON.parse(s.canvas.dataset.performance);
+  assert.ok(report.propContacts > 0); assert.ok(report.collisionPairs <= 45);
+  assert.equal(reads, before); assert.equal(s.canvas.attributes['aria-pressed'], 'false');
+  assert.equal(s.raf.size + s.timers.size, 1);
+  s.windowEvents.pointerup(down); run(s, 250);
+  assert.ok(s.propNodes.every(p => !p.art.dataset.dragState && !p.art.style.transform));
+  assert.equal(JSON.parse(s.canvas.dataset.performance).collisionPairs, 0);
+  s.dispose();
+});
+
+test('coins can be dragged into monsters; slow devices disable collision work before stopping the banner', () => {
+  const s = setup({ withProps: true }); s.visible(true); s.tick();
+  const down = { ...mouse(), clientX: 974, clientY: 426 };
+  s.heroEvents.pointerdown(down); assert.equal(s.propNodes[2].art.dataset.dragState, 'held');
+  s.heroEvents.pointermove({ ...down, clientX: 850 }); run(s, 35);
+  assert.equal(s.propNodes[1].art.dataset.dragState, 'falling');
+  assert.ok(JSON.parse(s.canvas.dataset.performance).propContacts > 0); s.dispose();
+  const slow = setup({ withProps: true, cost: 10, cores: 4 }); slow.visible(true); run(slow, 30);
+  assert.equal(JSON.parse(slow.canvas.dataset.performance).collisionsEnabled, false);
+  slow.dispose();
 });

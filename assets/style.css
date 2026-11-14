@@ -177,7 +177,7 @@ h2 { font-size: 1.35rem; margin: 48px 0 16px; }
 @media (max-width: 760px), (prefers-reduced-motion: reduce) { .hero-toy-hint { display: none; } }
 /* Pointer play has no focus ring; keyboard navigation retains the visible focus indicator. */
 .hero[data-toy-input='pointer'] .hero-storm:focus, .hero[data-toy-input='pointer'] .hero-prop-hit:focus { outline: none; }
-.hero-prop-hit[data-kind='mushroom'], .hero-prop-hit[data-kind='slime'] { cursor: grab; }
+.hero-prop-hit[data-kind] { cursor: grab; }
 .hero[data-monster-held] .hero-storm, .hero[data-monster-held] .hero-prop-hit { cursor: grabbing; }
 .hero-prop-art[data-drag-state] { will-change: transform; }
 .hero-prop-stage { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
