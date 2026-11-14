@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest.",
  "updates": [
   {
+   "id": "market-speed",
+   "version": "0.4.23",
+   "level": "patch",
+   "date": "2026-11-14",
+   "path": "/tools/market/",
+   "ko": "시세 서버 성능 개선 — 시세·그래프가 더 빠르고, 사람이 몰려도 멈추지 않게",
+   "en": "Market server speed-up — faster prices and charts that hold up under heavy traffic",
+   "desc": {
+    "ko": "시세 목록, 인기 순위, 아이템 시세 그래프를 미리 계산해 둔 요약에서 바로 읽도록 바꿨어요. 매물이 쌓이거나 방문자가 늘어도 느려지거나 멈추지 않고, 지난 시세는 날짜별로 계속 보관돼 오래된 그래프도 사라지지 않아요.",
+    "en": "The market list, live ranking and item price charts now read from pre-computed summaries. Pages stay fast as listings pile up and visitors grow, and past prices are kept day by day, so older charts no longer disappear."
+   }
+  },
+  {
    "id": "one-price",
    "version": "0.4.22",
    "level": "minor",
