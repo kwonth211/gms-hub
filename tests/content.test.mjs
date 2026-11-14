@@ -232,10 +232,9 @@ test('bosses page lists every field boss with its spawn map and says respawn tim
   assert.match(ko,/<strong>마노<\/strong><small>Mano<\/small>/);
   assert.match(read('dist/sitemap.xml'),/\/en\/bosses\//);
 });
-test('non-Korean homes lead with the database and keep the site directory last',()=>{
+test('every home uses the Korean section order: live market, tools, then the site directory',()=>{
   const en=read('dist/en/index.html'), ko=read('dist/ko/index.html');
-  assert.ok(en.indexOf('home-tools')<en.indexOf('id="live-market"')&&en.indexOf('id="live-market"')<en.indexOf('purposes-wrap'));
-  assert.ok(ko.indexOf('id="live-market"')<ko.indexOf('home-tools'));
+  for (const h of [en,ko]) assert.ok(h.indexOf('id="live-market"')<h.indexOf('home-tools')&&h.indexOf('home-tools')<h.indexOf('purposes-wrap'));
   assert.match(en,/<title>GMS Hub: MapleStory Classic World \(MSCW\) Drops/);
 });
 test('equipment finder lists obtainable gear per class with stats and where to get it',()=>{
