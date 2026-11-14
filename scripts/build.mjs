@@ -1036,6 +1036,7 @@ const LIVE = {
     more: '실시간 시세 전체 보기',
     updated: '{t} 갱신',
     fresh: '방금 새 매물 {n}건',
+    refresh: '새로고침', checked: '{t} 갱신됨', noneNew: '새 매물 없음', gotNew: '새 매물 {n}건',
     sparkLabel: '{name} 7일 추이: {from}에서 {to}',
     sparkHours: '{name} 24시간 추이: {from}에서 {to}',
     noTrend: '추이 데이터 부족',
@@ -1058,6 +1059,7 @@ const LIVE = {
     more: 'Open the live market',
     updated: 'updated {t}',
     fresh: '{n} new just now',
+    refresh: 'Refresh', checked: 'checked {t}', noneNew: 'Nothing new yet', gotNew: '{n} new',
     sparkLabel: '{name} 7-day trend: {from} to {to}',
     sparkHours: '{name} 24-hour trend: {from} to {to}',
     noTrend: 'not enough data for a trend',
@@ -1087,7 +1089,7 @@ ${collectionStatus(lang)}
 <ol class="rank-list" id="rank-list"></ol>
 </div>
 <div class="market-panel market-recent">
-<h3 class="recent-head"><span class="live-badge"><i aria-hidden="true"></i>LIVE</span>${t.recent}</h3>
+<h3 class="recent-head"><span class="live-badge"><i aria-hidden="true"></i>LIVE</span>${t.recent}<span class="recent-tools"><small class="recent-ago" id="recent-ago" aria-live="polite"></small><button type="button" class="recent-refresh" id="recent-refresh" title="${t.refresh}"><svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="M16 10a6 6 0 1 1-1.8-4.3M16 3.5v3.7h-3.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>${t.refresh}</span></button></span></h3>
 <div class="live-next" id="live-next" aria-hidden="true"></div>
 <ol class="recent-list" id="live-rows"><li class="market-empty">${t.empty}</li></ol>
 <a class="market-more" href="${href(langPath(lang, '/tools/market/'))}?view=listings">${t.more}</a>

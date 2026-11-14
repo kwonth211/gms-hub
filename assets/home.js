@@ -673,7 +673,7 @@ function renderTop(top, byId) {
 // (and on the first draw the newest few) drop in one at a time at the top, spread over the time until the next refresh,
 // while the oldest row slides out. "12초 전" ticks every second, and a thin bar shows when the next refresh comes.
 const rowKey = (r) => `${r.item}|${r.seller}|${r.price}|${r.seen}`;
-let shownRows = null, pendingRows = [], dripTimer = 0, liveById = null;
+let shownRows = null, pendingRows = [], dripTimer = 0, liveById = null, lastFresh = 0, manualRefresh = false;
 const FIRST_DRIP = 4;
 
 function recentRow(r, it, fresh) {
@@ -726,9 +726,10 @@ function renderRecent(rows, byId) {
   // Later refreshes: only listings not yet on screen or waiting, oldest first at the end of the queue.
   const known = new Set([...shownRows, ...pendingRows].map(rowKey));
   const fresh = all.filter((r) => !known.has(rowKey(r)));
+  lastFresh = fresh.length;
   if (fresh.length) {
     pendingRows = [...fresh, ...pendingRows].slice(0, LIVE_ROWS);
-    scheduleDrip(LIVE_REFRESH_MS * 0.8);
+    scheduleDrip(manualRefresh ? 2500 : LIVE_REFRESH_MS * 0.8);
   }
   return shownRows.length + pendingRows.length;
 }
@@ -740,6 +741,8 @@ setInterval(() => {
   document.querySelectorAll('#live-rows .ago[data-seen]').forEach((el) => (el.textContent = ago(el.dataset.seen)));
   const first = document.querySelector('#live-rows .ago[data-seen]');
   if (first) document.getElementById('live-updated').textContent = liveText.updated.replace('{t}', ago(first.dataset.seen));
+  const checked = document.getElementById('recent-ago');
+  if (checked && !checked.dataset.hold) checked.textContent = liveText.checked.replace('{t}', ago(new Date(lastRefresh).toISOString().slice(0, 19).replace('T', ' ')));
   const bar = document.getElementById('live-next');
   if (bar) bar.style.setProperty('--p', Math.min(1, (Date.now() - lastRefresh) / LIVE_REFRESH_MS).toFixed(3));
 }, 1000);
@@ -813,6 +816,30 @@ if (live) {
   live.addEventListener('click', (e) => {
     const a = e.target.closest('a[href*="?q="]');
     if (a) track('live_market_click', { item: decodeURIComponent(a.href.split('?q=')[1] || ''), list: a.closest('#rank-list') ? 'top' : 'recent' });
+  });
+  // The refresh button reloads only this feed (one small request), not the page. New listings drop in within seconds;
+  // a 10-second cooldown keeps repeated taps from hammering the API.
+  const btn = document.getElementById('recent-refresh');
+  btn?.addEventListener('click', async () => {
+    if (btn.disabled || !liveById) return;
+    btn.disabled = true;
+    btn.classList.add('spinning');
+    const label = document.getElementById('recent-ago');
+    try {
+      const rows = await fetch(`${live.dataset.api}/listings/recent`, { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null));
+      lastRefresh = Date.now();
+      manualRefresh = true;
+      if (rows) renderRecent(rows, liveById);
+      manualRefresh = false;
+      if (label) {
+        label.dataset.hold = '1';
+        label.textContent = lastFresh ? liveText.gotNew.replace('{n}', lastFresh) : liveText.noneNew;
+        setTimeout(() => delete label.dataset.hold, 3000);
+      }
+      track('live_refresh', { ui_value: String(lastFresh) });
+    } catch {}
+    setTimeout(() => btn.classList.remove('spinning'), 600);
+    setTimeout(() => (btn.disabled = false), 10000);
   });
   refreshLive();
   setInterval(refreshLive, LIVE_REFRESH_MS);
