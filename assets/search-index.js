@@ -39,6 +39,22 @@ const initials = (s) => [...s].map((ch) => {
   return code >= 0 && code <= 11171 ? String.fromCharCode(0x1100 + Math.floor(code / 588)) : ch;
 }).join('');
 
+// A syllable still being typed often shows the next syllable's first consonant as its final ("귁" on the way to 귀고리,
+// "갑오" to 갑옷, "됒" to 돼지). Comparing letter by letter (jamo) lets those half-typed words still find the item.
+const CHO = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ', JUNG = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅗㅏ', 'ㅗㅐ', 'ㅗㅣ', 'ㅛ', 'ㅜ', 'ㅜㅓ', 'ㅜㅔ', 'ㅜㅣ', 'ㅠ', 'ㅡ', 'ㅡㅣ', 'ㅣ'];
+const JONG = ['', 'ㄱ', 'ㄲ', 'ㄱㅅ', 'ㄴ', 'ㄴㅈ', 'ㄴㅎ', 'ㄷ', 'ㄹ', 'ㄹㄱ', 'ㄹㅁ', 'ㄹㅂ', 'ㄹㅅ', 'ㄹㅌ', 'ㄹㅍ', 'ㄹㅎ', 'ㅁ', 'ㅂ', 'ㅂㅅ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+const COMPAT = { ㅘ: 'ㅗㅏ', ㅙ: 'ㅗㅐ', ㅚ: 'ㅗㅣ', ㅝ: 'ㅜㅓ', ㅞ: 'ㅜㅔ', ㅟ: 'ㅜㅣ', ㅢ: 'ㅡㅣ', ㄳ: 'ㄱㅅ', ㄵ: 'ㄴㅈ', ㄶ: 'ㄴㅎ', ㄺ: 'ㄹㄱ', ㄻ: 'ㄹㅁ', ㄼ: 'ㄹㅂ', ㄽ: 'ㄹㅅ', ㄾ: 'ㄹㅌ', ㄿ: 'ㄹㅍ', ㅀ: 'ㄹㅎ', ㅄ: 'ㅂㅅ' };
+export const jamo = (s) => [...String(s)].map((ch) => {
+  const c = ch.charCodeAt(0) - 0xac00;
+  if (c < 0 || c > 11171) return COMPAT[ch] || ch;
+  return CHO[Math.floor(c / 588)] + JUNG[Math.floor((c % 588) / 28)] + JONG[c % 28];
+}).join('');
+// Korean typed with the keyboard still in English mode ("rnlrhf" for 귀골, "dkeo" for 아대): map the keys back to letters.
+const KEY = { q: 'ㅂ', w: 'ㅈ', e: 'ㄷ', r: 'ㄱ', t: 'ㅅ', y: 'ㅛ', u: 'ㅕ', i: 'ㅑ', o: 'ㅐ', p: 'ㅔ', a: 'ㅁ', s: 'ㄴ', d: 'ㅇ', f: 'ㄹ', g: 'ㅎ',
+  h: 'ㅗ', j: 'ㅓ', k: 'ㅏ', l: 'ㅣ', z: 'ㅋ', x: 'ㅌ', c: 'ㅊ', v: 'ㅍ', b: 'ㅠ', n: 'ㅜ', m: 'ㅡ', Q: 'ㅃ', W: 'ㅉ', E: 'ㄸ', R: 'ㄲ', T: 'ㅆ', O: 'ㅒ', P: 'ㅖ' };
+export const keysToJamo = (s) => (/^[a-zA-Z\s]+$/.test(s) ? [...s].map((ch) => KEY[ch] || KEY[ch.toLowerCase()] || ch).join('') : null);
+const jamoWords = (s) => String(s).trim().split(/\s+/u).map((w) => jamo(normalize(w) || w).replace(/[^ㄱ-ㆎ\p{L}\p{N}]/gu, '')).filter(Boolean);
+
 // Cash items have English names only, even in the Korean client, so Korean descriptive words also try their English
 // counterparts ("토끼 모자" finds Bunny Hat). These rank below any name match but above a word that only appears in a description.
 const KO_EN = { 토끼: ['bunny', 'rabbit'], 고양이: ['cat'], 강아지: ['puppy', 'dog'], 곰: ['bear'], 악마: ['devil'], 천사: ['angel'],
@@ -59,6 +75,7 @@ export function indexEntry(entry) {
     aliasNames: names.map(canonical),
     aliasText: canonical(`${names.join(' ')} ${keywords}`),
     initials: names.map((name) => normalize(initials(name))),
+    jamoNames: names.map((name) => jamo(normalize(name))),
     // Gear type words ("아대", "claw") from entry.types: a search for just the type ranks that gear with name matches.
     typeNames: (entry.types || []).filter(Boolean).flatMap((t) => [normalize(t), canonical(t)]),
   };
@@ -73,6 +90,10 @@ function searchCore(entries, query) {
   const aliasWords = String(expanded).trim().split(/\s+/u).map(canonical).filter(Boolean);
   const initialQuery = /^[\u1100-\u1112]+$/.test(flat);
   const latin = /^[a-z0-9]+$/.test(flat);
+  // Letter-level matching only for Korean with at least two letters per word, so one stray consonant matches nothing.
+  const hangulish = /[\u3131-\u318e\uac00-\ud7a3]/.test(query);
+  const jamoQuery = hangulish ? jamoWords(query) : [];
+  if (jamoQuery.some((w) => [...w].length < 3)) jamoQuery.length = 0;
   // Every word with an English counterpart, swapped in turn, gives the query a set of English variants.
   const typed = String(query).trim().split(/\s+/u);
   let variants = typed.some((word) => KO_EN[word]) ? [typed] : [];
@@ -92,6 +113,7 @@ function searchCore(entries, query) {
     else if (aliasNames.some((name) => aliasWords.every((word) => name.includes(word)))) score = 65;
     else if (initialQuery && entry.initials.some((name) => name.includes(flat))) score = 60;
     else if (text.includes(flat) || words.every((word) => text.includes(word))) score = 40;
+    else if (hangulish && jamoQuery.length && entry.jamoNames.some((name) => jamoQuery.every((w) => name.includes(w)))) score = 38;
     else if (aliasText.includes(alias) || aliasWords.every((word) => aliasText.includes(word))) score = 30;
     if (score < 80 && entry.typeNames.length && (entry.typeNames.includes(flat) || entry.typeNames.includes(alias))) score = 80;
     if (score < 42 && variants.some((v) => names.some((name) => v.every((word) => name.includes(word))))) score = 42;
@@ -111,7 +133,7 @@ const EN_WORD = { glove: 'gloves', earrings: 'earring', ear: 'earring', ears: 'e
   bottom: 'bottomwear', bot: 'bottomwear', pants: 'bottomwear', shoe: 'shoes', boots: 'shoes', ova: 'overall', att: 'attack',
   atk: 'attack', attk: 'attack', wa: 'attack', matt: 'magic attack', matk: 'magic attack', acc: 'accuracy', avoid: 'evasion',
   avoidability: 'evasion', eva: 'evasion', spd: 'speed', jmp: 'jump', zak: 'zakum', '1h': 'one-handed', '2h': 'two-handed',
-  '100': 'lesser', '60': 'intermediate', '10': 'greater', ...EN_WHOLE };
+  luck: 'luk', luc: 'luk', earing: 'earring', '100': 'lesser', '60': 'intermediate', '10': 'greater', ...EN_WHOLE };
 export function englishQuery(query) {
   const raw = String(query).trim().toLowerCase();
   if (!raw || !/^[a-z0-9%.\s-]+$/.test(raw)) return null;
@@ -120,8 +142,43 @@ export function englishQuery(query) {
   return out === raw ? null : out;
 }
 
+
+// Builds syllables from a row of letters the way a Korean keyboard does (ㄱㅟㄱㅗㄹ → 귀골).
+const CHO_I = Object.fromEntries([...CHO].map((c, i) => [c, i]));
+const JUNG_I = Object.fromEntries(['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'].map((c, i) => [c, i]));
+const JONG_I = Object.fromEntries(['', 'ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'].map((c, i) => [c, i]));
+const VV = { ㅗㅏ: 'ㅘ', ㅗㅐ: 'ㅙ', ㅗㅣ: 'ㅚ', ㅜㅓ: 'ㅝ', ㅜㅔ: 'ㅞ', ㅜㅣ: 'ㅟ', ㅡㅣ: 'ㅢ' };
+const CC = { ㄱㅅ: 'ㄳ', ㄴㅈ: 'ㄵ', ㄴㅎ: 'ㄶ', ㄹㄱ: 'ㄺ', ㄹㅁ: 'ㄻ', ㄹㅂ: 'ㄼ', ㄹㅅ: 'ㄽ', ㄹㅌ: 'ㄾ', ㄹㅍ: 'ㄿ', ㄹㅎ: 'ㅀ', ㅂㅅ: 'ㅄ' };
+const isV = (c) => c in JUNG_I;
+export function compose(letters) {
+  const a = [...letters];
+  let out = '';
+  for (let i = 0; i < a.length;) {
+    const c = a[i];
+    if (!(c in CHO_I) || !isV(a[i + 1] || '')) { out += c; i += 1; continue; }
+    let v = a[i + 1]; i += 2;
+    if (VV[v + a[i]]) { v = VV[v + a[i]]; i += 1; }
+    let t = '';
+    if (a[i] in JONG_I && a[i] && !isV(a[i + 1] || '')) {
+      t = a[i]; i += 1;
+      if (CC[t + a[i]] && !isV(a[i + 1] || '')) { t = CC[t + a[i]]; i += 1; }
+    }
+    out += String.fromCharCode(0xac00 + (CHO_I[c] * 21 + JUNG_I[v]) * 28 + JONG_I[t]);
+  }
+  return out;
+}
+
 export function searchEntries(entries, query) {
   const base = searchCore(entries, query);
+  // Nothing found for Latin letters: maybe Korean typed in English keyboard mode. Rebuild the syllables and try that.
+  if (!base.length) {
+    const keyed = keysToJamo(String(query).trim());
+    const ko = keyed && compose(keyed);
+    if (ko && /^[\uac00-\ud7a3\s]+$/.test(ko)) {
+      const hits = searchCore(entries, ko);
+      if (hits.length) return hits;
+    }
+  }
   const en = englishQuery(query);
   if (!en) return base;
   const best = new Map();

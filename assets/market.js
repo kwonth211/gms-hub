@@ -137,8 +137,16 @@ document.addEventListener("pointerover", (e) => {
   const id = Number(a.dataset.item || new URL(a.href, location.href).searchParams.get("item"));
   hoverTimer = setTimeout(() => prefetchItem(id), 120);
 });
+// Names of the wishlist and recent items, kept in this browser so their chips can be drawn at once on the next visit,
+// before the item index loads (drawing them later pushed the whole list down: layout shift).
+const NAMES_KEY = `mk-mine-names-${D.lang}`;
+let mineNames = {};
+try {
+  const v = JSON.parse(stored(NAMES_KEY) || "{}");
+  if (v && typeof v === "object" && !Array.isArray(v)) mineNames = v;
+} catch {}
 function itemName(id) {
-  return byId.get(id)?.name || `#${id}`;
+  return byId.get(id)?.name || mineNames[id] || `#${id}`;
 }
 function itemLink(id) {
   return `<a class="mb-item-link" href="?item=${id}" data-item="${id}">${icon(id)}<span>${esc(itemName(id))}</span></a>`;
@@ -150,14 +158,21 @@ function starButton(id, extra = "") {
 // item they were watching. Both lists live only in this browser.
 function renderMine() {
   const box = $("mb-mine");
-  recent = recent.filter((id) => byId.has(id));
-  const wish = [...favorites].filter((id) => byId.has(id));
-  box.hidden = !wish.length && !recent.length;
+  // Until the item index arrives, only items whose names this browser remembers are drawn.
+  const known = (id) => (byId.size ? byId.has(id) : id in mineNames);
+  if (byId.size) recent = recent.filter((id) => byId.has(id));
+  const wish = [...favorites].filter(known);
+  const shownRecent = recent.filter(known);
+  if (byId.size) {
+    const names = Object.fromEntries([...wish, ...recent].map((id) => [id, itemName(id)]));
+    if (JSON.stringify(names) !== JSON.stringify(mineNames)) { mineNames = names; persist(NAMES_KEY, names); }
+  }
+  box.hidden = !wish.length && !shownRecent.length;
   if (box.hidden) {
     box.innerHTML = "";
     return;
   }
-  box.innerHTML = `${wish.length ? `<button type="button" class="chip mb-mine-wish" data-show-wishlist aria-pressed="${view === "items" && $("mb-favorites").checked}">★ ${tr(`관심 아이템 ${wish.length}`, `Wishlist · ${wish.length}`)}</button>` : ""}${recent.length ? `<span class="mb-mine-label">${tr("최근 본", "Recent")}</span>${recent.map((id) => `<span class="chip mb-recent-chip ${id === selected ? "selected" : ""}"><a href="?item=${id}" data-item="${id}" data-source="recent">${icon(id, 18)}${esc(itemName(id))}</a><button type="button" data-forget="${id}" aria-label="${esc(itemName(id))} ${tr("최근 목록에서 삭제", "remove from recent")}">×</button></span>`).join("")}<button type="button" class="mb-mine-clear" data-forget="all">${tr("최근 목록 지우기", "Clear recent")}</button>` : ""}`;
+  box.innerHTML = `${wish.length ? `<button type="button" class="chip mb-mine-wish" data-show-wishlist aria-pressed="${view === "items" && $("mb-favorites").checked}">★ ${tr(`관심 아이템 ${wish.length}`, `Wishlist · ${wish.length}`)}</button>` : ""}${shownRecent.length ? `<span class="mb-mine-label">${tr("최근 본", "Recent")}</span>${shownRecent.map((id) => `<span class="chip mb-recent-chip ${id === selected ? "selected" : ""}"><a href="?item=${id}" data-item="${id}" data-source="recent">${icon(id, 18)}${esc(itemName(id))}</a><button type="button" data-forget="${id}" aria-label="${esc(itemName(id))} ${tr("최근 목록에서 삭제", "remove from recent")}">×</button></span>`).join("")}<button type="button" class="mb-mine-clear" data-forget="all">${tr("최근 목록 지우기", "Clear recent")}</button>` : ""}`;
 }
 function rememberOpen(id) {
   recent = addRecent(recent, id);
@@ -1289,4 +1304,5 @@ async function initialize() {
 }
 setInterval(refresh, 60000);
 document.addEventListener("visibilitychange", refresh);
+renderMine();
 initialize();

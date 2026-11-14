@@ -1889,10 +1889,11 @@ html[data-charm='off'] .charm-leaves { display: none; }
 .mk-foot { margin: 18px 0 0; }
 /* On a phone, and where the detail panel sits beside the list in a column under ~1600px (narrower still when the side
    ad rails take room), the item name gets its own line; the star, link and close buttons wrap under it instead of squeezing it. */
-@media (max-width: 600px), (min-width: 1051px) and (max-width: 1599px) {
-  .mb-detail .mk-head { flex-wrap: wrap; }
-  .mb-detail .mk-head > div { flex-basis: calc(100% - 52px); }
-}
+/* The item name always gets its own line: the star, alert, link and close buttons wrap under it instead of squeezing it
+   (wide screens with the side ad rails squeezed it to one letter per line). */
+.mb-detail .mk-head { flex-wrap: wrap; }
+.mb-detail .mk-head > div { flex-basis: calc(100% - 52px); }
+.mb-detail .mk-head h2 { overflow-wrap: anywhere; word-break: keep-all; }
 
 /* "More" menu at the end of the header, beside the language menu. */
 /* The details box is as tall as the tabs; flex keeps the summary centred in it instead of on the line box's baseline. */
@@ -2713,3 +2714,6 @@ body.exp-running .exp-stop { display: inline-flex; }
 .map-legend i { width: 12px; height: 12px; border-radius: 50%; flex: none; }
 .map-legend img { image-rendering: pixelated; object-fit: contain; }
 .map-legend small { color: var(--muted); }
+
+/* Before the first list arrives, hold room for it so the footer and ads below do not jump when it fills in. */
+#mb-results[aria-busy="true"]:has(> p:only-child) { min-height: 60vh; }

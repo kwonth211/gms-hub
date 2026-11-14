@@ -96,3 +96,18 @@ test('English shorthand finds scrolls and common item nicknames', () => {
   assert.equal(name('steelies'), 'Steely Throwing Knives');
   assert.equal(name('work gloves'), 'Work Gloves');
 });
+
+test('half-typed Korean and English-keyboard Korean still find items', async () => {
+  const { indexEntry, searchEntries, compose, keysToJamo } = await import('../assets/search-index.js');
+  const entries = [
+    { type: 'item', id: 1, title: '귀고리 STR 주문서: 하급', names: ['귀고리 STR 주문서: 하급'] },
+    { type: 'item', id: 2, title: '전신 갑옷 DEF 주문서: 하급', names: ['전신 갑옷 DEF 주문서: 하급'] },
+    { type: 'item', id: 3, title: '리본돼지 머리띠', names: ['리본돼지 머리띠'] },
+  ].map(indexEntry);
+  const first = (q) => searchEntries(entries, q)[0]?.id;
+  assert.equal(first('귁'), 1);
+  assert.equal(first('전신 갑오'), 2);
+  assert.equal(first('됒'), 3);
+  assert.equal(compose(keysToJamo('rnlrhf')), '귀골');
+  assert.equal(first('rnlrhf'), 1);
+});
