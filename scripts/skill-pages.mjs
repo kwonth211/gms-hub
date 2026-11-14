@@ -1,6 +1,6 @@
 // /skills/: the standard skill builds for every 1st and 2nd job, drawn as an in-game skill window. Skill names, icons,
 // master levels and prerequisites come from the client (data/skills.json, scripts/fetch-skills.mjs); the builds are the
-// overlap of YouTube guides and community write-ups (data/skill-builds.json). The page is complete without scripting:
+// overlap of YouTube guides and community write-ups (data/skill-builds.json); sources stay in the data, not on the page. The page is complete without scripting:
 // every build is rendered at level 30/70; assets/skills.js adds the class/job switch and the level slider.
 import { POOLS, levelsAt, timeline } from '../assets/skill-tree.js';
 
@@ -64,12 +64,6 @@ ${sub.length ? `<ul class="sk-kids">${sub.map((c) => node(c, c.req.find((r) => r
 </div>`;
   };
 
-  const srcChip = (key, guideSlug) => {
-    if (key === 'guide') return guideSlug ? `<a class="sk-src is-guide" href="${link(`/guides/${guideSlug}/`)}">${tr('GMS Hub 공략', 'GMS Hub guide')}</a>` : '';
-    const s = data.sources[key];
-    return `<a class="sk-src is-${s.kind}" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(L(s))}</a>`;
-  };
-
   // A build: its steps with the levels they land on, the note, and who agrees on it.
   const stepsHtml = (b, poolNo) => {
     const pool = POOLS[poolNo];
@@ -97,7 +91,6 @@ ${builds.map((b, i) => `<div class="sk-build" data-build-panel="${b.id}"${i ? ' 
 <h4>${tr('찍는 순서', 'SP order')}${builds.length > 1 ? ` · ${esc(L(b))}` : ''}</h4>
 ${stepsHtml(b, poolNo)}
 <p class="sk-note">${esc(ko ? b.noteKo : b.noteEn)}</p>
-<p class="sk-agree"><span>${tr('이 순서를 쓰는 곳', 'Where this comes from')}</span>${b.agree.map((a) => srcChip(a, guide)).join('')}</p>
 </div>`).join('')}
 </div></div></div>`;
   };
@@ -108,12 +101,12 @@ ${stepsHtml(b, poolNo)}
     return `<section class="sk-class" id="${c.id}" data-class="${c.id}">
 <header class="sk-class-head"><img class="sk-class-ico" src="${icon(main.id)}" alt="" width="40" height="40"><div><h2>${esc(L(c))}</h2><p>${tr(`1차 61포인트 · 2차 121포인트`, '1st job 61 SP · 2nd job 121 SP')}</p></div></header>
 <div class="sk-stat"><h3>${tr('스탯', 'Stats')} <span class="sk-stat-keys"><b>${c.statMain}</b> ${tr('주 스탯', 'main')} · <b>${c.statSub}</b> ${tr('요구치만', 'only as required')}</span></h3>
-<p>${esc(L(c.stat))}</p><p class="sk-agree"><span>${tr('같은 말을 하는 곳', 'Who says so')}</span>${c.statSources.map((a) => srcChip(a)).join('')}</p></div>
+<p>${esc(L(c.stat))}</p></div>
 <h3 class="sk-h">${tr(`${L(c)} 1차 스킬트리`, `${L(c)} 1st job`)}</h3>
 <p class="sk-core">${tr('모든 빌드 공통:', 'Every build:')} <b>${esc(L(c.core))}</b>${c.builds.length > 1 ? tr('. 남는 포인트는 갈 2차에 맞춰 골라요.', '. The rest depends on your 2nd job.') : ''}</p>
 ${tree({ job: c.job, poolNo: 1, builds: c.builds, title: tr(`${L(c)} (1차)`, `${L(c)} (1st job)`) })}
 ${c.builds.some((b) => b.for?.length) && c.builds.length > 1 ? `<p class="sk-for">${c.builds.map((b) => `<span><b>${esc(L(b))}</b> → ${forJobs(b).map(esc).join(', ')}</span>`).join('')}</p>` : ''}
-${c.disagree ? `<aside class="sk-split"><b>${tr('의견이 갈리는 곳', 'Where guides differ')}</b><p>${esc(L(c.disagree))}</p></aside>` : ''}
+${c.disagree ? `<aside class="sk-split"><b>${tr('다른 방법', 'Another way')}</b><p>${esc(L(c.disagree))}</p></aside>` : ''}
 <h3 class="sk-h">${tr('2차 스킬트리', '2nd job')}</h3>
 <div class="sk-jobs" role="tablist" aria-label="${tr('2차 직업', '2nd job')}">${c.second.map((j, i) => `<button type="button" role="tab" class="sk-job-btn" data-job="${j.job}" aria-selected="${i ? 'false' : 'true'}"><img src="${icon(j.builds[0].steps.find(([id]) => book(j.job).find((s) => s.id === id && !s.passive))?.[0] ?? j.builds[0].steps[0][0])}" alt="" width="24" height="24">${esc(L(j))}</button>`).join('')}</div>
 ${c.second.map((j, i) => `<div class="sk-job" data-job-panel="${j.job}" id="${c.id}-${j.job}"${i ? ' data-later' : ''}>
@@ -131,12 +124,10 @@ ${tree({ job: j.job, poolNo: 2, builds: j.builds, title: tr(`${L(j)} (2차)`, `$
   return `<link rel="stylesheet" href="__SK_CSS__">
 <div class="sk">
 <section class="sk-hero wrap"><h1>${tr('글클메 스킬트리 정석', 'Skill builds for every job')}</h1>
-<p>${tr('유튜브 공략과 커뮤니티 정리가 똑같이 말하는 순서만 모았어요. 레벨을 움직이면 그 레벨에 스킬 창이 어떻게 찍혀 있는지 보여요.', 'Only the orders that YouTube guides and community write-ups agree on. Drag the level to see your skill window at that level.')}</p>
+<p>${tr('직업별로 가장 많이 쓰는 스킬 찍는 순서예요. 레벨을 움직이면 그 레벨에 스킬 창이 어떻게 찍혀 있는지 보여요.', 'The most used SP order for every job. Drag the level to see your skill window at that level.')}</p>
 ${picker}</section>
 <div hidden><span data-tpl="advance">${tr('%L레벨 전직: %S', 'Level %L job advance: %S')}</span><span data-tpl="at">${tr('%L레벨에 찍을 것: %S', 'At level %L: %S')}</span><span data-tpl="done">${tr('%L레벨: 이미 다 찍었어요', 'Level %L: everything is already spent')}</span></div>
 <div class="wrap sk-body">${data.classes.map(classSec).join('\n')}</div>
-<section class="wrap sk-how"><h2>${tr('어떻게 정리했나요', 'How this was put together')}</h2>
-<p>${tr('스킬 이름·아이콘·최대 레벨·선행 스킬은 게임 클라이언트 데이터 그대로예요. 찍는 순서는 글클메 공략 영상과 커뮤니티 정리를 맞춰 보고, 두 곳 이상이 같은 순서를 권한 것만 실었어요. 갈리는 곳은 갈래로 나눠 두었어요.', 'Skill names, icons, master levels and prerequisites are straight from the game client. The SP orders are the ones at least two MapleStory Classic World guides (videos and community write-ups) agree on; where they split, both branches are shown.')}</p>
-<p>${tr('1차 포인트(61)는 2차 때 받은 포인트로 채울 수 없어요. 30레벨 전에 1차 스킬을 다 찍어 두세요.', 'Points earned after the 2nd job cannot go into 1st job skills, so finish your 1st job skills before level 30.')}</p></section>
+<section class="wrap sk-how"><p>${tr('1차 포인트(61)는 2차 때 받은 포인트로 채울 수 없어요. 30레벨 전에 1차 스킬을 다 찍어 두세요.', 'Points earned after the 2nd job cannot go into 1st job skills, so finish your 1st job skills before level 30.')}</p></section>
 </div>`;
 }

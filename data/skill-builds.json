@@ -219,8 +219,8 @@
     }
    ],
    "disagree": {
-    "ko": "게임두기 정리는 회복력 향상을 3에서 멈추고 슬래시 블러스트를 19까지 올려요. 영상 두 편은 회복력 향상 15를 공통으로 찍어서, 여기서는 그쪽을 따랐어요.",
-    "en": "Gamedoogi stops Improved HP Recovery at 3 and takes Slash Blast to 19. Both videos max HP Recovery at 15, so this page follows them."
+    "ko": "HP 회복력 향상을 3에서 멈추고 슬래시 블러스트를 19까지 올리는 방법도 있어요.",
+    "en": "You can also stop Improved HP Recovery at 3 and take Slash Blast to 19."
    },
    "second": [
     {
@@ -336,8 +336,8 @@
          20
         ]
        ],
-       "noteKo": "공략 사이트에서 주로 권하는 순서예요.",
-       "noteEn": "The order guide sites usually give.",
+       "noteKo": "가장 많이 쓰는 순서예요.",
+       "noteEn": "The most used order.",
        "agree": [
         "gd-warrior",
         "guide"
@@ -385,8 +385,8 @@
          20
         ]
        ],
-       "noteKo": "둔기 페이지들이 많이 가는 길이에요. 느린 둔기로 한 번 휘두를 시간에 돌진이 거의 두 번 나가서 놓친 몬스터를 금방 정리해요.",
-       "noteEn": "What many blunt-weapon Pages do: Rush fires almost twice in one slow swing, so stray monsters get cleaned up fast.",
+       "noteKo": "느린 둔기로 한 번 휘두를 시간에 돌진이 거의 두 번 나가서, 놓친 몬스터를 금방 정리해요.",
+       "noteEn": "Rush fires almost twice in one slow blunt-weapon swing, so stray monsters get cleaned up fast.",
        "agree": [
         "guide"
        ]
@@ -558,8 +558,8 @@
     }
    ],
    "disagree": {
-    "ko": "최대 MP 증가는 이제 찍는 순간 최대 MP가 퍼센트로 오르는 방식이라 늦게 찍어도 손해가 없어요. 게임두기 정리는 회복력 향상 대신 최대 MP 증가를 15까지 올리는 빌드를 기본으로 둬요.",
-    "en": "Max MP Increase now adds a percentage the moment you take it, so taking it late loses nothing. Gamedoogi's default maxes Max MP Increase instead of MP Recovery."
+    "ko": "최대 MP 증가는 찍는 순간 최대 MP가 퍼센트로 올라서 늦게 찍어도 손해가 없어요. 회복력 향상 대신 최대 MP 증가를 15까지 올리는 방법도 있어요.",
+    "en": "Max MP Increase adds a percentage the moment you take it, so taking it late loses nothing. You can also max Max MP Increase instead of MP Recovery."
    },
    "second": [
     {
@@ -660,8 +660,8 @@
          1
         ]
        ],
-       "noteKo": "공략 사이트들이 주로 권하는 순서예요. 콜드 빔이 낮을 땐 1차 공격기가 더 세니 35~38레벨쯤 콜드 빔으로 바꿔요.",
-       "noteEn": "The order guide sites give. Your 1st job attack is stronger while Cold Beam is low, so switch around level 35–38.",
+       "noteKo": "콜드 빔이 낮을 땐 1차 공격기가 더 세니 35~38레벨쯤 콜드 빔으로 바꿔요.",
+       "noteEn": "Your 1st job attack is stronger while Cold Beam is low, so switch around level 35–38.",
        "agree": [
         "gd-magician",
         "guide"
@@ -705,8 +705,8 @@
          1
         ]
        ],
-       "noteKo": "직접 키운 플레이어들이 많이 가는 길이에요. 썬더 볼트는 마지막에 채워요.",
-       "noteEn": "What many players who levelled one did: Thunder Bolt comes last.",
+       "noteKo": "썬더 볼트는 마지막에 채워요.",
+       "noteEn": "Thunder Bolt comes last.",
        "agree": [
         "guide"
        ]
@@ -1088,8 +1088,8 @@
        8
       ]
      ],
-     "noteKo": "다크 사이트를 마스터하는 것보다 님블 바디를 먼저 채우라는 의견이 많아요. 퓨전 도적(2차 시프)도 1차는 이대로 찍고 40~45레벨에 스킬 초기화로 단검으로 넘어가요.",
-     "noteEn": "Most advice fills Nimble Body before Dark Sight. Fusion thieves (Bandit at 2nd job) use this 1st job too and switch to daggers with a skill reset around level 40–45.",
+     "noteKo": "님블 바디를 다크 사이트보다 먼저 채워요. 퓨전 도적(2차 시프)도 1차는 이대로 찍고 40~45레벨에 스킬 초기화로 단검으로 넘어가요.",
+     "noteEn": "Fill Nimble Body before Dark Sight. Fusion thieves (Bandit at 2nd job) use this 1st job too and switch to daggers with a skill reset around level 40–45.",
      "agree": [
       "yt-thief",
       "gd-thief",

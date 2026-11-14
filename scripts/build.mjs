@@ -3237,7 +3237,7 @@ for (const lang of LANGS) {
     write(path.join(lang, 'skills', 'index.html'), page({
       lang, pageKey: 'skills', pagePath: '/skills/', modules: ['skills.js'],
       title: lang === 'ko' ? '글클메 스킬트리 정석: 전사·법사·궁수·도적 1차·2차 스킬 찍는 순서와 스탯 | GMS Hub' : 'MapleStory Classic World Skill Builds: 1st & 2nd Job SP Order and Stats for Every Class | GMS Hub',
-      desc: lang === 'ko' ? '글클메 파이터·페이지·스피어맨·불독·썬콜·클레릭·헌터·사수·어쌔신·시프 스킬트리 정석. 유튜브 공략과 커뮤니티가 같이 권하는 SP 순서와 스탯 찍는 법을 게임 스킬 창처럼 보여주고, 레벨별로 무엇을 찍는지 바로 보여줘요.' : 'Standard skill builds for every MapleStory Classic World job: Fighter, Page, Spearman, Fire/Poison, Ice/Lightning, Cleric, Hunter, Crossbowman, Assassin and Bandit. The SP orders YouTube guides and the community agree on, plus stat advice, in an in-game style skill window with a level slider.',
+      desc: lang === 'ko' ? '글클메 파이터·페이지·스피어맨·불독·썬콜·클레릭·헌터·사수·어쌔신·시프 스킬트리 정석. 가장 많이 쓰는 SP 순서와 스탯 찍는 법을 게임 스킬 창처럼 보여주고, 레벨별로 무엇을 찍는지 바로 보여줘요.' : 'Standard skill builds for every MapleStory Classic World job: Fighter, Page, Spearman, Fire/Poison, Ice/Lightning, Cleric, Hunter, Crossbowman, Assassin and Bandit. The most used SP orders and stat advice in an in-game style skill window with a level slider.',
       body: skillsBody({ lang, skills: SKILLS, data: SKILL_BUILDS, link, icon: (id) => href(`/assets/skills/${id}.png`) }).replace('__SK_CSS__', scriptSrc('skills.css')),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '스킬트리 정석' : 'Skill builds', '/skills/')]
     }));
