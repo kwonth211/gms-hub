@@ -27,7 +27,7 @@ export function publicRates(r, evidence) {
   });
 }
 export function publicTrainingData(data, evidence = null) {
-  const keys = ['id','level','jobs','party','advanced','costTier','title','monsters','summary','entry','route','cost','exit','alternative','mobs'];
+  const keys = ['id','level','jobs','party','advanced','costTier','title','monsters','summary','entry','route','cost','exit','alternative','mobs','drops'];
   return { version: data.version, updated: data.updated, routes: data.routes.map(r => ({ ...Object.fromEntries(keys.map(k => [k,r[k]])), rates: publicRates(r, evidence) })) };
 }
 // "8.8만" / "88k" style numbers; a range shows both ends.
@@ -64,7 +64,10 @@ export function routeCards(rows, lang = 'ko', prefix = `/${lang}`) {
   if (!rows.length) return `<div class="panel tr-empty"><h3>${tr('조건을 조금 넓혀 비교해 보세요', 'Broaden one filter to compare options')}</h3><p>${tr('솔로 조건을 해제하거나 장비 조건부 후보를 포함할 수 있어요. 지금 사냥터에서 처치 타수가 줄었다면, 레벨이 올라도 그곳을 유지하는 편이 나을 수 있어요.', 'Try allowing parties or equipped-character options. Staying on a lower-level map can still be effective when your kill count improves.')}</p><a href="${prefix}/guides/leveling-30-70/">${tr('직업별 다음 동선 보기', 'Class progression guide')}</a></div>`;
   // A level-ordered list read like a guide table: the level band as a bar, the map, its monsters and the accuracy they
   // need in one line; the advice opens underneath. `--you` on the list (set by the finder) marks the reader's level.
-  const head = `<div class="tr-row-head" aria-hidden="true"><span>${tr('레벨','Level')}</span><span>${tr('사냥터','Route')}</span><span>${tr('몬스터','Monsters')}</span><span>${tr('필요 명중','Accuracy')}</span></div>`;
+  const head = `<div class="tr-row-head" aria-hidden="true"><span>${tr('레벨','Level')}</span><span>${tr('사냥터','Route')}</span><span>${tr('몬스터','Monsters')}</span><span>${tr('주요 드롭','Top drops')}</span><span>${tr('필요 명중','Accuracy')}</span></div>`;
+  // Item names stay as in the game client; prices are the live market's (3+ listings), shown in 만 / k.
+  const icon = (id) => `<img class="tr-drop-icon" src="https://maplestory.io/api/MCW/1/item/${id}/icon" width="24" height="24" alt="" loading="lazy">`;
+  const dropLink = (d) => `<a href="${prefix}${d.path}">${icon(d.id)}<span><b>${esc(lang === 'ko' ? d.ko : d.en)}</b>${d.price ? `<small translate="no">${rateNum(d.price, lang)}${lang === 'ko' ? ' 메소' : ''}</small>` : ''}</span></a>`;
   return `<div class="tr-route-list">${head}${rows.map(r => {
     const item = (label,value) => `<div><dt>${label}</dt><dd>${esc(value[lang])}</dd></div>`;
     // One scale for every row (levels 1–80) so bars compare at a glance; bands past 80 run to the end.
@@ -78,8 +81,8 @@ export function routeCards(rows, lang = 'ko', prefix = `/${lang}`) {
     const badge = best ? `<span class="tr-rate-badge tr-rate-${esc(best.basis)}" translate="no">${best.exp != null ? `${rateNum(best.exp, lang)} exp/h` : `${rateNum(best.mesos, lang)} ${tr('메소','mesos')}/h`}</span>` : '';
     const rateBlock = rates.length ? `<div class="tr-rates"><h4>${tr('시간당 경험치·메소','EXP and mesos an hour')}</h4><ul>${rateLines(rates, lang, tx)}</ul></div>` : '';
     return `<details class="tr-row" id="route-${esc(r.id)}" data-route="${esc(r.id)}">
-<summary><span class="tr-lv"><b>Lv. ${r.level.min}–${r.level.max}</b>${bar}</span><span class="tr-name"><strong>${esc(r.title[lang])}</strong>${badge}<span class="tr-who">${who.map(w => `<span>${w}</span>`).join('')}</span></span><span class="tr-mobs">${mobs}</span><span class="tr-acc">${acc != null ? `<span><span class="sr-only">${tr('필요 명중','Accuracy')} </span>${acc}</span>` : '<span>–</span>'}<small>${acc != null ? tr(`Lv. ${r.level.min} 기준`, `at Lv. ${r.level.min}`) : ''}</small></span></summary>
-<div class="tr-detail"><p>${esc(r.summary[lang])}</p>${rateBlock}<p class="tr-exp-link"><a href="${prefix}/tools/exp/?route=${encodeURIComponent(r.id)}&${r.mobs?.[0] ? `mob=${r.mobs[0].id}&` : ''}spot=${encodeURIComponent(r.title[lang])}">${tr('이 사냥터에서 내 시간당 경험치 재 보기','Measure your own EXP per hour here')}</a></p><dl>${item(tr('진입 기준','Before moving'),r.entry)}${item(tr('물약과 비용','Supplies and costs'),r.cost)}${item(tr('가는 길과 동선','Access and rotation'),r.route)}${item(tr('옮길 때','When to move'),r.exit)}${item(tr('자리 없을 때','Alternative'),r.alternative)}</dl></div></details>`;
+<summary><span class="tr-lv"><b>Lv. ${r.level.min}–${r.level.max}</b>${bar}</span><span class="tr-name"><strong>${esc(r.title[lang])}</strong>${badge}<span class="tr-who">${who.map(w => `<span>${w}</span>`).join('')}</span></span><span class="tr-mobs">${mobs}</span><span class="tr-drops">${(r.drops || []).slice(0, 3).map(dropLink).join('') || '<span>–</span>'}</span><span class="tr-acc">${acc != null ? `<span><span class="sr-only">${tr('필요 명중','Accuracy')} </span>${acc}</span>` : '<span>–</span>'}<small>${acc != null ? tr(`Lv. ${r.level.min} 기준`, `at Lv. ${r.level.min}`) : ''}</small></span></summary>
+<div class="tr-detail"><p>${esc(r.summary[lang])}</p>${rateBlock}${(r.drops || []).length > 3 ? `<div class="tr-drop-all"><h4>${tr('이 사냥터 드롭 아이템','Drops on this route')}</h4><div class="tr-drops">${r.drops.map(dropLink).join('')}</div><small>${tr('시세는 실시간 시세 페이지의 최근 가격이에요. 가격이 없는 건 매물이 3건 미만인 아이템이에요.','Prices are recent live-market prices; items without one had fewer than 3 listings.')}</small></div>` : ''}<p class="tr-exp-link"><a href="${prefix}/tools/exp/?route=${encodeURIComponent(r.id)}&${r.mobs?.[0] ? `mob=${r.mobs[0].id}&` : ''}spot=${encodeURIComponent(r.title[lang])}">${tr('이 사냥터에서 내 시간당 경험치 재 보기','Measure your own EXP per hour here')}</a></p><dl>${item(tr('진입 기준','Before moving'),r.entry)}${item(tr('물약과 비용','Supplies and costs'),r.cost)}${item(tr('가는 길과 동선','Access and rotation'),r.route)}${item(tr('옮길 때','When to move'),r.exit)}${item(tr('자리 없을 때','Alternative'),r.alternative)}</dl></div></details>`;
   }).join('')}</div>`;
 }
 export function validateTraining(data, evidence, monsters = null) {

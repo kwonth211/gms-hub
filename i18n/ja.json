@@ -4544,5 +4544,18 @@
  "{e0} platforms and spawn points": "{e0} の足場とモンスター出現地点",
  "Every map page now shows the map as it looks in game, next to a diagram of its platforms, ropes and every monster spawn point in game coordinates, plus how many floors the monsters stand on (one floor = a flat map) and the map size.": "各マップページに、ゲーム内の実際のマップと、足場・ロープ・すべてのモンスター出現地点をゲーム座標のまま描いた図が表示されます。モンスターが何階層に分かれているか（1階層なら一直線マップ）とマップサイズも表示します。",
  "Maps now show the map": "マップ図鑑にマップ表示",
- "Maps now show the map — the in-game picture and where every monster spawns": "マップ図鑑にマップ表示 — ゲーム内の実際の画面とモンスター出現位置"
+ "Maps now show the map — the in-game picture and where every monster spawns": "マップ図鑑にマップ表示 — ゲーム内の実際の画面とモンスター出現位置",
+ "Drops on this route": "この狩り場のドロップ",
+ "Prices are recent live-market prices; items without one had fewer than {n0} listings.": "価格はリアルタイム相場の直近価格です。価格のないアイテムは出品が{n0}件未満です。",
+ "Top drops": "主なドロップ",
+ "/alert add": "/alert add",
+ "<b>Get it on Discord</b>: join the GMS Hub Discord and type": "<b>Discordで受け取る</b>：GMS HubのDiscordに参加して入力",
+ "Discord price alerts": "Discord価格通知",
+ "Discord price alerts — a DM when an item is listed at your price": "Discord価格通知 — 希望価格で出品されたらDM",
+ "In Discord, /alert add with an item and a price (e.g. {n0}m) sends you a DM as soon as a shop or megaphone sells it at that price or less. A cheaper listing alerts you again; the same one does not repeat. The 🔔 Price alert button on the market shows how.": "Discordで /alert add にアイテムと価格（例：{n0}m）を入れると、露店や拡声器でその価格以下の出品が出た時点でDMが届きます。さらに安い出品があれば再度通知し、同じ出品は繰り返しません。相場画面の🔔価格通知ボタンでも案内しています。",
+ "Open Discord": "Discordを開く",
+ "The training table now shows the three priciest items the spot's monsters drop, with live prices. Open a row to see up to {n0} drops; each links to the item's price page.": "狩り場の表に、その狩り場のモンスターが落とすアイテムのうち相場の高い3つを価格付きで表示します。行を開くと最大{n0}個のドロップが見られ、押すとアイテムの相場ページに移動します。",
+ "Training spots now list top drops": "狩り場おすすめに主なドロップ",
+ "Training spots now list top drops — the priciest items each spot drops, with prices": "狩り場おすすめに主なドロップ — 狩り場ごとの高価なドロップと相場",
+ "→ item <b>{n0}</b>{n1} in any channel. A DM arrives when a shop or megaphone sells it at that price or less.": "→ どのチャンネルでもアイテム <b>{n0}</b>{n1}。露店や拡声器でその価格以下の出品が出るとDMが届きます。"
 }

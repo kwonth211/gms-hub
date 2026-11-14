@@ -1525,7 +1525,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 @media (max-width: 760px) { .quest-grid { grid-template-columns: minmax(0, 1fr); } }
 /* Training routes as a level-ordered guide table: one line per route, details open underneath. */
 .tr-route-list { display: block; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); box-shadow: 0 2px 0 var(--line-strong); overflow: hidden; }
-.tr-row-head, .tr-row > summary { display: grid; grid-template-columns: 150px minmax(0, 1.3fr) minmax(0, 1.4fr) 110px; gap: 16px; align-items: center; padding: 12px 18px; }
+.tr-row-head, .tr-row > summary { display: grid; grid-template-columns: 130px minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 1.2fr) 90px; gap: 16px; align-items: center; padding: 12px 18px; }
 .tr-row-head { background: var(--panel-2); color: var(--muted); font-size: 0.8rem; font-weight: 700; border-bottom: 1px solid var(--line); }
 .tr-row { border-bottom: 1px solid var(--line); }
 .tr-row:last-child { border-bottom: 0; }
@@ -1549,7 +1549,18 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .tr-row .tr-mobs small { margin-left: 4px; color: var(--muted); font-size: 0.78rem; }
 .tr-row .tr-acc { display: grid; color: var(--text); font-size: 0.9rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 .tr-row .tr-acc small { color: var(--muted); font-size: 0.75rem; font-weight: 400; }
-.tr-detail { padding: 4px 18px 18px calc(150px + 34px); }
+.tr-detail { padding: 4px 18px 18px calc(130px + 34px); }
+.tr-row .tr-drops { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.tr-drops a { display: flex; align-items: center; gap: 6px; color: var(--text); text-decoration: none; font-size: 0.85rem; min-width: 0; }
+.tr-drops a:hover b { text-decoration: underline; }
+.tr-drops a > span { display: flex; flex-wrap: wrap; gap: 0 6px; min-width: 0; }
+.tr-drops b { font-weight: 600; overflow-wrap: anywhere; }
+.tr-drops small { color: var(--accent-2); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tr-drop-icon { width: 24px; height: 24px; flex: none; object-fit: contain; image-rendering: pixelated; }
+.tr-drop-all { margin: 0 0 14px; }
+.tr-drop-all h4 { margin: 0 0 8px; font-size: 0.85rem; }
+.tr-drop-all .tr-drops { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px 16px; }
+.tr-drop-all > small { display: block; margin-top: 6px; color: var(--muted); font-size: 0.75rem; }
 .tr-detail > p { margin: 8px 0 12px; font-weight: 600; }
 .tr-detail dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px 24px; margin: 0; }
 .tr-detail dt { font-size: 0.8rem; font-weight: 700; color: var(--muted); margin-bottom: 2px; }
@@ -1560,6 +1571,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
   .tr-lv { grid-column: 1 / -1; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 10px; }
   .tr-row .tr-mobs { grid-column: 1; }
   .tr-row .tr-acc { grid-column: 2; grid-row: 2 / span 2; text-align: right; }
+  .tr-row .tr-drops { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; gap: 4px 12px; }
   .tr-detail { padding: 4px 14px 16px; }
 }
 

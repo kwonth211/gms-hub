@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest.",
  "updates": [
   {
+   "id": "training-drops",
+   "version": "0.4.27",
+   "level": "minor",
+   "date": "2026-11-14",
+   "path": "/tools/training/",
+   "ko": "사냥터 추천에 주요 드롭 — 사냥터마다 비싼 드롭 아이템과 시세",
+   "en": "Training spots now list top drops — the priciest items each spot drops, with prices",
+   "desc": {
+    "ko": "사냥터 표에 그 사냥터 몬스터들이 떨어뜨리는 아이템 중 시세가 높은 3개를 가격과 함께 보여 줘요. 줄을 펼치면 드롭 아이템을 최대 12개까지 볼 수 있고, 누르면 아이템 시세 페이지로 가요.",
+    "en": "The training table now shows the three priciest items the spot's monsters drop, with live prices. Open a row to see up to 12 drops; each links to the item's price page."
+   }
+  },
+  {
    "id": "discord-price-alert",
    "version": "0.4.26",
    "level": "minor",

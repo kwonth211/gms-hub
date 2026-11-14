@@ -4544,5 +4544,18 @@
  "{e0} platforms and spawn points": "{e0} 的平台与怪物出现点",
  "Every map page now shows the map as it looks in game, next to a diagram of its platforms, ropes and every monster spawn point in game coordinates, plus how many floors the monsters stand on (one floor = a flat map) and the map size.": "每个地图页面都会显示游戏内的实际地图，并附上按游戏坐标绘制的平台、绳索和每个怪物出现点的示意图，同时显示怪物分布在几层（一层即平地图）以及地图大小。",
  "Maps now show the map": "地图图鉴新增地图",
- "Maps now show the map — the in-game picture and where every monster spawns": "地图图鉴新增地图 — 游戏内实际画面与每个怪物的出现位置"
+ "Maps now show the map — the in-game picture and where every monster spawns": "地图图鉴新增地图 — 游戏内实际画面与每个怪物的出现位置",
+ "Drops on this route": "此练级点的掉落",
+ "Prices are recent live-market prices; items without one had fewer than {n0} listings.": "价格为实时行情的近期价格；没有价格的物品挂单少于{n0}件。",
+ "Top drops": "主要掉落",
+ "/alert add": "/alert add",
+ "<b>Get it on Discord</b>: join the GMS Hub Discord and type": "<b>在 Discord 接收</b>：加入 GMS Hub Discord 并输入",
+ "Discord price alerts": "Discord 价格提醒",
+ "Discord price alerts — a DM when an item is listed at your price": "Discord 价格提醒 — 物品以你的价格上架时私信通知",
+ "In Discord, /alert add with an item and a price (e.g. {n0}m) sends you a DM as soon as a shop or megaphone sells it at that price or less. A cheaper listing alerts you again; the same one does not repeat. The 🔔 Price alert button on the market shows how.": "在 Discord 用 /alert add 输入物品和价格（例如 {n0}m），一旦商店或喇叭以该价格或更低出售，就会私信通知你。出现更便宜的挂单会再次提醒，同一挂单不会重复。行情页的🔔价格提醒按钮也有说明。",
+ "Open Discord": "打开 Discord",
+ "The training table now shows the three priciest items the spot's monsters drop, with live prices. Open a row to see up to {n0} drops; each links to the item's price page.": "练级表现在会显示该练级点怪物掉落中最值钱的3件物品及实时价格。展开一行可查看最多{n0}件掉落，点击可进入物品价格页。",
+ "Training spots now list top drops": "练级推荐新增主要掉落",
+ "Training spots now list top drops — the priciest items each spot drops, with prices": "练级推荐新增主要掉落 — 每个练级点的高价掉落与价格",
+ "→ item <b>{n0}</b>{n1} in any channel. A DM arrives when a shop or megaphone sells it at that price or less.": "→ 在任意频道输入物品 <b>{n0}</b>{n1}。商店或喇叭以该价格或更低出售时会收到私信。"
 }

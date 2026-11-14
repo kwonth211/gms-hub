@@ -2606,6 +2606,23 @@ const ITEM_PAGE_IDS = new Set(ITEM_PAGES.map((i) => i.id));
 const liveDrop = (i) => (DROP_INDEX.get(i.id) || []).some(({ m }) => m.status === 'active');
 const INDEXABLE = ITEM_PAGES.filter((i) => (priceOf(i)?.n || 0) >= MIN_INDEX_LISTINGS || liveDrop(i));
 const WEAPON_SUB = /Wand|Staff|Bow|Claw|Dagger|Spear|Pole ?Arm|Sword|Axe|Blunt|BW/;
+// What each training route drops, for the route table: every reported drop of its monsters (quest items left out), the
+// ones with a market price first (dearest first), then equipment and scrolls, then the rest. A price needs 3+ listings.
+{
+  const ITEM_BY_ID = new Map(itemsData.items.map((i) => [i.id, i]));
+  const rank = (d) => (d.price ? 0 : d.cat === 'Equip' ? 1 : d.cat === 'Use' && Math.floor(d.id / 1000) >= 2040 && Math.floor(d.id / 1000) <= 2049 ? 2 : 3);
+  for (const r of training.routes) {
+    const seen = new Map();
+    for (const id of r.mobIds) for (const d of MOB_BY_ID.get(id).drops || []) {
+      if (d.cat === 'Quest' || seen.has(d.itemId)) continue;
+      const i = ITEM_BY_ID.get(d.itemId), p = i && priceOf(i);
+      seen.set(d.itemId, { id: d.itemId, ko: d.ko || d.en, en: d.en, cat: d.cat, price: p && p.n >= 3 ? lastPrice(i) : null,
+        path: i && ITEM_PAGE_IDS.has(i.id) ? itemPath(i) : `/tools/market/?item=${d.itemId}`, rare: d.confidence === 'limited' });
+    }
+    r.drops = [...seen.values()].sort((a, b) => rank(a) - rank(b) || (b.price || 0) - (a.price || 0) || Number(a.rare) - Number(b.rare) || a.id - b.id).slice(0, 12)
+      .map(({ cat, rare, ...d }) => d);
+  }
+}
 const itemIcon = (id, size) => `<img src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="${size}" height="${size}" loading="lazy">`;
 
 // Korean players think in 만/억; elsewhere k/m/b (same as the live market page).
