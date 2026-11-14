@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest.",
  "updates": [
   {
+   "id": "home-layout-match",
+   "version": "0.5.1",
+   "level": "patch",
+   "date": "2026-11-14",
+   "path": "/",
+   "ko": "홈 정리 — 방금 올라온 매물이 인기 아이템 TOP 10과 같은 높이로",
+   "en": "Home tidy-up — the same section order in every language, and the live feed matches the TOP 10 height",
+   "desc": {
+    "ko": "방금 올라온 매물 칸이 옆의 인기 아이템 TOP 10과 높이가 같아지고, 넘치는 매물은 칸 안에서 스크롤돼요.",
+    "en": "The home page now opens with the live market in every language, like the Korean page, and the just-listed feed is as tall as the TOP 10 beside it, scrolling inside."
+   }
+  },
+  {
    "id": "own-market-collector",
    "version": "0.5.0",
    "level": "major",

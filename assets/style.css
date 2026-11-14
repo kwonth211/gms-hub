@@ -2728,3 +2728,11 @@ body.exp-running .exp-stop { display: inline-flex; }
 .recent-list li.fresh a { background: color-mix(in srgb, var(--accent) 14%, transparent); box-shadow: inset 3px 0 0 var(--accent); transition: background 1.5s ease, box-shadow 1.5s ease; }
 .recent-list li a { transition: background 1.5s ease, box-shadow 1.5s ease; }
 @media (prefers-reduced-motion: reduce) { .live-badge i { animation: none; } }
+
+/* Side by side, the "just listed" panel is exactly as tall as the TOP 10 beside it: it takes no height of its own
+   (contain: size), stretches to the row, and its list scrolls inside. Stacked on narrow screens it keeps its natural height. */
+@media (min-width: 1001px) {
+  .market-grid:not(:has(.market-top[hidden])) { align-items: stretch; }
+  .market-grid:not(:has(.market-top[hidden])) .market-recent { contain: size; display: flex; flex-direction: column; }
+  .market-grid:not(:has(.market-top[hidden])) .recent-list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+}

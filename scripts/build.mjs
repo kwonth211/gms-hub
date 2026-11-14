@@ -1242,9 +1242,8 @@ ${sections}
 </section>
 `
   : '';
-  // English, Chinese and Japanese visitors land here from search for drops, prices and training, not for a list of Korean
-  // community sites: they left in about 11 seconds, so they get the database and guides first and the directory last.
-  const body = lang === 'ko' ? [marketBlock, toolsBlock, directoryBlock, guidesBlock] : [toolsBlock, guidesBlock, marketBlock, directoryBlock];
+  // Every language uses the Korean home's order (live market first), as the owner asked on 2026-11-14.
+  const body = [marketBlock, toolsBlock, directoryBlock, guidesBlock];
   return `<section class="hero">
 ${heroScene()}
 <div class="wrap hero-inner">
