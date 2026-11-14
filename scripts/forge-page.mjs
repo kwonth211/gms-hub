@@ -8,7 +8,7 @@ export function forgeStrings(lang) {
   const ko = lang === 'ko';
   const tr = (k, e) => (ko ? k : e);
   return {
-    equips: tr('장비 선반', 'Gear shelf'), scrolls: tr('주문서 선반', 'Scroll shelf'), anvil: tr('작업대', 'Workbench'), log: tr('작업 기록', 'Work log'),
+    equips: tr('장비 선반', 'Gear shelf'), winTitle: tr('주문서 강화', 'Scroll enhancement'), scrolls: tr('주문서 선반', 'Scroll shelf'), anvil: tr('작업대', 'Workbench'), log: tr('작업 기록', 'Work log'),
     search: tr('장비 이름 (예: 브라운 워크 장갑)', 'Gear name (e.g. Brown Work Gloves)'), obtainable: tr('지금 얻을 수 있는 장비만', 'Only gear you can get now'),
     all: tr('전체', 'All'), pick: tr('왼쪽 선반에서 장비를 골라 작업대에 올려요.', 'Pick gear from the shelf to put it on the workbench.'),
     pickScroll: tr('이 장비에 바를 수 있는 주문서예요. 끌어서 장비 위에 놓거나 [바르기]를 누르세요.', 'Scrolls for this gear. Drag one onto the gear, or press Apply.'),

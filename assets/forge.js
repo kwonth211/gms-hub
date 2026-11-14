@@ -52,7 +52,11 @@ const statLines = () => STAT_ORDER.filter((k) => (item.inc[k] || 0) + (state.add
 function renderAnvil() {
   if (!item) return;
   const done = state.destroyed;
-  $('fg-anvil').innerHTML = `<div class="fg-stage${done ? ' is-broken' : ''}" id="fg-stage" data-drop>
+  $('fg-anvil').innerHTML = `<div class="fg-win-title"><span class="fg-win-dot" aria-hidden="true"></span>${esc(T.winTitle)}<span class="fg-win-sub">${esc(item.name)}</span></div>
+<div class="fg-stage${done ? ' is-broken' : ''}" id="fg-stage" data-drop>
+<div class="fg-sky" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+<svg class="fg-circle" viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="92"/><circle cx="100" cy="100" r="78"/><path d="M100 12 L176 144 L24 144 Z"/><path d="M100 188 L24 56 L176 56 Z"/><circle cx="100" cy="100" r="40"/></svg>
+<div class="fg-pedestal" aria-hidden="true"></div>
 <canvas class="fg-fx" id="fg-fx" aria-hidden="true"></canvas>
 <div class="fg-rays" aria-hidden="true"></div><div class="fg-glow" aria-hidden="true"></div>
 <div class="fg-item" id="fg-item" tabindex="0" data-hover-tip><img src="${icon(item.id)}" alt="" width="64" height="64"></div>
@@ -201,6 +205,24 @@ function charge(s, auto, fromImg) {
   sound('charge', dur, s.success < 60 && !auto);
   return wait(dur).then(() => { stage.classList.remove('fx-charge', 'fx-tense'); return wait(s.success < 60 && !auto ? 180 : 60); });
 }
+
+// The game's own scroll animation (Effect.wz BasicEff/Enchant: the scroll flares, a maple leaf rises, glitter falls),
+// played frame by frame over the item. Sheets are aligned on the effect's origin (assets/fx).
+const FXS = { 'scroll-success': { w: 164, h: 189, ax: 83, ay: 195, n: 21, d: 50 }, 'scroll-fail': { w: 109, h: 149, ax: 62, ay: 155, n: 16, d: 50 } };
+function sprite(name) {
+  const stage = $('fg-stage'), it = $('fg-item');
+  if (!stage || !it || calm) return;
+  const m = FXS[name], S = 1.35;
+  const sr = stage.getBoundingClientRect(), ir = it.getBoundingClientRect();
+  const el = document.createElement('div');
+  el.className = 'fg-sprite';
+  el.style.cssText = `width:${m.w}px;height:${m.h}px;background-image:url(${new URL(`./fx/${name}.png`, import.meta.url)});left:${ir.left - sr.left + ir.width / 2 - (m.w / 2) * S}px;top:${ir.top - sr.top + ir.height / 2 - (m.h / 2) * S}px;transform:scale(${S});transform-origin:0 0`;
+  stage.appendChild(el);
+  let f = 0;
+  const step = () => { el.style.backgroundPosition = `${-f * m.w}px 0`; if (++f < m.n) setTimeout(step, m.d); else setTimeout(() => el.remove(), m.d); };
+  step();
+}
+
 function play(r, rare = false) {
   const stage = $('fg-stage'); if (!stage) return;
   stage.classList.add(r === 'ok' ? 'fx-ok' : r === 'boom' ? 'fx-boom' : 'fx-fail');
@@ -228,6 +250,7 @@ function play(r, rare = false) {
       ...Array.from({ length: 16 }, () => ({ kind: 'smoke', x: x + rand(-20, 20), y: y + rand(-10, 10), vx: rand(-1.2, 1.2), vy: rand(-1.2, -0.2), g: 0, drag: 0.97, rot: 0, vr: 0, size: rand(12, 24), color: 'rgba(60,40,40,0.6)', life: Math.floor(rand(50, 80)), fade: 40 }))
     ]);
   }
+  sprite(r === 'ok' ? 'scroll-success' : 'scroll-fail');
   if (r === 'ok' && rare) stage.classList.add('fx-rare');
   sound(r === 'ok' && rare ? 'jackpot' : r);
 }

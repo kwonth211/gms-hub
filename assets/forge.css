@@ -55,18 +55,40 @@
 .fg-more { padding: 8px; color: var(--muted); font-size: .8rem; }
 .fg-note { margin: 0 0 8px; color: var(--muted); font-size: .85rem; }
 
-/* the forge */
-.fg-anvil { background: radial-gradient(120% 90% at 50% 100%, var(--fg-forge-2), var(--fg-forge)); border-radius: 16px; padding: 14px; color: var(--fg-tip-ink); box-shadow: 0 6px 0 #0a0807, inset 0 0 0 2px #3a2a1f; min-height: 420px; }
-.fg-empty { margin: 0; padding: 140px 20px; text-align: center; color: #c9b8a6; }
-.fg-stage { position: relative; height: 230px; border-radius: 12px; overflow: hidden; display: grid; place-items: center;
-  background: radial-gradient(60% 45% at 50% 78%, var(--fg-ember-soft), transparent 70%), linear-gradient(transparent 70%, rgba(0,0,0,.35)); }
-.fg-stage::after { /* the anvil */ content: ''; position: absolute; left: 50%; bottom: 26px; width: 170px; height: 44px; transform: translateX(-50%);
-  background: linear-gradient(var(--fg-steel-2), var(--fg-steel)); clip-path: polygon(0 0, 100% 0, 88% 45%, 70% 55%, 74% 100%, 26% 100%, 30% 55%, 12% 45%); }
-.fg-fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; }
-.fg-glow { position: absolute; left: 50%; top: 42%; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%; background: radial-gradient(var(--fg-gold-soft), transparent 70%); opacity: 0; transform: scale(.6); z-index: 1; }
-.fg-item { position: relative; z-index: 2; width: 92px; height: 92px; display: grid; place-items: center; margin-bottom: 52px; border-radius: 18px; background: rgba(255,255,255,.06); box-shadow: 0 0 0 2px rgba(255,255,255,.08); }
+/* the forge: a Maple-style enhancement window (steel-blue frame, navy title strip) around a night-sky scene with a
+ * slowly turning magic circle and a stone pedestal under the item */
+.fg-anvil { background: linear-gradient(#eef2fa, #d9e0ee); border: 2px solid #2b3150; border-radius: 12px; padding: 0 8px 10px; color: var(--fg-tip-ink); box-shadow: 0 5px 0 #1b2038, inset 0 1px 0 #fff; min-height: 420px; }
+:root[data-theme='dark'] .fg-anvil { background: linear-gradient(#323a55, #262c42); }
+.fg-win-title { display: flex; align-items: center; gap: 8px; margin: 0 -8px 8px; padding: 7px 12px; border-radius: 10px 10px 0 0; background: linear-gradient(#4a5a8c, #2c3660); color: #fff; font-weight: 800; letter-spacing: .3px; box-shadow: inset 0 -2px 0 rgba(0,0,0,.25); }
+.fg-win-dot { width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff6c9, #ffb52e 60%, #c46a00); box-shadow: 0 0 6px #ffcf5a; }
+.fg-win-sub { margin-left: auto; font-weight: 500; font-size: .8rem; color: #c9d3ef; max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fg-empty { margin: 0; padding: 150px 20px; text-align: center; color: #5b6274; }
+:root[data-theme='dark'] .fg-empty { color: #a9b2c8; }
+.fg-stage { position: relative; height: 270px; border-radius: 10px; overflow: hidden; display: grid; place-items: center; border: 2px solid #1b2038;
+  background: radial-gradient(70% 55% at 50% 85%, rgba(255, 196, 120, .35), transparent 70%), linear-gradient(#1c1f4a 0%, #3a2f6e 55%, #6d4c8f 100%); }
+/* twinkling stars */
+.fg-sky { position: absolute; inset: 0; z-index: 0; background-image: radial-gradient(1.5px 1.5px at 12% 18%, #fff 50%, transparent), radial-gradient(1px 1px at 30% 40%, #fff 50%, transparent),
+  radial-gradient(1.5px 1.5px at 72% 22%, #fff 50%, transparent), radial-gradient(1px 1px at 88% 48%, #fff 50%, transparent), radial-gradient(1px 1px at 55% 10%, #fff 50%, transparent), radial-gradient(1.2px 1.2px at 20% 62%, #fff 50%, transparent); opacity: .8; }
+.fg-sky i { position: absolute; width: 14px; height: 14px; background: var(--leaf) center / contain no-repeat; opacity: .55; animation: fg-leaf 9s linear infinite; }
+.fg-sky i:nth-child(1) { left: 8%; animation-delay: -1s; } .fg-sky i:nth-child(2) { left: 26%; animation-delay: -5s; animation-duration: 11s; }
+.fg-sky i:nth-child(3) { left: 70%; animation-delay: -3s; } .fg-sky i:nth-child(4) { left: 86%; animation-delay: -7s; animation-duration: 12s; } .fg-sky i:nth-child(5) { left: 48%; animation-delay: -9s; animation-duration: 10s; }
+@keyframes fg-leaf { from { top: -16px; transform: rotate(0) translateX(0); } to { top: 105%; transform: rotate(320deg) translateX(30px); } }
+.fg-circle { position: absolute; z-index: 1; left: 50%; top: 50%; width: 220px; height: 220px; margin: -112px 0 0 -110px; fill: none; stroke: rgba(160, 220, 255, .55); stroke-width: 1.5; filter: drop-shadow(0 0 4px rgba(120, 200, 255, .7)); animation: fg-spin 24s linear infinite; }
+@keyframes fg-spin { to { transform: rotate(360deg); } }
+.fg-pedestal { position: absolute; z-index: 1; left: 50%; bottom: 30px; width: 150px; height: 30px; margin-left: -75px; border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 35%, #8f86b8, #4b4377 70%); box-shadow: 0 6px 0 #2e2752, 0 0 0 3px #d8b25a inset, 0 10px 18px rgba(0,0,0,.4); }
+.fg-fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+.fg-sprite { position: absolute; z-index: 4; pointer-events: none; background-repeat: no-repeat; }
+.fg-glow { position: absolute; left: 50%; top: 42%; width: 140px; height: 140px; margin: -70px 0 0 -70px; border-radius: 50%; background: radial-gradient(var(--fg-gold-soft), transparent 70%); opacity: 0; transform: scale(.6); z-index: 1; }
+.fg-item { position: relative; z-index: 3; width: 96px; height: 96px; display: grid; place-items: center; margin-bottom: 40px; border-radius: 16px;
+  background: linear-gradient(145deg, rgba(255,255,255,.22), rgba(255,255,255,.05)); border: 2px solid rgba(255, 220, 140, .65); box-shadow: 0 0 0 4px rgba(30, 24, 70, .55), 0 0 22px rgba(255, 210, 120, .25);
+  animation: fg-float 3.2s ease-in-out infinite; }
+.fg-item::before, .fg-item::after { content: ''; position: absolute; width: 14px; height: 14px; border: 3px solid #ffd75a; }
+.fg-item::before { left: -6px; top: -6px; border-right: 0; border-bottom: 0; border-radius: 6px 0 0 0; }
+.fg-item::after { right: -6px; bottom: -6px; border-left: 0; border-top: 0; border-radius: 0 0 6px 0; }
+@keyframes fg-float { 50% { transform: translateY(-5px); } }
 .fg-item img { width: 64px; height: 64px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 4px 6px rgba(0,0,0,.5)); }
-.fg-drop-hint { position: absolute; bottom: 4px; left: 0; right: 0; margin: 0; text-align: center; font-size: .78rem; color: #c9b8a6; opacity: .75; }
+.fg-drop-hint { position: absolute; z-index: 2; bottom: 6px; left: 0; right: 0; margin: 0; text-align: center; font-size: .78rem; color: #e6dcff; opacity: .8; }
 .fg-stage.drop-over { box-shadow: inset 0 0 0 3px var(--fg-gold); }
 .fg-stage.drop-over .fg-glow { opacity: 1; transform: scale(1); }
 .fg-stage.is-broken .fg-item img { filter: grayscale(1) brightness(.5); opacity: .35; }
@@ -160,7 +182,8 @@
 .fg-slots b { color: var(--fg-plus); }
 .fg-dead { margin: 6px 0 0; color: var(--fg-boom); font-weight: 700; text-align: center; }
 .fg-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 12px; }
-.fg-actions .btn { color: var(--fg-tip-ink); border-color: #5a4a3c; background: rgba(255,255,255,.04); }
+.fg-actions .btn { color: #fff; border: 2px solid #8a4a00; background: linear-gradient(#ffb547, #f08019); box-shadow: 0 3px 0 #8a4a00; font-weight: 800; }
+.fg-actions .btn:hover { filter: brightness(1.06); }
 
 .fg-log { margin-top: 12px; background: var(--fg-shelf); border: 1px solid var(--fg-shelf-edge); border-radius: var(--radius); padding: 12px; }
 .fg-log h3 { margin: 0 0 6px; font-size: 1rem; }
@@ -197,5 +220,6 @@ body.fg-dragging { cursor: grabbing; }
   .fg-banner.show, .fg-gain.show { animation: none; opacity: 1; transform: none; }
   .fg-stage.fx-ok .fg-rays { animation: none; }
   .fg-stage.fx-charge .fg-item, .fg-stage.fx-charge .fg-glow, .fg-stage.fx-ok, .fg-stage.fx-ok .fg-item, .fg-stage.fx-fail .fg-item, .fg-item.shake,
+  .fg-item, .fg-circle, .fg-sky i,
   .fg-stage.fx-boom, .fg-stage.fx-boom .fg-item, .fg-stage.fx-tense, .fg-stage.fx-tense .fg-item img, .fg-stage.fx-rare { animation: none; }
 }
