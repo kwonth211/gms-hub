@@ -914,9 +914,11 @@ function withTopAd(body, ads) {
 function withMidAd(body, ads) {
   return body.split(AD_MID).join(ads ? adfitSlot('mid') : '');
 }
+const NO_AD_PAGES = new Set(['about', 'bot', 'contact']);
 function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], modules = [], ld = [], only, noindex }) {
-  // Every page carries ads (owner's call 2026-11-14), including thin noindex detail pages and the info pages.
-  const ads = Object.values(config.adfit || {}).some(Boolean);
+  // Every page carries ads (owner's call 2026-11-14), including thin noindex detail pages, except About, the Discord bot
+  // page and Contact/sponsorship.
+  const ads = !NO_AD_PAGES.has(pageKey) && Object.values(config.adfit || {}).some(Boolean);
   return `${head({ lang, title, desc, pagePath, ld, only, noindex })}
 <body data-page="${pageKey}"${ads && (config.adfit?.railLeft || config.adfit?.railRight) ? ' data-rails' : ''} data-price-api="${esc(config.voteApi)}"${config.discord ? ` data-discord-url="${esc(config.discord)}"` : ''} data-tips="${esc(href('/assets/item-tips.json'))}" data-sprites="${esc(href('/assets/monsters/'))}">
 ${header(lang, pagePath, only)}
