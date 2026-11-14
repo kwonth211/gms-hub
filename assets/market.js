@@ -5,7 +5,7 @@ import { makeMarketIndex, catalogRows, matchingIds, refPrice, npcBetter } from "
 import { mountMarketCharts } from "./market-charts.js";
 import { intentOf, priceOf as megaPrice } from "./mega-text.js";
 import { WISHLIST_KEY, RECENT_KEY, SEEN_KEY, WISHLIST_MAX, readList, addRecent, removeRecent, toggleWishlist, snapshot, visitDelta, pruneSeen } from "./market-memory.js";
-// Opened from a Discord alert DM: the first item shown sorts its listings newest first.
+// Opened from a Discord alert DM (listings are newest first for everyone now, so the alerted one is on top).
 let fromAlert = new URLSearchParams(location.search).get("utm_medium") === "alert";
 const D = JSON.parse(document.getElementById("mk-data").textContent),
   T = D.t,
@@ -127,7 +127,7 @@ function get(path, signal) {
 function prefetchItem(id) {
   if (!Number.isInteger(id) || id === selected) return;
   get(`/market/history?id=${id}`).catch(() => null);
-  get("/market/listings?" + new URLSearchParams({ item: id, state: "open", sort: "price", channel: "", room: "", seller: "", page: 1, limit: 30, days: 7 })).catch(() => null);
+  get("/market/listings?" + new URLSearchParams({ item: id, state: "open", sort: "recent", channel: "", room: "", seller: "", page: 1, limit: 30, days: 7 })).catch(() => null);
 }
 let hoverTimer = null;
 document.addEventListener("pointerover", (e) => {
@@ -556,8 +556,9 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
   if (reset || changed) {
     detailState = {
       state: "open",
-      // Arriving from a Discord alert: the newest listings first, so the one the alert was about is on top.
-      sort: fromAlert && !(fromAlert = false) ? "recent" : "price",
+      // Newest listings first (2026-11-14, user request): what was just put up is what a buyer can still catch.
+      // The cheapest stays one choice away in the sort menu.
+      sort: (fromAlert = false, "recent"),
       channel: "",
       room: "",
       seller: "",
