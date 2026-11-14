@@ -698,7 +698,8 @@ ${ld.map(ldScript).join('\n')}
 }
 
 // Day or night before the first paint: a saved choice wins, otherwise the system setting. No script, no theme: day.
-const THEME_BOOT = `(function(){try{var t=localStorage.getItem('gms-theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;if(localStorage.getItem('gms-charm')==='off')document.documentElement.dataset.charm='off';var m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='dark'?'#0f1420':'#f6f1e7';}catch(e){}})();`;
+// The theme follows the device (the header switch was removed 2026-11-14, user request); an old saved choice is dropped.
+const THEME_BOOT = `(function(){try{localStorage.removeItem('gms-theme');var t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;if(localStorage.getItem('gms-charm')==='off')document.documentElement.dataset.charm='off';var m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='dark'?'#0f1420':'#f6f1e7';}catch(e){}})();`;
 const THEME_ICON = `<svg class="theme-icon" viewBox="0 0 16 16" width="18" height="18" shape-rendering="crispEdges" aria-hidden="true"><g class="sun"><rect x="6" y="6" width="4" height="4"/><rect x="7" y="1" width="2" height="3"/><rect x="7" y="12" width="2" height="3"/><rect x="1" y="7" width="3" height="2"/><rect x="12" y="7" width="3" height="2"/><rect x="3" y="3" width="2" height="2"/><rect x="11" y="3" width="2" height="2"/><rect x="3" y="11" width="2" height="2"/><rect x="11" y="11" width="2" height="2"/></g><g class="moon"><rect x="6" y="2" width="5" height="2"/><rect x="4" y="4" width="3" height="2"/><rect x="3" y="6" width="3" height="4"/><rect x="4" y="10" width="3" height="2"/><rect x="6" y="12" width="5" height="2"/><rect x="11" y="10" width="2" height="2"/></g></svg>`;
 
 // Our own pixel art for the small touches (assets/common.js, style.css "Charm"): cursors and the maple leaf.
@@ -760,7 +761,7 @@ function header(lang, pagePath, only) {
 <nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}${guideMenu}${toolMenu}</nav>
 ${presencePill(lang)}
 ${headerSearch(lang, [...tabs, ...guideItems, ...toolItems, ...moved])}
-${config.discord ? `<a class="theme-toggle discord-link" href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="header" aria-label="Discord" title="Discord">${DISCORD_ICON(20)}</a>` : ''}<button type="button" class="theme-toggle" data-theme-toggle>${THEME_ICON}<span class="sr-only">${lang === 'ko' ? '낮과 밤 화면 바꾸기' : 'Switch day or night theme'}</span></button>
+${config.discord ? `<a class="theme-toggle discord-link" href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="header" aria-label="Discord" title="Discord">${DISCORD_ICON(20)}</a>` : ''}
 <details class="lang-menu"><summary class="lang-current" aria-label="Language"><span class="lang-full" translate="no">${LANG_NAMES[lang]}</span><span class="lang-code" translate="no" aria-hidden="true">${lang.toUpperCase()}</span></summary><div class="lang-list">${(only ? [lang, ...ALL_LANGS.filter((l) => l !== lang)] : ALL_LANGS).map((l) => `<a class="lang-opt" href="${href(langPath(l, only && l !== lang ? '/' : pagePath || '/'))}" data-lang="${l}" hreflang="${HREFLANG[l]}" lang="${HREFLANG[l]}"${l === lang ? ' aria-current="true"' : ''}>${LANG_NAMES[l]}</a>`).join('')}</div></details>
 ${moreMenu(lang, moved)}
 </div></header>`;
@@ -798,7 +799,7 @@ function moreMenu(lang, moved = []) {
     ['/contact/', ko ? '문의·협찬·후원' : 'Contact and support']
   ].filter(Boolean);
   const label = ko ? '더보기' : 'More';
-  return `<details class="more-menu"><summary class="more-btn" aria-label="${label}"><span class="more-bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="more-label">${label}</span></summary><div class="more-list">${links.map(([p, name]) => `<a class="lang-opt" href="${href(langPath(lang, p))}">${name}</a>`).join('')}${config.discord ? `<a class="lang-opt" href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="menu">${DISCORD_ICON(16)}${ko ? '디스코드 커뮤니티' : 'Discord community'}</a>` : ''}<button type="button" class="lang-opt more-theme" data-theme-toggle>${ko ? '낮·밤 화면 바꾸기' : 'Switch day or night theme'}</button><button type="button" class="lang-opt more-charm" data-charm-toggle><span class="charm-on-label">${ko ? '낙엽 효과 끄기' : 'Turn off falling leaves'}</span><span class="charm-off-label">${ko ? '낙엽 효과 켜기' : 'Turn on falling leaves'}</span></button></div></details>`;
+  return `<details class="more-menu"><summary class="more-btn" aria-label="${label}"><span class="more-bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="more-label">${label}</span></summary><div class="more-list">${links.map(([p, name]) => `<a class="lang-opt" href="${href(langPath(lang, p))}">${name}</a>`).join('')}${config.discord ? `<a class="lang-opt" href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="menu">${DISCORD_ICON(16)}${ko ? '디스코드 커뮤니티' : 'Discord community'}</a>` : ''}<button type="button" class="lang-opt more-charm" data-charm-toggle><span class="charm-on-label">${ko ? '낙엽 효과 끄기' : 'Turn off falling leaves'}</span><span class="charm-off-label">${ko ? '낙엽 효과 켜기' : 'Turn on falling leaves'}</span></button></div></details>`;
 }
 
 // A strip above the header, on every page, that scrolls the latest game megaphones (assets/common.js fills it from
