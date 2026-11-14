@@ -10,6 +10,7 @@ import { collectMaps, mapDetail, mapIndex, mapName } from './map-pages.mjs';
 import { collectQuests, questDetail, questIndex, questBestBody, questPath, areaName as questArea } from './quest-pages.mjs';
 import { questGuideData, questGuideBody } from './quest-guide.mjs';
 import { fhBody } from './forgotten-hollow.mjs';
+import { skillsBody } from './skill-pages.mjs';
 import { EQ_CLASSES, equipPath, collectEquipment, equipmentIndexBody, equipmentClassBody } from './equipment-pages.mjs';
 import { rankBody } from './rank-page.mjs';
 import { megaphoneBody } from './megaphone-page.mjs';
@@ -510,6 +511,8 @@ const PAGES = [
 
 // Shared reviewed snapshot keeps home search, calculator and detail pages consistent.
 const MONSTERS = readJson('data/monsters.json');
+const SKILLS = readJson('data/skills.json');
+const SKILL_BUILDS = readJson('data/skill-builds.json');
 const MOBS = MONSTERS.monsters.map(m => ({ ...m, status: m.status === 'active' ? undefined : m.status }));
 // Player-sourced hunting notes per monster; evidence ids resolve in data/editorial/korean-guides.json and never reach HTML.
 const MONSTER_NOTES = readJson('data/monster-notes.json');
@@ -758,6 +761,7 @@ function headerSearch(lang, tabs) {
     [ko ? '캐릭터 랭킹' : 'Character ranking', href(langPath(lang, '/rank/'))],
     [ko ? '직업별 장비' : 'Gear by class', href(langPath(lang, '/equipment/'))], [ko ? '보스' : 'Bosses', href(langPath(lang, '/bosses/'))],
     ...QUEST_GUIDES.map(({ guide: g }) => [`${guideLabel(g, lang)}${ko ? ' 공략' : ''}`.replace(/ 공략 공략$/, ' 공략'), href(langPath(lang, `/quests/${g.slug}/`))]), [ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests', href(langPath(lang, '/quests/best-exp/'))], [ko ? '맵 도감' : 'Maps', href(langPath(lang, '/maps/'))],
+    [ko ? '스킬트리 정석 (스킬 찍는 순서)' : 'Skill builds (SP order)', href(langPath(lang, '/skills/'))],
     [ko ? '포가튼 할로우 공략' : 'Forgotten Hollow guide', href(langPath(lang, '/forgotten-hollow/'))], [ko ? '패치노트 (업데이트 기록)' : 'Patch notes', href(langPath(lang, '/updates/'))], [ko ? '잊혀진 골짜기 (포가튼 할로우)' : 'Forgotten Hollow maps, quests and boss', href(langPath(lang, '/forgotten-hollow/'))], [ko ? '썩은 머쉬맘 보스 (포가튼 할로우)' : 'Rotten Mushmom boss (Forgotten Hollow)', href(langPath(lang, '/forgotten-hollow/#boss'))],
     [ko ? '문의·협찬·후원' : 'Contact and support', href(langPath(lang, '/contact/'))]];
   return `<button type="button" class="hs-open" data-hs data-items="${esc(href('/assets/items.json'))}" data-mobs="${esc(href('/assets/mobs.json'))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-monsters="${esc(href(langPath(lang, '/monsters/')))}" data-pages="${esc(JSON.stringify(pages))}" aria-label="${ko ? '검색' : 'Search'}" title="${ko ? '검색 ( / )' : 'Search ( / )'}"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="hs-label">${ko ? '검색' : 'Search'}</span><kbd class="hs-kbd" aria-hidden="true">/</kbd></button>`;
@@ -768,6 +772,7 @@ function headerSearch(lang, tabs) {
 function moreMenu(lang, moved = []) {
   const ko = lang === 'ko';
   const links = [
+    ['/skills/', ko ? '스킬트리 정석' : 'Skill builds'],
     ['/forgotten-hollow/', ko ? '포가튼 할로우 공략' : 'Forgotten Hollow guide'],
     ['/updates/', ko ? '패치노트' : 'Patch notes'],
     ...moved.map(([p, , label]) => [p, label]),
@@ -3220,6 +3225,14 @@ for (const lang of LANGS) {
         ld: [breadcrumbLd(lang, lang === 'ko' ? '포가튼 할로우 공략' : 'Forgotten Hollow guide', '/forgotten-hollow/')]
       }));
     }
+    // /skills/: standard skill builds per job as an in-game skill window (scripts/skill-pages.mjs).
+    write(path.join(lang, 'skills', 'index.html'), page({
+      lang, pageKey: 'skills', pagePath: '/skills/', modules: ['skills.js'],
+      title: lang === 'ko' ? '글클메 스킬트리 정석: 전사·법사·궁수·도적 1차·2차 스킬 찍는 순서와 스탯 | GMS Hub' : 'MapleStory Classic World Skill Builds: 1st & 2nd Job SP Order and Stats for Every Class | GMS Hub',
+      desc: lang === 'ko' ? '글클메 파이터·페이지·스피어맨·불독·썬콜·클레릭·헌터·사수·어쌔신·시프 스킬트리 정석. 유튜브 공략과 커뮤니티가 같이 권하는 SP 순서와 스탯 찍는 법을 게임 스킬 창처럼 보여주고, 레벨별로 무엇을 찍는지 바로 보여줘요.' : 'Standard skill builds for every MapleStory Classic World job: Fighter, Page, Spearman, Fire/Poison, Ice/Lightning, Cleric, Hunter, Crossbowman, Assassin and Bandit. The SP orders YouTube guides and the community agree on, plus stat advice, in an in-game style skill window with a level slider.',
+      body: skillsBody({ lang, skills: SKILLS, data: SKILL_BUILDS, link, icon: (id) => href(`/assets/skills/${id}.png`) }).replace('__SK_CSS__', scriptSrc('skills.css')),
+      ld: [breadcrumbLd(lang, lang === 'ko' ? '스킬트리 정석' : 'Skill builds', '/skills/')]
+    }));
     write(path.join(lang, 'quests', 'best-exp', 'index.html'), page({
       lang, pageKey: 'questBest', pagePath: '/quests/best-exp/',
       title: lang === 'ko' ? '글클메 경험치 퀘스트 추천: 레벨별 보상 EXP 순위 | GMS Hub' : 'MapleStory Classic World Best EXP Quests by Level | GMS Hub',
@@ -3438,7 +3451,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
   )
 ).concat(
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
-  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/forgotten-hollow/'}, {path:'/updates/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/forgotten-hollow/'}, {path:'/skills/'}, {path:'/updates/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/bosses/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/quests/'}, ...QUESTS.filter(q=>!q.expired).map(q=>({path:questPath(q)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
   [{path:'/maps/'}, ...MAPS.filter(l=>l.availability==='open').map(l=>({path:mapPath(l)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),

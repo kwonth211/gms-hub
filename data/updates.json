@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest.",
  "updates": [
   {
+   "id": "skill-builds",
+   "version": "0.4.29",
+   "level": "minor",
+   "date": "2026-11-14",
+   "path": "/skills/",
+   "ko": "스킬트리 정석 — 1차·2차 전 직업 스킬 찍는 순서를 게임 스킬 창처럼",
+   "en": "Skill builds for every job — the SP order in an in-game style skill window",
+   "desc": {
+    "ko": "전사·마법사·궁수·도적 1차와 파이터부터 시프까지 2차 10개 직업의 스킬트리 정석을 정리했어요. 유튜브 공략과 커뮤니티가 같이 권하는 순서만 실었고, 레벨을 움직이면 그 레벨에 스킬 창이 어떻게 찍혀 있는지 보여요. 스탯 찍는 법과 의견이 갈리는 곳도 같이 적었어요.",
+    "en": "Standard skill builds for the four 1st jobs and all ten 2nd jobs, from Fighter to Bandit. Only the orders YouTube guides and the community agree on; drag the level to see your skill window at that level. Stat advice and the spots where guides differ are included."
+   }
+  },
+  {
    "id": "training-florina",
    "version": "0.4.28",
    "level": "minor",

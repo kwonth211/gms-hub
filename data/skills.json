@@ -1,0 +1,2233 @@
+{
+ "updated": "2026-11-14",
+ "source": "https://maplestory.io/api/MCW/1/job/<id>/skillbook",
+ "jobs": {
+  "100": {
+   "id": 100,
+   "ko": "Warrior 기본기",
+   "en": "Warrior Basics",
+   "skills": [
+    {
+     "id": 1000000,
+     "ko": "HP 회복력 향상",
+     "en": "Improved HP Recovery",
+     "master": 15,
+     "passive": true,
+     "req": [],
+     "descKo": "가만히 서 있을 때뿐만 아니라 이동할 때도 HP가 일정 시간마다 자연 회복된다. 또한 회복 아이템의 HP 회복 효과가 상승한다.",
+     "descEn": "HP naturally regenerates over time, not just when standing still. Also, HP recovery from items is boosted.",
+     "lv1": {
+      "y": 20
+     },
+     "max": {
+      "y": 50
+     }
+    },
+    {
+     "id": 1000001,
+     "ko": "최대 HP 증가",
+     "en": "Max HP Increase",
+     "master": 15,
+     "passive": true,
+     "req": [
+      {
+       "id": 1000000,
+       "lv": 3,
+       "name": "Improved HP Recovery"
+      }
+     ],
+     "descKo": "최대 HP가 증가한다.",
+     "descEn": "Max HP increases.",
+     "lv1": {
+      "mhpR": 10
+     },
+     "max": {
+      "mhpR": 25
+     }
+    },
+    {
+     "id": 1000002,
+     "ko": "정밀 일격",
+     "en": "Precise Strikes",
+     "master": 15,
+     "passive": true,
+     "req": [],
+     "descKo": "무기를 다루는 반복된 연습을 통해 Accuracy와 Critical Rate가 증가한다.",
+     "descEn": "Repeated practice with your weapon has increased your Accuracy and Critical Rate.",
+     "lv1": {
+      "accX": 5,
+      "crtX": 1
+     },
+     "max": {
+      "accX": 20,
+      "crtX": 5
+     }
+    },
+    {
+     "id": 1001000,
+     "ko": "아이언 바디",
+     "en": "Iron Body",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 1000001,
+       "lv": 3,
+       "name": "Max HP Increase"
+      }
+     ],
+     "descKo": "일시적으로 Weapon Defense가 증가한다.",
+     "descEn": "Temporarily increases your Weapon Defense.",
+     "lv1": {
+      "time": 300,
+      "mpCon": 15,
+      "indiePddR": 20
+     },
+     "max": {
+      "time": 600,
+      "mpCon": 15,
+      "indiePddR": 40
+     }
+    },
+    {
+     "id": 1001001,
+     "ko": "파워 스트라이크",
+     "en": "Power Strike",
+     "master": 20,
+     "passive": false,
+     "req": [],
+     "descKo": "MP를 소모해 무기로 적 한 명에게 치명적인 일격을 가한다.",
+     "descEn": "Consumes MP to deliver a lethal blow to a single enemy with your weapon.",
+     "lv1": {
+      "mpCon": 4,
+      "damage": 160,
+      "mobCount": 1,
+      "attackCount": 1
+     },
+     "max": {
+      "mpCon": 12,
+      "damage": 260,
+      "mobCount": 1,
+      "attackCount": 1
+     }
+    },
+    {
+     "id": 1001002,
+     "ko": "슬래시 블러스트",
+     "en": "Slash Blast",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 1001001,
+       "lv": 1,
+       "name": "Power Strike"
+      }
+     ],
+     "descKo": "HP와 MP를 소모해 주변의 적을 최대 6명까지 무기로 공격한다.",
+     "descEn": "Consumes HP and MP to attack up to 6 enemies around you with your weapon.",
+     "lv1": {
+      "hpCon": 8,
+      "mpCon": 6,
+      "damage": 70,
+      "range": 130
+     },
+     "max": {
+      "hpCon": 16,
+      "mpCon": 14,
+      "damage": 130,
+      "range": 150
+     }
+    }
+   ]
+  },
+  "110": {
+   "id": 110,
+   "ko": "Fighter 기술",
+   "en": "Fighter Techniques",
+   "skills": [
+    {
+     "id": 1100000,
+     "ko": "소드 마스터리",
+     "en": "Sword Mastery",
+     "master": 20,
+     "passive": true,
+     "req": [],
+     "descKo": "소드 마스터리와 Accuracy를 높인다. 한손 검 또는 두손 검을 장착한 경우에만 적용된다.",
+     "descEn": "Increases Sword Mastery and Accuracy. It only applies when a one-handed or two-handed sword is equipped.",
+     "lv1": {
+      "x": 1
+     },
+     "max": {
+      "x": 20
+     }
+    },
+    {
+     "id": 1100001,
+     "ko": "액스 마스터리",
+     "en": "Axe Mastery",
+     "master": 20,
+     "passive": true,
+     "req": [],
+     "descKo": "액스 마스터리를 향상시키며, 공격 시 일정 확률로 적에게 출혈 효과를 적용시킨다. 한손 또는 두손 도끼 장착 시에만 적용된다.",
+     "descEn": "Increases Axe Mastery, and attacks have a chance to inflict a bleeding effect on the target when attacking. It only applies when a one-handed or two-handed axe is equipped.",
+     "lv1": {
+      "prop": 5
+     },
+     "max": {
+      "prop": 25
+     }
+    },
+    {
+     "id": 1101000,
+     "ko": "파이널 어택: 검",
+     "en": "Final Attack: Sword",
+     "master": 30,
+     "passive": false,
+     "req": [
+      {
+       "id": 1100000,
+       "lv": 3,
+       "name": "Sword Mastery"
+      }
+     ],
+     "descKo": "공격 스킬을 사용하면 60초 동안 파이널 어택 스킬이 활성화될 수 있다. 파이널 어택이 활성화된 동안에는 이 스킬을 사용할 수 있으며, 전방의 적 최대 3명에게 큰 데미지를 준다. 한손검 또는 양손검을 장착했을 때만 적용된다.",
+     "descEn": "Using attack skills has a chance to enable the Final Attack skill for 60 sec. While enabled, the skill can be used, dealing heavy damage to up to 3 enemies in front. Only applies when equipped with a one-handed or two-handed sword.",
+     "lv1": {
+      "damage": 140,
+      "mobCount": 3,
+      "attackCount": 1,
+      "range": 130,
+      "hpCon": 12,
+      "mpCon": 10,
+      "prop": 25,
+      "time": 60
+     },
+     "max": {
+      "damage": 200,
+      "mobCount": 3,
+      "attackCount": 1,
+      "range": 150,
+      "hpCon": 20,
+      "mpCon": 18,
+      "prop": 25,
+      "time": 60
+     }
+    },
+    {
+     "id": 1101001,
+     "ko": "파이널 어택: 도끼",
+     "en": "Final Attack: Axe",
+     "master": 30,
+     "passive": false,
+     "req": [
+      {
+       "id": 1100001,
+       "lv": 3,
+       "name": "Axe Mastery"
+      }
+     ],
+     "descKo": "공격 스킬 사용 시 일정 확률로 60초 동안 파이널 어택 스킬을 사용할 수 있게 된다. 활성화된 동안 해당 스킬을 사용하면 전방의 최대 3명의 적에게 큰 데미지를 입힌다. 한손 도끼 또는 두손 도끼를 장착한 경우에만 적용된다.",
+     "descEn": "Using attack skills has a chance to enable the Final Attack skill for 60 sec. While enabled, the skill can be used, dealing heavy damage to up to 3 enemies in front. Only applies when equipped with a one-handed or two-handed axe.",
+     "lv1": {
+      "damage": 140,
+      "mobCount": 3,
+      "attackCount": 1,
+      "range": 130,
+      "hpCon": 12,
+      "mpCon": 10,
+      "prop": 25,
+      "time": 60
+     },
+     "max": {
+      "damage": 200,
+      "mobCount": 3,
+      "attackCount": 1,
+      "range": 150,
+      "hpCon": 20,
+      "mpCon": 18,
+      "prop": 25,
+      "time": 60
+     }
+    },
+    {
+     "id": 1101002,
+     "ko": "소드 부스터",
+     "en": "Sword Booster",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 1100000,
+       "lv": 5,
+       "name": "Sword Mastery"
+      }
+     ],
+     "descKo": "장착한 검의 공격 속도를 일시적으로 높이기 위해 HP와 MP를 소모한다. 한손 검 또는 두손 검을 장착한 경우에만 적용된다.",
+     "descEn": "Consumes HP and MP to temporarily increase the Attack Speed of the equipped sword. Only applies when equipped with a one-handed or two-handed sword.",
+     "lv1": {
+      "hpCon": 30,
+      "mpCon": 30,
+      "time": 100,
+      "x": -2
+     },
+     "max": {
+      "hpCon": 10,
+      "mpCon": 10,
+      "time": 300,
+      "x": -2
+     }
+    },
+    {
+     "id": 1101003,
+     "ko": "액스 부스터",
+     "en": "Axe Booster",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 1100001,
+       "lv": 5,
+       "name": "Axe Mastery"
+      }
+     ],
+     "descKo": "장착한 도끼의 공격 속도를 일시적으로 높이기 위해 HP와 MP를 소모한다. 한손 도끼 또는 두손 도끼를 장착한 경우에만 적용된다.",
+     "descEn": "Consumes HP and MP to temporarily increase the Attack Speed of the equipped axe. Only applies when equipped with a one-handed or two-handed axe.",
+     "lv1": {
+      "hpCon": 30,
+      "mpCon": 30,
+      "time": 100,
+      "x": -2
+     },
+     "max": {
+      "hpCon": 10,
+      "mpCon": 10,
+      "time": 300,
+      "x": -2
+     }
+    },
+    {
+     "id": 1101004,
+     "ko": "분노",
+     "en": "Rage",
+     "master": 30,
+     "passive": false,
+     "req": [],
+     "descKo": "일정 시간 동안 주변 파티원의 Attack Power를 증가시키고, Weapon Def.을 감소시킨다.",
+     "descEn": "Temporarily increases the Attack Power of everyone in the party around the area, but also decreases Weapon Def.",
+     "lv1": {
+      "mpCon": 10,
+      "time": 150
+     },
+     "max": {
+      "mpCon": 25,
+      "time": 300
+     }
+    },
+    {
+     "id": 1101005,
+     "ko": "돌진",
+     "en": "Rush",
+     "master": 20,
+     "passive": false,
+     "req": [],
+     "descKo": "바라보는 방향으로 일정 거리를 돌진한다. 돌진 범위 내에 몬스터가 있으면 최대 6마리에게 데미지를 입히고 일정 거리를 밀쳐낼 수 있다. 돌진 중에는 몬스터의 공격을 받아도 밀려나지 않는다. 재사용 대기시간: 2초",
+     "descEn": "Rushes forward a certain distance in the direction you are facing. If there are monsters within the rush range, you can deal damage to up to 6 of them and knock them back a certain distance. While rushing, you will not be knocked back even if attacked by monsters. Cooldown: 2 sec",
+     "lv1": {
+      "mpCon": 35,
+      "damage": 60,
+      "mobCount": 6,
+      "range": 130
+     },
+     "max": {
+      "mpCon": 15,
+      "damage": 80,
+      "mobCount": 6,
+      "range": 150
+     }
+    }
+   ]
+  },
+  "120": {
+   "id": 120,
+   "ko": "Page의 길",
+   "en": "Page's Path",
+   "skills": [
+    {
+     "id": 1200000,
+     "ko": "소드 마스터리",
+     "en": "Sword Mastery",
+     "master": 20,
+     "passive": true,
+     "req": [],
+     "descKo": "소드 마스터리와 Accuracy를 높인다. 한손 검 또는 두손 검을 장착한 경우에만 적용된다.",
+     "descEn": "Increases Sword Mastery and Accuracy. It only applies when a one-handed or two-handed sword is equipped.",
+     "lv1": {
+      "x": 1
+     },
+     "max": {
+      "x": 20
+     }
+    },
+    {
+     "id": 1200001,
+     "ko": "블런트 웨폰 마스터리",
+     "en": "Blunt Weapon Mastery",
+     "master": 20,
+     "passive": true,
+     "req": [],
+     "descKo": "블런트 웨폰 마스터리와 Critical Damage를 높인다. 한손 둔기 또는 두손 둔기를 장착한 경우에만 적용된다.",
+     "descEn": "Increases Blunt Weapon Mastery and Critical Damage. It only applies when a one-handed or two-handed blunt weapon is equipped.",
+     "lv1": {
+      "x": 1
+     },
+     "max": {
+      "x": 20
+     }
+    },
+    {
+     "id": 1201000,
+     "ko": "파이널 어택: 검",
+     "en": "Final Attack: Sword",
+     "master": 30,
+     "passive": false,
+     "req": [
+      {
+       "id": 1200000,
+       "lv": 3,
+       "name": "Sword Mastery"
+      }
+     ],
+     "descKo": "공격 스킬 사용 시 일정 확률로 60초 동안 파이널 어택 스킬이 활성화된다. 활성화된 동안 해당 스킬을 사용할 수 있으며, 단일 적에게 큰 데미지를 준다. 한손검 또는 두손검을 장착한 경우에만 적용된다.",
+     "descEn": "Using attack skills has a chance to enable the Final Attack skill for 60 sec. While enabled, the skill can be used, dealing heavy damage to a single enemy. Only applies when equipped with a one-handed or two-handed sword.",
+     "lv1": {
+      "damage": 270,
+      "mobCount": 1,
+      "attackCount": 1,
+      "mpCon": 8,
+      "prop": 25,
+      "time": 60
+     },
+     "max": {
+      "damage": 360,
+      "mobCount": 1,
+      "attackCount": 1,
+      "mpCon": 16,
+      "prop": 25,
+      "time": 60
+     }
+    },
+    {
+     "id": 1201001,
+     "ko": "파이널 어택: 둔기",
+     "en": "Final Attack: Blunt Weapon",
+     "master": 30,
+     "passive": false,
+     "req": [
+      {
+       "id": 1200001,
+       "lv": 3,
+       "name": "Blunt Weapon Mastery"
+      }
+     ],
+     "descKo": "공격 스킬 사용 시 일정 확률로 60초 동안 파이널 어택 스킬이 활성화된다. 활성화된 동안 해당 스킬을 사용할 수 있으며, 단일 적에게 큰 데미지를 준다. 한손 둔기 또는 두손 둔기를 장착한 경우에만 적용된다.",
+     "descEn": "Using attack skills has a chance to enable the Final Attack skill for 60 sec. While enabled, the skill can be used, dealing heavy damage to a single enemy. Only applies when equipped with a one-handed or two-handed blunt weapon.",
+     "lv1": {
+      "damage": 270,
+      "mobCount": 1,
+      "attackCount": 1,
+      "mpCon": 8,
+      "prop": 25,
+      "time": 60
+     },
+     "max": {
+      "damage": 360,
+      "mobCount": 1,
+      "attackCount": 1,
+      "mpCon": 16,
+      "prop": 25,
+      "time": 60
+     }
+    },
+    {
+     "id": 1201002,
+     "ko": "소드 부스터",
+     "en": "Sword Booster",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 1200000,
+       "lv": 5,
+       "name": "Sword Mastery"
+      }
+     ],
+     "descKo": "장착한 검의 공격 속도를 일시적으로 높이기 위해 HP와 MP를 소모한다. 한손 검 또는 두손 검을 장착한 경우에만 적용된다.",
+     "descEn": "Consumes HP and MP to temporarily increase the Attack Speed of the equipped sword. Only applies when equipped with a one-handed or two-handed sword.",
+     "lv1": {
+      "hpCon": 30,
+      "mpCon": 30,
+      "time": 100,
+      "x": -2
+     },
+     "max": {
+      "hpCon": 10,
+      "mpCon": 10,
+      "time": 300,
+      "x": -2
+     }
+    },
+    {
+     "id": 1201003,
+     "ko": "블런트 웨폰 부스터",
+     "en": "Blunt Weapon Booster",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 1200001,
+       "lv": 5,
+       "name": "Blunt Weapon Mastery"
+      }
+     ],
+     "descKo": "HP와 MP를 소모하여 장착한 둔기의 공격 속도를 일시적으로 증가시킨다. 한손 둔기 또는 두손 둔기를 장착한 경우에만 적용된다.",
+     "descEn": "Consumes HP and MP to temporarily increase the Attack Speed of the equipped blunt weapon. Only applies when equipped with a one-handed or two-handed blunt weapon.",
+     "lv1": {
+      "hpCon": 30,
+      "mpCon": 30,
+      "time": 100,
+      "x": -2
+     },
+     "max": {
+      "hpCon": 10,
+      "mpCon": 10,
+      "time": 300,
+      "x": -2
+     }
+    },
+    {
+     "id": 1201004,
+     "ko": "위협",
+     "en": "Threaten",
+     "master": 30,
+     "passive": false,
+     "req": [],
+     "descKo": "MP를 소비하여 일정 시간 동안 주변의 몬스터를 위협한다. 주변에 있는 최대 4마리 몬스터의 Speed와 Weapon Def.을 감소시킨다.",
+     "descEn": "Use MP to temporarily threaten monsters. Decreases the Movement Speed and Weapon Def. of up to 4 monsters around the area.",
+     "lv1": {
+      "mpCon": 10,
+      "time": 15,
+      "x": -2,
+      "mobCount": 4,
+      "speed": 5
+     },
+     "max": {
+      "mpCon": 25,
+      "time": 30,
+      "x": -10,
+      "mobCount": 4,
+      "speed": 35
+     }
+    },
+    {
+     "id": 1201005,
+     "ko": "돌진",
+     "en": "Rush",
+     "master": 20,
+     "passive": false,
+     "req": [],
+     "descKo": "바라보는 방향으로 일정 거리를 돌진한다. 돌진 범위 내에 몬스터가 있으면 최대 6마리에게 데미지를 입히고 일정 거리를 밀쳐낼 수 있다. 돌진 중에는 몬스터의 공격을 받아도 밀려나지 않는다. 재사용 대기시간: 2초",
+     "descEn": "Rushes forward a certain distance in the direction you are facing. If there are monsters within the rush range, you can deal damage to up to 6 of them and knock them back a certain distance. While rushing, you will not be knocked back even if attacked by monsters. Cooldown: 2 sec",
+     "lv1": {
+      "mpCon": 35,
+      "damage": 60,
+      "mobCount": 6,
+      "range": 130
+     },
+     "max": {
+      "mpCon": 15,
+      "damage": 80,
+      "mobCount": 6,
+      "range": 150
+     }
+    }
+   ]
+  },
+  "130": {
+   "id": 130,
+   "ko": "Spearman 기술",
+   "en": "Spearman Techniques",
+   "skills": [
+    {
+     "id": 1300000,
+     "ko": "스피어 마스터리",
+     "en": "Spear Mastery",
+     "master": 20,
+     "passive": true,
+     "req": [],
+     "descKo": "스피어 마스터리를 증가시키며 대상의 Weapon Def를 무시하는 데미지를 입힐 확률이 생긴다. 창을 장착한 경우에만 적용된다.",
+     "descEn": "Increases Spear Mastery and gives a chance to deal damage that ignores the target’s Weapon Def. It only applies when a spear is equipped.",
+     "lv1": {
+      "prop": 1
+     },
+     "max": {
+      "prop": 20
+     }
+    },
+    {
+     "id": 1300001,
+     "ko": "폴암 마스터리",
+     "en": "Polearm Mastery",
+     "master": 20,
+     "passive": true,
+     "req": [],
+     "descKo": "폴암 마스터리와 Speed를 증가시킨다. 폴암을 착용했을 경우에만 적용된다.",
+     "descEn": "Increases Polearm Mastery and movement speed. It only applies when a polearm is equipped.",
+     "lv1": {
+      "x": 1
+     },
+     "max": {
+      "x": 20
+     }
+    },
+    {
+     "id": 1301000,
+     "ko": "파이널 어택: 창",
+     "en": "Final Attack: Spear",
+     "master": 30,
+     "passive": false,
+     "req": [
+      {
+       "id": 1300000,
+       "lv": 3,
+       "name": "Spear Mastery"
+      }
+     ],
+     "descKo": "공격 스킬을 사용하면 60초 동안 파이널 어택 스킬이 활성화될 확률이 있다. 활성화되면 이 스킬을 사용할 수 있으며, 단일 적에게 큰 데미지를 입히고 가한 데미지의 일부를 HP로 흡수한다. 한 번에 흡수할 수 있는 최대량은 캐릭터 최대 HP의 25%이며, 적의 최대 HP를 초과하여 흡수할 수 없다. 창을 장착한 경우에만 적용된다.",
+     "descEn": "Using attack skills has a chance to enable the Final Attack skill for 60 sec. While enabled, the skill can be used, dealing heavy damage to a single enemy and absorbing some of the damage dealt as HP. The most one can absorb at once is 25% of the character's Max HP, and can't absorb more than the Max HP of the enemy. Only applies when equipped with a spear.",
+     "lv1": {
+      "damage": 260,
+      "mobCount": 1,
+      "attackCount": 1,
+      "x": 5,
+      "mpCon": 8,
+      "prop": 25,
+      "time": 60
+     },
+     "max": {
+      "damage": 350,
+      "mobCount": 1,
+      "attackCount": 1,
+      "x": 10,
+      "mpCon": 16,
+      "prop": 25,
+      "time": 60
+     }
+    },
+    {
+     "id": 1301001,
+     "ko": "파이널 어택: 폴암",
+     "en": "Final Attack: Polearm",
+     "master": 30,
+     "passive": false,
+     "req": [
+      {
+       "id": 1300001,
+       "lv": 3,
+       "name": "Polearm Mastery"
+      }
+     ],
+     "descKo": "공격 스킬을 사용하면 60초 동안 파이널 어택 스킬이 활성화될 확률이 있다. 활성화되면 이 스킬을 사용할 수 있으며, 단일 적에게 큰 데미지를 입히고 가한 데미지의 일부를 HP로 흡수한다. 한 번에 흡수할 수 있는 최대량은 캐릭터 최대 HP의 25%이며, 적의 최대 HP를 초과하여 흡수할 수 없다. 폴암을 장착한 경우에만 적용된다.",
+     "descEn": "Using attack skills has a chance to enable the Final Attack skill for 60 sec. While enabled, the skill can be used, dealing heavy damage to a single enemy and absorbing some of the damage dealt as HP. The most one can absorb at once is 25% of the character's Max HP, and can't absorb more than the Max HP of the enemy. Only applies when equipped with a polearm.",
+     "lv1": {
+      "damage": 260,
+      "mobCount": 1,
+      "attackCount": 1,
+      "x": 5,
+      "mpCon": 8,
+      "prop": 25,
+      "time": 60
+     },
+     "max": {
+      "damage": 350,
+      "mobCount": 1,
+      "attackCount": 1,
+      "x": 10,
+      "mpCon": 16,
+      "prop": 25,
+      "time": 60
+     }
+    },
+    {
+     "id": 1301002,
+     "ko": "스피어 부스터",
+     "en": "Spear Booster",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 1300000,
+       "lv": 5,
+       "name": "Spear Mastery"
+      }
+     ],
+     "descKo": "HP와 MP를 소모하여 장착 중인 창의 공격 속도를 일시적으로 증가시킨다. 창을 장착한 경우에만 적용된다.",
+     "descEn": "Consumes HP and MP to temporarily increase the Attack Speed of the equipped spear. Only applies when equipped with a spear.",
+     "lv1": {
+      "hpCon": 30,
+      "mpCon": 30,
+      "time": 100,
+      "x": -2
+     },
+     "max": {
+      "hpCon": 10,
+      "mpCon": 10,
+      "time": 300,
+      "x": -2
+     }
+    },
+    {
+     "id": 1301003,
+     "ko": "폴암 부스터",
+     "en": "Polearm Booster",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 1300001,
+       "lv": 5,
+       "name": "Polearm Mastery"
+      }
+     ],
+     "descKo": "HP와 MP를 소모하여 장착 중인 폴암의 공격 속도를 일시적으로 증가시킨다. 폴암을 장착한 경우에만 적용된다.",
+     "descEn": "Consumes HP and MP to temporarily increase the Attack Speed of the equipped polearm. Only applies when equipped with a polearm.",
+     "lv1": {
+      "hpCon": 30,
+      "mpCon": 30,
+      "time": 100,
+      "x": -2
+     },
+     "max": {
+      "hpCon": 10,
+      "mpCon": 10,
+      "time": 300,
+      "x": -2
+     }
+    },
+    {
+     "id": 1301004,
+     "ko": "아이언 윌",
+     "en": "Iron Will",
+     "master": 30,
+     "passive": false,
+     "req": [],
+     "descKo": "일정 시간 동안 자신의 Weapon Defense를 증가시키고, 일정 확률로 넉백 효과를 무시하게 해 준다.",
+     "descEn": "Temporarily increases the user's Weapon Defense and grants a chance to ignore knockback effects.",
+     "lv1": {
+      "mpCon": 10,
+      "time": 150,
+      "prop": 5
+     },
+     "max": {
+      "mpCon": 25,
+      "time": 300,
+      "prop": 35
+     }
+    },
+    {
+     "id": 1301005,
+     "ko": "돌진",
+     "en": "Rush",
+     "master": 20,
+     "passive": false,
+     "req": [],
+     "descKo": "바라보는 방향으로 일정 거리를 돌진한다. 돌진 범위 내에 몬스터가 있으면 최대 6마리에게 데미지를 입히고 일정 거리를 밀쳐낼 수 있다. 돌진 중에는 몬스터의 공격을 받아도 밀려나지 않는다. 재사용 대기시간: 2초",
+     "descEn": "Rushes forward a certain distance in the direction you are facing. If there are monsters within the rush range, you can deal damage to up to 6 of them and knock them back a certain distance. While rushing, you will not be knocked back even if attacked by monsters. Cooldown: 2 sec",
+     "lv1": {
+      "mpCon": 35,
+      "damage": 60,
+      "mobCount": 6,
+      "range": 130
+     },
+     "max": {
+      "mpCon": 15,
+      "damage": 80,
+      "mobCount": 6,
+      "range": 150
+     }
+    }
+   ]
+  },
+  "200": {
+   "id": 200,
+   "ko": "마법 입문",
+   "en": "Introduction to Magic",
+   "skills": [
+    {
+     "id": 2000000,
+     "ko": "MP 회복력 향상",
+     "en": "Improved MP Recovery",
+     "master": 15,
+     "passive": true,
+     "req": [],
+     "descKo": "일정 시간마다 회복되는 MP량이 증가한다. 또한 아이템을 통한 MP 회복량도 증가한다.",
+     "descEn": "The amount of MP that naturally regenerates over time increases. Also, MP recovery from items is boosted.",
+     "lv1": {
+      "x": 1,
+      "y": 10
+     },
+     "max": {
+      "x": 1,
+      "y": 25
+     }
+    },
+    {
+     "id": 2000001,
+     "ko": "최대 MP 증가",
+     "en": "Max MP Increase",
+     "master": 15,
+     "passive": true,
+     "req": [
+      {
+       "id": 2000000,
+       "lv": 3,
+       "name": "Improved MP Recovery"
+      }
+     ],
+     "descKo": "최대 MP가 증가한다.",
+     "descEn": "Max MP increases.",
+     "lv1": {
+      "mmpR": 10
+     },
+     "max": {
+      "mmpR": 25
+     }
+    },
+    {
+     "id": 2001000,
+     "ko": "매직 가드",
+     "en": "Magic Guard",
+     "master": 15,
+     "passive": false,
+     "req": [],
+     "descKo": "받는 피해의 일부를 HP 대신 MP로 대체한다. MP가 0이 되면 모든 데미지를 HP로 받는다. 효과를 해제하려면 키를 다시 누른다.",
+     "descEn": "Replaces a portion of damage taken with MP instead of HP. If MP reaches 0, all damage is taken as HP. Press the key again to deactivate the effect.",
+     "lv1": {
+      "mpCon": 8,
+      "x": 30
+     },
+     "max": {
+      "mpCon": 12,
+      "x": 80
+     }
+    },
+    {
+     "id": 2001001,
+     "ko": "매직 아머",
+     "en": "Magic Armor",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 2001000,
+       "lv": 3,
+       "name": "Magic Guard"
+      }
+     ],
+     "descKo": "갑옷에 마력을 집중해 Weapon Def.과 Magic Def.을 일시적으로 증가시킨다.",
+     "descEn": "Temporarily increases Weapon Def. and Magic Def. by concentrating magic into your armor.",
+     "lv1": {
+      "time": 300,
+      "mpCon": 8
+     },
+     "max": {
+      "time": 600,
+      "mpCon": 16
+     }
+    },
+    {
+     "id": 2001002,
+     "ko": "에너지 볼트",
+     "en": "Energy Bolt",
+     "master": 20,
+     "passive": false,
+     "req": [],
+     "descKo": "MP를 소모해 전방 350 범위 내의 적 한 명을 공격한다. 마스터리가 높을수록 데미지 편차가 줄어든다.",
+     "descEn": "Consumes MP to attack a single enemy within 350 range in front. The higher the Mastery, the lower the damage variation.",
+     "lv1": {
+      "mpCon": 8,
+      "mad": 90,
+      "mobCount": 1,
+      "attackCount": 1
+     },
+     "max": {
+      "mpCon": 16,
+      "mad": 130,
+      "mobCount": 1,
+      "attackCount": 1
+     }
+    },
+    {
+     "id": 2001003,
+     "ko": "매직 클로",
+     "en": "Magic Claw",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 2001002,
+       "lv": 1,
+       "name": "Energy Bolt"
+      }
+     ],
+     "descKo": "MP를 소모해 전방 300 범위 내의 적 한 명을 두 번 공격한다. 마스터리가 높을수록 데미지 편차가 줄어든다.",
+     "descEn": "Consumes MP to attack a single enemy within 300 range in front twice. The higher the Mastery, the lower the damage variation.",
+     "lv1": {
+      "mpCon": 10,
+      "mad": 45,
+      "mobCount": 1,
+      "attackCount": 2
+     },
+     "max": {
+      "mpCon": 20,
+      "mad": 65,
+      "mobCount": 1,
+      "attackCount": 2
+     }
+    }
+   ]
+  },
+  "210": {
+   "id": 210,
+   "ko": "Fire & Poison 기본기",
+   "en": "Fire & Poison Basics",
+   "skills": [
+    {
+     "id": 2100000,
+     "ko": "MP 이터",
+     "en": "MP Eater",
+     "master": 20,
+     "passive": true,
+     "req": [],
+     "descKo": "마법 공격 시 적의 MP를 흡수하지만, 5초에 한 번만 흡수할 수 있다. 적의 MP가 0일 경우에는 흡수할 수 없다.",
+     "descEn": "Absorbs the enemy's MP when attacking with Magic skills, but only once every 5 seconds. Cannot absorb if the enemy's MP is 0.",
+     "lv1": {
+      "x": 30,
+      "prop": 30
+     },
+     "max": {
+      "x": 50,
+      "prop": 50
+     }
+    },
+    {
+     "id": 2101000,
+     "ko": "메디테이션",
+     "en": "Meditation",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 2100000,
+       "lv": 3,
+       "name": "MP Eater"
+      }
+     ],
+     "descKo": "잠시 명상하여 주변 파티원의 Magic Attack을 일시적으로 증가시킨다.",
+     "descEn": "Meditate for a bit to temporarily increase the Magic Attack of party members around the area.",
+     "lv1": {
+      "mpCon": 15,
+      "time": 100,
+      "indieMad": 5
+     },
+     "max": {
+      "mpCon": 25,
+      "time": 300,
+      "indieMad": 25
+     }
+    },
+    {
+     "id": 2101001,
+     "ko": "텔레포트",
+     "en": "Teleport",
+     "master": 20,
+     "passive": false,
+     "req": [],
+     "descKo": "방향키를 사용하여 같은 맵 안의 일정 거리를 텔레포트한다.",
+     "descEn": "Use the arrow keys to teleport a set distance within the same map.",
+     "lv1": {
+      "mpCon": 55,
+      "range": 110
+     },
+     "max": {
+      "mpCon": 15,
+      "range": 150
+     }
+    },
+    {
+     "id": 2101002,
+     "ko": "슬로우",
+     "en": "Slow",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 2101001,
+       "lv": 5,
+       "name": "Teleport"
+      }
+     ],
+     "descKo": "몬스터 최대 6마리의 이동 속도와 Evasion을 일시적으로 감소시킨다. 이미 효과를 받고 있는 몬스터에게는 사용할 수 없다.",
+     "descEn": "Temporarily slows down the movement speed and evasion of up to 6 monsters. Cannot be used on monsters that are already affected.",
+     "lv1": {
+      "mpCon": 15,
+      "speed": 10,
+      "x": 1,
+      "time": 10,
+      "mobCount": 6
+     },
+     "max": {
+      "mpCon": 8,
+      "speed": 30,
+      "x": 5,
+      "time": 20,
+      "mobCount": 6
+     }
+    },
+    {
+     "id": 2101003,
+     "ko": "파이어 애로우",
+     "en": "Fire Arrow",
+     "master": 30,
+     "passive": false,
+     "req": [],
+     "descKo": "마법의 힘으로 만든 불화살을 단일 적에게 발사하여 화염 속성 데미지를 주고, 대상을 불태워 3초 동안 매초 지속 데미지를 입힌다. 화염 속성에 약한 적에게는 더 큰 데미지를 주지만, 화염 속성 저항이 있는 적에게는 데미지가 감소하며 불태울 수 없다.",
+     "descEn": "Fires a fire arrow created with magic power at a single enemy, dealing fire-elemental damage and burning them to inflict continuous damage every second for 3 seconds. Deals increased damage to fire-weak enemies, but deals reduced damage to fire-resistant enemies and cannot burn them.",
+     "lv1": {
+      "mpCon": 14,
+      "mad": 120,
+      "mobCount": 1,
+      "attackCount": 1,
+      "prop": 100
+     },
+     "max": {
+      "mpCon": 28,
+      "mad": 180,
+      "mobCount": 1,
+      "attackCount": 1,
+      "prop": 100
+     }
+    },
+    {
+     "id": 2101004,
+     "ko": "포이즌 브레스",
+     "en": "Poison Breath",
+     "master": 30,
+     "passive": false,
+     "req": [],
+     "descKo": "적 한 명에게 독 방울을 발사한다. 독 방울은 적중 시 폭발하여 주변의 적 최대 6명에게 독 속성 데미지를 입히고 일정 확률로 중독시킨다. 독에 약한 적에게는 더 큰 데미지를 주지만, 독 내성이 있는 적에게는 데미지가 감소하며 중독시킬 수 없다.",
+     "descEn": "Fires a poison droplet at a single enemy. The droplet explodes on contact, dealing poison-elemental damage to up to 6 nearby enemies and granting a chance to poison them. Deals increased damage to poison-weak enemies, but deals reduced damage to poison-resistant enemies and cannot poison them.",
+     "lv1": {
+      "mpCon": 20,
+      "mobCount": 1,
+      "attackCount": 1
+     },
+     "max": {
+      "mpCon": 40,
+      "mobCount": 1,
+      "attackCount": 1
+     }
+    }
+   ]
+  },
+  "220": {
+   "id": 220,
+   "ko": "Ice & Lightning 기본기",
+   "en": "Ice & Lightning Basics",
+   "skills": [
+    {
+     "id": 2200000,
+     "ko": "MP 이터",
+     "en": "MP Eater",
+     "master": 20,
+     "passive": true,
+     "req": [],
+     "descKo": "마법 공격 시 적의 MP를 흡수하지만, 5초에 한 번만 흡수할 수 있다. 적의 MP가 0일 경우에는 흡수할 수 없다.",
+     "descEn": "Absorbs the enemy's MP when attacking with Magic skills, but only once every 5 seconds. Cannot absorb if the enemy's MP is 0.",
+     "lv1": {
+      "x": 30,
+      "prop": 30
+     },
+     "max": {
+      "x": 50,
+      "prop": 50
+     }
+    },
+    {
+     "id": 2201000,
+     "ko": "메디테이션",
+     "en": "Meditation",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 2200000,
+       "lv": 3,
+       "name": "MP Eater"
+      }
+     ],
+     "descKo": "잠시 명상하여 주변 파티원의 Magic Attack을 일시적으로 증가시킨다.",
+     "descEn": "Meditate for a bit to temporarily increase the Magic Attack of party members around the area.",
+     "lv1": {
+      "mpCon": 15,
+      "time": 100,
+      "indieMad": 5
+     },
+     "max": {
+      "mpCon": 25,
+      "time": 300,
+      "indieMad": 25
+     }
+    },
+    {
+     "id": 2201001,
+     "ko": "텔레포트",
+     "en": "Teleport",
+     "master": 20,
+     "passive": false,
+     "req": [],
+     "descKo": "방향키를 사용하여 같은 맵 안의 일정 거리를 텔레포트한다.",
+     "descEn": "Use the arrow keys to teleport a set distance within the same map.",
+     "lv1": {
+      "mpCon": 55,
+      "range": 110
+     },
+     "max": {
+      "mpCon": 15,
+      "range": 150
+     }
+    },
+    {
+     "id": 2201002,
+     "ko": "슬로우",
+     "en": "Slow",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 2201001,
+       "lv": 5,
+       "name": "Teleport"
+      }
+     ],
+     "descKo": "몬스터 최대 6마리의 이동 속도와 Evasion을 일시적으로 감소시킨다. 이미 효과를 받고 있는 몬스터에게는 사용할 수 없다.",
+     "descEn": "Temporarily slows down the movement speed and evasion of up to 6 monsters. Cannot be used on monsters that are already affected.",
+     "lv1": {
+      "mpCon": 15,
+      "speed": 10,
+      "x": 1,
+      "time": 10,
+      "mobCount": 6
+     },
+     "max": {
+      "mpCon": 8,
+      "speed": 30,
+      "x": 5,
+      "time": 20,
+      "mobCount": 6
+     }
+    },
+    {
+     "id": 2201003,
+     "ko": "콜드 빔",
+     "en": "Cold Beam",
+     "master": 30,
+     "passive": false,
+     "req": [],
+     "descKo": "날카로운 얼음 조각으로 적 한 명을 공격하여 얼음 속성의 데미지를 준다. 공격을 받은 적은 일정 시간 동안 결빙되어 행동이 느려진다. 얼음 속성에 약한 적에게는 더 큰 데미지를 주지만, 얼음 속성에 내성이 있는 적에게는 데미지가 반감되며 결빙 효과도 주지 못한다.",
+     "descEn": "Attacks a single enemy with a sharp piece of ice, dealing ice-elemental damage. Enemies hit are briefly frozen, slowing their actions. Deals increased damage to ice-weak enemies, but deals reduced damage to ice-resistant enemies and cannot slow them.",
+     "lv1": {
+      "mpCon": 11,
+      "mad": 110,
+      "time": 3,
+      "mobCount": 1,
+      "attackCount": 1,
+      "speed": 65
+     },
+     "max": {
+      "mpCon": 22,
+      "mad": 170,
+      "time": 3,
+      "mobCount": 1,
+      "attackCount": 1,
+      "speed": 65
+     }
+    },
+    {
+     "id": 2201004,
+     "ko": "썬더볼트",
+     "en": "Thunder Bolt",
+     "master": 30,
+     "passive": false,
+     "req": [],
+     "descKo": "주변의 몬스터를 번개로 공격하여 번개 속성 데미지를 입힌다. 번개 속성에 내성이 있는 몬스터를 제외한 모든 몬스터는 일정 확률로 감전되어 기절한다.",
+     "descEn": "Attacks surrounding monsters with a thunderbolt, dealing lightning-elemental damage. All monsters, except those resistant to lightning, have a chance to be stunned by electrocution.",
+     "lv1": {
+      "mpCon": 20,
+      "mad": 40,
+      "prop": 10,
+      "mobCount": 6,
+      "attackCount": 1,
+      "time": 2000
+     },
+     "max": {
+      "mpCon": 40,
+      "mad": 70,
+      "prop": 25,
+      "mobCount": 6,
+      "attackCount": 1,
+      "time": 2000
+     }
+    }
+   ]
+  },
+  "230": {
+   "id": 230,
+   "ko": "성마법의 기초",
+   "en": "Holy Magic Basics",
+   "skills": [
+    {
+     "id": 2300000,
+     "ko": "MP 이터",
+     "en": "MP Eater",
+     "master": 20,
+     "passive": true,
+     "req": [],
+     "descKo": "마법 공격 시 적의 MP를 흡수하지만, 5초에 한 번만 흡수할 수 있다. 적의 MP가 0일 경우에는 흡수할 수 없다.",
+     "descEn": "Absorbs the enemy's MP when attacking with Magic skills, but only once every 5 seconds. Cannot absorb if the enemy's MP is 0.",
+     "lv1": {
+      "x": 30,
+      "prop": 30
+     },
+     "max": {
+      "x": 50,
+      "prop": 50
+     }
+    },
+    {
+     "id": 2301000,
+     "ko": "텔레포트",
+     "en": "Teleport",
+     "master": 20,
+     "passive": false,
+     "req": [],
+     "descKo": "방향키를 사용하여 같은 맵 안의 일정 거리를 텔레포트한다.",
+     "descEn": "Use the arrow keys to teleport a set distance within the same map.",
+     "lv1": {
+      "mpCon": 55,
+      "range": 110
+     },
+     "max": {
+      "mpCon": 15,
+      "range": 150
+     }
+    },
+    {
+     "id": 2301001,
+     "ko": "힐",
+     "en": "Heal",
+     "master": 30,
+     "passive": false,
+     "req": [],
+     "descKo": "주변에 있는 모든 파티원의 HP를 회복시킨다. 회복시키는 인원수에 따라 회복량이 달라지며, 주변에 있는 언데드 몬스터는 피해를 입는다.",
+     "descEn": "Recovers the HP of all party members around the area. The amount of healing depends on the number of people being healed, and undead monsters around the area will receive damage.",
+     "lv1": {
+      "mpCon": 12,
+      "x": 40,
+      "mobCount": 6,
+      "attackCount": 1
+     },
+     "max": {
+      "mpCon": 27,
+      "x": 100,
+      "mobCount": 6,
+      "attackCount": 1
+     }
+    },
+    {
+     "id": 2301002,
+     "ko": "인빈서블",
+     "en": "Invincible",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 2301001,
+       "lv": 5,
+       "name": "Heal"
+      }
+     ],
+     "descKo": "일정 시간 동안 받는 물리 피해를 감소시키고, 시전자와 접촉하여 데미지를 받는 몬스터에게 무속성 마법 데미지를 준다.",
+     "descEn": "Reduces physical damage taken for a certain duration, and deals non-elemental magic damage to any monster that takes contact damage from the caster.",
+     "lv1": {
+      "mpCon": 16,
+      "x": 1,
+      "time": 100
+     },
+     "max": {
+      "mpCon": 36,
+      "x": 20,
+      "time": 300
+     }
+    },
+    {
+     "id": 2301003,
+     "ko": "블레스",
+     "en": "Bless",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 2301002,
+       "lv": 5,
+       "name": "Invincible"
+      }
+     ],
+     "descKo": "일정 시간 동안 받는 모든 피해를 감소시키고 주변 파티원 모두의 힐 스킬 HP 회복량을 증가시킨다.",
+     "descEn": "Temporarily reduces all Damage taken and increases the HP recovery from the Heal skill for all nearby party members.",
+     "lv1": {
+      "mpCon": 20,
+      "x": 1,
+      "y": 5,
+      "time": 100
+     },
+     "max": {
+      "mpCon": 30,
+      "x": 10,
+      "y": 15,
+      "time": 300
+     }
+    },
+    {
+     "id": 2301004,
+     "ko": "홀리 애로우",
+     "en": "Holy Arrow",
+     "master": 30,
+     "passive": false,
+     "req": [],
+     "descKo": "성스러운 화살을 발사하여 몬스터를 공격한다. 언데드 또는 악마 계열 몬스터에게 매우 효과적이다.",
+     "descEn": "Attacks a monster by firing a holy arrow. Very effective against the undead or devil-based monsters.",
+     "lv1": {
+      "mpCon": 14,
+      "mad": 100,
+      "mobCount": 1,
+      "attackCount": 1
+     },
+     "max": {
+      "mpCon": 28,
+      "mad": 160,
+      "mobCount": 1,
+      "attackCount": 1
+     }
+    }
+   ]
+  },
+  "300": {
+   "id": 300,
+   "ko": "Bowman 기본기",
+   "en": "Bowman Basics",
+   "skills": [
+    {
+     "id": 3000000,
+     "ko": "크리티컬 샷",
+     "en": "Critical Shot",
+     "master": 15,
+     "passive": true,
+     "req": [],
+     "descKo": "Critical Rate와 Critical Damage가 증가한다.",
+     "descEn": "Increases Critical Rate and Critical Damage.",
+     "lv1": {
+      "crtX": 5
+     },
+     "max": {
+      "crtX": 20
+     }
+    },
+    {
+     "id": 3000001,
+     "ko": "아마존의 눈",
+     "en": "The Eye of Amazon",
+     "master": 15,
+     "passive": true,
+     "req": [],
+     "descKo": "bow와 석궁의 사거리를 증가시킨다.",
+     "descEn": "Increases attack range for bows and crossbows.",
+     "lv1": {
+      "range": 50
+     },
+     "max": {
+      "range": 120
+     }
+    },
+    {
+     "id": 3001000,
+     "ko": "포커스",
+     "en": "Focus",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 3000001,
+       "lv": 3,
+       "name": "The Eye of Amazon"
+      }
+     ],
+     "descKo": "집중하여 일정 시간 동안 Accuracy와 Evasion을 증가시킨다.",
+     "descEn": "Focus to temporarily increase Accuracy and Evasion.",
+     "lv1": {
+      "time": 70,
+      "mpCon": 8
+     },
+     "max": {
+      "time": 300,
+      "mpCon": 16
+     }
+    },
+    {
+     "id": 3001003,
+     "ko": "파워 넉백",
+     "en": "Power Knockback",
+     "master": 15,
+     "passive": false,
+     "req": [],
+     "descKo": "활을 크게 휘둘러 다수의 적을 멀리 밀어낸다. 반드시 Critical로 명중하며, 레벨이 높아질수록 한 번에 밀어낼 수 있는 몬스터의 수가 늘어난다.",
+     "descEn": "Swings the bow widely to push multiple enemies far back. This attack always hits as a critical, and as the level rises, the number of monsters that one can push back with one swing increases.",
+     "lv1": {
+      "mpCon": 12,
+      "damage": 105,
+      "prop": 100,
+      "mobCount": 2,
+      "x": 140,
+      "attackCount": 1,
+      "range": 30
+     },
+     "max": {
+      "mpCon": 8,
+      "damage": 180,
+      "prop": 100,
+      "mobCount": 4,
+      "x": 200,
+      "attackCount": 1,
+      "range": 90
+     }
+    },
+    {
+     "id": 3001001,
+     "ko": "애로우 블로우",
+     "en": "Arrow Blow",
+     "master": 20,
+     "passive": false,
+     "req": [],
+     "descKo": "전방 350 범위 내의 적 하나에게 힘껏 화살을 발사한다. 일반적인 경우보다 더 큰 데미지를 준다.",
+     "descEn": "Fires an arrow with power at a single enemy within 350 range in front. Deals more damage than usual.",
+     "lv1": {
+      "mpCon": 6,
+      "damage": 160,
+      "mobCount": 1,
+      "attackCount": 1,
+      "range": 350
+     },
+     "max": {
+      "mpCon": 14,
+      "damage": 240,
+      "mobCount": 1,
+      "attackCount": 1,
+      "range": 350
+     }
+    },
+    {
+     "id": 3001002,
+     "ko": "더블 샷",
+     "en": "Double Shot",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 3001001,
+       "lv": 1,
+       "name": "Arrow Blow"
+      }
+     ],
+     "descKo": "화살 2개를 소모하여 전방 300 범위 내의 적 최대 2명을 공격한다.",
+     "descEn": "Consumes 2 arrows to attack up to 2 enemies within 300 range in front.",
+     "lv1": {
+      "mpCon": 8,
+      "damage": 80,
+      "x": 40,
+      "y": 5,
+      "mobCount": 2,
+      "attackCount": 1
+     },
+     "max": {
+      "mpCon": 16,
+      "damage": 120,
+      "x": 40,
+      "y": 5,
+      "mobCount": 2,
+      "attackCount": 1
+     }
+    }
+   ]
+  },
+  "310": {
+   "id": 310,
+   "ko": "Hunter의 지침",
+   "en": "Hunter's Guide",
+   "skills": [
+    {
+     "id": 3100000,
+     "ko": "보우 마스터리",
+     "en": "Bow Mastery",
+     "master": 20,
+     "passive": true,
+     "req": [],
+     "descKo": "보우 마스터리, Critical Rate 및 Speed를 증가시킨다. 활을 장착한 경우에만 이 효과가 적용된다.",
+     "descEn": "Increases Bow Mastery, Critical Rate, and Movement Speed. This effect only applies when a bow is equipped.",
+     "lv1": {
+      "x": 1,
+      "prop": 0,
+      "y": 1
+     },
+     "max": {
+      "x": 10,
+      "prop": 0,
+      "y": 10
+     }
+    },
+    {
+     "id": 3100001,
+     "ko": "아마존의 심판",
+     "en": "Amazon's Judgement",
+     "master": 20,
+     "passive": true,
+     "req": [
+      {
+       "id": 3100000,
+       "lv": 5,
+       "name": "Bow Mastery"
+      }
+     ],
+     "descKo": "Critical 공격이 적의 힘줄을 끊어 Speed를 느리게 한다.",
+     "descEn": "Critical hits sever the enemy's tendons, slowing them down.",
+     "lv1": {
+      "prop": 60,
+      "speed": 15,
+      "time": 3
+     },
+     "max": {
+      "prop": 100,
+      "speed": 35,
+      "time": 5
+     }
+    },
+    {
+     "id": 3101000,
+     "ko": "파이널 어택: 활",
+     "en": "Final Attack: Bow",
+     "master": 30,
+     "passive": false,
+     "req": [
+      {
+       "id": 3100000,
+       "lv": 3,
+       "name": "Bow Mastery"
+      }
+     ],
+     "descKo": "공격 스킬을 사용하면 60초 동안 일정 확률로 파이널 어택 스킬을 활성화한다. 활성화된 동안 스킬을 사용할 수 있으며, 전방의 최대 3명의 적에게 큰 데미지를 준다. 활을 장착한 경우에만 적용된다.",
+     "descEn": "Using attack skills has a chance to enable the Final Attack skill for 60 sec. While enabled, the skill can be used, dealing heavy damage to up to 3 enemies in front. Only applies when equipped with a bow.",
+     "lv1": {
+      "prop": 25,
+      "mpCon": 12,
+      "mobCount": 3,
+      "attackCount": 1,
+      "time": 60,
+      "damage": 90
+     },
+     "max": {
+      "prop": 25,
+      "mpCon": 20,
+      "mobCount": 3,
+      "attackCount": 1,
+      "time": 60,
+      "damage": 120
+     }
+    },
+    {
+     "id": 3101001,
+     "ko": "보우 부스터",
+     "en": "Bow Booster",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 3100000,
+       "lv": 5,
+       "name": "Bow Mastery"
+      }
+     ],
+     "descKo": "[마스터 레벨: 20] HP와 MP를 소모하여 장착한 활의 공격 속도를 일시적으로 증가시킨다. 활을 장착한 경우에만 적용된다.",
+     "descEn": "Consumes HP and MP to temporarily increase the Attack Speed of the equipped bow. Only applies when equipped with a bow.",
+     "lv1": {
+      "hpCon": 30,
+      "mpCon": 30,
+      "time": 100,
+      "x": -2
+     },
+     "max": {
+      "hpCon": 10,
+      "mpCon": 10,
+      "time": 300,
+      "x": -2
+     }
+    },
+    {
+     "id": 3101003,
+     "ko": "소울 애로우: 활",
+     "en": "Soul Arrow: Bow",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 3101001,
+       "lv": 5,
+       "name": "Bow Booster"
+      }
+     ],
+     "descKo": "일시적으로 화살을 소모하지 않고 활로 화살을 발사할 수 있게 한다. 활을 장착한 경우에만 작동한다.",
+     "descEn": "Temporarily allows the character to fire bow arrows without using up arrows. Only works with a bow equipped.",
+     "lv1": {
+      "mpCon": 25,
+      "prop": 100,
+      "time": 60
+     },
+     "max": {
+      "mpCon": 5,
+      "prop": 100,
+      "time": 300
+     }
+    },
+    {
+     "id": 3101004,
+     "ko": "애로우 봄",
+     "en": "Arrow Bomb",
+     "master": 30,
+     "passive": false,
+     "req": [],
+     "descKo": "폭탄을 부착한 화살을 발사한다. 정확히 명중하면 일정 확률로 폭탄이 적에게서 폭발하여 주변의 일부 적을 기절시킨다. 한 번에 6명보다 많이 공격할 수 없으며, 활을 장착한 경우에만 작동한다.",
+     "descEn": "Fires an arrow with a bomb attached to it. If struck cleanly, the bomb explodes on the enemy, stunning some enemies around with a certain trigger rate. Can't attack more than 6 at once, and it only works with a bow equipped.",
+     "lv1": {
+      "mpCon": 14,
+      "mobCount": 1,
+      "damage": 0,
+      "attackCount": 1
+     },
+     "max": {
+      "mpCon": 28,
+      "mobCount": 1,
+      "damage": 0,
+      "attackCount": 1
+     }
+    }
+   ]
+  },
+  "320": {
+   "id": 320,
+   "ko": "Crossbowman 지침",
+   "en": "Crossbowman Guide",
+   "skills": [
+    {
+     "id": 3200000,
+     "ko": "크로스보우 마스터리",
+     "en": "Crossbow Mastery",
+     "master": 20,
+     "passive": true,
+     "req": [],
+     "descKo": "석궁 마스터리와 Critical Damage를 증가시킨다. 석궁을 장착한 경우에만 적용된다.",
+     "descEn": "Increases Crossbow Mastery and Critical Damage. It only applies when a crossbow is equipped.",
+     "lv1": {
+      "x": 1
+     },
+     "max": {
+      "x": 20
+     }
+    },
+    {
+     "id": 3200001,
+     "ko": "아마존의 심판",
+     "en": "Amazon's Judgement",
+     "master": 20,
+     "passive": true,
+     "req": [
+      {
+       "id": 3200000,
+       "lv": 5,
+       "name": "Crossbow Mastery"
+      }
+     ],
+     "descKo": "Critical 공격 시 적의 힘줄을 끊어 적을 느리게 만든다.",
+     "descEn": "Critical hits sever the enemy's tendons, slowing them down.",
+     "lv1": {
+      "prop": 60,
+      "speed": 15,
+      "time": 3
+     },
+     "max": {
+      "prop": 100,
+      "speed": 35,
+      "time": 5
+     }
+    },
+    {
+     "id": 3201000,
+     "ko": "파이널 어택: 석궁",
+     "en": "Final Attack: Crossbow",
+     "master": 30,
+     "passive": false,
+     "req": [
+      {
+       "id": 3200000,
+       "lv": 3,
+       "name": "Crossbow Mastery"
+      }
+     ],
+     "descKo": "공격 스킬을 사용하면 60초 동안 파이널 어택 스킬을 활성화할 확률이 있다. 활성화된 동안 해당 스킬을 사용하여 단일 적에게 큰 데미지를 준다. 크로스보우를 장착한 경우에만 적용된다.",
+     "descEn": "Using attack skills has a chance to enable the Final Attack skill for 60 sec. While enabled, the skill can be used, dealing heavy damage to a single enemy. Only applies when equipped with a crossbow.",
+     "lv1": {
+      "prop": 25,
+      "mpCon": 12,
+      "time": 60,
+      "mobCount": 1,
+      "attackCount": 1,
+      "damage": 270
+     },
+     "max": {
+      "prop": 25,
+      "mpCon": 20,
+      "time": 60,
+      "mobCount": 1,
+      "attackCount": 1,
+      "damage": 360
+     }
+    },
+    {
+     "id": 3201001,
+     "ko": "크로스보우 부스터",
+     "en": "Crossbow Booster",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 3200000,
+       "lv": 5,
+       "name": "Crossbow Mastery"
+      }
+     ],
+     "descKo": "[마스터 레벨: 20] 장착한 크로스보우의 공격 속도를 일시적으로 높이기 위해 HP와 MP를 소모한다. 크로스보우를 장착한 경우에만 적용된다.",
+     "descEn": "Consumes HP and MP to temporarily increase the Attack Speed of the equipped crossbow. Only applies when equipped with a crossbow.",
+     "lv1": {
+      "hpCon": 30,
+      "mpCon": 30,
+      "time": 100,
+      "x": -2
+     },
+     "max": {
+      "hpCon": 10,
+      "mpCon": 10,
+      "time": 300,
+      "x": -2
+     }
+    },
+    {
+     "id": 3201003,
+     "ko": "소울 애로우: 석궁",
+     "en": "Soul Arrow: Crossbow",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 3201001,
+       "lv": 5,
+       "name": "Crossbow Booster"
+      }
+     ],
+     "descKo": "일시적으로 화살을 소모하지 않고 크로스보우 화살을 발사할 수 있게 한다. 크로스보우를 장착한 경우에만 작동한다.",
+     "descEn": "Temporarily allows the character to fire crossbow arrows without using up arrows. Only works with a crossbow equipped.",
+     "lv1": {
+      "mpCon": 25,
+      "prop": 100,
+      "time": 60
+     },
+     "max": {
+      "mpCon": 5,
+      "prop": 100,
+      "time": 300
+     }
+    },
+    {
+     "id": 3201004,
+     "ko": "아이언 애로우: 석궁",
+     "en": "Iron Arrow",
+     "master": 30,
+     "passive": false,
+     "req": [],
+     "descKo": "강력한 화살로 최대 6마리의 몬스터를 동시에 공격하며, 화살은 몬스터들을 관통한다. 화살이 각 몬스터를 관통할 때마다 데미지가 감소한다.",
+     "descEn": "Attacks up to 6 monsters at once with a powerful arrow, which penetrates through them. Damage decreases as the arrow flies through each monster.",
+     "lv1": {
+      "mpCon": 14,
+      "damage": 120,
+      "mobCount": 6,
+      "attackCount": 1
+     },
+     "max": {
+      "mpCon": 28,
+      "damage": 180,
+      "mobCount": 6,
+      "attackCount": 1
+     }
+    }
+   ]
+  },
+  "400": {
+   "id": 400,
+   "ko": "Thief 입문",
+   "en": "Introduction to the Thief",
+   "skills": [
+    {
+     "id": 4000000,
+     "ko": "님블바디",
+     "en": "Nimble Body",
+     "master": 15,
+     "passive": true,
+     "req": [],
+     "descKo": "Accuracy과 Evasion을 증가시킨다.",
+     "descEn": "Increases Accuracy and Evasion.",
+     "lv1": {
+      "accX": 1
+     },
+     "max": {
+      "accX": 15
+     }
+    },
+    {
+     "id": 4000001,
+     "ko": "킨 아이즈",
+     "en": "Keen Eyes",
+     "master": 15,
+     "passive": true,
+     "req": [
+      {
+       "id": 4000000,
+       "lv": 3,
+       "name": "Nimble Body"
+      }
+     ],
+     "descKo": "Throwing Stars 및 Knives 같은 투척 무기의 사정거리를 증가시킨다.",
+     "descEn": "Increases attack range for throwing weapons such as Throwing Stars and Knives.",
+     "lv1": {
+      "range": 50
+     },
+     "max": {
+      "range": 200
+     }
+    },
+    {
+     "id": 4001000,
+     "ko": "디스오더",
+     "en": "Disorder",
+     "master": 20,
+     "passive": false,
+     "req": [],
+     "descKo": "일정 시간 동안 적의 Attack Power와 Weapon Def.을 감소시키며 자신을 공격하지 못하도록 한다. 이미 \"디스오더\" 상태에 있는 몬스터에게는 효과가 없다.",
+     "descEn": "Temporarily decreases the Attack Power and Weapon Def. of an enemy and dissuades it from attacking you. Has no effect on a monster that's already in \"Disorder.\"",
+     "lv1": {
+      "mpCon": 5,
+      "time": 10,
+      "x": 5,
+      "y": 1,
+      "mobCount": 1,
+      "attackCount": 1,
+      "damage": 100
+     },
+     "max": {
+      "mpCon": 10,
+      "time": 30,
+      "x": 25,
+      "y": 5,
+      "mobCount": 1,
+      "attackCount": 1,
+      "damage": 100
+     }
+    },
+    {
+     "id": 4001001,
+     "ko": "다크 사이트",
+     "en": "Dark Sight",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 4001000,
+       "lv": 3,
+       "name": "Disorder"
+      }
+     ],
+     "descKo": "MP를 소모하여 그림자 속에 숨는다. 숨은 동안에는 공격받지도 공격할 수도 없다. 키를 다시 누르면 효과가 해제된다.",
+     "descEn": "Consumes MP to hide in the shadows. Cannot be attacked and cannot attack while hidden. Press the key again to deactivate the effect.",
+     "lv1": {
+      "mpCon": 50,
+      "speed": 20
+     },
+     "max": {
+      "mpCon": 30
+     }
+    },
+    {
+     "id": 4001002,
+     "ko": "더블 스탭",
+     "en": "Double Stab",
+     "master": 20,
+     "passive": false,
+     "req": [],
+     "descKo": "MP를 소모하여 단검으로 몬스터 한 마리를 빠르게 두 번 찌른다.",
+     "descEn": "Consumes MP to quickly stab a monster twice using a dagger.",
+     "lv1": {
+      "mpCon": 8,
+      "damage": 80,
+      "attackCount": 2,
+      "mobCount": 1
+     },
+     "max": {
+      "mpCon": 16,
+      "damage": 160,
+      "attackCount": 2,
+      "mobCount": 1
+     }
+    },
+    {
+     "id": 4001003,
+     "ko": "럭키 세븐",
+     "en": "Lucky Seven",
+     "master": 20,
+     "passive": false,
+     "req": [],
+     "descKo": "MP를 소모하여 투척 표창 2개를 전방 200 범위 내의 적 한 명에게 던져 LUK에 기반한 큰 데미지를 준다. 클로 마스터리와 관계없이 LUK에 기반하여 공격한다.",
+     "descEn": "Consumes MP to throw 2 throwing stars at a single enemy within 200 range in front, dealing powerful damage based on LUK. Attacks based on LUK regardless of Claw Mastery.",
+     "lv1": {
+      "mpCon": 8,
+      "damage": 60,
+      "x": 30,
+      "y": 5,
+      "mobCount": 1,
+      "attackCount": 1
+     },
+     "max": {
+      "mpCon": 16,
+      "damage": 140,
+      "x": 30,
+      "y": 5,
+      "mobCount": 1,
+      "attackCount": 1
+     }
+    }
+   ]
+  },
+  "410": {
+   "id": 410,
+   "ko": "Assassin 기술",
+   "en": "Assassin Skills",
+   "skills": [
+    {
+     "id": 4100000,
+     "ko": "클로 마스터리",
+     "en": "Claw Mastery",
+     "master": 20,
+     "passive": true,
+     "req": [],
+     "descKo": "클로 마스터리와 Attack Power를 증가시키며, 표창 공격 시 사용한 표창을 회수할 확률을 부여한다. 클로를 장착한 경우에만 적용된다.",
+     "descEn": "Increases Claw Mastery and Attack Power, and gives a chance to recover used throwing stars when using throwing star attacks. Only applies when a claw is equipped.",
+     "lv1": {
+      "x": 1,
+      "prop": 5
+     },
+     "max": {
+      "x": 20,
+      "prop": 25
+     }
+    },
+    {
+     "id": 4100001,
+     "ko": "크리티컬 스로우",
+     "en": "Critical Throw",
+     "master": 30,
+     "passive": true,
+     "req": [
+      {
+       "id": 4100000,
+       "lv": 3,
+       "name": "Claw Mastery"
+      }
+     ],
+     "descKo": "Critical Rate와 Critical Damage를 증가시킨다.",
+     "descEn": "Increases Critical Rate and Critical Damage.",
+     "lv1": {
+      "crtX": 1
+     },
+     "max": {
+      "crtX": 15
+     }
+    },
+    {
+     "id": 4100002,
+     "ko": "크리티컬 리커버리",
+     "en": "Critical Recovery",
+     "master": 20,
+     "passive": true,
+     "req": [],
+     "descKo": "Critical 공격 시 일정 확률로 HP와 MP를 추가 회복한다. 단, 회복 후 30초 동안은 재회복 불가.",
+     "descEn": "Recovers additional HP and MP with a certain chance when landing a critical hit. Cannot recover again within 30 seconds after a recovery.",
+     "lv1": {
+      "x": 1,
+      "y": 1,
+      "prop": 20
+     },
+     "max": {
+      "x": 10,
+      "y": 10,
+      "prop": 100
+     }
+    },
+    {
+     "id": 4101000,
+     "ko": "클로 부스터",
+     "en": "Claw Booster",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 4100000,
+       "lv": 5,
+       "name": "Claw Mastery"
+      }
+     ],
+     "descKo": "HP와 MP를 소모하여 장착한 클로의 공격 속도를 일시적으로 높인다. 클로를 장착한 경우에만 적용된다.",
+     "descEn": "Consumes HP and MP to temporarily increase the Attack Speed of the equipped claw. Only applies when equipped with a claw.",
+     "lv1": {
+      "hpCon": 30,
+      "mpCon": 30,
+      "time": 100,
+      "x": -2
+     },
+     "max": {
+      "hpCon": 10,
+      "mpCon": 10,
+      "time": 300,
+      "x": -2
+     }
+    },
+    {
+     "id": 4101001,
+     "ko": "헤이스트",
+     "en": "Haste",
+     "master": 20,
+     "passive": false,
+     "req": [],
+     "descKo": "일정 시간 동안 주변에 있는 모든 파티원의 speed와 jump를 증가시킨다.",
+     "descEn": "Temporarily increases the speed and jump of all party members around the area.",
+     "lv1": {
+      "mpCon": 15,
+      "time": 100
+     },
+     "max": {
+      "mpCon": 35,
+      "time": 300
+     }
+    },
+    {
+     "id": 4101002,
+     "ko": "드레인",
+     "en": "Drain",
+     "master": 30,
+     "passive": false,
+     "req": [
+      {
+       "id": 4100002,
+       "lv": 3,
+       "name": "Critical Recovery"
+      }
+     ],
+     "descKo": "적에게 가한 데미지의 일부를 HP로 흡수한다. 한 번에 흡수할 수 있는 최대량은 캐릭터 최대 HP의 25%이며, 적의 최대 HP를 초과해 흡수할 수 없다.",
+     "descEn": "Absorbs some of the damage dealt to the enemy as HP. The most one can absorb at once is 25% of the character's Max HP, and can't absorb more than the Max HP of the enemy.",
+     "lv1": {
+      "mpCon": 14,
+      "x": 5,
+      "damage": 180,
+      "mobCount": 1,
+      "attackCount": 1,
+      "prop": 2
+     },
+     "max": {
+      "mpCon": 28,
+      "x": 15,
+      "damage": 240,
+      "mobCount": 1,
+      "attackCount": 1,
+      "prop": 12
+     }
+    }
+   ]
+  },
+  "420": {
+   "id": 420,
+   "ko": "Bandit의 요령",
+   "en": "Bandit's Tricks",
+   "skills": [
+    {
+     "id": 4200000,
+     "ko": "대거 마스터리",
+     "en": "Dagger Mastery",
+     "master": 20,
+     "passive": true,
+     "req": [],
+     "descKo": "대거 마스터리와 Critical Rate를 증가시키며, 피격 시 넉백되지 않을 확률이 추가된다. 단검 장착 시에만 적용된다.",
+     "descEn": "Increases Dagger Mastery and Critical Rate, with a chance to ignore knockback effects. It only applies when a dagger is equipped.",
+     "lv1": {
+      "x": 1,
+      "prop": 1
+     },
+     "max": {
+      "x": 20,
+      "prop": 20
+     }
+    },
+    {
+     "id": 4200001,
+     "ko": "님블 리커버리",
+     "en": "Nimble Recovery",
+     "master": 20,
+     "passive": true,
+     "req": [],
+     "descKo": "회피 성공 시 일정 확률로 HP와 MP를 회복한다. 단, 회복 성공 시 30초 동안은 재회복되지 않는다.",
+     "descEn": "Recover HP and MP with a certain chance when evading. Cannot recover again within 30 seconds after a recovery.",
+     "lv1": {
+      "x": 1,
+      "y": 1,
+      "prop": 20
+     },
+     "max": {
+      "x": 10,
+      "y": 10,
+      "prop": 100
+     }
+    },
+    {
+     "id": 4201000,
+     "ko": "대거 부스터",
+     "en": "Dagger Booster",
+     "master": 20,
+     "passive": false,
+     "req": [
+      {
+       "id": 4200000,
+       "lv": 5,
+       "name": "Dagger Mastery"
+      }
+     ],
+     "descKo": "HP와 MP를 소모하여 장착한 단검의 공격 속도를 일시적으로 높인다. 단검을 장착한 경우에만 적용된다.",
+     "descEn": "Consumes HP and MP to temporarily increase the Attack Speed of the equipped dagger. Only applies when equipped with a dagger.",
+     "lv1": {
+      "hpCon": 30,
+      "mpCon": 30,
+      "time": 100,
+      "x": -2
+     },
+     "max": {
+      "hpCon": 10,
+      "mpCon": 10,
+      "time": 300,
+      "x": -2
+     }
+    },
+    {
+     "id": 4201001,
+     "ko": "헤이스트",
+     "en": "Haste",
+     "master": 20,
+     "passive": false,
+     "req": [],
+     "descKo": "일정 시간 동안 주변에 있는 모든 파티원의 speed와 jump를 증가시킨다.",
+     "descEn": "Temporarily increases the speed and jump of all party members around the area.",
+     "lv1": {
+      "mpCon": 15,
+      "time": 100
+     },
+     "max": {
+      "mpCon": 35,
+      "time": 300
+     }
+    },
+    {
+     "id": 4201002,
+     "ko": "스틸",
+     "en": "Steal",
+     "master": 30,
+     "passive": false,
+     "req": [
+      {
+       "id": 4201001,
+       "lv": 5,
+       "name": "Haste"
+      }
+     ],
+     "descKo": "일정한 성공 확률로 최대 2마리의 몬스터에게서 동시에 아이템을 훔치려고 한다. 훔치기에 성공하면 적을 1.5초 동안 기절시키고 Attack Power를 60초 동안 증가시킨다. 몬스터 한 마리당 한 번만 훔칠 수 있으며, 성공할 때까지 시도할 수 있다.",
+     "descEn": "Attempts to steal an item from up to 2 monsters at once with a given success rate. On a successful steal, stuns the enemies for 1.5 seconds and increases Attack Power for 60 seconds. Stealing works only once per monster and can be attempted until successful.",
+     "lv1": {
+      "mpCon": 10,
+      "prop": 30,
+      "damage": 120,
+      "mobCount": 2,
+      "time": 60
+     },
+     "max": {
+      "mpCon": 24,
+      "prop": 90,
+      "damage": 180,
+      "mobCount": 2,
+      "time": 60
+     }
+    },
+    {
+     "id": 4201003,
+     "ko": "새비지 블로우",
+     "en": "Savage Blow",
+     "master": 30,
+     "passive": false,
+     "req": [],
+     "descKo": "MP를 소비하여 단검으로 하나의 적을 최대 6번 연속 공격한다.",
+     "descEn": "Use MP to attack an enemy up to 6 times in a row with a dagger.",
+     "lv1": {
+      "mpCon": 14,
+      "damage": 65,
+      "attackCount": 4,
+      "mobCount": 1
+     },
+     "max": {
+      "mpCon": 28,
+      "damage": 75,
+      "attackCount": 6,
+      "mobCount": 1
+     }
+    }
+   ]
+  }
+ }
+}
