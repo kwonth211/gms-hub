@@ -20,6 +20,7 @@ import { handleEmail, handleSendMail } from './inbox.js';
 // GET  /presence?p=<path> (WebSocket) -> messages { site, here }: open pages on the whole site and on this page
 // The shop scanner runs from the local dev server for now, so its origin may post scans too.
 import { handleMarketBatch, getCollectionStatus, collectorView } from './market-batch.js';
+import { handleShopScan } from './shop-scan.js';
 import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoints, openShops, archiveListings, refreshItemMarket, reconcileItemMarket } from './market-browser.js';
 import { cachedPublicResponse } from './public-cache.js';
 import { Presence, handlePresence } from './presence.js';
@@ -346,6 +347,10 @@ const api = {
     const cors = corsHeaders(origin);
     // Private extension service worker uses a narrowly scoped ingestion token, never public CORS.
     if (url.pathname === '/internal/market-batch') return handleMarketBatch(req, env, knownItems, (rows) => {
+      if (rows.length && ctx?.waitUntil) ctx.waitUntil(itemLabel().then((nameOf) => notifyListings(env, rows, nameOf)).catch(() => null));
+    });
+    // The in-game shop collector sends one Free Market room at a time with its own token.
+    if (url.pathname === '/internal/shop-scan') return handleShopScan(req, env, knownItems, (rows) => {
       if (rows.length && ctx?.waitUntil) ctx.waitUntil(itemLabel().then((nameOf) => notifyListings(env, rows, nameOf)).catch(() => null));
     });
     if (url.pathname === '/internal/mail/send' && req.method === 'POST') return handleSendMail(req, env);
