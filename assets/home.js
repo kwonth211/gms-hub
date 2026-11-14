@@ -619,7 +619,7 @@ function changeCell(change) {
 }
 
 function rankRow(r, it) {
-  return `<li data-item="${it.id}" data-rank="${r.rank}"><a href="${live.dataset.price}?q=${encodeURIComponent(it.name)}">
+  return `<li data-item="${it.id}" data-rank="${r.rank}"><a href="${live.dataset.price}?item=${it.id}&src=home" data-live-item="${it.id}">
 <span class="rank">${r.rank}</span>${moveCell(r.move)}
 <img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="26" height="26" loading="lazy">
 <span class="name" title="${escHtml(it.name)}">${escHtml(it.name)}</span>
@@ -678,7 +678,7 @@ let shownRows = null, pendingRows = [], dripTimer = 0, liveById = null;
 const FIRST_DRIP = 4;
 
 function recentRow(r, it, fresh) {
-  return `<li class="${r.sold ? 'sold' : ''}${fresh ? ' fresh' : ''}" data-key="${escHtml(rowKey(r))}"><a href="${live.dataset.price}?q=${encodeURIComponent(it.name)}">
+  return `<li class="${r.sold ? 'sold' : ''}${fresh ? ' fresh' : ''}" data-key="${escHtml(rowKey(r))}"><a href="${live.dataset.price}?item=${it.id}&src=home" data-live-item="${it.id}">
 <img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="26" height="26" loading="lazy">
 <span class="name">${newMark(r.seen)}${escHtml(it.name)}${r.sold ? `<span class="tag">${escHtml(liveText.sold)}</span>` : ''}</span>
 <span class="price">${mesos(r.price)}${r.qty > 1 ? ` <small>×${r.qty}</small>` : ''}</span>
@@ -814,8 +814,9 @@ if (live) {
   });
   live.addEventListener('pointerleave', () => (tip.hidden = true));
   live.addEventListener('click', (e) => {
-    const a = e.target.closest('a[href*="?q="]');
-    if (a) track('live_market_click', { item: decodeURIComponent(a.href.split('?q=')[1] || ''), list: a.closest('#rank-list') ? 'top' : 'recent' });
+    // TOP 10 and just-listed rows open the item's price panel (chart and price range) directly, not a search list.
+    const a = e.target.closest('a[data-live-item]');
+    if (a) track('live_market_click', { item_id: a.dataset.liveItem, list: a.closest('#rank-list') ? 'top' : 'recent' });
   });
   // The feed refreshes itself every RECENT_REFRESH_MS while the tab is visible; the button does the same at once.
   // /listings/recent is cached at the edge for 20 s and shared by every visitor, so neither adds database load as the
