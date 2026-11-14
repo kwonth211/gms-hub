@@ -2737,11 +2737,6 @@ body.exp-running .exp-stop { display: inline-flex; }
   .market-grid:not(:has(.market-top[hidden])) .recent-list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
 }
 
-/* "N분 전 갱신됨" and a refresh button that reloads only the just-listed feed. */
+/* "N초 전 갱신됨" beside the just-listed title. */
 .recent-tools { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-weight: 400; }
 .recent-ago { color: var(--muted); font-size: 0.72rem; white-space: nowrap; }
-.recent-refresh { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 999px; padding: 3px 9px; font: inherit; font-size: 0.72rem; cursor: pointer; }
-.recent-refresh:hover:not(:disabled) { border-color: var(--accent); color: var(--accent-2); }
-.recent-refresh:disabled { opacity: .55; cursor: default; }
-.recent-refresh.spinning svg { animation: recent-spin .6s linear infinite; }
-@keyframes recent-spin { to { transform: rotate(360deg); } }

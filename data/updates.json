@@ -7,11 +7,11 @@
    "level": "patch",
    "date": "2026-11-14",
    "path": "/",
-   "ko": "방금 올라온 매물 — 20초마다 저절로 갱신, 새로고침 버튼도",
-   "en": "Just listed — refreshes itself every 20 seconds, plus a refresh button",
+   "ko": "방금 올라온 매물 — 20초마다 저절로 갱신",
+   "en": "Just listed — refreshes itself every 20 seconds",
    "desc": {
-    "ko": "홈의 방금 올라온 매물이 페이지를 열어 두면 20초마다 저절로 최신 매물로 바뀌어요. 바로 보고 싶으면 새로고침 버튼으로 그 칸만 즉시 불러올 수 있고, 몇 초 전에 갱신됐는지도 보여요.",
-    "en": "With the home page open, the just-listed feed now updates itself every 20 seconds. The refresh button reloads only that feed right away, and the label shows when it was last checked."
+    "ko": "홈의 방금 올라온 매물이 페이지를 열어 두면 20초마다 저절로 최신 매물로 바뀌어요. 몇 초 전에 갱신됐는지도 제목 옆에 보여요.",
+    "en": "With the home page open, the just-listed feed updates itself every 20 seconds, and the title shows when it was last checked."
    }
   },
   {

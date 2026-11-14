@@ -674,7 +674,7 @@ function renderTop(top, byId) {
 // (and on the first draw the newest few) drop in one at a time at the top, spread over the time until the next refresh,
 // while the oldest row slides out. "12초 전" ticks every second, and a thin bar shows when the next refresh comes.
 const rowKey = (r) => `${r.item}|${r.seller}|${r.price}|${r.seen}`;
-let shownRows = null, pendingRows = [], dripTimer = 0, liveById = null, lastFresh = 0, manualRefresh = false;
+let shownRows = null, pendingRows = [], dripTimer = 0, liveById = null;
 const FIRST_DRIP = 4;
 
 function recentRow(r, it, fresh) {
@@ -727,10 +727,9 @@ function renderRecent(rows, byId) {
   // Later refreshes: only listings not yet on screen or waiting, oldest first at the end of the queue.
   const known = new Set([...shownRows, ...pendingRows].map(rowKey));
   const fresh = all.filter((r) => !known.has(rowKey(r)));
-  lastFresh = fresh.length;
   if (fresh.length) {
     pendingRows = [...fresh, ...pendingRows].slice(0, LIVE_ROWS);
-    scheduleDrip(manualRefresh ? 2500 : RECENT_REFRESH_MS * 0.8);
+    scheduleDrip(RECENT_REFRESH_MS * 0.8);
   }
   return shownRows.length + pendingRows.length;
 }
@@ -743,7 +742,7 @@ setInterval(() => {
   const first = document.querySelector('#live-rows .ago[data-seen]');
   if (first) document.getElementById('live-updated').textContent = liveText.updated.replace('{t}', ago(first.dataset.seen));
   const checked = document.getElementById('recent-ago');
-  if (checked && !checked.dataset.hold) checked.textContent = liveText.checked.replace('{t}', ago(new Date(lastRefresh).toISOString().slice(0, 19).replace('T', ' ')));
+  if (checked) checked.textContent = liveText.checked.replace('{t}', ago(new Date(lastRefresh).toISOString().slice(0, 19).replace('T', ' ')));
   const bar = document.getElementById('live-next');
   if (bar) bar.style.setProperty('--p', Math.min(1, (Date.now() - lastRefresh) / RECENT_REFRESH_MS).toFixed(3));
 }, 1000);
@@ -821,33 +820,17 @@ if (live) {
   // The feed refreshes itself every RECENT_REFRESH_MS while the tab is visible; the button does the same at once.
   // /listings/recent is cached at the edge for 20 s and shared by every visitor, so neither adds database load as the
   // audience grows (at most ~3 small reads a minute per data centre). The button has a 10-second cooldown.
-  const btn = document.getElementById('recent-refresh');
-  const refreshRecent = async (manual) => {
-    if (!liveById || !live.dataset.api || PREVIEW || (!manual && document.hidden)) return;
-    const label = document.getElementById('recent-ago');
+  // The feed refreshes itself every RECENT_REFRESH_MS while the tab is visible. /listings/recent is cached at the edge
+  // for 20 s and shared by every visitor, so this adds no database load as the audience grows.
+  const refreshRecent = async () => {
+    if (!liveById || !live.dataset.api || PREVIEW || document.hidden) return;
     try {
       const rows = await fetch(`${live.dataset.api}/listings/recent`).then((r) => (r.ok ? r.json() : null));
       lastRefresh = Date.now();
-      manualRefresh = manual;
       if (rows) renderRecent(rows, liveById);
-      manualRefresh = false;
-      if (manual && label) {
-        label.dataset.hold = '1';
-        label.textContent = lastFresh ? liveText.gotNew.replace('{n}', lastFresh) : liveText.noneNew;
-        setTimeout(() => delete label.dataset.hold, 3000);
-      }
-      if (manual) track('live_refresh', { ui_value: String(lastFresh) });
     } catch {}
   };
-  btn?.addEventListener('click', async () => {
-    if (btn.disabled) return;
-    btn.disabled = true;
-    btn.classList.add('spinning');
-    await refreshRecent(true);
-    setTimeout(() => btn.classList.remove('spinning'), 600);
-    setTimeout(() => (btn.disabled = false), 10000);
-  });
-  setInterval(() => refreshRecent(false), RECENT_REFRESH_MS);
+  setInterval(refreshRecent, RECENT_REFRESH_MS);
   refreshLive();
   setInterval(refreshLive, LIVE_REFRESH_MS);
   document.addEventListener('visibilitychange', refreshLive);

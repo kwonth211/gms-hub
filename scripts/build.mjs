@@ -1089,7 +1089,7 @@ ${collectionStatus(lang)}
 <ol class="rank-list" id="rank-list"></ol>
 </div>
 <div class="market-panel market-recent">
-<h3 class="recent-head"><span class="live-badge"><i aria-hidden="true"></i>LIVE</span>${t.recent}<span class="recent-tools"><small class="recent-ago" id="recent-ago" aria-live="polite"></small><button type="button" class="recent-refresh" id="recent-refresh" title="${t.refresh}"><svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="M16 10a6 6 0 1 1-1.8-4.3M16 3.5v3.7h-3.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>${t.refresh}</span></button></span></h3>
+<h3 class="recent-head"><span class="live-badge"><i aria-hidden="true"></i>LIVE</span>${t.recent}<span class="recent-tools"><small class="recent-ago" id="recent-ago" aria-live="polite"></small></span></h3>
 <div class="live-next" id="live-next" aria-hidden="true"></div>
 <ol class="recent-list" id="live-rows"><li class="market-empty">${t.empty}</li></ol>
 <a class="market-more" href="${href(langPath(lang, '/tools/market/'))}?view=listings">${t.more}</a>
