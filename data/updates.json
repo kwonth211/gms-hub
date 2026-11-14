@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest.",
  "updates": [
   {
+   "id": "scroll-forge",
+   "version": "0.4.30",
+   "level": "minor",
+   "date": "2026-11-14",
+   "path": "/tools/forge/",
+   "ko": "주문서 작 시뮬레이터 — 장비에 주문서를 끌어다 발라 보는 대장간",
+   "en": "Scroll forge — drag scrolls onto your gear and see what happens",
+   "desc": {
+    "ko": "장비를 작업대에 올리고 주문서를 끌어다 발라 보세요. 하급 100%·중급 60%·상급 10% 성공률과 혼돈 주문서 파괴, 업그레이드 횟수까지 게임과 똑같이 굴러가요. 성공하면 금빛 폭발, 실패하면 연기, 파괴되면 장비가 산산조각 나요. 바른 주문서 값은 실시간 시세로 계산해요.",
+    "en": "Put gear on the workbench and drag scrolls onto it. Lesser 100%, Intermediate 60% and Greater 10% odds, Chaos scrolls destroying items and upgrade slots all work like the game: a gold burst on success, smoke on a fail, shattered gear when it breaks. Scroll costs come from the live market."
+   }
+  },
+  {
    "id": "skill-builds",
    "version": "0.4.29",
    "level": "minor",

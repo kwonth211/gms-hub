@@ -1,0 +1,166 @@
+/* /tools/forge/ · a blacksmith's bench: wooden shelves on both sides, a dark forge in the middle with the anvil lit from
+ * below. The anvil keeps its dark scene in both site themes (a forge is dark by day too); shelves follow the site theme.
+ * The results are the show: charge glow, gold burst, grey puff, red shatter (canvas particles in assets/forge.js). */
+:root {
+  --fg-forge: #17120f;
+  --fg-forge-2: #2a1f18;
+  --fg-ember: #ff8a3d;
+  --fg-ember-soft: rgba(255, 138, 61, 0.28);
+  --fg-steel: #3a3f4b;
+  --fg-steel-2: #5a6170;
+  --fg-gold: #ffd75a;
+  --fg-gold-soft: rgba(255, 215, 90, 0.35);
+  --fg-ok: #ffe27a;
+  --fg-fail: #b8bcc6;
+  --fg-boom: #ff5a3c;
+  --fg-tip-bg: rgba(18, 22, 34, 0.94);
+  --fg-tip-line: #4a5672;
+  --fg-tip-ink: #f2f4fa;
+  --fg-tip-soft: #a9b2c8;
+  --fg-plus: #ffd75a;
+  --fg-add: #7fd3ff;
+  --fg-shelf: var(--panel);
+  --fg-shelf-edge: var(--line);
+  --fg-t100: #2e9d63;
+  --fg-t60: #2b63c4;
+  --fg-t10: #a8510b;
+  --fg-chaos: #c23a3a;
+}
+:root[data-theme='dark'] { --fg-t100: #6fd29c; --fg-t60: #8fb4ff; --fg-t10: #ffb26b; --fg-chaos: #ff8a80; }
+
+.fg-hero { padding-top: 28px; }
+.fg-hero h1 { margin: 0 0 8px; overflow-wrap: break-word; min-width: 0; }
+.fg-hero p { margin: 0 0 18px; color: var(--muted); max-width: 66ch; }
+
+.fg-bench { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.25fr) minmax(0, 1fr); gap: 14px; align-items: start; padding-bottom: 40px; }
+@media (max-width: 1100px) { .fg-bench { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .fg-center { grid-column: 1 / -1; order: -1; } }
+@media (max-width: 720px) { .fg-bench { grid-template-columns: minmax(0, 1fr); } .fg-center { order: -2; } .fg-scrolls { order: -1; } .fg-scroll-ul, .fg-list { max-height: 420px; } }
+
+.fg-shelf { background: var(--fg-shelf); border: 1px solid var(--fg-shelf-edge); border-radius: var(--radius); padding: 12px; box-shadow: 0 4px 0 var(--line-strong); }
+.fg-shelf h2 { margin: 0 0 10px; font-size: 1.05rem; }
+.fg-shelf input[type='search'] { width: 100%; padding: 9px 12px; border-radius: var(--radius-control); border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit; }
+.fg-shelf input:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
+.fg-cats { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 8px; }
+.fg-cat { border: 1px solid var(--line); background: var(--bg); color: var(--text); border-radius: 999px; padding: 4px 10px; font: inherit; font-size: .82rem; cursor: pointer; }
+.fg-cat[aria-pressed='true'] { background: var(--accent-wash); border-color: var(--accent-fill); font-weight: 700; }
+.fg-cat:focus-visible, .fg-eq:focus-visible, .fg-sc:focus-visible, .fg-actions button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.fg-check { display: flex; gap: 6px; align-items: center; font-size: .85rem; color: var(--muted); margin-bottom: 8px; }
+.fg-list { list-style: none; margin: 0; padding: 0; max-height: 640px; overflow: auto; overscroll-behavior: contain; }
+.fg-eq { width: 100%; display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 10px; align-items: center; text-align: left; padding: 6px 8px; border: 0; border-radius: 10px; background: transparent; color: var(--text); font: inherit; cursor: pointer; }
+.fg-eq img { image-rendering: pixelated; width: 32px; height: 32px; object-fit: contain; }
+.fg-eq b { display: block; font-size: .92rem; overflow-wrap: anywhere; }
+.fg-eq small { color: var(--muted); font-size: .76rem; }
+.fg-eq:hover { background: var(--accent-soft); }
+.fg-eq.on { background: var(--accent-wash); box-shadow: inset 3px 0 0 var(--accent-fill); }
+.fg-more { padding: 8px; color: var(--muted); font-size: .8rem; }
+.fg-note { margin: 0 0 8px; color: var(--muted); font-size: .85rem; }
+
+/* the forge */
+.fg-anvil { background: radial-gradient(120% 90% at 50% 100%, var(--fg-forge-2), var(--fg-forge)); border-radius: 16px; padding: 14px; color: var(--fg-tip-ink); box-shadow: 0 6px 0 #0a0807, inset 0 0 0 2px #3a2a1f; min-height: 420px; }
+.fg-empty { margin: 0; padding: 140px 20px; text-align: center; color: #c9b8a6; }
+.fg-stage { position: relative; height: 230px; border-radius: 12px; overflow: hidden; display: grid; place-items: center;
+  background: radial-gradient(60% 45% at 50% 78%, var(--fg-ember-soft), transparent 70%), linear-gradient(transparent 70%, rgba(0,0,0,.35)); }
+.fg-stage::after { /* the anvil */ content: ''; position: absolute; left: 50%; bottom: 26px; width: 170px; height: 44px; transform: translateX(-50%);
+  background: linear-gradient(var(--fg-steel-2), var(--fg-steel)); clip-path: polygon(0 0, 100% 0, 88% 45%, 70% 55%, 74% 100%, 26% 100%, 30% 55%, 12% 45%); }
+.fg-fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; }
+.fg-glow { position: absolute; left: 50%; top: 42%; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%; background: radial-gradient(var(--fg-gold-soft), transparent 70%); opacity: 0; transform: scale(.6); z-index: 1; }
+.fg-item { position: relative; z-index: 2; width: 92px; height: 92px; display: grid; place-items: center; margin-bottom: 52px; border-radius: 18px; background: rgba(255,255,255,.06); box-shadow: 0 0 0 2px rgba(255,255,255,.08); }
+.fg-item img { width: 64px; height: 64px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 4px 6px rgba(0,0,0,.5)); }
+.fg-drop-hint { position: absolute; bottom: 4px; left: 0; right: 0; margin: 0; text-align: center; font-size: .78rem; color: #c9b8a6; opacity: .75; }
+.fg-stage.drop-over { box-shadow: inset 0 0 0 3px var(--fg-gold); }
+.fg-stage.drop-over .fg-glow { opacity: 1; transform: scale(1); }
+.fg-stage.is-broken .fg-item img { filter: grayscale(1) brightness(.5); opacity: .35; }
+
+.fg-banner { position: absolute; z-index: 4; top: 18px; left: 0; right: 0; margin: 0; text-align: center; font-weight: 900; font-size: 2rem; letter-spacing: 1px; opacity: 0; transform: scale(.4); pointer-events: none;
+  -webkit-text-stroke: 5px rgba(0,0,0,.65); paint-order: stroke fill; }
+.fg-banner.show { animation: fg-pop 1.3s var(--ease-snap) forwards; }
+.fg-banner.ok { color: var(--fg-ok); text-shadow: 0 0 18px rgba(255, 215, 90, .9); }
+.fg-banner.fail { color: var(--fg-fail); }
+.fg-banner.boom { color: var(--fg-boom); font-size: 1.6rem; text-shadow: 0 0 16px rgba(255, 90, 60, .8); }
+.fg-banner.warn { color: #ffcf8a; font-size: 1.2rem; }
+@keyframes fg-pop { 0% { opacity: 0; transform: scale(.4); } 18% { opacity: 1; transform: scale(1.18); } 30% { transform: scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-14px); } }
+
+/* charge: the item lifts and glows while the scroll works */
+.fg-stage.fx-charge .fg-item { animation: fg-lift .64s ease-in forwards; }
+.fg-stage.fx-charge .fg-glow { animation: fg-charge .64s ease-in forwards; }
+@keyframes fg-lift { 0% { transform: translateY(0); } 70% { transform: translateY(-10px) scale(1.04); } 100% { transform: translateY(-12px) scale(1.08); box-shadow: 0 0 30px 6px var(--fg-gold-soft); } }
+@keyframes fg-charge { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: scale(1.5); } }
+/* success: flash + bounce */
+.fg-stage.fx-ok { animation: fg-flash-ok .7s ease-out; }
+.fg-stage.fx-ok .fg-item { animation: fg-bounce .7s var(--ease-snap); box-shadow: 0 0 0 2px var(--fg-gold), 0 0 34px 8px var(--fg-gold-soft); }
+@keyframes fg-flash-ok { 0% { background-color: rgba(255, 240, 180, .55); } 100% { background-color: transparent; } }
+@keyframes fg-bounce { 0% { transform: translateY(-12px) scale(1.15); } 45% { transform: translateY(2px) scale(.96); } 100% { transform: none; } }
+/* failure: a dull shake */
+.fg-stage.fx-fail .fg-item, .fg-item.shake { animation: fg-shake .45s ease-out; }
+@keyframes fg-shake { 0%, 100% { transform: none; } 20% { transform: translateX(-8px) rotate(-4deg); } 40% { transform: translateX(7px) rotate(3deg); } 60% { transform: translateX(-5px); } 80% { transform: translateX(3px); } }
+/* destroyed: red flash, the item drops and cracks */
+.fg-stage.fx-boom { animation: fg-flash-boom .8s ease-out, fg-quake .5s ease-out; }
+.fg-stage.fx-boom .fg-item { animation: fg-break .8s ease-in forwards; }
+@keyframes fg-flash-boom { 0% { background-color: rgba(255, 70, 40, .55); } 100% { background-color: transparent; } }
+@keyframes fg-quake { 0%, 100% { transform: none; } 25% { transform: translate(-6px, 3px); } 50% { transform: translate(5px, -4px); } 75% { transform: translate(-3px, 2px); } }
+@keyframes fg-break { 0% { transform: scale(1.1); } 30% { transform: scale(1.15) rotate(6deg); } 100% { transform: translateY(18px) rotate(-12deg) scale(.85); opacity: .35; } }
+
+/* success extras: rotating light rays behind the item and the stat gain floating up */
+.fg-rays { position: absolute; left: 50%; top: 42%; width: 300px; height: 300px; margin: -150px 0 0 -150px; border-radius: 50%; opacity: 0; z-index: 0;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 230, 150, .5) 0deg 8deg, transparent 8deg 24deg); mask: radial-gradient(closest-side, #000 20%, transparent 100%); -webkit-mask: radial-gradient(closest-side, #000 20%, transparent 100%); }
+.fg-stage.fx-ok .fg-rays { animation: fg-rays 1.2s ease-out; }
+@keyframes fg-rays { 0% { opacity: 0; transform: scale(.3) rotate(0); } 20% { opacity: 1; } 100% { opacity: 0; transform: scale(1.25) rotate(50deg); } }
+.fg-gain { position: absolute; z-index: 4; left: 0; right: 0; top: 50%; margin: 0; text-align: center; font-weight: 900; font-size: 1.15rem; color: var(--fg-add); opacity: 0; pointer-events: none;
+  -webkit-text-stroke: 4px rgba(0,0,0,.6); paint-order: stroke fill; }
+.fg-gain.show { animation: fg-gain 1.3s ease-out forwards; }
+@keyframes fg-gain { 0% { opacity: 0; transform: translateY(10px); } 15% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; transform: translateY(-46px); } }
+.fg-fly { position: fixed; z-index: 1000; width: 32px; height: 32px; pointer-events: none; image-rendering: pixelated; filter: drop-shadow(0 0 8px rgba(255, 215, 90, .9)); }
+.fg-sc-btns .btn { padding: 4px 12px; min-height: 0; font-size: .8rem; }
+
+/* the item tooltip, in the game's style */
+.fg-tip { margin: 12px auto 0; max-width: 300px; background: var(--fg-tip-bg); border: 1px solid var(--fg-tip-line); border-radius: 8px; padding: 12px 14px; font-size: .9rem; }
+.fg-tip h3 { margin: 0 0 6px; text-align: center; font-size: 1rem; }
+.fg-plus { color: var(--fg-plus); }
+.fg-req { margin: 0 0 8px; color: var(--fg-tip-soft); text-align: center; font-size: .82rem; }
+.fg-stats { list-style: none; margin: 0 0 8px; padding: 8px 0 0; border-top: 1px dashed var(--fg-tip-line); }
+.fg-stats li { display: flex; gap: 6px; align-items: baseline; padding: 1px 0; }
+.fg-stats span { flex: 1; color: var(--fg-tip-soft); }
+.fg-stats em { font-style: normal; color: var(--fg-add); font-size: .8rem; }
+.fg-slots { margin: 0; padding-top: 8px; border-top: 1px dashed var(--fg-tip-line); }
+.fg-slots b { color: var(--fg-plus); }
+.fg-dead { margin: 6px 0 0; color: var(--fg-boom); font-weight: 700; text-align: center; }
+.fg-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 12px; }
+.fg-actions .btn { color: var(--fg-tip-ink); border-color: #5a4a3c; background: rgba(255,255,255,.04); }
+
+.fg-log { margin-top: 12px; background: var(--fg-shelf); border: 1px solid var(--fg-shelf-edge); border-radius: var(--radius); padding: 12px; }
+.fg-log h3 { margin: 0 0 6px; font-size: 1rem; }
+.fg-sum { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 8px; font-size: .88rem; color: var(--muted); }
+.fg-sum b { color: var(--text); font-variant-numeric: tabular-nums; }
+.fg-entries { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow: auto; }
+.fg-entries li { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 4px 2px; border-bottom: 1px dashed var(--line); font-size: .85rem; }
+.fg-entries img { image-rendering: pixelated; }
+.fg-entries .r-ok b { color: var(--ok); }
+.fg-entries .r-fail b { color: var(--muted); }
+.fg-entries .r-boom b { color: var(--danger); }
+
+/* scroll shelf */
+.fg-scroll-ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 700px; overflow: auto; overscroll-behavior: contain; }
+.fg-sc { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; grid-template-areas: 'i n m' 'i b b'; gap: 4px 10px; align-items: center; padding: 8px; border-radius: 10px; border: 1px solid var(--line); border-left: 5px solid var(--fg-t60); background: var(--bg); cursor: grab; user-select: none; }
+.fg-sc.tier-100 { border-left-color: var(--fg-t100); }
+.fg-sc.tier-10 { border-left-color: var(--fg-t10); }
+.fg-sc.tier-chaos { border-left-color: var(--fg-chaos); }
+.fg-sc img { grid-area: i; image-rendering: pixelated; width: 32px; height: 32px; object-fit: contain; }
+.fg-sc-name { grid-area: n; min-width: 0; }
+.fg-sc-name b { display: block; font-size: .9rem; overflow-wrap: anywhere; }
+.fg-sc-name small { color: var(--muted); font-size: .76rem; }
+.fg-sc-meta { grid-area: m; display: grid; justify-items: end; gap: 2px; font-size: .75rem; color: var(--muted); }
+.fg-rate { font-style: normal; font-weight: 800; font-size: .9rem; color: var(--text); }
+.fg-boom { font-style: normal; color: var(--fg-chaos); font-weight: 700; }
+.fg-sc-btns { grid-area: b; display: flex; gap: 6px; justify-content: flex-end; }
+.fg-sc:hover { border-color: var(--accent-line); }
+.fg-sc.dragging { opacity: .45; }
+.fg-ghost { position: fixed; left: 0; top: 0; z-index: 1000; width: 40px; height: 40px; pointer-events: none; image-rendering: pixelated; filter: drop-shadow(0 6px 8px rgba(0,0,0,.45)); }
+body.fg-dragging { cursor: grabbing; }
+.fg-bench.is-busy .fg-sc-btns .btn { opacity: .5; pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fg-banner.show, .fg-gain.show { animation: none; opacity: 1; transform: none; }
+  .fg-stage.fx-ok .fg-rays { animation: none; }
+  .fg-stage.fx-charge .fg-item, .fg-stage.fx-charge .fg-glow, .fg-stage.fx-ok, .fg-stage.fx-ok .fg-item, .fg-stage.fx-fail .fg-item, .fg-item.shake,
+  .fg-stage.fx-boom, .fg-stage.fx-boom .fg-item { animation: none; }
+}

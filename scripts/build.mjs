@@ -11,6 +11,7 @@ import { collectQuests, questDetail, questIndex, questBestBody, questPath, areaN
 import { questGuideData, questGuideBody } from './quest-guide.mjs';
 import { fhBody } from './forgotten-hollow.mjs';
 import { skillsBody } from './skill-pages.mjs';
+import { forgeBody } from './forge-page.mjs';
 import { EQ_CLASSES, equipPath, collectEquipment, equipmentIndexBody, equipmentClassBody } from './equipment-pages.mjs';
 import { rankBody } from './rank-page.mjs';
 import { megaphoneBody } from './megaphone-page.mjs';
@@ -728,6 +729,7 @@ function header(lang, pagePath, only) {
     ['/bosses/', 'crown', ko ? '보스' : 'Bosses']
   ].filter(Boolean);
   const toolItems = [
+    ['/tools/forge/', 'hammer', ko ? '작 시뮬레이터' : 'Scroll forge'],
     ['/tools/exp/', 'clock', EXP[lang].nav],
     ['/tools/scroll/', 'scroll', t.navScroll],
     ['/tools/drop-rate/', 'bag', t.navDrop],
@@ -3233,6 +3235,13 @@ for (const lang of LANGS) {
         ld: [breadcrumbLd(lang, lang === 'ko' ? '포가튼 할로우 공략' : 'Forgotten Hollow guide', '/forgotten-hollow/')]
       }));
     }
+    write(path.join(lang, 'tools', 'forge', 'index.html'), page({
+      lang, pageKey: 'forge', pagePath: '/tools/forge/', modules: ['forge.js'],
+      title: lang === 'ko' ? '글클메 주문서 작 시뮬레이터: 장공·귀힘·혼돈 주문서 직접 발라 보기 | GMS Hub' : 'MapleStory Classic World Scroll Simulator: Scroll Your Gear Like In-Game | GMS Hub',
+      desc: lang === 'ko' ? '글클메 장비에 주문서를 끌어다 발라 보는 작 시뮬레이터. 하급 100%·중급 60%·상급 10%·혼돈 주문서의 성공과 파괴, 업그레이드 횟수까지 게임과 똑같이 굴러가고, 바른 주문서 값은 실시간 시세로 계산해요.' : 'Drag scrolls onto MapleStory Classic World gear and watch them pass, fail or destroy the item, with the real success rates, stat gains and upgrade slots, priced from the live market.',
+      body: forgeBody({ lang, jsonScript, dataUrl: href('/assets/forge-data.json') }).replace('__FG_CSS__', scriptSrc('forge.css')),
+      ld: [breadcrumbLd(lang, lang === 'ko' ? '작 시뮬레이터' : 'Scroll forge', '/tools/forge/')]
+    }));
     // /skills/: standard skill builds per job as an in-game skill window (scripts/skill-pages.mjs).
     write(path.join(lang, 'skills', 'index.html'), page({
       lang, pageKey: 'skills', pagePath: '/skills/', modules: ['skills.js'],
@@ -3459,7 +3468,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
   )
 ).concat(
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
-  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/forgotten-hollow/'}, {path:'/skills/'}, {path:'/updates/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/forgotten-hollow/'}, {path:'/skills/'}, {path:'/tools/forge/'}, {path:'/updates/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/bosses/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/quests/'}, ...QUESTS.filter(q=>!q.expired).map(q=>({path:questPath(q)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
   [{path:'/maps/'}, ...MAPS.filter(l=>l.availability==='open').map(l=>({path:mapPath(l)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
@@ -3578,6 +3587,18 @@ for (const name of moduleFiles) {
 // Compact item index for the price search: [id, korean, english, category, subcategory, level].
 write('assets/shop-glyphs.json', fs.readFileSync(path.join(root, 'data/shop-glyphs.json')));
 // Hits-to-kill calculator data: [id, ko, en, level, hp, wdef, mdef, eva, elements, undead, boss, mp] and weapons [id, ko, en, type, level, watk, matk].
+// Scroll forge data (/tools/forge/): every scroll and every piece of gear with upgrade slots, Korean names from the item DB
+// (scroll shorthand like 장공 60%), market prices, and whether the gear can be obtained now.
+{
+  const F = readJson('data/forge.json');
+  const BY = new Map(itemsData.items.map((i) => [i.id, i]));
+  const OK = new Set(EQUIPMENT.map((e) => e.id));
+  const price = (id) => { const i = BY.get(id); const v = i && shownMedian(i); return v ? Math.round(v) : null; };
+  write('assets/forge-data.json', JSON.stringify({
+    scrolls: F.scrolls.map((x) => { const i = BY.get(x.id); const a = i && scrollAlias(i); return [x.id, a ? a.long : i?.ko || x.ko || '', i?.en || x.en, a ? a.short : '', x.cat, x.success, x.destroy, x.inc, price(x.id)]; }),
+    equips: F.equips.map((x) => { const i = BY.get(x.id); return [x.id, i?.ko || x.ko || '', i?.en || x.en, x.cat, x.lv, x.slots, x.inc, OK.has(x.id) ? 1 : 0, price(x.id)]; })
+  }));
+}
 write('assets/mobs.json', JSON.stringify(MOBS.map((m) => [m.id, m.ko || '', m.en, m.lv, m.hp, m.wdef, m.mdef, m.eva, m.el || '', m.undead ? 1 : 0, m.boss ? 1 : 0, m.mp, m.aka.join(' '), m.status || ''])));
 write('assets/weapons.json', JSON.stringify(readJson('data/weapons.json').weapons.map((w) => [w.id, w.ko || '', w.en, w.type, w.lv, w.watk || 0, w.matk || 0])));
 write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko || '', i.en, i.cat, i.sub, i.lv || 0])));
