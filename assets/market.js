@@ -5,6 +5,8 @@ import { makeMarketIndex, catalogRows, matchingIds, refPrice, npcBetter } from "
 import { mountMarketCharts } from "./market-charts.js";
 import { intentOf, priceOf as megaPrice } from "./mega-text.js";
 import { WISHLIST_KEY, RECENT_KEY, SEEN_KEY, WISHLIST_MAX, readList, addRecent, removeRecent, toggleWishlist, snapshot, visitDelta, pruneSeen } from "./market-memory.js";
+// Opened from a Discord alert DM: the first item shown sorts its listings newest first.
+let fromAlert = new URLSearchParams(location.search).get("utm_medium") === "alert";
 const D = JSON.parse(document.getElementById("mk-data").textContent),
   T = D.t,
   ko = D.lang === "ko";
@@ -554,7 +556,8 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
   if (reset || changed) {
     detailState = {
       state: "open",
-      sort: "price",
+      // Arriving from a Discord alert: the newest listings first, so the one the alert was about is on top.
+      sort: fromAlert && !(fromAlert = false) ? "recent" : "price",
       channel: "",
       room: "",
       seller: "",

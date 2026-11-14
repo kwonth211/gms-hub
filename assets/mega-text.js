@@ -34,7 +34,8 @@ export function intentOf(text) {
 }
 // "132K", "4m", "1.5b", "380k ea" → mesos. The first amount is the asking price.
 export function priceOf(text) {
-  const m = /(\d+(?:[.,]\d+)?)\s?(k|m|mil|b)\b/i.exec(text);
+  // OCR often splits a decimal: "1 .9m" is 1.9m, not 9m.
+  const m = /(?<![\d.])(\d+(?:[.,]\d+)?)\s?(k|m|mil|b)\b/i.exec(String(text).replace(/(\d)\s+([.,]\d)/g, '$1$2'));
   if (!m) return null;
   return Math.round(Number(m[1].replace(',', '.')) * { k: 1e3, m: 1e6, mil: 1e6, b: 1e9 }[m[2].toLowerCase()]);
 }
