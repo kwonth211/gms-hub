@@ -1,6 +1,6 @@
 {
  "version": 3,
- "updated": "2026-11-12",
+ "updated": "2026-11-14",
  "routes": [
   {
    "id": "island",
@@ -3408,6 +3408,195 @@
     19,
     21,
     23
+   ]
+  },
+  {
+   "id": "clang-solo",
+   "level": {
+    "min": 48,
+    "max": 58
+   },
+   "jobs": [],
+   "party": "solo",
+   "costTier": "medium",
+   "advanced": false,
+   "evidence": [
+    "chueok-florina",
+    "shumi-warrior-40-70",
+    "haheho-thief-50",
+    "linden-25-65"
+   ],
+   "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
+   "title": {
+    "ko": "로랑과 클랑 · 클랑 솔로 자리",
+    "en": "Lorang and Clang · solo Clang map"
+   },
+   "monsters": {
+    "ko": "클랑 · 로랑",
+    "en": "Clang · Lorang"
+   },
+   "summary": {
+    "ko": "고렙 사냥터 자리 싸움을 피해 혼자 조용히 돌기 좋은 맵이에요. 맵이 넓고 한 번에 19마리쯤(클랑 12) 나와요. 클랑은 마리당 경험치가 로랑의 1.6배예요.",
+    "en": "A wide, quiet map for soloing away from the crowded high-level spots: about 19 monsters at once (12 Clangs), and a Clang gives 1.6× a Lorang's EXP."
+   },
+   "entry": {
+    "ko": "클랑은 명중 98이 필요해요. 검 든 파이터는 48부터, 다른 전사는 50에 모자 명중작과 덱스 붙은 50제 옷으로 맞추고 가요. 클랑은 방어가 높아 어쌔신은 다른 맵이 더 편하다는 의견도 있어요.",
+    "en": "Clangs need 98 accuracy. Sword Fighters can start at 48; other warriors at 50 with accuracy-scrolled hats and DEX-rolled level-50 armor. Clangs have high defense, so some Assassins prefer other maps."
+   },
+   "route": {
+    "ko": "리스항구 페이슨에게 말을 걸어 플로리나 비치로 가요. 마을 동쪽으로 해변 주변 전망 오두막 → 로랑 로랑 → 로랑과 클랑 순서예요. 오른쪽 끝 야자수 위 숨은 포탈은 클랑과 로랑(12마리)으로 이어지는데, 솔로로는 애매하다는 평이 많아요.",
+    "en": "Talk to Pason in Lith Harbor to reach Florina Beach, then head east: Look-Out Shed → Lorang Lorang → Lorang and Clang. A hidden portal on the far-right palm leads to Clang and Lorang (12 monsters), which most find weak for solo play."
+   },
+   "cost": {
+    "ko": "플로리나에선 마을 귀환 주문서가 안 써져요. 마을의 발렌 상점에서 하얀 포션(350)과 화살·표창을 사고, 이동 속도 포션을 챙기면 편해요. 클랑은 로우어·망토 INT 60%·장갑 공격력 주문서 등 비싼 드롭이 많아요.",
+    "en": "Return scrolls do not work in Florina. Valen's shop in town sells White Potions (350) plus arrows and stars; speed potions help. Clangs drop pricey items such as the Lower crossbow and Cape INT 60% scrolls."
+   },
+   "exit": {
+    "ko": "56부터는 골렘의 사원, 60부터는 슬리피 던전 다크 스톤골렘과 비교해요.",
+    "en": "From 56 compare Golem's Temple; from 60, Dark Stone Golems in the Sleepy Dungeon."
+   },
+   "alternative": {
+    "ko": "자리가 없으면 같은 해변의 뜨거운 모래나, 50부터 드레이크 사냥터로 가요.",
+    "en": "If it is taken, try Hot Sand on the same beach, or the Drake hunting ground from 50."
+   },
+   "mobIds": [
+    44,
+    36
+   ]
+  },
+  {
+   "id": "hot-sand",
+   "level": {
+    "min": 46,
+    "max": 66
+   },
+   "jobs": [],
+   "party": "preferred",
+   "costTier": "medium",
+   "advanced": false,
+   "evidence": [
+    "chueok-florina",
+    "dahni-hot-sand"
+   ],
+   "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
+   "title": {
+    "ko": "뜨거운 모래 · 토티·클랑 2~3인",
+    "en": "Hot Sand · Tortie and Clang, 2–3 players"
+   },
+   "monsters": {
+    "ko": "토티(엄티) · 클랑",
+    "en": "Tortie · Clang"
+   },
+   "summary": {
+    "ko": "플로리나 비치 마지막 맵으로, 한 번에 22마리(토티 14, 클랑 8)가 나와요. 토티는 마법 방어가 0이고 아주 느려서 법사가 몰아 잡기 좋아요. 2~3인 파티도 솔로도 다 괜찮아요.",
+    "en": "The last Florina Beach map: 22 monsters at once (14 Torties, 8 Clangs). Torties have 0 magic defense and move very slowly, so mages can gather them easily. Good for 2–3 players or solo."
+   },
+   "entry": {
+    "ko": "토티는 명중 82, 클랑은 98이 필요해요(같은 레벨 기준). 45 넘으면 클랑·토티 맵을 추천하는 의견이 많아요. 썬콜은 클랑이 전기 약점이라 더 편해요.",
+    "en": "Torties need 82 accuracy and Clangs 98 at equal level. Most advice moves to the Clang and Tortie maps after 45. Ice/Lightning mages benefit from Clang's lightning weakness."
+   },
+   "route": {
+    "ko": "층마다 숨은 포탈이 있어 위 방향키로 한 층씩 올라가요. 2인이면 1층 가운데에서 양끝으로 갈라져 잡고, 끝에서 숨은 포탈로 한 층씩 올라가 가운데에서 1층으로 내려와 다시 도는 식이에요. 3인이면 1층은 원거리, 왼쪽·오른쪽은 근접이 맡아요.",
+    "en": "Each floor has a hidden portal (press up) to the next. With two, split from the middle of floor 1 toward each end, climb floor by floor through the hidden portals, then drop back to floor 1 near the middle and repeat. With three, a ranged player takes floor 1 and melee take left and right."
+   },
+   "cost": {
+    "ko": "마을 귀환 주문서가 안 써지니 물약을 넉넉히 챙겨요. 토티는 장갑 공격력 주문서 10%(최근 약 65만)와 망토 STR 60%를 떨궈요.",
+    "en": "Return scrolls do not work here, so bring enough potions. Torties drop Gloves ATT 10% (about 650k recently) and Cape STR 60% scrolls."
+   },
+   "exit": {
+    "ko": "솔로 자리는 구하기 어려울 수 있어요. 60 이후엔 슬리피 던전·군영과 비교해요.",
+    "en": "Solo slots can be hard to find. After 60, compare Sleepy Dungeon and the Camps."
+   },
+   "alternative": {
+    "ko": "로랑과 클랑(솔로), 로랑 로랑(6인 파티).",
+    "en": "Lorang and Clang (solo) or Lorang Lorang (6-player party)."
+   },
+   "mobIds": [
+    41,
+    44
+   ],
+   "rates": [
+    {
+     "exp": [
+      156000,
+      174000
+     ],
+     "level": "~50",
+     "party": "party",
+     "basis": "measured",
+     "src": "chueok-florina",
+     "note": {
+      "ko": "2~3인 파티, 분당 2,600~2,900 직접 측정",
+      "en": "2–3 player party, 2,600–2,900 a minute, measured in play"
+     }
+    },
+    {
+     "exp": [
+      250000,
+      274000
+     ],
+     "level": "65",
+     "job": "ice",
+     "party": "solo",
+     "basis": "measured",
+     "src": "dahni-hot-sand",
+     "note": {
+      "ko": "썬더볼트 솔로, 경험치 트래커 화면 27.4만/시간",
+      "en": "Thunder Bolt solo; EXP tracker on screen shows 274k an hour"
+     }
+    }
+   ]
+  },
+  {
+   "id": "lorang-hidden",
+   "level": {
+    "min": 38,
+    "max": 48
+   },
+   "jobs": [],
+   "party": "solo",
+   "costTier": "low",
+   "advanced": false,
+   "evidence": [
+    "chueok-florina",
+    "linden-25-65"
+   ],
+   "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
+   "title": {
+    "ko": "로랑 로랑 로랑 · 숨은 맵",
+    "en": "Lorang Lorang Lorang · hidden map"
+   },
+   "monsters": {
+    "ko": "로랑 · 토티(엄티)",
+    "en": "Lorang · Tortie"
+   },
+   "summary": {
+    "ko": "로랑 로랑 위쪽 숨은 포탈로만 가는 맵이라 사람이 거의 없어요. 한 번에 15마리(로랑 11, 토티 4)가 나오고 젠도 좋아요.",
+    "en": "Reached only by a hidden portal above Lorang Lorang, so it is nearly always empty: 15 monsters at once (11 Lorangs, 4 Torties) with good respawns."
+   },
+   "entry": {
+    "ko": "로랑은 물리 방어가 0이라 전사·도적이 편해요. 같은 레벨이면 명중 79로 충분해요.",
+    "en": "Lorangs have 0 physical defense, which suits warriors and thieves; 79 accuracy is enough at equal level."
+   },
+   "route": {
+    "ko": "로랑 로랑 맨 위 소라집 입구에서 위 방향키를 누르면 숨은 맵으로 가요. 소라집이 위로 쌓인 좁은 맵이라 혼자 조용히 돌거나 5~6인이 층을 하나씩 맡아요. 나갈 땐 맨 아래 포탈로 나가요.",
+    "en": "Press up at the shell-house entrance at the top of Lorang Lorang. It is a narrow map of stacked shell houses: solo it quietly, or let 5–6 players take a platform each. Leave by the bottom portal."
+   },
+   "cost": {
+    "ko": "좁은 발판을 오르내려야 해서 혼자면 이동이 조금 번거로워요. 토티가 섞여 장갑 공격력 주문서 10%·망토 STR 60%도 노릴 수 있어요.",
+    "en": "Narrow platforms mean some climbing when solo. Torties mixed in can drop Gloves ATT 10% and Cape STR 60%."
+   },
+   "exit": {
+    "ko": "45 넘으면 로랑과 클랑·뜨거운 모래로 옮겨요.",
+    "en": "After 45, move on to Lorang and Clang or Hot Sand."
+   },
+   "alternative": {
+    "ko": "로랑 로랑(파티), 해변 주변 전망 오두막(마을 바로 옆, 금비 표창 드롭).",
+    "en": "Lorang Lorang (party) or the Look-Out Shed next to town (drops Ilbi stars)."
+   },
+   "mobIds": [
+    36,
+    41
    ]
   }
  ]

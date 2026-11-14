@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest.",
  "updates": [
   {
+   "id": "training-florina",
+   "version": "0.4.28",
+   "level": "minor",
+   "date": "2026-11-14",
+   "path": "/tools/training/",
+   "ko": "사냥터 추천에 플로리나 비치 3곳 — 클랑 솔로, 뜨거운 모래, 숨은 맵",
+   "en": "Three Florina Beach spots added — solo Clangs, Hot Sand and a hidden Lorang map",
+   "desc": {
+    "ko": "자리 싸움이 덜한 플로리나 비치 사냥터를 추가했어요. 48~58 로랑과 클랑(솔로), 46~66 뜨거운 모래(2~3인, 실측 시간당 15.6만~27.4만), 38~48 숨은 맵 로랑 로랑 로랑이에요. 가는 길, 숨은 포탈, 필요 명중을 같이 적었어요.",
+    "en": "Less crowded spots on Florina Beach: Lorang and Clang for solo play at 48–58, Hot Sand for 2–3 players at 46–66 (measured 156k–274k EXP an hour), and the hidden Lorang Lorang Lorang at 38–48, with directions, hidden portals and accuracy needs."
+   }
+  },
+  {
    "id": "training-drops",
    "version": "0.4.27",
    "level": "minor",
