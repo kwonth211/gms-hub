@@ -10,6 +10,7 @@ import { collectMaps, mapDetail, mapIndex, mapName } from './map-pages.mjs';
 import { collectQuests, questIndex, questBestBody, questPath, questName, setQuestGuides, areaName as questArea } from './quest-pages.mjs';
 import { questGuideData, questGuideBody } from './quest-guide.mjs';
 import { fhBody } from './forgotten-hollow.mjs';
+import { computeReport, reportBody } from './weekly-report.mjs';
 import { skillsBody } from './skill-pages.mjs';
 import { forgeBody } from './forge-page.mjs';
 import { EQ_CLASSES, equipPath, collectEquipment, equipmentIndexBody, equipmentClassBody } from './equipment-pages.mjs';
@@ -957,6 +958,8 @@ const pageHead = (lang, icon, h1, lead) =>
 // engines find a fresh "today's prices" page without anyone writing it. Only measured numbers: listing counts, asking
 // medians and lows from scanned shops, and how often an item was named in the latest megaphones.
 const MARKET_REPORT = fs.existsSync(path.join(root, 'data/market-report.json')) ? readJson('data/market-report.json') : null;
+// The weekly report's numbers, computed once from data/weekly-raw.json (scripts/fetch-weekly-report.mjs).
+const WEEKLY = fs.existsSync(path.join(root, 'data/weekly-raw.json')) ? computeReport(readJson('data/weekly-raw.json'), itemsData.items) : null;
 function marketTodayBody(lang) {
   const ko = lang === 'ko';
   const tr = (k, e) => (ko ? k : e);
@@ -3243,6 +3246,16 @@ for (const lang of LANGS) {
       body: patchNotesBody(lang),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '패치노트' : 'Patch notes', '/updates/')]
     }));
+    if (WEEKLY) {
+      // /report-preview/: the weekly report ("주간 리포트"), owner review only for now: noindex, not linked, not in the
+      // sitemap (scripts/weekly-report.mjs).
+      write(path.join(lang, 'report-preview', 'index.html'), page({
+        lang, pageKey: 'reportPreview', pagePath: '/report-preview/', noindex: true,
+        title: lang === 'ko' ? 'GMS Hub 주간 리포트 (미리보기) | GMS Hub' : 'GMS Hub Weekly Report (preview) | GMS Hub',
+        desc: lang === 'ko' ? '한 주 동안의 글클메 시세, 팔린 아이템, 확성기, 랭킹을 한 장에 모은 주간 리포트.' : 'One week of MapleStory Classic World prices, sales, megaphones and rankings on one page.',
+        body: reportBody({ lang, R: WEEKLY, items: itemsData.items, href, langPath, fh: readJson('data/forgotten-hollow.json') }).replace('__WR_CSS__', scriptSrc('weekly-report.css'))
+      }));
+    }
     {
       // /forgotten-hollow/: the November update's new area on one page (scripts/forgotten-hollow.mjs).
       const fh = readJson('data/forgotten-hollow.json');

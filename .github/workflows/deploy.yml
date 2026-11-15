@@ -27,6 +27,7 @@ jobs:
           node-version: 22
       - run: node scripts/fetch-item-prices.mjs
       - run: node scripts/fetch-market-report.mjs
+      - run: node scripts/fetch-weekly-report.mjs
       - run: node scripts/fetch-page-snapshots.mjs
       - name: Build and verify content publication rules
         run: node --test tests/content.test.mjs tests/monsters.test.mjs tests/collection-status.test.mjs tests/product-analytics.test.mjs tests/hero-storm.test.mjs

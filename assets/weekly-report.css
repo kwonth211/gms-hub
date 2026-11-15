@@ -1,0 +1,132 @@
+/* Hallmark · shape: long document (one weekly issue, front page then sections) · genre: editorial · theme: custom, inside GMS Hub's kept system · page: /report-preview/ · v2.0.0
+ * material: the week's own market and megaphone numbers, item icons from the game · signature: the front page, the week's biggest price move set as a headline over its seven-day chart
+ * axes: newspaper rules on the site's cream paper (old navy at night), one maple accent for actions, red/blue (ko) or green/red (en) only for up and down */
+/* Hallmark · pre-emit critique: P4 H4 E3 S4 R4 V3 · weakest: V, the page is numbers and lists by nature, so mass comes from the headline, the chart and the big figures, not pictures */
+
+:root {
+  --wr-paper: var(--panel);
+  --wr-ink: var(--text);
+  --wr-ink-2: var(--text-2);
+  --wr-soft: var(--muted);
+  --wr-rule: var(--line-strong);
+  --wr-rule-soft: var(--line);
+  --wr-accent: var(--accent);
+  --wr-mark: var(--accent-fill);
+  --wr-up: var(--up);
+  --wr-down: var(--down);
+  --wr-band: var(--panel-2);
+  --wr-font: var(--font-body);
+  --wr-measure: 1120px;
+}
+
+.wr { font-family: var(--wr-font); color: var(--wr-ink); padding-bottom: 48px; }
+.wr .wrap { max-width: var(--wr-measure); }
+.wr h1, .wr h2, .wr h3 { overflow-wrap: break-word; min-width: 0; text-wrap: balance; }
+
+/* Masthead: the paper's name between two rules. */
+.wr-mast { padding-top: 28px; }
+.wr-brand { margin: 0; padding: 16px 0 8px; border-top: 3px solid var(--wr-ink); border-bottom: 1px solid var(--wr-ink); font-size: clamp(1.9rem, 4.2vw, 3.1rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1; text-align: center; }
+.wr-issue { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; margin: 0; padding: 8px 0; border-bottom: 3px solid var(--wr-ink); color: var(--wr-ink-2); font-size: 0.92rem; font-weight: 700; }
+
+/* Front page: the headline and its chart. */
+.wr-front { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 32px; align-items: center; padding-top: 32px; padding-bottom: 28px; }
+.wr-lead h1 { margin: 0; font-size: clamp(2rem, 4.4vw, 3.2rem); font-weight: 900; line-height: 1.12; letter-spacing: -0.035em; }
+.wr-dek { margin: 16px 0 0; font-size: 1.15rem; color: var(--wr-ink-2); line-height: 1.55; }
+.wr-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0 0; }
+.wr-chart { margin: 0; }
+.wr-chart svg { display: block; width: 100%; height: auto; }
+.wr-chart-grid line { stroke: var(--wr-rule-soft); stroke-width: 1; }
+.wr-chart-line polyline { fill: none; stroke: var(--wr-mark); stroke-width: 4; stroke-linejoin: round; stroke-linecap: round; }
+.wr-chart-dot circle { fill: var(--wr-paper); stroke: var(--wr-mark); stroke-width: 3; }
+.wr-chart-val { fill: var(--wr-ink); font-family: var(--wr-font); font-size: 17px; font-weight: 800; }
+.wr-chart-day { fill: var(--wr-soft); font-family: var(--wr-font); font-size: 14px; font-weight: 700; }
+.wr-chart figcaption { margin-top: 8px; color: var(--wr-soft); font-size: 0.85rem; }
+
+/* The week in four numbers. */
+.wr-strip dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); margin: 0; border-top: 1px solid var(--wr-ink); border-bottom: 1px solid var(--wr-ink); }
+.wr-strip dl > div { padding: 16px 16px; border-left: 1px solid var(--wr-rule-soft); }
+.wr-strip dl > div:first-child { border-left: 0; }
+.wr-strip dt { color: var(--wr-ink-2); font-size: 0.9rem; font-weight: 700; }
+.wr-strip dd { margin: 4px 0 0; font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 900; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+
+/* Sections: one idea each, under a rule. */
+.wr-sec { padding-top: 40px; }
+.wr-sec > h2 { margin: 0; padding-top: 12px; border-top: 3px solid var(--wr-ink); font-size: clamp(1.4rem, 2.6vw, 1.85rem); font-weight: 900; letter-spacing: -0.02em; }
+.wr-note { margin: 8px 0 16px; color: var(--wr-ink-2); font-size: 0.95rem; }
+.wr-note a, .wr-more a { font-weight: 700; }
+.wr-more { margin: 16px 0 0; }
+.wr-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
+.wr-cols.three { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+.wr-cols h3 { margin: 0 0 8px; padding-bottom: 8px; border-bottom: 1px solid var(--wr-ink); font-size: 1.1rem; font-weight: 800; }
+.wr-cols h3.up { color: var(--wr-up); }
+.wr-cols h3.down { color: var(--wr-down); }
+.wr-empty { color: var(--wr-soft); }
+
+.wr ol, .wr ul { list-style: none; margin: 0; padding: 0; }
+.wr-row { display: flex; align-items: center; gap: 8px; min-width: 0; color: inherit; text-decoration: none; border-radius: 8px; }
+.wr-row:hover .wr-name { color: var(--wr-accent); text-decoration: underline; }
+.wr-row:focus-visible { outline: 2px solid var(--focus, var(--wr-accent)); outline-offset: 2px; }
+.wr-row:active .wr-name { color: var(--wr-ink); }
+.wr a:focus-visible { outline: 2px solid var(--focus, var(--wr-accent)); outline-offset: 2px; }
+.wr-icon { flex: none; object-fit: contain; image-rendering: pixelated; }
+.wr-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+
+.wr-moves li { border-bottom: 1px solid var(--wr-rule-soft); }
+.wr-moves .wr-row { padding: 8px 2px; }
+.wr-moves .wr-name { flex: 1 1 auto; }
+.wr-price { display: flex; flex-direction: column; align-items: flex-end; flex: none; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.wr-from { color: var(--wr-soft); font-size: 0.8rem; text-decoration: line-through; }
+.wr-to { font-weight: 800; }
+.wr-spark { flex: none; }
+.wr-spark polyline { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.wr-spark.up polyline { stroke: var(--wr-up); } .wr-spark.up circle { fill: var(--wr-up); }
+.wr-spark.down polyline { stroke: var(--wr-down); } .wr-spark.down circle { fill: var(--wr-down); }
+.wr-pct { flex: none; min-width: 3.6em; text-align: right; font-weight: 900; font-variant-numeric: tabular-nums; }
+.wr-pct.up { color: var(--wr-up); } .wr-pct.down { color: var(--wr-down); }
+
+.wr-sold { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: column; grid-template-rows: repeat(5, auto); column-gap: 32px; }
+.wr-sold li { display: flex; align-items: center; gap: 8px; padding: 8px 2px; border-bottom: 1px solid var(--wr-rule-soft); }
+.wr-sold .wr-rank { flex: none; width: 1.4em; color: var(--wr-soft); font-weight: 800; text-align: right; }
+.wr-sold .wr-row { flex: 1 1 auto; }
+.wr-now { flex: none; min-width: 4.5em; color: var(--wr-ink-2); text-align: right; font-variant-numeric: tabular-nums; }
+
+.wr-mega li, .wr-watch li { display: flex; align-items: center; gap: 8px; padding: 8px 2px; border-bottom: 1px solid var(--wr-rule-soft); }
+.wr-mega .wr-rank { flex: none; width: 1.4em; color: var(--wr-soft); font-weight: 800; text-align: right; }
+.wr-mega .wr-row, .wr-watch .wr-row { flex: 1 1 auto; }
+.wr-count { flex: none; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+/* Ranking: job mix as bars. */
+.wr-rank-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 32px; align-items: start; margin-top: 16px; }
+.wr-jobs li { display: grid; grid-template-columns: 5.5em minmax(0, 1fr) 3em 5.5em; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--wr-rule-soft); }
+.wr-job { font-weight: 800; }
+.wr-bar { display: block; height: 12px; background: var(--wr-band); border-radius: 3px; overflow: hidden; }
+.wr-bar span { display: block; height: 100%; width: var(--w); background: var(--wr-mark); }
+.wr-share { font-weight: 900; text-align: right; font-variant-numeric: tabular-nums; }
+.wr-n { color: var(--wr-ink-2); text-align: right; font-variant-numeric: tabular-nums; }
+.wr-n small.up { color: var(--wr-up); } .wr-n small.down { color: var(--wr-down); }
+.wr-rank-facts { margin: 0; display: grid; gap: 0; border-top: 1px solid var(--wr-ink); }
+.wr-rank-facts > div { padding: 16px 0; border-bottom: 1px solid var(--wr-rule-soft); }
+.wr-rank-facts dt { color: var(--wr-ink-2); font-size: 0.9rem; font-weight: 700; }
+.wr-rank-facts dd { margin: 2px 0 0; font-size: 2rem; font-weight: 900; font-variant-numeric: tabular-nums; }
+
+/* Next week. */
+.wr-next { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; margin-top: 16px; }
+.wr-next h3 { margin: 0 0 8px; padding-bottom: 8px; border-bottom: 1px solid var(--wr-ink); font-size: 1.1rem; font-weight: 800; }
+.wr-prep li { padding: 12px 16px; border: 1px solid var(--wr-rule-soft); border-radius: 8px; background: var(--wr-band); margin-bottom: 8px; line-height: 1.55; color: var(--wr-ink-2); }
+
+.wr-foot { margin-top: 44px; padding-top: 16px; border-top: 3px solid var(--wr-ink); color: var(--wr-ink-2); font-size: 0.9rem; }
+.wr-foot p { margin: 0 0 8px; max-width: 72ch; }
+
+@media (max-width: 900px) {
+  .wr-front { grid-template-columns: minmax(0, 1fr); gap: 20px; padding-top: 24px; }
+  .wr-cols, .wr-cols.three, .wr-rank-grid, .wr-next { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .wr-sold { grid-template-columns: minmax(0, 1fr); grid-auto-flow: row; grid-template-rows: none; }
+}
+@media (max-width: 520px) {
+  .wr-spark { display: none; }
+  .wr-jobs li { grid-template-columns: 4.5em minmax(0, 1fr) 2.8em; }
+  .wr-n { display: none; }
+  .wr-strip dl > div { border-left: 0; border-top: 1px solid var(--wr-rule-soft); }
+  .wr-strip dl > div:first-child { border-top: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .wr * { scroll-behavior: auto; } }

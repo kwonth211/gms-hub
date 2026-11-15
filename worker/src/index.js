@@ -32,6 +32,7 @@ import { discordInteractions } from './discord-bot.js';
 import { notifyMegaphones, notifyListings } from './discord-alerts.js';
 import { oauthStart, oauthCallback } from './discord-oauth.js';
 import { postMegaphones, listMegaphones, pruneMegaphones, megaphoneAsks, megaphoneStats } from './megaphone.js';
+import { storeDailyRollups, reportRaw } from './report.js';
 import { createAlert, listAlerts, deleteAlert, takeHits, checkAlerts } from './alerts.js';
 export { Presence };
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
@@ -330,7 +331,9 @@ const api = {
     // Once a day (the 16:00 UTC run, a quiet hour in Korea): old megaphones are dropped by a table scan. The megaphone
     // trend snapshot is refreshed once an hour. Both are read-heavy, so they are not run on every tick.
     const now = new Date();
-    if (now.getUTCHours() === 16 && now.getUTCMinutes() < 15) ctx.waitUntil(pruneMegaphones(env).catch(() => null));
+    // The weekly report's daily rollups (yesterday's megaphones, today's ranking) are written before the prune runs.
+    if (now.getUTCHours() === 16 && now.getUTCMinutes() < 15)
+      ctx.waitUntil(storeDailyRollups(env).catch(() => null).then(() => pruneMegaphones(env)).catch(() => null));
     // Retention first, then the safety-net re-summary of everything seen in the last day (one 1-day scan).
     if (now.getUTCHours() === 16 && now.getUTCMinutes() < 15)
       ctx.waitUntil(archiveListings(env).catch(() => null).then(() => reconcileItemMarket(env)).catch(() => null));
@@ -389,6 +392,9 @@ const api = {
     }
 
     // Collector watch (assets: none; for operators and the daily check): the extension's last heartbeat and last runs.
+    if (url.pathname === '/report/raw' && req.method === 'GET') {
+      try { return json(await reportRaw(env), cors, 200, 'public, max-age=3600'); } catch { return json({ error: 'report unavailable' }, cors, 503); }
+    }
     if (url.pathname === '/market/collector' && req.method === 'GET') return json(await collectorView(env), cors, 200, 'public, max-age=20');
 
     if (url.pathname === '/votes' && req.method === 'GET') {
