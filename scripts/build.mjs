@@ -31,6 +31,12 @@ const training = readJson('data/training.json');
 const editorialEvidence = readJson('data/editorial/korean-guides.json');
 validateTraining(training, editorialEvidence);
 const itemsData = readJson('data/items.json');
+// Classic World items whose client data has no Korean name (cosmetics, cash items) get one from data/item-names-ko.json,
+// so Korean pages never mix in English item names.
+{
+  const extra = readJson('data/item-names-ko.json').names;
+  for (const it of itemsData.items) if (!it.ko && extra[it.id]) it.ko = extra[it.id];
+}
 const scrolls = readJson('data/scrolls.json');
 // Korean pages use the client's own tier names (하급·중급·상급·혼돈); English keeps Lesser/Intermediate/Greater/Chaos.
 const tierName = (lang, s) => (lang === 'ko' ? s.ko : s.name);

@@ -32,7 +32,7 @@ function optLine(o) {
   if (!o) return '';
   const ko = document.documentElement.lang === 'ko';
   const chips = [];
-  if (o.ups > 0) chips.push(`<span class="mb-opt plus">+${o.ups}</span>`);
+  if (o.ups > 0) chips.push(`<span class="mb-opt plus">${ko ? '작' : 'Scrolled'} +${o.ups}</span>`);
   OPT_ORDER.filter((k) => o.stats?.[k] != null).forEach((k) => chips.push(`<span class="mb-opt">${OPT_LABEL[k]} ${o.stats[k]}</span>`));
   if (o.slots != null) chips.push(`<span class="mb-opt">${ko ? '업횟' : 'Slots'} ${o.slots}</span>`);
   if (o.used > 0 && o.ups != null) chips.push(`<span class="mb-opt">${ko ? `성공 ${o.ups} · 실패 ${o.used - o.ups}` : `${o.ups} pass · ${o.used - o.ups} fail`}</span>`);

@@ -59,7 +59,7 @@ function optRange(b, p) {
     parts.push(`${ko ? OPT_LABEL.ko[freq] || freq : freq} ${lo}${hi > lo ? `~${hi}` : ''}`);
   }
   const plus = b.opts.filter((o) => o.ups > 0);
-  if (plus.length) parts.push(`+${Math.max(...plus.map((o) => o.ups))}${plus.length > 1 ? (ko ? ` 외 ${plus.length - 1}건` : ` +${plus.length - 1}`) : ''}`);
+  if (plus.length) parts.push(`${ko ? '작 ' : ''}+${Math.max(...plus.map((o) => o.ups))}${plus.length > 1 ? (ko ? ` 외 ${plus.length - 1}건` : ` +${plus.length - 1}`) : ''}`);
   return parts.length ? `<small class="profile-opt">${parts.join(' · ')}</small>` : '';
 }
 

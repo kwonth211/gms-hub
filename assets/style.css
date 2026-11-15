@@ -2172,7 +2172,8 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-optsum ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 4px 12px; }
 .mb-optsum li { display: flex; align-items: baseline; gap: 6px; min-width: 0; font-size: 0.82rem; }
 .mb-optsum li span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mb-optsum li b { margin-left: auto; font-variant-numeric: tabular-nums; }
+.mb-optsum li b { margin-left: auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mb-optsum li small { white-space: nowrap; }
 .mb-optsum li small { color: var(--muted); }
 .mb-offer-price { display: flex; align-items: baseline; gap: 4px; flex: none; min-width: 88px; white-space: nowrap; }
 .mb-offer-price strong { font-size: 0.9rem; font-variant-numeric: tabular-nums; }

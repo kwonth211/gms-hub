@@ -91,7 +91,7 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
     const known = Object.keys(base).length > 0;
     const rows = OPT_ORDER.filter((k) => o.stats?.[k] != null).map((k) => {
       const v = o.stats[k], b = base[k], d = b != null ? v - b : null;
-      const note = !known ? '' : b == null ? `<small class="tip-gold">${tr('추옵', 'extra')}</small>` : d ? `<small class="${d > 0 ? 'tip-up' : 'tip-down'}">${d > 0 ? '▲' : '▼'}${Math.abs(d)}</small>` : '';
+      const note = !known ? '' : b == null ? `<small class="tip-gold">${tr('추옵', 'extra')}</small>` : d ? `<small class="${d > 0 ? 'tip-up' : 'tip-down'}">${d > 0 ? '+' : ''}${d}</small>` : '';
       return `<li class="tip-opt"><span>${INC[k] || k} <b>${v > 0 ? '+' : ''}${v}</b></span>${note}</li>`;
     }).join('');
     const used = o.used ?? (known && baseSlots && o.slots != null && baseSlots >= o.slots ? baseSlots - o.slots : null);
@@ -101,7 +101,7 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
     const out = [`<ul class="tip-stats tip-opts">${rows}</ul>`];
     if (o.slots != null) out.push(`<p>${tr('업그레이드 가능 횟수', 'Upgrade slots')} <b>${o.slots}</b>${total != null ? ` / ${total}` : ''}</p>`);
     if (used > 0) out.push(`<p class="tip-muted">${tr(`주문서 ${used}번: 성공 ${o.ups ?? '?'} · 실패 ${o.ups != null ? used - o.ups : '?'}`, `${used} scrolls: ${o.ups ?? '?'} passed · ${o.ups != null ? used - o.ups : '?'} failed`)}</p>`);
-    if (grade != null) out.push(`<p class="tip-grade ${grade > 0 ? 'tip-up' : grade < 0 ? 'tip-down' : ''}">${grade > 0 ? tr(`상옵 +${grade}`, `Above base +${grade}`) : grade < 0 ? tr(`하옵 ${grade}`, `Below base ${grade}`) : tr('기본옵', 'Base roll')}</p>`);
+    if (grade != null) out.push(`<p class="tip-grade ${grade > 0 ? 'tip-up' : grade < 0 ? 'tip-down' : ''}">${grade > 0 ? `+${grade}` : grade < 0 ? `${grade}` : tr('정옵', 'Base')}</p>`);
     return out.join('');
   }
 

@@ -230,7 +230,7 @@ const OPT_LABEL = ko
   : { PAD: "ATT", MAD: "M.ATT", STR: "STR", DEX: "DEX", INT: "INT", LUK: "LUK", ACC: "ACC", EVA: "AVOID", MHP: "HP", MMP: "MP", PDD: "DEF", MDD: "M.DEF", Speed: "SPEED", Jump: "JUMP", CRT: "CRIT", CRD: "C.DMG" };
 const optStats = (o) => OPT_ORDER.filter((k) => o?.stats?.[k] != null).map((k) => [k, o.stats[k]]);
 // Short text for grouping and the summary: "공 9 · 업횟 7". Upgrades left say whether it was scrolled, so no "clean" tag.
-const optKey = (o) => [o?.ups > 0 ? `+${o.ups}` : "", ...optStats(o).map(([k, v]) => `${OPT_LABEL[k]} ${v}`), o?.slots != null ? `${tr("업횟", "Slots")} ${o.slots}` : ""].filter(Boolean).join(" · ");
+const optKey = (o) => [o?.ups > 0 ? `${tr("작", "Scrolled")} +${o.ups}` : "", ...optStats(o).map(([k, v]) => `${OPT_LABEL[k]} ${v}`), o?.slots != null ? `${tr("업횟", "Slots")} ${o.slots}` : ""].filter(Boolean).join(" · ");
 // Upgrades: left / total, passed ("+N" after the name in game) and failed. "used" may be missing; the base slot count
 // then fills it (base - left), which holds unless the item was hammered.
 function optUpgrades(o, baseSlots) {
@@ -257,9 +257,9 @@ function optionChips(r) {
   const up = optUpgrades(o, baseSlots);
   const grade = optGrade(o, base);
   // Headline first: the "+N" a player sees after the item name, then the roll grade for clean gear.
-  if (o.ups > 0) chips.push(`<span class="mb-opt plus" title="${esc(tr(`주문서 ${o.ups}번 성공`, `${o.ups} scrolls passed`))}">+${o.ups}</span>`);
+  if (o.ups > 0) chips.push(`<span class="mb-opt plus" title="${esc(tr(`주문서 ${o.ups}번 성공`, `${o.ups} scrolls passed`))}">${tr("작", "Scrolled")} +${o.ups}</span>`);
   if (grade != null) {
-    const g = grade > 0 ? ["hi", tr(`상옵 +${grade}`, `Above base +${grade}`)] : grade < 0 ? ["lo", tr(`하옵 ${grade}`, `Below base ${grade}`)] : ["mid", tr("기본옵", "Base roll")];
+    const g = grade > 0 ? ["hi", `+${grade}`] : grade < 0 ? ["lo", `${grade}`] : ["mid", tr("정옵", "Base")];
     chips.push(`<span class="mb-opt grade ${g[0]}" title="${esc(tr("기본 능력치와 비교한 드롭 옵션 합계 (작 안 한 장비)", "Sum of differences from the base stats (unscrolled gear)"))}">${g[1]}</span>`);
   }
   for (const [k, v] of optStats(o)) {
@@ -269,7 +269,7 @@ function optionChips(r) {
     const title = !known ? "" : b != null
       ? (d ? tr(`기본보다 ${d > 0 ? "+" : ""}${d}`, `${d > 0 ? "+" : ""}${d} vs base`) : tr("기본과 같아요", "Same as base"))
       : o.clean ? tr("기본에 없는 추가 옵션", "Extra stat not on the base item") : tr("기본에 없는 능력치 (주문서 또는 추가 옵션)", "Not on the base item (scrolls or extra stat)");
-    const note = !known ? "" : b == null ? `<small>${tr("추옵", "extra")}</small>` : d ? `<small>${d > 0 ? "▲" : "▼"}${Math.abs(d)}</small>` : "";
+    const note = !known ? "" : b == null ? `<small>${tr("추옵", "extra")}</small>` : d ? `<small>${d > 0 ? "+" : ""}${d}</small>` : "";
     chips.push(`<span class="mb-opt${cls}" title="${esc(title)}">${esc(OPT_LABEL[k])} ${v}${note}</span>`);
   }
   // Upgrades: "업횟 5/7", then passed and failed when any were used.
