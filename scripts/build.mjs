@@ -755,7 +755,9 @@ function header(lang, pagePath, only) {
   ];
   // Live megaphones are a main feature and keep a tab; the monster database moved to the "more" menu (2026-11-13, user
   // request) so the tabs fit beside the live-viewer pill. Monsters stay one search away.
-  const moved = [['/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monsters'], ['/', 'star', t.navLinks]];
+  const moved = [['/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monsters']];
+  // The site directory left the menu (owner, 2026-11-15); the header search still finds it.
+  const sitesEntry = ['/sites/', 'star', lang === 'ko' ? '사이트 모음' : 'Other Classic World sites'];
   // English labels that would break mid-word on a phone ("Calcul/ator") get a one-word form there.
   // The newest tab carries a small N so returning visitors notice it.
   const NEW_TAB = UPDATES.find((u) => [...tabs, ...toolItems, ...guideItems].some(([p]) => p === u.path.split('#')[0]))?.path.split('#')[0] || '/quests/';
@@ -777,7 +779,7 @@ function header(lang, pagePath, only) {
 <a class="brand" href="${href(langPath(lang, '/'))}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>${esc(t.gameName)}</small></span></a>
 <nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}${guideMenu}${toolMenu}</nav>
 ${presencePill(lang)}
-${headerSearch(lang, [...tabs, ...guideItems, ...toolItems, ...moved])}
+${headerSearch(lang, [...tabs, ...guideItems, ...toolItems, ...moved, sitesEntry])}
 ${config.discord ? `<a class="theme-toggle discord-link" href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="header" aria-label="${lang === 'ko' ? '디스코드 커뮤니티' : 'Discord community'}" title="${lang === 'ko' ? '디스코드 커뮤니티' : 'Discord community'}">${DISCORD_ICON(20)}</a>` : ''}
 <details class="lang-menu"><summary class="lang-current" aria-label="Language"><span class="lang-full" translate="no">${LANG_NAMES[lang]}</span><span class="lang-code" translate="no" aria-hidden="true">${lang.toUpperCase()}</span></summary><div class="lang-list">${(only ? [lang, ...ALL_LANGS.filter((l) => l !== lang)] : ALL_LANGS).map((l) => `<a class="lang-opt" href="${href(langPath(l, only && l !== lang ? '/' : pagePath || '/'))}" data-lang="${l}" hreflang="${HREFLANG[l]}" lang="${HREFLANG[l]}"${l === lang ? ' aria-current="true"' : ''}>${LANG_NAMES[l]}</a>`).join('')}</div></details>
 ${moreMenu(lang, moved)}
