@@ -229,8 +229,8 @@ const OPT_LABEL = ko
   ? { PAD: "공", MAD: "마", STR: "힘", DEX: "덱", INT: "인", LUK: "럭", ACC: "명중", EVA: "회피", MHP: "HP", MMP: "MP", PDD: "물방", MDD: "마방", Speed: "이속", Jump: "점프", CRT: "크확", CRD: "크뎀" }
   : { PAD: "ATT", MAD: "M.ATT", STR: "STR", DEX: "DEX", INT: "INT", LUK: "LUK", ACC: "ACC", EVA: "AVOID", MHP: "HP", MMP: "MP", PDD: "DEF", MDD: "M.DEF", Speed: "SPEED", Jump: "JUMP", CRT: "CRIT", CRD: "C.DMG" };
 const optStats = (o) => OPT_ORDER.filter((k) => o?.stats?.[k] != null).map((k) => [k, o.stats[k]]);
-// Short text for grouping and the summary: "공 9 · 클린".
-const optKey = (o) => [o?.ups > 0 ? `+${o.ups}` : "", ...optStats(o).map(([k, v]) => `${OPT_LABEL[k]} ${v}`), o?.clean ? tr("클린", "clean") : ""].filter(Boolean).join(" · ");
+// Short text for grouping and the summary: "공 9 · 업횟 7". Upgrades left say whether it was scrolled, so no "clean" tag.
+const optKey = (o) => [o?.ups > 0 ? `+${o.ups}` : "", ...optStats(o).map(([k, v]) => `${OPT_LABEL[k]} ${v}`), o?.slots != null ? `${tr("업횟", "Slots")} ${o.slots}` : ""].filter(Boolean).join(" · ");
 // Upgrades: left / total, passed ("+N" after the name in game) and failed. "used" may be missing; the base slot count
 // then fills it (base - left), which holds unless the item was hammered.
 function optUpgrades(o, baseSlots) {
@@ -272,7 +272,6 @@ function optionChips(r) {
     const note = !known ? "" : b == null ? `<small>${tr("추옵", "extra")}</small>` : d ? `<small>${d > 0 ? "▲" : "▼"}${Math.abs(d)}</small>` : "";
     chips.push(`<span class="mb-opt${cls}" title="${esc(title)}">${esc(OPT_LABEL[k])} ${v}${note}</span>`);
   }
-  if (o.clean) chips.push(`<span class="mb-opt clean">${tr("클린", "Clean")}</span>`);
   // Upgrades: "업횟 5/7", then passed and failed when any were used.
   if (o.slots != null) chips.push(`<span class="mb-opt slots" title="${esc(tr("남은 업그레이드 가능 횟수 / 전체", "Upgrades left / total"))}">${tr("업횟", "Slots")} ${o.slots}${up.total != null ? `/${up.total}` : ""}</span>`);
   if (up.used > 0 && o.ups != null) chips.push(`<span class="mb-opt" title="${esc(tr(`작 ${up.used}번: 성공 ${o.ups} · 실패 ${up.fails}`, `${up.used} scrolls: ${o.ups} passed, ${up.fails} failed`))}">${tr(`성공 ${o.ups} · 실패 ${up.fails}`, `${o.ups} pass · ${up.fails} fail`)}</span>`);

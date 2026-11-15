@@ -101,8 +101,7 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
     const out = [`<ul class="tip-stats tip-opts">${rows}</ul>`];
     if (o.slots != null) out.push(`<p>${tr('업그레이드 가능 횟수', 'Upgrade slots')} <b>${o.slots}</b>${total != null ? ` / ${total}` : ''}</p>`);
     if (used > 0) out.push(`<p class="tip-muted">${tr(`주문서 ${used}번: 성공 ${o.ups ?? '?'} · 실패 ${o.ups != null ? used - o.ups : '?'}`, `${used} scrolls: ${o.ups ?? '?'} passed · ${o.ups != null ? used - o.ups : '?'} failed`)}</p>`);
-    if (grade != null) out.push(`<p class="tip-grade ${grade > 0 ? 'tip-up' : grade < 0 ? 'tip-down' : ''}">${grade > 0 ? tr(`상옵 +${grade}`, `Above base +${grade}`) : grade < 0 ? tr(`하옵 ${grade}`, `Below base ${grade}`) : tr('기본옵', 'Base roll')}${o.clean ? ` · ${tr('클린', 'Clean')}` : ''}</p>`);
-    else if (o.clean) out.push(`<p class="tip-good">${tr('클린', 'Clean')}</p>`);
+    if (grade != null) out.push(`<p class="tip-grade ${grade > 0 ? 'tip-up' : grade < 0 ? 'tip-down' : ''}">${grade > 0 ? tr(`상옵 +${grade}`, `Above base +${grade}`) : grade < 0 ? tr(`하옵 ${grade}`, `Below base ${grade}`) : tr('기본옵', 'Base roll')}</p>`);
     return out.join('');
   }
 

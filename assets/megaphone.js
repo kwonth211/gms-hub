@@ -34,7 +34,6 @@ function optLine(o) {
   const chips = [];
   if (o.ups > 0) chips.push(`<span class="mb-opt plus">+${o.ups}</span>`);
   OPT_ORDER.filter((k) => o.stats?.[k] != null).forEach((k) => chips.push(`<span class="mb-opt">${OPT_LABEL[k]} ${o.stats[k]}</span>`));
-  if (o.clean) chips.push(`<span class="mb-opt clean">${ko ? '클린' : 'Clean'}</span>`);
   if (o.slots != null) chips.push(`<span class="mb-opt">${ko ? '업횟' : 'Slots'} ${o.slots}</span>`);
   if (o.used > 0 && o.ups != null) chips.push(`<span class="mb-opt">${ko ? `성공 ${o.ups} · 실패 ${o.used - o.ups}` : `${o.ups} pass · ${o.used - o.ups} fail`}</span>`);
   return chips.length ? `<p class="mb-opts mg-opts">${chips.join('')}</p>` : '';
