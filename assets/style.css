@@ -3074,6 +3074,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 .dc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .dc-list li { display: grid; grid-template-columns: 4.6em 3.6em minmax(0, 1fr) 6.6em 4.4em; align-items: center; gap: 8px; font-size: 0.84rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .dc-list li > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.bot-page:not([data-lang='ko']) .dc-list:not(.dc-moves) li { grid-template-columns: 4.6em 5.6em minmax(0, 1fr) 6.6em 4.4em; }
 .dc-list b { color: #fff; }
 .dc-roll { font-size: 0.74rem; font-weight: 800; text-align: center; border-radius: 4px; padding: 0 4px; background: #383a40; color: var(--dc-text); }
 .dc-roll.none { background: none; }
