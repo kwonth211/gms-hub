@@ -2855,8 +2855,8 @@ body.exp-running .exp-stop { display: inline-flex; }
 .map-legend small { color: var(--muted); }
 
 /* Before the first list arrives, hold room for it so the footer and ads below do not jump when it fills in. */
-#mb-results[aria-busy="true"]:has(> p:only-child), #mb-results:has(> .sk-list) { min-height: 60vh; }
-.sk-list li { height: 52px; }
+#mb-results[aria-busy="true"]:has(> p:only-child), #mb-results:has(> .skel-list) { min-height: 60vh; }
+.skel-list li { height: 52px; }
 
 /* Home "just listed" feed: a LIVE badge, a thin bar that fills until the next refresh, and new rows that glow as they drop in. */
 .recent-head { display: flex; align-items: center; gap: 8px; }
@@ -2995,18 +2995,18 @@ body.exp-running .exp-stop { display: inline-flex; }
 }
 
 /* Loading placeholders in the market's item panel (market.js SK): soft grey blocks in the shape of what is coming. */
-.sk { display: block; border-radius: 6px; background: linear-gradient(90deg, var(--line) 0%, var(--panel-2) 50%, var(--line) 100%); background-size: 200% 100%; animation: sk-shine 1.4s ease-in-out infinite; }
-.sk-wrap { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.sk-block { width: 100%; }
-.sk-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
-.sk-chips .sk { border-radius: 999px; }
-.sk-offers li { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; }
-@keyframes sk-shine { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+.skel { display: block; border-radius: 6px; background: linear-gradient(90deg, var(--line) 0%, var(--panel-2) 50%, var(--line) 100%); background-size: 200% 100%; animation: skel-shine 1.4s ease-in-out infinite; }
+.skel-wrap { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.skel-block { width: 100%; }
+.skel-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.skel-chips .skel { border-radius: 999px; }
+.skel-offers li { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; }
+@keyframes skel-shine { from { background-position: 100% 0; } to { background-position: -100% 0; } }
 /* What replaces a placeholder fades in instead of snapping into place. */
 @keyframes mb-in { from { opacity: 0; transform: translateY(3px); } }
-#mk-detail :is(#mb-history, #mb-facts, #md-rows, #mb-info, #mb-megas, #mk-charts) > :not(.sk-wrap), #mb-results > :not(.sk-wrap) { animation: mb-in 0.22s ease-out both; }
-#md-rows[aria-busy="true"] > :not(.sk-wrap) { opacity: 0.55; transition: opacity 0.15s; }
-@media (prefers-reduced-motion: reduce) { .sk { animation: none; } #mk-detail :is(#mb-history, #mb-facts, #md-rows, #mb-info, #mb-megas, #mk-charts) > * { animation: none; } }
+#mk-detail :is(#mb-history, #mb-facts, #md-rows, #mb-info, #mb-megas, #mk-charts) > :not(.skel-wrap), #mb-results > :not(.skel-wrap) { animation: mb-in 0.22s ease-out both; }
+#md-rows[aria-busy="true"] > :not(.skel-wrap) { opacity: 0.55; transition: opacity 0.15s; }
+@media (prefers-reduced-motion: reduce) { .skel { animation: none; } #mk-detail :is(#mb-history, #mb-facts, #md-rows, #mb-info, #mb-megas, #mk-charts) > * { animation: none; } }
 
 /* /discord-bot/ (build.mjs botBody + bot-page.js): hero with a live Discord-style reply, showcase rows, command cards,
    steps, community band. The Discord windows keep Discord's own dark palette in both site themes. */
@@ -3056,7 +3056,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 .dc-arg { padding-right: 6px; }
 .dc-arg i + * , .dc-arg { color: var(--dc-text); }
 .dc-embed { position: relative; display: grid; gap: 8px; align-content: start; background: var(--dc-embed); border-left: 4px solid var(--accent-fill); border-radius: 4px; padding: 12px 14px; min-width: 0; }
-.dc-embed .sk { background: linear-gradient(90deg, #3a3c42 0%, #45474e 50%, #3a3c42 100%); background-size: 200% 100%; }
+.dc-embed .skel { background: linear-gradient(90deg, #3a3c42 0%, #45474e 50%, #3a3c42 100%); background-size: 200% 100%; }
 .dc-embed.is-in > * { animation: mb-in 0.25s ease-out both; }
 .dc-thumb { position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; object-fit: contain; image-rendering: pixelated; }
 .dc-title { color: var(--dc-link); font-weight: 700; padding-right: 48px; }

@@ -248,11 +248,11 @@ function optionSummary(rows) {
 // Loading placeholders: grey blocks in the shape of what is coming (style.css .sk), so the panel keeps its layout while
 // its parts arrive one by one instead of text popping in and pushing everything down.
 const SK = {
-  line: (w, h = 12) => `<span class="sk" style="width:${w};height:${h}px"></span>`,
-  history: () => `<div class="sk-wrap sk-history" aria-hidden="true">${SK.line("30%", 11)}${SK.line("55%", 30)}${SK.line("40%", 11)}<span class="sk sk-block" style="height:44px"></span>${SK.line("50%", 11)}<span class="sk sk-block" style="height:170px"></span></div>`,
-  facts: () => `<p class="sk-wrap sk-chips" aria-hidden="true">${["22%", "14%", "30%", "18%"].map((w) => SK.line(w, 26)).join("")}</p>`,
-  offers: (n = 6) => `<ul class="sk-wrap sk-offers" aria-hidden="true">${Array.from({ length: n }, () => `<li><span class="sk" style="width:22%;height:14px"></span><span class="sk" style="width:18%;height:14px"></span><span class="sk" style="width:16%;height:14px;margin-left:auto"></span></li>`).join("")}</ul>`,
-  block: (h) => `<div class="sk-wrap" aria-hidden="true"><span class="sk sk-block" style="height:${h}px"></span></div>`,
+  line: (w, h = 12) => `<span class="skel" style="width:${w};height:${h}px"></span>`,
+  history: () => `<div class="skel-wrap skel-history" aria-hidden="true">${SK.line("30%", 11)}${SK.line("55%", 30)}${SK.line("40%", 11)}<span class="skel skel-block" style="height:44px"></span>${SK.line("50%", 11)}<span class="skel skel-block" style="height:170px"></span></div>`,
+  facts: () => `<p class="skel-wrap skel-chips" aria-hidden="true">${["22%", "14%", "30%", "18%"].map((w) => SK.line(w, 26)).join("")}</p>`,
+  offers: (n = 6) => `<ul class="skel-wrap skel-offers" aria-hidden="true">${Array.from({ length: n }, () => `<li><span class="skel" style="width:22%;height:14px"></span><span class="skel" style="width:18%;height:14px"></span><span class="skel" style="width:16%;height:14px;margin-left:auto"></span></li>`).join("")}</ul>`,
+  block: (h) => `<div class="skel-wrap" aria-hidden="true"><span class="skel skel-block" style="height:${h}px"></span></div>`,
 };
 function offerCards(rows) {
   lastOffers = rows;
