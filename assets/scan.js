@@ -5,6 +5,8 @@ import { detectScale, findChannel, findRoom, findShopRows, findShopRowsLoose, ma
 
 import { KERNING, placeLabel } from './place.js';
 import { SELLER, validLocation, listingKey, payload, fingerprint, validListing, canUpload, sameShop, verifiedPrice } from './scan-state.js';
+// Rechargeable items (throwing stars 207xxxx, bullets 233xxxx): sold and priced per set, whatever the star count.
+const RECHARGE = (id) => (id >= 2070000 && id < 2080000) || (id >= 2330000 && id < 2340000);
 
 const i18n = JSON.parse(document.getElementById('i18n').textContent);
 const $ = (id) => document.getElementById(id);
@@ -279,7 +281,9 @@ async function recognize(canvas) {
     // rather than as the stray marks OCR made of it.
     if (!match && !/[A-Za-z가-힣]{2}/.test(name)) name = '';
     // "100 for 5,000 mesos" is 100 items at 50 each: prices are kept per item so bundles compare with single listings.
-    const qty = p?.qty || 1;
+    // Throwing stars and bullets are the exception: the number on them is how many stars the one set holds (a 500-star
+    // Wolbi set for 2,000), and the market prices them per set, so the whole price stays on one item.
+    const qty = RECHARGE(match?.item?.id) ? 1 : p?.qty || 1;
     out.push({
       sold: row.sold,
       name,
