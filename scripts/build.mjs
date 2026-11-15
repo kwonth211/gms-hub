@@ -817,7 +817,7 @@ function moreMenu(lang, moved = []) {
     ['/contact/', ko ? '문의·협찬·후원' : 'Contact and support']
   ].filter(Boolean);
   const label = ko ? '더보기' : 'More';
-  return `<details class="more-menu"><summary class="more-btn" aria-label="${label}"><span class="more-bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="more-label">${label}</span></summary><div class="more-list">${links.map(([p, name]) => `<a class="lang-opt" href="${href(langPath(lang, p))}">${name}</a>`).join('')}${config.discord ? `<a class="lang-opt" href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="menu">${DISCORD_ICON(16)}${ko ? '디스코드 커뮤니티' : 'Discord community'}</a>` : ''}<button type="button" class="lang-opt more-charm" data-charm-toggle><span class="charm-on-label">${ko ? '낙엽 효과 끄기' : 'Turn off falling leaves'}</span><span class="charm-off-label">${ko ? '낙엽 효과 켜기' : 'Turn on falling leaves'}</span></button></div></details>`;
+  return `<details class="more-menu"><summary class="more-btn" aria-label="${label}"><span class="more-bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="more-label">${label}</span></summary><div class="more-list">${links.map(([p, name]) => `<a class="lang-opt" href="${href(langPath(lang, p))}">${name}</a>`).join('')}<button type="button" class="lang-opt more-charm" data-charm-toggle><span class="charm-on-label">${ko ? '낙엽 효과 끄기' : 'Turn off falling leaves'}</span><span class="charm-off-label">${ko ? '낙엽 효과 켜기' : 'Turn on falling leaves'}</span></button></div></details>`;
 }
 
 // A strip above the header, on every page, that scrolls the latest game megaphones (assets/common.js fills it from
