@@ -33,6 +33,7 @@ function optLine(o) {
   const ko = document.documentElement.lang === 'ko';
   const chips = OPT_ORDER.filter((k) => o.stats?.[k] != null).map((k) => `<span class="mb-opt">${OPT_LABEL[k]} ${o.stats[k]}</span>`);
   if (o.clean) chips.push(`<span class="mb-opt clean">${ko ? '클린' : 'Clean'}</span>`);
+  if (o.ups != null && (o.ups > 0 || o.used > 0)) chips.push(`<span class="mb-opt">${ko ? '성공' : 'Passed'} ${o.ups}${o.used != null ? `/${o.used}` : ''}</span>`);
   if (o.slots != null) chips.push(`<span class="mb-opt">${ko ? '업횟' : 'Slots'} ${o.slots}</span>`);
   return chips.length ? `<p class="mb-opts mg-opts">${chips.join('')}</p>` : '';
 }

@@ -1,3 +1,4 @@
+import { normalizeOptions } from './item-options.js';
 import { refreshItemMarket } from './market-browser.js';
 import { validRoom } from '../../assets/place.js';
 // Authenticated ingestion for the in-game shop collector: it walks one Free Market room, opens every shop and sends
@@ -37,12 +38,15 @@ export async function handleShopScan(req, env, knownItems, onListings) {
   const known = await knownItems().catch(() => null);
   if (!known) return reply({ error: 'item index unavailable' }, 503);
   if (!validScan(body, known)) return reply({ error: 'invalid scan' }, 400);
-  const stmt = env.DB.prepare(`INSERT INTO listings (item,price,qty,sold,seller,channel,room,reporter,first_seen,last_seen)
-    VALUES (?,?,?,?,?,?,?,'collector:shop',?,?)
-    ON CONFLICT (seller,item,price,channel,room) DO UPDATE SET last_seen=excluded.last_seen, qty=excluded.qty, sold=excluded.sold
+  // Equipment options ride along when the collector read the tooltip (item-options.js is the single gate): bad ones are
+  // dropped, never the row, and a later snapshot without them keeps the stored ones.
+  const stmt = env.DB.prepare(`INSERT INTO listings (item,price,qty,sold,seller,channel,room,reporter,first_seen,last_seen,opts)
+    VALUES (?,?,?,?,?,?,?,'collector:shop',?,?,?)
+    ON CONFLICT (seller,item,price,channel,room) DO UPDATE SET last_seen=excluded.last_seen, qty=excluded.qty, sold=excluded.sold,
+    opts=COALESCE(excluded.opts, listings.opts)
     WHERE excluded.last_seen > listings.last_seen`);
   try {
-    const results = await env.DB.batch(body.rows.map((r) => stmt.bind(r.item, r.price, r.qty, r.sold ? 1 : 0, r.seller, body.channel, body.room, body.seen, body.seen)));
+    const results = await env.DB.batch(body.rows.map((r) => stmt.bind(r.item, r.price, r.qty, r.sold ? 1 : 0, r.seller, body.channel, body.room, body.seen, body.seen, normalizeOptions(r.opts))));
     const changedRows = body.rows.filter((_, i) => results[i].meta.changes > 0);
     await refreshItemMarket(env, body.rows.map((r) => r.item)).catch(() => null);
     if (onListings) onListings(changedRows.filter((r) => !r.sold).map((r) => ({ ...r, channel: body.channel, room: body.room })));

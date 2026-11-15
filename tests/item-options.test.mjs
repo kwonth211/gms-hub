@@ -11,5 +11,9 @@ test('item options keep known stats, slots and clean; drop junk', () => {
   assert.equal(normalizeOptions({ slots: 99 }), null);
   // "Clean" with upgrades already used contradicts itself: the claim goes, the numbers stay.
   assert.deepEqual(parseOptions(normalizeOptions({ clean: true, used: 2, slots: 3 })), { slots: 3, used: 2 });
+  // Passed upgrades ('+N'): kept with the used count, dropped when they outnumber it, and never 'clean'.
+  assert.deepEqual(parseOptions(normalizeOptions({ slots: 0, used: 7, ups: 2 })), { slots: 0, used: 7, ups: 2 });
+  assert.deepEqual(parseOptions(normalizeOptions({ slots: 5, used: 2, ups: 3 })), { slots: 5, used: 2 });
+  assert.deepEqual(parseOptions(normalizeOptions({ clean: true, ups: 1 })), { ups: 1 });
   assert.ok(normalizeOptions({ stats: Object.fromEntries(['PAD', 'MAD', 'STR', 'DEX', 'INT', 'LUK', 'ACC', 'EVA', 'MHP', 'MMP', 'PDD', 'MDD', 'Speed', 'Jump', 'CRT', 'CRD'].map((k) => [k, 99])), slots: 7, used: 3 }).length < 300);
 });

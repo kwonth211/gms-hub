@@ -6,7 +6,7 @@ import { handleShopScan } from '../worker/src/shop-scan.js';
 const stamp = (t) => new Date(t).toISOString().slice(0, 19).replace('T', ' ');
 function environment() {
   const sqlite = new DatabaseSync(':memory:');
-  for (const file of ['schema.sql', 'migrations/0001_market_batch.sql', 'migrations/0002_listing_history.sql']) sqlite.exec(fs.readFileSync(new URL('../worker/' + file, import.meta.url), 'utf8'));
+  for (const file of ['schema.sql', 'migrations/0001_market_batch.sql', 'migrations/0002_listing_history.sql', 'migrations/0019_item_options.sql']) sqlite.exec(fs.readFileSync(new URL('../worker/' + file, import.meta.url), 'utf8'));
   const DB = { prepare(sql, args = []) { return { bind(...a) { return DB.prepare(sql, a); }, async first() { return sqlite.prepare(sql).get(...args) || null; }, async all() { return { results: sqlite.prepare(sql).all(...args) }; }, async run() { return { meta: { changes: Number(sqlite.prepare(sql).run(...args).changes) } }; } }; },
     async batch(stmts) { sqlite.exec('BEGIN'); try { const out = []; for (const s of stmts) out.push(await s.run()); sqlite.exec('COMMIT'); return out; } catch (e) { sqlite.exec('ROLLBACK'); throw e; } } };
   return { DB, sqlite, SHOP_SCAN_TOKEN: 'scan-token' };
@@ -59,4 +59,16 @@ test('one bad row rejects the whole snapshot', async () => {
     (b) => (b.seen = stamp(Date.now() - 25 * 3600000)), (b) => (b.seen = '2026-02-30 00:00:00'), (b) => b.rows.push({ ...b.rows[0] }), (b) => (b.rows = [])];
   for (const change of changes) { const b = scan(); change(b); assert.equal((await post(e, b)).status, 400); }
   assert.equal(rows(e).length, 0);
+});
+
+test('equipment options ride along: cleaned by the shared gate, a bad one never drops the row, a later snapshot without them keeps them', async () => {
+  const e = environment(), b = scan(Date.now() - 600000);
+  b.rows[0].opts = { stats: { PAD: 49, Speed: 15, BOGUS: 3 }, slots: 7, used: 0, clean: true };
+  b.rows[1].opts = 'not an object';
+  assert.equal((await post(e, b)).data.listingsChanged, 2);
+  const read = () => e.sqlite.prepare('SELECT opts FROM listings ORDER BY item').all().map((r) => r.opts && JSON.parse(r.opts));
+  assert.deepEqual(read(), [{ stats: { PAD: 49, Speed: 15 }, slots: 7, used: 0, clean: true }, null]);
+  const later = scan(Date.now() - 1000);
+  assert.equal((await post(e, later)).data.listingsChanged, 2);
+  assert.deepEqual(read()[0].stats, { PAD: 49, Speed: 15 });
 });

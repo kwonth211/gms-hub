@@ -243,6 +243,8 @@ function optionChips(r) {
     return `<span class="mb-opt${cls}" title="${esc(title)}">${esc(OPT_LABEL[k])} ${v}${d ? `<small>${d > 0 ? "+" : ""}${d}</small>` : b == null ? "<small>+</small>" : ""}</span>`;
   });
   if (o.clean) chips.push(`<span class="mb-opt clean">${tr("클린", "Clean")}</span>`);
+  // Passed upgrades, the "(+N)" after the item name in game; next to the used count it also tells the fails.
+  if (o.ups != null && (o.ups > 0 || o.used > 0)) chips.push(`<span class="mb-opt${o.ups > 0 ? " up" : ""}" title="${esc(tr("주문서 성공 횟수", "Scrolls that passed"))}">${tr("성공", "Passed")} ${o.ups}${o.used != null ? `/${o.used}` : ""}</span>`);
   if (o.slots != null) chips.push(`<span class="mb-opt">${tr("업횟", "Slots")} ${o.slots}${baseSlots ? `/${baseSlots}` : ""}</span>`);
   return chips.length ? `<span class="mb-opts">${chips.join("")}</span>` : "";
 }

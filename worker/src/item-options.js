@@ -6,6 +6,7 @@
 //   stats: { PAD: 9, LUK: 2, ... }  // the item's stat values as shown in game (base roll + scrolls), integers
 //   slots: 5,                       // upgrades still available
 //   used: 2,                        // upgrades already used (passes and fails)
+//   ups: 1,                         // upgrades that passed: the '(+1)' after the item name in game
 //   clean: true,                    // never scrolled
 // }
 // Stat names are the game data's (also used by data/item-details.json and the scroll forge).
@@ -29,9 +30,12 @@ export function normalizeOptions(raw) {
   const slots = int(raw.slots, 0, 20), used = int(raw.used, 0, 20);
   if (slots !== null) out.slots = slots;
   if (used !== null) out.used = used;
+  // Passed upgrades cannot outnumber used ones; a count that does was misread, so it is dropped.
+  const ups = int(raw.ups, 0, 20);
+  if (ups !== null && (used === null || ups <= used)) out.ups = ups;
   if (raw.clean === true || raw.clean === false) out.clean = raw.clean;
   // "Clean" with upgrades used contradicts itself; keep the numbers, drop the claim.
-  if (out.clean === true && out.used > 0) delete out.clean;
+  if (out.clean === true && (out.used > 0 || out.ups > 0)) delete out.clean;
   return Object.keys(out).length ? JSON.stringify(out) : null;
 }
 
