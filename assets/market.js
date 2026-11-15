@@ -236,13 +236,13 @@ function optionSummary(rows) {
     if (r.sold) continue;
     const b = optBadge(r.item, r.opts, tips);
     if (!b) continue;
-    const g = groups.get(b.text) || groups.set(b.text, { key: b.text, n: 0, low: Infinity, sort: b.sort }).get(b.text);
+    const g = groups.get(b.text) || groups.set(b.text, { key: b.text, cls: b.cls, n: 0, low: Infinity, sort: b.sort }).get(b.text);
     g.n += 1;
     g.low = Math.min(g.low, r.price);
   }
   if (groups.size < 2) return "";
   const list = [...groups.values()].sort((a, b) => b.sort - a.sort || a.low - b.low).slice(0, 8);
-  return `<div class="mb-optsum"><h4>${tr("옵션별 시세", "Price by option")}</h4><ul>${list.map((g) => `<li><span>${esc(g.key)}</span><b>${money(g.low)}</b><small>${tr(`${g.n}건`, `${g.n}`)}</small></li>`).join("")}</ul></div>`;
+  return `<div class="mb-optsum"><h4>${tr("옵션별 시세", "Price by option")}</h4><ul>${list.map((g) => `<li><span class="opt-${g.cls}">${esc(g.key)}</span><b>${money(g.low)}</b><small>${tr(`${g.n}건`, `${g.n}`)}</small></li>`).join("")}</ul></div>`;
 }
 function offerCards(rows) {
   lastOffers = rows;

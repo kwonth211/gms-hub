@@ -49,7 +49,7 @@ function optRange(b, badge) {
     const g = badge(o);
     if (g) (c.get(g.text) || c.set(g.text, { ...g, n: 0 }).get(g.text)).n += 1;
   }
-  const parts = [...c.values()].sort((x, y) => y.sort - x.sort).slice(0, 4).map((g) => `${g.text}${g.n > 1 ? (document.documentElement.lang === 'ko' ? ` ${g.n}건` : ` ×${g.n}`) : ''}`);
+  const parts = [...c.values()].sort((x, y) => y.sort - x.sort).slice(0, 4).map((g) => `<span class="opt-${g.cls}">${g.text}</span>${g.n > 1 ? (document.documentElement.lang === 'ko' ? ` ${g.n}건` : ` ×${g.n}`) : ''}`);
   return parts.length ? `<small class="profile-opt">${parts.join(' · ')}</small>` : '';
 }
 

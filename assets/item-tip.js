@@ -95,7 +95,7 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
     const total = known && baseSlots ? baseSlots : o.slots != null && used != null ? o.slots + used : null;
     const key = known && !(used > 0) && !(o.ups > 0) ? mainStat(sub, base) : null;
     const d = key && o.stats?.[key] != null ? o.stats[key] - base[key] : null;
-    const grade = d == null ? '' : d > 0 ? tr(`${d}상`, `+${d} roll`) : d < 0 ? tr(`${-d}하`, `${d} roll`) : tr('정옵', 'Base roll');
+    const grade = d == null ? '' : d > 0 ? tr(`▲ ${d}상`, `▲ +${d} roll`) : d < 0 ? tr(`▼ ${-d}하`, `▼ ${d} roll`) : tr('정옵', 'Base roll');
     const rows = OPT_ORDER.filter((k) => o.stats?.[k] != null).map((k) => {
       const v = o.stats[k];
       const note = k === key && grade ? `<small class="${d > 0 ? 'tip-up' : d < 0 ? 'tip-down' : 'tip-muted'}">${grade}</small>` : '';

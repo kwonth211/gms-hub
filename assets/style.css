@@ -2922,3 +2922,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 .recent-list .name .opt.hi { color: var(--up); }
 .recent-list .name .opt.lo { color: var(--down); }
 .mb-opt.grade.plus { border-color: var(--accent); color: var(--accent); }
+.profile-opt .opt-hi, .mb-optsum .opt-hi { color: var(--up); }
+.profile-opt .opt-lo, .mb-optsum .opt-lo { color: var(--down); }
+.profile-opt .opt-mid, .mb-optsum .opt-mid { color: var(--text-2); }
+.mb-optsum .opt-plus { color: var(--accent); }

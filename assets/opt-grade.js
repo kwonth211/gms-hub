@@ -1,5 +1,5 @@
 // One short word for a listed item's options, as players say it: "+3" for scrolled gear (scrolls passed), and for
-// unscrolled gear its main stat against the base value: "정옵" (same), "2상" (2 above), "1하" (1 below). The main stat
+// unscrolled gear its main stat against the base value: "정옵" (same), "▲ 2상" (2 above), "▼ 1하" (1 below), arrows in the up/down colours. The main stat
 // is weapon attack (magic attack for wands and staves), else weapon defense, else magic defense. No word when the
 // item has no options, or its base stats are unknown. The full stats stay in the hover card (item-tip.js).
 const ko = document.documentElement.lang === 'ko';
@@ -28,6 +28,6 @@ export function optBadge(itemId, o, data = tips) {
   const key = mainStat(t[3], base);
   if (!key || o.stats?.[key] == null) return null;
   const d = o.stats[key] - base[key];
-  const text = d > 0 ? (ko ? `${d}상` : `+${d} roll`) : d < 0 ? (ko ? `${-d}하` : `${d} roll`) : ko ? '정옵' : 'Base roll';
+  const text = d > 0 ? (ko ? `▲ ${d}상` : `▲ +${d} roll`) : d < 0 ? (ko ? `▼ ${-d}하` : `▼ ${d} roll`) : ko ? '정옵' : 'Base roll';
   return { text, cls: d > 0 ? 'hi' : d < 0 ? 'lo' : 'mid', title: '', sort: d };
 }
