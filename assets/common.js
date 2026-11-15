@@ -105,20 +105,24 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   const api = document.body.dataset.priceApi;
   if (!spots.length || !api || !('WebSocket' in window)) return;
   let ws = null, ping = 0, idle = 0, retry = 0;
+  // Owner's decision (2026-11-15, early days): the pill shows the real count plus a fixed 50. Temporary — remove BOOST to
+  // show the real number again. GA/RUM and every report use real numbers only.
+  const BOOST = 50;
   // A changed number pops briefly, like a broadcast viewer counter.
   const show = (site, quiet) => spots.forEach((el) => {
     const num = el.querySelector('[data-site]');
-    if (num.textContent !== String(site) && !el.hidden && !quiet) {
+    const shown = site >= 1 ? site + BOOST : 0;
+    if (num.textContent !== String(shown) && !el.hidden && !quiet) {
       num.classList.remove('bump');
       void num.offsetWidth;
       num.classList.add('bump');
     }
-    num.textContent = site;
-    el.hidden = !(site >= 2);
+    num.textContent = shown;
+    el.hidden = !(site >= 1);
   });
   // The last count is drawn at once on the next page, so the pill does not pop in after the socket connects.
   const PR_KEY = 'gms-presence';
-  try { const last = Number(sessionStorage.getItem(PR_KEY)); if (last >= 2) show(last, true); } catch (x) {}
+  try { const last = Number(sessionStorage.getItem(PR_KEY)); if (last >= 1) show(last, true); } catch (x) {}
   const remember = (site) => { try { sessionStorage.setItem(PR_KEY, String(site)); } catch (x) {} };
   const open = () => {
     if (ws || document.hidden) return;
