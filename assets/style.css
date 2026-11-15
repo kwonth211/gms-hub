@@ -2167,6 +2167,10 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-opt.grade.lo { border-color: var(--down); color: var(--down); }
 .mb-offer.has-opts { flex-wrap: wrap; row-gap: 4px; }
 .mb-offer.has-opts .mb-opts { order: 9; flex: 1 1 100%; }
+/* All-listings table: the option word sits on the item name line, not under it. */
+.mb-item-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.mb-item-row .mb-item-link { min-width: 0; }
+.mb-item-row .mb-opts { flex: none; }
 .mb-optsum { margin: 0 0 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); }
 .mb-optsum h4 { margin: 0 0 6px; font-size: 0.82rem; color: var(--text-2); }
 .mb-optsum ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 4px 12px; }
