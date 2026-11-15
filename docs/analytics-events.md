@@ -74,3 +74,4 @@
 - `market_option_tip` (item_id): hovered a shop listing with options; the in-game style card opened.
 - `market_stat_search` (item_id, stat, value, results): an item opened from a value search ("48슬레인") and its listings were filtered to that main-stat value.
 - `market_option_filter` (item_id, value): picked a value (or "all") in the item panel's option menu.
+- `scan_remove` (item_id, sent): removed a misread line on the shop scan page (sent = it had already been uploaded and was withdrawn).

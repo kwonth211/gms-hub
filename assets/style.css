@@ -538,6 +538,10 @@ a.band-link:hover { border-color: var(--accent); }
 .scan-checks [data-state='warn'] small { color: var(--accent-2); }
 .scan-table .edit-btn { font: inherit; background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 6px; padding: 2px 8px; cursor: pointer; }
 .scan-table .edit-btn:hover { color: var(--text); border-color: var(--accent); }
+.scan-table .row-actions { white-space: nowrap; }
+.scan-table .del-btn { font: inherit; margin-left: 4px; background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 6px; padding: 2px 8px; cursor: pointer; }
+.scan-table .del-btn:hover { color: var(--danger); border-color: var(--danger); }
+.scan-table .edit-btn:focus-visible, .scan-table .del-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 .scan-table .alt-pick { display: block; margin-top: 4px; font-size: 0.78rem; padding: 3px 6px; max-width: 240px; }
 .row-edit { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: flex-end; padding: 6px 0; }
 .row-edit label { display: flex; flex-direction: column; gap: 3px; font-size: 0.72rem; color: var(--muted); }

@@ -645,6 +645,19 @@ const api = {
       }
     }
 
+    // The scan page's "remove this misread line": deletes one listing, only if this same connection reported it (the same
+    // reporter hash as /listings and /listings/fix), so nobody can remove other people's or the collectors' rows.
+    if (url.pathname === '/listings/remove' && req.method === 'POST') {
+      if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
+      const l = (await req.json().catch(() => null))?.listing || {};
+      if (!Number.isInteger(l.item) || !Number.isInteger(l.price) || typeof l.seller !== 'string' || !/^[A-Za-z0-9]{2,13}$/.test(l.seller) ||
+          !Number.isInteger(l.channel) || l.channel < 1 || l.channel > 40 || !validRoom(l.room)) return json({ error: 'bad input' }, cors, 400);
+      const reporter = await visitorHash(req.headers.get('CF-Connecting-IP') || '', 'scan', env.VOTE_SALT);
+      const res = await env.DB.prepare('DELETE FROM listings WHERE seller = ? AND item = ? AND price = ? AND channel = ? AND room = ? AND reporter = ?')
+        .bind(l.seller, l.item, l.price, l.channel, l.room, reporter).run();
+      return json({ removed: res.meta.changes }, cors);
+    }
+
     if (url.pathname === '/listings' && req.method === 'POST') {
       if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
       const body = await req.json().catch(() => null);

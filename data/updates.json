@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "scan-keep-location",
+   "version": "0.7.7",
+   "level": "patch",
+   "date": "2026-11-16",
+   "path": "/tools/scan/",
+   "ko": "상점 스캔 — 채널·위치를 기억하고, 잘못 읽은 줄은 ✕로 지우기",
+   "en": "Shop scan — remembers channel and room, and ✕ removes a misread line",
+   "desc": {
+    "ko": "화면 공유 중 인벤토리나 다른 창을 봐도 한 번 읽은 채널과 위치가 그대로 남아요. 공유를 껐다 켜도, 3시간 안에 새로고침해도 유지돼요. 결과 목록의 ✕를 누르면 잘못 읽은 줄이 지워지고, 이미 올라간 줄이면 시세에서도 빠져요.",
+    "en": "The channel and room read once stay while you look at the inventory or another window, and survive restarting the share or reloading within three hours. ✕ in the results removes a misread line; if it was already sent, it is withdrawn from the prices too."
+   }
+  },
+  {
    "id": "item-answers",
    "version": "0.7.6",
    "level": "minor",

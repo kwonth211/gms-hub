@@ -30,8 +30,17 @@ let items = [];
 let table = {};
 let mapData = null;
 // The channel is only visible while the Change Channel window is open, so the last one seen is kept until the player moves.
-let channel = null;
-let room = null;
+// Once read, channel and room stay until a different one is read (2026-11-15, owner): switching to the inventory, chat or
+// another window hides the minimap and the channel, and that is no reason to forget where the shop is. They also survive
+// stopping and restarting the share, and a page reload within three hours.
+const LOC_KEY = 'gmshub_scan_loc';
+let { channel = null, room = null } = (() => {
+  try {
+    const v = JSON.parse(localStorage.getItem(LOC_KEY) || 'null');
+    return v && Date.now() - v.at < 3 * 3600e3 ? { channel: validLocation(v.channel) ? v.channel : null, room: validLocation(v.room) ? v.room : null } : {};
+  } catch { return {}; }
+})();
+const keepLocation = () => { try { localStorage.setItem(LOC_KEY, JSON.stringify({ channel, room, at: Date.now() })); } catch {} };
 let locationRevision = 0;
 let sessionRevision = 0;
 let dataReady = false;
@@ -72,8 +81,9 @@ function locationStatus() {
 }
 for (const key of ['channel', 'room']) $('scan-' + key).addEventListener('change', () => {
   locationRevision++;
-  channel = Number($('scan-channel').value) || null;
-  room = Number($('scan-room').value) || null;
+  channel = Number($('scan-channel').value) || channel;
+  room = Number($('scan-room').value) || room;
+  keepLocation();
   currentShop = null;
   lastSig = null;
   settling = true;
@@ -237,8 +247,9 @@ async function recognize(canvas) {
   const ch = manualChannel || findChannel(img);
   if (validLocation(ch)) channel = ch;
   const fm = manualRoom || findRoom(img, mapData, scale !== 1);
-  // A hidden or unreadable minimap is not evidence that we are still in the previous room.
-  room = validLocation(fm) ? fm : null;
+  // Only a new reading moves the room; a hidden or unreadable minimap keeps the last one (see LOC_KEY).
+  if (validLocation(fm)) room = fm;
+  if (validLocation(ch) || validLocation(fm)) keepLocation();
   locationStatus();
   // Pixel-exact rows first; a scaled or blurred capture falls back to the blur-tolerant finder.
   let rows = findShopRows(img);
@@ -416,6 +427,8 @@ $('scan-retry-upload').addEventListener('click', () => { retryAt = 0; upload(); 
 // An unresolved location stays with its original frame and can be corrected in the row editor.
 const listings = new Map();
 const correctedKeys = new Set();
+// Rows the player removed as misread: the same row read again is not added back.
+const removedKeys = new Set();
 
 // Market medians for the items read, fetched once per item so each row shows how far the asking price is from the market.
 const medians = new Map();
@@ -459,7 +472,7 @@ ${marketCells(r)}
 <td>${where(r.channel, r.room).map((w) => `<span class="where">${w}</span>`).join(' ') || '—'}</td>
 <td>${r.sold ? i18n.sold : i18n.selling}</td>
 <td><span class="badge ${r.sure ? 'ok' : 'check'}">${r.edited ? i18n.edited : r.sure ? i18n.ok : i18n.check}</span></td>
-<td><button type="button" class="edit-btn" aria-label="${esc(i18n.edit)}" title="${esc(i18n.edit)}">✎</button></td>`;
+<td class="row-actions"><button type="button" class="edit-btn" aria-label="${esc(i18n.edit)}" title="${esc(i18n.edit)}">✎</button><button type="button" class="del-btn" aria-label="${esc(i18n.remove)}" title="${esc(i18n.remove)}">✕</button></td>`;
   if (r.alternatives && !r.sure) {
     const pick = document.createElement('select');
     pick.className = 'alt-pick';
@@ -580,7 +593,7 @@ function show(found) {
   // Prepending in reverse keeps the rows in the same order as on screen.
   for (const r of [...found].reverse()) {
     const key = listingKey(r);
-    if (correctedKeys.has(key)) continue;
+    if (correctedKeys.has(key) || removedKeys.has(key)) continue;
     let entry = listings.get(key);
     if (!entry) {
       entry = { tr: document.createElement('tr') };
@@ -607,7 +620,30 @@ function show(found) {
   updateSummary();
 }
 
+// Removing a misread row: it leaves the list, is never sent, and if it was already sent the stored copy is withdrawn
+// (only rows this browser's own connection reported; worker /listings/remove).
+async function removeRow(entry) {
+  const key = listingKey(entry.r);
+  const wasSent = sent.has(key) && validListing(entry.r);
+  removedKeys.add(key);
+  listings.delete(key);
+  entry.tr.remove();
+  updateSummary();
+  track('scan_remove', { item_id: entry.r.item?.id, sent: wasSent });
+  if (!wasSent || !i18n.api) return;
+  try {
+    const res = await fetch(`${i18n.api}/listings/remove`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ listing: payload(entry.r) }) });
+    if (res.ok) { sent.delete(key); uploaded = Math.max(0, uploaded - 1); check('upload', 'ok', fill(i18n.uploadOk, { n: uploaded })); }
+    else say(i18n.removeFail);
+  } catch { say(i18n.removeFail); }
+}
 results.addEventListener('click', (e) => {
+  const del = e.target.closest('.del-btn');
+  if (del) {
+    const entry = [...listings.values()].find((x) => x.tr === del.closest('tr'));
+    if (entry && !sending) removeRow(entry);
+    return;
+  }
   const btn = e.target.closest('.edit-btn');
   if (!btn) return;
   const tr = btn.closest('tr');
@@ -690,10 +726,12 @@ function stop() {
   document.body.classList.remove('scanning');
   $('scan-stop').disabled = true;
   $('scan-start').disabled = !dataReady;
-  channel = Number($('scan-channel').value) || null;
-  room = Number($('scan-room').value) || null;
+  // The last channel and room stay for the next share (a manual choice still wins).
+  channel = Number($('scan-channel').value) || channel;
+  room = Number($('scan-room').value) || room;
   settling = true;
-  ['share', 'shop', 'channel', 'room'].forEach((k) => check(k, 'wait', i18n.wait));
+  ['share', 'shop'].forEach((k) => check(k, 'wait', i18n.wait));
+  locationStatus();
   say(fill(i18n.stopped, { n: frames }));
   track('scan_stop', { frames });
 }
