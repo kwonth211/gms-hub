@@ -174,6 +174,7 @@ export async function marketCatalog(env) {
     },
   };
 }
+const OPT_STATS = new Set(["PAD", "MAD", "STR", "DEX", "INT", "LUK", "ACC", "EVA", "MHP", "MMP", "PDD", "MDD", "Speed", "Jump", "CRT", "CRD"]);
 function integer(p, key, min, max, fallback) {
   if (!p.has(key) || p.get(key) === "") return fallback;
   const n = Number(p.get(key));
@@ -256,6 +257,13 @@ export async function browseListings(env, p) {
       args.push(n);
     }
   }
+  // One option stat at an exact value ("48 slain" = Steel Slain with 48 attack): only listings whose reader sent options.
+  if (p.has("stat")) {
+    const key = p.get("stat"), val = integer(p, "val", 0, 999, null);
+    if (!OPT_STATS.has(key) || val === null) throw Error("bad stat");
+    where.push(`json_extract(opts, '$.stats.${key}') = ?`);
+    args.push(val);
+  }
   const sqlWhere = where.join(" AND "),
     order =
       sort === "price"
@@ -266,7 +274,7 @@ export async function browseListings(env, p) {
   // The total is only for the pager, and counting scans the whole window (5-15k index rows a call: the biggest read on
   // the account once the market page got busy). Counts for plain views (no seller, price or since filter) are kept
   // for ten minutes in the snapshots table; filtered views count live, their windows are small.
-  const plain = !p.has("since") && !p.get("seller") && !p.has("min") && !p.has("max") && !p.has("item");
+  const plain = !p.has("since") && !p.get("seller") && !p.has("min") && !p.has("max") && !p.has("item") && !p.has("stat");
   const countKey = `listings-count:${state}:${days}`;
   let count = null;
   if (plain) {

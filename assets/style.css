@@ -2165,8 +2165,8 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-opt.plus { border-color: var(--accent); color: var(--accent); }
 .mb-opt.grade.hi { border-color: var(--up); color: var(--up); }
 .mb-opt.grade.lo { border-color: var(--down); color: var(--down); }
-.mb-offer.has-opts { flex-wrap: wrap; row-gap: 4px; }
-.mb-offer.has-opts .mb-opts { order: 9; flex: 1 1 100%; }
+/* The option word sits beside the price, on the card's one line. */
+.mb-offer-price .mb-opts { align-self: center; margin-left: 2px; }
 /* All-listings table: the option word sits on the item name line, not under it. */
 .mb-item-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .mb-item-row .mb-item-link { min-width: 0; }
