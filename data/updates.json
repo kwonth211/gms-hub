@@ -21,10 +21,10 @@
    "highlight": true,
    "date": "2026-11-15",
    "path": "/tools/market/",
-   "ko": "장비 옵션 — 상옵·하옵·추옵, 작 성공·실패, 업횟까지 매물마다",
+   "ko": "장비 옵션 — 기본보다 +몇·-몇, 추옵, 작 성공·실패, 업횟까지 매물마다",
    "en": "Equipment options — above/below base, extra stats, scroll passes and slots on every listing",
    "desc": {
-    "ko": "시세에서 장비를 열면 상점 매물마다 실제 옵션이 보여요. 기본 능력치보다 높으면 상옵, 낮으면 하옵, 기본에 없는 능력치는 추옵으로 표시하고, +N(작 성공), 실패 횟수, 남은 업그레이드 횟수도 함께 보여 줘요. 옵션이 다른 매물이 여럿이면 옵션별 최저가도 정리해 줘요.",
+    "ko": "시세에서 장비를 열면 상점 매물마다 실제 옵션이 보여요. 능력치마다 기본보다 몇 높고 낮은지(+2, -1, 같으면 정옵), 기본에 없는 능력치는 추옵으로 보여 주고, 작 +N(주문서 성공), 실패 횟수, 남은 업그레이드 횟수도 함께 보여 줘요. 매물에 마우스를 올리면 아이템 카드에 그 매물 옵션이 떠요.",
     "en": "Open a piece of gear in the market and each shop listing shows its real options: above or below the base stats, extra stats the base item lacks, the +N from passed scrolls, failed scrolls and upgrades left. When listings differ, the lowest price for each option set is listed too."
    }
   },
