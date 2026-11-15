@@ -174,7 +174,7 @@ ${dropList ? `<section><h4>${tr('주요 드롭', 'Notable drops')}</h4><ul class
     card.hidden = true;
   }
   document.addEventListener('pointerover', (e) => {
-    if (e.target.closest('.item-tip, nav, header.site-header, select, input, button')) return;
+    if (e.target.closest('.item-tip, nav, header.site-header, select, input, button, .mb-offer.has-opts')) return;
     const t = targetOf(e.target);
     if (!t || !t.id) return;
     const key = keyOf(t);

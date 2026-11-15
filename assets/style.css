@@ -2874,3 +2874,26 @@ body.exp-running .exp-stop { display: inline-flex; }
 .upd-list li.is-hl { background: var(--warn-soft); border-radius: 8px; }
 .pn-item.is-hl { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent); background: var(--warn-soft); }
 .pn-item.is-hl h3 .upd-hl { margin-right: 6px; }
+/* Listing hover card in the game's tooltip layout (market.js optTipHtml). */
+.opt-tip { position: fixed; left: 0; top: 0; z-index: 80; width: 260px; pointer-events: none; padding: 10px 12px; border: 1px solid var(--tip-line); border-radius: 8px;
+  background: color-mix(in srgb, var(--tip-bg) 94%, transparent); color: var(--tip-text); box-shadow: 0 14px 34px var(--shadow-c); font-size: 0.78rem; line-height: 1.45; font-variant-numeric: tabular-nums; }
+.opt-tip[hidden] { display: none; }
+.opt-tip p { margin: 0; }
+.opt-tip ul { list-style: none; margin: 0; padding: 0; }
+.opt-tip .ot-name { text-align: center; font-weight: 800; font-size: 0.92rem; padding-bottom: 6px; border-bottom: 1px solid var(--tip-line); }
+.opt-tip .ot-top { display: flex; gap: 10px; align-items: center; padding: 8px 0 6px; }
+.opt-tip .ot-top img { flex: none; image-rendering: pixelated; background: var(--tip-line); border-radius: 6px; padding: 4px; }
+.opt-tip .ot-req li { font-size: 0.72rem; }
+.opt-tip .off { color: var(--tip-muted); opacity: 0.55; }
+.opt-tip .ot-jobs { display: flex; flex-wrap: wrap; gap: 2px 8px; padding: 4px 0 6px; border-bottom: 1px solid var(--tip-line); font-size: 0.72rem; }
+.opt-tip .ot-stats { padding: 6px 0; }
+.opt-tip .ot-stats li { display: flex; justify-content: space-between; gap: 8px; }
+.opt-tip em { font-style: normal; font-size: 0.7rem; color: var(--tip-muted); white-space: nowrap; }
+.opt-tip em.up, .opt-tip .ot-grade.up { color: var(--tip-bad); }
+.opt-tip em.down, .opt-tip .ot-grade.down { color: #8fb8ff; }
+.opt-tip em.extra { color: var(--tip-gold); }
+.opt-tip .ot-grade { font-weight: 800; padding-top: 6px; border-top: 1px solid var(--tip-line); }
+.opt-tip .ot-muted { color: var(--tip-muted); font-size: 0.72rem; }
+.opt-tip .ot-price { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--tip-line); }
+.opt-tip .ot-price b { color: var(--tip-gold); }
+.mb-offer.has-opts { cursor: default; }
