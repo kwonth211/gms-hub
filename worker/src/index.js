@@ -22,6 +22,7 @@ import { handleEmail, handleSendMail } from './inbox.js';
 // The shop scanner runs from the local dev server for now, so its origin may post scans too.
 import { handleMarketBatch, getCollectionStatus, collectorView } from './market-batch.js';
 import { handleShopScan } from './shop-scan.js';
+import { parseOptions } from './item-options.js';
 import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoints, openShops, archiveListings, refreshItemMarket, reconcileItemMarket } from './market-browser.js';
 import { cachedPublicResponse } from './public-cache.js';
 import { Presence, handlePresence } from './presence.js';
@@ -548,11 +549,12 @@ const api = {
 
     if (url.pathname === '/listings/recent' && req.method === 'GET') {
       const { results } = await env.DB.prepare(
-        'SELECT item, price, qty, sold, seller, channel, room, last_seen AS seen FROM listings ORDER BY last_seen DESC, id DESC LIMIT ?'
+        'SELECT item, price, qty, sold, seller, channel, room, last_seen AS seen, opts FROM listings ORDER BY last_seen DESC, id DESC LIMIT ?'
       )
         .bind(Math.min(100, Math.max(1, Number(url.searchParams.get('limit')) || 30)))
         .all();
-      return json(results, cors, 200, 'public, max-age=20');
+      // Options (when the shop reader sent them) go out parsed, so the home feed can show them.
+      return json(results.map(({ opts, ...r }) => (opts ? { ...r, opts: parseOptions(opts) } : r)), cors, 200, 'public, max-age=20');
     }
 
     // Players name Free Market rooms the scanner does not know; collected here and merged into the shared table by hand.
