@@ -548,6 +548,8 @@ a.band-link:hover { border-color: var(--accent); }
 .row-edit .check-line { flex-direction: row; align-items: center; gap: 6px; color: var(--text); }
 .row-edit .edit-msg { flex-basis: 100%; margin: 0; font-size: 0.78rem; color: var(--accent-2); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* Scroll boxes contain their visually hidden labels; otherwise a label in a wide table widens the page on phones. */
+.table-wrap, .scan-table-wrap { position: relative; }
 .scan-table .empty td { text-align: center; color: var(--muted); padding: 20px; }
 #scan-start { background: var(--record); color: var(--on-overlay); }
 .scanning #scan-start { opacity: 0.5; pointer-events: none; }
@@ -642,7 +644,10 @@ a.band-link:hover { border-color: var(--accent); }
 .recent-list li a { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 1px 10px; align-items: center; padding: 7px 4px; border-bottom: 1px solid var(--line); color: var(--text); text-decoration: none; }
 .recent-list li a:hover { background: var(--panel-2); }
 .recent-list img { grid-row: span 2; image-rendering: pixelated; }
-.recent-list .name { font-weight: 700; font-size: 0.86rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recent-list .name { display: flex; align-items: center; min-width: 0; font-weight: 700; font-size: 0.86rem; white-space: nowrap; }
+/* A long (English) name shortens with an ellipsis; the "sold" tag after it always stays visible. */
+.recent-list .name .nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.recent-list .name > :not(.nm) { flex: none; }
 .recent-list .price { font-weight: 800; font-size: 0.86rem; text-align: right; white-space: nowrap; }
 .recent-list .meta { font-size: 0.75rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .recent-list .ago { font-size: 0.75rem; color: var(--muted); text-align: right; white-space: nowrap; }
@@ -662,7 +667,7 @@ a.band-link:hover { border-color: var(--accent); }
 }
 @media (max-width: 480px) {
   /* Phones: names get two lines instead of a one-word ellipsis; the basis label goes, the price stays. */
-  .rank-list li a { grid-template-columns: 16px 24px 22px minmax(0, 1fr) auto 58px; gap: 6px; padding: 6px 2px; }
+  .rank-list li a { grid-template-columns: 20px 24px 22px minmax(0, 1fr) auto 58px; gap: 6px; padding: 6px 2px; }
   .rank-list .name { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font-size: 0.84rem; }
   .rank-list .avg small { display: none; }
   .spark { width: 58px; height: 24px; }
@@ -1524,7 +1529,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .char-job-btn:focus-visible { outline: 2px solid var(--accent-fill); outline-offset: 2px; }
 .char-job-btn i { width: 8px; height: 8px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: translateY(-2px) rotate(45deg); }
 .char-job-btn[aria-expanded="true"] i { transform: translateY(2px) rotate(-135deg); }
-.char-job-menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 30; display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 4px 10px; padding: 12px; border: 1px solid var(--line-strong); border-radius: 14px; background: var(--panel); box-shadow: 0 10px 30px rgb(0 0 0 / 0.14); }
+.char-job-menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 30; display: grid; width: max-content; max-width: calc(100vw - 32px); grid-template-columns: repeat(4, max-content); gap: 4px 10px; padding: 12px; border: 1px solid var(--line-strong); border-radius: 14px; background: var(--panel); box-shadow: 0 10px 30px rgb(0 0 0 / 0.14); }
 .char-job-menu[hidden] { display: none; }
 .char-job-group { display: grid; align-content: start; gap: 2px; }
 .char-job-group b { padding: 2px 8px 4px; color: var(--muted); font-size: 0.78rem; }
@@ -1532,7 +1537,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .char-job-group button:hover { background: var(--panel-2); }
 .char-job-group button[aria-checked="true"] { background: var(--panel-2); color: var(--accent-edge); font-weight: 800; }
 .char-job-group button:focus-visible { outline: 2px solid var(--accent-fill); outline-offset: -2px; }
-@media (max-width: 760px) { .char-job-menu { left: 0; right: auto; grid-template-columns: repeat(2, minmax(120px, 1fr)); } }
+@media (max-width: 760px) { .char-job-menu { left: 0; right: auto; grid-template-columns: repeat(2, minmax(0, max-content)); } .char-job-group button { white-space: normal; } }
 .char-lv { box-sizing: border-box; display: flex; align-items: stretch; height: 44px; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--panel); overflow: hidden; }
 .char-lv .btn { box-sizing: border-box; height: 100%; min-width: 42px; margin: 0; padding: 0 12px; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: var(--text); font-size: 1.15rem; line-height: 1; transform: none; }
 .char-lv .btn:hover { background: var(--panel-2); }
@@ -1550,7 +1555,10 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .char-card { display: grid; grid-template-rows: auto 1fr auto; gap: 8px; min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-2); }
 .char-card h3 { margin: 0; font-size: 0.95rem; color: var(--text-2); }
 .char-card > .muted { margin: 0; font-size: 0.9rem; }
-.char-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; align-content: start; }
+.char-list { list-style: none; padding: 0 4px 0 0; margin: 0; display: grid; gap: 6px; align-content: start; }
+/* Every option is listed; the best fit is on top and the rest scroll inside the card, about three and a half rows tall. */
+.char-card .char-list { max-height: 252px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.char-n { margin-left: 4px; color: var(--muted); font-weight: 700; font-variant-numeric: tabular-nums; }
 .char-list a { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--text); text-decoration: none; }
 .char-list a:hover { border-color: var(--accent-fill); }
 .char-list a:focus-visible, .char-more:focus-visible, .char-skill:focus-visible { outline: 2px solid var(--accent-fill); outline-offset: 2px; }
@@ -2082,7 +2090,7 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-class { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--muted); margin: 0 0 10px; }
 .mb-class select { font: inherit; color: var(--text); }
 /* Daily market report. */
-.market-today { display: grid; gap: 16px; padding-bottom: 24px; }
+.market-today { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding-bottom: 24px; }
 .mt-date { font-size: 0.55em; color: var(--muted); font-weight: 600; margin-left: 6px; }
 .mt-stats { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; }
 .mt-stats div { padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
@@ -2521,7 +2529,8 @@ body.exp-running .exp-stop { display: inline-flex; }
 .gq-js .gq-chain h2 { font-size: 1.05rem; color: var(--muted); }
 .gq-js .gq-chain .lead { display: none; }
 @media (max-width: 960px) {
-  .gq-cols { grid-template-columns: 1fr; }
+  .gq-cols { grid-template-columns: minmax(0, 1fr); }
+  .gq-cols > * { min-width: 0; }
   .gq-list { position: static; max-height: 280px; }
   .gq-right .gq-now { display: none; }
 }

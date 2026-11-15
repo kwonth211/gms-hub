@@ -528,7 +528,7 @@ const FIRST_DRIP = 4;
 function recentRow(r, it, fresh) {
   return `<li class="${r.sold ? 'sold' : ''}${fresh ? ' fresh' : ''}" data-key="${escHtml(rowKey(r))}"><a href="${live.dataset.price}?item=${it.id}&src=home" data-live-item="${it.id}">
 <img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="26" height="26" loading="lazy">
-<span class="name">${newMark(r.seen)}${escHtml(it.name)}${r.sold ? `<span class="tag">${escHtml(liveText.sold)}</span>` : ''}</span>
+<span class="name">${newMark(r.seen)}<span class="nm">${escHtml(it.name)}</span>${r.sold ? `<span class="tag">${escHtml(liveText.sold)}</span>` : ''}</span>
 <span class="price">${mesos(r.price)}${r.qty > 1 ? ` <small>×${r.qty}</small>` : ''}</span>
 <span class="meta">${escHtml(r.seller)} · CH ${r.channel} · ${placeLabel(r.room, korean)}</span>
 <span class="ago" data-seen="${escHtml(r.seen)}">${ago(r.seen)}</span></a></li>`;

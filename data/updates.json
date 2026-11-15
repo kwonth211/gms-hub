@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest.",
  "updates": [
   {
+   "id": "my-character-all",
+   "version": "0.6.7",
+   "level": "patch",
+   "date": "2026-11-15",
+   "path": "/",
+   "ko": "내 캐릭터 — 사냥터·퀘스트·장비 전부, 내 레벨 장비부터",
+   "en": "Your character — every spot, quest and piece of gear, your level first",
+   "desc": {
+    "ko": "내 캐릭터 칸이 맞는 사냥터, 할 수 있는 퀘스트, 낄 수 있는 장비를 전부 보여 줘요. 칸 안에서 스크롤되고, 장비는 내 레벨 장비부터 레벨 내림차순이에요. 영어 화면에서 넘치던 곳과 휴대폰에서 퀘스트 공략·오늘의 시세 리포트가 깨지던 것도 고쳤어요.",
+    "en": "The character panel now lists every training spot, quest and piece of gear that fits, scrolling inside each card, with gear from your level down. Long English text no longer spills, and quest guides and the daily price report fit on phones."
+   }
+  },
+  {
    "id": "mega-trending-rising",
    "version": "0.6.6",
    "level": "patch",

@@ -446,7 +446,11 @@ function paintCounter() {
   const t = { ok: shared.today.ok + pending.ok, fail: shared.today.fail + pending.fail, boom: shared.today.boom + pending.boom };
   const all = shared.total.ok + shared.total.fail + shared.total.boom + pendingSum();
   const set = (k, v) => { const b = counter.querySelector(`[data-fc="${k}"]`); if (b) b.textContent = nf.format(v); };
-  set('today', t.ok + t.fail + t.boom); set('ok', t.ok); set('fail', t.fail); set('boom', t.boom); set('total', all);
+  const today = t.ok + t.fail + t.boom;
+  set('today', today); set('ok', t.ok); set('fail', t.fail); set('boom', t.boom); set('total', all);
+  // The all-time number only adds something once it differs from today's.
+  const total = counter.querySelector('.fg-c-total');
+  if (total) total.hidden = all <= today;
   counter.hidden = false;
 }
 function flushCounts(beacon = false) {

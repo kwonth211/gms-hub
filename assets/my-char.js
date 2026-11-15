@@ -83,29 +83,22 @@ export function skillPlan(hub, { lv, job }) {
 
 // The best piece per slot the character can wear now (requirement within 15 levels), weapon first, newest gear next.
 export function pickGear(gear, { lv, job }) {
+  // Every piece the character can wear now, highest requirement first (a level 40 sees level 40 gear on top); at the same
+  // level the weapon comes first, then the stronger piece.
   const bit = BIT[family(job)], allowed = new Set(WEAPONS[job] || WEAPONS[family(job)] || []);
-  const best = new Map();
-  for (const g of gear) {
-    const [, , , sub, need, bits, atk, def] = g;
+  return gear.filter(([, , , sub, need, bits]) => {
     const weapon = ALL_WEAPONS.has(sub);
-    if (need > lv || need < lv - 15) continue;
-    if (weapon ? !allowed.has(sub) || !(bits & bit) : bits && !(bits & bit)) continue;
+    if (need > lv) return false;
+    if (weapon ? !allowed.has(sub) || !(bits & bit) : bits && !(bits & bit)) return false;
     // Shields are warrior gear in practice; other families hold two-handed or ranged weapons.
-    if (sub === 'Shield' && family(job) !== 'warrior') continue;
-    const key = weapon ? 'weapon' : sub === 'Overall' ? 'Top' : sub;
-    const cur = best.get(key);
-    if (!cur || need > cur[4] || (need === cur[4] && (atk || def) > (cur[6] || cur[7]))) best.set(key, g);
-  }
-  const weapon = best.get('weapon');
-  best.delete('weapon');
-  return [...(weapon ? [weapon] : []), ...[...best.values()].sort((a, b) => b[4] - a[4] || (b[8] || 0) - (a[8] || 0))].slice(0, 4);
+    return !(sub === 'Shield' && family(job) !== 'warrior');
+  }).sort((a, b) => b[4] - a[4] || ALL_WEAPONS.has(b[3]) - ALL_WEAPONS.has(a[3]) || (b[6] || b[7]) - (a[6] || a[7]) || (b[8] || 0) - (a[8] || 0));
 }
 // Guided quests the character can start now: a part that starts at or below its level, the most recently unlocked first.
 export function pickQuests(quests, { lv }) {
   return quests.map((q) => ({ q, start: Math.max(0, ...q[1].filter((x) => x <= lv)) }))
     .filter(({ start }) => start > 0)
     .sort((a, b) => b.start - a.start)
-    .slice(0, 3)
     .map(({ q, start }) => [...q, start]);
 }
 
@@ -122,7 +115,7 @@ export function mountCharPanel(el, { routes, classes, finder, korean }) {
     : { setH: tx('Your character home'), setP: tx('Save your class and level once, and the next visit opens on training spots, EXP quests, gear with prices and the skill build for it. Stored in this browser only.'), job: tx('Class'), lv: tx('Level'), save: tx('Save'),
       mine: tx('My character'), up: tx('Level up'), down: tx('Level down'), routesH: tx('Where to train now'), questsH: tx('Quests you can do now'), gearH: tx('Gear you can wear now'), all: tx('See all'), finder: tx('Adjust in the finder'),
       skill: (job) => tx('{job} skill build', { job }), none: tx('No route fits this level yet.'), noQuest: tx('Guided quests open from level 10.'), noGear: tx('No gear fits this level yet.'),
-      start: (lv) => tx('From level {lv}', { lv }), noPrice: tx('No price'), loading: tx('Loading…'), upload: tx('Add a picture of your character'), firstJob: tx('1st job (before the 2nd)'), change: tx('Change picture'), reset: tx('Use the default character'), photoNote: tx('The picture stays in this browser only.'), photoFail: tx('That file cannot be used. Pick another picture.'), guide: tx('Guide'),
+      start: (lv) => tx('From level {lv}', { lv }), noPrice: tx('No price'), loading: tx('Loading…'), upload: tx('Add a picture of your character'), firstJob: tx('1st job'), change: tx('Change picture'), reset: tx('Use the default character'), photoNote: tx('The picture stays in this browser only.'), photoFail: tx('That file cannot be used. Pick another picture.'), guide: tx('Guide'),
       skillH: (job, n) => tx('{job} skill order · job {n}', { job, n }), skillAll: tx('Full skill trees'), skillNow: tx('Now'), skillBefore: tx('Take your 1st job at level 10, then spend SP in this order.'), skillPick: tx('Past level 30: pick your 2nd job above to see its skill order.'), master: tx('max') };
   const names = korean ? jobNames.ko : jobNames.en;
   const classHref = (job) => classes.find((c) => c.job === family(job))?.href;
@@ -139,7 +132,7 @@ export function mountCharPanel(el, { routes, classes, finder, korean }) {
 <label>${esc(t.lv)}<input name="lv" type="number" min="1" max="200" inputmode="numeric" required value="${c?.lv || ''}" placeholder="30"></label>
 <button class="btn" type="submit">${esc(t.save)}</button></form></div>`;
 
-  const card = (kind, title, body, more) => `<div class="char-card" data-kind="${kind}"><h3>${esc(title)}</h3>${body}${more}</div>`;
+  const card = (kind, title, body, more, n) => `<div class="char-card" data-kind="${kind}"><h3>${esc(title)}${n ? ` <span class="char-n">${n}</span>` : ''}</h3>${body}${more}</div>`;
   const moreLink = (url, label, kind) => `<a class="char-more" href="${esc(url)}" data-char-link="${kind}">${esc(label)}</a>`;
 
   // Titles, one-line summaries and rewards come in Korean and English from the quest guides, like the guide pages.
@@ -202,15 +195,16 @@ ${jobPicker(c)}
 <div class="char-lv" role="group" aria-label="${esc(t.lv)}"><button type="button" class="btn ghost" data-char="down" aria-label="${esc(t.down)}">−</button><label><span>Lv.</span><input data-char-lv type="number" min="1" max="200" inputmode="numeric" value="${c.lv}" aria-label="${esc(t.lv)}"></label><button type="button" class="btn ghost" data-char="up" aria-label="${esc(t.up)}">+</button></div>
 </div></div></div><div class="char-body"></div>`;
   const body = (c) => {
-    const rows = selectRoutes(routes, { level: c.lv, job: c.job }).slice(0, 3);
+    // The spots that open closest to the character's level fit best; ties keep the finder's own order.
+    const rows = selectRoutes(routes, { level: c.lv, job: c.job }).map((r, i) => ({ r, i })).sort((a, b) => b.r.level.min - a.r.level.min || a.i - b.i).map(({ r }) => r);
     const cls = classHref(c.job);
     const routesBody = rows.length
       ? `<ul class="char-list">${rows.map((r) => `<li><a href="${esc(r.href)}" data-route="${esc(r.id)}" data-char-link="route"><strong>${esc(r.title)}</strong><small>Lv. ${r.level.min}–${r.level.max}</small><span>${esc(r.monsters)}</span></a></li>`).join('')}</ul>`
       : `<p class="muted">${esc(t.none)}</p>`;
     return `<div class="char-grid">
-${card('routes', t.routesH, routesBody, `<p class="char-more-row">${moreLink(`${finder}?lv=${c.lv}&job=${c.job}`, t.finder, 'finder')}${cls ? moreLink(cls, t.all, 'class') : ''}</p>`)}
-${card('quests', t.questsH, questsBody(c), `<p class="char-more-row">${moreLink(d.quests, t.all, 'quests')}</p>`)}
-${card('gear', t.gearH, gearBody(c), `<p class="char-more-row">${moreLink(d.equip, t.all, 'equipment')}</p>`)}
+${card('routes', t.routesH, routesBody, `<p class="char-more-row">${moreLink(`${finder}?lv=${c.lv}&job=${c.job}`, t.finder, 'finder')}${cls ? moreLink(cls, t.all, 'class') : ''}</p>`, rows.length)}
+${card('quests', t.questsH, questsBody(c), `<p class="char-more-row">${moreLink(d.quests, t.all, 'quests')}</p>`, hub ? pickQuests(hub.quests, c).length : 0)}
+${card('gear', t.gearH, gearBody(c), `<p class="char-more-row">${moreLink(d.equip, t.all, 'equipment')}</p>`, hub ? pickGear(hub.gear, c).length : 0)}
 </div>
 ${skillBody(c)}`;
   };
