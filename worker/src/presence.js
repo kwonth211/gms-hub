@@ -25,8 +25,9 @@ export class Presence {
     }
     // Internal read of the record (the worker checks the owner's token before asking): { peak, at, now }.
     if (new URL(req.url).pathname === '/peak') {
-      const peak = await this.loadPeak();
       const now = this.state.getWebSockets().filter((ws) => ws.readyState === 1 && !this.state.getTags(ws).includes('chat')).length;
+      await this.notePeak(now);
+      const peak = await this.loadPeak();
       return Response.json({ peak: peak.n, at: peak.at, now });
     }
     if (req.headers.get('Upgrade') !== 'websocket') return new Response('expected websocket', { status: 426 });
