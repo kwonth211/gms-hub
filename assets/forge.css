@@ -31,6 +31,15 @@
 .fg-hero { padding-top: 28px; }
 .fg-hero h1 { margin: 0 0 8px; overflow-wrap: break-word; min-width: 0; }
 .fg-hero p { margin: 0 0 18px; color: var(--muted); max-width: 66ch; }
+/* Everyone's scroll count today and all time (assets/forge.js fills it from the worker). */
+.fg-hero .fg-counter { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; max-width: none; margin: -6px 0 18px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--text-2); font-size: 0.92rem; }
+.fg-hero .fg-counter[hidden] { display: none; }
+.fg-counter b { color: var(--text); font-variant-numeric: tabular-nums; }
+.fg-counter-today b { font-size: 1.15rem; }
+.fg-counter-split { display: inline-flex; flex-wrap: wrap; gap: 4px 12px; }
+.fg-counter-split .is-ok b { color: var(--ok); }
+.fg-counter-split .is-boom b { color: var(--danger); }
+.fg-counter-total { margin-left: auto; color: var(--muted); }
 
 .fg-bench { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.25fr) minmax(0, 1fr); gap: 14px; align-items: start; padding-bottom: 40px; }
 @media (max-width: 1100px) { .fg-bench { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .fg-center { grid-column: 1 / -1; order: -1; } }

@@ -1,3 +1,4 @@
+import { addForgeCounts, forgeCounts } from './forge-counts.js';
 import { addExpRun, expRunsSummary } from './exp-runs.js';
 import { handleEmail, handleSendMail } from './inbox.js';
 // GMS Hub vote API (Cloudflare Worker + D1).
@@ -394,6 +395,15 @@ const api = {
       const { results } = await env.DB.prepare('SELECT site, count FROM votes').all();
       return json(Object.fromEntries(results.map((r) => [r.site, r.count])), cors, 200, 'public, max-age=30');
     }
+
+    // Scroll forge counter (forge-counts.js): batches of results posted as text (no preflight), totals read with a short cache.
+    if (url.pathname === '/forge/count' && req.method === 'POST') {
+      if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
+      const body = await req.text().then((t) => JSON.parse(t)).catch(() => null);
+      const r = await addForgeCounts(env, body);
+      return json(r.body, cors, r.status);
+    }
+    if (url.pathname === '/forge/count' && req.method === 'GET') return json(await forgeCounts(env), cors, 200, 'public, max-age=30');
 
     // Shared EXP tracker runs (exp-runs.js): stored only when a player presses the share button; read as per-spot medians.
     if (url.pathname === '/exp-runs' && req.method === 'POST') {

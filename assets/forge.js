@@ -138,6 +138,7 @@ async function apply(scrollId, auto = false, from = null) {
   play(r, s.success < 60);
   renderLog();
   track('forge_apply', { item_id: String(item.id), ui_label: String(s.id), ui_value: r, ui_area: auto ? 'auto' : 'single' });
+  countResult(r);
   await wait(auto ? 650 : 900);
   busy = false;
   root.classList.remove('is-busy');
@@ -431,3 +432,54 @@ addEventListener('resize', () => sizeFx());
     pickItem(start, true);
   }
 })();
+
+// ---------- everyone's count ----------
+// Each result is added to a shared per-day counter. Results are batched (ten at a time, every 15 s, and when the page is
+// hidden) so the counter costs one database write per batch; the strip shows the shared totals plus what is not sent yet.
+const counter = document.getElementById('fg-counter');
+const fcApi = counter?.dataset.api || '';
+const pending = { ok: 0, fail: 0, boom: 0 };
+let shared = null, flushTimer = null;
+const pendingSum = () => pending.ok + pending.fail + pending.boom;
+function paintCounter() {
+  if (!counter || !shared) return;
+  const t = { ok: shared.today.ok + pending.ok, fail: shared.today.fail + pending.fail, boom: shared.today.boom + pending.boom };
+  const all = shared.total.ok + shared.total.fail + shared.total.boom + pendingSum();
+  const set = (k, v) => { const b = counter.querySelector(`[data-fc="${k}"]`); if (b) b.textContent = nf.format(v); };
+  set('today', t.ok + t.fail + t.boom); set('ok', t.ok); set('fail', t.fail); set('boom', t.boom); set('total', all);
+  counter.hidden = false;
+}
+function flushCounts(beacon = false) {
+  clearTimeout(flushTimer);
+  flushTimer = null;
+  if (!fcApi || !pendingSum()) return;
+  const body = JSON.stringify(pending);
+  // Sent results move into the shared numbers we show, so the strip does not dip until the next read.
+  if (shared) for (const k of ['ok', 'fail', 'boom']) { shared.today[k] += pending[k]; shared.total[k] += pending[k]; }
+  pending.ok = pending.fail = pending.boom = 0;
+  if (beacon && navigator.sendBeacon) navigator.sendBeacon(`${fcApi}/forge/count`, new Blob([body], { type: 'text/plain' }));
+  else fetch(`${fcApi}/forge/count`, { method: 'POST', body, keepalive: true, headers: { 'Content-Type': 'text/plain' } }).catch(() => {});
+}
+function countResult(r) {
+  if (!fcApi || !(r in pending)) return;
+  pending[r] += 1;
+  paintCounter();
+  if (pendingSum() >= 10) flushCounts();
+  else if (!flushTimer) flushTimer = setTimeout(flushCounts, 15000);
+}
+async function readCounts() {
+  if (!fcApi) return;
+  try {
+    const d = await (await fetch(`${fcApi}/forge/count`)).json();
+    // Our own sends may not be in a cached read yet: never let the numbers go backwards.
+    if (shared && d.day === shared.day) for (const part of ['today', 'total']) for (const k of ['ok', 'fail', 'boom']) d[part][k] = Math.max(d[part][k], shared[part][k]);
+    shared = d;
+    paintCounter();
+  } catch {}
+}
+if (fcApi) {
+  readCounts();
+  setInterval(() => { if (!document.hidden) readCounts(); }, 60000);
+  addEventListener('pagehide', () => flushCounts(true));
+  document.addEventListener('visibilitychange', () => { if (document.hidden) flushCounts(true); });
+}

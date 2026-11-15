@@ -71,13 +71,14 @@ ${table}
 <details><summary>Where do the scroll prices come from?</summary><p>The live market: the median of the listings up for sale right now. Scrolls without listings show no price.</p></details></div></div></section>`;
 }
 
-export function forgeBody({ lang, jsonScript, dataUrl }) {
+export function forgeBody({ lang, jsonScript, dataUrl, api = '' }) {
   const ko = lang === 'ko';
   const tr = (k, e) => (ko ? k : e);
   return `<link rel="stylesheet" href="__FG_CSS__">
 <div class="fg">
 <section class="fg-hero wrap"><h1>${tr('주문서 작 시뮬레이터', 'Scroll forge')}</h1>
-<p>${tr('장비를 작업대에 올리고 주문서를 끌어다 발라 보세요. 성공률, 오르는 능력치, 업그레이드 횟수, 혼돈 주문서 파괴까지 게임과 똑같이 굴러가요. 바른 주문서 값은 실시간 시세로 계산해요.', 'Put gear on the workbench and drag scrolls onto it. Success rates, stat gains, upgrade slots and Chaos scrolls destroying items work just like the game, and the scrolls you use are priced from the live market.')}</p></section>
+<p>${tr('장비를 작업대에 올리고 주문서를 끌어다 발라 보세요. 성공률, 오르는 능력치, 업그레이드 횟수, 혼돈 주문서 파괴까지 게임과 똑같이 굴러가요. 바른 주문서 값은 실시간 시세로 계산해요.', 'Put gear on the workbench and drag scrolls onto it. Success rates, stat gains, upgrade slots and Chaos scrolls destroying items work just like the game, and the scrolls you use are priced from the live market.')}</p><p class="fg-counter" id="fg-counter" data-api="${esc(api)}" hidden aria-live="polite"><span class="fg-counter-today">${tr('오늘 모두가 바른 주문서', 'Scrolls everyone used today')} <b data-fc="today">0</b>${tr('장', '')}</span><span class="fg-counter-split"><span class="is-ok">${tr('성공', 'pass')} <b data-fc="ok">0</b></span><span class="is-fail">${tr('실패', 'fail')} <b data-fc="fail">0</b></span><span class="is-boom">${tr('파괴', 'destroyed')} <b data-fc="boom">0</b></span></span><span class="fg-counter-total">${tr('지금까지', 'All time')} <b data-fc="total">0</b>${tr('장', '')}</span></p></section>
+<!--ad-top-->
 <div class="wrap fg-bench" id="fg-bench" data-url="${esc(dataUrl)}">
 <aside class="fg-shelf fg-equips" aria-labelledby="fg-eq-h"><h2 id="fg-eq-h">${tr('장비 선반', 'Gear shelf')}</h2>
 <input id="fg-q" type="search" autocomplete="off" placeholder="${tr('장비 이름 (예: 브라운 워크 장갑)', 'Gear name (e.g. Brown Work Gloves)')}" aria-label="${tr('장비 검색', 'Search gear')}">

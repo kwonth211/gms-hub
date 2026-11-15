@@ -3265,7 +3265,7 @@ for (const lang of LANGS) {
       lang, pageKey: 'forge', pagePath: '/tools/forge/', modules: ['forge.js'],
       title: lang === 'ko' ? '글클메 주문서 작 시뮬레이터: 장공·귀힘·혼돈 주문서 직접 발라 보기 | GMS Hub' : 'MapleStory Classic World Scroll Simulator: Scroll Your Gear Like In-Game | GMS Hub',
       desc: lang === 'ko' ? '글클메 장비에 주문서를 끌어다 발라 보는 작 시뮬레이터. 하급 100%·중급 60%·상급 10%·혼돈 주문서의 성공과 파괴, 업그레이드 횟수까지 게임과 똑같이 굴러가고, 바른 주문서 값은 실시간 시세로 계산해요.' : 'Drag scrolls onto MapleStory Classic World gear and watch them pass, fail or destroy the item, with the real success rates, stat gains and upgrade slots, priced from the live market.',
-      body: forgeBody({ lang, jsonScript, dataUrl: href('/assets/forge-data.json') }).replace('__FG_CSS__', scriptSrc('forge.css')),
+      body: forgeBody({ lang, jsonScript, dataUrl: href('/assets/forge-data.json'), api: config.voteApi }).replace('__FG_CSS__', scriptSrc('forge.css')),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '작 시뮬레이터' : 'Scroll forge', '/tools/forge/')]
     }));
     // /skills/: standard skill builds per job as an in-game skill window (scripts/skill-pages.mjs).
