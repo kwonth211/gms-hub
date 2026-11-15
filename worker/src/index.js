@@ -373,7 +373,9 @@ const api = {
     }
     if (url.pathname === '/discord/interactions' && req.method === 'POST') {
       return discordInteractions(req, env, { env, discord: env.DISCORD_INVITE,
-        prices: (id) => api.fetch(new Request(`https://internal.invalid/prices?ids=${id}`), env, ctx).then((r) => r.json()) });
+        prices: (id) => api.fetch(new Request(`https://internal.invalid/prices?ids=${id}`), env, ctx).then((r) => r.json()),
+        // Read-only site API (listings, catalog, megaphones) for /listings, /movers and /megaphone; same edge caches.
+        get: (p) => api.fetch(new Request(`https://internal.invalid${p}`), env, ctx).then((r) => (r.ok ? r.json() : null)) });
     }
     if (url.pathname === '/internal/megaphone') {
       const allow = { ...corsHeaders(req.headers.get('Origin') || ''), 'Access-Control-Allow-Headers': 'Content-Type, Authorization' };

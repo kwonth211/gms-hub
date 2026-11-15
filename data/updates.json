@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "discord-bot-v2",
+   "version": "0.7.5",
+   "level": "minor",
+   "date": "2026-11-15",
+   "path": "/discord-bot/",
+   "ko": "디스코드 봇 — /매물, /급등락, /아이템, /고확 추가와 안내 페이지 새 단장",
+   "en": "Discord bot — new /listings, /movers, /item and /megaphone, and a new guide page",
+   "desc": {
+    "ko": "디스코드에서 /매물로 지금 판매 중인 매물을 싼 순으로(옵션 숫자로 걸러서도) 보고, /급등락으로 하루 사이 많이 오르고 내린 아이템, /아이템으로 아이템 정보, /고확으로 최근 고확 글을 볼 수 있어요. 봇 페이지에는 서버에 추가·내 계정에 추가 버튼, 추가하는 방법, 전체 명령어, 자주 묻는 질문을 정리했어요.",
+    "en": "In Discord, /listings shows the cheapest listings on sale now (optionally at one option value), /movers the biggest risers and fallers of the day, /item an item card and /megaphone recent megaphones. The bot page now has add-to-server and add-to-account buttons, setup steps, every command and a FAQ."
+   }
+  },
+  {
    "id": "faster-pages",
    "version": "0.7.4",
    "level": "patch",

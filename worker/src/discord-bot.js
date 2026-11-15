@@ -29,6 +29,8 @@ async function load(fetcher = fetch) {
   d.mobEntries = d.mobs.map((m) => indexEntry({ id: m.id, title: m.en, names: [m.ko, m.en, ...(m.aka || [])] }));
   d.mobById = new Map(d.mobs.map((m) => [m.id, m]));
   d.itemById = new Map(d.items.map((i) => [i.id, i]));
+  // Item facts (level, class, stats, slots, NPC price) from the hover-card data, for /item, /listings option words.
+  d.tips = await fetcher(`${SITE}/assets/item-tips.json`, { cf: { cacheTtl: 1800 } }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
   data = d; dataAt = Date.now();
   return d;
 }
@@ -44,6 +46,20 @@ const JOBS = { warrior: ['전사', 'Warrior'], fighter: ['파이터', 'Fighter']
 const FAMILY = { warrior: ['warrior', 'fighter'], fighter: ['warrior', 'fighter'], mage: ['mage', 'fire', 'ice', 'cleric'], fire: ['mage', 'fire'], ice: ['mage', 'ice'],
   cleric: ['mage', 'cleric'], archer: ['archer', 'hunter', 'crossbow'], hunter: ['archer', 'hunter'], crossbow: ['archer', 'crossbow'],
   thief: ['thief', 'assassin', 'bandit'], assassin: ['thief', 'assassin'], bandit: ['thief', 'bandit'] };
+
+// The stat players judge a piece of gear by (same rule as assets/opt-grade.js): weapon attack, magic attack for wands and
+// staves, else weapon defense, else magic defense.
+function mainStat(sub, base) {
+  if (base.PAD != null && sub !== 'Wand' && sub !== 'Staff') return 'PAD';
+  return base.MAD != null ? 'MAD' : base.PDD != null ? 'PDD' : base.MDD != null ? 'MDD' : null;
+}
+// "+3" for scrolled gear, else the roll on the main stat: 정옵 / ▲ 2상 / ▼ 1하.
+function rollWord(o, base, key, ko) {
+  if (o.ups > 0) return `+${o.ups}`;
+  if (o.used > 0 || !key || o.stats?.[key] == null) return '';
+  const dlt = o.stats[key] - base[key];
+  return dlt > 0 ? (ko ? `▲ ${dlt}상` : `▲ +${dlt}`) : dlt < 0 ? (ko ? `▼ ${-dlt}하` : `▼ ${dlt}`) : ko ? '정옵' : 'base roll';
+}
 
 export const COMMANDS = [
   { name: 'price', name_localizations: { ko: '시세' }, description: 'Free Market price of an item', description_localizations: { ko: '아이템의 자유시장 시세' },
@@ -62,6 +78,16 @@ export const COMMANDS = [
         { type: 3, name: 'price', name_localizations: { ko: '가격' }, description: 'Only at this price or cheaper (e.g. 3m, 500k); buy alerts: at least this', description_localizations: { ko: '이 가격 이하일 때만 (예: 300만, 3m). 살 때 알림은 이 가격 이상' }, required: false, max_length: 20 }] },
       { type: 1, name: 'list', name_localizations: { ko: '목록' }, description: 'Your alerts', description_localizations: { ko: '내 알림 목록' } },
       { type: 1, name: 'remove', name_localizations: { ko: '삭제' }, description: 'Stop watching an item', description_localizations: { ko: '아이템 알림 삭제' }, options: [{ type: 3, name: 'item', name_localizations: { ko: '아이템' }, description: 'Item name', description_localizations: { ko: '아이템 이름' }, required: true, autocomplete: true }] }] },
+  { name: 'listings', name_localizations: { ko: '매물' }, description: 'Shop listings on sale now, cheapest first, with options', description_localizations: { ko: '지금 판매 중인 상점 매물 (싼 순, 옵션 포함)' },
+    options: [{ type: 3, name: 'item', name_localizations: { ko: '아이템' }, description: 'Item name (Korean, English or short names like 장공)', description_localizations: { ko: '아이템 이름 (한글, 영문, 장공 같은 줄임말)' }, required: true, autocomplete: true },
+      { type: 4, name: 'option', name_localizations: { ko: '옵션' }, description: 'Only gear at this main stat, e.g. 53 attack', description_localizations: { ko: '이 주 능력치만 (예: 공격력 53)' }, required: false, min_value: 0, max_value: 999 }] },
+  { name: 'movers', name_localizations: { ko: '급등락' }, description: 'Items whose typical price moved most in a day', description_localizations: { ko: '하루 사이 시세가 크게 오르고 내린 아이템' },
+    options: [{ type: 3, name: 'direction', name_localizations: { ko: '방향' }, description: 'Up, down or both (default)', description_localizations: { ko: '오른 것, 내린 것, 둘 다 (기본)' }, required: false,
+      choices: [{ name: 'Up', name_localizations: { ko: '오른 것' }, value: 'up' }, { name: 'Down', name_localizations: { ko: '내린 것' }, value: 'down' }, { name: 'Both', name_localizations: { ko: '둘 다' }, value: 'both' }] }] },
+  { name: 'item', name_localizations: { ko: '아이템' }, description: 'Item card: level, class, stats, slots, NPC price and market price', description_localizations: { ko: '아이템 정보: 레벨, 직업, 능력치, 업횟, 상점 판매가, 시세' },
+    options: [{ type: 3, name: 'item', name_localizations: { ko: '아이템' }, description: 'Item name (Korean, English or short names like 장공)', description_localizations: { ko: '아이템 이름 (한글, 영문, 장공 같은 줄임말)' }, required: true, autocomplete: true }] },
+  { name: 'megaphone', name_localizations: { ko: '고확' }, description: 'Recent megaphones naming an item', description_localizations: { ko: '최근 고확에 나온 아이템 글' },
+    options: [{ type: 3, name: 'item', name_localizations: { ko: '아이템' }, description: 'Item name (Korean, English or short names like 장공)', description_localizations: { ko: '아이템 이름 (한글, 영문, 장공 같은 줄임말)' }, required: true, autocomplete: true }] },
   { name: 'feedback', name_localizations: { ko: '건의' }, description: 'Send feedback or a bug report to GMS Hub', description_localizations: { ko: 'GMS Hub에 건의나 오류 제보 보내기' },
     options: [{ type: 3, name: 'text', name_localizations: { ko: '내용' }, description: 'What should we fix or add?', description_localizations: { ko: '고치거나 추가했으면 하는 것' }, required: true, min_length: 5, max_length: 1000 }] },
   { name: 'gmshub', description: 'About GMS Hub and its Discord', description_localizations: { ko: 'GMS Hub 사이트와 디스코드 안내' } },
@@ -83,7 +109,7 @@ function pick(d, name, value) {
   return hit ? byId.get(hit.id) : null;
 }
 
-export async function handleInteraction(i, { prices, discord, fetcher, env }) {
+export async function handleInteraction(i, { prices, get, discord, fetcher, env }) {
   if (i.type === 1) return Response.json({ type: 1 });
   const ko = String(i.locale || '').startsWith('ko'), lang = ko ? 'ko' : 'en';
   const tr = (k, e) => (ko ? k : e);
@@ -138,6 +164,73 @@ export async function handleInteraction(i, { prices, discord, fetcher, env }) {
       description: tr(`[진입 조건, 동선, 물약 비용까지 보기](${url})`, `[Entry conditions, rotation and supply costs](${url})`) });
   }
 
+  const tipOf = (id) => d.tips?.items?.[id] || null;
+  const itemTitle = (item) => (ko && item.ko ? `${item.ko} (${item.en})` : item.en);
+  const itemIcon = (id) => ({ url: `https://maplestory.io/api/MCW/1/item/${id}/icon?resize=2` });
+  const marketUrl = (id, extra = '') => `${SITE}/${lang}/tools/market/?item=${id}${extra}&utm_source=discord&utm_medium=bot`;
+  const ago = (seen) => { const m = Math.max(0, Math.round((Date.now() - Date.parse(`${String(seen).replace(' ', 'T')}Z`)) / 60000)); return m < 60 ? tr(`${m}분 전`, `${m}m ago`) : m < 1440 ? tr(`${Math.round(m / 60)}시간 전`, `${Math.round(m / 60)}h ago`) : tr(`${Math.round(m / 1440)}일 전`, `${Math.round(m / 1440)}d ago`); };
+  const STAT = ko ? { PAD: '공격력', MAD: '마력', PDD: '물리방어력', MDD: '마법방어력', STR: '힘', DEX: '덱스', INT: '인트', LUK: '럭', ACC: '명중률', EVA: '회피율', MHP: 'HP', MMP: 'MP', Speed: '이동속도', Jump: '점프력' }
+    : { PAD: 'ATT', MAD: 'M.ATT', PDD: 'DEF', MDD: 'M.DEF', STR: 'STR', DEX: 'DEX', INT: 'INT', LUK: 'LUK', ACC: 'ACC', EVA: 'AVOID', MHP: 'HP', MMP: 'MP', Speed: 'Speed', Jump: 'Jump' };
+  if (['listings', 'item', 'megaphone'].includes(name)) {
+    const item = pick(d, 'price', opt.item?.value);
+    if (!item) return reply({ content: tr('그 이름의 아이템을 찾지 못했어요. 입력할 때 뜨는 목록에서 골라 주세요.', 'No item by that name. Pick one from the suggestions while typing.'), flags: 64 });
+    const t = tipOf(item.id), base = t?.[2] === 'Equip' && t[7] && Object.keys(t[7]).length ? t[7] : null;
+    const key = base ? mainStat(t[3], base) : null;
+    if (name === 'listings') {
+      const want = opt.option?.value != null && key ? Number(opt.option.value) : null;
+      const q = new URLSearchParams({ item: item.id, state: 'open', sort: 'price', limit: 8, days: 7 });
+      if (want != null) { q.set('stat', key); q.set('val', want); }
+      const res = await get?.(`/market/listings?${q}`).catch(() => null);
+      const url = marketUrl(item.id, want != null ? `&opt=${want}` : '');
+      const head = want != null ? tr(`${STAT[key]} ${want} 매물`, `${STAT[key]} ${want} listings`) : tr('판매 중 매물', 'On sale now');
+      if (!res?.rows?.length) return embed({ title: `${itemTitle(item)} · ${head}`, url, thumbnail: itemIcon(item.id), description: tr(`지금 판매 중인 매물이 없어요. [사이트에서 보기](${url})`, `Nothing on sale right now. [See the site](${url})`) });
+      const lines = res.rows.map((r) => {
+        const o = r.opts, w = o ? rollWord(o, base, key, ko) : '';
+        return `**${num(r.price)}**${r.qty > 1 ? ` ×${r.qty}` : ''}${w ? ` · ${w}` : ''} · ${r.seller} · CH ${r.channel} FM ${r.room} · ${ago(r.seen)}`;
+      });
+      return embed({ title: `${itemTitle(item)} · ${head}`, url, thumbnail: itemIcon(item.id),
+        description: `${lines.join('\n')}\n\n${tr(`싼 순 ${res.rows.length}건 / 전체 ${num(res.total)}건 · [전체 매물과 옵션 필터](${url})`, `Cheapest ${res.rows.length} of ${num(res.total)} · [All listings and option filter](${url})`)}` });
+    }
+    if (name === 'item') {
+      const url = marketUrl(item.id);
+      if (!t) return embed({ title: itemTitle(item), url, thumbnail: itemIcon(item.id), description: tr(`[시세 보기](${url})`, `[Market price](${url})`) });
+      const [, , cat, , lv, job, req, inc, slots, sell] = t;
+      const JOB_BITS = [[1, tr('전사', 'Warrior')], [2, tr('마법사', 'Magician')], [4, tr('궁수', 'Bowman')], [8, tr('도적', 'Thief')], [16, tr('해적', 'Pirate')]];
+      const fields = [];
+      if (lv) fields.push({ name: tr('레벨', 'Level'), value: String(lv), inline: true });
+      if (cat === 'Equip') fields.push({ name: tr('직업', 'Class'), value: JOB_BITS.filter(([b]) => job & b).map(([, n]) => n).join(', ') || tr('모든 직업', 'All classes'), inline: true });
+      const reqs = Object.entries(req || {}).map(([k, v]) => `${STAT[k.toUpperCase()] || k.toUpperCase()} ${v}`).join(' · ');
+      if (reqs) fields.push({ name: tr('필요 능력치', 'Requires'), value: reqs, inline: true });
+      const stats = Object.entries(inc || {}).map(([k, v]) => `${STAT[k] || k} +${v}`).join(' · ');
+      if (stats) fields.push({ name: tr('능력치', 'Stats'), value: stats });
+      if (slots) fields.push({ name: tr('업그레이드 가능 횟수', 'Upgrade slots'), value: String(slots), inline: true });
+      if (sell) fields.push({ name: tr('상점 판매가', 'NPC sell price'), value: `${num(sell)} ${tr('메소', 'mesos')}`, inline: true });
+      const p = (await prices(item.id).catch(() => ({})))?.[item.id];
+      if (p?.median) fields.push({ name: tr('시세', 'Market price'), value: `**${money(p.median)}**`, inline: true });
+      return embed({ title: itemTitle(item), url, thumbnail: itemIcon(item.id), fields, description: tr(`[시세와 판매 중인 상점 보기](${url})`, `[Market price and open shops](${url})`) });
+    }
+    // megaphone
+    const res = await get?.(`/megaphones?item=${item.id}&limit=6`).catch(() => null);
+    const url = `${SITE}/${lang}/megaphone/?utm_source=discord&utm_medium=bot`;
+    if (!res?.rows?.length) return embed({ title: tr(`${itemTitle(item)} · 최근 고확`, `${itemTitle(item)} · recent megaphones`), url, thumbnail: itemIcon(item.id), description: tr(`최근 3일 고확에 이 아이템이 없어요. \`/알림 추가\`로 뜨면 DM을 받을 수 있어요.`, `No megaphone named it in the last 3 days. Use \`/alert add\` to get a DM when one does.`) });
+    return embed({ title: tr(`${itemTitle(item)} · 최근 고확`, `${itemTitle(item)} · recent megaphones`), url, thumbnail: itemIcon(item.id),
+      description: res.rows.map((r) => `**${r.nick}**${r.channel ? ` · CH ${r.channel}` : ''} · ${ago(r.seen)}\n${String(r.text).slice(0, 180)}`).join('\n\n') });
+  }
+  if (name === 'movers') {
+    const dir = opt.direction?.value || 'both';
+    const cat = await get?.('/market/catalog').catch(() => null);
+    // Only items traded enough that a day's change means something; huge swings are usually a few odd listings.
+    const rows = (cat?.items || []).filter((r) => r.typicalDay != null && r.open >= 8 && Math.abs(r.typicalDay) <= 300 && d.itemById.has(r.item));
+    const line = (r) => `${r.typicalDay > 0 ? '▲' : '▼'} **${itemTitle(d.itemById.get(r.item))}** ${r.typicalDay > 0 ? '+' : ''}${r.typicalDay}% · ${money(r.typical)}`;
+    const up = rows.filter((r) => r.typicalDay > 0).sort((a, b) => b.typicalDay - a.typicalDay).slice(0, 6);
+    const down = rows.filter((r) => r.typicalDay < 0).sort((a, b) => a.typicalDay - b.typicalDay).slice(0, 6);
+    const fields = [];
+    if (dir !== 'down') fields.push({ name: tr('오른 아이템', 'Up'), value: up.map(line).join('\n') || tr('없음', 'None') });
+    if (dir !== 'up') fields.push({ name: tr('내린 아이템', 'Down'), value: down.map(line).join('\n') || tr('없음', 'None') });
+    const url = `${SITE}/${lang}/tools/market/today/?utm_source=discord&utm_medium=bot`;
+    return embed({ title: tr('하루 사이 시세 급등락', 'Biggest price moves in a day'), url, fields, description: tr(`판매 중 매물 8건 이상인 아이템의 보통 가격 변화예요. [오늘의 시세 리포트](${url})`, `Change in the typical price of items with 8+ open listings. [Today's market report](${url})`) });
+  }
+
   const hidden = (content) => reply({ content, flags: 64 });
   const label = (it) => (ko && it.ko ? `${it.ko} (${it.en})` : it.en);
   if (name === 'alert') {
@@ -176,7 +269,7 @@ export async function handleInteraction(i, { prices, discord, fetcher, env }) {
   }
 
   return embed({ title: 'GMS Hub', url: `${SITE}/${lang}/?utm_source=discord&utm_medium=bot`,
-    description: tr('메이플스토리 클래식 월드 DB와 도구 모음이에요. 실시간 시세, 드롭, 사냥터, 퀘스트, 맵을 볼 수 있어요.\n명령어: `/시세`, `/몬스터`, `/사냥터`, `/알림`, `/건의`', 'Database and tools for MapleStory Classic World: live prices, drops, training spots, quests and maps.\nCommands: `/price`, `/mob`, `/train`, `/alert`, `/feedback`')
+    description: tr('메이플스토리 클래식 월드 DB와 도구 모음이에요. 실시간 시세, 드롭, 사냥터, 퀘스트, 맵을 볼 수 있어요.\n명령어: `/시세`, `/매물`, `/급등락`, `/아이템`, `/고확`, `/몬스터`, `/사냥터`, `/알림`, `/건의`', 'Database and tools for MapleStory Classic World: live prices, drops, training spots, quests and maps.\nCommands: `/price`, `/listings`, `/movers`, `/item`, `/megaphone`, `/mob`, `/train`, `/alert`, `/feedback`')
       + (discord ? tr(`\n질문, 건의, 오류 제보는 디스코드에서: ${discord}`, `\nQuestions, feedback and bug reports: ${discord}`) : '') });
 }
 
