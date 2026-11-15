@@ -2810,8 +2810,11 @@ body.exp-running .exp-stop { display: inline-flex; }
 .recent-ago { color: var(--muted); font-size: 0.72rem; white-space: nowrap; }
 /* Market: the in-list ad sits over a spacer row after the 10th result (see market.js). */
 #mb-browser { position: relative; }
-.mb-ad-mid { position: absolute; left: 0; right: 0; top: 0; visibility: hidden; pointer-events: none; }
-.mb-ad-mid.on { visibility: visible; pointer-events: auto; }
-.mb-ad-mid .ad-slot { margin: 0 auto; }
+/* Never hidden while the SDK loads (AdFit skips units it cannot see): it starts below the list, then moves over the spacer. */
+.mb-ad-mid { position: static; }
+.mb-ad-mid .ad-slot { margin: 24px auto 0; }
+.mb-ad-mid.on { position: absolute; left: 0; right: 0; }
+.mb-ad-mid.on .ad-slot { margin: 0 auto; }
+.mb-workspace.has-selection .mb-ad-mid:not(.on) { height: 0; overflow: hidden; }
 .mb-table tbody tr.mb-ad-gap, .mb-table tbody tr.mb-ad-gap:hover { background: var(--panel); cursor: default; }
 .mb-table tr.mb-ad-gap td { padding: 0; display: table-cell; }

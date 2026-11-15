@@ -1309,7 +1309,8 @@ initialize();
 
 // One ad inside the list, after the 10th row, where people actually look (the old end-of-page slot was seen ~10% of the time).
 // The ad never moves in the DOM (moving its iframe would reload it, which counts as a refresh); a spacer row reserves
-// room in whatever table is showing and the ad sits over it. A list narrower than the ad (detail panel open) hides it.
+// room in whatever table is showing and the ad sits over it. Until then (or when the list is narrower than the ad) it stays
+// below the list, as the old end slot did.
 (() => {
   const box = $("mb-ad-mid"), results = $("mb-results"), panel = $("mb-browser");
   if (!box || !results || !panel) return;
@@ -1321,6 +1322,7 @@ initialize();
     if (!ad || !body?.rows.length || panel.clientWidth < Number(ad.dataset.adWidth) + 16) {
       gap?.remove();
       box.classList.remove("on");
+      box.style.top = "";
       return;
     }
     if (!gap) {
@@ -1330,7 +1332,7 @@ initialize();
       gap.innerHTML = '<td colspan="99"></td>';
       body.insertBefore(gap, body.rows[AFTER] || null);
     }
-    const h = `${box.offsetHeight + 28}px`;
+    const h = `${box.querySelector(".ad-slot")?.offsetHeight + 28}px`;
     if (gap.firstChild.style.height !== h) gap.firstChild.style.height = h;
     const top = `${Math.round(gap.getBoundingClientRect().top - panel.getBoundingClientRect().top + 14)}px`;
     if (box.style.top !== top) box.style.top = top;
