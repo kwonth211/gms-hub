@@ -37,7 +37,8 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches && body.dataset.tip
     const href = a?.getAttribute('href') || '';
     const mob = href.match(/\/monsters\/(\d+)\/(?:[?#]|$)/) || (el.matches('img') ? (el.getAttribute('src') || '').match(/\/assets\/monsters\/(\d+)\.gif/) : null);
     if (mob) return { kind: 'mob', id: Number(mob[1]) };
-    const tagged = el.closest('[data-item-id], [data-item]');
+    // A row carrying options wins over the item link inside it, so the card shows that listing's own stats.
+    const tagged = el.closest('[data-opts]') || el.closest('[data-item-id], [data-item]');
     if (tagged) {
       // A shop listing with options (market.js): the card shows that piece's actual stats instead of the base ones.
       let opts = null;
