@@ -156,3 +156,21 @@ test("megaphone prices: OCR-split decimals and stat numbers", async () => {
   for (const [t, p] of [["S> GFA 1 .9m or Best Of", 1900000], ["S> GFA 60% 1 .95m !", 1950000], ["S> C/o 1.7M", 1700000], ["S> 13M DEX glove 2m", 2000000], ["S> 380k ea", 380000]])
     assert.equal(parseMegaphone(t).price, p, t);
 });
+
+test("a buying megaphone names what is wanted, not the item the caller linked", async () => {
+  const { parseMegaphone, wantedItem } = await import("../worker/src/megaphone.js");
+  const names = new Map([["snail", 5000054], ["bunny earmuffs", 1002600], ["steel slain", 1472018], ["piece of ice", 4003002], ["ice", 4003999],
+    ["overall armor dex scroll: greater", 2040510], ["brown sonata", 1002994], ["sonata", 1002990]]);
+  // The linked pet is not what they want.
+  assert.equal(parseMegaphone("[Snail] B> Bunny earmuffs 200k", names).item, 1002600);
+  // The longest name wins over a shorter one inside it.
+  assert.equal(parseMegaphone("B> Brown Sonata wisp offer", names).item, 1002994);
+  // A linked item named again in the request is the wanted one.
+  assert.equal(parseMegaphone("[Steel Slain] B> +1-3 Clean Slain OH 47 Att Slain PMO", names).item, 1472018);
+  // Shorthand that matches nothing gives no item rather than the linked one.
+  assert.equal(parseMegaphone("[Snail] B> 60% OVERALL STR 550K", names).item, null);
+  // Only the part before a later "S>" is the request.
+  assert.equal(wantedItem("B> Piece of ice 40k S> Steel Slain 2m", names), 4003002);
+  // Selling megaphones keep the linked item.
+  assert.deepEqual(parseMegaphone("[Overall Armor DEX Scroll: Greater] S> 22.5k Ea (3) B> Piece of ice 40k~", names), { item: 2040510, intent: "sell", price: 22500 });
+});

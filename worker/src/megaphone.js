@@ -22,7 +22,55 @@ export function parseMegaphone(text, names) {
   let item = null;
   const br = /\[([^\]]{3,60})\]/.exec(text);
   if (br) item = names?.get(br[1].toLowerCase()) ?? null;
+  if (intent === 'buy') item = wantedItem(text, names, item);
   return { item, intent, price };
+}
+
+// What a buying megaphone is after. The linked [item] is something the caller owns, so on a "B>" line it is usually
+// unrelated ("[Snail] B> Bunny Earmuffs 200k" wants the earmuffs; the list of wanted items used to count the snail). The
+// item is the longest item name written after the buy word (up to an "S>" part, if any). The linked item counts only
+// when the caller names it again ("[Steel Slain] B> clean Slain 47 att"). Shorthand nobody can resolve gives no item.
+const words = (t) => String(t).toLowerCase().replace(/[^a-z0-9%]+/g, ' ').trim().split(' ').filter(Boolean);
+// A word that is not part of an item name: nothing, a number or price ("300k", "2", "60%"), or trade filler.
+const aside = (w) => w === undefined || /^[\d%]/.test(w) || /^(ea|each|pm|pmo|pls|plz|offer|offers|for|at|x|fm|ch\d*|clean|any|all|your|ur|a|an|the|my|more)$/.test(w);
+const nameIndexes = new WeakMap();
+function nameIndex(names) {
+  let index = nameIndexes.get(names);
+  if (!index) {
+    index = new Map();
+    for (const [name, id] of names) {
+      const w = words(name);
+      if (!w.length || w.join(' ').length < 4) continue;
+      if (!index.has(w[0])) index.set(w[0], []);
+      index.get(w[0]).push({ w, id, len: w.join(' ').length });
+    }
+    for (const list of index.values()) list.sort((a, b) => b.len - a.len);
+    nameIndexes.set(names, index);
+  }
+  return index;
+}
+export function wantedItem(text, names, linked = null) {
+  if (!names) return linked;
+  const b = BUY.exec(text);
+  if (!b) return linked;
+  let part = text.slice(b.index + b[0].length);
+  const s = SELL.exec(part);
+  if (s) part = part.slice(0, s.index);
+  const seg = words(part.replace(/\[[^\]]*\]/g, ' ')), index = nameIndex(names);
+  let best = null;
+  for (let i = 0; i < seg.length; i++) {
+    for (const c of index.get(seg[i]) || []) {
+      if (best && c.len <= best.len) break;
+      if (!c.w.every((w, k) => seg[i + k] === w)) continue;
+      // A one-word name ("Emerald", "Coupon", "Spear") must stand alone: "emerald earrings" or "hair coupon" is another item.
+      if (c.w.length === 1 && !(aside(seg[i - 1]) && aside(seg[i + 1]))) continue;
+      best = c; break;
+    }
+  }
+  if (best) return best.id;
+  const br = /\[([^\]]{3,60})\]/.exec(text);
+  if (linked != null && br && words(br[1]).some((w) => w.length >= 4 && seg.includes(w))) return linked;
+  return null;
 }
 
 export function validMegaphone(r, now = Date.now()) {
@@ -102,7 +150,7 @@ export async function megaphoneAsks(env, ids) {
 // Pattern content for the home and megaphone pages (snapshot hourly by the schedule, to keep D1 reads small): the items named most in the last 24
 // hours with their change against the day before, how many sell vs buy, the busiest callers today, and megaphones per
 // hour over the last day. Only what was read from the game; names and ids are resolved by the pages.
-export async function megaphoneStats(env, now = Date.now()) {
+export async function megaphoneStats(env, now = Date.now(), names = null) {
   // Today's numbers need the last 24 hours row by row; "before" (the 24 hours before that) only needs per-item counts,
   // which never change once an hour is over. Those are kept per hour in the snapshot 'mega-hours', so an hourly run reads
   // one day of megaphones instead of two. Without a recent, complete store it reads both days once and starts one.
@@ -111,7 +159,9 @@ export async function megaphoneStats(env, now = Date.now()) {
   const dayAgo = iso(now - 86400000), twoDays = iso(now - 2 * 86400000);
   const kept = await env.DB.prepare("SELECT json, at FROM snapshots WHERE key = 'mega-hours'").first().then((r) => r && { ...JSON.parse(r.json), at: r.at }).catch(() => null);
   const covered = kept && kept.from <= hourOf(twoDays) && now - Date.parse(`${kept.at.replace(' ', 'T')}Z`) < 23 * 3600000;
-  const { results } = await env.DB.prepare("SELECT seen_at AS t, nick, item, intent FROM megaphones WHERE seen_at >= ?").bind(covered ? dayAgo : twoDays).all();
+  const { results } = await env.DB.prepare("SELECT seen_at AS t, nick, item, intent, text FROM megaphones WHERE seen_at >= ?").bind(covered ? dayAgo : twoDays).all();
+  // Buying megaphones stored before 2026-11-16 carry the linked item, not the wanted one: read the wanted item again.
+  if (names) for (const r of results) if (r.intent === 'buy') r.item = wantedItem(r.text, names, r.item);
   const items = new Map(), before = new Map(), hours = new Map(), callers = new Map(), nicks = new Set();
   const hourItems = {};
   let n = 0, withItem = 0;

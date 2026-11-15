@@ -342,7 +342,7 @@ const api = {
     if (now.getUTCHours() === 16 && now.getUTCMinutes() < 15)
       ctx.waitUntil(archiveListings(env).catch(() => null).then(() => reconcileItemMarket(env)).catch(() => null));
     // Four times a day (00, 06, 12, 18 UTC) the same snapshot also goes to the Discord trends channel.
-    if (now.getUTCMinutes() < 15) ctx.waitUntil(megaphoneStats(env).then(async (d) => {
+    if (now.getUTCMinutes() < 15) ctx.waitUntil(itemNames().catch(() => null).then((names) => megaphoneStats(env, Date.now(), names)).then(async (d) => {
       await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('mega-stats',?,datetime('now'))").bind(JSON.stringify(d)).run();
       if (now.getUTCHours() % 6 === 0) await trendsToDiscord(env, d, await itemLabel());
     }).catch(() => null));
@@ -517,7 +517,7 @@ const api = {
 
     if (url.pathname === '/megaphones/stats' && req.method === 'GET') {
       // Served from the snapshot the schedule writes every three hours; computed on demand only when none exists yet.
-      const data = (await freshSnapshot(env, 'mega-stats', 90)) || (await megaphoneStats(env).then(async (d) => {
+      const data = (await freshSnapshot(env, 'mega-stats', 90)) || (await itemNames().catch(() => null).then((names) => megaphoneStats(env, Date.now(), names)).then(async (d) => {
         await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('mega-stats',?,datetime('now'))").bind(JSON.stringify(d)).run();
         return d;
       }));
