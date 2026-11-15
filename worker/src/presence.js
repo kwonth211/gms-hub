@@ -1,5 +1,6 @@
 // Live "people here now" counter: one Durable Object holds every open page's WebSocket. Sockets use the hibernation API,
-// so the object sleeps between joins and leaves (no duration billed while idle) and nothing is ever written to storage.
+// so the object sleeps between joins and leaves (no duration billed while idle). The only thing kept in storage is the
+// all-time peak (one value: the highest number of open pages and when it happened), written only when it is beaten.
 // The keep-alive ping is answered by the runtime itself without waking the object.
 export const PRESENCE_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
 
@@ -21,6 +22,12 @@ export class Presence {
       const out = await req.text();
       for (const ws of this.state.getWebSockets()) if (!this.state.getTags(ws).includes('chat')) { try { ws.send(out); } catch (e) {} }
       return new Response(null, { status: 204 });
+    }
+    // Internal read of the record (the worker checks the owner's token before asking): { peak, at, now }.
+    if (new URL(req.url).pathname === '/peak') {
+      const peak = await this.loadPeak();
+      const now = this.state.getWebSockets().filter((ws) => ws.readyState === 1 && !this.state.getTags(ws).includes('chat')).length;
+      return Response.json({ peak: peak.n, at: peak.at, now });
     }
     if (req.headers.get('Upgrade') !== 'websocket') return new Response('expected websocket', { status: 426 });
     if (new URL(req.url).pathname === '/chat') return this.joinChat();
@@ -63,6 +70,19 @@ export class Presence {
     this.broadcast(ws);
   }
 
+  // The site's record of pages open at once (real count, internal use): { n, at }. Read from storage once per wake.
+  async loadPeak() {
+    if (!this.peak) this.peak = (await this.state.storage?.get('peak')) || { n: 0, at: null };
+    return this.peak;
+  }
+  async notePeak(n, now = new Date()) {
+    const peak = await this.loadPeak();
+    if (n <= peak.n) return false;
+    this.peak = { n, at: now.toISOString() };
+    await this.state.storage?.put('peak', this.peak);
+    return true;
+  }
+
   // Every open page gets the site total and its own page's count after each join or leave.
   broadcast(gone) {
     if (gone && this.state.getTags(gone).includes('chat')) return;
@@ -72,6 +92,7 @@ export class Presence {
       const page = this.state.getTags(ws)[0];
       perPage.set(page, (perPage.get(page) || 0) + 1);
     }
+    this.notePeak(open.length).catch(() => {});
     for (const ws of open) {
       try { ws.send(JSON.stringify({ site: open.length, here: perPage.get(this.state.getTags(ws)[0]) || 0 })); } catch (e) {}
     }
@@ -90,6 +111,15 @@ export function chatLine(m, last, now = Date.now()) {
   if (now - last < 3000) return { error: 'slow' };
   const clean = BAD_WORDS.reduce((t, w) => t.split(w).join('*'.repeat(w.length)), text);
   return { name, text: clean, at: new Date(now).toISOString() };
+}
+
+// GET /internal/presence-peak (Authorization: Bearer MAIL_ADMIN_TOKEN): the record of pages open at once and the count
+// right now. Owner only; read it with scripts/peak.py.
+export async function handlePresencePeak(req, env) {
+  const auth = req.headers.get('Authorization') || '';
+  if (!env.MAIL_ADMIN_TOKEN || auth !== `Bearer ${env.MAIL_ADMIN_TOKEN}`) return new Response('forbidden', { status: 403 });
+  if (!env.PRESENCE) return new Response('presence off', { status: 503 });
+  return env.PRESENCE.get(env.PRESENCE.idFromName('site')).fetch('https://presence/peak');
 }
 
 export function handlePresence(req, env) {

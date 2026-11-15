@@ -18,6 +18,7 @@ import { handleEmail, handleSendMail } from './inbox.js';
 // POST /internal/megaphone {rows} (Bearer MEGAPHONE_TOKEN)  (admin collector)
 // GET  /rank -> { at, source, stats, rows: [top 1,000 by level] }  (ClassicRank, refreshed hourly by the schedule)
 // GET  /rank/lookup?name= -> { data: one character }  (ClassicRank, cached an hour)
+// GET  /internal/presence-peak (Bearer MAIL_ADMIN_TOKEN) -> { peak, at, now }: record of pages open at once (owner only)
 // GET  /presence?p=<path> (WebSocket) -> messages { site, here }: open pages on the whole site and on this page
 // The shop scanner runs from the local dev server for now, so its origin may post scans too.
 import { handleMarketBatch, getCollectionStatus, collectorView } from './market-batch.js';
@@ -25,7 +26,7 @@ import { handleShopScan } from './shop-scan.js';
 import { parseOptions } from './item-options.js';
 import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoints, openShops, archiveListings, refreshItemMarket, reconcileItemMarket } from './market-browser.js';
 import { cachedPublicResponse } from './public-cache.js';
-import { Presence, handlePresence } from './presence.js';
+import { Presence, handlePresence, handlePresencePeak } from './presence.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
 import { validRoom } from '../../assets/place.js';
 import { trendsToDiscord } from './discord.js';
@@ -361,6 +362,7 @@ const api = {
       if (rows.length && ctx?.waitUntil) ctx.waitUntil(itemLabel().then((nameOf) => notifyListings(env, rows, nameOf)).catch(() => null));
     });
     if (url.pathname === '/internal/mail/send' && req.method === 'POST') return handleSendMail(req, env);
+    if (url.pathname === '/internal/presence-peak' && req.method === 'GET') return handlePresencePeak(req, env);
     // The collector page runs on gms-hub.com (or localhost while testing) and sends the admin key, so it needs CORS.
     // Discord slash commands (signed by Discord; see discord-bot.js). Prices come from this worker's own summary.
     // Price alerts set on the website through "Log in with Discord" (see discord-oauth.js).

@@ -28,3 +28,16 @@ test('chat lines need a name, stay short, carry no links and come at most every 
   assert.equal(chatLine({ type: 'say', name: '모험가', text: 'hi' }, Date.now()).error, 'slow');
   assert.equal(chatLine({ type: 'say', name: '모험가', text: '이 병신' }, 0).text, '이 **');
 });
+
+test('presence keeps one record of pages open at once and rewrites it only when beaten', async () => {
+  const store = new Map(); let puts = 0;
+  const state = { getWebSockets: () => [], getTags: () => [], setWebSocketAutoResponse() {}, storage: { get: async (k) => store.get(k), put: async (k, v) => { puts++; store.set(k, v); } } };
+  const room = new Presence(state);
+  assert.equal(await room.notePeak(3, new Date('2026-11-15T12:00:00Z')), true);
+  assert.equal(await room.notePeak(3), false);
+  assert.equal(await room.notePeak(2), false);
+  assert.equal(await room.notePeak(7, new Date('2026-11-15T13:00:00Z')), true);
+  assert.equal(puts, 2);
+  // A woken object (fresh instance) reads the record back.
+  assert.deepEqual(await new Presence(state).loadPeak(), { n: 7, at: '2026-11-15T13:00:00.000Z' });
+});
