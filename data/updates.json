@@ -21,11 +21,11 @@
    "highlight": true,
    "date": "2026-11-15",
    "path": "/tools/market/",
-   "ko": "장비 옵션 — 정옵·N상·N하, +N(작 성공), 업횟까지 매물마다",
-   "en": "Equipment options — base roll, +N/−N roll, scrolls passed and slots on every listing",
+   "ko": "장비 옵션 — 매물마다 정옵·N상·N하, +N(작 성공)",
+   "en": "Equipment options — base roll, +N/−N roll or scrolls passed on every listing",
    "desc": {
-    "ko": "시세에서 장비를 열면 상점 매물마다 실제 옵션이 보여요. 노작 장비는 주 능력치(무기는 공격력, 완드·스태프는 마력, 방어구는 방어력)로 정옵·N상·N하를 보여 주고, 작한 장비는 +N(주문서 성공 횟수)과 실패 횟수, 남은 업횟을 보여 줘요. 매물에 마우스를 올리면 아이템 카드에 그 매물 옵션이 떠요.",
-    "en": "Open a piece of gear in the market and each shop listing shows its real options. Unscrolled gear shows its roll on the main stat (weapon attack, magic attack for wands and staves, defense for armor); scrolled gear shows +N passed scrolls, failed scrolls and slots left. Hover a listing to see them in the item card."
+    "ko": "시세에서 장비를 열면 상점 매물마다 실제 옵션이 보여요. 노작 장비는 주 능력치(무기는 공격력, 완드·스태프는 마력, 방어구는 방어력)로 정옵·N상·N하가 붙고, 작한 장비는 +N(주문서 성공 횟수)이 붙어요. 자세한 능력치와 업횟은 매물에 마우스를 올리면 아이템 카드에 떠요.",
+    "en": "Open a piece of gear in the market and each shop listing shows its real options. Unscrolled gear shows its roll on the main stat (weapon attack, magic attack for wands and staves, defense for armor); scrolled gear shows +N passed scrolls. Hover a listing for the full stats and slots in the item card."
    }
   },
   {

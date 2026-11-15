@@ -4,6 +4,7 @@ import { gearKeywords, gearTypes } from './item-sub.js';
 import { mountCharPanel } from './my-char.js';
 import { newMark } from './market-data.js';
 import { placeLabel } from './place.js';
+import { optBadge, loadTips as loadOptTips } from './opt-grade.js';
 
 const input = document.getElementById('site-search');
 // The site directory moved to /sites/ (2026-11-15). The home keeps the site list as data so the search still finds sites,
@@ -525,20 +526,15 @@ const rowKey = (r) => `${r.item}|${r.seller}|${r.price}|${r.seen}`;
 let shownRows = null, pendingRows = [], dripTimer = 0, liveById = null;
 const FIRST_DRIP = 4;
 
-// Listing options in one short line: "+3 · 공 73 · 업횟 0" (the hover card shows them in full against the base stats).
-const OPT_SHORT = korean
-  ? { PAD: '공', MAD: '마', STR: '힘', DEX: '덱', INT: '인', LUK: '럭', ACC: '명중', EVA: '회피', MHP: 'HP', MMP: 'MP', PDD: '물방', MDD: '마방', Speed: '이속', Jump: '점프', CRT: '크확', CRD: '크뎀' }
-  : { PAD: 'ATT', MAD: 'M.ATT', STR: 'STR', DEX: 'DEX', INT: 'INT', LUK: 'LUK', ACC: 'ACC', EVA: 'AVOID', MHP: 'HP', MMP: 'MP', PDD: 'DEF', MDD: 'M.DEF', Speed: 'SPEED', Jump: 'JUMP', CRT: 'CRIT', CRD: 'C.DMG' };
-function optShort(o) {
-  if (!o) return '';
-  const stats = Object.keys(OPT_SHORT).filter((k) => o.stats?.[k] != null).slice(0, 3).map((k) => `${OPT_SHORT[k]} ${o.stats[k]}`);
-  const parts = [o.ups > 0 ? `+${o.ups}` : '', ...stats, o.slots != null ? `${korean ? '업횟' : 'Slots'} ${o.slots}` : ''].filter(Boolean);
-  return parts.length ? `<span class="opt">${escHtml(parts.join(' · '))}</span>` : '';
+// Listing options as one word: "+3", "정옵", "2상", "1하" (opt-grade.js); the hover card shows the full stats.
+function optShort(r) {
+  const b = optBadge(r.item, r.opts);
+  return b ? `<span class="opt ${b.cls}">${escHtml(b.text)}</span>` : '';
 }
 function recentRow(r, it, fresh) {
   return `<li class="${r.sold ? 'sold' : ''}${fresh ? ' fresh' : ''}" data-key="${escHtml(rowKey(r))}"${r.opts ? ` data-item-id="${it.id}" data-opts="${escHtml(JSON.stringify(r.opts))}"` : ''}><a href="${live.dataset.price}?item=${it.id}&src=home" data-live-item="${it.id}">
 <img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="26" height="26" loading="lazy">
-<span class="name">${newMark(r.seen)}<span class="nm">${escHtml(it.name)}</span>${r.sold ? `<span class="tag">${escHtml(liveText.sold)}</span>` : ''}${optShort(r.opts)}</span>
+<span class="name">${newMark(r.seen)}<span class="nm">${escHtml(it.name)}</span>${r.sold ? `<span class="tag">${escHtml(liveText.sold)}</span>` : ''}${optShort(r)}</span>
 <span class="price">${mesos(r.price)}${r.qty > 1 ? ` <small>×${r.qty}</small>` : ''}</span>
 <span class="meta">${escHtml(r.seller)} · CH ${r.channel} · ${placeLabel(r.room, korean)}</span>
 <span class="ago" data-seen="${escHtml(r.seen)}">${ago(r.seen)}</span></a></li>`;
@@ -647,6 +643,7 @@ async function refreshLive() {
       el.hidden = !n;
     });
     lastRefresh = Date.now();
+    if (recent?.some((r) => r.opts)) await loadOptTips();
     const listed = recent ? renderRecent(recent, byId) : 0;
     if (!listed) document.getElementById('live-rows').innerHTML = `<li class="market-empty">${escHtml(liveText.empty)}</li>`;
     if (recent?.length) document.getElementById('live-updated').textContent = liveText.updated.replace('{t}', ago(recent[0].seen));
@@ -686,6 +683,7 @@ if (live) {
     try {
       const rows = await fetch(`${live.dataset.api}/listings/recent`).then((r) => (r.ok ? r.json() : null));
       lastRefresh = Date.now();
+      if (rows?.some((r) => r.opts)) await loadOptTips();
       if (rows) renderRecent(rows, liveById);
     } catch {}
   };

@@ -41,29 +41,19 @@ const COPY = {
 const escape = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 // The UI owns one observer and one delegated listener set; clean up before switching items.
-// Stat range of the listings with options in one price band, on the stat most of them carry: "공 53~57 · +3 1건".
-const OPT_LABEL = { ko: { PAD: '공', MAD: '마', STR: '힘', DEX: '덱', INT: '인', LUK: '럭', ACC: '명중', EVA: '회피', MHP: 'HP', MMP: 'MP', PDD: '물방', MDD: '마방', Speed: '이속', Jump: '점프', CRT: '크확', CRD: '크뎀' } };
-function optRange(b, p) {
-  if (!b.opts?.length) return '';
-  const ko = document.documentElement.lang === 'ko';
-  const freq = p.optKey ??= (() => {
-    const c = {};
-    for (const bin of p.bins) for (const o of bin.opts || []) for (const k of Object.keys(o.stats || {})) c[k] = (c[k] || 0) + 1;
-    // Attack first when present: it is what weapon buyers compare.
-    return ['PAD', 'MAD'].find((k) => c[k]) || Object.entries(c).sort((x, y) => y[1] - x[1])[0]?.[0] || '';
-  })();
-  const vals = b.opts.map((o) => o.stats?.[freq]).filter((v) => v != null);
-  const parts = [];
-  if (vals.length) {
-    const lo = Math.min(...vals), hi = Math.max(...vals);
-    parts.push(`${ko ? OPT_LABEL.ko[freq] || freq : freq} ${lo}${hi > lo ? `~${hi}` : ''}`);
+// The option words of the listings in one price band ("3상 2건 · 정옵 · +3"), best first; badge() is opt-grade.js.
+function optRange(b, badge) {
+  if (!badge || !b.opts?.length) return '';
+  const c = new Map();
+  for (const o of b.opts) {
+    const g = badge(o);
+    if (g) (c.get(g.text) || c.set(g.text, { ...g, n: 0 }).get(g.text)).n += 1;
   }
-  const plus = b.opts.filter((o) => o.ups > 0);
-  if (plus.length) parts.push(`+${Math.max(...plus.map((o) => o.ups))}${plus.length > 1 ? (ko ? ` 외 ${plus.length - 1}건` : ` +${plus.length - 1}`) : ''}`);
+  const parts = [...c.values()].sort((x, y) => y.sort - x.sort).slice(0, 4).map((g) => `${g.text}${g.n > 1 ? (document.documentElement.lang === 'ko' ? ` ${g.n}건` : ` ×${g.n}`) : ''}`);
   return parts.length ? `<small class="profile-opt">${parts.join(' · ')}</small>` : '';
 }
 
-export function mountMarketCharts(root, rows, { lang = 'ko', now = Date.now(), truncated = false, limit = 400, profileRows = rows, persistent = false, profileTruncated = false, onBand = null } = {}) {
+export function mountMarketCharts(root, rows, { lang = 'ko', now = Date.now(), truncated = false, limit = 400, profileRows = rows, persistent = false, profileTruncated = false, onBand = null, optBadge = null } = {}) {
   const t = { ...(COPY[lang] || COPY.en), ...(persistent ? (lang === 'ko'
     ? { asking: '판매가 관측', sold: '판매 완료 관측', count: '관측 기록', amount: '관측 기록 수' }
     : { asking: tx('Observed asks'), sold: tx('Observed sold'), count: tx('Observations'), amount: tx('Observations') }) : {}) };
@@ -180,7 +170,7 @@ export function mountMarketCharts(root, rows, { lang = 'ko', now = Date.now(), t
       <p class="profile-scope">${scope}</p><div class="analysis-distributions">
       <div class="chart-card"><h4>${t.profile}</h4><p class="chart-caption">${onBand ? t.profileNote : (lang === 'ko' ? '가격 구간별로 확인한 판매 매물 수예요.' : tx('Observed asking listings in each price band.'))}</p>
       ${peak ? `<p class="profile-peak"><span>${t.peak}</span><strong>${tied > 1 ? t.tied.replace('{n}', tied) : bandName(peak)}</strong><span>${count(peak.count)} · ${Math.round(peak.share * 100)}%</span></p>` : ''}
-      <div class="price-profile">${p.bins.map((b, i) => `<${onBand ? 'button type="button"' : 'div'} class="profile-band" ${onBand ? `data-band="${i}" aria-pressed="${selectedBand === i}" ${b.count ? '' : 'disabled'}` : ''}><span class="profile-label">${bandName(b)}<small>${count(b.count)} · ${Math.round(b.count / p.total * 100)}%</small>${optRange(b, p)}</span><span class="profile-track"><span style="width:${b.count / biggest * 100}%"></span></span></${onBand ? 'button' : 'div'}>`).join('') || `<p class="chart-empty">${t.noAsking}</p>`}</div><p class="chart-caption">${t.price}</p>
+      <div class="price-profile">${p.bins.map((b, i) => `<${onBand ? 'button type="button"' : 'div'} class="profile-band" ${onBand ? `data-band="${i}" aria-pressed="${selectedBand === i}" ${b.count ? '' : 'disabled'}` : ''}><span class="profile-label">${bandName(b)}<small>${count(b.count)} · ${Math.round(b.count / p.total * 100)}%</small>${optRange(b, optBadge)}</span><span class="profile-track"><span style="width:${b.count / biggest * 100}%"></span></span></${onBand ? 'button' : 'div'}>`).join('') || `<p class="chart-empty">${t.noAsking}</p>`}</div><p class="chart-caption">${t.price}</p>
       <button type="button" class="btn ghost small-btn" data-clear-band ${selectedBand == null ? 'hidden' : ''}>${t.clear}</button></div>
       <div class="chart-card"><h4>${t.depth}</h4><p class="chart-caption">${t.depthNote}</p><div data-depth-chart></div><p class="chart-inspector" data-depth-inspect aria-live="polite">${p.total ? `${price(p.levels.at(-1).price)} ${t.accumulated} ${count(p.total)}` : t.none}</p><p class="chart-caption">${t.price}</p></div></div>`;
     draw();

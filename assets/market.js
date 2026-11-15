@@ -3,6 +3,7 @@ import { DAY, parseUtc, newMark } from "./market-data.js";
 import { KERNING, placeLabel } from "./place.js";
 import { makeMarketIndex, catalogRows, matchingIds, refPrice, npcBetter } from "./market-catalog.js";
 import { mountMarketCharts } from "./market-charts.js";
+import { optBadge, loadTips as loadOptTips } from "./opt-grade.js";
 import { intentOf, priceOf as megaPrice } from "./mega-text.js";
 import { WISHLIST_KEY, RECENT_KEY, SEEN_KEY, WISHLIST_MAX, readList, addRecent, removeRecent, toggleWishlist, snapshot, visitDelta, pruneSeen } from "./market-memory.js";
 // Opened from a Discord alert DM (listings are newest first for everyone now, so the alerted one is on top).
@@ -222,67 +223,20 @@ const placeChips = (r) => `<span class="mb-ch" style="--h:${(Number(r.channel) *
 // The item panel's "where to buy" list: one card per listing, price first, then how fresh it is, who and where.
 // Freshness follows MesoWatch's wording: seen within an hour is probably still up, older ones may have sold.
 let lastOffers = null;
-// Equipment options sent with a listing (worker/src/item-options.js): each stat as shown in game, with the difference
-// from the item's base value in the game data, plus "clean" and upgrades left. Shown only when a reader sent them.
-const OPT_ORDER = ["PAD", "MAD", "STR", "DEX", "INT", "LUK", "ACC", "EVA", "MHP", "MMP", "PDD", "MDD", "Speed", "Jump", "CRT", "CRD"];
-const OPT_LABEL = ko
-  ? { PAD: "공", MAD: "마", STR: "힘", DEX: "덱", INT: "인", LUK: "럭", ACC: "명중", EVA: "회피", MHP: "HP", MMP: "MP", PDD: "물방", MDD: "마방", Speed: "이속", Jump: "점프", CRT: "크확", CRD: "크뎀" }
-  : { PAD: "ATT", MAD: "M.ATT", STR: "STR", DEX: "DEX", INT: "INT", LUK: "LUK", ACC: "ACC", EVA: "AVOID", MHP: "HP", MMP: "MP", PDD: "DEF", MDD: "M.DEF", Speed: "SPEED", Jump: "JUMP", CRT: "CRIT", CRD: "C.DMG" };
-const optStats = (o) => OPT_ORDER.filter((k) => o?.stats?.[k] != null).map((k) => [k, o.stats[k]]);
-// Short text for grouping and the summary: "공 9 · 업횟 7". Upgrades left say whether it was scrolled, so no "clean" tag.
-const optKey = (o) => [o?.ups > 0 ? `+${o.ups}` : "", ...optStats(o).map(([k, v]) => `${OPT_LABEL[k]} ${v}`), o?.slots != null ? `${tr("업횟", "Slots")} ${o.slots}` : ""].filter(Boolean).join(" · ");
-// Upgrades: left / total, passed ("+N" after the name in game) and failed. "used" may be missing; the base slot count
-// then fills it (base - left), which holds unless the item was hammered.
-function optUpgrades(o, baseSlots) {
-  const used = o.used ?? (baseSlots != null && o.slots != null && baseSlots >= o.slots ? baseSlots - o.slots : null);
-  const fails = used != null && o.ups != null ? used - o.ups : null;
-  return { used, fails, total: baseSlots ?? (o.slots != null && used != null ? o.slots + used : null) };
-}
-// Option words as players use them: an item's roll is judged on one stat only, its main one (weapon attack; magic attack
-// for wands and staves; weapon defense for armor, magic defense when the item has no weapon defense). Same as the base
-// value is 정옵, N above is "N상", N below is "N하". Scrolled gear mixes scroll stats into that number, so only
-// unscrolled gear gets a roll. "+N" before the name is the number of scrolls that passed.
-const MAGIC_WEAPONS = new Set(["Wand", "Staff"]);
-function mainStat(sub, base) {
-  if (base.PAD != null && !MAGIC_WEAPONS.has(sub)) return "PAD";
-  if (base.MAD != null) return "MAD";
-  if (base.PDD != null) return "PDD";
-  if (base.MDD != null) return "MDD";
-  return null;
-}
-function optGrade(o, base, sub) {
-  const used = o.used ?? 0;
-  if (used > 0 || o.ups > 0) return null;
-  const key = mainStat(sub, base);
-  if (!key || o.stats?.[key] == null) return null;
-  return { key, d: o.stats[key] - base[key] };
-}
-const gradeText = (g) => (g.d > 0 ? tr(`${g.d}상`, `+${g.d} roll`) : g.d < 0 ? tr(`${-g.d}하`, `${g.d} roll`) : tr("정옵", "Base roll"));
+// Equipment options sent with a listing (worker/src/item-options.js), shown as one word: "+3", "정옵", "2상", "1하"
+// (assets/opt-grade.js). The hover card shows the full stats.
 function optionChips(r) {
-  const o = r.opts;
-  if (!o) return "";
-  const t = tips?.items?.[r.item];
-  // Some gear has no stats in the game data we hold ({} and 0 slots): then no roll and no total slots.
-  const known = !!(t?.[7] && Object.keys(t[7]).length);
-  const base = known ? t[7] : {}, baseSlots = known && t[8] ? t[8] : null;
-  const chips = [];
-  const up = optUpgrades(o, baseSlots);
-  const grade = known ? optGrade(o, base, t[3]) : null;
-  if (o.ups > 0) chips.push(`<span class="mb-opt plus" title="${esc(tr(`주문서 ${o.ups}번 성공`, `${o.ups} scrolls passed`))}">+${o.ups}</span>`);
-  if (grade) chips.push(`<span class="mb-opt grade ${grade.d > 0 ? "hi" : grade.d < 0 ? "lo" : "mid"}" title="${esc(tr(`${OPT_LABEL[grade.key]} 기준`, `by ${OPT_LABEL[grade.key]}`))}">${gradeText(grade)}</span>`);
-  for (const [k, v] of optStats(o)) chips.push(`<span class="mb-opt">${esc(OPT_LABEL[k])} ${v}</span>`);
-  if (o.slots != null) chips.push(`<span class="mb-opt slots" title="${esc(tr("남은 업그레이드 가능 횟수 / 전체", "Upgrades left / total"))}">${tr("업횟", "Slots")} ${o.slots}${up.total != null ? `/${up.total}` : ""}</span>`);
-  if (up.fails > 0) chips.push(`<span class="mb-opt" title="${esc(tr(`주문서 ${up.used}번 중 실패 ${up.fails}`, `${up.fails} of ${up.used} scrolls failed`))}">${tr(`실패 ${up.fails}`, `${up.fails} failed`)}</span>`);
-  return chips.length ? `<span class="mb-opts">${chips.join("")}</span>` : "";
+  const b = optBadge(r.item, r.opts, tips);
+  return b ? `<span class="mb-opts"><span class="mb-opt grade ${b.cls}"${b.title ? ` title="${esc(b.title)}"` : ""}>${esc(b.text)}</span></span>` : "";
 }
-// "Price by option": listings that carry options, grouped by the same options, lowest asking price per group.
+// "Price by option": listings grouped by that word, lowest asking price per group.
 function optionSummary(rows) {
   const groups = new Map();
   for (const r of rows) {
-    if (!r.opts || r.sold) continue;
-    const key = optKey(r.opts);
-    if (!key) continue;
-    const g = groups.get(key) || groups.set(key, { key, n: 0, low: Infinity, sort: optStats(r.opts).reduce((a, [, v]) => a + v, 0) }).get(key);
+    if (r.sold) continue;
+    const b = optBadge(r.item, r.opts, tips);
+    if (!b) continue;
+    const g = groups.get(b.text) || groups.set(b.text, { key: b.text, n: 0, low: Infinity, sort: b.sort }).get(b.text);
     g.n += 1;
     g.low = Math.min(g.low, r.price);
   }
@@ -700,6 +654,8 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
     if (lastOffers && $("md-rows")?.querySelector(".mb-offers")) $("md-rows").innerHTML = offerCards(lastOffers);
     const normalize = (rs) =>
       rs.map((r) => ({ ...r, sold: !!r.sold, t: parseUtc(r.seen) }));
+    if ((data.profile || []).some((r) => r.opts)) await loadTips();
+    if (seq !== detailSeq) return;
     chart = mountMarketCharts($("mk-charts"), normalize(data.rows), {
       lang: D.lang,
       now: Date.parse(data.asOf),
@@ -708,6 +664,7 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
       truncated: data.truncated,
       profileTruncated: data.profileTruncated,
       limit: data.limit,
+      optBadge: (o) => optBadge(id, o, tips),
       onBand(band) {
         priceBand = band;
         if (band) {
@@ -1043,8 +1000,8 @@ $("mb-shop").addEventListener("click", (e) => {
 });
 // What the item is and where it comes from, under the price: requirements and stats, NPC price, quest rewards and the
 // monsters that drop it (the same data file as the hover cards, loaded once).
-let tipsData = null, tips = null;
-const loadTips = () => (tipsData ||= fetch(document.body.dataset.tips).then((r) => r.json()).then((d) => (tips = d)).catch(() => null));
+let tips = null;
+const loadTips = () => loadOptTips().then((d) => (tips = d));
 // What an NPC shop pays for one (game data; 0 when unknown or not loaded yet), and how that compares with the market.
 const npcSell = (id) => tips?.items?.[id]?.[9] || 0;
 // basis: which market price was compared (today's asking median or the reference "typical" price), named in the text.

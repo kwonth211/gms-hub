@@ -2918,3 +2918,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 .mb-listings-table .mb-cell-price .mb-opts { justify-content: flex-end; }
 .profile-label .profile-opt { flex-basis: 100%; color: var(--accent); font-weight: 700; }
 .recent-list .name .opt { margin-left: 6px; flex: none; color: var(--accent); font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+.recent-list .name .opt.mid { color: var(--text-2); }
+.recent-list .name .opt.hi { color: var(--up); }
+.recent-list .name .opt.lo { color: var(--down); }
+.mb-opt.grade.plus { border-color: var(--accent); color: var(--accent); }
