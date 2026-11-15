@@ -231,11 +231,10 @@ function offerCards(rows) {
   return `<ul class="mb-offers">${rows.map((r) => {
     const age = Date.now() - parseUtc(r.seen);
     const fresh = r.sold ? "sold" : age < 3600000 ? "fresh" : age < 6 * 3600000 ? "warm" : "old";
-    const status = { sold: tr("판매 완료 표시", "Marked sold"), fresh: tr("아직 팔고 있을 가능성 높음", "Likely still up"), warm: tr("몇 시간 전 확인", "Seen a few hours ago"), old: tr("팔렸을 수도 있어요", "May have sold") }[fresh];
-    const tag = r25 == null || r.sold ? "" : r.price < r25 ? `<b class="mb-deal cheap">${tr("싼 편", "Cheap")}</b>` : r.price > r75 ? `<b class="mb-deal pricey">${tr("비싼 편", "Pricey")}</b>` : `<b class="mb-deal fair">${tr("보통", "Typical")}</b>`;
-    return `<li class="mb-offer ${fresh}"><div class="mb-offer-price"><strong>${money(r.price)}</strong><small>${T.priceUnit}${r.qty > 1 ? ` · ×${money(r.qty)} = ${money(r.price * r.qty)}` : ""}</small>${tag}</div>
-<div class="mb-offer-who"><button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)}</button><span class="mb-fresh"><i aria-hidden="true"></i>${when(r.seen)} · ${status}</span></div>
-<div class="mb-offer-where">${placeChips(r)}</div></li>`;
+    // One line per listing: the dot colour carries how fresh it is (full wording on hover).
+    const status = { sold: tr("판매 완료 표시", "Marked sold"), fresh: tr("1시간 안에 확인", "Seen within the hour"), warm: tr("몇 시간 전 확인", "Seen a few hours ago"), old: tr("팔렸을 수도 있어요", "May have sold") }[fresh];
+    const tag = r.sold ? `<b class="mb-deal pricey">${tr("판매 완료", "Sold")}</b>` : r25 == null ? "" : r.price < r25 ? `<b class="mb-deal cheap">${tr("싼 편", "Cheap")}</b>` : r.price > r75 ? `<b class="mb-deal pricey">${tr("비싼 편", "Pricey")}</b>` : "";
+    return `<li class="mb-offer ${fresh}"><span class="mb-offer-price"><strong>${money(r.price)}</strong>${r.qty > 1 ? `<small>×${money(r.qty)}</small>` : ""}${tag}</span><button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)}</button><span class="mb-fresh" title="${esc(status)}"><i aria-hidden="true"></i>${when(r.seen)}<span class="sr-only"> · ${esc(status)}</span></span><span class="mb-offer-where">${placeChips(r)}</span></li>`;
   }).join("")}</ul>`;
 }
 function listingTable(rows, { showItem = true, shopButtons = true } = {}) {

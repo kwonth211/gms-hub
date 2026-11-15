@@ -2137,19 +2137,20 @@ html:has(.mg-ticker) { --tk-h: 32px; }
   color: hsl(var(--h) 55% 28%); background: hsl(var(--h) 75% 90%); border: 1px solid hsl(var(--h) 50% 78%); }
 [data-theme='dark'] .mb-ch { color: hsl(var(--h) 80% 82%); background: hsl(var(--h) 35% 22%); border-color: hsl(var(--h) 35% 34%); }
 .mb-room { display: inline-block; margin-left: 4px; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; color: var(--text-2); background: var(--panel-2); border: 1px solid var(--line); }
-.mb-offers { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-.mb-offer { display: grid; grid-template-columns: minmax(120px, auto) minmax(0, 1fr) auto; align-items: center; gap: 6px 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); box-shadow: inset 3px 0 0 var(--fresh, var(--line-strong)); }
+.mb-offers { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; }
+.mb-offer { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 5px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); box-shadow: inset 3px 0 0 var(--fresh, var(--line-strong)); font-size: 0.76rem; line-height: 1.3; }
 .mb-offer.fresh { --fresh: #2e9d5b; } .mb-offer.warm { --fresh: #d9a520; } .mb-offer.old { --fresh: var(--line-strong); opacity: 0.82; } .mb-offer.sold { --fresh: var(--muted); opacity: 0.6; }
-.mb-offer-price strong { display: block; font-size: 1.15rem; font-variant-numeric: tabular-nums; line-height: 1.15; }
-.mb-offer-price small { color: var(--muted); font-size: 0.74rem; }
-.mb-deal { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 4px; font-size: 0.7rem; vertical-align: 1px; }
+.mb-offer-price { display: flex; align-items: baseline; gap: 4px; flex: none; min-width: 88px; white-space: nowrap; }
+.mb-offer-price strong { font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+.mb-offer-price small { color: var(--muted); font-size: 0.7rem; }
+.mb-deal { display: inline-block; margin-left: 2px; padding: 0 5px; border-radius: 4px; font-size: 0.66rem; line-height: 1.5; }
 .mb-deal.cheap { color: #fff; background: #2e9d5b; } .mb-deal.fair { color: var(--accent-ink); background: color-mix(in srgb, var(--accent-fill) 35%, transparent); } .mb-deal.pricey { color: var(--muted); background: var(--panel-2); }
-.mb-offer-who { display: grid; gap: 2px; min-width: 0; }
-.mb-offer-who .mb-seller { justify-self: start; font-weight: 800; }
-.mb-fresh { display: flex; align-items: center; gap: 6px; font-size: 0.76rem; color: var(--muted); }
-.mb-fresh i { width: 7px; height: 7px; border-radius: 50%; background: var(--fresh, var(--muted)); flex: none; }
-.mb-offer-where { justify-self: end; white-space: nowrap; }
-@media (max-width: 640px) { .mb-offer { grid-template-columns: minmax(0, 1fr) auto; } .mb-offer-who { grid-column: 1 / -1; grid-row: 2; } }
+.mb-offer .mb-seller { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; font-weight: 700; font-size: 0.76rem; padding: 0; }
+.mb-fresh { display: flex; align-items: center; gap: 5px; flex: none; font-size: 0.7rem; color: var(--muted); white-space: nowrap; }
+.mb-fresh i { width: 6px; height: 6px; border-radius: 50%; background: var(--fresh, var(--muted)); flex: none; }
+.mb-offer-where { flex: none; white-space: nowrap; font-size: 0.7rem; }
+.mb-offer-where .mb-ch, .mb-offer-where .mb-room { padding: 0 5px; font-size: 0.68rem; }
+@media (max-width: 420px) { .mb-offer { gap: 7px; padding: 5px 8px; } .mb-offer-price { min-width: 0; } }
 /* Header search: a button in the header and a search sheet over the page. */
 .hs-open { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--text-2); font: inherit; font-size: 0.85rem; cursor: pointer; }
 .hs-open:hover { color: var(--text); border-color: var(--line-strong); }

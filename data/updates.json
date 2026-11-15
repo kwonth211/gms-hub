@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest.",
  "updates": [
   {
+   "id": "market-offers-compact",
+   "version": "0.6.4",
+   "level": "patch",
+   "date": "2026-11-15",
+   "path": "/tools/market/",
+   "ko": "시세 — 지금 파는 곳 목록을 한 줄로 간단하게",
+   "en": "Prices — where-to-buy list fits on one line",
+   "desc": {
+    "ko": "아이템 시세의 매물 목록이 한 줄에 가격·상점·확인 시각·채널만 보여 줘서 한 화면에 더 많이 보여요. 점 색깔로 얼마나 최근에 확인했는지 알 수 있어요.",
+    "en": "The listings under an item's price now show price, shop, last seen and channel on one line, so more fit on screen. The dot colour shows how recently each was seen."
+   }
+  },
+  {
    "id": "forge-counter",
    "version": "0.6.3",
    "level": "patch",
