@@ -279,66 +279,6 @@ function optionChips(r) {
   else if (up.used > 0) chips.push(`<span class="mb-opt">${tr(`작 ${up.used}번`, `${up.used} used`)}</span>`);
   return chips.length ? `<span class="mb-opts">${chips.join("")}</span>` : "";
 }
-// In-game style card for one listing with options: hover the row (pointer devices) and the item's tooltip appears the
-// way the game draws it (name with +N, requirements, job, stats with the base value beside each, upgrades left), plus
-// the roll grade, passed/failed scrolls and the asking price.
-const OPT_LONG = ko
-  ? { PAD: "공격력", MAD: "마력", STR: "STR", DEX: "DEX", INT: "INT", LUK: "LUK", ACC: "명중률", EVA: "회피율", MHP: "최대 HP", MMP: "최대 MP", PDD: "물리방어력", MDD: "마법방어력", Speed: "이동속도", Jump: "점프력", CRT: "크리티컬 확률", CRD: "크리티컬 데미지" }
-  : { PAD: "Weapon ATT", MAD: "Magic ATT", STR: "STR", DEX: "DEX", INT: "INT", LUK: "LUK", ACC: "Accuracy", EVA: "Avoidability", MHP: "Max HP", MMP: "Max MP", PDD: "Weapon DEF", MDD: "Magic DEF", Speed: "Speed", Jump: "Jump", CRT: "Critical rate", CRD: "Critical damage" };
-const OPT_JOBS = [[0, tr("초보자", "Beginner")], [1, tr("전사", "Warrior")], [2, tr("마법사", "Magician")], [4, tr("궁수", "Bowman")], [8, tr("도적", "Thief")]];
-const OPT_SUB = ko ? { Wand: "완드", Staff: "스태프", Bow: "활", Crossbow: "석궁", Claw: "아대", Dagger: "단검", Spear: "창", "Pole Arm": "폴암", "One-Handed Sword": "한손검", "Two-Handed Sword": "두손검", "One-Handed Axe": "한손도끼", "Two-Handed Axe": "두손도끼", "One-Handed Blunt Weapon": "한손둔기", "Two-Handed Blunt": "두손둔기", Hat: "모자", Top: "상의", Bottom: "하의", Overall: "한벌옷", Shoes: "신발", Glove: "장갑", Shield: "방패", Cape: "망토", Earrings: "귀고리", Ring: "반지", Pendant: "펜던트", Belt: "벨트", "Face Accessory": "얼굴장식", "Eye Accessory": "눈장식" } : {};
-let optTip = null;
-function optTipHtml(r) {
-  const o = r.opts, t = tips?.items?.[r.item];
-  const known = !!(t?.[7] && Object.keys(t[7]).length);
-  const base = known ? t[7] : {}, baseSlots = known && t[8] ? t[8] : null;
-  const up = optUpgrades(o, baseSlots), grade = optGrade(o, base);
-  const name = `${esc(itemName(r.item))}${o.ups > 0 ? ` (+${o.ups})` : ""}`;
-  const req = t?.[6] || {};
-  const reqRow = (k, label) => `<li${req[k] || (k === "lv" && t?.[4]) ? "" : ' class="off"'}>${label} : ${k === "lv" ? t?.[4] || 0 : req[k] || 0}</li>`;
-  const job = t?.[5] || 0;
-  const jobs = OPT_JOBS.map(([b, n]) => `<span${(b === 0 ? !job : !job || job & b) ? "" : ' class="off"'}>${n}</span>`).join("");
-  const sign = (v) => (v > 0 ? `+${v}` : `${v}`);
-  const stats = optStats(o).map(([k, v]) => {
-    const b = base[k], d = b != null ? v - b : null;
-    const note = !known ? "" : b == null ? `<em class="extra">${tr("추옵", "extra")}</em>` : d ? `<em class="${d > 0 ? "up" : "down"}">${tr("기본", "base")} ${b}, ${d > 0 ? "▲" : "▼"}${Math.abs(d)}</em>` : `<em>${tr("기본", "base")}</em>`;
-    return `<li><span>${esc(OPT_LONG[k])} : ${sign(v)}</span>${note}</li>`;
-  }).join("");
-  const gradeLine = grade == null ? "" : `<p class="ot-grade ${grade > 0 ? "up" : grade < 0 ? "down" : ""}">${grade > 0 ? tr(`상옵 +${grade}`, `Above base +${grade}`) : grade < 0 ? tr(`하옵 ${grade}`, `Below base ${grade}`) : tr("기본옵", "Base roll")}${o.clean ? ` · ${tr("클린", "Clean")}` : ""}</p>`;
-  const scrollLine = up.used > 0 ? `<p class="ot-muted">${tr(`주문서 ${up.used}번 사용: 성공 ${o.ups ?? "?"} · 실패 ${up.fails ?? "?"}`, `${up.used} scrolls used: ${o.ups ?? "?"} passed · ${up.fails ?? "?"} failed`)}</p>` : o.clean && grade == null ? `<p class="ot-muted">${tr("클린", "Clean")}</p>` : "";
-  return `<p class="ot-name">${name}</p>
-<div class="ot-top"><img src="https://maplestory.io/api/MCW/1/item/${r.item}/icon" width="40" height="40" alt=""><ul class="ot-req">${reqRow("lv", tr("REQ LEV", "REQ LEV"))}${reqRow("str", "REQ STR")}${reqRow("dex", "REQ DEX")}${reqRow("int", "REQ INT")}${reqRow("luk", "REQ LUK")}</ul></div>
-<p class="ot-jobs">${jobs}</p>
-<ul class="ot-stats">${t?.[3] ? `<li><span>${tr("장비 분류", "Category")} : ${esc(OPT_SUB[t[3]] || t[3])}</span></li>` : ""}${stats}${o.slots != null ? `<li><span>${tr("업그레이드 가능 횟수", "Upgrades available")} : ${o.slots}${up.total != null ? ` / ${up.total}` : ""}</span></li>` : ""}</ul>
-${gradeLine}${scrollLine}<p class="ot-price"><b>${money(r.price)}</b> ${tr("메소", "mesos")} · ${esc(r.seller)}</p>`;
-}
-if (matchMedia("(hover: hover) and (pointer: fine)").matches) {
-  let shownFor = null, mx = 0, my = 0;
-  const place = () => {
-    const w = optTip.offsetWidth, h = optTip.offsetHeight;
-    let x = mx + 16, y = my + 16;
-    if (x + w > innerWidth - 8) x = Math.max(8, mx - w - 16);
-    if (y + h > innerHeight - 8) y = Math.max(8, innerHeight - h - 8);
-    optTip.style.transform = `translate(${x}px, ${y}px)`;
-  };
-  const hideTip = () => { shownFor = null; if (optTip) optTip.hidden = true; };
-  document.addEventListener("pointermove", (e) => {
-    mx = e.clientX; my = e.clientY;
-    const li = e.target.closest?.(".mb-offer.has-opts[data-offer]");
-    if (!li) return hideTip();
-    if (li !== shownFor) {
-      const r = lastOffers?.[Number(li.dataset.offer)];
-      if (!r?.opts) return hideTip();
-      if (!optTip) { optTip = document.createElement("div"); optTip.className = "opt-tip"; optTip.setAttribute("role", "tooltip"); document.body.append(optTip); }
-      optTip.innerHTML = optTipHtml(r);
-      optTip.hidden = false;
-      shownFor = li;
-      window.track?.("market_option_tip", { item_id: r.item });
-    }
-    place();
-  }, { passive: true });
-  addEventListener("scroll", hideTip, { passive: true });
-}
 // "Price by option": listings that carry options, grouped by the same options, lowest asking price per group.
 function optionSummary(rows) {
   const groups = new Map();
@@ -367,7 +307,7 @@ function offerCards(rows) {
     const status = { sold: tr("판매 완료 표시", "Marked sold"), fresh: tr("1시간 안에 확인", "Seen within the hour"), warm: tr("몇 시간 전 확인", "Seen a few hours ago"), old: tr("팔렸을 수도 있어요", "May have sold") }[fresh];
     const tag = r.sold ? `<b class="mb-deal pricey">${tr("판매 완료", "Sold")}</b>` : r25 == null ? "" : r.price < r25 ? `<b class="mb-deal cheap">${tr("싼 편", "Cheap")}</b>` : r.price > r75 ? `<b class="mb-deal pricey">${tr("비싼 편", "Pricey")}</b>` : "";
     const chips = optionChips(r);
-    return `<li class="mb-offer ${fresh}${chips ? " has-opts" : ""}"${chips ? ` data-offer="${rows.indexOf(r)}"` : ""}><span class="mb-offer-price"><strong>${money(r.price)}</strong>${r.qty > 1 ? `<small>×${money(r.qty)}</small>` : ""}${tag}</span>${chips}<button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)}</button><span class="mb-fresh" title="${esc(status)}"><i aria-hidden="true"></i>${when(r.seen)}<span class="sr-only"> · ${esc(status)}</span></span><span class="mb-offer-where">${placeChips(r)}</span></li>`;
+    return `<li class="mb-offer ${fresh}${chips ? " has-opts" : ""}"${chips ? ` data-item-id="${r.item}" data-opts="${esc(JSON.stringify(r.opts))}"` : ""}><span class="mb-offer-price"><strong>${money(r.price)}</strong>${r.qty > 1 ? `<small>×${money(r.qty)}</small>` : ""}${tag}</span>${chips}<button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)}</button><span class="mb-fresh" title="${esc(status)}"><i aria-hidden="true"></i>${when(r.seen)}<span class="sr-only"> · ${esc(status)}</span></span><span class="mb-offer-where">${placeChips(r)}</span></li>`;
   }).join("")}</ul>`;
 }
 function listingTable(rows, { showItem = true, shopButtons = true } = {}) {

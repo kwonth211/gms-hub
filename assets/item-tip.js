@@ -24,7 +24,8 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches && body.dataset.tip
   const INC = {
     PAD: tr('공격력', 'Weapon attack'), MAD: tr('마력', 'Magic attack'), STR: 'STR', DEX: 'DEX', INT: 'INT', LUK: 'LUK',
     MHP: 'HP', MMP: 'MP', PDD: tr('물리 방어력', 'Weapon defense'), MDD: tr('마법 방어력', 'Magic defense'),
-    ACC: tr('명중률', 'Accuracy'), EVA: tr('회피율', 'Avoidability'), Speed: tr('이동속도', 'Speed'), Jump: tr('점프력', 'Jump')
+    ACC: tr('명중률', 'Accuracy'), EVA: tr('회피율', 'Avoidability'), Speed: tr('이동속도', 'Speed'), Jump: tr('점프력', 'Jump'),
+    CRT: tr('크리티컬 확률', 'Critical rate'), CRD: tr('크리티컬 데미지', 'Critical damage')
   };
   const JOBS = [[1, tr('전사', 'Warrior')], [2, tr('마법사', 'Magician')], [4, tr('궁수', 'Bowman')], [8, tr('도적', 'Thief')]];
   const CAT = { Equip: tr('장비', 'Equipment'), Use: tr('소비', 'Use'), Etc: tr('기타', 'Etc'), Setup: tr('설치', 'Setup') };
@@ -37,7 +38,12 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches && body.dataset.tip
     const mob = href.match(/\/monsters\/(\d+)\/(?:[?#]|$)/) || (el.matches('img') ? (el.getAttribute('src') || '').match(/\/assets\/monsters\/(\d+)\.gif/) : null);
     if (mob) return { kind: 'mob', id: Number(mob[1]) };
     const tagged = el.closest('[data-item-id], [data-item]');
-    if (tagged) return { kind: 'item', id: Number(tagged.dataset.itemId || tagged.dataset.item) };
+    if (tagged) {
+      // A shop listing with options (market.js): the card shows that piece's actual stats instead of the base ones.
+      let opts = null;
+      try { opts = tagged.dataset.opts ? JSON.parse(tagged.dataset.opts) : null; } catch (e) {}
+      return { kind: 'item', id: Number(tagged.dataset.itemId || tagged.dataset.item), opts, optKey: tagged.dataset.opts || '' };
+    }
     const m = href.match(/\/items\/(\d{7})-/) || href.match(/[?&](?:item|scroll)=(\d{7})/);
     if (m) return { kind: 'item', id: Number(m[1]) };
     const holder = el.closest('a, li, tr, .item-card, .monster-drop');
@@ -45,7 +51,7 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches && body.dataset.tip
     const i = icon.match(/\/item\/(\d{7})\/icon/);
     return i ? { kind: 'item', id: Number(i[1]) } : null;
   }
-  const keyOf = (t) => (t ? `${t.kind}:${t.id}` : null);
+  const keyOf = (t) => (t ? `${t.kind}:${t.id}:${t.optKey || ''}` : null);
   const sprite = (id, size) => `<img class="tip-sprite" src="${body.dataset.sprites}${id}.gif" width="${size}" height="${size}" alt="" loading="lazy">`;
   const mobName = (id) => { const m = data.mobs[id]; return m ? (ko ? m[0] : m[1]) : ''; };
   const itemName = (id) => { const t = data.items[id]; return t ? (ko && t[0] ? t[0] : t[1]) : ''; };
@@ -77,11 +83,33 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
 <dl>${row(tr('기록', 'Records'), `${nf.format(p.n)}${tr('건', '')}`)}${row(tr('판매 완료', 'Sold'), p.sold?.median ? nf.format(p.sold.median) : '')}${row(tr('판매 중', 'Asking'), p.selling?.median ? nf.format(p.selling.median) : '')}${row(tr('구매 희망', 'Buying'), p.buying?.median ? nf.format(p.buying.median) : '')}</dl></section>`;
   }
 
-  function renderItem(id) {
+  // This listing's own stats (opts from the shop reader) next to the base values: ▲/▼ per stat, stats the base item
+  // lacks as extra, the roll grade for unscrolled gear, upgrades left and scrolls passed/failed.
+  const OPT_ORDER = ['PAD', 'MAD', 'STR', 'DEX', 'INT', 'LUK', 'ACC', 'EVA', 'MHP', 'MMP', 'PDD', 'MDD', 'Speed', 'Jump', 'CRT', 'CRD'];
+  function optionLines(o, base, baseSlots) {
+    const known = Object.keys(base).length > 0;
+    const rows = OPT_ORDER.filter((k) => o.stats?.[k] != null).map((k) => {
+      const v = o.stats[k], b = base[k], d = b != null ? v - b : null;
+      const note = !known ? '' : b == null ? `<small class="tip-gold">${tr('추옵', 'extra')}</small>` : d ? `<small class="${d > 0 ? 'tip-up' : 'tip-down'}">${d > 0 ? '▲' : '▼'}${Math.abs(d)} <span class="tip-muted">(${tr('기본', 'base')} ${b})</span></small>` : `<small class="tip-muted">${tr('기본', 'base')}</small>`;
+      return `<li class="tip-opt"><span>${INC[k] || k} <b>${v > 0 ? '+' : ''}${v}</b></span>${note}</li>`;
+    }).join('');
+    const used = o.used ?? (known && baseSlots && o.slots != null && baseSlots >= o.slots ? baseSlots - o.slots : null);
+    const total = known && baseSlots ? baseSlots : o.slots != null && used != null ? o.slots + used : null;
+    const keys = Object.keys(base).filter((k) => o.stats?.[k] != null);
+    const grade = o.clean && known && keys.length ? keys.reduce((a, k) => a + (o.stats[k] - base[k]), 0) : null;
+    const out = [`<ul class="tip-stats tip-opts">${rows}</ul>`];
+    if (o.slots != null) out.push(`<p>${tr('업그레이드 가능 횟수', 'Upgrade slots')} <b>${o.slots}</b>${total != null ? ` / ${total}` : ''}</p>`);
+    if (used > 0) out.push(`<p class="tip-muted">${tr(`주문서 ${used}번: 성공 ${o.ups ?? '?'} · 실패 ${o.ups != null ? used - o.ups : '?'}`, `${used} scrolls: ${o.ups ?? '?'} passed · ${o.ups != null ? used - o.ups : '?'} failed`)}</p>`);
+    if (grade != null) out.push(`<p class="tip-grade ${grade > 0 ? 'tip-up' : grade < 0 ? 'tip-down' : ''}">${grade > 0 ? tr(`상옵 +${grade}`, `Above base +${grade}`) : grade < 0 ? tr(`하옵 ${grade}`, `Below base ${grade}`) : tr('기본옵', 'Base roll')}${o.clean ? ` · ${tr('클린', 'Clean')}` : ''}</p>`);
+    else if (o.clean) out.push(`<p class="tip-good">${tr('클린', 'Clean')}</p>`);
+    return out.join('');
+  }
+
+  function renderItem(id, opts) {
     const t = data?.items?.[id];
     if (!t) return false;
     const [nameKo, nameEn, cat, sub, lv, job, req, inc, slots, sell, scroll, drops, dropN, questN] = t;
-    const name = ko && nameKo ? nameKo : nameEn;
+    const name = (ko && nameKo ? nameKo : nameEn) + (opts?.ups > 0 ? ` (+${opts.ups})` : '');
     const lines = [];
     if (scroll) {
       const [gain, success, boom] = scroll;
@@ -92,9 +120,12 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
       const jobs = JOBS.filter(([b]) => job & b).map(([, n]) => n).join(', ') || tr('모든 직업', 'All classes');
       const reqs = Object.entries(req || {}).map(([k, v]) => `${k.toUpperCase()} ${v}`).join(' · ');
       lines.push(`<p class="tip-req">${lv ? `Lv. ${lv} · ` : ''}${esc(jobs)}${reqs ? `<br><span class="tip-muted">${reqs}</span>` : ''}</p>`);
-      const stats = Object.entries(inc || {}).map(([k, v]) => `<li>${INC[k] || k} <b>+${v}</b></li>`).join('');
-      if (stats) lines.push(`<ul class="tip-stats">${stats}</ul>`);
-      if (slots) lines.push(`<p class="tip-muted">${tr('업그레이드 가능 횟수', 'Upgrade slots')} ${slots}</p>`);
+      if (opts) lines.push(optionLines(opts, inc || {}, slots));
+      else {
+        const stats = Object.entries(inc || {}).map(([k, v]) => `<li>${INC[k] || k} <b>+${v}</b></li>`).join('');
+        if (stats) lines.push(`<ul class="tip-stats">${stats}</ul>`);
+        if (slots) lines.push(`<p class="tip-muted">${tr('업그레이드 가능 횟수', 'Upgrade slots')} ${slots}</p>`);
+      }
     }
     const from = [];
     let dropList = '';
@@ -136,7 +167,7 @@ ${dropList ? `<section><h4>${tr('주요 드롭', 'Notable drops')}</h4><ul class
 <footer>${tr('필요 명중은 같은 레벨 기준 · 드롭: 플레이어 제보', 'Accuracy at its own level · drops: player reports')}</footer>`;
     return true;
   }
-  const render = (t) => (t.kind === 'mob' ? renderMob(t.id) : renderItem(t.id));
+  const render = (t) => (t.kind === 'mob' ? renderMob(t.id) : renderItem(t.id, t.opts));
 
   let current = null;
   let timer = 0;
@@ -158,6 +189,7 @@ ${dropList ? `<section><h4>${tr('주요 드롭', 'Notable drops')}</h4><ul class
     if (current !== key || !render(t)) return;
     card.hidden = false;
     place();
+    if (t.opts) window.track?.('market_option_tip', { item_id: t.id });
     if (t.kind === 'item' && !prices.has(t.id) && body.dataset.priceApi) {
       try {
         const r = await fetch(`${body.dataset.priceApi}/prices?ids=${t.id}`);
@@ -174,7 +206,7 @@ ${dropList ? `<section><h4>${tr('주요 드롭', 'Notable drops')}</h4><ul class
     card.hidden = true;
   }
   document.addEventListener('pointerover', (e) => {
-    if (e.target.closest('.item-tip, nav, header.site-header, select, input, button, .mb-offer.has-opts')) return;
+    if (e.target.closest('.item-tip, nav, header.site-header, select, input, button')) return;
     const t = targetOf(e.target);
     if (!t || !t.id) return;
     const key = keyOf(t);
