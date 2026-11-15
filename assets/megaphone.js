@@ -328,8 +328,8 @@ document.querySelectorAll('[data-mg-view]').forEach((group) => group.addEventLis
   let intent = 'sell', picked = null, pick = -1, options = [];
   try { f.nick.value = localStorage.getItem(NICK_KEY) || ''; f.ch.value = localStorage.getItem(CH_KEY) || ''; } catch (e) {}
   const PH = {
-    sell: () => tr('예: 장공 → 목록에서 고르고 180만 1개 급처', 'e.g. gloves att, pick it, then 1.8m quick sale'),
-    buy: () => tr('예: 일비 → 목록에서 고르고 30만에 삽니다', 'e.g. ilbi, pick it, then buying at 300k'),
+    sell: () => tr('예: 장공 180만 급처', 'e.g. gloves att 1.8m'),
+    buy: () => tr('예: 일비 30만에 구해요', 'e.g. ilbi 300k'),
     talk: () => tr('하고 싶은 말 (예: 장공 시세 왜 이래요?)', 'Say something (e.g. who is buying gloves?)'),
   };
   const setIntent = (v) => {
