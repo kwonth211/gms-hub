@@ -34,6 +34,7 @@ import { notifyMegaphones, notifyListings } from './discord-alerts.js';
 import { oauthStart, oauthCallback } from './discord-oauth.js';
 import { postMegaphones, listMegaphones, pruneMegaphones, megaphoneAsks, megaphoneStats } from './megaphone.js';
 import { storeDailyRollups, reportRaw } from './report.js';
+import { count, flushUsage, isOver, meterDb, usageView } from './usage-guard.js';
 import { createAlert, listAlerts, deleteAlert, takeHits, checkAlerts } from './alerts.js';
 export { Presence };
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
@@ -676,9 +677,29 @@ const api = {
   }
 };
 
+// Every entry point runs on a metered D1 binding (src/usage-guard.js): it counts rows read and written and, past 98% of
+// the plan's monthly included amounts, refuses (owner's call 2026-11-15: never pay more than the $5 plan).
+const metered = (env) => ({ ...env, DB: meterDb(env.DB) });
+const paused = () => new Response(JSON.stringify({ error: 'paused: monthly budget reached' }), { status: 503, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' } });
+
 export default {
-  scheduled: api.scheduled,
-  email: handleEmail,
+  scheduled: (event, env, ctx) => {
+    count('q');
+    ctx?.waitUntil?.(flushUsage(env.DB).catch(() => null));
+    return api.scheduled(event, metered(env), ctx);
+  },
+  email: (message, env, ctx) => handleEmail(message, metered(env), ctx),
   // The live viewer count is a WebSocket upgrade, so it skips the public response cache.
-  fetch: (req, env, ctx) => ['/presence', '/chat'].includes(new URL(req.url).pathname) ? handlePresence(req, env) : cachedPublicResponse(req, () => api.fetch(req, env, ctx), ctx)
+  fetch: (req, env, ctx) => {
+    const path = new URL(req.url).pathname;
+    const live = path === '/presence' || path === '/chat';
+    count('q');
+    if (live) count('d');
+    // Without an execution context (tests) there is nothing to flush into.
+    ctx?.waitUntil?.(flushUsage(env.DB).catch(() => null));
+    if (isOver('q') || (live && isOver('d'))) return paused();
+    if (path === '/usage') return new Response(JSON.stringify(usageView() || { checking: true }), { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+    const e = metered(env);
+    return live ? handlePresence(req, e) : cachedPublicResponse(req, () => api.fetch(req, e, ctx), ctx);
+  }
 };
