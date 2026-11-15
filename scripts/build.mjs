@@ -702,7 +702,7 @@ ${naverVerify}
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="preconnect" href="${esc(config.voteApi)}" crossorigin>
 ${pagePath === '/tools/market/' ? `<link rel="preload" as="fetch" href="${esc(config.voteApi)}/market/catalog" crossorigin>` : ''}
-<link rel="preload" as="style" href="${PRETENDARD}" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="${PRETENDARD}"></noscript>
+<link rel="preload" as="style" href="${PRETENDARD}" media="(min-width: 760px)" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="${PRETENDARD}" media="(min-width: 760px)"></noscript>
 <link rel="stylesheet" href="${scriptSrc('style.css')}">
 <style>${CHARM_VARS}</style>
 <script type="speculationrules">${SPECULATION}</script>
@@ -825,6 +825,8 @@ function moreMenu(lang, moved = []) {
 // is reserved from the start so nothing below moves when the messages arrive.
 // Same-site links are fetched when the pointer comes down on them or rests on them, so the next page is already here
 // when it opens; together with the cross-document view transition in style.css the site moves like one app.
+// Phones (under 760px) use the device's own font: Korean text needed some twenty font files before it counted as
+// painted (mobile LCP 7.7 s on /ko/, 2026-11-15), and phone system fonts (Noto Sans KR, Apple SD Gothic Neo) are close.
 const PRETENDARD = 'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css';
 const SPECULATION = JSON.stringify({ prefetch: [{ where: { and: [{ href_matches: '/*' }, { not: { selector_matches: '[target], [download]' } }] }, eagerness: 'moderate' }] });
 
