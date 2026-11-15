@@ -174,3 +174,29 @@ test("a buying megaphone names what is wanted, not the item the caller linked", 
   // Selling megaphones keep the linked item.
   assert.deepEqual(parseMegaphone("[Overall Armor DEX Scroll: Greater] S> 22.5k Ea (3) B> Piece of ice 40k~", names), { item: 2040510, intent: "sell", price: 22500 });
 });
+
+test("buying megaphones written in shorthand resolve to the item, and unclear ones to none", async () => {
+  const { wantedItem } = await import("../worker/src/megaphone.js");
+  const names = new Map([["gloves attack scroll: lesser", 1], ["gloves attack scroll: intermediate", 2], ["gloves attack scroll: greater", 3],
+    ["earring luk scroll: intermediate", 4], ["earring int scroll: greater", 5], ["overall armor dex scroll: intermediate", 6],
+    ["overall armor luk scroll: lesser", 7], ["overall armor luk scroll: greater", 8], ["kumbi throwing stars", 9], ["steely throwing knives", 10],
+    ["fairy wand", 11], ["mushmom spore", 12], ["mushroom spore", 13], ["storage room 5-slot coupon", 14], ["arwen's glass shoe", 15]]);
+  // Scrolls: slot + stat + percent, in either order, with or without the word scroll.
+  assert.equal(wantedItem("[Tree Branch] B> GFA 60% 1.8M 4ea more, fm", names), 2);
+  assert.equal(wantedItem("b>glove at 10%", names), 3);
+  assert.equal(wantedItem("B> Scroll Earring Luk 60%", names), 4);
+  assert.equal(wantedItem("B> Overall Dex 60 650K PM me", names), 6);
+  // The percent with a % sign is the tier even when a count comes first.
+  assert.equal(wantedItem("B> 10 OVERALL LUK SCROLL 100%", names), 7);
+  // No percent: the tier is unknown. A bare 10 is a stat, not a tier.
+  assert.equal(wantedItem("B> GFA 1.8m ch20 fm", names), null);
+  assert.equal(wantedItem("B> 10 int earrings PM offer", names), null);
+  // One word only one item has, when it leads the request; plurals too.
+  assert.equal(wantedItem("[Cat Soul] B> 1 set of kumbi 575k", names), 9);
+  assert.equal(wantedItem("BUYINS STEELYS 6.5M", names), 10);
+  assert.equal(wantedItem("B> Gloves at 60% ch2, FM Room 20", names), 2);
+  assert.equal(wantedItem("B> Shoe for speed 10k ea", names), null);
+  // A longer name with one word a letter off; two items equally close settle nothing.
+  assert.equal(wantedItem("B> 18-20+ faiy wand pm", names), 11);
+  assert.equal(wantedItem("B> Mushmoom Spore offer please", names), null);
+});

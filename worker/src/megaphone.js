@@ -49,6 +49,103 @@ function nameIndex(names) {
   }
   return index;
 }
+// Shorthand players write instead of the full name. Tried in this order after the exact name:
+// 1. a scroll: slot + stat + percent ("gfa 60", "earring luk 60%", "cape dex 10", "polearm at 60%"). Percents are the
+//    Classic tiers (100 Lesser, 60 Intermediate, 10 Greater). Without a percent the tier is unknown, so no item.
+// 2. a name of two or more words with one word a letter off, as the screen reader often leaves it ("faiy wand").
+// 3. one word that belongs to a single item ("kumbi", "steelys", "icicles").
+const SHORT = { glove: 'gloves', gloves: 'gloves', earrings: 'earring', earing: 'earring', earings: 'earring', ear: 'earring', ears: 'earring',
+  att: 'attack', atk: 'attack', attk: 'attack', atack: 'attack', atck: 'attack', at: 'attack', wa: 'attack', watk: 'attack', watt: 'attack',
+  matt: 'magic attack', matk: 'magic attack', ma: 'magic attack', luck: 'luk', acc: 'accuracy', avoid: 'evasion', eva: 'evasion',
+  spd: 'speed', jmp: 'jump', ova: 'overall', overalls: 'overall', helm: 'hat', helmet: 'hat', top: 'topwear', bottom: 'bottomwear',
+  pants: 'bottomwear', shoe: 'shoes', boots: 'shoes', gfa: 'gloves attack', gfatt: 'gloves attack', gma: 'gloves magic attack',
+  gfma: 'gloves magic attack', '1h': 'one-handed', '2h': 'two-handed', bw: 'blunt weapon', xbow: 'crossbow', dmg: 'damage', crit: 'crit.' };
+const TIER = { 100: 'lesser', 60: 'intermediate', 10: 'greater' };
+const NOT_A_NAME = /^(shoe|room|today|single|regular|female|male|stack|bulk|each|need|needs|offer|offers|price|junk|trash|clean|items|item|sets|set|whisp|whisper|please|cheap|fast|higher|lower|perfect|good|more|less|have|with|only|must|looking|stats|stat|pair|pairs|packs|pack|boxes|scroll|scrolls|buying|selling|free|market|lobby|anyone|wanna|your|mine|this|that|them|here|come|sell|sale|store|shop|name|fame|defame|defames|mesos|meso|coin|coins|ring|rings|cape|capes|wand|claw|bow|hat|shoes|gloves|overall|earring|shield|sword|spear|dagger|staff|armor|weapon|attack|magic|speed|jump|accuracy|evasion|damage|rate|equip|level|thief|warrior|mage|bowman|archer|blue|red|green|black|white|brown|pink|yellow|dark|purple|orange|silver|gold|steel|mithril|bronze)$/;
+const shortIndexes = new WeakMap();
+function shortIndex(names) {
+  let ix = shortIndexes.get(names);
+  if (ix) return ix;
+  const scrolls = new Map(), byWord = new Map(), owners = new Map();
+  for (const [name, id] of names) {
+    const m = /^(.+) scroll: (lesser|intermediate|greater)$/.exec(name);
+    if (m) {
+      const base = m[1].replace(/\./g, '').replace(/[^a-z0-9-]+/g, ' ').trim();
+      for (const key of new Set([base, base.replace(' armor', ''), base.replace(' weapon', '')])) {
+        if (!scrolls.has(key)) scrolls.set(key, {});
+        scrolls.get(key)[m[2]] = id;
+      }
+    }
+    const w = words(name);
+    if (w.length >= 2) for (const x of new Set(w)) { if (!byWord.has(x)) byWord.set(x, []); byWord.get(x).push({ w, id, len: w.join(' ').length }); }
+    for (const x of new Set(w)) { if (!owners.has(x)) owners.set(x, new Set()); owners.get(x).add(id); }
+  }
+  ix = { scrolls, byWord, owners };
+  shortIndexes.set(names, ix);
+  return ix;
+}
+// One edit apart (a letter added, dropped, changed, or two swapped); the shorter word has four letters or more.
+function near(a, b) {
+  if (a === b) return true;
+  if (Math.min(a.length, b.length) < 4 || Math.max(a.length, b.length) < 5 || Math.abs(a.length - b.length) > 1) return false;
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  const ra = a.slice(i), rb = b.slice(i);
+  return ra.slice(1) === rb.slice(1) || ra.slice(1) === rb || ra === rb.slice(1) || (ra[0] === rb[1] && ra[1] === rb[0] && ra.slice(2) === rb.slice(2));
+}
+function shorthandItem(part, names) {
+  const { scrolls, byWord, owners } = shortIndex(names);
+  // 1. Scrolls. "60%", "gfa60" and "60 gfa" all carry the tier; stat and slot may come in either order.
+  const flat = part.toLowerCase().replace(/\[[^\]]*\]/g, ' ').replace(/([a-z])(\d)/g, '$1 $2').replace(/(\d)\s*%/g, '$1 ').replace(/[^a-z0-9-]+/g, ' ').trim();
+  const sw = flat.split(' ').filter((w) => w && !/^scrolls?$/.test(w)).flatMap((w) => (SHORT[w] || w).replace(/\./g, '').split(' '));
+  // The tier is a number written as a percent. A bare 60 or 100 also counts, but a bare 10 is a stat ("10 int earrings",
+  // "+10 STR") unless the line says scroll.
+  const pct = [...part.matchAll(/(?<![+\d.])(100|60|10)\s*%/g)].map((m) => m[1]);
+  const bare = sw.find((w) => w === '60' || w === '100' || (w === '10' && /scroll|greater/i.test(part) && !/\+\s*10/.test(part)));
+  const tier = TIER[pct[0] ?? bare];
+  if (tier) {
+    const plain = sw.filter((w) => !(w in TIER) && !/^\d/.test(w));
+    let hit = null;
+    for (let i = 0; i < plain.length && !hit; i++) {
+      for (const n of [4, 3, 2]) {
+        const run = plain.slice(i, i + n);
+        if (run.length < n) continue;
+        const key = scrolls.get(run.join(' ')) || (n === 2 ? scrolls.get(`${run[1]} ${run[0]}`) : null);
+        if (key?.[tier]) { hit = key[tier]; break; }
+      }
+    }
+    if (hit) return hit;
+  }
+  // 2. A longer name with one word a letter off.
+  const seg = words(part.replace(/\[[^\]]*\]/g, ' '));
+  // Two different items a letter away from the same words ("mushmoom spore": Mushmom or Mushroom) settle nothing.
+  const close = new Map();
+  for (let i = 0; i < seg.length; i++) {
+    for (const c of byWord.get(seg[i]) || []) {
+      for (let at = 0; at < c.w.length; at++) {
+        if (c.w[at] !== seg[i] || i - at < 0) continue;
+        let off = 0;
+        if (c.w.every((w, k) => seg[i - at + k] === w || (seg[i - at + k] !== undefined && near(seg[i - at + k], w) && ++off <= 1)) && off === 1) close.set(c.id, c);
+      }
+    }
+  }
+  if (close.size) {
+    const top = Math.max(...[...close.values()].map((c) => c.w.length));
+    const longest = [...close.values()].filter((c) => c.w.length === top);
+    return longest.length === 1 ? longest[0].id : null;
+  }
+  // 3. The first word of the request, when only one item has it, plurals included ("kumbi 500k", "1 set of mokbis",
+  //    "steelys"). Words further along are too often chatter ("FM room 20", "need today").
+  const lead = seg.find((w) => w.length >= 4 && !aside(w) && !/^(sets?|stacks?|pairs?)$/.test(w));
+  if (lead) {
+    for (const w of new Set([lead, lead.replace(/s$/, ''), lead.replace(/ies$/, 'y'), lead.replace(/es$/, '')])) {
+      if (w.length < 4 || NOT_A_NAME.test(w)) continue;
+      const own = owners.get(w);
+      if (own?.size === 1) return [...own][0];
+    }
+  }
+  return null;
+}
 export function wantedItem(text, names, linked = null) {
   if (!names) return linked;
   const b = BUY.exec(text);
@@ -70,7 +167,7 @@ export function wantedItem(text, names, linked = null) {
   if (best) return best.id;
   const br = /\[([^\]]{3,60})\]/.exec(text);
   if (linked != null && br && words(br[1]).some((w) => w.length >= 4 && seg.includes(w))) return linked;
-  return null;
+  return shorthandItem(part, names);
 }
 
 export function validMegaphone(r, now = Date.now()) {
