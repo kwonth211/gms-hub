@@ -778,7 +778,7 @@ function header(lang, pagePath, only) {
 <nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}${guideMenu}${toolMenu}</nav>
 ${presencePill(lang)}
 ${headerSearch(lang, [...tabs, ...guideItems, ...toolItems, ...moved])}
-${config.discord ? `<a class="theme-toggle discord-link" href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="header" aria-label="Discord" title="Discord">${DISCORD_ICON(20)}</a>` : ''}
+${config.discord ? `<a class="theme-toggle discord-link" href="${href(langPath(lang, config.discordBotInstall ? '/discord-bot/' : '/contact/'))}" data-discord="header" aria-label="Discord" title="Discord">${DISCORD_ICON(20)}</a>` : ''}
 <details class="lang-menu"><summary class="lang-current" aria-label="Language"><span class="lang-full" translate="no">${LANG_NAMES[lang]}</span><span class="lang-code" translate="no" aria-hidden="true">${lang.toUpperCase()}</span></summary><div class="lang-list">${(only ? [lang, ...ALL_LANGS.filter((l) => l !== lang)] : ALL_LANGS).map((l) => `<a class="lang-opt" href="${href(langPath(l, only && l !== lang ? '/' : pagePath || '/'))}" data-lang="${l}" hreflang="${HREFLANG[l]}" lang="${HREFLANG[l]}"${l === lang ? ' aria-current="true"' : ''}>${LANG_NAMES[l]}</a>`).join('')}</div></details>
 ${moreMenu(lang, moved)}
 </div></header>`;
@@ -850,7 +850,7 @@ function footer(lang) {
 <div class="footer-brand">${spriteSvg('mushroom', 24)}<strong>GMS Hub</strong></div>
 <p>${esc(t.footerDisclaimer)}</p>
 <p><button type="button" class="charm-toggle" data-charm-toggle><span class="charm-on-label">${lang === 'ko' ? '낙엽 효과 끄기' : 'Turn off falling leaves'}</span><span class="charm-off-label">${lang === 'ko' ? '낙엽 효과 켜기' : 'Turn on falling leaves'}</span></button></p>
-<p>${guides.some((g) => g.lang === lang) ? `<a href="${href(langPath(lang, '/guides/'))}">${t.navGuides}</a> · ` : ''}<a href="${href(langPath(lang, '/about/'))}">${t.navAbout}</a> · <a href="${href(langPath(lang, '/privacy/'))}">${t.privacy}</a> · <a href="${href(langPath(lang, '/terms/'))}">${t.terms}</a> · <a href="${href(langPath(lang, '/contact/'))}">${lang === 'ko' ? '문의·협찬·후원' : 'Contact and support'}</a> · <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub</a>${config.discord ? ` · <a href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="footer">${DISCORD_ICON(14)}${lang === 'ko' ? '디스코드' : 'Discord'}</a>` : ''}${Object.values(config.support || {}).some(Boolean) ? ` · <a href="${href(langPath(lang, '/contact/'))}#support" data-support="footer">${lang === 'ko' ? '서버비 후원' : 'Help cover the server bill'}</a>` : ''}</p>
+<p>${guides.some((g) => g.lang === lang) ? `<a href="${href(langPath(lang, '/guides/'))}">${t.navGuides}</a> · ` : ''}<a href="${href(langPath(lang, '/about/'))}">${t.navAbout}</a> · <a href="${href(langPath(lang, '/privacy/'))}">${t.privacy}</a> · <a href="${href(langPath(lang, '/terms/'))}">${t.terms}</a> · <a href="${href(langPath(lang, '/contact/'))}">${lang === 'ko' ? '문의·협찬·후원' : 'Contact and support'}</a> · <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub</a>${config.discord ? ` · <a href="${href(langPath(lang, '/discord-bot/'))}" data-discord="footer">${DISCORD_ICON(14)}${lang === 'ko' ? '디스코드' : 'Discord'}</a>` : ''}${Object.values(config.support || {}).some(Boolean) ? ` · <a href="${href(langPath(lang, '/contact/'))}#support" data-support="footer">${lang === 'ko' ? '서버비 후원' : 'Help cover the server bill'}</a>` : ''}</p>
 </div></footer>`;
 }
 
@@ -2468,56 +2468,65 @@ function botBody(lang) {
   // Two install links: the server one adds the commands for everyone in a guild (needs Manage Server), the account one
   // lets you use them anywhere, DMs included. Both ask only for slash commands.
   const install = (type) => `${config.discordBotInstall}${config.discordBotInstall.includes('?') ? '&' : '?'}scope=applications.commands&integration_type=${type}`;
-  const groups = [
-    [tr('시세와 매물', 'Prices and listings'), [
-      ['/시세 장공', '/price steely', tr('아이템의 자유시장 시세와 가격 범위. 입력하는 동안 후보가 뜨고, 장공·귀힘 같은 줄임말도 알아들어요.', 'Free Market price and range of an item, with suggestions while you type.')],
-      ['/매물 레드바이퍼 옵션:53', '/listings red viper option:53', tr('지금 판매 중인 상점 매물을 싼 순으로 8건. 판매자, 채널·FM, 정옵·N상·+N까지 보여 주고, 옵션에 숫자를 넣으면 그 공격력(완드·스태프는 마력, 방어구는 방어력) 매물만 나와요.', 'The 8 cheapest shop listings on sale now, with seller, channel and room, and the roll (base, +N/−N, scrolls passed). Give an option number to see only gear at that attack (magic attack for wands and staves, defense for armor).')],
-      ['/급등락', '/movers', tr('하루 사이 보통 가격이 가장 많이 오르고 내린 아이템. 오른 것만, 내린 것만도 골라요.', 'Items whose typical price rose or fell most in a day; up only or down only if you like.')],
-      ['/고확 에메랄드 귀고리', '/megaphone emerald earrings', tr('최근 고확에서 그 아이템을 팔고 사는 글.', 'Recent megaphones buying or selling the item.')],
-    ]],
-    [tr('게임 정보', 'Game info'), [
-      ['/아이템 스틸 슬레인', '/item steel slain', tr('레벨, 직업, 필요 능력치, 능력치, 업그레이드 가능 횟수, 상점 판매가, 시세.', 'Level, class, requirements, stats, upgrade slots, NPC price and market price.')],
-      ['/몬스터 엄티', '/mob zombie lupin', tr('레벨, HP, 경험치, 많이 나오는 맵, 주요 드롭.', 'Level, HP, EXP, the busiest maps and notable drops.')],
-      ['/사냥터 45 클레릭', '/train 45 cleric', tr('레벨과 직업에 맞는 사냥터와 동선 요약.', 'Training spots for your level and class.')],
-    ]],
-    [tr('알림과 건의', 'Alerts and feedback'), [
-      ['/알림 추가 일비 표창 가격:300만', '/alert add ilbi price:3m', tr('그 가격 이하로 상점 매물이나 고확이 뜨면 DM으로 알려 줘요. 팔 때만, 살 때만도 골라요. `/알림 목록`, `/알림 삭제`로 관리해요.', 'A DM when a shop or megaphone sells it at or under your price; selling or buying only if you like. Manage them with `/alert list` and `/alert remove`.')],
-      ['/건의 보스 타이머 만들어 주세요', '/feedback please add boss timers', tr('사이트에 바라는 점이나 틀린 정보를 바로 보내요.', 'Send a request or a correction straight to us.')],
-      ['/gmshub', '/gmshub', tr('사이트와 디스코드 안내, 전체 명령어.', 'About the site and Discord, with every command.')],
-    ]],
+  const check = '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 8.5l3 3 7-7"/></svg>';
+  const bot = `<span class="dc-av dc-av-bot">${spriteSvg('mushroom', 26)}</span>`;
+  const you = `<span class="dc-av dc-av-you" aria-hidden="true">${tr('나', 'Me')}</span>`;
+  // A Discord-style window: a slash command and the bot's reply. Replies are filled from live data by bot-page.js.
+  const win = (channel, cmd, args, slot, h) => `<figure class="dc-win" aria-label="${esc(tr(`${cmd} 명령어 예시`, `${cmd} example`))}"><div class="dc-bar"><span class="dc-hash">${channel.startsWith('@') ? '@' : '#'}</span>${esc(channel.replace(/^@/, ''))}</div>
+<div class="dc-msg">${you}<div class="dc-body"><div class="dc-name">${tr('나', 'You')}</div><div class="dc-cmd"><b translate="no">${esc(cmd)}</b>${args.map(([k, v]) => `<span class="dc-arg"><i>${esc(k)}</i>${esc(v)}</span>`).join('')}</div></div></div>
+<div class="dc-msg">${bot}<div class="dc-body"><div class="dc-name">GMS Hub <span class="dc-app">${tr('앱', 'APP')}</span></div><div class="dc-embed" data-bot-demo="${slot}" style="min-height:${h}px"><span class="sk" style="width:55%;height:14px"></span><span class="sk" style="width:80%;height:12px"></span><span class="sk" style="width:70%;height:12px"></span><span class="sk" style="width:60%;height:12px"></span></div></div></div></figure>`;
+  const cmds = [
+    ['price', tr('/시세', '/price'), tr('아이템', 'item'), tr('자유시장 시세와 가격 범위', 'Free Market price and range'), tr('/시세 장공', '/price steely')],
+    ['listings', tr('/매물', '/listings'), tr('아이템 · 옵션', 'item · option'), tr('지금 판매 중인 매물 싼 순 8건. 정옵·N상·+N, 판매자, 채널까지', 'The 8 cheapest listings on sale now, with roll, seller and channel'), tr('/매물 레드바이퍼 옵션:53', '/listings red viper option:53')],
+    ['movers', tr('/급등락', '/movers'), tr('방향', 'direction'), tr('하루 사이 많이 오르고 내린 아이템', 'Biggest risers and fallers of the day'), tr('/급등락 방향:오른 것', '/movers direction:up')],
+    ['megaphone', tr('/고확', '/megaphone'), tr('아이템', 'item'), tr('최근 고확에서 그 아이템을 팔고 사는 글', 'Recent megaphones buying or selling it'), tr('/고확 에메랄드 귀고리', '/megaphone emerald earrings')],
+    ['item', tr('/아이템', '/item'), tr('아이템', 'item'), tr('레벨, 직업, 능력치, 업횟, 상점 판매가, 시세', 'Level, class, stats, slots, NPC price, market price'), tr('/아이템 스틸 슬레인', '/item steel slain')],
+    ['mob', tr('/몬스터', '/mob'), tr('이름', 'name'), tr('레벨, HP, 경험치, 많이 나오는 맵, 드롭', 'Level, HP, EXP, busiest maps, drops'), tr('/몬스터 엄티', '/mob zombie lupin')],
+    ['train', tr('/사냥터', '/train'), tr('레벨 · 직업', 'level · class'), tr('레벨과 직업에 맞는 사냥터와 동선', 'Training spots for your level and class'), tr('/사냥터 45 클레릭', '/train 45 cleric')],
+    ['alert', tr('/알림', '/alert'), tr('추가 · 목록 · 삭제', 'add · list · remove'), tr('원하는 가격 이하로 매물이나 고확이 뜨면 DM', 'A DM when it shows up at or under your price'), tr('/알림 추가 일비 표창 가격:300만', '/alert add ilbi price:3m')],
+    ['feedback', tr('/건의', '/feedback'), tr('내용', 'text'), tr('사이트에 바라는 점이나 틀린 정보 보내기', 'Send a request or a correction'), tr('/건의 보스 타이머 만들어 주세요', '/feedback add boss timers')],
+    ['gmshub', '/gmshub', '', tr('사이트와 디스코드 안내', 'About the site and the Discord'), '/gmshub'],
   ];
   const faq = [
     [tr('서버에 추가할까요, 내 계정에 추가할까요?', 'Add it to a server or to my account?'), tr('길드나 친구 서버에서 모두가 쓰게 하려면 서버에 추가하세요. 서버 관리 권한이 필요해요. 혼자 쓰려면 내 계정에 추가하세요. DM이나 다른 서버에서도 쓸 수 있어요(그 서버가 외부 앱을 허용할 때).', 'Add it to a server so everyone in your guild can use it; that needs Manage Server. Add it to your account to use it yourself anywhere, DMs included (in servers that allow external apps).')],
-    [tr('시세는 어디서 나와요?', 'Where do the prices come from?'), tr('사이트의 실시간 시세와 같은 데이터예요. 유저들이 스캔한 자유시장 상점 매물과 판매 완료 기록, 게임 고확을 모아 계산해요. 답마다 그래프와 전체 매물을 볼 수 있는 사이트 링크가 붙어요.', 'The same data as the live market on the site: Free Market shop listings and sales scanned by players, plus game megaphones. Every reply links to the charts and all listings on the site.')],
-    [tr('정옵, 1상, +3은 무슨 뜻이에요?', 'What do base roll, +1 and +3 mean?'), tr('작을 안 한 장비는 주 능력치(무기는 공격력)가 기본값과 같으면 정옵, 높으면 N상, 낮으면 N하예요. 작한 장비는 주문서 성공 횟수를 +N으로 보여 줘요.', 'For unscrolled gear, the main stat (attack for weapons) equal to the base value is a base roll, above it +N, below it −N. Scrolled gear shows the number of scrolls passed as +N.')],
+    [tr('시세는 어디서 나와요?', 'Where do the prices come from?'), tr('사이트의 실시간 시세와 같은 데이터예요. 유저들이 스캔한 자유시장 상점 매물과 판매 완료 기록, 게임 고확을 모아 계산해요. 이 페이지의 예시 답도 지금 데이터로 채운 거예요.', 'The same data as the live market on the site: Free Market shop listings and sales scanned by players, plus game megaphones. The example replies on this page are filled from that data right now.')],
+    [tr('정옵, ▲ 1상, +3은 무슨 뜻이에요?', 'What do base roll, ▲ +1 and +3 mean?'), tr('작을 안 한 장비는 주 능력치(무기는 공격력)가 기본값과 같으면 정옵, 높으면 N상, 낮으면 N하예요. 작한 장비는 주문서 성공 횟수를 +N으로 보여 줘요.', 'For unscrolled gear, the main stat (attack for weapons) equal to the base value is a base roll, above it +N, below it −N. Scrolled gear shows the number of scrolls passed as +N.')],
     [tr('돈이 들어요? 안전해요?', 'Does it cost anything? Is it safe?'), tr('무료예요. 슬래시 명령어만 추가되고, 서버 권한을 요구하지 않으며 채팅 내용을 읽지 않아요.', 'It is free. It only adds slash commands, asks for no server permissions and does not read your chat.')],
+    [tr('알림 DM이 안 와요.', 'I get no alert DMs.'), tr('봇이 DM을 보내려면 GMS Hub 디스코드에 들어와 있거나 봇을 내 계정에 추가해 두어야 해요. 디스코드 설정에서 서버 멤버의 DM을 막아 두었다면 풀어 주세요.', 'To DM you, the bot needs you in the GMS Hub Discord or the bot added to your account. If your Discord settings block DMs from server members, allow them.')],
   ];
-  return `<article class="wrap prose contact-page bot-page"><h1>${tr('디스코드에서 쓰는 GMS Hub', 'GMS Hub in Discord')}</h1>
-<p>${tr('디스코드 채팅창을 떠나지 않고 메이플스토리 클래식 월드 시세, 판매 중인 매물, 아이템·몬스터 정보, 사냥터를 바로 찾아보는 봇이에요. 원하는 가격에 매물이 뜨면 DM으로 알려 주기도 해요. 무료예요.', 'Look up MapleStory Classic World prices, listings on sale, items, monsters and training spots without leaving Discord, and get a DM when something shows up at your price. It is free.')}</p>
-<p class="contact-actions"><a class="btn" href="${esc(install(0))}" target="_blank" rel="noopener" data-discord="bot-install-server">${DISCORD_ICON(18)}${tr('서버에 추가', 'Add to server')}</a><a class="btn" href="${esc(install(1))}" target="_blank" rel="noopener" data-discord="bot-install-user">${DISCORD_ICON(18)}${tr('내 계정에 추가', 'Add to my account')}</a>${config.discord ? `<a class="btn ghost" href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="bot-page">${tr('GMS Hub 디스코드 들어가기', 'Join the GMS Hub Discord')}</a>` : ''}</p>
-<h2>${tr('추가하는 방법', 'How to add it')}</h2>
-<ol>
-<li>${tr('위에서 <b>서버에 추가</b>(길드·친구 서버) 또는 <b>내 계정에 추가</b>(나 혼자, 어디서나)를 눌러요.', 'Choose <b>Add to server</b> (your guild or friends) or <b>Add to my account</b> (just you, anywhere).')}</li>
-<li>${tr('디스코드 창에서 서버를 고르고 <b>승인</b>을 눌러요. 다른 설정은 없어요.', 'Pick the server in the Discord window and press <b>Authorize</b>. Nothing else to set up.')}</li>
-<li>${tr('채팅창에 <code>/</code>를 치면 GMS Hub 명령어가 떠요. 한국어 디스코드에서는 <code>/시세</code>처럼 한국어 이름으로 보여요.', 'Type <code>/</code> in the chat and the GMS Hub commands appear. In Korean Discord they show Korean names such as <code>/시세</code>.')}</li>
-</ol>
-<h2>${tr('명령어', 'Commands')}</h2>
-${groups.map(([title, cmds]) => `<h3>${title}</h3>
-<div class="table-wrap"><table class="bot-cmds"><thead><tr><th>${tr('이렇게 입력', 'Type this')}</th><th>${tr('이런 답이 와요', 'What you get')}</th></tr></thead><tbody>
-${cmds.map(([k, e, d]) => `<tr><td><code translate="no">${esc(ko ? k : e)}</code></td><td>${esc(d).replace(/`([^`]+)`/g, '<code translate="no">$1</code>')}</td></tr>`).join('\n')}
-</tbody></table></div>`).join('\n')}
-<p>${tr('디스코드를 한국어로 쓰면 한국어로, 그 밖에는 영어로 답해요. 이름은 한글, 영문, 줄임말 모두 알아듣고, 입력하는 동안 뜨는 목록에서 고르면 정확해요.', 'Replies are in Korean for Korean Discord clients and in English otherwise. Names work in Korean, English or short forms; picking from the suggestions while you type is the surest.')}</p>
-<h2>${tr('자주 묻는 질문', 'FAQ')}</h2>
+  return `<div class="bot-page" data-api="${esc(config.voteApi)}" data-lang="${lang}" data-market="${esc(href(langPath(lang, '/tools/market/')))}">
+<section class="bp-hero wrap"><div class="bp-hero-text">
+<h1>${tr('디스코드에서 바로 보는<br>글클메 시세', 'MapleStory Classic World prices,<br>right in Discord')}</h1>
+<p class="bp-lead">${tr('채팅창에 <code>/시세</code>만 치면 지금 시세가, <code>/매물</code>이면 판매 중인 상점이 바로 와요. 원하는 가격에 매물이 뜨면 DM으로 알려 주고요.', 'Type <code>/price</code> for the price now, <code>/listings</code> for the shops selling it, and get a DM when it shows up at your price.')}</p>
+<div class="bp-actions"><a class="bp-btn bp-btn-dc" href="${esc(install(0))}" target="_blank" rel="noopener" data-discord="bot-install-server">${DISCORD_ICON(20)}${tr('서버에 봇 추가', 'Add to a server')}</a><a class="bp-btn bp-btn-alt" href="${esc(install(1))}" target="_blank" rel="noopener" data-discord="bot-install-user">${tr('내 계정에 추가', 'Add to my account')}</a></div>
+<ul class="bp-trust"><li>${check}${tr('무료', 'Free')}</li><li>${check}${tr('서버 권한 요구 없음', 'No server permissions')}</li><li>${check}${tr('채팅 내용 안 읽음', 'Never reads your chat')}</li><li>${check}${tr('한국어·영어 자동', 'Korean or English, automatically')}</li></ul>${config.discord ? `<p class="bp-join">${tr('봇 말고 커뮤니티를 찾으세요?', 'Looking for the community instead?')} <a href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="bot-page-hero">${tr('GMS Hub 디스코드 들어가기', 'Join the GMS Hub Discord')}</a></p>` : ''}
+</div>${win(tr('시세-질문', 'price-check'), tr('/시세', '/price'), [[tr('아이템', 'item'), tr('장갑 공격력 주문서', 'Glove ATT scroll')]], 'price', 190)}</section>
+
+<section class="bp-band"><div class="wrap"><h2>${tr('이렇게 답해요', 'What it answers')}</h2><p class="bp-sub">${tr('아래 답은 예시가 아니라 지금 데이터로 채운 실제 결과예요.', 'These replies are filled from live data, not made up.')}</p>
+<div class="bp-show"><div class="bp-show-text"><h3>${tr('판매 중인 매물을 옵션까지', 'Listings on sale, with their rolls')}</h3><p>${tr('<code>/매물</code>은 지금 판매 중인 상점을 싼 순으로 보여 줘요. 장비는 정옵·▲ N상·▼ N하·+N이 같이 붙고, <code>옵션:53</code>처럼 숫자를 주면 그 공격력 매물만 골라 줘요.', '<code>/listings</code> shows the shops selling it, cheapest first. Gear carries its roll (base, ▲ +N, ▼ −N, +N scrolls), and <code>option:53</code> keeps only gear at that attack.')}</p></div>${win(tr('거래', 'trading'), tr('/매물', '/listings'), [[tr('아이템', 'item'), tr('레드 바이퍼', 'Red Viper')]], 'listings', 230)}</div>
+<div class="bp-show bp-show-flip"><div class="bp-show-text"><h3>${tr('오늘 많이 움직인 아이템', 'What moved today')}</h3><p>${tr('<code>/급등락</code>은 하루 사이 보통 가격이 가장 많이 오르고 내린 아이템이에요. 매물이 적어 튀는 값은 빼고 계산해요.', '<code>/movers</code> lists the items whose typical price rose or fell most in a day, leaving out thinly listed ones.')}</p></div>${win(tr('시세-질문', 'price-check'), tr('/급등락', '/movers'), [], 'movers', 230)}</div>
+<div class="bp-show"><div class="bp-show-text"><h3>${tr('원하는 가격에 뜨면 DM', 'A DM when your price shows up')}</h3><p>${tr('<code>/알림 추가</code>로 아이템과 가격을 정해 두면, 그 가격 이하로 상점 매물이나 고확이 뜰 때 바로 DM이 와요. 팔 때만, 살 때만도 골라요.', 'Set an item and a price with <code>/alert add</code>; when a shop or megaphone sells it at or under that, you get a DM. Selling or buying only if you like.')}</p></div>${win('@GMS Hub', tr('/알림 추가', '/alert add'), [[tr('아이템', 'item'), tr('일비 표창', 'Ilbi')], [tr('가격', 'price'), tr('300만', '3m')]], 'alert', 120)}</div>
+</div></section>
+
+<section class="wrap bp-section"><h2>${tr('전체 명령어', 'Every command')}</h2><p class="bp-sub">${tr('한국어 디스코드에서는 한국어 이름으로 떠요. 이름은 한글, 영문, 장공 같은 줄임말 모두 알아들어요.', 'Korean Discord shows Korean names. Item names work in Korean, English or short forms.')}</p>
+<ul class="bp-cmds">${cmds.map(([key, c, args, d, ex]) => `<li class="bp-cmd" data-cmd="${key}"><div class="bp-cmd-head"><code translate="no">${esc(c)}</code>${args ? `<span>${esc(args)}</span>` : ''}</div><p>${esc(d)}</p><small translate="no">${esc(ex)}</small></li>`).join('')}</ul></section>
+
+<section class="wrap bp-section"><h2>${tr('추가하는 방법', 'How to add it')}</h2>
+<ol class="bp-steps"><li><b>1</b><h3>${tr('어디에 쓸지 고르기', 'Choose where')}</h3><p>${tr('길드·친구 서버에서 다 같이 쓰려면 <b>서버에 봇 추가</b>, 혼자 어디서나 쓰려면 <b>내 계정에 추가</b>.', '<b>Add to a server</b> for your guild or friends, <b>Add to my account</b> to use it yourself anywhere.')}</p></li><li><b>2</b><h3>${tr('승인 누르기', 'Authorize')}</h3><p>${tr('디스코드 창에서 서버를 고르고 승인을 눌러요. 따로 설정할 건 없어요.', 'Pick the server in the Discord window and press Authorize. Nothing else to set up.')}</p></li><li><b>3</b><h3>${tr('채팅창에 / 치기', 'Type / in chat')}</h3><p>${tr('명령어 목록에 GMS Hub가 떠요. 고르고 아이템 이름만 넣으면 끝.', 'GMS Hub shows up in the command list. Pick one, type an item name, done.')}</p></li></ol>
+<div class="bp-actions bp-actions-center"><a class="bp-btn bp-btn-dc" href="${esc(install(0))}" target="_blank" rel="noopener" data-discord="bot-install-server-2">${DISCORD_ICON(20)}${tr('서버에 봇 추가', 'Add to a server')}</a><a class="bp-btn bp-btn-alt" href="${esc(install(1))}" target="_blank" rel="noopener" data-discord="bot-install-user-2">${tr('내 계정에 추가', 'Add to my account')}</a></div></section>
+
+${config.discord ? `<section class="wrap bp-section"><div class="bp-community"><div><h2>${tr('GMS Hub 디스코드 커뮤니티', 'The GMS Hub Discord')}</h2><p>${tr('봇 없이도 들어와서 시세 질문, 건의, 오류 제보를 할 수 있어요. 새 기능 소식도 여기서 제일 먼저 알려요.', 'Join without the bot to ask about prices, suggest features and report bugs. New features are announced here first.')}</p></div><a class="bp-btn bp-btn-light" href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="bot-page">${DISCORD_ICON(20)}${tr('디스코드 들어가기', 'Join the Discord')}</a></div></section>` : ''}
+
+<section class="wrap bp-section bp-narrow"><h2>${tr('자주 묻는 질문', 'FAQ')}</h2>
 ${faq.map(([q, a]) => `<details class="bot-faq"><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('\n')}
 <h2>${tr('권한과 개인정보', 'Permissions and privacy')}</h2>
-<ul>
+<ul class="bp-privacy">
 <li>${tr('서버 권한을 요구하지 않아요. 슬래시 명령어만 추가되고, 채팅 내용을 읽지 않아요.', 'It asks for no server permissions. It only adds slash commands and does not read your chat.')}</li>
 <li>${tr('알림을 켜면 디스코드 사용자 번호와 고른 아이템을 저장해요. 알림을 지우면 함께 지워져요.', 'Turning on an alert stores your Discord user ID and the items you picked; removing the alert removes them.')}</li>
 <li>${tr('건의 명령으로 보낸 글은 GMS Hub 디스코드의 건의 채널에 디스코드 이름과 함께 올라가요.', 'Text sent with the feedback command is posted in the feedback channel of the GMS Hub Discord with your Discord name.')}</li>
-<li>${tr('알림 DM을 받으려면 GMS Hub 디스코드에 들어와 있거나 봇을 내 계정에 추가해 두어야 해요.', 'To receive alert DMs, be in the GMS Hub Discord or have the bot added to your account.')}</li>
 </ul>
-<p class="muted small">${tr('GMS Hub는 넥슨과 관계없는 팬 사이트예요.', 'GMS Hub is an unofficial fan site and is not affiliated with Nexon.')}</p>
-</article>`;
+<p class="muted small">${tr('GMS Hub는 넥슨과 관계없는 팬 사이트예요.', 'GMS Hub is an unofficial fan site and is not affiliated with Nexon.')}</p></section>
+</div>`;
 }
 
 // ---------- guides ----------
@@ -3137,6 +3146,7 @@ for (const lang of LANGS) {
       title: lang === 'ko' ? '글클메 디스코드 봇: 시세·매물·급등락·사냥터 명령어 | GMS Hub' : 'MapleStory Classic World Discord Bot: Prices, Listings, Movers, Training | GMS Hub',
       desc: lang === 'ko' ? '디스코드에서 /시세, /매물, /급등락, /아이템, /몬스터, /사냥터로 글로벌 클래식 메이플 정보를 바로 찾는 무료 봇. 원하는 가격 매물 DM 알림도 받아요.' : 'A free Discord bot for MapleStory Classic World: /price, /listings, /movers, /item, /mob and /train answer from live Free Market data, plus price alerts by DM.',
       body: botBody(lang),
+      modules: ['bot-page.js'],
       ld: [breadcrumbLd(lang, lang === 'ko' ? '디스코드 봇' : 'Discord bot', '/discord-bot/')]
     }
   };

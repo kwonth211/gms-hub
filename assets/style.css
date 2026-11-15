@@ -3007,3 +3007,130 @@ body.exp-running .exp-stop { display: inline-flex; }
 #mk-detail :is(#mb-history, #mb-facts, #md-rows, #mb-info, #mb-megas, #mk-charts) > :not(.sk-wrap), #mb-results > :not(.sk-wrap) { animation: mb-in 0.22s ease-out both; }
 #md-rows[aria-busy="true"] > :not(.sk-wrap) { opacity: 0.55; transition: opacity 0.15s; }
 @media (prefers-reduced-motion: reduce) { .sk { animation: none; } #mk-detail :is(#mb-history, #mb-facts, #md-rows, #mb-info, #mb-megas, #mk-charts) > * { animation: none; } }
+
+/* /discord-bot/ (build.mjs botBody + bot-page.js): hero with a live Discord-style reply, showcase rows, command cards,
+   steps, community band. The Discord windows keep Discord's own dark palette in both site themes. */
+.bot-page {
+  --dc-bg: #313338; --dc-side: #2b2d31; --dc-embed: #2b2d31; --dc-text: #dbdee1; --dc-muted: #949ba4; --dc-head: #f2f3f5;
+  --dc-blurple: #5865f2; --dc-blurple-2: #4752c4; --dc-line: #3f4147; --dc-cmd: rgba(88, 101, 242, 0.18); --dc-link: #00a8fc;
+  --dc-up: #f2777a; --dc-down: #6aa7ff; --dc-ok: #23a55a;
+}
+.bot-page h2 { font-size: clamp(1.4rem, 2.6vw, 1.9rem); margin: 0 0 6px; letter-spacing: -0.01em; }
+.bot-page code { font-size: 0.92em; padding: 1px 6px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); }
+.bp-sub { margin: 0 0 22px; color: var(--muted); }
+.bp-hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 40px; align-items: center; padding-top: 40px; padding-bottom: 48px; }
+.bp-hero h1 { font-size: clamp(2rem, 4.4vw, 3.1rem); line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 16px; overflow-wrap: break-word; min-width: 0; }
+.bp-lead { font-size: 1.08rem; line-height: 1.65; color: var(--text-2); margin: 0 0 24px; }
+.bp-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.bp-actions-center { justify-content: center; margin-top: 26px; }
+.bp-btn { display: inline-flex; align-items: center; gap: 9px; padding: 13px 22px; border-radius: 12px; font-weight: 800; font-size: 1rem; text-decoration: none; transition: transform 0.12s ease, background-color 0.12s ease; }
+.bp-btn:hover { transform: translateY(-1px); }
+.bp-btn:active { transform: translateY(0); }
+.bp-btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.bp-btn-dc { background: var(--dc-blurple); color: #fff; box-shadow: 0 6px 18px rgba(88, 101, 242, 0.32); }
+.bp-btn-dc:hover { background: var(--dc-blurple-2); color: #fff; }
+.bp-btn-alt { background: var(--panel); color: var(--text); border: 1.5px solid var(--line-strong); }
+.bp-btn-alt:hover { border-color: var(--dc-blurple); color: var(--text); }
+.bp-btn-light { background: #fff; color: var(--dc-blurple-2); flex: none; }
+.bp-btn-light:hover { color: var(--dc-blurple-2); }
+.bp-trust { display: flex; flex-wrap: wrap; gap: 8px 18px; list-style: none; margin: 22px 0 0; padding: 0; font-size: 0.9rem; color: var(--text-2); }
+.bp-trust li { display: inline-flex; align-items: center; gap: 6px; }
+.bp-trust svg { color: var(--dc-ok); }
+
+/* Discord-style window */
+.dc-win { margin: 0; background: var(--dc-bg); color: var(--dc-text); border-radius: 14px; overflow: hidden; box-shadow: 0 18px 44px rgba(20, 22, 30, 0.28); font-size: 0.9rem; min-width: 0; }
+.dc-bar { display: flex; align-items: center; gap: 6px; padding: 11px 16px; background: var(--dc-side); color: var(--dc-head); font-weight: 700; border-bottom: 1px solid var(--dc-line); }
+.dc-hash { color: var(--dc-muted); font-size: 1.15rem; }
+.dc-msg { display: flex; gap: 12px; padding: 12px 16px 4px; }
+.dc-msg:last-child { padding-bottom: 16px; }
+.dc-av { flex: none; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-size: 0.78rem; font-weight: 800; }
+.dc-av-you { background: #5c6bc0; color: #fff; }
+.dc-av-bot { background: #fff4e6; }
+.dc-body { min-width: 0; flex: 1; }
+.dc-name { color: var(--dc-head); font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+.dc-app { background: var(--dc-blurple); color: #fff; font-size: 0.62rem; font-weight: 800; padding: 1px 5px; border-radius: 4px; }
+.dc-cmd { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.dc-cmd b { color: #c9cdfb; background: var(--dc-cmd); padding: 2px 6px; border-radius: 4px; }
+.dc-arg { display: inline-flex; border-radius: 4px; overflow: hidden; background: #1e1f22; }
+.dc-arg i { font-style: normal; color: var(--dc-muted); padding: 2px 6px; background: #26272b; }
+.dc-arg { padding-right: 6px; }
+.dc-arg i + * , .dc-arg { color: var(--dc-text); }
+.dc-embed { position: relative; display: grid; gap: 8px; align-content: start; background: var(--dc-embed); border-left: 4px solid var(--accent-fill); border-radius: 4px; padding: 12px 14px; min-width: 0; }
+.dc-embed .sk { background: linear-gradient(90deg, #3a3c42 0%, #45474e 50%, #3a3c42 100%); background-size: 200% 100%; }
+.dc-embed.is-in > * { animation: mb-in 0.25s ease-out both; }
+.dc-thumb { position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; object-fit: contain; image-rendering: pixelated; }
+.dc-title { color: var(--dc-link); font-weight: 700; padding-right: 48px; }
+.dc-thumb + .dc-title { min-height: 40px; }
+.dc-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.dc-fields span { display: block; color: var(--dc-head); font-weight: 700; font-size: 0.78rem; margin-bottom: 2px; }
+.dc-fields b { color: #fff; }
+.dc-link { color: var(--dc-link); font-size: 0.86rem; }
+.dc-link:hover { color: var(--dc-link); }
+.dc-foot { color: var(--dc-muted); font-size: 0.72rem; margin-top: 2px; }
+.dc-note, .dc-small { margin: 0; color: var(--dc-muted); font-size: 0.82rem; }
+.dc-plain { margin: 0; line-height: 1.55; }
+.dc-plain b { color: #fff; }
+.dc-label { color: var(--dc-head); font-weight: 700; font-size: 0.8rem; margin-top: 2px; }
+.dc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.dc-list li { display: grid; grid-template-columns: 4.6em 3.6em minmax(0, 1fr) 6.6em 4.4em; align-items: center; gap: 8px; font-size: 0.84rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.dc-list li > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.dc-list b { color: #fff; }
+.dc-roll { font-size: 0.74rem; font-weight: 800; text-align: center; border-radius: 4px; padding: 0 4px; background: #383a40; color: var(--dc-text); }
+.dc-roll.none { background: none; }
+.dc-roll.hi { color: var(--dc-up); } .dc-roll.lo { color: var(--dc-down); } .dc-roll.plus { color: #ffb15c; }
+.dc-seller { color: var(--dc-text); }
+.dc-where, .dc-ago { color: var(--dc-muted); font-size: 0.78rem; }
+.dc-moves li { grid-template-columns: 5.4em minmax(0, 1fr) auto; }
+.dc-move { font-weight: 800; }
+.dc-move.up { color: var(--dc-up); } .dc-move.down { color: var(--dc-down); }
+
+/* showcase */
+.bp-band { background: var(--panel-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 52px 0; }
+.bp-show { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 40px; align-items: center; margin-top: 34px; }
+.bp-show-flip .bp-show-text { order: 2; }
+.bp-show-text h3 { font-size: 1.3rem; margin: 0 0 10px; }
+.bp-show-text p { margin: 0; line-height: 1.7; color: var(--text-2); }
+.bp-section { padding-top: 52px; }
+.bp-narrow { max-width: 820px; }
+
+/* commands */
+.bp-cmds { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 12px; }
+.bp-cmd { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 8px; align-content: start; transition: border-color 0.12s ease, transform 0.12s ease; }
+.bp-cmd:hover { border-color: var(--dc-blurple); transform: translateY(-2px); }
+.bp-cmd-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; }
+.bp-cmd-head code { font-size: 1.05rem; font-weight: 800; background: rgba(88, 101, 242, 0.12); color: var(--dc-blurple-2); }
+.bp-cmd-head span { font-size: 0.8rem; color: var(--muted); }
+.bp-cmd p { margin: 0; line-height: 1.55; color: var(--text-2); font-size: 0.92rem; }
+.bp-cmd small { color: var(--muted); font-size: 0.8rem; }
+
+/* steps */
+.bp-steps { list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.bp-steps li { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; }
+.bp-steps li > b { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--dc-blurple); color: #fff; font-size: 1rem; }
+.bp-steps h3 { margin: 12px 0 6px; font-size: 1.05rem; }
+.bp-steps p { margin: 0; color: var(--text-2); line-height: 1.6; font-size: 0.92rem; }
+
+/* community band */
+.bp-community { display: flex; align-items: center; justify-content: space-between; gap: 24px; background: var(--dc-blurple); color: #fff; border-radius: 18px; padding: 28px 32px; }
+.bp-community h2 { color: #fff; }
+.bp-community p { margin: 0; opacity: 0.92; line-height: 1.6; }
+.bp-privacy { line-height: 1.7; color: var(--text-2); }
+.bp-narrow h2 + .bot-faq { margin-top: 12px; }
+.bp-narrow .bot-faq + h2 { margin-top: 36px; }
+.bp-join { margin: 18px 0 0; font-size: 0.92rem; color: var(--muted); }
+.bp-join a { font-weight: 700; color: var(--dc-blurple-2); }
+
+@media (max-width: 900px) {
+  .bp-hero, .bp-show { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .bp-show-flip .bp-show-text { order: 0; }
+  .bp-steps { grid-template-columns: minmax(0, 1fr); }
+  .bp-community { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 520px) {
+  .dc-list li { grid-template-columns: 4.4em 3.4em minmax(0, 1fr) 6.2em; }
+  .dc-list li .dc-ago { display: none; }
+  .dc-moves li { grid-template-columns: 5.2em minmax(0, 1fr) auto; }
+  .dc-moves li .dc-ago { display: inline; }
+  .dc-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) { .bp-btn, .bp-cmd { transition: none; } .bp-btn:hover, .bp-cmd:hover { transform: none; } .dc-embed.is-in > * { animation: none; } }
