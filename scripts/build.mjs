@@ -778,7 +778,7 @@ function header(lang, pagePath, only) {
 <nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}${guideMenu}${toolMenu}</nav>
 ${presencePill(lang)}
 ${headerSearch(lang, [...tabs, ...guideItems, ...toolItems, ...moved])}
-${config.discord ? `<a class="theme-toggle discord-link" href="${href(langPath(lang, config.discordBotInstall ? '/discord-bot/' : '/contact/'))}" data-discord="header" aria-label="Discord" title="Discord">${DISCORD_ICON(20)}</a>` : ''}
+${config.discord ? `<a class="theme-toggle discord-link" href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="header" aria-label="${lang === 'ko' ? '디스코드 커뮤니티' : 'Discord community'}" title="${lang === 'ko' ? '디스코드 커뮤니티' : 'Discord community'}">${DISCORD_ICON(20)}</a>` : ''}
 <details class="lang-menu"><summary class="lang-current" aria-label="Language"><span class="lang-full" translate="no">${LANG_NAMES[lang]}</span><span class="lang-code" translate="no" aria-hidden="true">${lang.toUpperCase()}</span></summary><div class="lang-list">${(only ? [lang, ...ALL_LANGS.filter((l) => l !== lang)] : ALL_LANGS).map((l) => `<a class="lang-opt" href="${href(langPath(l, only && l !== lang ? '/' : pagePath || '/'))}" data-lang="${l}" hreflang="${HREFLANG[l]}" lang="${HREFLANG[l]}"${l === lang ? ' aria-current="true"' : ''}>${LANG_NAMES[l]}</a>`).join('')}</div></details>
 ${moreMenu(lang, moved)}
 </div></header>`;
@@ -810,10 +810,8 @@ function moreMenu(lang, moved = []) {
     ['/rank/', ko ? '캐릭터 랭킹' : 'Character ranking'],
     ['/items/', ko ? '아이템 도감' : 'Item database'],
     ['/maps/', ko ? '맵 도감' : 'Map database'],
-    ['/sites/', ko ? '다른 사이트 모음' : 'Other Classic World sites'],
     ['/tools/scan/', ko ? '상점 스캔으로 올리기' : 'Upload a shop scan'],
     ['/about/', ko ? '사이트 소개' : 'About'],
-    config.discordBotInstall && ['/discord-bot/', ko ? '디스코드 봇' : 'Discord bot'],
     ['/contact/', ko ? '문의·협찬·후원' : 'Contact and support']
   ].filter(Boolean);
   const label = ko ? '더보기' : 'More';
