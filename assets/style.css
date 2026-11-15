@@ -2150,8 +2150,8 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-hist-legend .k.med { width: 16px; border-top: 2.5px solid var(--accent-fill); }
 /* Where to buy: listing cards in the item panel, and channel/room chips everywhere listings show. */
 .mb-ch { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap;
-  color: var(--text); background: var(--panel-2); border: 1px solid var(--line-strong); }
-/* One colour for every channel (2026-11-15, owner): per-channel hues made the rows read as noise. */
+  color: var(--accent-ink); background: color-mix(in srgb, var(--accent-fill) 16%, var(--panel)); border: 1px solid color-mix(in srgb, var(--accent-fill) 45%, var(--panel)); }
+/* One colour for every channel, set apart from the grey FM chip (2026-11-15, owner): per-channel hues read as noise. */
 .mb-room { display: inline-block; margin-left: 4px; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; color: var(--text-2); background: var(--panel-2); border: 1px solid var(--line); }
 .mb-offers { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; }
 .mb-offer { display: grid; grid-template-columns: 6.6em 3.4em 4.4em minmax(0, 1fr) 5.4em 7.4em; align-items: center; gap: 8px; min-width: 0; padding: 5px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); box-shadow: inset 3px 0 0 var(--fresh, var(--line-strong)); font-size: 0.76rem; line-height: 1.3; }
