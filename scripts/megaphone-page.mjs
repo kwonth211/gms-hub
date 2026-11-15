@@ -48,14 +48,35 @@ function guide(ko, snap, itemName, itemHref) {
 <details><summary>Why is a letter wrong now and then?</summary><p>Megaphones are read from the game screen, so similar letters get mixed up. Check the price and name in game before you trade.</p></details></div></section>`);
 }
 
+// 무료 고확: a slim chat-like bar above the feed (assets/megaphone.js drives it). Works without login.
+function freeComposer(ko) {
+  const t = (k, e) => (ko ? k : e);
+  return `<form class="fm-form" id="fm-form" autocomplete="off" aria-label="${t('무료 고확 쏘기', 'Send a free megaphone')}">
+<div class="fm-bar">
+<span class="fm-badge">${t('무료 고확', 'Free mega')}</span>
+<div class="fm-types" role="group" aria-label="${t('종류', 'Kind')}"><button type="button" data-intent="sell" aria-pressed="true">${t('팝니다', 'Selling')}</button><button type="button" data-intent="buy" aria-pressed="false">${t('삽니다', 'Buying')}</button><button type="button" data-intent="talk" aria-pressed="false">${t('한마디', 'Chat')}</button></div>
+<div class="fm-item-wrap fm-trade"><input id="fm-item" class="fm-item" placeholder="${t('아이템 이름', 'Item name')}" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="fm-suggest" aria-label="${t('아이템', 'Item')}"><ul id="fm-suggest" class="fm-suggest" role="listbox" hidden></ul></div>
+<input id="fm-price" class="fm-price-in fm-trade" placeholder="${t('가격 (예: 300만)', 'Price (e.g. 3m)')}" aria-label="${t('가격', 'Price')}" maxlength="14">
+<input id="fm-text" class="fm-text" maxlength="80" placeholder="${t('한마디 (선택, 예: 1개 급처)', 'A short note (optional)')}" aria-label="${t('한마디', 'Note')}">
+<input id="fm-nick" class="fm-nick" maxlength="13" placeholder="${t('게임 닉네임', 'Game name')}" aria-label="${t('게임 닉네임 (귓말 받을 이름)', 'Game name (for whispers)')}" spellcheck="false" autocapitalize="off">
+<input id="fm-ch" class="fm-ch" type="number" min="1" max="40" inputmode="numeric" placeholder="CH" aria-label="${t('채널 (선택)', 'Channel (optional)')}">
+<button type="submit" class="btn fm-send" id="fm-send">${t('쏘기', 'Send')}</button>
+</div>
+<p class="fm-rules muted small"><span id="fm-status" class="fm-status" role="status" aria-live="polite"></span> ${t('무료 고확은 24시간 동안 떠 있고 2분에 한 번 쏠 수 있어요. 현금 거래, 링크, 연락처는 올릴 수 없어요. 신고가 3번 쌓이면 숨겨져요.', 'Free megaphones stay up for 24 hours, one every 2 minutes. No real-money trades, links or contact handles. Three reports hide a post.')}</p>
+</form>`;
+}
+
 export function megaphoneBody({ lang, itemsUrl, marketUrl, snapshot, itemName = (id) => `#${id}`, itemHref = () => marketUrl }) {
   const ko = lang === 'ko';
   return `<section class="page-head wrap"><h1>${ko ? '실시간 확성기' : 'Live megaphones'}</h1>
-<p class="lead">${ko ? '게임 안 고확을 실시간으로 모아 보여 드려요. 분홍은 고확, 노랑은 아이템 고확, 청록은 더블 아이템 고확이에요. 아이템이 나오면 지금 시세와 비교해 드리고, 귓말 명령어도 바로 복사돼요.' : 'Super megaphones from the game, live: pink for super megaphones, gold for item megaphones, teal for double item megaphones. Items are compared with the current market price, and the whisper command copies in one tap.'}</p></section>
+<p class="lead">${ko ? '게임 안 고확을 실시간으로 모아 보여 드려요. 분홍은 고확, 노랑은 아이템 고확, 청록은 더블 아이템 고확이에요. 여기서 <b>무료 고확</b>을 쏘면 모든 페이지 맨 위 띠에도 같이 흘러가요.' : 'Super megaphones from the game, live: pink for super megaphones, gold for item megaphones, teal for double item megaphones. Send a <b>free megaphone</b> here and it rolls across the top of every page too.'}</p></section>
 <div class="wrap mg-page" id="mg-page" data-items="${itemsUrl}" data-market="${marketUrl}">
 <section class="panel mega-trends" data-mega-trends="full" data-items="${itemsUrl}" data-market="${marketUrl}" data-megaphone="${ko ? '/ko/megaphone/' : '/en/megaphone/'}" hidden aria-label="${ko ? '오늘의 고확' : "Today's megaphones"}"></section>
 <section class="mg-feed-panel" aria-label="${ko ? '게임 확성기' : 'Game megaphones'}">
-<div class="mg-filters"><input id="mg-search" class="mg-search" type="search" placeholder="${ko ? '검색: 아이템(한글·영어), 닉네임, 가격…' : 'Search items, names, prices…'}" autocomplete="off"></div>
+${freeComposer(ko)}
+<div class="mg-filters"><input id="mg-search" class="mg-search" type="search" placeholder="${ko ? '검색: 아이템(한글·영어), 닉네임, 가격…' : 'Search items, names, prices…'}" autocomplete="off">
+<div class="mg-seg" data-mg-view="src" role="group" aria-label="${ko ? '어디서 온 고확' : 'Source'}"><button type="button" data-v="all" aria-pressed="true">${ko ? '전체' : 'All'}</button><button type="button" data-v="free" aria-pressed="false">${ko ? '무료 고확' : 'Free megas'}</button><button type="button" data-v="game" aria-pressed="false">${ko ? '게임 고확' : 'In game'}</button></div>
+<div class="mg-seg" data-mg-view="intent" role="group" aria-label="${ko ? '팝니다·삽니다' : 'Selling or buying'}"><button type="button" data-v="all" aria-pressed="true">${ko ? '모두' : 'Both'}</button><button type="button" data-v="sell" aria-pressed="false">${ko ? '팝니다' : 'Selling'}</button><button type="button" data-v="buy" aria-pressed="false">${ko ? '삽니다' : 'Buying'}</button></div></div>
 <p class="muted small mg-note">${ko ? '화면 글자 인식으로 모아서 오타가 있을 수 있어요. 한국어 풀이는 거래 용어 기준 자동 풀이예요.' : 'Read from the game screen, so expect the odd typo.'}</p>
 <p class="muted small mg-count" id="mg-count" role="status"></p>
 <ol class="mg-feed" id="mg-feed" aria-live="polite" tabindex="0"></ol>

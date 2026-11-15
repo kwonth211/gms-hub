@@ -16,11 +16,15 @@ const tr = (k, e, vars = {}) => (ko ? k : tx(e, vars)).replace(/\{(\w+)\}/g, (_,
 const POLL_MS = 30000;
 
 // ?m=<id> (from the header ticker) scrolls to that megaphone once and marks it.
-let focusId = Number(new URLSearchParams(location.search).get('m')) || 0;
+// ?f=<id> does the same for a 무료 고확 (site post), whose ids are kept as 'f<id>'.
+const qs = new URLSearchParams(location.search);
+let focusId = Number(qs.get('f')) ? `f${Number(qs.get('f'))}` : Number(qs.get('m')) || 0;
 let focused = false;
 // The header ticker asks for a megaphone that is on this page already: mark it and scroll to it without a reload.
 addEventListener('mega-focus', (e) => { focusId = e.detail.id; focused = false; e.preventDefault(); render(); });
-let rows = [], lastId = 0, names = [], byName = new Map(), prices = new Map();
+let rows = [], lastId = 0, lastFree = 0, names = [], byName = new Map(), byId = new Map(), prices = new Map();
+// Which lines to show: source (all, free = site posts, game) and intent (all, sell, buy).
+const view = { src: 'all', intent: 'all' };
 
 // ---------- reading a megaphone ----------
 // "[Shoes Speed Scroll: Intermediate]" is an exact item megaphone; otherwise the longest catalogue name in the text.
@@ -103,7 +107,30 @@ function ago(seen) {
 }
 
 const KIND = { super: () => tr('고확', 'Super'), item: () => tr('아이템 고확', 'Item'), double: () => tr('더블 아이템 고확', 'Double item'), mega: () => tr('확성기', 'Megaphone') };
+// A 무료 고확 arrives structured (intent, item id, price, a short line); the page keeps it in the same shape as a game
+// megaphone: id 'f<id>', kind 'free', colour band F.
+const freeRow = (r) => ({ id: `f${r.id}`, fid: r.id, free: true, kind: 'free', color: 'F', seen: r.at, nick: r.nick, channel: r.channel,
+  intent: r.intent === 'talk' ? null : r.intent, talk: r.intent === 'talk', item: r.item, price: r.price, text: r.text || '' });
+const atOf = (r) => seenAt(r.seen);
+const bySeen = (a, b) => atOf(b) - atOf(a);
+function myKeys() { try { return JSON.parse(localStorage.getItem('gms-free-keys') || '{}'); } catch (e) { return {}; } }
+function freeCard(r) {
+  const it = r.item ? byId.get(r.item) : null, market = it && prices.get(it.id);
+  const raw = r.price && market?.median ? Math.round(((r.price - market.median) / market.median) * 100) : null;
+  const diff = raw != null && Math.abs(raw) <= 300 ? raw : null;
+  const tag = r.intent ? `<span class="mg-intent ${r.intent}">${r.intent === 'sell' ? tr('팝니다', 'Selling') : tr('삽니다', 'Buying')}</span>` : '';
+  const name = it ? `<a class="mg-item" href="${root.dataset.market}?item=${it.id}">[${esc(ko && it.ko ? it.ko : it.en)}]</a> ` : '';
+  const cost = r.price ? `<b class="fm-price">${esc(mesos(r.price))}</b> ` : '';
+  const cmp = it && market?.median ? `<a class="mg-price" href="${root.dataset.market}?item=${it.id}">${tr('시세', 'Market')} ${mesos(market.median)}${diff != null ? ` · <b class="${diff > 0 ? 'up' : diff < 0 ? 'down' : ''}">${diff > 0 ? '+' : ''}${diff}%</b>` : ''}</a>` : '';
+  const mine = myKeys()[r.fid];
+  const act = mine ? `<button type="button" class="fm-act" data-del="${r.fid}">${tr('내 글 지우기', 'Delete mine')}</button>` : `<button type="button" class="fm-act" data-report="${r.fid}">${tr('신고', 'Report')}</button>`;
+  return `<li class="mg-msg mg-F mg-k-free${r.id === focusId ? ` mg-focus${focused ? '' : ' mg-pulse'}` : ''}" id="m-${r.id}">
+<div class="mg-who"><strong class="mg-nick"${r.id === focusId ? ` data-pick="${esc(tr('선택한 고확', 'Selected'))}"` : ''}>${esc(r.nick)}</strong><span class="mg-meta">${r.channel ? `<span class="mg-ch">CH${String(r.channel).padStart(2, '0')}</span>` : ''}<time datetime="${new Date(atOf(r)).toISOString()}" title="${ago(r.seen)}">${clock(r.seen)}</time></span><span class="mg-kind">${tr('무료 고확', 'Free mega')}</span></div>
+<div class="mg-body"><p class="mg-text">${tag}${name}${cost}${esc(r.text)}</p>${cmp}${act}</div>
+<button type="button" class="mg-copy" data-nick="${esc(r.nick)}" title="${esc(tr('귓말 명령어 복사', 'Copy whisper command'))}" aria-label="${esc(tr('귓말 명령어 복사', 'Copy whisper command'))}">${WHISPER}</button></li>`;
+}
 function card(r) {
+  if (r.free) return freeCard(r);
   const items = itemsOf(r.text), it = items[0], price = priceOf(r.text), market = it && prices.get(it.id);
   // Far-off differences usually mean a scrolled or bundled item, not a cheap or pricey one, so they are not shown.
   const raw = price && market?.median ? Math.round(((price - market.median) / market.median) * 100) : null;
@@ -119,7 +146,9 @@ function card(r) {
 <button type="button" class="mg-copy" data-nick="${esc(r.nick)}" title="${esc(tr('귓말 명령어 복사', 'Copy whisper command'))}" aria-label="${esc(tr('귓말 명령어 복사', 'Copy whisper command'))}">${WHISPER}</button></li>`;
 }
 
-const haystack = (r) => (r.hay ||= `${r.nick} ${r.text} ${itemsOf(r.text).map((i) => i.ko || '').join(' ')}`.toLowerCase());
+const haystack = (r) => (r.hay ||= (r.free ? `${r.nick} ${r.text} ${byId.get(r.item)?.ko || ''} ${byId.get(r.item)?.en || ''}` : `${r.nick} ${r.text} ${itemsOf(r.text).map((i) => i.ko || '').join(' ')}`).toLowerCase());
+const shown = (r) => (view.src === 'all' || (view.src === 'free') === !!r.free) && (view.intent === 'all' || r.intent === view.intent);
+const filtering = () => view.src !== 'all' || view.intent !== 'all' || $('mg-search').value.trim();
 // Mark search words in the text (not inside links or buttons' attributes).
 function highlight(feed, words) {
   const re = new RegExp(`(${words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
@@ -143,6 +172,7 @@ function render() {
   const seen = new Set();
   const list = rows.filter((r) => {
     if (ch && r.channel !== ch) return false;
+    if (!shown(r)) return false;
     // Search covers the nick, the text, and the Korean names of the items it mentions, every word anywhere.
     if (q && !q.split(/\s+/).every((w) => haystack(r).includes(w))) return false;
     if (r.id === focusId) return true;
@@ -162,21 +192,24 @@ function render() {
     focused = true;
   }
   fillAi();
-  $('mg-count').textContent = q || ch ? tr('{n}개 찾음', '{n} found', { n: list.length }) : tr('최근 {n}개', 'Latest {n}', { n: list.length });
+  $('mg-count').textContent = q || ch || filtering() ? tr('{n}개 찾음', '{n} found', { n: list.length }) : tr('최근 {n}개', 'Latest {n}', { n: list.length });
   $('mg-empty').hidden = rows.length > 0;
 }
 
 async function loadItems() {
   try {
     const list = await fetch(root.dataset.items).then((r) => r.json());
-    for (const [id, koName, en] of list) if (en && en.length >= 5) byName.set(en.toLowerCase(), { id, ko: koName, en });
+    for (const [id, koName, en] of list) {
+      if (en) byId.set(id, { id, ko: koName, en });
+      if (en && en.length >= 5) byName.set(en.toLowerCase(), { id, ko: koName, en });
+    }
     names = [...byName.keys()].sort((a, b) => b.length - a.length);
   } catch (e) {}
 }
 
 async function loadPrices(newRows) {
   if (newRows.some((r) => r.opts)) await loadOptTips();
-  const ids = [...new Set(newRows.flatMap((r) => itemsOf(r.text).map((i) => i.id)))].filter((id) => !prices.has(id)).slice(0, 60);
+  const ids = [...new Set(newRows.flatMap((r) => (r.free ? (r.item ? [r.item] : []) : itemsOf(r.text).map((i) => i.id))))].filter((id) => !prices.has(id)).slice(0, 60);
   if (!ids.length) return;
   try { const p = await fetch(`${api}/prices?ids=${ids.join(',')}`).then((r) => r.json()); for (const id of ids) prices.set(id, p[id] || null); } catch (e) {}
 }
@@ -187,11 +220,11 @@ addEventListener('gms-megaphones', async (e) => {
   if (!fresh.length) return;
   lastId = Math.max(lastId, ...fresh.map((r) => r.id));
   const seen = new Set(rows.map((r) => `${r.nick}|${r.text.toLowerCase()}`));
-  rows = fresh.concat(rows).slice(0, 400);
+  rows = fresh.concat(rows).sort(bySeen).slice(0, 400);
   await loadPrices(fresh).catch(() => null);
-  // With a search open the filtered list is redrawn; otherwise the new cards slide in at the top and the rest stay put
-  // (a reader scrolled down keeps their place).
-  if ($('mg-search').value.trim()) return render();
+  // With a search or filter open the filtered list is redrawn; otherwise the new cards slide in at the top and the rest
+  // stay put (a reader scrolled down keeps their place).
+  if (filtering()) return render();
   const feed = $('mg-feed');
   const cards = fresh.filter((r) => !seen.has(`${r.nick}|${r.text.toLowerCase()}`)).map((r) => card(r).replace('class="mg-msg ', 'class="mg-msg mg-new ')).join('');
   if (!cards) return;
@@ -210,15 +243,58 @@ async function poll() {
     const fresh = (data.rows || []).map((r) => ({ ...r, intent: intentOf(r.text) }));
     if (fresh.length) {
       lastId = Math.max(lastId, ...fresh.map((r) => r.id));
-      rows = fresh.concat(rows).slice(0, 400);
+      rows = fresh.concat(rows).sort(bySeen).slice(0, 400);
       await loadPrices(fresh);
       render();
     } else if (!rows.length) render();
   } catch (e) {}
+  await pollFree();
 }
+
+// ---------- 무료 고확 ----------
+// Site posts come over the same socket ('gms-free'); this poll is their fallback too.
+function addFree(list, slide) {
+  const fresh = list.filter((r) => r.id > lastFree && !rows.some((x) => x.fid === r.id)).map(freeRow);
+  if (!fresh.length) return false;
+  lastFree = Math.max(lastFree, ...fresh.map((r) => r.fid));
+  rows = fresh.concat(rows).sort(bySeen).slice(0, 400);
+  loadPrices(fresh).catch(() => null).then(() => {
+    if (!slide || filtering()) return render();
+    const feed = $('mg-feed');
+    feed.insertAdjacentHTML('afterbegin', fresh.map((r) => card(r).replace('class="mg-msg ', 'class="mg-msg mg-new ')).join(''));
+    $('mg-empty').hidden = true;
+  });
+  return true;
+}
+async function pollFree() {
+  try {
+    const data = await fetch(`${api}/free-megas${lastFree ? `?after=${lastFree}` : ''}`).then((r) => r.json());
+    if (addFree(data.rows || [], false)) render();
+  } catch (e) {}
+}
+addEventListener('gms-free', (e) => addFree(e.detail, true));
+addEventListener('gms-free-gone', (e) => { const before = rows.length; rows = rows.filter((r) => r.fid !== e.detail); if (rows.length !== before) render(); });
 
 $('mg-search').addEventListener('input', render);
 $('mg-feed').addEventListener('click', async (e) => {
+  const del = e.target.closest('[data-del]'), rep = e.target.closest('[data-report]');
+  if (del || rep) {
+    const id = Number((del || rep).dataset.del || (del || rep).dataset.report);
+    const btn = del || rep;
+    btn.disabled = true;
+    try {
+      if (del) {
+        const keys = myKeys();
+        const r = await fetch(`${api}/free-megas?id=${id}&key=${encodeURIComponent(keys[id] || '')}`, { method: 'DELETE' });
+        if (r.ok || r.status === 404) { delete keys[id]; try { localStorage.setItem('gms-free-keys', JSON.stringify(keys)); } catch (x) {} rows = rows.filter((x) => x.fid !== id); render(); track('free_mega_delete'); }
+      } else {
+        await fetch(`${api}/free-megas/report`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+        btn.textContent = tr('신고했어요', 'Reported');
+        track('free_mega_report');
+      }
+    } catch (x) { btn.disabled = false; }
+    return;
+  }
   const b = e.target.closest('.mg-copy');
   if (!b) return;
   try { await navigator.clipboard.writeText(`/w ${b.dataset.nick} `); b.innerHTML = `<span>${tr('복사됨', 'Copied')}</span>`; setTimeout(() => (b.innerHTML = WHISPER), 1200); } catch (x) {}
@@ -228,3 +304,108 @@ $('mg-feed').addEventListener('click', async (e) => {
 loadItems().then(() => { poll(); setInterval(poll, POLL_MS); setupAi(); });
 // The "n minutes ago" tooltips tick over in place; the list itself is only redrawn when its contents change.
 setInterval(() => { for (const t of document.querySelectorAll('#mg-feed time')) { const r = rows.find((x) => `m-${x.id}` === t.closest('.mg-msg')?.id); if (r) t.title = ago(r.seen); } }, 30000);
+
+// ---------- filters: source and intent chips ----------
+document.querySelectorAll('[data-mg-view]').forEach((group) => group.addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-v]');
+  if (!b) return;
+  view[group.dataset.mgView] = b.dataset.v;
+  for (const x of group.querySelectorAll('button')) x.setAttribute('aria-pressed', String(x === b));
+  render();
+  track('mega_filter', { [group.dataset.mgView]: b.dataset.v });
+}));
+
+// ---------- the 무료 고확 composer ----------
+// One slim chat-like bar: pick 팝니다 / 삽니다 / 한마디, the item (search by Korean or English name), a price and a short line,
+// and the game name people whisper to. The name and the last kind are remembered in this browser.
+(() => {
+  const form = $('fm-form');
+  if (!form) return;
+  const NICK_KEY = 'gms-free-nick';
+  const f = { item: $('fm-item'), price: $('fm-price'), text: $('fm-text'), nick: $('fm-nick'), ch: $('fm-ch'), list: $('fm-suggest'), status: $('fm-status'), send: $('fm-send') };
+  let intent = 'sell', itemId = null, pick = -1;
+  try { f.nick.value = localStorage.getItem(NICK_KEY) || ''; } catch (e) {}
+  const setIntent = (v) => {
+    intent = v;
+    for (const b of form.querySelectorAll('[data-intent]')) b.setAttribute('aria-pressed', String(b.dataset.intent === v));
+    form.dataset.intent = v;
+    f.text.placeholder = v === 'talk' ? tr('하고 싶은 말 (예: 장공 시세 왜 이래요?)', 'Say something (e.g. who is buying gloves?)') : tr('한마디 (선택, 예: 1개 급처)', 'A short note (optional)');
+  };
+  setIntent('sell');
+  form.addEventListener('click', (e) => { const b = e.target.closest('[data-intent]'); if (b) { setIntent(b.dataset.intent); (b.dataset.intent === 'talk' ? f.text : f.item).focus(); } });
+
+  // Item search: Korean or English name, names starting with the words first; at most 8.
+  const matches = (q) => {
+    const w = q.trim().toLowerCase();
+    if (!w) return [];
+    const out = [];
+    for (const it of byId.values()) {
+      const k = (it.ko || '').toLowerCase(), en = it.en.toLowerCase();
+      const at = Math.min(...[k.indexOf(w), en.indexOf(w)].filter((i) => i >= 0));
+      if (Number.isFinite(at)) out.push([at === 0 ? 0 : 1, (it.ko || it.en).length, it]);
+    }
+    return out.sort((a, b) => a[0] - b[0] || a[1] - b[1]).slice(0, 8).map((x) => x[2]);
+  };
+  let options = [];
+  const close = () => { f.list.hidden = true; f.item.setAttribute('aria-expanded', 'false'); pick = -1; };
+  const draw = () => {
+    f.list.innerHTML = options.map((it, i) => `<li role="option" id="fm-opt-${i}" data-i="${i}" aria-selected="${i === pick}">${esc(ko && it.ko ? it.ko : it.en)}${ko && it.ko && it.ko !== it.en ? ` <small>${esc(it.en)}</small>` : ''}</li>`).join('');
+    f.list.hidden = !options.length;
+    f.item.setAttribute('aria-expanded', String(!!options.length));
+    if (pick >= 0) f.item.setAttribute('aria-activedescendant', `fm-opt-${pick}`); else f.item.removeAttribute('aria-activedescendant');
+  };
+  const choose = async (it) => {
+    itemId = it.id;
+    f.item.value = ko && it.ko ? it.ko : it.en;
+    close();
+    await loadPrices([{ free: true, item: it.id }]).catch(() => null);
+    const m = prices.get(it.id);
+    f.price.placeholder = m?.median ? tr('가격 (시세 {p})', 'Price (market {p})', { p: mesos(m.median) }) : tr('가격 (예: 300만)', 'Price (e.g. 3m)');
+    f.price.focus();
+  };
+  f.item.addEventListener('input', () => { itemId = null; options = matches(f.item.value); pick = -1; draw(); });
+  f.item.addEventListener('keydown', (e) => {
+    if (f.list.hidden) return;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); pick = (pick + (e.key === 'ArrowDown' ? 1 : options.length - 1)) % options.length; draw(); }
+    else if (e.key === 'Enter' && options.length) { e.preventDefault(); choose(options[Math.max(0, pick)]); }
+    else if (e.key === 'Escape') close();
+  });
+  f.list.addEventListener('mousedown', (e) => { const li = e.target.closest('li[data-i]'); if (li) { e.preventDefault(); choose(options[Number(li.dataset.i)]); } });
+  f.item.addEventListener('blur', () => setTimeout(close, 120));
+
+  const ERR = {
+    nick: () => tr('게임 닉네임을 영문·숫자 2~13자로 넣어 주세요. 귓말 받을 이름이에요.', 'Enter your game name (2-13 letters or digits) so people can whisper you.'),
+    item: () => tr('아이템은 목록에서 골라 주세요.', 'Pick the item from the list.'),
+    price: () => tr('가격은 300만, 1.5억, 3m처럼 써 주세요.', 'Write the price like 3m, 500k or 1.5b.'),
+    length: () => tr('한마디는 80자까지예요.', 'Keep the note to 80 characters.'),
+    link: () => tr('링크는 올릴 수 없어요.', 'Links are not allowed.'),
+    rmt: () => tr('현금 거래나 연락처는 올릴 수 없어요. 메소 가격은 300만처럼 써 주세요.', 'No real-money trades or contact handles.'),
+    empty: () => tr('아이템을 고르거나 한마디를 써 주세요.', 'Pick an item or write a few words.'),
+    channel: () => tr('채널은 1~40 사이예요.', 'Channels are 1 to 40.'),
+    slow: () => tr('무료 고확은 2분에 한 번 쏠 수 있어요. 조금만 기다려 주세요.', 'One free megaphone every 2 minutes. Please wait a moment.'),
+    daily: () => tr('무료 고확은 하루 10번까지예요. 내일 다시 쏴 주세요.', 'Up to 10 free megaphones a day. Try again tomorrow.'),
+    paused: () => tr('지금은 잠시 쉬는 중이에요. 잠시 뒤 다시 시도해 주세요.', 'Taking a short break. Please try again soon.'),
+  };
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (intent !== 'talk' && f.item.value.trim() && !itemId) { const m = matches(f.item.value)[0]; if (m && (m.ko === f.item.value.trim() || m.en.toLowerCase() === f.item.value.trim().toLowerCase())) itemId = m.id; else { f.status.textContent = ERR.item(); f.item.focus(); return; } }
+    const body = { nick: f.nick.value.trim(), intent, item: intent === 'talk' ? null : itemId, price: intent === 'talk' ? null : f.price.value.trim() || null, text: f.text.value.trim(), channel: f.ch.value ? Number(f.ch.value) : null };
+    f.send.disabled = true;
+    f.status.textContent = '';
+    try {
+      const r = await fetch(`${api}/free-megas`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const out = await r.json().catch(() => ({}));
+      if (!r.ok || !out.row) { f.status.textContent = (ERR[out.error] || (() => (r.status === 503 ? ERR.paused() : tr('올리지 못했어요. 잠시 뒤 다시 시도해 주세요.', 'Could not post. Please try again.'))))(); return; }
+      const keys = myKeys(); keys[out.row.id] = out.key;
+      try { localStorage.setItem('gms-free-keys', JSON.stringify(Object.fromEntries(Object.entries(keys).slice(-30)))); localStorage.setItem(NICK_KEY, body.nick); } catch (x) {}
+      addFree([out.row], true);
+      dispatchEvent(new CustomEvent('gms-free', { detail: [out.row] }));
+      f.item.value = ''; f.price.value = ''; f.text.value = ''; itemId = null;
+      f.price.placeholder = tr('가격 (예: 300만)', 'Price (e.g. 3m)');
+      f.status.textContent = tr('무료 고확을 쐈어요! 24시간 동안 모두에게 보여요.', 'Sent! Everyone sees it for 24 hours.');
+      track('free_mega_post', { intent, item: body.item ? 1 : 0 });
+    } catch (x) {
+      f.status.textContent = tr('올리지 못했어요. 잠시 뒤 다시 시도해 주세요.', 'Could not post. Please try again.');
+    } finally { f.send.disabled = false; }
+  });
+})();

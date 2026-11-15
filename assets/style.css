@@ -2926,3 +2926,54 @@ body.exp-running .exp-stop { display: inline-flex; }
 .profile-opt .opt-lo, .mb-optsum .opt-lo { color: var(--down); }
 .profile-opt .opt-mid, .mb-optsum .opt-mid { color: var(--text-2); }
 .mb-optsum .opt-plus { color: var(--accent); }
+
+/* 무료 고확: site posts share the megaphone feed and the header ticker (band F = the site's maple accent). */
+.mg-page { --mg-F: var(--accent-fill); }
+.mg-F { --band: var(--mg-F); }
+.mg-ticker { --tk-F: var(--accent-fill); }
+.mg-tk-F { --band: var(--tk-F); }
+.mg-tk-free { font-style: normal; font-size: 0.68rem; font-weight: 800; padding: 0 5px; border-radius: 4px; color: var(--accent-ink); background: var(--accent-fill); }
+.mg-k-free .mg-kind { color: var(--accent-ink); background: var(--accent-fill); }
+.fm-price { font-weight: 800; }
+.fm-act { margin: 4px 0 0 8px; padding: 0; border: 0; background: none; font: inherit; font-size: 0.74rem; color: var(--muted); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.fm-act:hover { color: var(--text); }
+.fm-act:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 3px; }
+.fm-act[disabled] { cursor: default; text-decoration: none; }
+
+.fm-form { margin: 0 0 12px; }
+.fm-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--panel); box-shadow: inset 3px 0 0 var(--accent-fill); }
+.fm-bar:focus-within { border-color: var(--accent-fill); }
+.fm-badge { flex: none; padding: 4px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 800; color: var(--accent-ink); background: var(--accent-fill); white-space: nowrap; }
+.fm-types { display: inline-flex; flex: none; border-radius: 999px; background: var(--panel-2); padding: 2px; }
+.fm-types button, .mg-seg button { font: inherit; font-size: 0.8rem; font-weight: 700; padding: 4px 10px; border: 0; border-radius: 999px; background: transparent; color: var(--text-2); cursor: pointer; white-space: nowrap; }
+.fm-types button[aria-pressed='true'] { background: var(--panel); color: var(--text); box-shadow: 0 0 0 1px var(--line-strong); }
+.fm-types button[data-intent='sell'][aria-pressed='true'] { background: var(--up); color: var(--panel); box-shadow: none; }
+.fm-types button[data-intent='buy'][aria-pressed='true'] { background: var(--down); color: var(--panel); box-shadow: none; }
+.fm-types button:focus-visible, .mg-seg button:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.fm-bar input { min-width: 0; font: inherit; font-size: 0.9rem; padding: 6px 10px; border: 1px solid transparent; border-radius: 999px; background: var(--panel-2); color: var(--text); }
+.fm-bar input:focus { outline: none; border-color: var(--accent-fill); background: var(--panel); }
+.fm-bar input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.fm-item-wrap { position: relative; flex: 1.4 1 150px; min-width: 120px; }
+.fm-item { width: 100%; }
+.fm-price-in { flex: 0.8 1 110px; }
+.fm-text { flex: 2 1 160px; }
+.fm-nick { flex: 0.9 1 110px; }
+.fm-ch { flex: 0 0 64px; width: 64px; }
+.fm-send { flex: none; border-radius: 999px; padding: 6px 16px; }
+.fm-form[data-intent='talk'] .fm-trade { display: none; }
+.fm-form[data-intent='talk'] .fm-text { flex-grow: 4; }
+.fm-suggest { position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none; background: var(--panel); border: 1px solid var(--line-strong); border-radius: 10px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16); max-height: 280px; overflow-y: auto; }
+.fm-suggest li { padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.88rem; }
+.fm-suggest li small { color: var(--muted); }
+.fm-suggest li[aria-selected='true'], .fm-suggest li:hover { background: var(--panel-2); }
+.fm-rules { margin: 6px 4px 0 14px; }
+.fm-status:not(:empty) { font-weight: 700; color: var(--text); }
+.mg-seg { display: inline-flex; flex: none; border-radius: 999px; background: var(--panel-2); padding: 2px; }
+.mg-seg button[aria-pressed='true'] { background: var(--panel); color: var(--text); box-shadow: 0 0 0 1px var(--line-strong); }
+.mg-seg button:hover, .fm-types button:hover { color: var(--text); }
+@media (max-width: 720px) {
+  .fm-bar { border-radius: 16px; }
+  .fm-badge { order: -2; }
+  .fm-types { order: -1; }
+  .fm-send { margin-left: auto; }
+}

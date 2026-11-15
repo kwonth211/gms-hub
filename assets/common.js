@@ -133,6 +133,9 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
         const msg = JSON.parse(e.data);
         // Pushed megaphones go to whoever listens (the ticker below, the megaphone page); counts update the pill.
         if (msg.type === 'megaphones') { if (Array.isArray(msg.rows) && msg.rows.length) dispatchEvent(new CustomEvent('gms-megaphones', { detail: msg.rows })); return; }
+        // 무료 고확 (site trade posts): new ones and removed ones (deleted by the poster or hidden by reports).
+        if (msg.type === 'free') { if (Array.isArray(msg.rows) && msg.rows.length) dispatchEvent(new CustomEvent('gms-free', { detail: msg.rows })); return; }
+        if (msg.type === 'free-gone') { dispatchEvent(new CustomEvent('gms-free-gone', { detail: Number(msg.id) })); return; }
         show(msg.site); remember(msg.site);
       } catch (x) {}
     };
@@ -249,13 +252,22 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   const TK_KEY = 'gms-ticker';
   const icon = () => box.querySelector('.mg-tk-icon')?.innerHTML || '';
   const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let lastId = 0, kept = [], x = 0, last = 0, held = false, frame = 0;
+  let loaded = false, kept = [], x = 0, last = 0, held = false, frame = 0;
+  // Game megaphones and 무료 고확 (site posts, free: true) share the strip; each is known by its own id space.
+  const keyOf = (r) => `${r.free ? 'f' : 'm'}${r.id}`;
+  const seenKeys = new Set();
+  const atOf = (r) => Date.parse(`${String(r.seen).replace(' ', 'T')}Z`) || 0;
+  const ko = lang === 'ko';
+  const mesos = (n) => (ko ? (n >= 1e8 ? `${+(n / 1e8).toFixed(2)}억` : n >= 1e4 ? `${+(n / 1e4).toFixed(n >= 1e6 ? 0 : 1)}만` : String(n)) : n >= 1e9 ? `${+(n / 1e9).toFixed(2)}b` : n >= 1e6 ? `${+(n / 1e6).toFixed(2)}m` : n >= 1e3 ? `${+(n / 1e3).toFixed(1)}k` : String(n));
+  // A site post as one ticker line: "팝니다 [장갑 공격 주문서 60%] 300만 1개 급처".
+  const freeRow = (r) => ({ id: r.id, free: true, seen: r.at, nick: r.nick, channel: r.channel, color: 'F',
+    text: [r.intent === 'sell' ? (ko ? '팝니다' : 'Selling') : r.intent === 'buy' ? (ko ? '삽니다' : 'Buying') : '', r.item ? `[${(ko ? r.ko : r.en) || r.en || `#${r.item}`}]` : '', r.price ? mesos(r.price) : '', r.text].filter(Boolean).join(' ') });
   run.innerHTML = '<div class="mg-tk-set"></div>';
   const set = run.firstChild;
   async function itemsHtml(rows, fresh = false) {
     const read = await getReader();
-    const texts = await Promise.all(rows.map(async (r) => { const original = noChannel(r.text, r.channel); return [original, read ? await read(original).catch(() => original) : original]; }));
-    return rows.map((r, i) => `<a class="mg-tk-item mg-tk-${esc(r.color || 'Y')}${fresh ? ' mg-tk-new' : ''}" href="${box.dataset.href}?m=${Number(r.id)}" tabindex="-1"${texts[i][1] !== texts[i][0] ? ` title="${esc(texts[i][0])}"` : ''}>${icon()}${r.channel ? `<b>CH${r.channel}</b>` : ''}<time>${clock(r.seen)}</time><strong>${esc(r.nick)}</strong><span>${esc(short(texts[i][1]))}</span></a>`).join('');
+    const texts = await Promise.all(rows.map(async (r) => { const original = noChannel(r.text, r.channel); return [original, read && !r.free ? await read(original).catch(() => original) : original]; }));
+    return rows.map((r, i) => `<a class="mg-tk-item mg-tk-${esc(r.color || 'Y')}${fresh ? ' mg-tk-new' : ''}" href="${box.dataset.href}?${r.free ? 'f' : 'm'}=${Number(r.id)}" tabindex="-1"${texts[i][1] !== texts[i][0] ? ` title="${esc(texts[i][0])}"` : ''}>${icon()}${r.free ? `<em class="mg-tk-free">${ko ? '무료 고확' : 'Free mega'}</em>` : ''}${r.channel ? `<b>CH${r.channel}</b>` : ''}<time>${clock(r.seen)}</time><strong>${esc(r.nick)}</strong><span>${esc(short(texts[i][1]))}</span></a>`).join('');
   }
   const stopAt = () => Math.min(0, run.parentElement.clientWidth - set.scrollWidth);
   // With nothing new coming in, the strip keeps rolling through a few recent megaphones again ("replay" items). A new
@@ -289,9 +301,9 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   const go = () => { if (!calm && !frame) frame = requestAnimationFrame(step); };
   const settle = () => { x = calm ? 0 : stopAt(); run.style.transform = `translateX(${x}px)`; };
   async function add(rows, fresh) {
-    const next = rows.filter((r) => r.id > lastId).sort((a, b) => a.id - b.id);
+    const next = rows.filter((r) => !seenKeys.has(keyOf(r))).sort((a, b) => atOf(a) - atOf(b) || a.id - b.id);
     if (!next.length) return;
-    lastId = next[next.length - 1].id;
+    for (const r of next) seenKeys.add(keyOf(r));
     kept = kept.concat(next).slice(-20);
     try { localStorage.setItem(TK_KEY, JSON.stringify(kept)); } catch (e) {}
     const html = await itemsHtml(next, fresh);
@@ -306,13 +318,17 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
       let rows = [];
       try { rows = JSON.parse(localStorage.getItem(TK_KEY) || '[]'); } catch (e) {}
       if (!rows.length) return;
+      loaded = true;
       await add(rows, false);
       // What was already seen stands still, newest at the right edge.
       return settle();
     }
     let rows = [];
-    try { rows = (await (await fetch(`${api}/megaphones?limit=20`)).json()).rows || []; } catch (e) { return; }
-    if (!lastId) { await add(rows, false); return settle(); }
+    try {
+      const [game, free] = await Promise.all([fetch(`${api}/megaphones?limit=20`).then((r) => r.json()), fetch(`${api}/free-megas?limit=10`).then((r) => r.json()).catch(() => ({ rows: [] }))]);
+      rows = (game.rows || []).concat((free.rows || []).map(freeRow));
+    } catch (e) { return; }
+    if (!loaded) { loaded = true; await add(rows, false); return settle(); }
     return add(rows, true);
   }
   const hold = (on) => { held = on; if (!on) go(); };
@@ -328,12 +344,13 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
     if (!a) return;
     track('mega_ticker_click');
     if (samePage) {
-      const id = Number(new URL(a.href).searchParams.get('m'));
-      if (id && dispatchEvent(new CustomEvent('mega-focus', { detail: { id }, cancelable: true })) === false) { e.preventDefault(); history.replaceState(null, '', `?m=${id}`); }
+      const q = new URL(a.href).searchParams, f = Number(q.get('f')), id = f ? `f${f}` : Number(q.get('m'));
+      if (id && dispatchEvent(new CustomEvent('mega-focus', { detail: { id }, cancelable: true })) === false) { e.preventDefault(); history.replaceState(null, '', f ? `?f=${f}` : `?m=${id}`); }
     }
   });
   load(true).then(() => load());
   addEventListener('gms-megaphones', (e) => add(e.detail, true));
+  addEventListener('gms-free', (e) => add(e.detail.map(freeRow), true));
   setInterval(() => document.visibilityState === 'visible' && load(), 60000);
 })();
 

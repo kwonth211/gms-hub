@@ -33,6 +33,7 @@ import { discordInteractions } from './discord-bot.js';
 import { notifyMegaphones, notifyListings } from './discord-alerts.js';
 import { oauthStart, oauthCallback } from './discord-oauth.js';
 import { postMegaphones, listMegaphones, pruneMegaphones, megaphoneAsks, megaphoneStats } from './megaphone.js';
+import { listFreeMegas, postFreeMega, deleteFreeMega, reportFreeMega, pruneFreeMegas } from './free-mega.js';
 import { storeDailyRollups, reportRaw } from './report.js';
 import { count, flushUsage, isOver, meterDb, usageView } from './usage-guard.js';
 import { createAlert, listAlerts, deleteAlert, takeHits, checkAlerts } from './alerts.js';
@@ -335,7 +336,7 @@ const api = {
     const now = new Date();
     // The weekly report's daily rollups (yesterday's megaphones, today's ranking) are written before the prune runs.
     if (now.getUTCHours() === 16 && now.getUTCMinutes() < 15)
-      ctx.waitUntil(storeDailyRollups(env).catch(() => null).then(() => pruneMegaphones(env)).catch(() => null));
+      ctx.waitUntil(storeDailyRollups(env).catch(() => null).then(() => pruneMegaphones(env)).then(() => pruneFreeMegas(env)).catch(() => null));
     // Retention first, then the safety-net re-summary of everything seen in the last day (one 1-day scan).
     if (now.getUTCHours() === 16 && now.getUTCMinutes() < 15)
       ctx.waitUntil(archiveListings(env).catch(() => null).then(() => reconcileItemMarket(env)).catch(() => null));
@@ -517,6 +518,37 @@ const api = {
         return d;
       }));
       return json(data, cors, 200, 'public, max-age=300');
+    }
+
+    // 무료 고확: site-written trade posts (free-mega.js). New and removed posts reach every open page over the presence
+    // socket at once, like game megaphones; the list itself is edge-cached for 10 s.
+    if (url.pathname === '/free-megas' || url.pathname === '/free-megas/report') {
+      const push = (msg) => {
+        const p = env.PRESENCE?.get(env.PRESENCE.idFromName('site')).fetch('https://presence/push', { method: 'POST', body: JSON.stringify(msg) }).catch(() => null);
+        if (p && ctx?.waitUntil) ctx.waitUntil(p);
+      };
+      // Item names ride along so the header ticker can print a post without loading the item index.
+      const named = async (rows) => { const nameOf = await itemLabel(); return rows.map((r) => (r.item ? { ...r, en: nameOf(r.item, 'en') || null, ko: nameOf(r.item, 'ko') || null } : r)); };
+      if (req.method === 'GET' && url.pathname === '/free-megas') { const d = await listFreeMegas(env, url.searchParams); return json({ ...d, rows: await named(d.rows) }, cors, 200, 'public, max-age=10'); }
+      const who = await visitorHash(req.headers.get('CF-Connecting-IP') || '', 'free-mega', env.VOTE_SALT);
+      if (req.method === 'POST' && url.pathname === '/free-megas') {
+        const [out, status] = await postFreeMega(env, await req.json().catch(() => null), who, await knownItems().catch(() => null));
+        if (out.row) { out.row = (await named([out.row]))[0]; push({ type: 'free', rows: [out.row] }); }
+        return json(out, cors, status, 'no-store');
+      }
+      if (req.method === 'DELETE' && url.pathname === '/free-megas') {
+        const id = Number(url.searchParams.get('id'));
+        const [out, status] = await deleteFreeMega(env, id, url.searchParams.get('key'));
+        if (out.ok) push({ type: 'free-gone', id });
+        return json(out, cors, status, 'no-store');
+      }
+      if (req.method === 'POST' && url.pathname === '/free-megas/report') {
+        const id = Number((await req.json().catch(() => null))?.id);
+        const [out, status] = await reportFreeMega(env, id, who);
+        if (out.hidden) push({ type: 'free-gone', id });
+        return json(out, cors, status, 'no-store');
+      }
+      return json({ error: 'method not allowed' }, cors, 405);
     }
 
     if (url.pathname === '/megaphones' && req.method === 'GET') {

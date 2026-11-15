@@ -2,6 +2,20 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "free-megaphone",
+   "version": "0.7.2",
+   "level": "minor",
+   "highlight": true,
+   "date": "2026-11-15",
+   "path": "/megaphone/",
+   "ko": "무료 고확 — 사이트에서 팝니다·삽니다를 공짜로 쏘면 맨 위 띠에도 흘러가요",
+   "en": "Free megaphones — post selling or buying on the site for free, and it rolls across the top bar too",
+   "desc": {
+    "ko": "실시간 확성기 페이지에서 팝니다·삽니다·한마디를 골라 아이템과 가격, 게임 닉네임만 넣으면 무료 고확이 나가요. 게임 고확과 같은 목록에 섞여 보이고, 모든 페이지 맨 위 띠에도 바로 흘러가요. 아이템을 고르면 지금 시세가 같이 보이고, 보는 사람은 귓말 명령어를 바로 복사할 수 있어요. 24시간 동안 떠 있고, 2분에 한 번 쏠 수 있어요.",
+    "en": "On the live megaphone page pick selling, buying or chat, add the item, price and your game name, and a free megaphone goes out. It shows in the same list as game megaphones and rolls across the top bar of every page at once. Picking an item shows its market price, and readers copy the whisper command in one tap. Posts stay up for 24 hours, one every 2 minutes."
+   }
+  },
+  {
    "id": "weekly-report",
    "version": "0.7.1",
    "level": "patch",
