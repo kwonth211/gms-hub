@@ -381,4 +381,8 @@ document.addEventListener('click', (e) => { const a = e.target.closest('[data-di
 
 // Repeat visits take the site's files from a service worker cache (assets/sw.js, served at /sw.js). Registered after
 // load so it never competes with the page, and only on the real site (not on a local build).
-if ('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  // Page scripts start after the first paint, which can be after the load event.
+  const register = () => navigator.serviceWorker.register('/sw.js').catch(() => {});
+  if (document.readyState === 'complete') register(); else addEventListener('load', register);
+}

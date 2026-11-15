@@ -95,7 +95,7 @@ test('training form exposes costs and party setup without navigation or research
   for(const lang of ['ko','en']){
     const html=read(`dist/${lang}/tools/training/index.html`);
     for(const field of ['lv','job','goal','party','advanced'])assert.ok(html.includes(`name="${field}"`));
-    assert.match(html,/type="module" src="[^"]*training.js/);
+    assert.match(html,/\["[^"]*training\.js[^"]*",1\]/); // loaded as a module by the after-paint loader (build.mjs lateScripts)
     assert.ok(!html.includes('name="unknown"'));
     assert.ok(!html.includes('meowdbExpHr'));
   }

@@ -944,14 +944,14 @@ function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], module
 ${header(lang, pagePath, only)}
 <main>${ads && pageKey !== 'home' ? adfitRails() : ''}${withMidAd(withTopAd(withDownload(body, lang, pageKey, pagePath), ads), ads)}${ads && !body.includes(AD_MID) ? adfitSlot() : ''}</main>
 ${footer(lang)}
-<script src="${scriptSrc('analytics.js')}" defer></script>
-<script src="${scriptSrc('common.js')}" defer></script>
-<script type="module" src="${href(`/assets/header-search.js?v=${moduleVersion}`)}"></script>
-${ads ? `<script src="${scriptSrc('adfit.js')}" defer></script>` : ''}
-${scripts.map((s) => `<script src="${scriptSrc(s)}" defer></script>`).join('\n')}
-${modules.map((s) => `<script type="module" src="${href(`/assets/${s}?v=${moduleVersion}`)}"></script>`).join('\n')}
-${String(XL_BY_PAGE[pageKey] || '').startsWith('live:') || pageKey === 'questGuide' || XL_BY_PAGE[pageKey] ? `<script type="module" src="${href(`/assets/xlsx-live.js?v=${moduleVersion}`)}"></script>` : ''}
-<script type="module" src="${href(`/assets/item-tip.js?v=${moduleVersion}`)}"></script>
+${lateScripts([
+  [scriptSrc('analytics.js')], [scriptSrc('common.js')], [href(`/assets/header-search.js?v=${moduleVersion}`), 1],
+  ...(ads ? [[scriptSrc('adfit.js')]] : []),
+  ...scripts.map((s) => [scriptSrc(s)]),
+  ...modules.map((s) => [href(`/assets/${s}?v=${moduleVersion}`), 1]),
+  ...(String(XL_BY_PAGE[pageKey] || '').startsWith('live:') || pageKey === 'questGuide' || XL_BY_PAGE[pageKey] ? [[href(`/assets/xlsx-live.js?v=${moduleVersion}`), 1]] : []),
+  [href(`/assets/item-tip.js?v=${moduleVersion}`), 1],
+])}
 </body>
 </html>`;
 }
@@ -2980,6 +2980,16 @@ function shareSprites(html) {
   if (!ids.size) return html;
   const defs = `<svg class="sprite-defs" width="0" height="0" style="position:absolute" aria-hidden="true"><defs>${[...ids].map(([inner, id]) => `<g id="${id}">${inner}</g>`).join('')}</defs></svg>`;
   return body.replace(/<body[^>]*>/, (tag) => `${tag}\n${defs}`);
+}
+// Page scripts run after the first paint. As plain deferred tags they ran before it whenever the stylesheet was the last
+// thing to arrive (a slow connection): the parser was done, so every script executed first and the first paint waited
+// behind them (mobile first paint 1.2 s or 5 s from one test to the next, 2026-11-15). The files are still fetched early
+// (preload); a small loader adds them, in the same order, right after the first frame — at once in a background tab, and
+// after 2.5 s at the latest.
+function lateScripts(list) {
+  const hints = list.map(([src, mod]) => (mod ? `<link rel="modulepreload" href="${src}">` : `<link rel="preload" as="script" href="${src}">`)).join('\n');
+  return `${hints}
+<script>(function(){var L=${JSON.stringify(list.map(([src, mod]) => [src, mod ? 1 : 0]))},done=0;function go(){if(done++)return;L.forEach(function(d){var s=document.createElement('script');if(d[1])s.type='module';s.async=false;s.src=d[0];document.body.appendChild(s)})}if(document.visibilityState==='hidden')go();else{requestAnimationFrame(function(){setTimeout(go,0)});setTimeout(go,2500)}})()</script>`;
 }
 const write = (rel, content) => {
   if (rel.startsWith('en/') && rel.endsWith('.html')) EN_PAGES.push([rel, content]);
