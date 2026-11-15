@@ -3,6 +3,7 @@
 // reading of the trade shorthand.
 import { koMesos, GLOSS, plain, intentOf, priceOf } from './mega-text.js';
 import { optBadge, loadTips as loadOptTips } from './opt-grade.js';
+import { indexEntry, searchEntries } from './search-index.js';
 export { intentOf, priceOf };
 
 const root = document.getElementById('mg-page');
@@ -334,17 +335,12 @@ document.querySelectorAll('[data-mg-view]').forEach((group) => group.addEventLis
   setIntent('sell');
   form.addEventListener('click', (e) => { const b = e.target.closest('[data-intent]'); if (b) { setIntent(b.dataset.intent); (b.dataset.intent === 'talk' ? f.text : f.item).focus(); } });
 
-  // Item search: Korean or English name, names starting with the words first; at most 8.
+  // Item search: the site search's matching, so Korean shorthand (장공), initials and English names all work; at most 8.
+  let entries = null;
   const matches = (q) => {
-    const w = q.trim().toLowerCase();
-    if (!w) return [];
-    const out = [];
-    for (const it of byId.values()) {
-      const k = (it.ko || '').toLowerCase(), en = it.en.toLowerCase();
-      const at = Math.min(...[k.indexOf(w), en.indexOf(w)].filter((i) => i >= 0));
-      if (Number.isFinite(at)) out.push([at === 0 ? 0 : 1, (it.ko || it.en).length, it]);
-    }
-    return out.sort((a, b) => a[0] - b[0] || a[1] - b[1]).slice(0, 8).map((x) => x[2]);
+    if (!q.trim()) return [];
+    entries ||= [...byId.values()].map((it) => indexEntry({ type: 'item', id: it.id, names: [it.ko, it.en] }));
+    return searchEntries(entries, q).slice(0, 8).map((e) => byId.get(e.id)).filter(Boolean);
   };
   let options = [];
   const close = () => { f.list.hidden = true; f.item.setAttribute('aria-expanded', 'false'); pick = -1; };
