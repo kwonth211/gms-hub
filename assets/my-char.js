@@ -20,13 +20,39 @@ export function saveChar(c) {
   } catch (e) {}
 }
 
+// A picture of the player's own character, resized in the browser and kept in this browser only (never uploaded anywhere).
+const IMG_KEY = 'gms-char-img';
+export function loadCharImg() {
+  try { const v = localStorage.getItem(IMG_KEY); return v && v.startsWith('data:image/') ? v : null; } catch (e) { return null; }
+}
+function saveCharImg(v) {
+  try { if (v) localStorage.setItem(IMG_KEY, v); else localStorage.removeItem(IMG_KEY); return true; } catch (e) { return false; }
+}
+// Fits the picture in 240×240 and re-encodes it, so a phone photo does not fill browser storage.
+async function shrink(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((ok, fail) => { const i = new Image(); i.onload = () => ok(i); i.onerror = fail; i.src = url; });
+    const k = Math.min(1, 240 / Math.max(img.naturalWidth, img.naturalHeight));
+    const cv = document.createElement('canvas');
+    cv.width = Math.max(1, Math.round(img.naturalWidth * k));
+    cv.height = Math.max(1, Math.round(img.naturalHeight * k));
+    const g = cv.getContext('2d');
+    g.imageSmoothingEnabled = k < 1;
+    g.drawImage(img, 0, 0, cv.width, cv.height);
+    const webp = cv.toDataURL('image/webp', 0.9);
+    return webp.startsWith('data:image/webp') ? webp : cv.toDataURL('image/png');
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 // Subclasses without a page of their own share their family's page.
 const FAMILY = { fighter: 'warrior', page: 'warrior', spear: 'warrior', hunter: 'archer', crossbow: 'archer', fire: 'mage', ice: 'mage', cleric: 'mage', assassin: 'thief', bandit: 'thief' };
 const family = (job) => FAMILY[job] || job;
 // Equipment job bits and quest job ids per family; the skills page anchors per job.
 const BIT = { warrior: 1, mage: 2, archer: 4, thief: 8 };
-const QUEST_JOB = { warrior: 100, mage: 200, archer: 300, thief: 400 };
 const SKILL_HASH = { warrior: 'warrior', fighter: 'warrior-110', page: 'warrior-120', spear: 'warrior-130', mage: 'magician', fire: 'magician-210', ice: 'magician-220',
   cleric: 'magician-230', archer: 'bowman', hunter: 'bowman-310', crossbow: 'bowman-320', thief: 'thief', assassin: 'thief-410', bandit: 'thief-420' };
 const SWORDS = ['One-Handed Sword', 'Two-Handed Sword'];
@@ -40,7 +66,6 @@ const SLOT_KO = { Hat: '모자', Top: '상의', Overall: '한벌옷', Bottom: '�
   'Face Accessory': '얼굴장식', 'Eye Decoration': '눈장식', Ring: '반지', Wand: '완드', Staff: '스태프', Bow: '활', Crossbow: '석궁', Claw: '아대', Dagger: '단검',
   Spear: '창', 'Pole Arm': '폴암', 'One-Handed Sword': '한손검', 'Two-Handed Sword': '두손검', 'One-Handed Axe': '한손도끼', 'Two-Handed Axe': '두손도끼',
   'One-Handed Blunt Weapon': '한손둔기', 'Two-Handed Blunt': '두손둔기' };
-const QUEST_BANDS = [1, 11, 21, 31, 41, 51];
 // Skill build ids: the family's 1st job and each 2nd job.
 const SKILL_JOB = { warrior: 100, fighter: 110, page: 120, spear: 130, mage: 200, fire: 210, ice: 220, cleric: 230, archer: 300, hunter: 310, crossbow: 320,
   thief: 400, assassin: 410, bandit: 420 };
@@ -75,13 +100,13 @@ export function pickGear(gear, { lv, job }) {
   best.delete('weapon');
   return [...(weapon ? [weapon] : []), ...[...best.values()].sort((a, b) => b[4] - a[4] || (b[8] || 0) - (a[8] || 0))].slice(0, 4);
 }
-// Quests that start within ten levels below the character, open to its family, by EXP.
-export function pickQuests(quests, { lv, job }) {
-  const fam = QUEST_JOB[family(job)];
-  return quests.filter(([, start, , jobs]) => start <= lv && start >= lv - 10 && (!jobs.length || jobs.includes(fam) || jobs.includes(0)))
-    .sort((a, b) => b[2] - a[2])
-    // Steps of one guided chain (Jane's three challenges) show once; the guide covers the rest.
-    .filter((q, i, all) => !q[4] || all.findIndex((x) => x[4] === q[4]) === i).slice(0, 3);
+// Guided quests the character can start now: a part that starts at or below its level, the most recently unlocked first.
+export function pickQuests(quests, { lv }) {
+  return quests.map((q) => ({ q, start: Math.max(0, ...q[1].filter((x) => x <= lv)) }))
+    .filter(({ start }) => start > 0)
+    .sort((a, b) => b.start - a.start)
+    .slice(0, 3)
+    .map(({ q, start }) => [...q, start]);
 }
 
 // Home panel: a two-field form until a character is saved, then routes, EXP quests, gear and the skill build for it.
@@ -90,14 +115,14 @@ export function mountCharPanel(el, { routes, classes, finder, korean }) {
   const d = el.dataset;
   const t = korean
     ? { setH: '내 캐릭터 맞춤 홈', setP: '직업과 레벨을 한 번 저장하면 다음부터 사냥터, 경험치 퀘스트, 낄 장비와 시세, 스킬 순서를 바로 보여 줘요. 이 브라우저에만 저장돼요.', job: '직업', lv: '레벨', save: '저장',
-      mine: '내 캐릭터', up: '레벨 올리기', down: '레벨 내리기', routesH: '지금 갈 사냥터', questsH: '경험치 퀘스트', gearH: '지금 낄 수 있는 장비', all: '전체 보기', finder: '조건 바꿔 찾기',
-      skill: (job) => `${job} 스킬 찍는 순서 보기`, none: '이 레벨에 맞는 경로가 아직 없어요.', noQuest: '이 레벨 근처에 시작하는 퀘스트가 없어요.', noGear: '이 레벨에 맞는 장비가 아직 없어요.',
-      start: (lv) => `Lv. ${lv}부터`, noPrice: '시세 없음', loading: '불러오는 중…', guide: '공략',
+      mine: '내 캐릭터', up: '레벨 올리기', down: '레벨 내리기', routesH: '지금 갈 사냥터', questsH: '지금 할 수 있는 퀘스트', gearH: '지금 낄 수 있는 장비', all: '전체 보기', finder: '조건 바꿔 찾기',
+      skill: (job) => `${job} 스킬 찍는 순서 보기`, none: '이 레벨에 맞는 경로가 아직 없어요.', noQuest: '공략 퀘스트는 10레벨부터 열려요.', noGear: '이 레벨에 맞는 장비가 아직 없어요.',
+      start: (lv) => `Lv. ${lv}부터`, noPrice: '시세 없음', loading: '불러오는 중…', upload: '내 캐릭터 사진 올리기', change: '사진 바꾸기', reset: '기본 캐릭터로', photoNote: '사진은 이 브라우저에만 저장돼요.', photoFail: '이 파일은 쓸 수 없어요. 다른 사진을 골라 주세요.', guide: '공략',
       skillH: (job, n) => `${job} 스킬 찍는 순서 · ${n}차`, skillAll: '스킬트리 전체 보기', skillNow: '지금', skillBefore: '10레벨에 1차 전직하면 이 순서로 찍어요.', skillPick: '30레벨이 넘었어요. 위에서 2차 직업을 고르면 2차 스킬 순서가 나와요.', master: '마스터' }
     : { setH: tx('Your character home'), setP: tx('Save your class and level once, and the next visit opens on training spots, EXP quests, gear with prices and the skill build for it. Stored in this browser only.'), job: tx('Class'), lv: tx('Level'), save: tx('Save'),
-      mine: tx('My character'), up: tx('Level up'), down: tx('Level down'), routesH: tx('Where to train now'), questsH: tx('EXP quests'), gearH: tx('Gear you can wear now'), all: tx('See all'), finder: tx('Adjust in the finder'),
-      skill: (job) => tx('{job} skill build', { job }), none: tx('No route fits this level yet.'), noQuest: tx('No quest starts near this level.'), noGear: tx('No gear fits this level yet.'),
-      start: (lv) => tx('From level {lv}', { lv }), noPrice: tx('No price'), loading: tx('Loading…'), guide: tx('Guide'),
+      mine: tx('My character'), up: tx('Level up'), down: tx('Level down'), routesH: tx('Where to train now'), questsH: tx('Quests you can do now'), gearH: tx('Gear you can wear now'), all: tx('See all'), finder: tx('Adjust in the finder'),
+      skill: (job) => tx('{job} skill build', { job }), none: tx('No route fits this level yet.'), noQuest: tx('Guided quests open from level 10.'), noGear: tx('No gear fits this level yet.'),
+      start: (lv) => tx('From level {lv}', { lv }), noPrice: tx('No price'), loading: tx('Loading…'), upload: tx('Add a picture of your character'), change: tx('Change picture'), reset: tx('Use the default character'), photoNote: tx('The picture stays in this browser only.'), photoFail: tx('That file cannot be used. Pick another picture.'), guide: tx('Guide'),
       skillH: (job, n) => tx('{job} skill order · job {n}', { job, n }), skillAll: tx('Full skill trees'), skillNow: tx('Now'), skillBefore: tx('Take your 1st job at level 10, then spend SP in this order.'), skillPick: tx('Past level 30: pick your 2nd job above to see its skill order.'), master: tx('max') };
   const names = korean ? jobNames.ko : jobNames.en;
   const classHref = (job) => classes.find((c) => c.job === family(job))?.href;
@@ -109,23 +134,22 @@ export function mountCharPanel(el, { routes, classes, finder, korean }) {
   let hub = null, hubLoad = null;
   const loadHub = () => (hubLoad ||= fetch(d.hub).then((r) => (r.ok ? r.json() : null)).catch(() => null));
 
-  const form = (c) => `<form class="char-form"><div class="char-intro"><h2>${esc(t.setH)}</h2><p class="muted">${esc(t.setP)}</p></div>
+  const form = (c) => `<div class="char-new">${avatar(null, false)}<form class="char-form"><div class="char-intro"><h2>${esc(t.setH)}</h2><p class="muted">${esc(t.setP)}</p></div>
 <label>${esc(t.job)}<select name="job" required>${Object.entries(names).map(([k, v]) => `<option value="${k}"${c?.job === k ? ' selected' : ''}>${esc(v)}</option>`).join('')}</select></label>
 <label>${esc(t.lv)}<input name="lv" type="number" min="1" max="200" inputmode="numeric" required value="${c?.lv || ''}" placeholder="30"></label>
-<button class="btn" type="submit">${esc(t.save)}</button></form>`;
+<button class="btn" type="submit">${esc(t.save)}</button></form></div>`;
 
   const card = (kind, title, body, more) => `<div class="char-card" data-kind="${kind}"><h3>${esc(title)}</h3>${body}${more}</div>`;
   const moreLink = (url, label, kind) => `<a class="char-more" href="${esc(url)}" data-char-link="${kind}">${esc(label)}</a>`;
 
+  // Titles, one-line summaries and rewards come in Korean and English from the quest guides, like the guide pages.
   const questsBody = (c) => {
     if (!hub) return `<p class="muted">${esc(t.loading)}</p>`;
     const list = pickQuests(hub.quests, c);
     if (!list.length) return `<p class="muted">${esc(t.noQuest)}</p>`;
-    return `<ul class="char-list">${list.map(([name, start, exp, , guide]) => {
-      const band = QUEST_BANDS.filter((b) => b <= Math.max(start, 1)).pop();
-      const url = guide ? `${d.questBase}${guide.replace(/^\//, '')}` : `${d.quests}#lv-${band}`;
-      return `<li><a href="${esc(url)}" data-char-link="quest"><strong translate="no">${esc(name)}</strong><small>${esc(t.start(start || 1))}${guide ? ` · ${esc(t.guide)}` : ''}</small><b>${nf.format(exp)} EXP</b></a></li>`;
-    }).join('')}</ul>`;
+    const L = (o) => (korean ? o.ko : o.en);
+    return `<ul class="char-list char-quests">${list.map(([slug, , title, cardLine, reward, start]) => `<li><a href="${esc(`${d.quests}${slug}/`)}" data-char-link="quest" data-quest="${esc(slug)}">`
+      + `<strong>${esc(L(title))}</strong><small>${esc(t.start(start))} · ${esc(L(reward))}</small><span>${esc(L(cardLine))}</span></a></li>`).join('')}</ul>`;
   };
   const gearBody = (c) => {
     if (!hub) return `<p class="muted">${esc(t.loading)}</p>`;
@@ -152,10 +176,19 @@ export function mountCharPanel(el, { routes, classes, finder, korean }) {
     return `<div class="char-card char-skills" data-kind="skills"><h3>${esc(t.skillH(names[c.job], plan.pool))}</h3>${note ? `<p class="muted">${esc(note)}</p>` : ''}<ol class="char-steps">${steps}</ol>${more}</div>`;
   };
   // Saved view: the class picker and level stepper sit in the header and change everything below at once.
-  const head = (c) => `<div class="char-head"><h2>${esc(t.mine)}</h2><div class="char-controls">
+  // The character picture: the player's own if they added one, otherwise a beginner (below level 10) or one holding the
+  // family's first weapon.
+  const AVATAR = { warrior: 'warrior', mage: 'mage', archer: 'archer', thief: 'thief' };
+  const avatarSrc = (c) => loadCharImg() || `${d.avatars}${!c || c.lv < 10 ? 'beginner' : AVATAR[family(c.job)] || 'beginner'}.png`;
+  const avatar = (c, editable) => {
+    const own = !!loadCharImg();
+    return `<figure class="char-avatar${own ? ' is-own' : ''}"><div class="char-avatar-frame"><img src="${esc(avatarSrc(c))}" alt="${esc(t.mine)}" data-char-img></div>${editable
+      ? `<figcaption><label class="char-photo-btn"><input type="file" accept="image/*" data-char-upload class="sr-only">${esc(own ? t.change : t.upload)}</label>${own ? `<button type="button" class="char-photo-reset" data-char="reset-img">${esc(t.reset)}</button>` : ''}<small class="muted" data-char-photo-msg>${esc(t.photoNote)}</small></figcaption>` : ''}</figure>`;
+  };
+  const head = (c) => `<div class="char-head">${avatar(c, true)}<div class="char-head-main"><h2>${esc(t.mine)}</h2><div class="char-controls">
 <label class="char-job"><span class="sr-only">${esc(t.job)}</span><select data-char-job aria-label="${esc(t.job)}">${Object.entries(names).map(([k, v]) => `<option value="${k}"${c.job === k ? ' selected' : ''}>${esc(v)}</option>`).join('')}</select></label>
 <div class="char-lv" role="group" aria-label="${esc(t.lv)}"><button type="button" class="btn ghost" data-char="down" aria-label="${esc(t.down)}">−</button><label><span>Lv.</span><input data-char-lv type="number" min="1" max="200" inputmode="numeric" value="${c.lv}" aria-label="${esc(t.lv)}"></label><button type="button" class="btn ghost" data-char="up" aria-label="${esc(t.up)}">+</button></div>
-</div></div><div class="char-body"></div>`;
+</div></div></div><div class="char-body"></div>`;
   const body = (c) => {
     const rows = selectRoutes(routes, { level: c.lv, job: c.job }).slice(0, 3);
     const cls = classHref(c.job);
@@ -195,6 +228,8 @@ ${skillBody(c)}`;
     const input = el.querySelector('[data-char-lv]');
     if (input && Number(input.value) !== next.lv) input.value = next.lv;
     refresh();
+    const img = el.querySelector('[data-char-img]');
+    if (img && img.getAttribute('src') !== avatarSrc(next)) img.src = avatarSrc(next);
     track('my_char_change', { field, job: next.job, level: next.lv });
   };
   el.addEventListener('submit', (e) => {
@@ -206,7 +241,18 @@ ${skillBody(c)}`;
     track('my_char_save', { job: f.job.value, level: lv });
     render();
   });
-  el.addEventListener('change', (e) => {
+  el.addEventListener('change', async (e) => {
+    if (e.target.matches('[data-char-upload]')) {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      let ok = false;
+      try { ok = file.type.startsWith('image/') && saveCharImg(await shrink(file)); } catch (err) { ok = false; }
+      track('my_char_photo', { action: ok ? 'upload' : 'fail' });
+      if (ok) return render();
+      const msg = el.querySelector('[data-char-photo-msg]');
+      if (msg) msg.textContent = t.photoFail;
+      return;
+    }
     if (e.target.matches('[data-char-job]') && jobNames.en[e.target.value]) change({ job: e.target.value }, 'job');
     if (e.target.matches('[data-char-lv]') && Number(e.target.value) > 0) change({ lv: Number(e.target.value) }, 'level');
   });
@@ -218,6 +264,11 @@ ${skillBody(c)}`;
   });
   el.addEventListener('click', (e) => {
     const b = e.target.closest('[data-char]');
+    if (b?.dataset.char === 'reset-img') {
+      saveCharImg(null);
+      track('my_char_photo', { action: 'reset' });
+      return render();
+    }
     if (b?.dataset.char === 'up' || b?.dataset.char === 'down') {
       const c = loadChar();
       if (c) change({ lv: c.lv + (b.dataset.char === 'up' ? 1 : -1) }, b.dataset.char === 'up' ? 'level_up' : 'level_down');
@@ -227,7 +278,7 @@ ${skillBody(c)}`;
     if (!a) return;
     const c = loadChar();
     if (a.dataset.route) track('my_char_route_click', { route_id: a.dataset.route });
-    track('my_char_click', { kind: a.dataset.charLink, item_id: a.dataset.item ? Number(a.dataset.item) : undefined, job: c?.job, level: c?.lv });
+    track('my_char_click', { kind: a.dataset.charLink, item_id: a.dataset.item ? Number(a.dataset.item) : undefined, ui_value: a.dataset.quest, job: c?.job, level: c?.lv });
   });
   render();
 }

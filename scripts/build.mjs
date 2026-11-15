@@ -1311,7 +1311,7 @@ ${jsonScript('home-classes', TR_CLASSES.map((c) => ({ slug: c.slug, job: c.job, 
 ${updatesSection(lang)}
 ${body[0]}
 ${AD_MID}
-<section class="wrap my-char" id="my-char" data-finder="${esc(href(langPath(lang, '/tools/training/')))}" data-hub="${esc(href('/assets/char-hub.json'))}" data-skills="${esc(href(langPath(lang, '/skills/')))}" data-skill-icons="${esc(href('/assets/skills/'))}" data-equip="${esc(href(langPath(lang, '/equipment/')))}" data-quests="${esc(href(langPath(lang, '/quests/best-exp/')))}" data-quest-base="${esc(href(langPath(lang, '/')))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" hidden></section>
+<section class="wrap my-char" id="my-char" data-finder="${esc(href(langPath(lang, '/tools/training/')))}" data-hub="${esc(href('/assets/char-hub.json'))}" data-skills="${esc(href(langPath(lang, '/skills/')))}" data-skill-icons="${esc(href('/assets/skills/'))}" data-avatars="${esc(href('/assets/char/'))}" data-equip="${esc(href(langPath(lang, '/equipment/')))}" data-quests="${esc(href(langPath(lang, '/quests/')))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" hidden></section>
 ${body.slice(1).join('\n')}
 <section class="wrap faq">
 <h2>${t.faqHeading}</h2>
@@ -3615,18 +3615,13 @@ write('assets/shop-glyphs.json', fs.readFileSync(path.join(root, 'data/shop-glyp
   const BY = new Map(itemsData.items.map((i) => [i.id, i]));
   const OK = new Set(EQUIPMENT.map((e) => e.id));
   const price = (id) => { const i = BY.get(id); const v = i && shownMedian(i); return v ? Math.round(v) : null; };
-  // Home "my character" panel: gear and EXP quests it picks from for the saved class and level. Loaded only once a
-  // character is saved. Gear: [id, ko, en, slot, level, job bits, weapon attack or magic, defense, median price].
-  // Quests: [name, start level, EXP, family job ids (empty = everyone), guide path or ''], one per name, best EXP kept.
-  const bestQuest = new Map();
-  for (const q of QUESTS) {
-    if (q.expired || q.repeat || q.exp <= 0 || q.area === 'Forgotten Hollow') continue;
-    const prev = bestQuest.get(q.name);
-    if (!prev || prev.exp < q.exp) bestQuest.set(q.name, q);
-  }
+  // Home "my character" panel: gear, guided quests and skill builds it picks from for the saved class and level. Loaded
+  // only once a character is saved. Gear: [id, ko, en, slot, level, job bits, weapon attack or magic, defense, median price].
+  // Quests: [guide slug, start levels of its parts, title, card line, reward] with ko/en text.
   write('assets/char-hub.json', JSON.stringify({
     gear: EQUIPMENT.map((e) => [e.id, e.ko, e.en, e.sub, e.lv, e.job, e.inc.PAD || e.inc.MAD || 0, e.inc.PDD || 0, price(e.id)]),
-    quests: [...bestQuest.values()].map((q) => [q.name, q.lv, q.exp, [...new Set(q.jobs.map((j) => Math.floor(j / 100) * 100))], questPath(q) || '']),
+    // Quests you can do now: the guided quests (Korean and English titles, what they give), with the level each part starts at.
+    quests: QUEST_GUIDES.map(({ guide: g }) => [g.slug, g.level.en.split('·').map((part) => Number(part.match(/\d+/)?.[0])).filter(Boolean), g.title, g.card, g.reward]),
     // Standard skill build per job id (100 = 1st job warrior, 410 = assassin …) and the names of the skills they use.
     skills: Object.fromEntries(SKILL_BUILDS.classes.flatMap((c) => [[c.job, c.builds[0].steps], ...c.second.map((j) => [j.job, j.builds[0].steps])])),
     skillNames: Object.fromEntries(SKILL_BUILDS.classes.flatMap((c) => [c.job, ...c.second.map((j) => j.job)])

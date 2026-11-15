@@ -68,5 +68,6 @@
 홈 "내 캐릭터" 칸 (직업·레벨은 `localStorage`의 `gms-char` 키에만 저장돼요):
 - `my_char_save`(`job`, `level`): 처음 직업·레벨을 저장할 때.
 - `my_char_change`(`field`: `job`·`level`·`level_up`·`level_down`, `job`, `level`): 칸 위의 직업 선택이나 레벨 −/+/입력으로 바꿀 때. 숫자 입력은 0.4초 멈춘 뒤 한 번만 보내요.
-- `my_char_click`(`kind`: `route`·`finder`·`class`·`quest`·`quests`·`gear`·`equipment`·`skills`, `item_id`(장비), `job`, `level`): 칸 안의 링크를 누를 때. 사냥터 카드는 기존 `my_char_route_click`(`route_id`)도 같이 보내요.
+- `my_char_click`(`kind`: `route`·`finder`·`class`·`quest`·`quests`·`gear`·`equipment`·`skills`, `item_id`(장비), `ui_value`(퀘스트 공략 slug), `job`, `level`): 칸 안의 링크를 누를 때. 사냥터 카드는 기존 `my_char_route_click`(`route_id`)도 같이 보내요.
+- `my_char_photo`(`action`: `upload`·`reset`·`fail`): 내 캐릭터 사진을 올리거나 기본 캐릭터로 돌릴 때. 사진은 240px로 줄여 `localStorage`의 `gms-char-img` 키에만 저장하고 어디에도 보내지 않아요.
 - `home_directory_open`: 홈 맨 아래 "다른 사이트 모음" 카드를 눌러 /sites/로 갈 때. 사이트 목록은 2026-11-15부터 /sites/ 페이지(검색엔진 제외)에 있고, 즐겨찾기·추천·용도 필터는 그 페이지에서 그대로 기록돼요. 예전 홈 주소(#community 등)는 /sites/의 같은 칸으로 넘어가요.
