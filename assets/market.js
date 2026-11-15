@@ -316,7 +316,7 @@ function closeItem() {
 function renderDirectory() {
   if (view !== "items" || !catalog) return;
   const rows = catalogRows(items, catalog.items, {
-    query: $("mk-q").value,
+    query: searchText(),
     category,
     sort: $("mb-item-sort").value,
     favorites: $("mb-favorites").checked ? favorites : null,
@@ -399,9 +399,11 @@ function searchParts() {
   const [n, name] = /^\d/.test(m[1]) ? [m[1], m[2]] : [m[2], m[1]];
   const ids = matchingIds(items, name) || [];
   const gear = ids.filter((id) => statKeyOf(id));
-  return gear.length ? { ids, value: Number(n), gear: new Set(gear) } : { ids: full, value: null };
+  return gear.length ? { ids, value: Number(n), gear: new Set(gear), name } : { ids: full, value: null };
 }
 // The stat a value search filters on for one item: its main stat (opt-grade.js), or null for non-gear.
+// The text the item list searches with: the gear name when the box holds a value search.
+const searchText = () => searchParts().name ?? $("mk-q").value;
 function statKeyOf(id) {
   const t = tips?.items?.[id];
   return t?.[2] === "Equip" && t[7] && Object.keys(t[7]).length ? mainStat(t[3], t[7]) : null;
@@ -552,7 +554,7 @@ async function renderRecords() {
 function renderSummary() {
   const box = $("mb-summary"), q = $("mk-q").value.trim();
   const rows = view === "listings" && q && catalog
-    ? catalogRows(items, catalog.items, { query: q, category, sort: "active", favorites: null, npcSell }).filter((r) => (r.median != null || r.typical) && classOk(r)).slice(0, 4)
+    ? catalogRows(items, catalog.items, { query: searchParts().name ?? q, category, sort: "active", favorites: null, npcSell }).filter((r) => (r.median != null || r.typical) && classOk(r)).slice(0, 4)
     : [];
   box.hidden = !rows.length;
   box.innerHTML = rows.map((r) => `<a class="mb-sum" href="?item=${r.id}" data-item="${r.id}" data-source="summary">${icon(r.id, 28)}<span class="mb-sum-name">${esc(itemName(r.id))}</span><strong>${money(r.median ?? r.typical)}</strong><small>${r.median != null ? `${tr("최저", "Low")} ${money(r.low)} · ${tr(`판매 ${r.open}건`, `${r.open} for sale`)}` : tr("대표 시세", "Typical")}</small></a>`).join("");
@@ -727,6 +729,13 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
 let detailListSeq = 0, lastStatTrack = "";
 async function loadDetailRows() {
   if (!selected) return;
+  // A value search ("48슬레인") needs the gear's base stats to know which stat the number is; an item opened straight
+  // from a link can get here before they load.
+  if (!tips && /\d/.test($("mk-q").value)) {
+    const want = selected;
+    await loadTips();
+    if (want !== selected) return;
+  }
   const id = selected,
     seq = ++detailListSeq,
     p = new URLSearchParams({ item: id, ...detailState, limit: 30, days: 7 });
