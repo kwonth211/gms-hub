@@ -64,8 +64,9 @@ const HREFLANG = { ko: 'ko', en: 'en', ...Object.fromEntries(LOCALES.map((l) => 
 // quest, about 2,600 of them) drew 2 impressions, and most sat in "crawled - currently not indexed", diluting the site.
 // They stay on the site for visitors but are noindex, out of the sitemap and out of hreflang; zh/ja keep the home,
 // tools, guides and list pages.
-const DB_DETAIL = /^\/(items|monsters|maps|quests)\/(?!best-exp\/)[^/]+\/$/;
-const indexedIn = (lang, pagePath) => LANGS.includes(lang) || !DB_DETAIL.test(pagePath || '');
+// 2026-11-15 (AdSense review): the zh/ja guides and tools are machine-translated, shorter than the originals and mix
+// simplified with traditional characters; 28 days brought them 6 impressions. All zh/ja pages are now noindex too.
+const indexedIn = (lang) => LANGS.includes(lang);
 const LANG_NAMES = { ko: '한국어', en: 'English', ...Object.fromEntries(LOCALES.map((l) => [l.code, l.name])) };
 const BUILD_DATE = new Date().toISOString().slice(0, 10);
 const SITE_COUNT = sites.categories.reduce((n, c) => n + c.sites.length, 0);
@@ -237,6 +238,7 @@ const T = {
 <h2>쿠키와 광고</h2>
 <p>이 사이트는 Google AdSense 광고를 게재할 수 있어요. Google을 비롯한 제3자 광고 업체는 쿠키를 사용해 사용자가 이 사이트나 다른 사이트를 방문한 기록을 바탕으로 광고를 보여줘요. Google은 광고 쿠키로 사용자에게 맞춤 광고를 제공해요.</p>
 <p>맞춤 광고는 <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google 광고 설정</a>에서 끌 수 있고, 다른 광고 업체의 맞춤 광고는 <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener">aboutads.info</a>에서 끌 수 있어요. 맞춤 광고를 꺼도 일반 광고는 보일 수 있어요. 자세한 내용은 <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">Google이 파트너 사이트의 정보를 사용하는 방식</a>을 참고하세요.</p>
+<p>지금 사이트에 보이는 광고는 카카오의 광고 플랫폼 AdFit이 보내요. AdFit도 광고를 보여 주고 성과를 재기 위해 쿠키 같은 기술을 쓸 수 있어요. 자세한 내용은 <a href="https://www.kakao.com/policy/privacy" target="_blank" rel="noopener">카카오 개인정보처리방침</a>을 참고하세요.</p>
 <p>유럽경제지역(EEA), 영국, 스위스에서 접속하면 Google 인증 동의 관리 도구로 광고 쿠키 사용에 대한 동의를 먼저 받아요.</p>
 <h2>방문 통계</h2>
 <p>사이트 개선을 위해 Cloudflare Web Analytics, Google Analytics, Microsoft Clarity로 방문 통계를 수집해요. 방문한 페이지, 체류 시간, 클릭한 버튼과 링크, 스크롤 같은 사용 기록이 익명으로 집계되며, Clarity는 개선을 위해 화면 이용 과정을 기록할 수 있어요. 검색창 등 입력값은 기록에서 가려져요. 자세한 내용은 <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google 개인정보처리방침</a>과 <a href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener">Microsoft 개인정보처리방침</a>을 참고하세요.</p>
@@ -450,6 +452,7 @@ const T = {
 <h2>Cookies and advertising</h2>
 <p>This site may show Google AdSense ads. Third-party vendors, including Google, use cookies to serve ads based on your prior visits to this and other websites. Google's use of advertising cookies enables it and its partners to serve ads based on those visits.</p>
 <p>You can opt out of personalized advertising in <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google Ads Settings</a>, and out of other vendors' personalized ads at <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener">aboutads.info</a>. You may still see non-personalized ads. See <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">how Google uses information from sites that use its services</a>.</p>
+<p>The ads currently on the site are served by Kakao AdFit, Kakao's ad platform, which may also use cookies and similar technology to show ads and measure them. See the <a href="https://www.kakao.com/policy/privacy" target="_blank" rel="noopener">Kakao Privacy Policy</a>.</p>
 <p>Visitors from the EEA, the UK and Switzerland are asked for consent to advertising cookies through a Google-certified consent management platform first.</p>
 <h2>Analytics</h2>
 <p>To improve the site we use Cloudflare Web Analytics, Google Analytics and Microsoft Clarity. They record usage such as pages visited, time on page, buttons and links clicked, and scrolling, without identifying you; Clarity may record how the page is used for replay. Text typed into fields such as search is masked. See the <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a> and the <a href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener">Microsoft Privacy Statement</a>.</p>
@@ -3200,7 +3203,8 @@ for (const lang of LANGS) {
       desc: lang === 'ko' ? `${name} (Lv. ${l.minLv}~${l.maxLv}): 나오는 몬스터 ${l.mobs.length}종, 출현 지점 ${l.total}곳, 한 바퀴 EXP, 확정 명중과 드롭 아이템을 정리했어요.` : `${name} (levels ${l.minLv}–${l.maxLv}): ${l.mobs.length} monster types, ${l.total} spawn points, EXP per full clear, sure-hit accuracy and drops.`,
       body: mapDetail({ lang, l, maps: MAPS, url: href, itemUrl: monsterItemUrl, notes: MONSTER_NOTES.notes, layout: MAP_LAYOUTS[l.id], accuracy: (lv, m) => dmgAccNeed(lv, m),
         routes: training.routes.filter((r) => r.mobIds.some((id) => l.mobs.some(({ m }) => m.id === id))) }),
-      noindex: l.availability !== 'open',
+      // Map pages are templates of game data (28 days: 4 clicks over 384 pages); kept for visitors, out of search.
+      noindex: true,
       ld: [breadcrumbLd(lang, name, mapPath(l))]
     }));
   }
@@ -3512,7 +3516,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
   [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/forgotten-hollow/'}, {path:'/skills/'}, {path:'/tools/forge/'}, {path:'/updates/'}, ...(WEEKLY ? [{path:'/report/'}] : [])].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/bosses/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/quests/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
-  [{path:'/maps/'}, ...MAPS.filter(l=>l.availability==='open').map(l=>({path:mapPath(l)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/maps/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [...new Set(guides.map((g) => g.lang)), ...LOCALES.map((l) => l.code)].map((l) => `<url><loc>${absUrl(langPath(l, '/guides/'))}</loc><lastmod>${guides.filter((g) => g.lang === (LANGS.includes(l) ? l : 'en')).map((g) => g.updated).sort().at(-1)}</lastmod></url>`),
   publishedGuides.flatMap((g) => [g.lang, ...(g.lang === 'en' ? LOCALES.map((l) => l.code) : [])].map((l) => `<url><loc>${absUrl(langPath(l, guidePath(g)))}</loc><lastmod>${g.updated}</lastmod></url>`)),
   // Only indexable items (enough recent listings) go in the sitemap.
@@ -3524,9 +3528,9 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
     )
   )
 ).join('\n')
-  // Locale database pages are noindex (see DB_DETAIL): their entries and the alternates pointing at them are dropped.
-  .split('\n').filter((u) => { const m = /<loc>[^<]*?\/(zh|ja)(\/[^<]*)<\/loc>/.exec(u); return !m || indexedIn(m[1], m[2]); }).join('\n')
-  .replace(/<xhtml:link rel="alternate" hreflang="[^"]*" href="[^"]*?\/(?:zh|ja)\/(?:items|monsters|maps|quests)\/(?!best-exp\/)[^"/]+\/"\/>/g, '');
+  // zh/ja pages are noindex (see indexedIn): their entries and the alternates pointing at them are dropped.
+  .split('\n').filter((u) => { const m = /<loc>[^<]*?\/(zh|ja)\/[^<]*<\/loc>/.exec(u); return !m || indexedIn(m[1]); }).join('\n')
+  .replace(/<xhtml:link rel="alternate" hreflang="[^"]*" href="[^"]*?\/(?:zh|ja)\/[^"]*"\/>/g, '');
 write(
   'sitemap.xml',
   `<?xml version="1.0" encoding="UTF-8"?>
@@ -3712,4 +3716,13 @@ write('assets/bot.json', JSON.stringify({
 }
 
 
+// Root = the English home page with the language redirect in front (2026-11-15, AdSense review): a crawler or reviewer
+// that opens gms-hub.com/ gets the real home, its content and the ad code, not an empty language chooser. Canonical
+// and hreflang stay those of /en/.
+{
+  const enHome = EN_PAGES.find(([rel]) => rel === 'en/index.html')?.[1];
+  const rootHtml = fs.readFileSync(path.join(out, 'index.html'), 'utf8');
+  const redirect = rootHtml.match(/<script>\n\(function\(\)\{var saved[\s\S]*?<\/script>/)?.[0];
+  if (enHome && redirect) fs.writeFileSync(path.join(out, 'index.html'), enHome.replace('<meta charset="utf-8">', `<meta charset="utf-8">\n${redirect}`));
+}
 console.log(`Built ${PAGES.length * LANGS.length} pages + ${MONSTERS.monsters.length * LANGS.length} monster pages + ${MAPS.length * LANGS.length} map pages + ${ITEM_PAGES.length * LANGS.length} item pages, ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);

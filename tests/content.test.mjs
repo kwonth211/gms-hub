@@ -174,8 +174,10 @@ test('class training pages are indexable, unique and list each route once',()=>{
   const titles=new Set();
   for(const lang of ['ko','en','zh','ja']) for(const slug of slugs){
     const html=read(`dist/${lang}/tools/training/class/${slug}/index.html`);
-    assert.ok(!html.includes('content="noindex'),`${lang} ${slug} noindex`);
-    assert.ok(sitemap.includes(`/${lang}/tools/training/class/${slug}/`),`${lang} ${slug} not in sitemap`);
+    // zh/ja are machine-translated and noindex since 2026-11-15 (AdSense review); ko/en stay in search.
+    const indexed=lang==='ko'||lang==='en';
+    assert.equal(!html.includes('content="noindex'),indexed,`${lang} ${slug} noindex`);
+    assert.equal(sitemap.includes(`/${lang}/tools/training/class/${slug}/`),indexed,`${lang} ${slug} sitemap`);
     const title=html.match(/<title>([^<]*)<\/title>/)[1]; assert.ok(!titles.has(title),title); titles.add(title);
     const ids=[...html.matchAll(/id="route-([\w-]+)"/g)].map(m=>m[1]);
     assert.ok(ids.length>=10,`${lang} ${slug} has ${ids.length} routes`);
@@ -219,7 +221,8 @@ test('map pages turn monster spawns around: monsters, spawn counts, full-clear E
   for(const m of ['Blue Mushroom','Slime','Blue Snail','Red Snail']) assert.ok(html.includes(`>${m}</span>`),m);
   // 16×35 + 8×12 + 7×4 + 1×8 = 692
   assert.ok(html.includes('<dd>692</dd>'));
-  assert.ok(read('dist/sitemap.xml').includes('/en/maps/10001081/'));
+  // Map pages are noindex templates since 2026-11-15; only the map list is in the sitemap.
+  assert.ok(!read('dist/sitemap.xml').includes('/en/maps/10001081/') && read('dist/sitemap.xml').includes('/en/maps/'));
   assert.ok(read('dist/ko/monsters/7/index.html').includes('/ko/maps/10001081/'),'monster locations link to map pages');
   assert.match(read('dist/ko/maps/10001081/index.html'),/<title>글클메 파란버섯 숲/);
 });
