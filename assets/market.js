@@ -267,7 +267,7 @@ function optionChips(r) {
     // Above or below the game's base value: for clean gear that is the roll; scrolled gear adds scroll stats.
     const cls = !known ? "" : b == null ? " extra" : d > 0 ? " up" : d < 0 ? " down" : "";
     const title = !known ? "" : b != null
-      ? tr(`기본 ${b} → ${v} (${d > 0 ? "+" : ""}${d})`, `base ${b} → ${v} (${d > 0 ? "+" : ""}${d})`)
+      ? (d ? tr(`기본보다 ${d > 0 ? "+" : ""}${d}`, `${d > 0 ? "+" : ""}${d} vs base`) : tr("기본과 같아요", "Same as base"))
       : o.clean ? tr("기본에 없는 추가 옵션", "Extra stat not on the base item") : tr("기본에 없는 능력치 (주문서 또는 추가 옵션)", "Not on the base item (scrolls or extra stat)");
     const note = !known ? "" : b == null ? `<small>${tr("추옵", "extra")}</small>` : d ? `<small>${d > 0 ? "▲" : "▼"}${Math.abs(d)}</small>` : "";
     chips.push(`<span class="mb-opt${cls}" title="${esc(title)}">${esc(OPT_LABEL[k])} ${v}${note}</span>`);
@@ -1081,7 +1081,7 @@ const dropIcons = (id) => {
   const more = t[12] - Math.min(3, ids.length);
   return `<span class="mb-src-mobs">${ids.slice(0, 3).map((m) => `<img src="${document.body.dataset.sprites}${m}.gif" width="26" height="26" alt="${esc(ko ? tips.mobs[m][0] : tips.mobs[m][1])}" title="${esc(ko ? tips.mobs[m][0] : tips.mobs[m][1])} Lv. ${tips.mobs[m][2]}" loading="lazy">`).join("")}${more > 0 ? `<small>+${more}</small>` : ""}</span>`;
 };
-const TIP_INC = { PAD: () => tr("공격력", "Weapon attack"), MAD: () => tr("마력", "Magic attack"), STR: () => "STR", DEX: () => "DEX", INT: () => "INT", LUK: () => "LUK",
+const TIP_INC = { PAD: () => tr("공격력", "Weapon attack"), MAD: () => tr("마력", "Magic attack"), STR: () => tr("힘", "STR"), DEX: () => tr("덱", "DEX"), INT: () => tr("인", "INT"), LUK: () => tr("럭", "LUK"),
   MHP: () => "HP", MMP: () => "MP", PDD: () => tr("물리 방어력", "Weapon defense"), MDD: () => tr("마법 방어력", "Magic defense"), ACC: () => tr("명중률", "Accuracy"),
   EVA: () => tr("회피율", "Avoidability"), Speed: () => tr("이동속도", "Speed"), Jump: () => tr("점프력", "Jump") };
 const TIP_JOBS = [[1, () => tr("전사", "Warrior")], [2, () => tr("마법사", "Magician")], [4, () => tr("궁수", "Bowman")], [8, () => tr("도적", "Thief")]];
@@ -1122,7 +1122,8 @@ async function fillItemInfo(id) {
   if (cat === "Equip") {
     const jobs = TIP_JOBS.filter(([b]) => job & b).map(([, n]) => n()).join(", ") || tr("모든 직업", "All classes");
     facts.push(`${lv ? `Lv. ${lv} · ` : ""}${esc(jobs)}`);
-    const reqs = Object.entries(req || {}).map(([k, v]) => `${k.toUpperCase()} ${v}`).join(" · ");
+    const REQ = { str: tr("힘", "STR"), dex: tr("덱", "DEX"), int: tr("인", "INT"), luk: tr("럭", "LUK") };
+    const reqs = Object.entries(req || {}).filter(([k]) => REQ[k]).map(([k, v]) => `${REQ[k]} ${v}`).join(" · ");
     if (reqs) facts.push(reqs);
     if (slots) facts.push(`${tr("업그레이드 가능 횟수", "Upgrade slots")} ${slots}`);
   }

@@ -22,7 +22,7 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches && body.dataset.tip
   const load = () => (loading ||= fetch(body.dataset.tips).then((r) => r.json()).then((d) => (data = d)).catch(() => null));
 
   const INC = {
-    PAD: tr('공격력', 'Weapon attack'), MAD: tr('마력', 'Magic attack'), STR: 'STR', DEX: 'DEX', INT: 'INT', LUK: 'LUK',
+    PAD: tr('공격력', 'Weapon attack'), MAD: tr('마력', 'Magic attack'), STR: tr('힘', 'STR'), DEX: tr('덱', 'DEX'), INT: tr('인', 'INT'), LUK: tr('럭', 'LUK'),
     MHP: 'HP', MMP: 'MP', PDD: tr('물리 방어력', 'Weapon defense'), MDD: tr('마법 방어력', 'Magic defense'),
     ACC: tr('명중률', 'Accuracy'), EVA: tr('회피율', 'Avoidability'), Speed: tr('이동속도', 'Speed'), Jump: tr('점프력', 'Jump'),
     CRT: tr('크리티컬 확률', 'Critical rate'), CRD: tr('크리티컬 데미지', 'Critical damage')
@@ -91,7 +91,7 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
     const known = Object.keys(base).length > 0;
     const rows = OPT_ORDER.filter((k) => o.stats?.[k] != null).map((k) => {
       const v = o.stats[k], b = base[k], d = b != null ? v - b : null;
-      const note = !known ? '' : b == null ? `<small class="tip-gold">${tr('추옵', 'extra')}</small>` : d ? `<small class="${d > 0 ? 'tip-up' : 'tip-down'}">${d > 0 ? '▲' : '▼'}${Math.abs(d)} <span class="tip-muted">(${tr('기본', 'base')} ${b})</span></small>` : `<small class="tip-muted">${tr('기본', 'base')}</small>`;
+      const note = !known ? '' : b == null ? `<small class="tip-gold">${tr('추옵', 'extra')}</small>` : d ? `<small class="${d > 0 ? 'tip-up' : 'tip-down'}">${d > 0 ? '▲' : '▼'}${Math.abs(d)}</small>` : '';
       return `<li class="tip-opt"><span>${INC[k] || k} <b>${v > 0 ? '+' : ''}${v}</b></span>${note}</li>`;
     }).join('');
     const used = o.used ?? (known && baseSlots && o.slots != null && baseSlots >= o.slots ? baseSlots - o.slots : null);
@@ -118,7 +118,9 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
     }
     if (cat === 'Equip') {
       const jobs = JOBS.filter(([b]) => job & b).map(([, n]) => n).join(', ') || tr('모든 직업', 'All classes');
-      const reqs = Object.entries(req || {}).map(([k, v]) => `${k.toUpperCase()} ${v}`).join(' · ');
+      // Stat requirements in the page language (the job bit is already in the line above).
+      const REQ = { str: tr('힘', 'STR'), dex: tr('덱', 'DEX'), int: tr('인', 'INT'), luk: tr('럭', 'LUK') };
+      const reqs = Object.entries(req || {}).filter(([k]) => REQ[k]).map(([k, v]) => `${REQ[k]} ${v}`).join(' · ');
       lines.push(`<p class="tip-req">${lv ? `Lv. ${lv} · ` : ''}${esc(jobs)}${reqs ? `<br><span class="tip-muted">${reqs}</span>` : ''}</p>`);
       if (opts) lines.push(optionLines(opts, inc || {}, slots));
       else {
