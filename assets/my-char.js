@@ -175,7 +175,7 @@ export function mountCharPanel(el, { routes, classes, finder, korean }) {
   const avatarSrc = (c) => loadCharImg() || `${d.avatars}${!c || c.lv < 10 ? 'beginner' : AVATAR[family(c.job)] || 'beginner'}.png`;
   const avatar = (c, editable) => {
     const own = !!loadCharImg();
-    return `<figure class="char-avatar${own ? ' is-own' : ''}"><div class="char-avatar-frame"><img src="${esc(avatarSrc(c))}" alt="${esc(t.mine)}" data-char-img></div>${editable
+    return `<figure class="char-avatar${own ? ' is-own' : ''}"><div class="char-avatar-frame"><img src="${esc(avatarSrc(c))}" alt="${esc(t.mine)}" width="96" height="96" data-char-img></div>${editable
       ? `<figcaption><label class="char-photo-btn"><input type="file" accept="image/*" data-char-upload class="sr-only">${esc(own ? t.change : t.upload)}</label>${own ? `<button type="button" class="char-photo-reset" data-char="reset-img">${esc(t.reset)}</button>` : ''}<small class="muted" data-char-photo-msg>${esc(t.photoNote)}</small></figcaption>` : ''}</figure>`;
   };
   // Class picker: the site's own menu (the native select looked out of place), grouped by family; the family itself means

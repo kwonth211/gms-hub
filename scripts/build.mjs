@@ -1136,7 +1136,7 @@ function fhPromo(lang) {
 
 function heroNew(lang) {
   const ko = lang === 'ko';
-  return `<p class="hero-new"><span class="hero-new-tag">NEW</span>${UPDATES.slice(0, 3).map((u) => `<a href="${href(langPath(lang, u.path))}">${esc((ko ? u.ko : u.en).split(' — ')[0])}</a>`).join('')}<a class="hero-new-all" href="${href(langPath(lang, '/updates/'))}">${ko ? '업데이트 소식' : "What's new"}</a></p>`;
+  return `<p class="hero-new"><span class="hero-new-tag">NEW</span>${UPDATES.filter((u) => u.path !== '/').slice(0, 3).map((u) => `<a href="${href(langPath(lang, u.path))}">${esc((ko ? u.ko : u.en).split(' — ')[0])}</a>`).join('')}<a class="hero-new-all" href="${href(langPath(lang, '/updates/'))}">${ko ? '업데이트 소식' : "What's new"}</a></p>`;
 }
 // Home: every update, newest first, eight to a page (assets/updates-pager.js turns the pages; without scripts the whole list
 // shows). Each opens its entry on the patch notes page (/updates/). Anything from the last three days (KST, rebuilt
@@ -1311,7 +1311,7 @@ ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이�
 </div>
 <p class="search-help" id="search-help">${lang === 'ko' ? '한글·영문·초성·줄임말로 검색하세요. 예: 귀힘, 미스릴, 좀비 루팡, 사냥터' : 'Search by name or keyword. Try Gloves Attack, Mithril, Zombie Lupin or training.'}</p>
 ${heroNew(lang)}
-<dl class="hero-stats"><div data-market-stat="listings" hidden><dt>${lang === 'ko' ? '24시간 매물' : 'Listings, 24h'}</dt><dd>0</dd></div><div data-market-stat="shops" hidden><dt>${lang === 'ko' ? '24시간 확인한 상점' : 'Shops checked, 24h'}</dt><dd>0</dd></div>${lang === 'ko'
+<dl class="hero-stats"><div data-market-stat="listings"><dt>${lang === 'ko' ? '24시간 매물' : 'Listings, 24h'}</dt><dd>–</dd></div><div data-market-stat="shops"><dt>${lang === 'ko' ? '24시간 확인한 상점' : 'Shops checked, 24h'}</dt><dd>–</dd></div>${lang === 'ko'
   ? `<div><dt>몬스터</dt><dd>${MONSTERS.monsters.filter((m) => m.status !== 'unplaced').length}</dd></div><div><dt>퀘스트</dt><dd>${QUESTS.length}</dd></div>`
   : `<div><dt>Monsters</dt><dd>${MONSTERS.monsters.filter((m) => m.status !== 'unplaced').length}</dd></div><div><dt>Quests</dt><dd>${QUESTS.length}</dd></div><div><dt>Maps</dt><dd>${MAPS.filter((l) => l.availability === 'open').length}</dd></div>`}</dl>
 </div>
@@ -2962,11 +2962,28 @@ const EN_PAGES = [];
 const WORKBOOKS = buildWorkbooks({ out, langs: ['ko', 'en'], abs: (lang, p) => absUrl(langPath(lang, p)), buildDate: BUILD_DATE, monsters: MONSTERS.monsters, items: itemsData.items,
   equipment: EQUIPMENT, maps: MAPS, quests: QUESTS, npcs: QUEST_RAW.npcs, training, evidence: editorialEvidence, scrolls, boxes, questGuides: QUEST_GUIDES, accNeed: dmgAccNeed,
   itemPagePath: (id) => (ITEM_PAGE_IDS.has(id) ? itemPath(ITEM_PAGES.find((i) => i.id === id)) : null) });
+// A pixel icon is some fifty <rect>s, and the same icon is used many times on a page (the home page carried one of them
+// 24 times; icons were two thirds of its HTML). Each repeated icon is drawn once in a hidden <defs> at the top of the body
+// and every place it appears points at that drawing with <use>.
+function shareSprites(html) {
+  const re = /(<svg class="sprite" [^>]*>)([\s\S]*?)<\/svg>/g;
+  const uses = new Map();
+  for (const m of html.matchAll(re)) if (!m[2].startsWith('<use')) uses.set(m[2], (uses.get(m[2]) || 0) + 1);
+  const ids = new Map();
+  const body = html.replace(re, (all, open, inner) => {
+    if (!(uses.get(inner) > 1)) return all;
+    if (!ids.has(inner)) ids.set(inner, `sp${ids.size}`);
+    return `${open}<use href="#${ids.get(inner)}"/></svg>`;
+  });
+  if (!ids.size) return html;
+  const defs = `<svg class="sprite-defs" width="0" height="0" style="position:absolute" aria-hidden="true"><defs>${[...ids].map(([inner, id]) => `<g id="${id}">${inner}</g>`).join('')}</defs></svg>`;
+  return body.replace(/<body[^>]*>/, (tag) => `${tag}\n${defs}`);
+}
 const write = (rel, content) => {
   if (rel.startsWith('en/') && rel.endsWith('.html')) EN_PAGES.push([rel, content]);
   const file = path.join(out, rel);
   fs.mkdirSync(path.dirname(file), { recursive: true });
-  fs.writeFileSync(file, content);
+  fs.writeFileSync(file, rel.endsWith('.html') ? shareSprites(content) : content);
 };
 
 for (const lang of LANGS) {
@@ -3628,6 +3645,12 @@ const seed = sites.categories
 fs.writeFileSync(path.join(root, 'worker', 'seed.sql'), `${seed}\n`);
 
 fs.cpSync(path.join(root, 'assets'), path.join(out, 'assets'), { recursive: true });
+// Stylesheets ship without their comments and indentation (the notes stay in the source): style.css blocks the first paint,
+// so every kilobyte of it is waited for.
+for (const name of fs.readdirSync(path.join(root, 'assets')).filter((n) => n.endsWith('.css'))) {
+  const css = fs.readFileSync(path.join(root, 'assets', name), 'utf8');
+  fs.writeFileSync(path.join(out, 'assets', name), css.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\n\s+/g, '\n').replace(/\n{2,}/g, '\n').trim() + '\n');
+}
 for (const { source, name } of Object.values(SHARE_IMAGES)) fs.copyFileSync(path.join(root, 'assets', source), path.join(out, 'assets', name));
 for (const name of moduleFiles) {
   const source = fs.readFileSync(path.join(root, 'assets', name), 'utf8');
@@ -3727,6 +3750,6 @@ write('assets/bot.json', JSON.stringify({
   const enHome = EN_PAGES.find(([rel]) => rel === 'en/index.html')?.[1];
   const rootHtml = fs.readFileSync(path.join(out, 'index.html'), 'utf8');
   const redirect = rootHtml.match(/<script>\n\(function\(\)\{var saved[\s\S]*?<\/script>/)?.[0];
-  if (enHome && redirect) fs.writeFileSync(path.join(out, 'index.html'), enHome.replace('<meta charset="utf-8">', `<meta charset="utf-8">\n${redirect}`));
+  if (enHome && redirect) fs.writeFileSync(path.join(out, 'index.html'), shareSprites(enHome).replace('<meta charset="utf-8">', `<meta charset="utf-8">\n${redirect}`));
 }
 console.log(`Built ${PAGES.length * LANGS.length} pages + ${MONSTERS.monsters.length * LANGS.length} monster pages + ${MAPS.length * LANGS.length} map pages + ${ITEM_PAGES.length * LANGS.length} item pages, ${SITE_COUNT} sites into dist/ (${BUILD_DATE})`);

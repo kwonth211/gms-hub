@@ -642,6 +642,8 @@ async function refreshLive() {
       el.querySelector('dd').textContent = Number(n || 0).toLocaleString(lang);
       el.hidden = !n;
     });
+    // No answer from the market: the two live counts (a dash so far, so the hero keeps its height) step aside.
+    else if (!PREVIEW) document.querySelectorAll('[data-market-stat]').forEach((el) => { if (el.querySelector('dd').textContent === '–') el.hidden = true; });
     lastRefresh = Date.now();
     if (recent?.some((r) => r.opts)) await loadOptTips();
     const listed = recent ? renderRecent(recent, byId) : 0;

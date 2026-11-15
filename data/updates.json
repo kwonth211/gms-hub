@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "faster-pages",
+   "version": "0.7.4",
+   "level": "patch",
+   "date": "2026-11-15",
+   "path": "/",
+   "ko": "더 빨라진 화면 — 휴대폰에서 첫 화면이 가볍게 열려요",
+   "en": "Faster pages — the site opens lighter on phones",
+   "desc": {
+    "ko": "모든 페이지의 용량을 줄이고, 위쪽 실시간 고확 띠가 휴대폰을 느리게 만들던 문제를 고쳤어요. 홈에서 광고 자리가 뒤늦게 밀리던 것도 잡았어요.",
+    "en": "Every page is smaller now, and the live megaphone strip at the top no longer slows phones down. The home page also stopped jumping as it loads."
+   }
+  },
+  {
    "id": "stat-search",
    "version": "0.7.3",
    "level": "minor",

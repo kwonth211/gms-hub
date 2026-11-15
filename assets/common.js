@@ -269,7 +269,21 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
     const texts = await Promise.all(rows.map(async (r) => { const original = noChannel(r.text, r.channel); return [original, read && !r.free ? await read(original).catch(() => original) : original]; }));
     return rows.map((r, i) => `<a class="mg-tk-item mg-tk-${esc(r.color || 'Y')}${fresh ? ' mg-tk-new' : ''}" href="${box.dataset.href}?${r.free ? 'f' : 'm'}=${Number(r.id)}" tabindex="-1"${texts[i][1] !== texts[i][0] ? ` title="${esc(texts[i][0])}"` : ''}>${icon()}${r.free ? `<em class="mg-tk-free">${ko ? '무료 고확' : 'Free mega'}</em>` : ''}${r.channel ? `<b>CH${r.channel}</b>` : ''}<time>${clock(r.seen)}</time><strong>${esc(r.nick)}</strong><span>${esc(short(texts[i][1]))}</span></a>`).join('');
   }
-  const stopAt = () => Math.min(0, run.parentElement.clientWidth - set.scrollWidth);
+  // Sizes are read only when the strip's content or the window changes (measure), never on every frame: a layout read
+  // right after moving the strip made the browser lay the whole page out again 60 times a second.
+  let view = 0, setW = 0, firstW = 0, newEnd = 0, stale = true;
+  const measure = () => {
+    stale = false;
+    view = run.parentElement.clientWidth;
+    setW = set.scrollWidth;
+    firstW = set.firstElementChild ? set.firstElementChild.offsetWidth : 0;
+    // Right edge of the last megaphone that is not a replay.
+    let lastNew = set.lastElementChild;
+    while (lastNew && lastNew.classList.contains('mg-tk-re')) lastNew = lastNew.previousElementSibling;
+    newEnd = lastNew ? lastNew.offsetLeft + lastNew.offsetWidth : 0;
+  };
+  addEventListener('resize', () => { stale = true; }, { passive: true });
+  const stopAt = () => { measure(); return Math.min(0, view - setW); };
   // With nothing new coming in, the strip keeps rolling through a few recent megaphones again ("replay" items). A new
   // megaphone skips ahead of any replay items not yet on screen, so it always comes in next.
   let refilling = false;
@@ -278,22 +292,22 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
     refilling = true;
     const html = await itemsHtml(kept.slice(-8));
     set.insertAdjacentHTML('beforeend', html.replace(/class="mg-tk-item /g, 'class="mg-tk-item mg-tk-re '));
+    stale = true;
     refilling = false;
   }
   function step(t) {
     frame = 0;
     const dt = Math.min(0.1, last ? (t - last) / 1000 : 0);
     last = t;
-    const view = run.parentElement.clientWidth, ahead = x + set.scrollWidth - view; // px still waiting off the right edge
+    if (stale) measure();
+    const ahead = x + setW - view; // px still waiting off the right edge
     // Same pace as before (60 px/s). Only a real pile-up of new megaphones (not replays) more than two screens long
     // speeds it up, and then by at most half again.
-    const re = set.querySelector('.mg-tk-re:last-child') ? [...set.children].reverse().findIndex((el) => !el.classList.contains('mg-tk-re')) : 0;
-    const lastNew = re > 0 ? set.children[set.children.length - 1 - re] : set.lastElementChild;
-    const backlog = lastNew ? x + lastNew.offsetLeft + lastNew.offsetWidth - view : 0;
+    const backlog = newEnd ? x + newEnd - view : 0;
     if (!held) x -= 60 * (backlog > 2 * view ? 1.5 : 1) * dt;
     if (ahead < view) replay();
     // Items that have scrolled fully past the left edge are done; dropping them keeps the strip short.
-    while (set.children.length > 1 && x + set.firstElementChild.offsetWidth < 0) { x += set.firstElementChild.offsetWidth; set.firstElementChild.remove(); }
+    while (set.children.length > 1 && firstW && x + firstW < 0) { x += firstW; set.firstElementChild.remove(); measure(); }
     run.style.transform = `translateX(${x}px)`;
     if (document.hidden) last = 0;
     else frame = requestAnimationFrame(step);
@@ -307,9 +321,10 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
     kept = kept.concat(next).slice(-20);
     try { localStorage.setItem(TK_KEY, JSON.stringify(kept)); } catch (e) {}
     const html = await itemsHtml(next, fresh);
-    const view = run.parentElement.clientWidth;
-    for (const el of [...set.querySelectorAll('.mg-tk-re')]) if (x + el.offsetLeft >= view) el.remove();
+    const width = run.parentElement.clientWidth;
+    for (const el of [...set.querySelectorAll('.mg-tk-re')]) if (x + el.offsetLeft >= width) el.remove();
     set.insertAdjacentHTML('beforeend', html);
+    stale = true;
     box.classList.add('ready');
     go();
   }
