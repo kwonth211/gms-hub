@@ -42,7 +42,13 @@ if (btn) {
     if (!q) { list.innerHTML = ''; hits = []; return; }
     if (!entries) { list.innerHTML = `<li class="hs-empty">${tr('불러오는 중…', 'Loading…')}</li>`; return; }
     // Pages first when they match, then a mix of items and monsters in match order.
-    const found = searchEntries(entries, q);
+    let found = searchEntries(entries, q);
+    // "53레드바이퍼" / "slain 48": a number beside a gear name opens the market at that option value (opt=, market.js).
+    const vm = !found.length && (/^(\d{1,3})\s*([^\d%].*)$/.exec(q) || /^(.*[^\d\s%+])\s*(\d{1,3})$/.exec(q));
+    if (vm) {
+      const [n, name] = /^\d/.test(vm[1]) ? [vm[1], vm[2]] : [vm[2], vm[1]];
+      found = searchEntries(entries, name.trim()).map((e) => (e.type === 'item' && /[?&]item=/.test(e.href) ? { ...e, href: `${e.href}&opt=${n}`, sub: tr(`옵션 ${n} 매물`, `Listings at ${n}`) } : e));
+    }
     hits = [...found.filter((e) => e.type === 'page').slice(0, 3), ...found.filter((e) => e.type !== 'page').slice(0, 9)];
     cursor = 0;
     list.innerHTML = hits.length

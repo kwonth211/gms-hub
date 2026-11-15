@@ -61,6 +61,7 @@ let items = [],
     room: "",
     seller: "",
     page: 1,
+    opt: null,
   },
   detailTab = "listings",
   priceBand = null;
@@ -275,7 +276,8 @@ const URL_FIELDS = [
 function syncURL() {
   if (FIXED) return;
   const p = new URLSearchParams(location.search);
-  for (const k of ["item", "view", "q", "cat", "page", "fav", ...URL_FIELDS.map((f) => f[0])]) p.delete(k);
+  for (const k of ["item", "view", "q", "cat", "page", "fav", "opt", ...URL_FIELDS.map((f) => f[0])]) p.delete(k);
+  if (optWanted != null && (selected || view === "listings")) p.set("opt", optWanted);
   if (selected) p.set("item", selected);
   if (view !== "items" || selected) p.set("view", view);
   const q = $("mk-q").value.trim();
@@ -388,9 +390,12 @@ function classOk(it) {
   if (scroll) { const slot = SCROLL_SLOT[sub] || sub; return WEAPONS.has(slot) ? weapons.includes(slot) : true; }
   return sub === "Thrown" && weapons.includes("Claw");
 }
-// "48슬레인", "슬레인 48", "48 slain": a number beside a gear name asks for that value of the gear's main stat (players
-// name a piece by it: 48 slain = Steel Slain with 48 attack). Used only when the whole text matches nothing and the name
-// alone matches equipment with known base stats; otherwise the search is the plain name search.
+// Option filter: listings of one gear item whose main stat (opt-grade.js: attack, magic attack for wands and staves,
+// defense for armor) has one value, e.g. Red Viper at 53 attack. It is picked in the item panel's "옵션" menu and kept in
+// the URL as opt=53, so a link or the header search ("53레드바이퍼") opens the same view; in "all listings" a search for
+// one gear item honours it too. The left search box only matches names: typing "53레드바이퍼" there finds Red Viper and
+// sets the option to 53.
+let optWanted = null;
 function searchParts() {
   const q = $("mk-q").value, full = matchingIds(items, q);
   if (!full || full.length) return { ids: full, value: null };
@@ -398,24 +403,21 @@ function searchParts() {
   if (!m) return { ids: full, value: null };
   const [n, name] = /^\d/.test(m[1]) ? [m[1], m[2]] : [m[2], m[1]];
   const ids = matchingIds(items, name) || [];
-  const gear = ids.filter((id) => statKeyOf(id));
-  return gear.length ? { ids, value: Number(n), gear: new Set(gear), name } : { ids: full, value: null };
+  return ids.length ? { ids, value: Number(n), name } : { ids: full, value: null };
 }
-// The stat a value search filters on for one item: its main stat (opt-grade.js), or null for non-gear.
-// The text the item list searches with: the gear name when the box holds a value search.
+// The text the item list searches with: the name without the number.
 const searchText = () => searchParts().name ?? $("mk-q").value;
+// The stat the option filter uses for one item, or null for anything that is not gear with known base stats.
 function statKeyOf(id) {
   const t = tips?.items?.[id];
   return t?.[2] === "Equip" && t[7] && Object.keys(t[7]).length ? mainStat(t[3], t[7]) : null;
 }
-// The stat filter for a list of matched items: one key shared by every matched gear item, else none.
-function statFilter(ids) {
-  const sq = searchParts();
-  if (sq.value == null) return null;
-  const keys = new Set((ids || [...sq.gear]).filter((id) => sq.gear.has(id)).map(statKeyOf));
-  return keys.size === 1 ? { key: [...keys][0], value: sq.value } : null;
+// The filter for a list of items: the wanted value on the one main stat they all share, else none.
+function statFilter(ids, value = optWanted) {
+  if (value == null || !ids?.length) return null;
+  const keys = new Set(ids.map(statKeyOf));
+  return keys.size === 1 && !keys.has(null) ? { key: [...keys][0], value } : null;
 }
-let statCleared = null;
 const OPT_LABEL = ko
   ? { PAD: "공", MAD: "마", STR: "힘", DEX: "덱", INT: "인", LUK: "럭", ACC: "명중", EVA: "회피", MHP: "HP", MMP: "MP", PDD: "물방", MDD: "마방", Speed: "이속", Jump: "점프", CRT: "크확", CRD: "크뎀" }
   : { PAD: "ATT", MAD: "M.ATT", STR: "STR", DEX: "DEX", INT: "INT", LUK: "LUK", ACC: "ACC", EVA: "AVOID", MHP: "HP", MMP: "MP", PDD: "DEF", MDD: "M.DEF", Speed: "SPEED", Jump: "JUMP", CRT: "CRIT", CRD: "C.DMG" };
@@ -487,6 +489,8 @@ async function renderRecords() {
       return;
     }
     p.set("ids", ids.join(","));
+    if (view === "listings" && optWanted != null && !tips) await loadTips();
+    if (seq !== listSeq) return;
     const sf = view === "listings" ? statFilter(ids) : null;
     if (sf) {
       p.set("stat", sf.key);
@@ -538,6 +542,7 @@ async function renderRecords() {
           : `<div class="market-empty"><strong>${tr("이 조건의 가격 제보가 없어요.", "No price reports match.")}</strong><p>${tr("가격 제보는 아이템 시세 페이지에서 직접 남긴 기록이에요. 상점에서 확인된 매물은 매물 목록 탭에 있어요.", "Price reports are prices players entered on item pages. Listings seen in shops are in the Listings tab.")} <button type="button" class="btn ghost small-btn" data-view="listings">${tr("매물 목록 보기", "Open listings")}</button></p></div>`
         : listingTable(data.rows);
     $("mb-pagination").innerHTML = pager(data, "main");
+    if (p.has("stat")) $("mb-results").insertAdjacentHTML("afterbegin", `<div class="price-band-filter"><span>${esc(tr(`${OPT_LABEL[p.get("stat")]} ${p.get("val")} 옵션 매물만 보는 중`, `Showing ${OPT_LABEL[p.get("stat")]} ${p.get("val")} listings only`))}</span><button type="button" class="btn ghost small-btn" data-clear-opt>${tr("옵션 해제", "Clear option")}</button></div>`);
   } catch (e) {
     if (e.name !== "AbortError" && seq === listSeq) {
       $("mb-results").innerHTML =
@@ -642,6 +647,7 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
       room: "",
       seller: "",
       page: 1,
+      opt: optWanted,
     };
     detailTab = "listings";
   }
@@ -662,7 +668,7 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
   $("mk-detail").innerHTML =
     `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(it.name)}</h2><small>${esc(it.en)}</small></div>${starButton(id, "mb-star-detail")}${D.alerts || document.body.dataset.discordUrl ? `<button type="button" class="btn ghost small-btn" data-alert-open="${id}">🔔 ${tr("가격 알림", "Price alert")}</button>` : ""}${pageLink}<button class="btn ghost small-btn" data-share-item="${id}" title="${tr("이 아이템 링크 복사", "Copy a link to this item")}">${tr("링크 복사", "Copy link")}</button><button class="btn ghost small-btn" data-close-item aria-label="${tr("상세 닫기", "Close details")}">×</button></header><p class="share-status mb-share-status" id="mb-share-status" role="status" aria-live="polite"></p><section class="mb-alert" id="mb-alert" hidden></section><section class="mb-history" id="mb-history" aria-label="${tr("가격 한눈에 보기", "Price at a glance")}"><p class="muted note">${T.loading}</p></section>${stats}<section class="mb-info mb-facts" id="mb-facts"></section>${changed || reset ? visitNote(id) : ""}
  <div class="mb-tabs" role="tablist" aria-label="${tr("아이템 상세", "Item details")}"><button data-detail-tab="listings" role="tab" aria-selected="${detailTab === "listings"}" aria-controls="mb-detail-listings">${tr("판매 매물", "Shop listings")}</button><button data-detail-tab="charts" role="tab" aria-selected="${detailTab === "charts"}" aria-controls="mb-detail-charts">${tr("가격 추이·매물대", "Trends & depth")}</button><button class="mb-detail-refresh" data-refresh-item>${tr("새로고침", "Refresh")}</button></div>
- <div id="mb-detail-listings" role="tabpanel" aria-label="${tr("판매 매물", "Shop listings")}"><p class="muted note">${T.whereNote}</p><div class="mb-detail-filters"><label>${tr("채널", "Channel")}<select id="md-channel">${selectLocation("channel", detailState.channel)}</select></label><label>${tr("방", "Room")}<select id="md-room">${selectLocation("room", detailState.room)}</select></label><label>${tr("정렬", "Sort")}<select id="md-sort"><option value="price">${T.sortPrice}</option><option value="recent">${T.sortRecent}</option><option value="high">${tr("높은 가격순", "Highest price")}</option></select></label><label>${tr("상태", "Status")}<select id="md-state"><option value="open">${tr("판매 중 · 24h", "Asking · 24h")}</option><option value="all">${tr("전체 기록 · 7일", "All records · 7d")}</option><option value="sold">${tr("판매 완료 표시", "Marked sold")}</option><option value="stale">${tr("24시간 경과", "Over 24h old")}</option></select></label></div><div class="price-band-filter" id="md-price-band" hidden><span></span><button class="btn ghost small-btn" data-clear-band>${tr("가격대 해제", "Clear price band")}</button></div><div class="price-band-filter" id="md-stat-filter" hidden><span></span><button class="btn ghost small-btn" data-clear-stat>${tr("옵션 조건 해제", "Clear option filter")}</button></div><p id="md-count" class="muted note" role="status"></p><div id="md-rows"></div><div id="md-pages" class="mb-pagination"></div></div>
+ <div id="mb-detail-listings" role="tabpanel" aria-label="${tr("판매 매물", "Shop listings")}"><p class="muted note">${T.whereNote}</p><div class="mb-detail-filters"><label>${tr("채널", "Channel")}<select id="md-channel">${selectLocation("channel", detailState.channel)}</select></label><label>${tr("방", "Room")}<select id="md-room">${selectLocation("room", detailState.room)}</select></label><label>${tr("정렬", "Sort")}<select id="md-sort"><option value="price">${T.sortPrice}</option><option value="recent">${T.sortRecent}</option><option value="high">${tr("높은 가격순", "Highest price")}</option></select></label><label id="md-opt-wrap" hidden>${tr("옵션", "Option")}<select id="md-opt"></select></label><label>${tr("상태", "Status")}<select id="md-state"><option value="open">${tr("판매 중 · 24h", "Asking · 24h")}</option><option value="all">${tr("전체 기록 · 7일", "All records · 7d")}</option><option value="sold">${tr("판매 완료 표시", "Marked sold")}</option><option value="stale">${tr("24시간 경과", "Over 24h old")}</option></select></label></div><div class="price-band-filter" id="md-price-band" hidden><span></span><button class="btn ghost small-btn" data-clear-band>${tr("가격대 해제", "Clear price band")}</button></div><p id="md-count" class="muted note" role="status"></p><div id="md-rows"></div><div id="md-pages" class="mb-pagination"></div></div>
  <div id="mb-detail-charts" role="tabpanel" aria-label="${tr("가격 추이와 매물대", "Trends and depth")}"><div id="mk-charts"><p>${T.loading}</p></div></div>
  <section class="mb-info" id="mb-info" aria-live="polite"></section><section class="mb-megas" id="mb-megas" hidden></section>`;
   $("md-sort").value = detailState.sort;
@@ -671,6 +677,14 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
   detailPanels();
   if (!FIXED && window.matchMedia("(max-width:1050px)").matches) $("mk-detail").scrollIntoView({behavior:"smooth",block:"start"});
   loadDetailRows();
+  $("md-opt").addEventListener("change", () => {
+    const v = $("md-opt").value;
+    detailState.opt = optWanted = v === "" ? null : Number(v);
+    detailState.page = 1;
+    syncURL();
+    track("market_option_filter", { item_id: selected, value: v || "all", lang: D.lang });
+    loadDetailRows();
+  });
   for (const key of ["channel", "room", "sort", "state"])
     $("md-" + key).addEventListener("change", () => {
       detailState[key] = $("md-" + key).value;
@@ -686,6 +700,7 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
     if (seq !== detailSeq) return;
     priceData = data;
     renderDaily();
+    if ((data.profile || []).some((r) => r.opts)) loadTips().then(() => { if (priceData === data) fillOptMenu(id); });
     // Consumables and cash items that no shop scan covers take their asking price from megaphones (/prices basis "mega").
     if (!(data.profile || []).length) get(`/prices?ids=${id}`).then((p) => { if (priceData === data && p?.[id]?.mega) { data.megaAsk = p[id].mega; renderDaily(); } }).catch(() => null);
     // The cheap/typical/pricey tags need the typical range, which can arrive after the listing cards.
@@ -727,11 +742,27 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
   }
 }
 let detailListSeq = 0, lastStatTrack = "";
+// The item panel's "옵션" menu: every main-stat value among the item's open listings with options (from the price
+// profile), best first, with its roll word and count ("53 · ▲ 1상 (18)"), plus the URL's value if none is listed now.
+function fillOptMenu(id) {
+  const sel = $("md-opt"), key = statKeyOf(id);
+  if (!sel) return;
+  const counts = new Map();
+  if (key) for (const r of priceData?.profile || []) { const v = r.opts?.stats?.[key]; if (v != null && !r.sold) counts.set(v, (counts.get(v) || 0) + 1); }
+  if (detailState.opt != null && key) counts.set(detailState.opt, counts.get(detailState.opt) || 0);
+  $("md-opt-wrap").hidden = !counts.size;
+  const label = key ? OPT_LABEL[key] : "";
+  sel.innerHTML = `<option value="">${tr(`모든 옵션`, `All options`)}</option>` + [...counts].sort((a, b) => b[0] - a[0]).map(([v, n]) => {
+    const g = optBadge(id, { stats: { [key]: v } }, tips);
+    return `<option value="${v}">${label} ${v}${g ? ` · ${g.text}` : ""} (${n})</option>`;
+  }).join("");
+  sel.value = detailState.opt ?? "";
+}
 async function loadDetailRows() {
   if (!selected) return;
   // A value search ("48슬레인") needs the gear's base stats to know which stat the number is; an item opened straight
   // from a link can get here before they load.
-  if (!tips && /\d/.test($("mk-q").value)) {
+  if (!tips && detailState.opt != null) {
     const want = selected;
     await loadTips();
     if (want !== selected) return;
@@ -744,16 +775,13 @@ async function loadDetailRows() {
     p.set("max", priceBand.to);
     p.set("since", new Date(priceBand.fromTime).toISOString());
   }
-  const sf = statCleared === id ? null : statFilter([id]);
+  p.delete("opt");
+  const sf = statFilter([id], detailState.opt);
   if (sf) {
     p.set("stat", sf.key);
     p.set("val", sf.value);
   }
-  const bar = $("md-stat-filter");
-  if (bar) {
-    bar.hidden = !sf;
-    bar.querySelector("span").textContent = sf ? tr(`${OPT_LABEL[sf.key]} ${sf.value} 매물만 보는 중 (옵션이 수집된 매물만)`, `Showing ${OPT_LABEL[sf.key]} ${sf.value} only (listings with options)`) : "";
-  }
+  fillOptMenu(id);
   $("md-rows").setAttribute("aria-busy", "true");
   $("md-count").textContent = T.loading;
   $("md-price-band").hidden = !priceBand;
@@ -880,7 +908,7 @@ async function refresh() {
 }
 function changedSearch() {
   page = 1;
-  statCleared = null;
+  optWanted = searchParts().value;
   clearTimeout(debounce);
   if (view === "items") renderMain();
   else debounce = setTimeout(renderMain, 250);
@@ -1017,9 +1045,10 @@ document.querySelector(".market-browser").addEventListener("click", (e) => {
     );
   if (el.hasAttribute("data-retry-list")) return renderRecords();
   if (el.hasAttribute("data-retry-detail")) return loadDetailRows();
-  if (el.hasAttribute("data-clear-stat")) {
-    statCleared = selected;
-    return loadDetailRows();
+  if (el.hasAttribute("data-clear-opt")) {
+    optWanted = null;
+    syncURL();
+    return renderMain();
   }
   if (el.hasAttribute("data-clear-band")) {
     priceBand = null;
@@ -1381,6 +1410,8 @@ async function initialize() {
     const p = new URLSearchParams(location.search),
       id = FIXED || Number(p.get("item"));
     if (p.get("q")) $("mk-q").value = p.get("q");
+    if (/^\d{1,3}$/.test(p.get("opt") || "")) optWanted = Number(p.get("opt"));
+    else optWanted = searchParts().value;
     // Items (one row per item, like MesoWatch) is the default view; "all listings" is for finding a seller, channel or
     // room. The anonymous price-report tab was removed (no one used it); old ?view=reports links open the items.
     const initialView = ["items", "listings"].includes(p.get("view"))
