@@ -21,6 +21,7 @@ function env() {
     "migrations/0002_listing_history.sql",
     "migrations/0004_trim_writes.sql",
     "migrations/0005_stop_history_copies.sql",
+    "migrations/0019_item_options.sql",
   ])
     sqlite.exec(
       fs.readFileSync(new URL("../worker/" + file, import.meta.url), "utf8"),

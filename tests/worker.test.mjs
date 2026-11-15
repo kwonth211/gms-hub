@@ -14,6 +14,7 @@ function environment() {
   // Megaphones carry parsed item/intent/price since migration 0009.
   sqlite.exec(fs.readFileSync(new URL('../worker/migrations/0009_megaphone_fields.sql', import.meta.url), 'utf8'));
   sqlite.exec(fs.readFileSync(new URL('../worker/migrations/0011_discord_alerts.sql', import.meta.url), 'utf8'));
+  sqlite.exec(fs.readFileSync(new URL('../worker/migrations/0019_item_options.sql', import.meta.url), 'utf8'));
   const DB = { failUpdates: false, prepare(sql, args = []) {
     return { bind(...values) { return DB.prepare(sql, values); }, async first() { return sqlite.prepare(sql).get(...args) || null; },
       async all() { return { results: sqlite.prepare(sql).all(...args) }; }, async run() {

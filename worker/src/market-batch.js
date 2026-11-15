@@ -1,3 +1,4 @@
+import { normalizeOptions } from './item-options.js';
 import { refreshItemMarket } from './market-browser.js';
 // Authenticated, idempotent ingestion for the private deterministic collector.
 const reply = (body, status = 200, headers = {}) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store', ...headers } });
@@ -156,16 +157,18 @@ export async function handleMarketBatch(req, env, knownItems, onListings) {
     SELECT ?,?,?,?,?,? WHERE (SELECT COALESCE(SUM(accepted),0) FROM market_batch_runs WHERE received_at >= date('now')) + ? <= ?
     AND NOT EXISTS (SELECT 1 FROM market_batch_runs WHERE received_at > datetime('now', ?))`)
     .bind(body.runId, hash, body.startedAt, body.finishedAt, body.shops, body.rows.length, body.rows.length, policy.dailyRows, `-${policy.intervalSeconds} seconds`);
-  const listing = env.DB.prepare(`INSERT INTO listings (item,price,qty,sold,seller,channel,room,reporter,first_seen,last_seen)
-    SELECT ?,?,1,0,?,?,?,'batch:market',?,?
+  const listing = env.DB.prepare(`INSERT INTO listings (item,price,qty,sold,seller,channel,room,reporter,first_seen,last_seen,opts)
+    SELECT ?,?,1,0,?,?,?,'batch:market',?,?,?
     WHERE EXISTS (SELECT 1 FROM market_batch_runs WHERE run_id=? AND payload_hash=?)
     AND NOT EXISTS (SELECT 1 FROM listings WHERE item=? AND price=? AND seller=? AND channel=? AND room=? AND last_seen>=?)
     ON CONFLICT (seller,item,price,channel,room) DO UPDATE SET
-    last_seen=excluded.last_seen, qty=CASE WHEN listings.sold=0 THEN excluded.qty ELSE listings.qty END
+    last_seen=excluded.last_seen, qty=CASE WHEN listings.sold=0 THEN excluded.qty ELSE listings.qty END,
+    opts=COALESCE(excluded.opts, listings.opts)
     WHERE excluded.last_seen > listings.last_seen`);
   try {
     // listing_history triggers already preserve these observations. Keep the legacy archive read-only.
-    const results = await env.DB.batch([receipt, ...body.rows.map(r => listing.bind(r.item,r.price,r.seller,r.channel,r.room,r.seen,r.seen,
+    // Equipment options ride along when the reader has them (item-options.js); bad ones are dropped, never the row.
+    const results = await env.DB.batch([receipt, ...body.rows.map(r => listing.bind(r.item,r.price,r.seller,r.channel,r.room,r.seen,r.seen,normalizeOptions(r.opts),
       body.runId,hash,r.item,r.price,r.seller,r.channel,r.room,r.seen))]);
     if (!results[0].meta.changes) return quotaReply();
     const changed = results.slice(1).filter(r => r.meta.changes > 0).length;

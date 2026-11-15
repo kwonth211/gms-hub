@@ -1,3 +1,4 @@
+import { parseOptions } from "./item-options.js";
 // Browsable market data. Asking listings, retained observations and anonymous price reports are distinct datasets.
 const DAY = 86400000;
 const stamp = (n) => new Date(n).toISOString().slice(0, 19).replace("T", " ");
@@ -278,7 +279,7 @@ export async function browseListings(env, p) {
   }
   const rows = await all(
     env,
-    "SELECT id,item,price,qty,sold,seller,channel,room,first_seen AS firstSeen,last_seen AS seen FROM listings " +
+    "SELECT id,item,price,qty,sold,seller,channel,room,first_seen AS firstSeen,last_seen AS seen,opts FROM listings " +
       // Newest first walks the first_seen index from the top and stops after one page; with an item filter the item index is cheaper.
       (sort === "recent" && !p.get("item") && !p.get("ids") ? "INDEXED BY listings_first " : "") +
       "WHERE " +
@@ -290,7 +291,8 @@ export async function browseListings(env, p) {
   );
   return {
     asOf: new Date(now).toISOString(),
-    rows,
+    // Equipment options (item-options.js) as an object, only on rows that have them.
+    rows: rows.map(({ opts, ...r }) => (opts ? { ...r, opts: parseOptions(opts) } : r)),
     total: count.n,
     page,
     limit,

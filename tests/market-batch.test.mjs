@@ -7,7 +7,7 @@ const iso = t => new Date(t).toISOString();
 const seen = t => iso(t).slice(0,19).replace('T',' ');
 function environment() {
   const sqlite = new DatabaseSync(':memory:');
-  for (const file of ['schema.sql','migrations/0001_market_batch.sql','migrations/0002_listing_history.sql','migrations/0003_market_batch_usage_index.sql']) sqlite.exec(fs.readFileSync(new URL('../worker/'+file,import.meta.url),'utf8'));
+  for (const file of ['schema.sql','migrations/0001_market_batch.sql','migrations/0002_listing_history.sql','migrations/0003_market_batch_usage_index.sql','migrations/0019_item_options.sql']) sqlite.exec(fs.readFileSync(new URL('../worker/'+file,import.meta.url),'utf8'));
   const DB = { failAt: null, prepare(sql,args=[]) { return { bind(...a) { return DB.prepare(sql,a); }, async first() { return sqlite.prepare(sql).get(...args)||null; }, async all() { return {results:sqlite.prepare(sql).all(...args)}; }, async run() { if (DB.failAt && sql.includes(DB.failAt)) throw Error('test failure'); return {meta:{changes:Number(sqlite.prepare(sql).run(...args).changes)}}; } }; }, async batch(stmts) {
     sqlite.exec('BEGIN'); try { const out=[]; for (const s of stmts) out.push(await s.run()); sqlite.exec('COMMIT'); return out; } catch(e) { sqlite.exec('ROLLBACK'); throw e; }
   }};
@@ -127,4 +127,16 @@ test('a summary-only upload stores reference prices right away without a run',as
  const again=await post(e,{summaryOnly:true,world:'Windia',summary:[{item:2040801,typical:1500000,day:1,week:2,sales:10}]});
  assert.equal(again.data.summary.stored,1);
  assert.equal((await post(e,{summaryOnly:true,summary:[]})).status,400);
+});
+test('equipment options ride along with a row, survive a later run without them, and bad options never fail the run',async()=>{
+ const e=environment(), b=batch(2);
+ b.rows[0].opts={stats:{PAD:9,LUK:2,BOGUS:4},slots:5,clean:true};
+ b.rows[1].opts='not an object';
+ assert.equal((await post(e,b)).status,200);
+ const opts=e.sqlite.prepare('SELECT price, opts FROM listings ORDER BY price').all();
+ assert.deepEqual(JSON.parse(opts[0].opts),{stats:{PAD:9,LUK:2},slots:5,clean:true});
+ assert.equal(opts[1].opts,null);
+ const later=structuredClone(b); later.runId=crypto.randomUUID(); delete later.rows[0].opts; later.rows[0].seen=seen(Date.parse(b.finishedAt)-1000); later.rows[1].seen=later.rows[0].seen;
+ assert.equal((await post(e,later)).status,200);
+ assert.deepEqual(JSON.parse(e.sqlite.prepare('SELECT opts FROM listings ORDER BY price').get().opts).stats,{PAD:9,LUK:2});
 });

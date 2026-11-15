@@ -222,19 +222,58 @@ const placeChips = (r) => `<span class="mb-ch" style="--h:${(Number(r.channel) *
 // The item panel's "where to buy" list: one card per listing, price first, then how fresh it is, who and where.
 // Freshness follows MesoWatch's wording: seen within an hour is probably still up, older ones may have sold.
 let lastOffers = null;
+// Equipment options sent with a listing (worker/src/item-options.js): each stat as shown in game, with the difference
+// from the item's base value in the game data, plus "clean" and upgrades left. Shown only when a reader sent them.
+const OPT_ORDER = ["PAD", "MAD", "STR", "DEX", "INT", "LUK", "ACC", "EVA", "MHP", "MMP", "PDD", "MDD", "Speed", "Jump", "CRT", "CRD"];
+const OPT_LABEL = ko
+  ? { PAD: "공", MAD: "마", STR: "힘", DEX: "덱", INT: "인", LUK: "럭", ACC: "명중", EVA: "회피", MHP: "HP", MMP: "MP", PDD: "물방", MDD: "마방", Speed: "이속", Jump: "점프", CRT: "크확", CRD: "크뎀" }
+  : { PAD: "ATT", MAD: "M.ATT", STR: "STR", DEX: "DEX", INT: "INT", LUK: "LUK", ACC: "ACC", EVA: "AVOID", MHP: "HP", MMP: "MP", PDD: "DEF", MDD: "M.DEF", Speed: "SPEED", Jump: "JUMP", CRT: "CRIT", CRD: "C.DMG" };
+const optStats = (o) => OPT_ORDER.filter((k) => o?.stats?.[k] != null).map((k) => [k, o.stats[k]]);
+// Short text for grouping and the summary: "공 9 · 클린".
+const optKey = (o) => [...optStats(o).map(([k, v]) => `${OPT_LABEL[k]} ${v}`), o?.clean ? tr("클린", "clean") : ""].filter(Boolean).join(" · ");
+function optionChips(r) {
+  const o = r.opts;
+  if (!o) return "";
+  const base = tips?.items?.[r.item]?.[7] || {}, baseSlots = tips?.items?.[r.item]?.[8];
+  const chips = optStats(o).map(([k, v]) => {
+    const b = base[k], d = b != null ? v - b : null;
+    // Above or below the game's base value: for clean gear that is the roll ("상옵/하옵"); scrolled gear adds scroll stats.
+    const cls = d > 0 ? " up" : d < 0 ? " down" : "";
+    const title = b != null ? tr(`기본 ${b}`, `base ${b}`) : tr("기본값 없음 (주문서로 붙은 능력치)", "not on the base item (from scrolls)");
+    return `<span class="mb-opt${cls}" title="${esc(title)}">${esc(OPT_LABEL[k])} ${v}${d ? `<small>${d > 0 ? "+" : ""}${d}</small>` : b == null ? "<small>+</small>" : ""}</span>`;
+  });
+  if (o.clean) chips.push(`<span class="mb-opt clean">${tr("클린", "Clean")}</span>`);
+  if (o.slots != null) chips.push(`<span class="mb-opt">${tr("업횟", "Slots")} ${o.slots}${baseSlots ? `/${baseSlots}` : ""}</span>`);
+  return chips.length ? `<span class="mb-opts">${chips.join("")}</span>` : "";
+}
+// "Price by option": listings that carry options, grouped by the same options, lowest asking price per group.
+function optionSummary(rows) {
+  const groups = new Map();
+  for (const r of rows) {
+    if (!r.opts || r.sold) continue;
+    const key = optKey(r.opts);
+    if (!key) continue;
+    const g = groups.get(key) || groups.set(key, { key, n: 0, low: Infinity, sort: optStats(r.opts).reduce((a, [, v]) => a + v, 0) }).get(key);
+    g.n += 1;
+    g.low = Math.min(g.low, r.price);
+  }
+  if (groups.size < 2) return "";
+  const list = [...groups.values()].sort((a, b) => b.sort - a.sort || a.low - b.low).slice(0, 8);
+  return `<div class="mb-optsum"><h4>${tr("옵션별 시세", "Price by option")}</h4><ul>${list.map((g) => `<li><span>${esc(g.key)}</span><b>${money(g.low)}</b><small>${tr(`${g.n}건`, `${g.n}`)}</small></li>`).join("")}</ul></div>`;
+}
 function offerCards(rows) {
   lastOffers = rows;
   if (!rows.length)
     return `<p class="market-empty">${tr("조건에 맞는 매물이 없어요. 필터를 바꿔 보세요.", "No listings match. Try other filters.")}</p>`;
   const open = (priceData?.profile || []).map((r) => r.price).filter((p) => p > 0).sort((a, b) => a - b);
   const [r25, r75] = open.length >= 4 ? [quant(open, 0.25), quant(open, 0.75)] : [null, null];
-  return `<ul class="mb-offers">${rows.map((r) => {
+  return `${optionSummary(rows)}<ul class="mb-offers">${rows.map((r) => {
     const age = Date.now() - parseUtc(r.seen);
     const fresh = r.sold ? "sold" : age < 3600000 ? "fresh" : age < 6 * 3600000 ? "warm" : "old";
     // One line per listing: the dot colour carries how fresh it is (full wording on hover).
     const status = { sold: tr("판매 완료 표시", "Marked sold"), fresh: tr("1시간 안에 확인", "Seen within the hour"), warm: tr("몇 시간 전 확인", "Seen a few hours ago"), old: tr("팔렸을 수도 있어요", "May have sold") }[fresh];
     const tag = r.sold ? `<b class="mb-deal pricey">${tr("판매 완료", "Sold")}</b>` : r25 == null ? "" : r.price < r25 ? `<b class="mb-deal cheap">${tr("싼 편", "Cheap")}</b>` : r.price > r75 ? `<b class="mb-deal pricey">${tr("비싼 편", "Pricey")}</b>` : "";
-    return `<li class="mb-offer ${fresh}"><span class="mb-offer-price"><strong>${money(r.price)}</strong>${r.qty > 1 ? `<small>×${money(r.qty)}</small>` : ""}${tag}</span><button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)}</button><span class="mb-fresh" title="${esc(status)}"><i aria-hidden="true"></i>${when(r.seen)}<span class="sr-only"> · ${esc(status)}</span></span><span class="mb-offer-where">${placeChips(r)}</span></li>`;
+    return `<li class="mb-offer ${fresh}"><span class="mb-offer-price"><strong>${money(r.price)}</strong>${r.qty > 1 ? `<small>×${money(r.qty)}</small>` : ""}${tag}</span>${optionChips(r)}<button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)}</button><span class="mb-fresh" title="${esc(status)}"><i aria-hidden="true"></i>${when(r.seen)}<span class="sr-only"> · ${esc(status)}</span></span><span class="mb-offer-where">${placeChips(r)}</span></li>`;
   }).join("")}</ul>`;
 }
 function listingTable(rows, { showItem = true, shopButtons = true } = {}) {
@@ -1035,6 +1074,8 @@ function equipExtras(id, data) {
 }
 async function fillItemInfo(id) {
   const data = await loadTips();
+  // Option chips compare with base stats from this data; redraw listings that arrived before it.
+  if (lastOffers?.some((r) => r.opts) && $("md-rows")?.querySelector(".mb-offers")) $("md-rows").innerHTML = offerCards(lastOffers);
   const box = $("mb-info");
   const t = data?.items?.[id];
   if (!box || !t || selected !== id) return;

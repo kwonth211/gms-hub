@@ -23,6 +23,19 @@ let rows = [], lastId = 0, names = [], byName = new Map(), prices = new Map();
 
 // ---------- reading a megaphone ----------
 // "[Shoes Speed Scroll: Intermediate]" is an exact item megaphone; otherwise the longest catalogue name in the text.
+// Equipment options a reader sent with the megaphone (worker/src/item-options.js), as small chips under the text.
+const OPT_ORDER = ['PAD', 'MAD', 'STR', 'DEX', 'INT', 'LUK', 'ACC', 'EVA', 'MHP', 'MMP', 'PDD', 'MDD', 'Speed', 'Jump', 'CRT', 'CRD'];
+const OPT_LABEL = document.documentElement.lang === 'ko'
+  ? { PAD: '공', MAD: '마', STR: '힘', DEX: '덱', INT: '인', LUK: '럭', ACC: '명중', EVA: '회피', MHP: 'HP', MMP: 'MP', PDD: '물방', MDD: '마방', Speed: '이속', Jump: '점프', CRT: '크확', CRD: '크뎀' }
+  : { PAD: 'ATT', MAD: 'M.ATT', STR: 'STR', DEX: 'DEX', INT: 'INT', LUK: 'LUK', ACC: 'ACC', EVA: 'AVOID', MHP: 'HP', MMP: 'MP', PDD: 'DEF', MDD: 'M.DEF', Speed: 'SPEED', Jump: 'JUMP', CRT: 'CRIT', CRD: 'C.DMG' };
+function optLine(o) {
+  if (!o) return '';
+  const ko = document.documentElement.lang === 'ko';
+  const chips = OPT_ORDER.filter((k) => o.stats?.[k] != null).map((k) => `<span class="mb-opt">${OPT_LABEL[k]} ${o.stats[k]}</span>`);
+  if (o.clean) chips.push(`<span class="mb-opt clean">${ko ? '클린' : 'Clean'}</span>`);
+  if (o.slots != null) chips.push(`<span class="mb-opt">${ko ? '업횟' : 'Slots'} ${o.slots}</span>`);
+  return chips.length ? `<p class="mb-opts mg-opts">${chips.join('')}</p>` : '';
+}
 function itemsOf(text) {
   const found = [];
   const bracket = /\[([^\]]{3,60})\]/.exec(text);
@@ -109,7 +122,7 @@ function card(r) {
   // One compact row: who and where on the left, the message and its reading in the middle, the whisper copy on the right.
   return `<li class="mg-msg mg-${r.color || 'Y'} mg-k-${r.kind}${r.id === focusId ? ` mg-focus${focused ? '' : ' mg-pulse'}` : ''}" id="m-${r.id}">
 <div class="mg-who"><strong class="mg-nick"${r.id === focusId ? ` data-pick="${esc(tr('선택한 고확', 'Selected'))}"` : ''}>${esc(r.nick)}</strong><span class="mg-meta">${r.channel ? `<span class="mg-ch">CH${String(r.channel).padStart(2, '0')}</span>` : ''}<time datetime="${new Date(seenAt(r.seen)).toISOString()}" title="${ago(r.seen)}">${clock(r.seen)}</time></span><span class="mg-kind">${KIND[r.kind]?.() || ''}</span></div>
-<div class="mg-body"><p class="mg-text">${tag}${text}</p>${translator && plain(r.text) ? `<p class="mg-ai" data-src="${esc(plain(r.text))}" data-prefix="${esc(itemPrefix(r.text, items))}" hidden></p>` : ''}${g ? `<p class="mg-gloss">${esc(g)}</p>` : ''}${cmp}</div>
+<div class="mg-body"><p class="mg-text">${tag}${text}</p>${optLine(r.opts)}${translator && plain(r.text) ? `<p class="mg-ai" data-src="${esc(plain(r.text))}" data-prefix="${esc(itemPrefix(r.text, items))}" hidden></p>` : ''}${g ? `<p class="mg-gloss">${esc(g)}</p>` : ''}${cmp}</div>
 <button type="button" class="mg-copy" data-nick="${esc(r.nick)}" title="${esc(tr('귓말 명령어 복사', 'Copy whisper command'))}" aria-label="${esc(tr('귓말 명령어 복사', 'Copy whisper command'))}">${WHISPER}</button></li>`;
 }
 

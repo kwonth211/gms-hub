@@ -1,3 +1,4 @@
+import { normalizeOptions, parseOptions } from './item-options.js';
 // In-game megaphones. The admin collector posts what it reads from a shared game window; the public page polls the
 // newest rows. color is the background band the line was drawn on (Y gold, P pink, C cyan, N none). Writes need MEGAPHONE_TOKEN; rows older than 2 days are dropped by the schedule (prices outlive them in listings and snapshots).
 // At ingest the text is parsed once: the item it names, whether it sells or buys, and the asking price (see parseMegaphone).
@@ -44,12 +45,13 @@ export async function postMegaphones(req, env, itemNames, onNew) {
   if (!rows.length) return reply({ ok: true, accepted: 0 });
   // The same line stays on screen for a while and scrolls through several frames: one row per nick+text per 10 minutes.
   const names = itemNames ? await itemNames().catch(() => null) : null;
-  const insert = env.DB.prepare('INSERT OR IGNORE INTO megaphones (seen_at, kind, color, channel, nick, text, hash, item, intent, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+  const insert = env.DB.prepare('INSERT OR IGNORE INTO megaphones (seen_at, kind, color, channel, nick, text, hash, item, intent, price, opts) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
   const parsed = [];
   const stmts = await Promise.all(rows.map(async (r, i) => {
     const text = r.text.trim(), p = parseMegaphone(text, names);
-    parsed[i] = { ...r, text, ...p };
-    return insert.bind(stamp(r.seen), r.kind, r.color ?? null, r.channel ?? null, r.nick, text, await digest(`${r.nick}|${text.toLowerCase()}|${Math.floor(Date.parse(r.seen) / 600000)}`), p.item, p.intent, p.price);
+    const opts = normalizeOptions(r.opts);
+    parsed[i] = { ...r, text, ...p, opts: parseOptions(opts) };
+    return insert.bind(stamp(r.seen), r.kind, r.color ?? null, r.channel ?? null, r.nick, text, await digest(`${r.nick}|${text.toLowerCase()}|${Math.floor(Date.parse(r.seen) / 600000)}`), p.item, p.intent, p.price, opts);
   }));
   const results = await env.DB.batch(stmts);
   // New rows carry their id and the stored time stamp, shaped like GET /megaphones rows, so they can be pushed to pages.
@@ -64,13 +66,16 @@ export async function listMegaphones(env, params) {
   // ?item=<id>: megaphones naming that item (the market's item panel), newest first, by index.
   const item = Number(params.get('item'));
   if (Number.isInteger(item) && item > 0) {
-    const { results } = await env.DB.prepare('SELECT id, seen_at AS seen, kind, color, channel, nick, text, intent, price FROM megaphones WHERE item = ? ORDER BY id DESC LIMIT ?')
+    const { results } = await env.DB.prepare('SELECT id, seen_at AS seen, kind, color, channel, nick, text, intent, price, opts FROM megaphones WHERE item = ? ORDER BY id DESC LIMIT ?')
       .bind(item, Math.min(limit, 30)).all();
-    return { rows: results, at: new Date().toISOString() };
+    return { rows: results.map(withOptions), at: new Date().toISOString() };
   }
-  const { results } = await env.DB.prepare('SELECT id, seen_at AS seen, kind, color, channel, nick, text FROM megaphones WHERE id > ? ORDER BY id DESC LIMIT ?').bind(after, limit).all();
-  return { rows: results, at: new Date().toISOString() };
+  const { results } = await env.DB.prepare('SELECT id, seen_at AS seen, kind, color, channel, nick, text, opts FROM megaphones WHERE id > ? ORDER BY id DESC LIMIT ?').bind(after, limit).all();
+  return { rows: results.map(withOptions), at: new Date().toISOString() };
 }
+
+// Options go out as an object (or are left out), never as raw JSON text.
+const withOptions = ({ opts, ...r }) => (opts ? { ...r, opts: parseOptions(opts) } : r);
 
 export const pruneMegaphones = (env) => env.DB.prepare("DELETE FROM megaphones WHERE seen_at < datetime('now', '-2 days')").run();
 

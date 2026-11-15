@@ -1924,6 +1924,7 @@ html[data-charm='off'] .charm-leaves { display: none; }
 .mg-copy:hover { color: var(--text); border-color: var(--line-strong); }
 .mg-copy:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .mg-text { margin: 0; font-size: 0.92rem; line-height: 1.45; overflow-wrap: anywhere; }
+.mg-opts { display: flex; margin: 4px 0 0; }
 .mg-item { font-weight: 700; color: var(--accent-2); }
 .mg-gloss { margin: 2px 0 0; font-size: 0.84rem; color: var(--text-2); }
 .mg-price { display: inline-block; margin-top: 4px; font-size: 0.76rem; color: var(--muted); text-decoration: none; }
@@ -2148,6 +2149,19 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-offers { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; }
 .mb-offer { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 5px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); box-shadow: inset 3px 0 0 var(--fresh, var(--line-strong)); font-size: 0.76rem; line-height: 1.3; }
 .mb-offer.fresh { --fresh: #2e9d5b; } .mb-offer.warm { --fresh: #d9a520; } .mb-offer.old { --fresh: var(--line-strong); opacity: 0.82; } .mb-offer.sold { --fresh: var(--muted); opacity: 0.6; }
+.mb-opts { display: inline-flex; flex-wrap: wrap; gap: 3px; flex: 0 1 auto; min-width: 0; }
+.mb-opt { padding: 0 5px; border: 1px solid var(--line); border-radius: 5px; background: var(--panel-2); color: var(--text-2); font-size: 0.72rem; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mb-opt small { margin-left: 2px; font-size: 0.68rem; font-weight: 800; }
+.mb-opt.up small { color: var(--ok); }
+.mb-opt.down small { color: var(--danger); }
+.mb-opt.clean { border-color: var(--ok-line); color: var(--ok); }
+.mb-optsum { margin: 0 0 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); }
+.mb-optsum h4 { margin: 0 0 6px; font-size: 0.82rem; color: var(--text-2); }
+.mb-optsum ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 4px 12px; }
+.mb-optsum li { display: flex; align-items: baseline; gap: 6px; min-width: 0; font-size: 0.82rem; }
+.mb-optsum li span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mb-optsum li b { margin-left: auto; font-variant-numeric: tabular-nums; }
+.mb-optsum li small { color: var(--muted); }
 .mb-offer-price { display: flex; align-items: baseline; gap: 4px; flex: none; min-width: 88px; white-space: nowrap; }
 .mb-offer-price strong { font-size: 0.9rem; font-variant-numeric: tabular-nums; }
 .mb-offer-price small { color: var(--muted); font-size: 0.7rem; }
