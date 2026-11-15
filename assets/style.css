@@ -2808,3 +2808,10 @@ body.exp-running .exp-stop { display: inline-flex; }
 /* "N초 전 갱신됨" beside the just-listed title. */
 .recent-tools { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-weight: 400; }
 .recent-ago { color: var(--muted); font-size: 0.72rem; white-space: nowrap; }
+/* Market: the in-list ad sits over a spacer row after the 10th result (see market.js). */
+#mb-browser { position: relative; }
+.mb-ad-mid { position: absolute; left: 0; right: 0; top: 0; visibility: hidden; pointer-events: none; }
+.mb-ad-mid.on { visibility: visible; pointer-events: auto; }
+.mb-ad-mid .ad-slot { margin: 0 auto; }
+.mb-table tbody tr.mb-ad-gap, .mb-table tbody tr.mb-ad-gap:hover { background: var(--panel); cursor: default; }
+.mb-table tr.mb-ad-gap td { padding: 0; display: table-cell; }

@@ -1306,3 +1306,38 @@ setInterval(refresh, 60000);
 document.addEventListener("visibilitychange", refresh);
 renderMine();
 initialize();
+
+// One ad inside the list, after the 10th row, where people actually look (the old end-of-page slot was seen ~10% of the time).
+// The ad never moves in the DOM (moving its iframe would reload it, which counts as a refresh); a spacer row reserves
+// room in whatever table is showing and the ad sits over it. A list narrower than the ad (detail panel open) hides it.
+(() => {
+  const box = $("mb-ad-mid"), results = $("mb-results"), panel = $("mb-browser");
+  if (!box || !results || !panel) return;
+  const AFTER = 10;
+  const place = () => {
+    const ad = box.querySelector("ins.kakao_ad_area");
+    const body = results.querySelector("tbody");
+    let gap = results.querySelector(".mb-ad-gap");
+    if (!ad || !body?.rows.length || panel.clientWidth < Number(ad.dataset.adWidth) + 16) {
+      gap?.remove();
+      box.classList.remove("on");
+      return;
+    }
+    if (!gap) {
+      gap = document.createElement("tr");
+      gap.className = "mb-ad-gap";
+      gap.setAttribute("aria-hidden", "true");
+      gap.innerHTML = '<td colspan="99"></td>';
+      body.insertBefore(gap, body.rows[AFTER] || null);
+    }
+    const h = `${box.offsetHeight + 28}px`;
+    if (gap.firstChild.style.height !== h) gap.firstChild.style.height = h;
+    const top = `${Math.round(gap.getBoundingClientRect().top - panel.getBoundingClientRect().top + 14)}px`;
+    if (box.style.top !== top) box.style.top = top;
+    box.classList.add("on");
+  };
+  new MutationObserver(place).observe(results, { childList: true });
+  new MutationObserver(place).observe(box, { childList: true, subtree: true });
+  new ResizeObserver(place).observe(panel);
+  place();
+})();
