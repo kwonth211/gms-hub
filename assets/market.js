@@ -474,9 +474,10 @@ async function renderRecords() {
   const filtering = $("mk-q").value.trim() || category !== "all" || $("mb-class").value;
   if (filtering) {
     let ids = filteredIds();
-    // The worker takes at most 200 items per query. A class filter alone can match more, so it keeps the 200 with the
-    // most open listings (rarely traded gear drops out); a search or category that broad still asks for a narrower name.
-    if (ids.length > 200 && $("mb-class").value && !$("mk-q").value.trim()) {
+    // The worker takes at most 200 items per query. A category or class filter alone (equipment alone is 500+ items) can
+    // match more, so it keeps the 200 with the most open listings (rarely traded gear drops out); only a search that broad
+    // still asks for a narrower name.
+    if (ids.length > 200 && !$("mk-q").value.trim()) {
       const open = new Map((catalog?.items || []).map((r) => [r.item, r.open || 0]));
       ids = ids.sort((a, b) => (open.get(b) || 0) - (open.get(a) || 0)).slice(0, 200);
     }
