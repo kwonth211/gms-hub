@@ -76,11 +76,11 @@ const T = {
     navAbout: '소개',
     navGuides: '가이드',
     switchLang: 'English',
-    homeTitle: '글클메 허브: 사이트 모음·실시간 시세·몬스터 DB·사냥터 추천 | GMS Hub',
-    homeDesc: `글로벌 메이플스토리 클래식 월드(글클메) 공식 채널, 디스코드·레딧·디시 커뮤니티, DB·위키, 자유시장 시세, 보스 타이머, 빌드 플래너 ${SITE_COUNT}곳을 용도별로 정리했어요. 직업별 조건을 정리한 사냥터 추천와 주문서 계산기도 있어요.`,
+    homeTitle: '글클메 허브: 실시간 시세·사냥터 추천·몬스터 DB·스킬트리 | GMS Hub',
+    homeDesc: '글로벌 메이플스토리 클래식 월드(글클메) 실시간 자유시장 시세와 확성기, 직업·레벨별 사냥터 추천, 경험치 퀘스트, 몬스터 드롭과 장비, 스킬 찍는 순서까지 한곳에서 찾아요.',
     heroKicker: '글클메 유저를 위한 길잡이',
-    heroTitle: '아이템·시세·유용한 사이트, <br>한 번에 찾아보세요',
-    heroSub: '아이템·몬스터부터 공략과 도구까지 한곳에서 검색하고, 필요한 사이트로 바로 이동하세요.',
+    heroTitle: '시세·사냥터·내 캐릭터, <br>한 번에 찾아보세요',
+    heroSub: '아이템 시세와 드롭, 내 레벨에 맞는 사냥터·퀘스트·장비까지 한곳에서 찾아요.',
     searchPlaceholder: '아이템, 몬스터, 사이트 검색 (어디서든 / 키)',
     statSites: '수록 사이트',
     statCats: '카테고리',
@@ -796,6 +796,7 @@ function moreMenu(lang, moved = []) {
     ['/rank/', ko ? '캐릭터 랭킹' : 'Character ranking'],
     ['/items/', ko ? '아이템 도감' : 'Item database'],
     ['/maps/', ko ? '맵 도감' : 'Map database'],
+    ['/sites/', ko ? '다른 사이트 모음' : 'Other Classic World sites'],
     ['/tools/scan/', ko ? '상점 스캔으로 올리기' : 'Upload a shop scan'],
     ['/about/', ko ? '사이트 소개' : 'About'],
     config.discordBotInstall && ['/discord-bot/', ko ? '디스코드 봇' : 'Discord bot'],
@@ -1150,6 +1151,35 @@ function patchNotesBody(lang) {
 <ul class="pn-list">${UPDATES.filter((u) => u.date === d).map((u) => `<li class="pn-item pn-item-${u.level}" id="${u.id}"><h3>${ver(u)}<span>${esc(title(u))}</span></h3><p>${esc(ko ? u.desc.ko : u.desc.en)}</p><a class="pn-go" href="${href(langPath(lang, u.path))}">${ko ? '바로 가기' : 'Open it'}</a></li>`).join('')}</ul></section>`).join('\n')}</div>`;
 }
 
+// /sites/: the site directory exactly as it was on the home page (purpose buttons, sidebar, favorites, votes), kept out
+// of search (noindex, not in the sitemap). assets/directory.js runs it.
+function directoryBody(lang) {
+  const t = T[lang];
+  const cats = sites.categories;
+  const purposes = cats.map((c) => `<button class="purpose" type="button" data-filter="${c.id}" aria-pressed="false">${spriteSvg(c.icon, 36)}<span>${esc(t.purposes[c.id])}</span><small>${esc(c.name[lang])} · ${c.sites.length}${t.sitesUnit}</small></button>`).join('');
+  const toc = cats.map((c) => `<a href="#${c.id}">${spriteSvg(c.icon, 20)}<span>${esc(c.name[lang])}</span><b>${c.sites.length}</b></a>`).join('');
+  const sections = cats.map((c) => `<section class="cat" id="${c.id}" data-cat data-name="${esc(c.name[lang])}">
+<header class="cat-head">${spriteSvg(c.icon, 40)}<div><h3>${esc(c.name[lang])} <span>${c.sites.length}</span></h3><p>${esc(c.desc[lang])}</p></div></header>
+<div class="cards">${c.sites.map((st) => siteCard(lang, st)).join('')}</div>
+</section>`).join('');
+  return `<section class="page-head wrap"><h1>${lang === 'ko' ? '다른 사이트 모음' : 'Other Classic World sites'}</h1><p class="lead">${lang === 'ko' ? `글클메 공식 채널, 커뮤니티, DB·위키, 시세 사이트 ${SITE_COUNT}곳을 용도별로 모았어요.` : `${SITE_COUNT} Classic World sites, grouped by purpose: official channels, communities, databases and price sites.`}</p></section>
+<section class="wrap purposes-wrap">
+<h2>${t.purposeHeading}</h2>
+<div class="purposes">${purposes}</div>
+</section>
+<div class="wrap directory">
+<aside class="toc"><nav><h2>${t.toc}</h2><a href="#favorites" id="fav-toc" hidden>${spriteSvg('star', 20)}<span>${t.favHeading}</span><b id="fav-count">0</b></a>${toc}</nav></aside>
+<div class="dir-main" data-vote-api="${esc(config.voteApi)}" data-fav-add="${esc(t.favAdd)}" data-fav-remove="${esc(t.favRemove)}" data-filtering="${esc(t.filtering)}">
+<p class="filter-bar" id="filter-bar" hidden><span id="filter-label"></span> <button type="button" class="btn ghost small-btn" id="filter-clear">${t.showAll}</button></p>
+<section class="cat favorites" id="favorites" hidden>
+<header class="cat-head">${spriteSvg('star', 40)}<div><h3>${t.favHeading} <span id="fav-count-2">0</span></h3><p>${esc(t.favDesc)}</p></div></header>
+<div class="cards" id="fav-cards"></div>
+</section>
+${sections}
+</div>
+</div>`;
+}
+
 function homeBody(lang) {
   const t = T[lang];
   const cats = sites.categories;
@@ -1222,21 +1252,11 @@ tool('/tools/scan/', 'megaphone', SCAN[lang].h1, SCAN[lang].cardDesc)
 </div>
 </section>
 `;
-  const directoryBlock = `<section class="wrap purposes-wrap">
-<h2>${t.purposeHeading}</h2>
-<div class="purposes">${purposes}</div>
-</section>
-<div class="wrap directory">
-<aside class="toc"><nav><h2>${t.toc}</h2><a href="#favorites" id="fav-toc" hidden>${spriteSvg('star', 20)}<span>${t.favHeading}</span><b id="fav-count">0</b></a>${toc}</nav></aside>
-<div class="dir-main" data-vote-api="${esc(config.voteApi)}" data-fav-add="${esc(t.favAdd)}" data-fav-remove="${esc(t.favRemove)}" data-filtering="${esc(t.filtering)}">
-<p class="filter-bar" id="filter-bar" hidden><span id="filter-label"></span> <button type="button" class="btn ghost small-btn" id="filter-clear">${t.showAll}</button></p>
-<section class="cat favorites" id="favorites" hidden>
-<header class="cat-head">${spriteSvg('star', 40)}<div><h3>${t.favHeading} <span id="fav-count-2">0</span></h3><p>${esc(t.favDesc)}</p></div></header>
-<div class="cards" id="fav-cards"></div>
-</section>
-${sections}
-</div>
-</div>
+  // The site directory has its own page (/sites/, noindex) since 2026-11-15; few visitors left for other sites (about 2% on
+  // 11-14). The home keeps a link to it and the site list as data, so the home search still finds sites by name.
+  const directoryBlock = `<section class="wrap dir-link"><a class="dir-link-card" href="${href(langPath(lang, '/sites/'))}" data-dir-link><span class="dir-fold-title">${lang === 'ko' ? `다른 사이트 모음 <b>${SITE_COUNT}곳</b>` : `Other Classic World sites <b>${SITE_COUNT}</b>`}</span><span class="dir-fold-sub">${lang === 'ko' ? '공식 채널, 커뮤니티, DB·위키, 시세 사이트를 용도별로 모았어요.' : 'Official channels, communities, databases and price sites, grouped by purpose.'}</span><span class="dir-fold-btn" aria-hidden="true">${lang === 'ko' ? '보기' : 'Open'}</span></a></section>
+${jsonScript('home-sites', { ids: cats.map((c) => c.id), sites: cats.flatMap((c) => c.sites.map((st) => ({ id: siteId(st.url), name: st.name, url: st.url, cat: c.name[lang],
+  search: `${st.name} ${st.nameEn || ''} ${host(st.url)} ${st.desc.ko} ${st.desc.en} ${st.features.ko.join(' ')} ${st.features.en.join(' ')}`.toLowerCase() }))) })}
 `;
   const guidesBlock = guides.some((g) => g.lang === lang)
   ? `<section class="wrap">
@@ -1249,7 +1269,7 @@ ${sections}
 `
   : '';
   // Every language uses the Korean home's order (live market first), as the owner asked on 2026-11-14.
-  const body = [marketBlock, toolsBlock, directoryBlock, guidesBlock];
+  const body = [marketBlock, toolsBlock, guidesBlock, directoryBlock];
   return `<section class="hero">
 ${heroScene()}
 <div class="wrap hero-inner">
@@ -1276,7 +1296,7 @@ ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이�
 <p class="search-help" id="search-help">${lang === 'ko' ? '한글·영문·초성·줄임말로 검색하세요. 예: 귀힘, 미스릴, 좀비 루팡, 사냥터' : 'Search by name or keyword. Try Gloves Attack, Mithril, Zombie Lupin or training.'}</p>
 ${heroNew(lang)}
 <dl class="hero-stats"><div data-market-stat="listings" hidden><dt>${lang === 'ko' ? '24시간 매물' : 'Listings, 24h'}</dt><dd>0</dd></div><div data-market-stat="shops" hidden><dt>${lang === 'ko' ? '24시간 확인한 상점' : 'Shops checked, 24h'}</dt><dd>0</dd></div>${lang === 'ko'
-  ? `<div><dt>${t.statSites}</dt><dd>${SITE_COUNT}</dd></div><div><dt>${t.statCats}</dt><dd>${cats.length}</dd></div>`
+  ? `<div><dt>몬스터</dt><dd>${MONSTERS.monsters.filter((m) => m.status !== 'unplaced').length}</dd></div><div><dt>퀘스트</dt><dd>${QUESTS.length}</dd></div>`
   : `<div><dt>Monsters</dt><dd>${MONSTERS.monsters.filter((m) => m.status !== 'unplaced').length}</dd></div><div><dt>Quests</dt><dd>${QUESTS.length}</dd></div><div><dt>Maps</dt><dd>${MAPS.filter((l) => l.availability === 'open').length}</dd></div>`}</dl>
 </div>
 </div>
@@ -1288,10 +1308,10 @@ ${jsonScript('home-routes', training.routes.map((r) => ({ id: r.id, title: r.tit
   mobs: r.mobs.flatMap((m) => [m.ko, m.en]), href: href(langPath(lang, `/tools/training/?lv=${r.level.min}#route-${r.id}`)) })))}
 ${jsonScript('home-classes', TR_CLASSES.map((c) => ({ slug: c.slug, job: c.job, title: lang === 'ko' ? `${c.ko} 사냥터` : `${c.en} training routes`, n: classRoutes(c).length,
   href: href(langPath(lang, classPath(c))), keywords: `${c.ko} ${c.en} ${jobNames.ko[c.job]} ${jobNames.en[c.job]}` })))}
-<section class="wrap my-char" id="my-char" data-finder="${esc(href(langPath(lang, '/tools/training/')))}" hidden></section>
 ${updatesSection(lang)}
 ${body[0]}
 ${AD_MID}
+<section class="wrap my-char" id="my-char" data-finder="${esc(href(langPath(lang, '/tools/training/')))}" data-hub="${esc(href('/assets/char-hub.json'))}" data-skills="${esc(href(langPath(lang, '/skills/')))}" data-skill-icons="${esc(href('/assets/skills/'))}" data-equip="${esc(href(langPath(lang, '/equipment/')))}" data-quests="${esc(href(langPath(lang, '/quests/best-exp/')))}" data-quest-base="${esc(href(langPath(lang, '/')))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" hidden></section>
 ${body.slice(1).join('\n')}
 <section class="wrap faq">
 <h2>${t.faqHeading}</h2>
@@ -2950,15 +2970,6 @@ for (const lang of LANGS) {
       'query-input': 'required name=search_term_string'
     }
   };
-  const directoryLd = {
-    '@context': 'https://schema.org',
-    '@type': 'ItemList',
-    name: t.navLinks,
-    numberOfItems: SITE_COUNT,
-    itemListElement: sites.categories
-      .flatMap((c) => c.sites)
-      .map((s, i) => ({ '@type': 'ListItem', position: i + 1, name: lang === 'ko' ? s.name : s.nameEn || s.name, url: s.url, description: s.desc[lang] }))
-  };
   const faqLd = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -2977,7 +2988,7 @@ for (const lang of LANGS) {
   });
 
   const defs = {
-    home: { title: t.homeTitle, desc: t.homeDesc, body: homeBody(lang), modules: ['home.js', 'mega-trends.js', 'hero-storm.js', 'updates-pager.js'], ld: [websiteLd, directoryLd, faqLd] },
+    home: { title: t.homeTitle, desc: t.homeDesc, body: homeBody(lang), modules: ['home.js', 'mega-trends.js', 'hero-storm.js', 'updates-pager.js'], ld: [websiteLd, faqLd] },
     training: {
       title: t.trTitle,
       desc: t.trDesc,
@@ -3244,6 +3255,12 @@ for (const lang of LANGS) {
         ld: [breadcrumbLd(lang, lang === 'ko' ? '포가튼 할로우 공략' : 'Forgotten Hollow guide', '/forgotten-hollow/')]
       }));
     }
+    write(path.join(lang, 'sites', 'index.html'), page({
+      lang, pageKey: 'sites', pagePath: '/sites/', modules: ['directory.js'], noindex: true,
+      title: lang === 'ko' ? '글클메 다른 사이트 모음 | GMS Hub' : 'Other MapleStory Classic World sites | GMS Hub',
+      desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드 공식 채널, 커뮤니티, DB·위키, 시세 사이트를 용도별로 모았어요.' : 'MapleStory Classic World official channels, communities, databases and price sites, grouped by purpose.',
+      body: directoryBody(lang)
+    }));
     write(path.join(lang, 'tools', 'forge', 'index.html'), page({
       lang, pageKey: 'forge', pagePath: '/tools/forge/', modules: ['forge.js'],
       title: lang === 'ko' ? '글클메 주문서 작 시뮬레이터: 장공·귀힘·혼돈 주문서 직접 발라 보기 | GMS Hub' : 'MapleStory Classic World Scroll Simulator: Scroll Your Gear Like In-Game | GMS Hub',
@@ -3598,6 +3615,23 @@ write('assets/shop-glyphs.json', fs.readFileSync(path.join(root, 'data/shop-glyp
   const BY = new Map(itemsData.items.map((i) => [i.id, i]));
   const OK = new Set(EQUIPMENT.map((e) => e.id));
   const price = (id) => { const i = BY.get(id); const v = i && shownMedian(i); return v ? Math.round(v) : null; };
+  // Home "my character" panel: gear and EXP quests it picks from for the saved class and level. Loaded only once a
+  // character is saved. Gear: [id, ko, en, slot, level, job bits, weapon attack or magic, defense, median price].
+  // Quests: [name, start level, EXP, family job ids (empty = everyone), guide path or ''], one per name, best EXP kept.
+  const bestQuest = new Map();
+  for (const q of QUESTS) {
+    if (q.expired || q.repeat || q.exp <= 0 || q.area === 'Forgotten Hollow') continue;
+    const prev = bestQuest.get(q.name);
+    if (!prev || prev.exp < q.exp) bestQuest.set(q.name, q);
+  }
+  write('assets/char-hub.json', JSON.stringify({
+    gear: EQUIPMENT.map((e) => [e.id, e.ko, e.en, e.sub, e.lv, e.job, e.inc.PAD || e.inc.MAD || 0, e.inc.PDD || 0, price(e.id)]),
+    quests: [...bestQuest.values()].map((q) => [q.name, q.lv, q.exp, [...new Set(q.jobs.map((j) => Math.floor(j / 100) * 100))], questPath(q) || '']),
+    // Standard skill build per job id (100 = 1st job warrior, 410 = assassin …) and the names of the skills they use.
+    skills: Object.fromEntries(SKILL_BUILDS.classes.flatMap((c) => [[c.job, c.builds[0].steps], ...c.second.map((j) => [j.job, j.builds[0].steps])])),
+    skillNames: Object.fromEntries(SKILL_BUILDS.classes.flatMap((c) => [c.job, ...c.second.map((j) => j.job)])
+      .flatMap((job) => SKILLS.jobs[job].skills.map((sk) => [sk.id, [sk.ko, sk.en, sk.master]])))
+  }));
   write('assets/forge-data.json', JSON.stringify({
     scrolls: F.scrolls.map((x) => { const i = BY.get(x.id); const a = i && scrollAlias(i); return [x.id, a ? a.long : i?.ko || x.ko || '', i?.en || x.en, a ? a.short : '', x.cat, x.success, x.destroy, x.inc, price(x.id)]; }),
     equips: F.equips.map((x) => { const i = BY.get(x.id); return [x.id, i?.ko || x.ko || '', i?.en || x.en, x.cat, x.lv, x.slots, x.inc, OK.has(x.id) ? 1 : 0, price(x.id), [x.req.STR, x.req.DEX, x.req.INT, x.req.LUK]]; })

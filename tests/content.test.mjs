@@ -157,8 +157,13 @@ test('site review fixes: localized route links, unique monster titles, honest pr
   assert.ok(!/<p class="item-headline-label">[^<]*거래가/.test(ear));
   const home=read('dist/ko/index.html');
   assert.ok(home.includes('id="home-routes"')&&home.includes('route-sleepy2'));
-  assert.ok(home.indexOf('home-tools')<home.indexOf('purposes-wrap'),'tools come before the site directory');
-  assert.ok(read('dist/en/index.html').includes('DCInside: Global'));
+  assert.ok(home.indexOf('home-tools')<home.indexOf('data-dir-link'),'tools come before the link to the site directory');
+  // The site directory has its own page since 2026-11-15, out of search; the home keeps the site list for its search box.
+  const sitesPage=read('dist/ko/sites/index.html');
+  assert.ok(sitesPage.includes('<meta name="robots" content="noindex">')&&sitesPage.includes('purposes-wrap')&&sitesPage.includes('class="site-card"'));
+  assert.ok(!read('dist/sitemap.xml').includes('/sites/'));
+  assert.ok(home.includes('id="home-sites"')&&!home.includes('class="site-card"'));
+  assert.ok(read('dist/en/sites/index.html').includes('DCInside: Global'));
   assert.ok(/\.item-grid \{ display: grid; grid-template-columns: minmax\(0,1\.2fr\)/.test(read('assets/style.css')));
   assert.ok(read('assets/style.css').includes('.item-page { display: grid; grid-template-columns: minmax(0, 1fr);'));
 });
@@ -236,9 +241,12 @@ test('bosses page lists every field boss with its spawn map and says respawn tim
   assert.match(ko,/<strong>마노<\/strong><small>Mano<\/small>/);
   assert.match(read('dist/sitemap.xml'),/\/en\/bosses\//);
 });
-test('every home uses the Korean section order: live market, tools, then the site directory',()=>{
+test('every home uses the Korean section order: live market, my character, tools, guides, then the site directory link',()=>{
   const en=read('dist/en/index.html'), ko=read('dist/ko/index.html');
-  for (const h of [en,ko]) assert.ok(h.indexOf('id="live-market"')<h.indexOf('home-tools')&&h.indexOf('home-tools')<h.indexOf('purposes-wrap'));
+  for (const h of [en,ko]) {
+    const at=(m)=>h.indexOf(m);
+    assert.ok(at('id="live-market"')<at('id="my-char"')&&at('id="my-char"')<at('home-tools')&&at('home-tools')<at('data-dir-link'));
+  }
   assert.match(en,/<title>GMS Hub: MapleStory Classic World \(MSCW\) Drops/);
 });
 test('equipment finder lists obtainable gear per class with stats and where to get it',()=>{

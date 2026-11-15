@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest.",
  "updates": [
   {
+   "id": "my-character-home",
+   "version": "0.6.0",
+   "level": "minor",
+   "date": "2026-11-15",
+   "path": "/",
+   "ko": "내 캐릭터 맞춤 홈 — 직업·레벨을 고르면 사냥터·퀘스트·장비·스킬 순서가 한 번에",
+   "en": "Your character home — pick class and level for training spots, quests, gear and skill order",
+   "desc": {
+    "ko": "홈에서 직업과 레벨을 고르면 지금 갈 사냥터, 경험치 퀘스트, 낄 수 있는 장비와 시세, 스킬 찍는 순서가 바로 나와요. 레벨은 +/−로 바로 바꿀 수 있고, 다른 사이트 모음은 별도 페이지로 옮겼어요.",
+    "en": "Pick your class and level on the home page to see where to train, the best EXP quests, gear you can wear with prices, and your skill order. Change the level with +/− at any time; the site directory now has its own page."
+   }
+  },
+  {
    "id": "page-guides",
    "version": "0.5.4",
    "level": "patch",

@@ -64,3 +64,9 @@
 `discord_click`(`place`: `header`·`footer`·`menu`·`contact`·`search-empty`(검색 결과 없음)·`market-empty`(시세 검색 결과 없음)·`bot-install`(봇 페이지의 디스코드에 추가)·`bot-page`): 디스코드 초대 링크를 누를 때 보내요. 링크 주소는 `site.config.json`의 `discord`예요.
 
 `support_click`(`platform`: `toss`·`kakaopay`·`kofi`·`footer`(맨 아래 "서버비 후원" → 문의 페이지 #support)): 후원 버튼을 누를 때 보내요. 후원 링크는 `site.config.json`의 `support`이고, 빈 값은 버튼이 안 보여요.
+
+홈 "내 캐릭터" 칸 (직업·레벨은 `localStorage`의 `gms-char` 키에만 저장돼요):
+- `my_char_save`(`job`, `level`): 처음 직업·레벨을 저장할 때.
+- `my_char_change`(`field`: `job`·`level`·`level_up`·`level_down`, `job`, `level`): 칸 위의 직업 선택이나 레벨 −/+/입력으로 바꿀 때. 숫자 입력은 0.4초 멈춘 뒤 한 번만 보내요.
+- `my_char_click`(`kind`: `route`·`finder`·`class`·`quest`·`quests`·`gear`·`equipment`·`skills`, `item_id`(장비), `job`, `level`): 칸 안의 링크를 누를 때. 사냥터 카드는 기존 `my_char_route_click`(`route_id`)도 같이 보내요.
+- `home_directory_open`: 홈 맨 아래 "다른 사이트 모음" 카드를 눌러 /sites/로 갈 때. 사이트 목록은 2026-11-15부터 /sites/ 페이지(검색엔진 제외)에 있고, 즐겨찾기·추천·용도 필터는 그 페이지에서 그대로 기록돼요. 예전 홈 주소(#community 등)는 /sites/의 같은 칸으로 넘어가요.

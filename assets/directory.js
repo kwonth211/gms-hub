@@ -1,0 +1,160 @@
+// /sites/: the site directory that used to sit on the home page. Purpose buttons filter the categories, stars keep
+// favorites in this browser, and the shared upvotes come from the worker. Behaviour is unchanged from the home version.
+const main = document.querySelector('.dir-main');
+const favSection = document.getElementById('favorites');
+const favCards = document.getElementById('fav-cards');
+const favToc = document.getElementById('fav-toc');
+const originals = [...document.querySelectorAll('[data-cat] .site-card')];
+const FAV_KEY = 'gmshub_favs';
+const filterBar = document.getElementById('filter-bar');
+const track = (name, params) => window.track?.(name, params);
+let activeCat = null;
+
+// Favorites live only in this browser; storage can be unavailable (private mode), so fail soft.
+function loadFavs() {
+  try {
+    const v = JSON.parse(localStorage.getItem(FAV_KEY) || '[]');
+    return Array.isArray(v) ? v : [];
+  } catch (e) {
+    return [];
+  }
+}
+function saveFavs(list) {
+  try {
+    localStorage.setItem(FAV_KEY, JSON.stringify(list));
+  } catch (e) {}
+}
+let favs = loadFavs();
+
+function syncButtons() {
+  document.querySelectorAll('.fav').forEach((btn) => {
+    const on = favs.includes(btn.dataset.url);
+    btn.setAttribute('aria-pressed', String(on));
+    btn.textContent = on ? '★' : '☆';
+    btn.title = on ? main.dataset.favRemove : main.dataset.favAdd;
+  });
+}
+
+function filter() {
+  document.querySelectorAll('[data-cat]').forEach((cat) => {
+    cat.hidden = !!activeCat && cat.id !== activeCat;
+  });
+  favSection.hidden = !!activeCat || !favCards.children.length;
+}
+
+function renderFavs() {
+  favCards.innerHTML = '';
+  // Keep the order the user starred them in.
+  favs.forEach((url) => {
+    const card = originals.find((c) => c.dataset.url === url);
+    if (card) favCards.appendChild(card.cloneNode(true));
+  });
+  const n = favCards.children.length;
+  favSection.hidden = n === 0;
+  favToc.hidden = n === 0;
+  document.getElementById('fav-count').textContent = n;
+  document.getElementById('fav-count-2').textContent = n;
+  syncButtons();
+  filter();
+}
+
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.fav');
+  if (!btn) return;
+  const url = btn.dataset.url;
+  const adding = !favs.includes(url);
+  favs = adding ? [...favs, url] : favs.filter((u) => u !== url);
+  track(adding ? 'favorite_add' : 'favorite_remove', { site_id: btn.closest('.site-card')?.dataset.id });
+  saveFavs(favs);
+  renderFavs();
+});
+
+function setCategory(id) {
+  activeCat = activeCat === id ? null : id;
+  if (activeCat) track('filter_category', { category: activeCat });
+  document.querySelectorAll('.purpose').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === activeCat)));
+  document.querySelectorAll('.toc a[href^="#"]').forEach((a) => a.classList.toggle('active', a.getAttribute('href') === `#${activeCat}`));
+  filterBar.hidden = !activeCat;
+  if (activeCat) {
+    const name = document.getElementById(activeCat).dataset.name;
+    document.getElementById('filter-label').textContent = main.dataset.filtering.replace('{name}', name);
+  }
+  filter();
+}
+
+document.querySelectorAll('.purpose').forEach((b) => b.addEventListener('click', () => setCategory(b.dataset.filter)));
+document.getElementById('filter-clear').addEventListener('click', () => setCategory(activeCat));
+// The sidebar points at sections a category filter may have hidden; reveal the target instead of doing nothing.
+document.querySelectorAll('.toc a[href^="#"]').forEach((a) =>
+  a.addEventListener('click', () => {
+    const target = document.getElementById(a.getAttribute('href').slice(1));
+    if (target?.hidden && activeCat) setCategory(activeCat);
+  })
+);
+
+renderFavs();
+
+// Shared upvotes (Cloudflare Worker + D1). Hidden unless the build configured an API.
+const voteApi = main.dataset.voteApi;
+const VOTED_KEY = 'gmshub_voted';
+function loadVoted() {
+  try {
+    return JSON.parse(localStorage.getItem(VOTED_KEY) || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+let voted = loadVoted();
+let counts = {};
+
+// Most-recommended first within each category; ties keep the curated order.
+// Runs once on load only, so cards don't jump under the cursor right after a click.
+function sortByVotes() {
+  document.querySelectorAll('[data-cat] .cards').forEach((list) => {
+    const cards = [...list.children];
+    cards
+      .map((c, i) => ({ c, i, n: counts[c.dataset.id] || 0 }))
+      .sort((a, b) => b.n - a.n || a.i - b.i)
+      .forEach(({ c }) => list.appendChild(c));
+  });
+}
+
+function paintVotes() {
+  document.querySelectorAll('.vote').forEach((btn) => {
+    const id = btn.dataset.site;
+    // Newly added links may be published before their vote ID is registered.
+    btn.hidden = !Object.hasOwn(counts, id);
+    // An empty count reads better than a row of zeros on a young site.
+    btn.querySelector('b').textContent = counts[id] || '';
+    btn.setAttribute('aria-pressed', String(voted.includes(id)));
+  });
+}
+
+if (voteApi) {
+  fetch(`${voteApi}/votes`)
+    .then((r) => (r.ok ? r.json() : {}))
+    .then((data) => {
+      counts = data;
+      sortByVotes();
+      paintVotes();
+    })
+    .catch(() => {});
+
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.vote');
+    if (!btn || voted.includes(btn.dataset.site)) return;
+    const id = btn.dataset.site;
+    voted = [...voted, id];
+    track('recommend', { site_id: id });
+    try {
+      localStorage.setItem(VOTED_KEY, JSON.stringify(voted));
+    } catch (err) {}
+    counts[id] = (counts[id] || 0) + 1;
+    paintVotes();
+    try {
+      const r = await fetch(`${voteApi}/vote`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ site: id }) });
+      if (r.ok) counts[id] = (await r.json()).count;
+    } catch (err) {}
+    paintVotes();
+  });
+}
