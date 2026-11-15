@@ -3004,7 +3004,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 .skel-offers li { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; }
 @keyframes skel-shine { from { background-position: 100% 0; } to { background-position: -100% 0; } }
 /* What replaces a placeholder fades in instead of snapping into place. */
-@keyframes mb-in { from { opacity: 0; transform: translateY(3px); } }
+@keyframes mb-in { from { opacity: 0; } }
 #mk-detail :is(#mb-history, #mb-facts, #md-rows, #mb-info, #mb-megas, #mk-charts) > :not(.skel-wrap), #mb-results > :not(.skel-wrap) { animation: mb-in 0.22s ease-out both; }
 #md-rows[aria-busy="true"] > :not(.skel-wrap) { opacity: 0.55; transition: opacity 0.15s; }
 @media (prefers-reduced-motion: reduce) { .skel { animation: none; } #mk-detail :is(#mb-history, #mb-facts, #md-rows, #mb-info, #mb-megas, #mk-charts) > * { animation: none; } }
@@ -3136,3 +3136,12 @@ body.exp-running .exp-stop { display: inline-flex; }
   .dc-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (prefers-reduced-motion: reduce) { .bp-btn, .bp-cmd { transition: none; } .bp-btn:hover, .bp-cmd:hover { transform: none; } .dc-embed.is-in > * { animation: none; } }
+
+/* Item panel gate (market.js panelWait): one placeholder until the price summary and listings are both in, then the
+   whole panel at once, fading in place without moving. */
+#mk-detail[data-ready="0"] > :not(.mk-head):not(.mb-wait):not(.mb-share-status) { display: none; }
+#mk-detail:not([data-ready="0"]) > .mb-wait { display: none; }
+.mb-wait { display: grid; gap: 14px; }
+#mk-detail[data-ready="1"] > :not(.mk-head):not(.mb-wait) { animation: mb-in 0.2s ease-out both; }
+#mk-detail[data-ready="1"] :is(#mb-history, #mb-facts, #md-rows, #mb-info, #mb-megas, #mk-charts) > * { animation: none; }
+@media (prefers-reduced-motion: reduce) { #mk-detail[data-ready="1"] > * { animation: none; } }

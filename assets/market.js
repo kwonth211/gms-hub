@@ -254,6 +254,24 @@ const SK = {
   offers: (n = 6) => `<ul class="skel-wrap skel-offers" aria-hidden="true">${Array.from({ length: n }, () => `<li><span class="skel" style="width:22%;height:14px"></span><span class="skel" style="width:18%;height:14px"></span><span class="skel" style="width:16%;height:14px;margin-left:auto"></span></li>`).join("")}</ul>`,
   block: (h) => `<div class="skel-wrap" aria-hidden="true"><span class="skel skel-block" style="height:${h}px"></span></div>`,
 };
+// The item panel waits until its price summary and first listings are in, then shows everything in one go instead of
+// parts popping in and pushing each other down (2026-11-15, owner). A full-panel placeholder holds the space meanwhile;
+// after 2.5 s the panel shows whatever has arrived.
+let readyParts = new Set(), readyTimer = 0;
+function panelWait() {
+  readyParts = new Set();
+  clearTimeout(readyTimer);
+  $("mk-detail").dataset.ready = "0";
+  readyTimer = setTimeout(() => ($("mk-detail").dataset.ready = "1"), 2500);
+}
+function panelPart(part, id) {
+  if (id !== selected) return;
+  readyParts.add(part);
+  if (readyParts.has("history") && readyParts.has("rows")) {
+    clearTimeout(readyTimer);
+    $("mk-detail").dataset.ready = "1";
+  }
+}
 function offerCards(rows) {
   lastOffers = rows;
   if (!rows.length)
@@ -674,8 +692,9 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
   if ($("mb-alert")) $("mb-alert").hidden = true;
   fillItemInfo(id);
   fillMegaphones(id);
+  panelWait();
   $("mk-detail").innerHTML =
-    `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(it.name)}</h2><small>${esc(it.en)}</small></div>${starButton(id, "mb-star-detail")}${D.alerts || document.body.dataset.discordUrl ? `<button type="button" class="btn ghost small-btn" data-alert-open="${id}">🔔 ${tr("가격 알림", "Price alert")}</button>` : ""}${pageLink}<button class="btn ghost small-btn" data-share-item="${id}" title="${tr("이 아이템 링크 복사", "Copy a link to this item")}">${tr("링크 복사", "Copy link")}</button><button class="btn ghost small-btn" data-close-item aria-label="${tr("상세 닫기", "Close details")}">×</button></header><p class="share-status mb-share-status" id="mb-share-status" role="status" aria-live="polite"></p><section class="mb-alert" id="mb-alert" hidden></section><section class="mb-history" id="mb-history" aria-label="${tr("가격 한눈에 보기", "Price at a glance")}" aria-busy="true">${SK.history()}</section>${stats}<section class="mb-info mb-facts" id="mb-facts">${SK.facts()}</section>${changed || reset ? visitNote(id) : ""}
+    `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(it.name)}</h2><small>${esc(it.en)}</small></div>${starButton(id, "mb-star-detail")}${D.alerts || document.body.dataset.discordUrl ? `<button type="button" class="btn ghost small-btn" data-alert-open="${id}">🔔 ${tr("가격 알림", "Price alert")}</button>` : ""}${pageLink}<button class="btn ghost small-btn" data-share-item="${id}" title="${tr("이 아이템 링크 복사", "Copy a link to this item")}">${tr("링크 복사", "Copy link")}</button><button class="btn ghost small-btn" data-close-item aria-label="${tr("상세 닫기", "Close details")}">×</button></header><p class="share-status mb-share-status" id="mb-share-status" role="status" aria-live="polite"></p><div class="mb-wait" aria-hidden="true">${SK.history()}${SK.facts()}${SK.offers()}</div><section class="mb-alert" id="mb-alert" hidden></section><section class="mb-history" id="mb-history" aria-label="${tr("가격 한눈에 보기", "Price at a glance")}" aria-busy="true">${SK.history()}</section>${stats}<section class="mb-info mb-facts" id="mb-facts">${SK.facts()}</section>${changed || reset ? visitNote(id) : ""}
  <div class="mb-tabs" role="tablist" aria-label="${tr("아이템 상세", "Item details")}"><button data-detail-tab="listings" role="tab" aria-selected="${detailTab === "listings"}" aria-controls="mb-detail-listings">${tr("판매 매물", "Shop listings")}</button><button data-detail-tab="charts" role="tab" aria-selected="${detailTab === "charts"}" aria-controls="mb-detail-charts">${tr("가격 추이·매물대", "Trends & depth")}</button><button class="mb-detail-refresh" data-refresh-item>${tr("새로고침", "Refresh")}</button></div>
  <div id="mb-detail-listings" role="tabpanel" aria-label="${tr("판매 매물", "Shop listings")}"><p class="muted note">${T.whereNote}</p><div class="mb-detail-filters"><label id="md-opt-wrap" hidden>${tr("옵션", "Option")}<select id="md-opt"></select></label><label>${tr("정렬", "Sort")}<select id="md-sort"><option value="price">${T.sortPrice}</option><option value="recent">${T.sortRecent}</option><option value="high">${tr("높은 가격순", "Highest price")}</option></select></label><label>${tr("상태", "Status")}<select id="md-state"><option value="open">${tr("판매 중 · 24h", "Asking · 24h")}</option><option value="all">${tr("전체 기록 · 7일", "All records · 7d")}</option><option value="sold">${tr("판매 완료 표시", "Marked sold")}</option><option value="stale">${tr("24시간 경과", "Over 24h old")}</option></select></label></div><div class="price-band-filter" id="md-price-band" hidden><span></span><button class="btn ghost small-btn" data-clear-band>${tr("가격대 해제", "Clear price band")}</button></div><p id="md-count" class="muted note" role="status"></p><div id="md-rows">${SK.offers()}</div><div id="md-pages" class="mb-pagination"></div></div>
  <div id="mb-detail-charts" role="tabpanel" aria-label="${tr("가격 추이와 매물대", "Trends and depth")}"><div id="mk-charts">${SK.block(260)}</div></div>
@@ -710,6 +729,7 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
     if (seq !== detailSeq) return;
     priceData = data;
     renderDaily();
+    panelPart("history", id);
     if ((data.profile || []).some((r) => r.opts)) loadTips().then(() => { if (priceData === data) fillOptMenu(id); });
     // Consumables and cash items that no shop scan covers take their asking price from megaphones (/prices basis "mega").
     if (!(data.profile || []).length) get(`/prices?ids=${id}`).then((p) => { if (priceData === data && p?.[id]?.mega) { data.megaAsk = p[id].mega; renderDaily(); } }).catch(() => null);
@@ -743,7 +763,7 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
       },
     });
   } catch (e) {
-    if (e.name !== "AbortError" && seq === detailSeq) $("mb-history").innerHTML = "";
+    if (e.name !== "AbortError" && seq === detailSeq) { $("mb-history").innerHTML = ""; panelPart("history", id); }
     if (e.name !== "AbortError" && seq === detailSeq)
       $("mk-charts").innerHTML =
         `<p>${T.failed}</p><button class="btn small-btn" data-refresh-item>${T.retry}</button>`;
@@ -808,6 +828,7 @@ async function loadDetailRows() {
       `${data.total} matching listings · ${ago(data.asOf)}`,
     );
     $("md-rows").innerHTML = offerCards(data.rows);
+    panelPart("rows", id);
     $("md-pages").innerHTML = pager(data, "detail");
     if (sf && lastStatTrack !== `${id}:${sf.value}`) {
       lastStatTrack = `${id}:${sf.value}`;
@@ -820,6 +841,7 @@ async function loadDetailRows() {
     }
   } catch {
     if (seq === detailListSeq && id === selected) {
+      panelPart("rows", id);
       $("md-rows").innerHTML =
         `<p>${T.failed}</p><button class="btn small-btn" data-retry-detail>${T.retry}</button>`;
       $("md-count").textContent = "";
