@@ -162,7 +162,9 @@ export async function megaphoneStats(env, now = Date.now()) {
     items: day.map((r) => ({ ...r, before: before.get(r.item) || 0 })),
     trending,
     // Items more wanted than offered (at least 3 buyers): a demand signal the shops cannot show.
-    wanted: day.filter((r) => r.buy >= 3 && r.buy > r.sell).sort((a, b) => b.buy - a.buy).slice(0, 10),
+    // Taken from every item named today, not only the 40 most named: buyers mostly call for cheap, rarely sold things
+    // (that cut left just the same two items for days).
+    wanted: [...items.values()].filter((r) => r.buy >= 3 && r.buy > r.sell).sort((a, b) => b.buy - a.buy || (b.buy - b.sell) - (a.buy - a.sell) || a.item - b.item).slice(0, 10).map((r) => ({ ...r, before: before.get(r.item) || 0 })),
     hourly: [...hours].sort((a, b) => a[0].localeCompare(b[0])).map(([h, c]) => ({ h, n: c })),
     callers: [...callers.values()].sort((a, b) => b.n - a.n).slice(0, 10).map((c) => ({ nick: c.nick, n: c.n, items: c.set.size })),
   };

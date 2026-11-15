@@ -23,8 +23,8 @@
    "ko": "지금 뜨는 아이템 — 요즘 갑자기 많이 외치는 아이템 순으로",
    "en": "Trending items — what's suddenly being called more",
    "desc": {
-    "ko": "지금 뜨는 아이템이 하루 내내 많이 외친 아이템 대신, 최근 6시간 동안 평소보다 많이 외친 아이템 순으로 바뀌어요. 1시간마다 새로 계산해요.",
-    "en": "Trending now ranks items called more than usual in the last 6 hours, instead of the same all-day staples. It refreshes every hour."
+    "ko": "지금 뜨는 아이템이 하루 내내 많이 외친 아이템 대신, 최근 6시간 동안 평소보다 많이 외친 아이템 순으로 바뀌어요. 1시간마다 새로 계산해요. 사려는 사람이 더 많은 아이템도 많이 외친 아이템만이 아니라 모든 아이템에서 골라요.",
+    "en": "Trending now ranks items called more than usual in the last 6 hours, instead of the same all-day staples. It refreshes every hour. More-buyers-than-sellers now looks at every item called, not only the most called ones."
    }
   },
   {
