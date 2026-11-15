@@ -333,7 +333,7 @@ document.querySelectorAll('[data-mg-view]').forEach((group) => group.addEventLis
     f.text.placeholder = v === 'talk' ? tr('하고 싶은 말 (예: 장공 시세 왜 이래요?)', 'Say something (e.g. who is buying gloves?)') : tr('한마디 (선택, 예: 1개 급처)', 'A short note (optional)');
   };
   setIntent('sell');
-  form.addEventListener('click', (e) => { const b = e.target.closest('[data-intent]'); if (b) { setIntent(b.dataset.intent); (b.dataset.intent === 'talk' ? f.text : f.item).focus(); } });
+  form.addEventListener('click', (e) => { const b = e.target.closest('button[data-intent]'); if (b) { setIntent(b.dataset.intent); (b.dataset.intent === 'talk' ? f.text : f.item).focus(); } });
 
   // Item search: the site search's matching, so Korean shorthand (장공), initials and English names all work; at most 8.
   let entries = null;
@@ -385,6 +385,7 @@ document.querySelectorAll('[data-mg-view]').forEach((group) => group.addEventLis
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (intent !== 'talk' && f.item.value.trim() && !itemId) { const m = matches(f.item.value)[0]; if (m && (m.ko === f.item.value.trim() || m.en.toLowerCase() === f.item.value.trim().toLowerCase())) itemId = m.id; else { f.status.textContent = ERR.item(); f.item.focus(); return; } }
+    if (!/^[A-Za-z0-9]{2,13}$/.test(f.nick.value.trim())) { f.status.textContent = ERR.nick(); f.nick.focus(); return; }
     const body = { nick: f.nick.value.trim(), intent, item: intent === 'talk' ? null : itemId, price: intent === 'talk' ? null : f.price.value.trim() || null, text: f.text.value.trim(), channel: f.ch.value ? Number(f.ch.value) : null };
     f.send.disabled = true;
     f.status.textContent = '';

@@ -1,3 +1,4 @@
+import { spriteSvg } from './sprites.mjs';
 // Live megaphones, read from the game by the admin collector; assets/megaphone.js fills the feed.
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const nf = (n) => new Intl.NumberFormat('en-US').format(n);
@@ -54,13 +55,13 @@ function freeComposer(ko) {
   return `<form class="fm-form" id="fm-form" autocomplete="off" aria-label="${t('무료 고확 쏘기', 'Send a free megaphone')}">
 <div class="fm-bar">
 <span class="fm-badge">${t('무료 고확', 'Free mega')}</span>
+<label class="fm-nick-wrap"><span class="fm-nick-label">${t('내 닉네임', 'My name')}</span><input id="fm-nick" class="fm-nick" maxlength="13" placeholder="${t('게임 닉네임', 'Game name')}" title="${t('귓말 받을 게임 닉네임', 'Your game name, for whispers')}" spellcheck="false" autocapitalize="off"></label>
 <div class="fm-types" role="group" aria-label="${t('종류', 'Kind')}"><button type="button" data-intent="sell" aria-pressed="true">${t('팝니다', 'Selling')}</button><button type="button" data-intent="buy" aria-pressed="false">${t('삽니다', 'Buying')}</button><button type="button" data-intent="talk" aria-pressed="false">${t('한마디', 'Chat')}</button></div>
 <div class="fm-item-wrap fm-trade"><input id="fm-item" class="fm-item" placeholder="${t('아이템 이름', 'Item name')}" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="fm-suggest" aria-label="${t('아이템', 'Item')}"><ul id="fm-suggest" class="fm-suggest" role="listbox" hidden></ul></div>
 <input id="fm-price" class="fm-price-in fm-trade" placeholder="${t('가격 (예: 300만)', 'Price (e.g. 3m)')}" aria-label="${t('가격', 'Price')}" maxlength="14">
 <input id="fm-text" class="fm-text" maxlength="80" placeholder="${t('한마디 (선택, 예: 1개 급처)', 'A short note (optional)')}" aria-label="${t('한마디', 'Note')}">
-<input id="fm-nick" class="fm-nick" maxlength="13" placeholder="${t('게임 닉네임', 'Game name')}" aria-label="${t('게임 닉네임 (귓말 받을 이름)', 'Game name (for whispers)')}" spellcheck="false" autocapitalize="off">
 <input id="fm-ch" class="fm-ch" type="number" min="1" max="40" inputmode="numeric" placeholder="CH" aria-label="${t('채널 (선택)', 'Channel (optional)')}">
-<button type="submit" class="btn fm-send" id="fm-send">${t('쏘기', 'Send')}</button>
+<button type="submit" class="btn fm-send" id="fm-send">${spriteSvg('megaphone', 18)}<span>${t('쏘기', 'Send')}</span></button>
 </div>
 <p class="fm-rules muted small"><span id="fm-status" class="fm-status" role="status" aria-live="polite"></span> ${t('무료 고확은 24시간 동안 떠 있고 2분에 한 번 쏠 수 있어요. 현금 거래, 링크, 연락처는 올릴 수 없어요. 신고가 3번 쌓이면 숨겨져요.', 'Free megaphones stay up for 24 hours, one every 2 minutes. No real-money trades, links or contact handles. Three reports hide a post.')}</p>
 </form>`;

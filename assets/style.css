@@ -2961,9 +2961,14 @@ body.exp-running .exp-stop { display: inline-flex; }
 .fm-item { width: 100%; }
 .fm-price-in { flex: 0.8 1 110px; }
 .fm-text { flex: 2 1 160px; }
-.fm-nick { flex: 0.9 1 110px; }
+.fm-nick-wrap { display: flex; align-items: center; flex: 0.9 1 150px; min-width: 130px; border-radius: 999px; background: var(--panel-2); border: 1px solid transparent; }
+.fm-nick-wrap:focus-within { border-color: var(--accent-fill); background: var(--panel); }
+.fm-nick-label { flex: none; padding: 0 0 0 12px; font-size: 0.74rem; font-weight: 800; color: var(--text-2); white-space: nowrap; }
+.fm-bar .fm-nick-wrap input { flex: 1; width: 100%; background: transparent; border: 0; padding-left: 6px; font-weight: 700; }
+.fm-bar .fm-nick-wrap input:focus { background: transparent; }
 .fm-ch { flex: 0 0 64px; width: 64px; }
-.fm-send { flex: none; border-radius: 999px; padding: 6px 16px; }
+.fm-send { flex: none; display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 6px 16px; }
+.fm-send .sprite { flex: none; }
 .fm-form[data-intent='talk'] .fm-trade { display: none; }
 .fm-form[data-intent='talk'] .fm-text { flex-grow: 4; }
 .fm-suggest { position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none; background: var(--panel); border: 1px solid var(--line-strong); border-radius: 10px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16); max-height: 280px; overflow-y: auto; }
@@ -2979,5 +2984,6 @@ body.exp-running .exp-stop { display: inline-flex; }
   .fm-bar { border-radius: 16px; }
   .fm-badge { order: -2; }
   .fm-types { order: -1; }
+  .fm-nick-wrap { order: -1; flex-basis: 100%; }
   .fm-send { margin-left: auto; }
 }
