@@ -1,6 +1,20 @@
 {
- "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest.",
+ "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
+  {
+   "id": "item-options",
+   "version": "0.7.0",
+   "level": "minor",
+   "highlight": true,
+   "date": "2026-11-15",
+   "path": "/tools/market/",
+   "ko": "장비 옵션 — 상옵·하옵·추옵, 작 성공·실패, 업횟까지 매물마다",
+   "en": "Equipment options — above/below base, extra stats, scroll passes and slots on every listing",
+   "desc": {
+    "ko": "시세에서 장비를 열면 상점 매물마다 실제 옵션이 보여요. 기본 능력치보다 높으면 상옵, 낮으면 하옵, 기본에 없는 능력치는 추옵으로 표시하고, +N(작 성공), 실패 횟수, 남은 업그레이드 횟수도 함께 보여 줘요. 옵션이 다른 매물이 여럿이면 옵션별 최저가도 정리해 줘요.",
+    "en": "Open a piece of gear in the market and each shop listing shows its real options: above or below the base stats, extra stats the base item lacks, the +N from passed scrolls, failed scrolls and upgrades left. When listings differ, the lowest price for each option set is listed too."
+   }
+  },
   {
    "id": "my-character-all",
    "version": "0.6.7",

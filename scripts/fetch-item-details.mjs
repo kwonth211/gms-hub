@@ -3,7 +3,12 @@
 // Run by hand after a game patch or after new drops/prices: node scripts/fetch-item-details.mjs
 import { readFileSync, writeFileSync } from 'node:fs';
 
-const API = `https://maplestory.io/api/MCW/${process.argv[2] || '1'}`;
+// Usage: node scripts/fetch-item-details.mjs [version] [--ids file]  (file: comma-separated item ids to add, e.g. gear
+// seen in shop listings, whose base stats the option chips compare against)
+const args = process.argv.slice(2);
+const idsAt = args.indexOf('--ids');
+const extraIds = idsAt >= 0 ? readFileSync(args.splice(idsAt, 2)[1], 'utf8').split(',').map(Number).filter(Boolean) : [];
+const API = `https://maplestory.io/api/MCW/${args[0] || '1'}`;
 const read = (f) => JSON.parse(readFileSync(new URL(`../data/${f}`, import.meta.url), 'utf8'));
 
 async function get(path) {
@@ -32,6 +37,9 @@ for (const m of read('monsters.json').monsters) for (const d of m.drops) ids.add
 for (const id of Object.keys(read('item-prices.json').prices || {})) ids.add(Number(id));
 // Quest rewards too, so the equipment finder can list gear you earn from a quest.
 for (const q of read('quests-raw.json').quests) for (const i of q.rewardOnComplete?.items || []) if (i.count > 0) ids.add(i.id);
+// Items already on file stay on file (gear added earlier from listings), plus any ids passed with --ids.
+for (const id of Object.keys(read('item-details.json').items)) ids.add(Number(id));
+for (const id of extraIds) ids.add(id);
 const known = new Set(read('items.json').items.map((i) => i.id));
 const list = [...ids].filter((id) => known.has(id)).sort((a, b) => a - b);
 

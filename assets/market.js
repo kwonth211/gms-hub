@@ -230,22 +230,53 @@ const OPT_LABEL = ko
   : { PAD: "ATT", MAD: "M.ATT", STR: "STR", DEX: "DEX", INT: "INT", LUK: "LUK", ACC: "ACC", EVA: "AVOID", MHP: "HP", MMP: "MP", PDD: "DEF", MDD: "M.DEF", Speed: "SPEED", Jump: "JUMP", CRT: "CRIT", CRD: "C.DMG" };
 const optStats = (o) => OPT_ORDER.filter((k) => o?.stats?.[k] != null).map((k) => [k, o.stats[k]]);
 // Short text for grouping and the summary: "공 9 · 클린".
-const optKey = (o) => [...optStats(o).map(([k, v]) => `${OPT_LABEL[k]} ${v}`), o?.clean ? tr("클린", "clean") : ""].filter(Boolean).join(" · ");
+const optKey = (o) => [o?.ups > 0 ? `+${o.ups}` : "", ...optStats(o).map(([k, v]) => `${OPT_LABEL[k]} ${v}`), o?.clean ? tr("클린", "clean") : ""].filter(Boolean).join(" · ");
+// Upgrades: left / total, passed ("+N" after the name in game) and failed. "used" may be missing; the base slot count
+// then fills it (base - left), which holds unless the item was hammered.
+function optUpgrades(o, baseSlots) {
+  const used = o.used ?? (baseSlots != null && o.slots != null && baseSlots >= o.slots ? baseSlots - o.slots : null);
+  const fails = used != null && o.ups != null ? used - o.ups : null;
+  return { used, fails, total: baseSlots ?? (o.slots != null && used != null ? o.slots + used : null) };
+}
+// Drop roll for clean gear: the sum of differences from the base values on the stats the item has by default.
+// Scrolled gear mixes scroll stats in, so it gets no roll grade.
+function optGrade(o, base) {
+  if (!o.clean) return null;
+  const keys = Object.keys(base).filter((k) => o.stats?.[k] != null);
+  if (!keys.length) return null;
+  return keys.reduce((a, k) => a + (o.stats[k] - base[k]), 0);
+}
 function optionChips(r) {
   const o = r.opts;
   if (!o) return "";
-  const base = tips?.items?.[r.item]?.[7] || {}, baseSlots = tips?.items?.[r.item]?.[8];
-  const chips = optStats(o).map(([k, v]) => {
+  const t = tips?.items?.[r.item];
+  // Some gear has no stats in the game data we hold ({} and 0 slots): then show the values as they are, no comparison.
+  const known = !!(t?.[7] && Object.keys(t[7]).length);
+  const base = known ? t[7] : {}, baseSlots = known && t[8] ? t[8] : null;
+  const chips = [];
+  const up = optUpgrades(o, baseSlots);
+  const grade = optGrade(o, base);
+  // Headline first: the "+N" a player sees after the item name, then the roll grade for clean gear.
+  if (o.ups > 0) chips.push(`<span class="mb-opt plus" title="${esc(tr(`주문서 ${o.ups}번 성공`, `${o.ups} scrolls passed`))}">+${o.ups}</span>`);
+  if (grade != null) {
+    const g = grade > 0 ? ["hi", tr(`상옵 +${grade}`, `Above base +${grade}`)] : grade < 0 ? ["lo", tr(`하옵 ${grade}`, `Below base ${grade}`)] : ["mid", tr("기본옵", "Base roll")];
+    chips.push(`<span class="mb-opt grade ${g[0]}" title="${esc(tr("기본 능력치와 비교한 드롭 옵션 합계 (작 안 한 장비)", "Sum of differences from the base stats (unscrolled gear)"))}">${g[1]}</span>`);
+  }
+  for (const [k, v] of optStats(o)) {
     const b = base[k], d = b != null ? v - b : null;
-    // Above or below the game's base value: for clean gear that is the roll ("상옵/하옵"); scrolled gear adds scroll stats.
-    const cls = d > 0 ? " up" : d < 0 ? " down" : "";
-    const title = b != null ? tr(`기본 ${b}`, `base ${b}`) : tr("기본값 없음 (주문서로 붙은 능력치)", "not on the base item (from scrolls)");
-    return `<span class="mb-opt${cls}" title="${esc(title)}">${esc(OPT_LABEL[k])} ${v}${d ? `<small>${d > 0 ? "+" : ""}${d}</small>` : b == null ? "<small>+</small>" : ""}</span>`;
-  });
+    // Above or below the game's base value: for clean gear that is the roll; scrolled gear adds scroll stats.
+    const cls = !known ? "" : b == null ? " extra" : d > 0 ? " up" : d < 0 ? " down" : "";
+    const title = !known ? "" : b != null
+      ? tr(`기본 ${b} → ${v} (${d > 0 ? "+" : ""}${d})`, `base ${b} → ${v} (${d > 0 ? "+" : ""}${d})`)
+      : o.clean ? tr("기본에 없는 추가 옵션", "Extra stat not on the base item") : tr("기본에 없는 능력치 (주문서 또는 추가 옵션)", "Not on the base item (scrolls or extra stat)");
+    const note = !known ? "" : b == null ? `<small>${tr("추옵", "extra")}</small>` : d ? `<small>${d > 0 ? "▲" : "▼"}${Math.abs(d)}</small>` : "";
+    chips.push(`<span class="mb-opt${cls}" title="${esc(title)}">${esc(OPT_LABEL[k])} ${v}${note}</span>`);
+  }
   if (o.clean) chips.push(`<span class="mb-opt clean">${tr("클린", "Clean")}</span>`);
-  // Passed upgrades, the "(+N)" after the item name in game; next to the used count it also tells the fails.
-  if (o.ups != null && (o.ups > 0 || o.used > 0)) chips.push(`<span class="mb-opt${o.ups > 0 ? " up" : ""}" title="${esc(tr("주문서 성공 횟수", "Scrolls that passed"))}">${tr("성공", "Passed")} ${o.ups}${o.used != null ? `/${o.used}` : ""}</span>`);
-  if (o.slots != null) chips.push(`<span class="mb-opt">${tr("업횟", "Slots")} ${o.slots}${baseSlots ? `/${baseSlots}` : ""}</span>`);
+  // Upgrades: "업횟 5/7", then passed and failed when any were used.
+  if (o.slots != null) chips.push(`<span class="mb-opt slots" title="${esc(tr("남은 업그레이드 가능 횟수 / 전체", "Upgrades left / total"))}">${tr("업횟", "Slots")} ${o.slots}${up.total != null ? `/${up.total}` : ""}</span>`);
+  if (up.used > 0 && o.ups != null) chips.push(`<span class="mb-opt" title="${esc(tr(`작 ${up.used}번: 성공 ${o.ups} · 실패 ${up.fails}`, `${up.used} scrolls: ${o.ups} passed, ${up.fails} failed`))}">${tr(`성공 ${o.ups} · 실패 ${up.fails}`, `${o.ups} pass · ${up.fails} fail`)}</span>`);
+  else if (up.used > 0) chips.push(`<span class="mb-opt">${tr(`작 ${up.used}번`, `${up.used} used`)}</span>`);
   return chips.length ? `<span class="mb-opts">${chips.join("")}</span>` : "";
 }
 // "Price by option": listings that carry options, grouped by the same options, lowest asking price per group.
@@ -275,7 +306,8 @@ function offerCards(rows) {
     // One line per listing: the dot colour carries how fresh it is (full wording on hover).
     const status = { sold: tr("판매 완료 표시", "Marked sold"), fresh: tr("1시간 안에 확인", "Seen within the hour"), warm: tr("몇 시간 전 확인", "Seen a few hours ago"), old: tr("팔렸을 수도 있어요", "May have sold") }[fresh];
     const tag = r.sold ? `<b class="mb-deal pricey">${tr("판매 완료", "Sold")}</b>` : r25 == null ? "" : r.price < r25 ? `<b class="mb-deal cheap">${tr("싼 편", "Cheap")}</b>` : r.price > r75 ? `<b class="mb-deal pricey">${tr("비싼 편", "Pricey")}</b>` : "";
-    return `<li class="mb-offer ${fresh}"><span class="mb-offer-price"><strong>${money(r.price)}</strong>${r.qty > 1 ? `<small>×${money(r.qty)}</small>` : ""}${tag}</span>${optionChips(r)}<button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)}</button><span class="mb-fresh" title="${esc(status)}"><i aria-hidden="true"></i>${when(r.seen)}<span class="sr-only"> · ${esc(status)}</span></span><span class="mb-offer-where">${placeChips(r)}</span></li>`;
+    const chips = optionChips(r);
+    return `<li class="mb-offer ${fresh}${chips ? " has-opts" : ""}"><span class="mb-offer-price"><strong>${money(r.price)}</strong>${r.qty > 1 ? `<small>×${money(r.qty)}</small>` : ""}${tag}</span>${chips}<button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)}</button><span class="mb-fresh" title="${esc(status)}"><i aria-hidden="true"></i>${when(r.seen)}<span class="sr-only"> · ${esc(status)}</span></span><span class="mb-offer-where">${placeChips(r)}</span></li>`;
   }).join("")}</ul>`;
 }
 function listingTable(rows, { showItem = true, shopButtons = true } = {}) {

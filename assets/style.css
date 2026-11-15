@@ -2155,6 +2155,12 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-opt.up small { color: var(--ok); }
 .mb-opt.down small { color: var(--danger); }
 .mb-opt.clean { border-color: var(--ok-line); color: var(--ok); }
+.mb-opt.extra small { color: var(--accent); }
+.mb-opt.plus { border-color: var(--accent); color: var(--accent); }
+.mb-opt.grade.hi { border-color: var(--up); color: var(--up); }
+.mb-opt.grade.lo { border-color: var(--down); color: var(--down); }
+.mb-offer.has-opts { flex-wrap: wrap; row-gap: 4px; }
+.mb-offer.has-opts .mb-opts { order: 9; flex: 1 1 100%; }
 .mb-optsum { margin: 0 0 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); }
 .mb-optsum h4 { margin: 0 0 6px; font-size: 0.82rem; color: var(--text-2); }
 .mb-optsum ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 4px 12px; }
@@ -2861,3 +2867,10 @@ body.exp-running .exp-stop { display: inline-flex; }
 .mb-workspace.has-selection .mb-ad-mid:not(.on) { height: 0; overflow: hidden; }
 .mb-table tbody tr.mb-ad-gap, .mb-table tbody tr.mb-ad-gap:hover { background: var(--panel); cursor: default; }
 .mb-table tr.mb-ad-gap td { padding: 0; display: table-cell; }
+
+/* Key updates the owner flags ("highlight": true in data/updates.json): a badge and a tinted row. */
+.upd-hl { flex: none; padding: 0 6px; border-radius: 5px; background: var(--accent); color: var(--panel); font-size: 0.7rem; font-weight: 800; white-space: nowrap; }
+.upd-list li.is-hl a { font-weight: 800; color: var(--text); }
+.upd-list li.is-hl { background: var(--warn-soft); border-radius: 8px; }
+.pn-item.is-hl { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent); background: var(--warn-soft); }
+.pn-item.is-hl h3 .upd-hl { margin-right: 6px; }
