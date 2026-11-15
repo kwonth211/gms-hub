@@ -20,7 +20,10 @@ export function priceProfile(rows, maxBins = 8) {
   }));
   const byPrice = new Map();
   for (const r of rows) {
-    bins[Math.floor((r.price - low) / width)].count++;
+    const bin = bins[Math.floor((r.price - low) / width)];
+    bin.count++;
+    // Listings that came with options (market.js / market-charts.js show their stat range per band).
+    if (r.opts) (bin.opts ||= []).push(r.opts);
     byPrice.set(r.price, (byPrice.get(r.price) || 0) + 1);
   }
   let cumulative = 0;

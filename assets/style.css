@@ -2915,3 +2915,4 @@ body.exp-running .exp-stop { display: inline-flex; }
 
 .mb-listings-table .mb-opts { display: flex; margin-top: 4px; }
 .mb-listings-table .mb-cell-price .mb-opts { justify-content: flex-end; }
+.profile-label .profile-opt { flex-basis: 100%; color: var(--accent); font-weight: 700; }

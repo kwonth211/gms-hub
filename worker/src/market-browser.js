@@ -387,14 +387,15 @@ export async function marketHistory(env, p) {
     .sort((a, b) => (a.seen < b.seen ? 1 : a.seen > b.seen ? -1 : a.seller < b.seller ? -1 : a.seller > b.seller ? 1 : a.price - b.price));
   const current = await all(
     env,
-    "SELECT price,qty,sold,seller,channel,room,last_seen AS seen FROM listings WHERE item=? AND sold=0 AND last_seen>=? AND last_seen<=? ORDER BY price ASC,id ASC LIMIT 10001",
+    "SELECT price,qty,sold,seller,channel,room,last_seen AS seen,opts FROM listings WHERE item=? AND sold=0 AND last_seen>=? AND last_seen<=? ORDER BY price ASC,id ASC LIMIT 10001",
     [item, stamp(Date.now() - DAY), end],
   );
   return {
     item,
     rows: rows.slice(0, limit),
     daily: await dailyHistory(env, item),
-    profile: current.slice(0, 10000),
+    // Listing options ride along so the depth bars can show the stat range in each price band.
+    profile: current.slice(0, 10000).map(({ opts, ...r }) => (opts ? { ...r, opts: parseOptions(opts) } : r)),
     truncated: rows.length > limit,
     profileTruncated: current.length > 10000,
     limit,
