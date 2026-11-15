@@ -2180,7 +2180,7 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-optsum li b { margin-left: auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .mb-optsum li small { white-space: nowrap; }
 .mb-optsum li small { color: var(--muted); }
-.mb-offer-price { display: flex; flex-direction: column; align-items: flex-end; min-width: 0; white-space: nowrap; }
+.mb-offer-price { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; white-space: nowrap; }
 .mb-offer-price small { line-height: 1.1; }
 .mb-offer-price strong { font-size: 0.9rem; font-variant-numeric: tabular-nums; }
 .mb-offer-price small { color: var(--muted); font-size: 0.7rem; }
