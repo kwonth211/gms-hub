@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest.",
  "updates": [
   {
+   "id": "mega-trending-rising",
+   "version": "0.6.6",
+   "level": "patch",
+   "date": "2026-11-15",
+   "path": "/megaphone/",
+   "ko": "지금 뜨는 아이템 — 요즘 갑자기 많이 외치는 아이템 순으로",
+   "en": "Trending items — what's suddenly being called more",
+   "desc": {
+    "ko": "지금 뜨는 아이템이 하루 내내 많이 외친 아이템 대신, 최근 6시간 동안 평소보다 많이 외친 아이템 순으로 바뀌어요. 1시간마다 새로 계산해요.",
+    "en": "Trending now ranks items called more than usual in the last 6 hours, instead of the same all-day staples. It refreshes every hour."
+   }
+  },
+  {
    "id": "market-offers-first",
    "version": "0.6.5",
    "level": "patch",

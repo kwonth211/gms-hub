@@ -137,10 +137,30 @@ export async function megaphoneStats(env, now = Date.now()) {
   const from = covered ? kept.from : hourOf(iso(now - 2 * 86400000 + 3600000));
   await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('mega-hours',?,datetime('now'))").bind(JSON.stringify({ from, hours: store })).run().catch(() => null);
   const day = [...items.values()].sort((a, b) => b.n - a.n || a.item - b.item).slice(0, 40);
+  // "Trending": the raw 24-hour count keeps the same staples on top for days, so rank by the last 6 hours against each
+  // item's usual 6 hours (the 42 hours before, from the per-hour store). Smoothed (+5, at least 8 calls) so a 1 -> 4 jump does not top the list.
+  const recentFrom = hourOf(iso(now - 6 * 3600000)), baseFrom = hourOf(twoDays);
+  const recent = new Map(), base = new Map();
+  for (const [h, v] of Object.entries(store)) {
+    if (h < baseFrom) continue;
+    const into = h >= recentFrom ? recent : base;
+    for (const [item, c] of Object.entries(v)) into.set(Number(item), (into.get(Number(item)) || 0) + c);
+  }
+  const baseHours = Math.max(1, Object.keys(store).filter((h) => h >= baseFrom && h < recentFrom).length);
+  const trending = [...recent]
+    .filter(([item, c]) => c >= 8 && items.has(item))
+    .map(([item, c]) => {
+      const usual = ((base.get(item) || 0) * 6) / baseHours;
+      return { ...items.get(item), recent: c, usual: Math.round(usual * 10) / 10, score: (c + 5) / (usual + 5) };
+    })
+    .sort((a, b) => b.score - a.score || b.recent - a.recent)
+    .slice(0, 20)
+    .map(({ score, ...r }) => ({ ...r, before: before.get(r.item) || 0 }));
   return {
     at: new Date(now).toISOString(),
     today: { n, nicks: nicks.size, withItem },
     items: day.map((r) => ({ ...r, before: before.get(r.item) || 0 })),
+    trending,
     // Items more wanted than offered (at least 3 buyers): a demand signal the shops cannot show.
     wanted: day.filter((r) => r.buy >= 3 && r.buy > r.sell).sort((a, b) => b.buy - a.buy).slice(0, 10),
     hourly: [...hours].sort((a, b) => a[0].localeCompare(b[0])).map(([h, c]) => ({ h, n: c })),
