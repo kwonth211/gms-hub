@@ -230,7 +230,7 @@ const OPT_LABEL = ko
   : { PAD: "ATT", MAD: "M.ATT", STR: "STR", DEX: "DEX", INT: "INT", LUK: "LUK", ACC: "ACC", EVA: "AVOID", MHP: "HP", MMP: "MP", PDD: "DEF", MDD: "M.DEF", Speed: "SPEED", Jump: "JUMP", CRT: "CRIT", CRD: "C.DMG" };
 const optStats = (o) => OPT_ORDER.filter((k) => o?.stats?.[k] != null).map((k) => [k, o.stats[k]]);
 // Short text for grouping and the summary: "공 9 · 업횟 7". Upgrades left say whether it was scrolled, so no "clean" tag.
-const optKey = (o) => [o?.ups > 0 ? `${tr("작", "Scrolled")} +${o.ups}` : "", ...optStats(o).map(([k, v]) => `${OPT_LABEL[k]} ${v}`), o?.slots != null ? `${tr("업횟", "Slots")} ${o.slots}` : ""].filter(Boolean).join(" · ");
+const optKey = (o) => [o?.ups > 0 ? `+${o.ups}` : "", ...optStats(o).map(([k, v]) => `${OPT_LABEL[k]} ${v}`), o?.slots != null ? `${tr("업횟", "Slots")} ${o.slots}` : ""].filter(Boolean).join(" · ");
 // Upgrades: left / total, passed ("+N" after the name in game) and failed. "used" may be missing; the base slot count
 // then fills it (base - left), which holds unless the item was hammered.
 function optUpgrades(o, baseSlots) {
@@ -238,44 +238,41 @@ function optUpgrades(o, baseSlots) {
   const fails = used != null && o.ups != null ? used - o.ups : null;
   return { used, fails, total: baseSlots ?? (o.slots != null && used != null ? o.slots + used : null) };
 }
-// Drop roll for clean gear: the sum of differences from the base values on the stats the item has by default.
-// Scrolled gear mixes scroll stats in, so it gets no roll grade.
-function optGrade(o, base) {
-  if (!o.clean) return null;
-  const keys = Object.keys(base).filter((k) => o.stats?.[k] != null);
-  if (!keys.length) return null;
-  return keys.reduce((a, k) => a + (o.stats[k] - base[k]), 0);
+// Option words as players use them: an item's roll is judged on one stat only, its main one (weapon attack; magic attack
+// for wands and staves; weapon defense for armor, magic defense when the item has no weapon defense). Same as the base
+// value is 정옵, N above is "N상", N below is "N하". Scrolled gear mixes scroll stats into that number, so only
+// unscrolled gear gets a roll. "+N" before the name is the number of scrolls that passed.
+const MAGIC_WEAPONS = new Set(["Wand", "Staff"]);
+function mainStat(sub, base) {
+  if (base.PAD != null && !MAGIC_WEAPONS.has(sub)) return "PAD";
+  if (base.MAD != null) return "MAD";
+  if (base.PDD != null) return "PDD";
+  if (base.MDD != null) return "MDD";
+  return null;
 }
+function optGrade(o, base, sub) {
+  const used = o.used ?? 0;
+  if (used > 0 || o.ups > 0) return null;
+  const key = mainStat(sub, base);
+  if (!key || o.stats?.[key] == null) return null;
+  return { key, d: o.stats[key] - base[key] };
+}
+const gradeText = (g) => (g.d > 0 ? tr(`${g.d}상`, `+${g.d} roll`) : g.d < 0 ? tr(`${-g.d}하`, `${g.d} roll`) : tr("정옵", "Base roll"));
 function optionChips(r) {
   const o = r.opts;
   if (!o) return "";
   const t = tips?.items?.[r.item];
-  // Some gear has no stats in the game data we hold ({} and 0 slots): then show the values as they are, no comparison.
+  // Some gear has no stats in the game data we hold ({} and 0 slots): then no roll and no total slots.
   const known = !!(t?.[7] && Object.keys(t[7]).length);
   const base = known ? t[7] : {}, baseSlots = known && t[8] ? t[8] : null;
   const chips = [];
   const up = optUpgrades(o, baseSlots);
-  const grade = optGrade(o, base);
-  // Headline first: the "+N" a player sees after the item name, then the roll grade for clean gear.
-  if (o.ups > 0) chips.push(`<span class="mb-opt plus" title="${esc(tr(`주문서 ${o.ups}번 성공`, `${o.ups} scrolls passed`))}">${tr("작", "Scrolled")} +${o.ups}</span>`);
-  if (grade != null) {
-    const g = grade > 0 ? ["hi", `+${grade}`] : grade < 0 ? ["lo", `${grade}`] : ["mid", tr("정옵", "Base")];
-    chips.push(`<span class="mb-opt grade ${g[0]}" title="${esc(tr("기본 능력치와 비교한 드롭 옵션 합계 (작 안 한 장비)", "Sum of differences from the base stats (unscrolled gear)"))}">${g[1]}</span>`);
-  }
-  for (const [k, v] of optStats(o)) {
-    const b = base[k], d = b != null ? v - b : null;
-    // Above or below the game's base value: for clean gear that is the roll; scrolled gear adds scroll stats.
-    const cls = !known ? "" : b == null ? " extra" : d > 0 ? " up" : d < 0 ? " down" : "";
-    const title = !known ? "" : b != null
-      ? (d ? tr(`기본보다 ${d > 0 ? "+" : ""}${d}`, `${d > 0 ? "+" : ""}${d} vs base`) : tr("기본과 같아요", "Same as base"))
-      : o.clean ? tr("기본에 없는 추가 옵션", "Extra stat not on the base item") : tr("기본에 없는 능력치 (주문서 또는 추가 옵션)", "Not on the base item (scrolls or extra stat)");
-    const note = !known ? "" : b == null ? `<small>${tr("추옵", "extra")}</small>` : d ? `<small>${d > 0 ? "+" : ""}${d}</small>` : "";
-    chips.push(`<span class="mb-opt${cls}" title="${esc(title)}">${esc(OPT_LABEL[k])} ${v}${note}</span>`);
-  }
-  // Upgrades: "업횟 5/7", then passed and failed when any were used.
+  const grade = known ? optGrade(o, base, t[3]) : null;
+  if (o.ups > 0) chips.push(`<span class="mb-opt plus" title="${esc(tr(`주문서 ${o.ups}번 성공`, `${o.ups} scrolls passed`))}">+${o.ups}</span>`);
+  if (grade) chips.push(`<span class="mb-opt grade ${grade.d > 0 ? "hi" : grade.d < 0 ? "lo" : "mid"}" title="${esc(tr(`${OPT_LABEL[grade.key]} 기준`, `by ${OPT_LABEL[grade.key]}`))}">${gradeText(grade)}</span>`);
+  for (const [k, v] of optStats(o)) chips.push(`<span class="mb-opt">${esc(OPT_LABEL[k])} ${v}</span>`);
   if (o.slots != null) chips.push(`<span class="mb-opt slots" title="${esc(tr("남은 업그레이드 가능 횟수 / 전체", "Upgrades left / total"))}">${tr("업횟", "Slots")} ${o.slots}${up.total != null ? `/${up.total}` : ""}</span>`);
-  if (up.used > 0 && o.ups != null) chips.push(`<span class="mb-opt" title="${esc(tr(`작 ${up.used}번: 성공 ${o.ups} · 실패 ${up.fails}`, `${up.used} scrolls: ${o.ups} passed, ${up.fails} failed`))}">${tr(`성공 ${o.ups} · 실패 ${up.fails}`, `${o.ups} pass · ${up.fails} fail`)}</span>`);
-  else if (up.used > 0) chips.push(`<span class="mb-opt">${tr(`작 ${up.used}번`, `${up.used} used`)}</span>`);
+  if (up.fails > 0) chips.push(`<span class="mb-opt" title="${esc(tr(`주문서 ${up.used}번 중 실패 ${up.fails}`, `${up.fails} of ${up.used} scrolls failed`))}">${tr(`실패 ${up.fails}`, `${up.fails} failed`)}</span>`);
   return chips.length ? `<span class="mb-opts">${chips.join("")}</span>` : "";
 }
 // "Price by option": listings that carry options, grouped by the same options, lowest asking price per group.

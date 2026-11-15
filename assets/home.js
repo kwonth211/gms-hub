@@ -532,7 +532,7 @@ const OPT_SHORT = korean
 function optShort(o) {
   if (!o) return '';
   const stats = Object.keys(OPT_SHORT).filter((k) => o.stats?.[k] != null).slice(0, 3).map((k) => `${OPT_SHORT[k]} ${o.stats[k]}`);
-  const parts = [o.ups > 0 ? `${korean ? '작' : 'Scrolled'} +${o.ups}` : '', ...stats, o.slots != null ? `${korean ? '업횟' : 'Slots'} ${o.slots}` : ''].filter(Boolean);
+  const parts = [o.ups > 0 ? `+${o.ups}` : '', ...stats, o.slots != null ? `${korean ? '업횟' : 'Slots'} ${o.slots}` : ''].filter(Boolean);
   return parts.length ? `<span class="opt">${escHtml(parts.join(' · '))}</span>` : '';
 }
 function recentRow(r, it, fresh) {

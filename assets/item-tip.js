@@ -84,24 +84,26 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
 <dl>${row(tr('기록', 'Records'), `${nf.format(p.n)}${tr('건', '')}`)}${row(tr('판매 완료', 'Sold'), p.sold?.median ? nf.format(p.sold.median) : '')}${row(tr('판매 중', 'Asking'), p.selling?.median ? nf.format(p.selling.median) : '')}${row(tr('구매 희망', 'Buying'), p.buying?.median ? nf.format(p.buying.median) : '')}</dl></section>`;
   }
 
-  // This listing's own stats (opts from the shop reader) next to the base values: ▲/▼ per stat, stats the base item
-  // lacks as extra, the roll grade for unscrolled gear, upgrades left and scrolls passed/failed.
+  // This listing's own stats (opts from the shop reader). Players judge a drop on its main stat only (weapon attack;
+  // magic attack for wands and staves; weapon defense for armor, else magic defense): same as base is 정옵, above "N상",
+  // below "N하". Only unscrolled gear gets that, since scrolls add to the same number.
   const OPT_ORDER = ['PAD', 'MAD', 'STR', 'DEX', 'INT', 'LUK', 'ACC', 'EVA', 'MHP', 'MMP', 'PDD', 'MDD', 'Speed', 'Jump', 'CRT', 'CRD'];
-  function optionLines(o, base, baseSlots) {
+  const mainStat = (sub, base) => (base.PAD != null && sub !== 'Wand' && sub !== 'Staff' ? 'PAD' : base.MAD != null ? 'MAD' : base.PDD != null ? 'PDD' : base.MDD != null ? 'MDD' : null);
+  function optionLines(o, base, baseSlots, sub) {
     const known = Object.keys(base).length > 0;
-    const rows = OPT_ORDER.filter((k) => o.stats?.[k] != null).map((k) => {
-      const v = o.stats[k], b = base[k], d = b != null ? v - b : null;
-      const note = !known ? '' : b == null ? `<small class="tip-gold">${tr('추옵', 'extra')}</small>` : d ? `<small class="${d > 0 ? 'tip-up' : 'tip-down'}">${d > 0 ? '+' : ''}${d}</small>` : '';
-      return `<li class="tip-opt"><span>${INC[k] || k} <b>${v > 0 ? '+' : ''}${v}</b></span>${note}</li>`;
-    }).join('');
     const used = o.used ?? (known && baseSlots && o.slots != null && baseSlots >= o.slots ? baseSlots - o.slots : null);
     const total = known && baseSlots ? baseSlots : o.slots != null && used != null ? o.slots + used : null;
-    const keys = Object.keys(base).filter((k) => o.stats?.[k] != null);
-    const grade = o.clean && known && keys.length ? keys.reduce((a, k) => a + (o.stats[k] - base[k]), 0) : null;
+    const key = known && !(used > 0) && !(o.ups > 0) ? mainStat(sub, base) : null;
+    const d = key && o.stats?.[key] != null ? o.stats[key] - base[key] : null;
+    const grade = d == null ? '' : d > 0 ? tr(`${d}상`, `+${d} roll`) : d < 0 ? tr(`${-d}하`, `${d} roll`) : tr('정옵', 'Base roll');
+    const rows = OPT_ORDER.filter((k) => o.stats?.[k] != null).map((k) => {
+      const v = o.stats[k];
+      const note = k === key && grade ? `<small class="${d > 0 ? 'tip-up' : d < 0 ? 'tip-down' : 'tip-muted'}">${grade}</small>` : '';
+      return `<li class="tip-opt"><span>${INC[k] || k} <b>${v > 0 ? '+' : ''}${v}</b></span>${note}</li>`;
+    }).join('');
     const out = [`<ul class="tip-stats tip-opts">${rows}</ul>`];
     if (o.slots != null) out.push(`<p>${tr('업그레이드 가능 횟수', 'Upgrade slots')} <b>${o.slots}</b>${total != null ? ` / ${total}` : ''}</p>`);
     if (used > 0) out.push(`<p class="tip-muted">${tr(`주문서 ${used}번: 성공 ${o.ups ?? '?'} · 실패 ${o.ups != null ? used - o.ups : '?'}`, `${used} scrolls: ${o.ups ?? '?'} passed · ${o.ups != null ? used - o.ups : '?'} failed`)}</p>`);
-    if (grade != null) out.push(`<p class="tip-grade ${grade > 0 ? 'tip-up' : grade < 0 ? 'tip-down' : ''}">${grade > 0 ? `+${grade}` : grade < 0 ? `${grade}` : tr('정옵', 'Base')}</p>`);
     return out.join('');
   }
 
@@ -109,7 +111,8 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
     const t = data?.items?.[id];
     if (!t) return false;
     const [nameKo, nameEn, cat, sub, lv, job, req, inc, slots, sell, scroll, drops, dropN, questN] = t;
-    const name = (ko && nameKo ? nameKo : nameEn) + (opts?.ups > 0 ? ` (+${opts.ups})` : '');
+    // "+N" before the name: scrolls that passed, as players write it.
+    const name = (opts?.ups > 0 ? `+${opts.ups} ` : '') + (ko && nameKo ? nameKo : nameEn);
     const lines = [];
     if (scroll) {
       const [gain, success, boom] = scroll;
@@ -122,7 +125,7 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
       const REQ = { str: tr('힘', 'STR'), dex: tr('덱', 'DEX'), int: tr('인', 'INT'), luk: tr('럭', 'LUK') };
       const reqs = Object.entries(req || {}).filter(([k]) => REQ[k]).map(([k, v]) => `${REQ[k]} ${v}`).join(' · ');
       lines.push(`<p class="tip-req">${lv ? `Lv. ${lv} · ` : ''}${esc(jobs)}${reqs ? `<br><span class="tip-muted">${reqs}</span>` : ''}</p>`);
-      if (opts) lines.push(optionLines(opts, inc || {}, slots));
+      if (opts) lines.push(optionLines(opts, inc || {}, slots, sub));
       else {
         const stats = Object.entries(inc || {}).map(([k, v]) => `<li>${INC[k] || k} <b>+${v}</b></li>`).join('');
         if (stats) lines.push(`<ul class="tip-stats">${stats}</ul>`);
