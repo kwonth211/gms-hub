@@ -317,65 +317,83 @@ document.querySelectorAll('[data-mg-view]').forEach((group) => group.addEventLis
 }));
 
 // ---------- the 무료 고확 composer ----------
-// One slim chat-like bar: pick 팝니다 / 삽니다 / 한마디, the item (search by Korean or English name), a price and a short line,
-// and the game name people whisper to. The name and the last kind are remembered in this browser.
+// One slim chat-like bar: 내 닉네임, 팝니다 / 삽니다 / 한마디, one line of text, the channel, 쏘기.
+// In the one line, typing an item (장공, initials, English) opens the item list; picking one puts "[name] " at the front.
+// A price written anywhere in the line (180만, 1.5억, 3m) is read out of it, so the post still gets a market comparison.
 (() => {
   const form = $('fm-form');
   if (!form) return;
-  const NICK_KEY = 'gms-free-nick';
-  const f = { item: $('fm-item'), price: $('fm-price'), text: $('fm-text'), nick: $('fm-nick'), ch: $('fm-ch'), list: $('fm-suggest'), status: $('fm-status'), send: $('fm-send') };
-  let intent = 'sell', itemId = null, pick = -1;
-  try { f.nick.value = localStorage.getItem(NICK_KEY) || ''; } catch (e) {}
+  const NICK_KEY = 'gms-free-nick', CH_KEY = 'gms-free-ch';
+  const f = { text: $('fm-text'), nick: $('fm-nick'), ch: $('fm-ch'), list: $('fm-suggest'), status: $('fm-status'), send: $('fm-send') };
+  let intent = 'sell', picked = null, pick = -1, options = [];
+  try { f.nick.value = localStorage.getItem(NICK_KEY) || ''; f.ch.value = localStorage.getItem(CH_KEY) || ''; } catch (e) {}
+  const PH = {
+    sell: () => tr('예: 장공 → 목록에서 고르고 180만 1개 급처', 'e.g. gloves att, pick it, then 1.8m quick sale'),
+    buy: () => tr('예: 일비 → 목록에서 고르고 30만에 삽니다', 'e.g. ilbi, pick it, then buying at 300k'),
+    talk: () => tr('하고 싶은 말 (예: 장공 시세 왜 이래요?)', 'Say something (e.g. who is buying gloves?)'),
+  };
   const setIntent = (v) => {
     intent = v;
-    for (const b of form.querySelectorAll('[data-intent]')) b.setAttribute('aria-pressed', String(b.dataset.intent === v));
-    form.dataset.intent = v;
-    f.text.placeholder = v === 'talk' ? tr('하고 싶은 말 (예: 장공 시세 왜 이래요?)', 'Say something (e.g. who is buying gloves?)') : tr('한마디 (선택, 예: 1개 급처)', 'A short note (optional)');
+    for (const b of form.querySelectorAll('button[data-intent]')) b.setAttribute('aria-pressed', String(b.dataset.intent === v));
+    f.text.placeholder = PH[v]();
+    if (v === 'talk') close();
   };
   setIntent('sell');
-  form.addEventListener('click', (e) => { const b = e.target.closest('button[data-intent]'); if (b) { setIntent(b.dataset.intent); (b.dataset.intent === 'talk' ? f.text : f.item).focus(); } });
+  form.addEventListener('click', (e) => { const b = e.target.closest('button[data-intent]'); if (b) { setIntent(b.dataset.intent); f.text.focus(); } });
 
-  // Item search: the site search's matching, so Korean shorthand (장공), initials and English names all work; at most 8.
+  // Item search: the site search's matching (Korean shorthand, initials, English names); at most 8.
   let entries = null;
   const matches = (q) => {
     if (!q.trim()) return [];
     entries ||= [...byId.values()].map((it) => indexEntry({ type: 'item', id: it.id, names: [it.ko, it.en] }));
     return searchEntries(entries, q).slice(0, 8).map((e) => byId.get(e.id)).filter(Boolean);
   };
-  let options = [];
-  const close = () => { f.list.hidden = true; f.item.setAttribute('aria-expanded', 'false'); pick = -1; };
+  const label = (it) => (ko && it.ko ? it.ko : it.en);
+  const PRICE = /(\d+(?:[.,]\d+)?\s*(?:억(?:\s*\d+(?:\.\d+)?\s*천?\s*만?)?|천\s*만|만|k|m|b)(?![a-z]))/i;
+  // What the item search sees: the line before any price or note, without a picked item.
+  const query = () => (picked ? '' : f.text.value.split(PRICE)[0].trim());
+  function close() { f.list.hidden = true; f.text.setAttribute('aria-expanded', 'false'); f.text.removeAttribute('aria-activedescendant'); pick = -1; }
   const draw = () => {
-    f.list.innerHTML = options.map((it, i) => `<li role="option" id="fm-opt-${i}" data-i="${i}" aria-selected="${i === pick}">${esc(ko && it.ko ? it.ko : it.en)}${ko && it.ko && it.ko !== it.en ? ` <small>${esc(it.en)}</small>` : ''}</li>`).join('');
+    f.list.innerHTML = options.map((it, i) => `<li role="option" id="fm-opt-${i}" data-i="${i}" aria-selected="${i === pick}">${esc(label(it))}${ko && it.ko && it.ko !== it.en ? ` <small>${esc(it.en)}</small>` : ''}</li>`).join('');
     f.list.hidden = !options.length;
-    f.item.setAttribute('aria-expanded', String(!!options.length));
-    if (pick >= 0) f.item.setAttribute('aria-activedescendant', `fm-opt-${pick}`); else f.item.removeAttribute('aria-activedescendant');
+    f.text.setAttribute('aria-expanded', String(!!options.length));
+    if (pick >= 0) f.text.setAttribute('aria-activedescendant', `fm-opt-${pick}`); else f.text.removeAttribute('aria-activedescendant');
   };
   const choose = async (it) => {
-    itemId = it.id;
-    f.item.value = ko && it.ko ? it.ko : it.en;
+    picked = it;
+    const rest = f.text.value.slice(f.text.value.split(PRICE)[0].length).trim();
+    f.text.value = `[${label(it)}] ${rest}`;
     close();
+    f.text.focus();
+    f.text.setSelectionRange(f.text.value.length, f.text.value.length);
     await loadPrices([{ free: true, item: it.id }]).catch(() => null);
     const m = prices.get(it.id);
-    f.price.placeholder = m?.median ? tr('가격 (시세 {p})', 'Price (market {p})', { p: mesos(m.median) }) : tr('가격 (예: 300만)', 'Price (e.g. 3m)');
-    f.price.focus();
+    f.status.textContent = m?.median ? tr('지금 시세 {p}. 가격도 같이 적어 주세요.', 'Market price {p}. Add your price too.', { p: mesos(m.median) }) : '';
   };
-  f.item.addEventListener('input', () => { itemId = null; options = matches(f.item.value); pick = -1; draw(); });
-  f.item.addEventListener('keydown', (e) => {
+  f.text.addEventListener('input', () => {
+    // Removing the [item] part forgets the picked item.
+    if (picked && !f.text.value.includes(`[${label(picked)}]`)) picked = null;
+    if (intent === 'talk' || picked) { close(); return; }
+    options = query().length >= 1 ? matches(query()) : [];
+    pick = -1;
+    draw();
+  });
+  f.text.addEventListener('keydown', (e) => {
     if (f.list.hidden) return;
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); pick = (pick + (e.key === 'ArrowDown' ? 1 : options.length - 1)) % options.length; draw(); }
     else if (e.key === 'Enter' && options.length) { e.preventDefault(); choose(options[Math.max(0, pick)]); }
     else if (e.key === 'Escape') close();
   });
   f.list.addEventListener('mousedown', (e) => { const li = e.target.closest('li[data-i]'); if (li) { e.preventDefault(); choose(options[Number(li.dataset.i)]); } });
-  f.item.addEventListener('blur', () => setTimeout(close, 120));
+  f.text.addEventListener('blur', () => setTimeout(close, 120));
 
   const ERR = {
-    nick: () => tr('게임 닉네임을 영문·숫자 2~13자로 넣어 주세요. 귓말 받을 이름이에요.', 'Enter your game name (2-13 letters or digits) so people can whisper you.'),
-    item: () => tr('아이템은 목록에서 골라 주세요.', 'Pick the item from the list.'),
-    price: () => tr('가격은 300만, 1.5억, 3m처럼 써 주세요.', 'Write the price like 3m, 500k or 1.5b.'),
-    length: () => tr('한마디는 80자까지예요.', 'Keep the note to 80 characters.'),
+    nick: () => tr('내 닉네임에 게임 닉네임을 영문·숫자 2~13자로 넣어 주세요. 귓말 받을 이름이에요.', 'Enter your game name (2-13 letters or digits) so people can whisper you.'),
+    item: () => tr('아이템을 목록에서 다시 골라 주세요.', 'Pick the item from the list again.'),
+    price: () => tr('가격은 180만, 1.5억, 3m처럼 써 주세요.', 'Write the price like 3m, 500k or 1.5b.'),
+    length: () => tr('80자까지 쓸 수 있어요.', 'Keep it to 80 characters.'),
     link: () => tr('링크는 올릴 수 없어요.', 'Links are not allowed.'),
-    rmt: () => tr('현금 거래나 연락처는 올릴 수 없어요. 메소 가격은 300만처럼 써 주세요.', 'No real-money trades or contact handles.'),
+    rmt: () => tr('현금 거래나 연락처는 올릴 수 없어요. 메소 가격은 180만처럼 써 주세요.', 'No real-money trades or contact handles.'),
     empty: () => tr('아이템을 고르거나 한마디를 써 주세요.', 'Pick an item or write a few words.'),
     channel: () => tr('채널은 1~40 사이예요.', 'Channels are 1 to 40.'),
     slow: () => tr('무료 고확은 2분에 한 번 쏠 수 있어요. 조금만 기다려 주세요.', 'One free megaphone every 2 minutes. Please wait a moment.'),
@@ -384,9 +402,17 @@ document.querySelectorAll('[data-mg-view]').forEach((group) => group.addEventLis
   };
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (intent !== 'talk' && f.item.value.trim() && !itemId) { const m = matches(f.item.value)[0]; if (m && (m.ko === f.item.value.trim() || m.en.toLowerCase() === f.item.value.trim().toLowerCase())) itemId = m.id; else { f.status.textContent = ERR.item(); f.item.focus(); return; } }
+    close();
     if (!/^[A-Za-z0-9]{2,13}$/.test(f.nick.value.trim())) { f.status.textContent = ERR.nick(); f.nick.focus(); return; }
-    const body = { nick: f.nick.value.trim(), intent, item: intent === 'talk' ? null : itemId, price: intent === 'talk' ? null : f.price.value.trim() || null, text: f.text.value.trim(), channel: f.ch.value ? Number(f.ch.value) : null };
+    // Split the line: the picked [item], the first price, and the rest as the note.
+    let line = f.text.value.trim(), item = null, price = null;
+    if (intent !== 'talk') {
+      if (picked && line.includes(`[${label(picked)}]`)) { item = picked.id; line = line.replace(`[${label(picked)}]`, ' '); }
+      const m = PRICE.exec(line);
+      if (m) { price = m[1].replace(/\s+/g, ''); line = line.replace(m[1], ' '); }
+      if (!item && line.trim()) { const hit = matches(line.split(PRICE)[0])[0]; if (hit && line.trim() === label(hit)) { item = hit.id; line = ''; } }
+    }
+    const body = { nick: f.nick.value.trim(), intent, item, price, text: line.replace(/\s+/g, ' ').trim(), channel: f.ch.value ? Number(f.ch.value) : null };
     f.send.disabled = true;
     f.status.textContent = '';
     try {
@@ -394,13 +420,12 @@ document.querySelectorAll('[data-mg-view]').forEach((group) => group.addEventLis
       const out = await r.json().catch(() => ({}));
       if (!r.ok || !out.row) { f.status.textContent = (ERR[out.error] || (() => (r.status === 503 ? ERR.paused() : tr('올리지 못했어요. 잠시 뒤 다시 시도해 주세요.', 'Could not post. Please try again.'))))(); return; }
       const keys = myKeys(); keys[out.row.id] = out.key;
-      try { localStorage.setItem('gms-free-keys', JSON.stringify(Object.fromEntries(Object.entries(keys).slice(-30)))); localStorage.setItem(NICK_KEY, body.nick); } catch (x) {}
+      try { localStorage.setItem('gms-free-keys', JSON.stringify(Object.fromEntries(Object.entries(keys).slice(-30)))); localStorage.setItem(NICK_KEY, body.nick); localStorage.setItem(CH_KEY, f.ch.value); } catch (x) {}
       addFree([out.row], true);
       dispatchEvent(new CustomEvent('gms-free', { detail: [out.row] }));
-      f.item.value = ''; f.price.value = ''; f.text.value = ''; itemId = null;
-      f.price.placeholder = tr('가격 (예: 300만)', 'Price (e.g. 3m)');
+      f.text.value = ''; picked = null;
       f.status.textContent = tr('무료 고확을 쐈어요! 24시간 동안 모두에게 보여요.', 'Sent! Everyone sees it for 24 hours.');
-      track('free_mega_post', { intent, item: body.item ? 1 : 0 });
+      track('free_mega_post', { intent, item: body.item ? 1 : 0, price: body.price ? 1 : 0 });
     } catch (x) {
       f.status.textContent = tr('올리지 못했어요. 잠시 뒤 다시 시도해 주세요.', 'Could not post. Please try again.');
     } finally { f.send.disabled = false; }
