@@ -948,7 +948,7 @@ $("mk-retry").addEventListener("click", async () => {
 });
 document.querySelector(".market-browser").addEventListener("click", (e) => {
   // A click anywhere on an item row opens it, not only on the name.
-  const el = e.target.closest("button,a") || (!e.target.closest("input,select,label") && e.target.closest(".mb-catalog tbody tr")?.querySelector("a[data-item]"));
+  const el = e.target.closest("button,a") || (!e.target.closest("input,select,label") && e.target.closest(".mb-catalog tbody tr, .mb-listings-table tbody tr")?.querySelector("a[data-item]"));
   if (!el) return;
   if (el.dataset.item) {
     if (e.ctrlKey || e.metaKey || e.shiftKey) return;
