@@ -10,7 +10,7 @@ import { collectMaps, mapDetail, mapIndex, mapName } from './map-pages.mjs';
 import { collectQuests, questIndex, questBestBody, questPath, questName, setQuestGuides, areaName as questArea } from './quest-pages.mjs';
 import { questGuideData, questGuideBody } from './quest-guide.mjs';
 import { fhBody } from './forgotten-hollow.mjs';
-import { computeReport, reportBody } from './weekly-report.mjs';
+import { computeReport, reportBody, weeklyTeaser } from './weekly-report.mjs';
 import { skillsBody } from './skill-pages.mjs';
 import { forgeBody } from './forge-page.mjs';
 import { EQ_CLASSES, equipPath, collectEquipment, equipmentIndexBody, equipmentClassBody } from './equipment-pages.mjs';
@@ -1135,7 +1135,7 @@ function updatesSection(lang) {
   const since = updSince();
   const pages = Math.ceil(UPDATES.length / UPD_PER_PAGE);
   const pager = pages > 1 ? `<nav class="upd-pager" aria-label="${ko ? '업데이트 소식 페이지' : 'Update pages'}" hidden><button type="button" class="upd-prev" data-upd-step="-1">${ko ? '이전' : 'Newer'}</button><span class="upd-pages">${Array.from({ length: pages }, (_, i) => `<button type="button" data-upd-page="${i + 1}"${i === 0 ? ' aria-current="page"' : ''}>${i + 1}</button>`).join('')}</span><button type="button" class="upd-next" data-upd-step="1">${ko ? '다음' : 'Older'}</button></nav>` : '';
-  return `<section class="wrap home-updates" id="updates"><div class="home-updates-head"><h2>${ko ? '업데이트 소식' : "What's new"}</h2><a class="home-updates-all" href="${href(langPath(lang, '/updates/'))}">${ko ? '패치노트 전체 보기' : 'All patch notes'}</a></div>
+  return `${weeklyTeaser({ lang, R: WEEKLY, items: itemsData.items, href, langPath })}<section class="wrap home-updates" id="updates"><div class="home-updates-head"><h2>${ko ? '업데이트 소식' : "What's new"}</h2><a class="home-updates-all" href="${href(langPath(lang, '/updates/'))}">${ko ? '패치노트 전체 보기' : 'All patch notes'}</a></div>
 <ol class="upd-list" data-per-page="${UPD_PER_PAGE}">${UPDATES.map((u, i) => `<li data-upd-page="${Math.floor(i / UPD_PER_PAGE) + 1}"${u.highlight ? ' class="is-hl"' : ''}><time datetime="${u.date}" translate="no">${updDate(lang, u.date)}</time>${u.date >= since ? '<span class="upd-new" translate="no">NEW</span>' : ''}${u.highlight ? `<span class="upd-hl">${ko ? '중요' : 'Key update'}</span>` : ''}<a href="${href(langPath(lang, `/updates/#${u.id}`))}">${esc(ko ? u.ko : u.en)}</a><span class="upd-ver" translate="no">v${u.version}</span></li>`).join('')}</ol>${pager}</section>`;
 }
 
@@ -3247,13 +3247,14 @@ for (const lang of LANGS) {
       ld: [breadcrumbLd(lang, lang === 'ko' ? '패치노트' : 'Patch notes', '/updates/')]
     }));
     if (WEEKLY) {
-      // /report-preview/: the weekly report ("주간 리포트"), owner review only for now: noindex, not linked, not in the
-      // sitemap (scripts/weekly-report.mjs).
-      write(path.join(lang, 'report-preview', 'index.html'), page({
-        lang, pageKey: 'reportPreview', pagePath: '/report-preview/', noindex: true,
-        title: lang === 'ko' ? 'GMS Hub 주간 리포트 (미리보기) | GMS Hub' : 'GMS Hub Weekly Report (preview) | GMS Hub',
+      // /report/: the weekly report ("주간 리포트", scripts/weekly-report.mjs), opened from the fold above the home's
+      // update list.
+      write(path.join(lang, 'report', 'index.html'), page({
+        lang, pageKey: 'weeklyReport', pagePath: '/report/',
+        title: lang === 'ko' ? '글클메 주간 리포트: 이번 주 오른 템·내린 템, 많이 팔린 템, 확성기, 랭킹 | GMS Hub' : 'MapleStory Classic World Weekly Report: Risers, Fallers, Best Sellers, Megaphones and Rankings | GMS Hub',
         desc: lang === 'ko' ? '한 주 동안의 글클메 시세, 팔린 아이템, 확성기, 랭킹을 한 장에 모은 주간 리포트.' : 'One week of MapleStory Classic World prices, sales, megaphones and rankings on one page.',
-        body: reportBody({ lang, R: WEEKLY, items: itemsData.items, href, langPath, fh: readJson('data/forgotten-hollow.json') }).replace('__WR_CSS__', scriptSrc('weekly-report.css'))
+        body: reportBody({ lang, R: WEEKLY, items: itemsData.items, href, langPath, fh: readJson('data/forgotten-hollow.json') }).replace('__WR_CSS__', scriptSrc('weekly-report.css')),
+        ld: [breadcrumbLd(lang, lang === 'ko' ? '주간 리포트' : 'Weekly report', '/report/')]
       }));
     }
     {
@@ -3502,7 +3503,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
   )
 ).concat(
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
-  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/forgotten-hollow/'}, {path:'/skills/'}, {path:'/tools/forge/'}, {path:'/updates/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/forgotten-hollow/'}, {path:'/skills/'}, {path:'/tools/forge/'}, {path:'/updates/'}, ...(WEEKLY ? [{path:'/report/'}] : [])].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/bosses/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/quests/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
   [{path:'/maps/'}, ...MAPS.filter(l=>l.availability==='open').map(l=>({path:mapPath(l)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),

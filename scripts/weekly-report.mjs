@@ -1,6 +1,6 @@
 // The weekly report ("주간 리포트"): a front page for one Monday-to-Sunday week of the Free Market and the megaphones,
-// built from data/weekly-raw.json (scripts/fetch-weekly-report.mjs). Only measured numbers: asking prices and sold slots
-// from scanned shops, megaphone counts, the stored ranking. Nothing here is estimated or written by hand except the
+// built from data/weekly-raw.json (scripts/fetch-weekly-report.mjs). Only measured numbers: asking prices and sales,
+// megaphone counts, the stored ranking. The page never says how listings are collected (owner's call 2026-11-15). Nothing here is estimated or written by hand except the
 // short "next week" notes, which come from data/forgotten-hollow.json.
 
 const DAY = 86400000;
@@ -129,7 +129,8 @@ export function koItemName(i) {
 const DAYS_KO = ['월', '화', '수', '목', '금', '토', '일'];
 const DAYS_EN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-export function reportBody({ lang, R, items, href, langPath, fh }) {
+// Formatting shared by the report page and the home teaser.
+function fmt(lang, items) {
   const ko = lang === 'ko';
   const tr = (k, e) => (ko ? k : e);
   const byId = new Map(items.map((i) => [i.id, i]));
@@ -139,9 +140,42 @@ export function reportBody({ lang, R, items, href, langPath, fh }) {
     ? (n >= 1e8 ? `${+(n / 1e8).toFixed(2)}억` : n >= 1e4 ? `${+(n / 1e4).toFixed(n >= 1e6 ? 0 : 1)}만` : nf(n))
     : (n >= 1e6 ? `${+(n / 1e6).toFixed(2)}m` : n >= 1e3 ? `${+(n / 1e3).toFixed(1)}k` : nf(n));
   const pct = (c) => `${c > 0 ? '+' : ''}${Math.round(c * 100)}%`;
+  const icon = (id, size = 32) => `<img class="wr-icon" src="https://maplestory.io/api/MCW/1/item/${id}/icon" width="${size}" height="${size}" alt="" loading="lazy">`;
+  return { ko, tr, byId, name, nf, mesos, pct, icon };
+}
+
+// The week's lead story: its biggest move, weighted by how much the item trades.
+export function reportLead(R) {
+  return [...R.up, ...R.down].sort((a, b) => Math.abs(b.move.change) * Math.log10(10 + b.n) - Math.abs(a.move.change) * Math.log10(10 + a.n))[0] || null;
+}
+function leadHeadline(f, lead) {
+  if (!lead) return f.tr('이번 주 자유시장', 'The Free Market this week');
+  const n = Math.abs(Math.round(lead.move.change * 100));
+  return f.ko ? `${f.name(lead.id)}, 한 주 새 ${n}% ${lead.move.change > 0 ? '올랐어요' : '내렸어요'}` : `${f.name(lead.id)} ${lead.move.change > 0 ? 'up' : 'down'} ${n}% this week`;
+}
+const weekTitleOf = (W, ko) => (ko ? `${W.month}월 ${['', '첫째', '둘째', '셋째', '넷째', '다섯째'][W.nth]} 주` : `Week ${W.iso}`);
+
+// Home: a closed fold above the update list. The summary carries the week's headline; opened, it shows four short
+// lines (top riser, top faller, most sold, most called) and the way to the full report.
+export function weeklyTeaser({ lang, R, items, href, langPath }) {
+  if (!R) return '';
+  const f = fmt(lang, items);
+  const { tr, name, mesos, pct, nf, icon } = f;
+  const lead = reportLead(R);
+  const report = href(langPath(lang, '/report/'));
+  const market = href(langPath(lang, '/tools/market/'));
+  const line = (label, id, value) => id ? `<li><span class="wk-label">${label}</span><a class="wk-item" href="${market}?item=${id}">${icon(id, 24)}<span>${esc(name(id))}</span></a><span class="wk-val">${value}</span></li>` : '';
+  const up = R.up[0], down = R.down[0], sold = R.sellers[0], called = R.mega?.sold?.[0];
+  return `<details class="wrap wk-teaser"><summary><span class="wk-tag">${tr('주간 리포트', 'Weekly report')}</span><span class="wk-week">${esc(weekTitleOf(R.week, f.ko))}</span><strong class="wk-head">${esc(leadHeadline(f, lead))}</strong><span class="wk-open"><span class="wk-o1">${tr('펼쳐 보기', 'Open')}</span><span class="wk-o2">${tr('접기', 'Close')}</span></span></summary>
+<ul class="wk-lines">${line(tr('가장 많이 오른', 'Rose most'), up?.id, up ? `<b class="up">${pct(up.move.change)}</b>` : '')}${line(tr('가장 많이 내린', 'Fell most'), down?.id, down ? `<b class="down">${pct(down.move.change)}</b>` : '')}${line(tr('가장 많이 팔린', 'Sold most'), sold?.id, sold ? tr(`${nf(sold.sold)}개`, `${nf(sold.sold)} sold`) : '')}${line(tr('확성기 1위', 'Most called'), called?.item, called ? tr(`${nf(called.sell)}번`, `${nf(called.sell)} calls`) : '')}</ul>
+<p class="wk-more"><a class="btn" href="${report}">${tr('이번 주 리포트 전체 보기', "Read this week's report")}</a></p></details>`;
+}
+
+export function reportBody({ lang, R, items, href, langPath, fh }) {
+  const f = fmt(lang, items);
+  const { ko, tr, byId, name, nf, mesos, pct, icon } = f;
   const market = href(langPath(lang, '/tools/market/'));
   const itemHref = (id) => `${market}?item=${id}`;
-  const icon = (id, size = 32) => `<img class="wr-icon" src="https://maplestory.io/api/MCW/1/item/${id}/icon" width="${size}" height="${size}" alt="" loading="lazy">`;
   const W = R.week;
   const md = (d) => { const [, m, dd] = d.split('-').map(Number); return ko ? `${m}월 ${dd}일` : new Date(`${d}T12:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); };
   const nth = ['', '첫째', '둘째', '셋째', '넷째', '다섯째'][W.nth];
@@ -158,7 +192,7 @@ export function reportBody({ lang, R, items, href, langPath, fh }) {
   };
 
   // The lead story: the biggest move of the week, weighted by trade.
-  const lead = [...R.up, ...R.down].sort((a, b) => Math.abs(b.move.change) * Math.log10(10 + b.n) - Math.abs(a.move.change) * Math.log10(10 + a.n))[0];
+  const lead = reportLead(R);
   const leadChart = (r) => {
     const pts = r.series.map((v, i) => [i, v]);
     const vs = pts.filter(([, v]) => v != null).map(([, v]) => v);
@@ -177,10 +211,7 @@ export function reportBody({ lang, R, items, href, langPath, fh }) {
     return `<figure class="wr-chart"><svg viewBox="0 0 620 262" role="img" aria-label="${esc(tr(`${name(r.id)} 요일별 시세`, `${name(r.id)} price by day`))}"><g class="wr-chart-grid">${grid}</g><g class="wr-chart-line">${lines}</g><g class="wr-chart-dot">${dots}</g>${label(first, 'start')}${label(last, 'end')}${axis}</svg>
 <figcaption>${tr('그날 올라온 매물 가격의 중간값이에요. 빈칸은 매물이 5개보다 적었던 날이에요.', 'Median asking price each day. Gaps are days with fewer than five listings.')}</figcaption></figure>`;
   };
-  const leadHead = lead
-    ? (ko ? `${name(lead.id)}, 한 주 새 ${Math.abs(Math.round(lead.move.change * 100))}% ${lead.move.change > 0 ? '올랐어요' : '내렸어요'}`
-      : `${name(lead.id)} ${lead.move.change > 0 ? 'up' : 'down'} ${Math.abs(Math.round(lead.move.change * 100))}% this week`)
-    : tr('이번 주 자유시장', 'The Free Market this week');
+  const leadHead = leadHeadline(f, lead);
   const basisWord = R.basis === 'week' ? tr('지난주', 'last week') : tr('주 초', 'early in the week');
   const leadLine = lead
     ? tr(`${basisWord} ${mesos(lead.move.before)} 메소 안팎이던 시세가 주말엔 ${mesos(lead.move.after)} 메소예요.`, `From ${mesos(lead.move.before)} ${basisWord} to ${mesos(lead.move.after)} mesos by the weekend.`)
@@ -215,7 +246,7 @@ export function reportBody({ lang, R, items, href, langPath, fh }) {
   const prep = (fh?.prep || []).slice(0, 3);
   const opens = fh?.open ? md(fh.open) : null;
 
-  const sellers = `<ol class="wr-sold">${R.sellers.map((r, n) => `<li><span class="wr-rank">${n + 1}</span><a class="wr-row" href="${itemHref(r.id)}">${icon(r.id, 28)}<span class="wr-name">${esc(name(r.id))}</span></a><span class="wr-count">${nf(r.sold)}${tr('칸', ' sold')}</span><span class="wr-now">${esc(mesos(r.now))}</span></li>`).join('')}</ol>`;
+  const sellers = `<ol class="wr-sold">${R.sellers.map((r, n) => `<li><span class="wr-rank">${n + 1}</span><a class="wr-row" href="${itemHref(r.id)}">${icon(r.id, 28)}<span class="wr-name">${esc(name(r.id))}</span></a><span class="wr-count">${nf(r.sold)}${tr('개', ' sold')}</span><span class="wr-now">${esc(mesos(r.now))}</span></li>`).join('')}</ol>`;
 
   return `<link rel="stylesheet" href="__WR_CSS__">
 <article class="wr">
@@ -235,8 +266,8 @@ export function reportBody({ lang, R, items, href, langPath, fh }) {
 
 <section class="wr-strip wrap" aria-label="${tr('이번 주 숫자', 'This week in numbers')}">
   <dl>
-    <div><dt>${tr('이번 주 본 매물', 'Listings seen')}</dt><dd>${nf(R.asks)}</dd></div>
-    <div><dt>${tr('팔린 칸', 'Sold slots')}</dt><dd>${nf(R.sold)}</dd></div>
+    <div><dt>${tr('이번 주 매물', 'Listings')}</dt><dd>${nf(R.asks)}</dd></div>
+    <div><dt>${tr('거래된 아이템', 'Items sold')}</dt><dd>${nf(R.sold)}</dd></div>
     <div><dt>${tr('시세가 잡힌 아이템', 'Items priced')}</dt><dd>${nf(R.items)}</dd></div>
     ${M ? `<div><dt>${M.span === 'week' ? tr('이번 주 확성기', 'Megaphones') : tr('하루 확성기', 'Megaphones a day')}</dt><dd>${nf(M.total)}</dd></div>` : ''}
   </dl>
@@ -253,7 +284,7 @@ export function reportBody({ lang, R, items, href, langPath, fh }) {
 
 <section class="wr-sec wrap" id="sold">
   <h2>${tr('가장 많이 팔린 아이템', 'Sold the most')}</h2>
-  <p class="wr-note">${tr('상점에서 실제로 팔려 나간 칸을 셌어요. 오른쪽 숫자는 지금 시세예요.', 'Shop slots that actually sold; on the right, the price now.')}</p>
+  <p class="wr-note">${tr('이번 주 실제로 거래가 끝난 개수예요. 오른쪽 숫자는 지금 시세예요.', 'How many actually sold this week; on the right, the price now.')}</p>
   ${sellers}
 </section>
 
@@ -294,7 +325,7 @@ ${opens ? `<section class="wr-sec wrap" id="next">
 </section>` : ''}
 
 <footer class="wrap"><div class="wr-foot">
-  <p>${tr('모든 숫자는 자유시장 상점을 직접 돌며 본 매물, 팔린 칸, 게임 확성기, 캐릭터 랭킹을 모은 기록이에요. 가격은 그날 올라온 매물 가격의 중간값이라 장난 매물 몇 개로는 흔들리지 않아요.', 'Every number comes from Free Market shops we scanned, the slots that sold, in-game megaphones and the character ranking. Prices are the daily median of asking prices, so a few joke listings do not move them.')}</p>
+  <p>${tr('GMS Hub가 한 주 동안 모은 시세, 거래, 확성기, 랭킹 기록으로 만들어요. 가격은 그날 올라온 매물 가격의 중간값이라 장난 매물 몇 개로는 흔들리지 않아요.', 'Made from the prices, sales, megaphones and rankings GMS Hub gathered over the week. Prices are the daily median of asking prices, so a few joke listings do not move them.')}</p>
   <p>${tr(`다음 호는 ${md(new Date(Date.parse(`${W.end}T00:00:00Z`) + 86400000 * 8).toISOString().slice(0, 10))}에 나와요.`, `Next issue: ${md(new Date(Date.parse(`${W.end}T00:00:00Z`) + 86400000 * 8).toISOString().slice(0, 10))}.`)}</p>
 </div></footer>
 </article>`;

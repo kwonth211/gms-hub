@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "weekly-report",
+   "version": "0.7.1",
+   "level": "patch",
+   "date": "2026-11-15",
+   "path": "/report/",
+   "ko": "주간 리포트 — 한 주 동안 오른 템·내린 템, 많이 팔린 템, 확성기, 랭킹을 한 장에",
+   "en": "Weekly report — the week's risers, fallers, best sellers, megaphones and rankings on one page",
+   "desc": {
+    "ko": "매주 가장 크게 움직인 시세를 머리기사로, 오른 템과 내린 템, 가장 많이 팔린 템, 확성기에서 많이 외친 템, 랭킹 상위 1,000명의 직업 비율, 다음 주에 지켜볼 아이템을 정리해요. 홈의 업데이트 소식 위에서 펼쳐 볼 수 있어요.",
+    "en": "Each week leads with the biggest price move, then the risers and fallers, the best sellers, the items called most in megaphones, the job mix of the top 1,000 and what to watch next week. Open it from the fold above the home's update list."
+   }
+  },
+  {
    "id": "item-options",
    "version": "0.7.0",
    "level": "minor",
