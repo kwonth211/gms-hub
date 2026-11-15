@@ -1518,7 +1518,21 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 @media (max-width: 560px) { .char-head, .char-new { grid-template-columns: minmax(0, 1fr); justify-items: start; } .char-avatar { grid-template-columns: auto minmax(0, 1fr); align-items: center; justify-items: start; } .char-avatar figcaption { justify-items: start; text-align: left; } }
 .char-actions { display: flex; gap: 10px; }
 .char-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-.char-job select { box-sizing: border-box; height: 44px; min-width: 150px; padding: 0 34px 0 14px; border: 1px solid var(--line-strong); border-radius: 12px; background-color: var(--panel); color: var(--text); font: inherit; font-weight: 700; }
+.char-job { position: relative; }
+.char-job-btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: space-between; gap: 10px; height: 44px; min-width: 160px; padding: 0 14px; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--panel); color: var(--text); font: inherit; font-weight: 700; cursor: pointer; }
+.char-job-btn:hover { background: var(--panel-2); }
+.char-job-btn:focus-visible { outline: 2px solid var(--accent-fill); outline-offset: 2px; }
+.char-job-btn i { width: 8px; height: 8px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: translateY(-2px) rotate(45deg); }
+.char-job-btn[aria-expanded="true"] i { transform: translateY(2px) rotate(-135deg); }
+.char-job-menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 30; display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 4px 10px; padding: 12px; border: 1px solid var(--line-strong); border-radius: 14px; background: var(--panel); box-shadow: 0 10px 30px rgb(0 0 0 / 0.14); }
+.char-job-menu[hidden] { display: none; }
+.char-job-group { display: grid; align-content: start; gap: 2px; }
+.char-job-group b { padding: 2px 8px 4px; color: var(--muted); font-size: 0.78rem; }
+.char-job-group button { padding: 7px 8px; border: 0; border-radius: 8px; background: none; color: var(--text); font: inherit; font-size: 0.92rem; text-align: left; white-space: nowrap; cursor: pointer; }
+.char-job-group button:hover { background: var(--panel-2); }
+.char-job-group button[aria-checked="true"] { background: var(--panel-2); color: var(--accent-edge); font-weight: 800; }
+.char-job-group button:focus-visible { outline: 2px solid var(--accent-fill); outline-offset: -2px; }
+@media (max-width: 760px) { .char-job-menu { left: 0; right: auto; grid-template-columns: repeat(2, minmax(120px, 1fr)); } }
 .char-lv { box-sizing: border-box; display: flex; align-items: stretch; height: 44px; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--panel); overflow: hidden; }
 .char-lv .btn { box-sizing: border-box; height: 100%; min-width: 42px; margin: 0; padding: 0 12px; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: var(--text); font-size: 1.15rem; line-height: 1; transform: none; }
 .char-lv .btn:hover { background: var(--panel-2); }
@@ -2156,7 +2170,12 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .hs-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hs-name small { margin-left: 6px; color: var(--muted); font-weight: 500; font-size: 0.78rem; }
 .hs-type { font-size: 0.72rem; color: var(--muted); padding: 1px 6px; border: 1px solid var(--line); border-radius: 999px; }
+.hs-type:has(.hs-price) { padding: 0; border: 0; }
+.hs-price { color: var(--text); font-size: 0.88rem; font-weight: 800; white-space: nowrap; }
 .hs-empty { padding: 14px 10px; color: var(--muted); font-size: 0.9rem; }
+/* The Discord link in the empty message is plain inline text, not a result row. */
+.hs-results .hs-empty a { display: inline; padding: 0; color: var(--accent-edge); text-decoration: underline; }
+.hs-results .hs-empty a:hover { background: none; }
 .hs-hint { margin: 0; padding: 6px 14px 10px; }
 @media (max-width: 480px) { .hs-sheet { margin-top: 12px; } .hs-hint { display: none; } }
 /* Room for the search button: the live pill drops its LIVE word on narrow desktops and steps aside on phones. */

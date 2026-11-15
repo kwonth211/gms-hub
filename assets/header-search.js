@@ -3,6 +3,10 @@
 // like 장공, Korean or English names); the item and monster lists load the first time the sheet opens.
 import { indexEntry, searchEntries } from './search-index.js';
 import { gearKeywords, gearTypes } from './item-sub.js';
+// Build-time market median from the item index (7th column), so an item shows its price as soon as it is listed.
+const mesos = (n) => (document.documentElement.lang === 'ko'
+  ? (n >= 1e8 ? `${+(n / 1e8).toFixed(2)}억` : n >= 1e4 ? `${+(n / 1e4).toFixed(n >= 1e6 ? 0 : 1)}만` : n.toLocaleString('ko'))
+  : (n >= 1e9 ? `${+(n / 1e9).toFixed(2)}b` : n >= 1e6 ? `${+(n / 1e6).toFixed(2)}m` : n >= 1e3 ? `${+(n / 1e3).toFixed(1)}k` : String(n)));
 
 const btn = document.querySelector('[data-hs]');
 if (btn) {
@@ -27,7 +31,7 @@ if (btn) {
     entries = [
       ...pageEntries,
       ...mobs.map(([id, mko, men, lv, , , , , , , , , aliases]) => indexEntry({ type: 'mob', id: `m${id}`, title: ko && mko ? mko : men, sub: `Lv. ${lv}`, href: `${btn.dataset.monsters}${id}/`, icon: `/assets/monsters/${id}.gif`, names: [mko, men, ...String(aliases || '').split(' ')] })),
-      ...items.map(([id, iko, ien, cat, isub]) => indexEntry({ type: 'item', id, title: ko && iko ? iko : ien, sub: ko && iko ? ien : '', href: `${btn.dataset.market}?item=${id}`, icon: `https://maplestory.io/api/MCW/1/item/${id}/icon`, names: [iko, ien, String(id)], keywords: gearKeywords(cat, isub), types: gearTypes(cat, isub) })),
+      ...items.map(([id, iko, ien, cat, isub, , price]) => indexEntry({ type: 'item', id, price: price || 0, title: ko && iko ? iko : ien, sub: ko && iko ? ien : '', href: `${btn.dataset.market}?item=${id}`, icon: `https://maplestory.io/api/MCW/1/item/${id}/icon`, names: [iko, ien, String(id)], keywords: gearKeywords(cat, isub), types: gearTypes(cat, isub) })),
     ];
     render();
   }));
@@ -42,7 +46,7 @@ if (btn) {
     hits = [...found.filter((e) => e.type === 'page').slice(0, 3), ...found.filter((e) => e.type !== 'page').slice(0, 9)];
     cursor = 0;
     list.innerHTML = hits.length
-      ? hits.map((e, i) => `<li role="option" aria-selected="${i === cursor}"><a href="${esc(e.href)}" data-hs-type="${e.type}">${e.icon ? `<img src="${esc(e.icon)}" width="28" height="28" alt="" loading="lazy">` : '<span class="hs-ico" aria-hidden="true">›</span>'}<span class="hs-name">${esc(e.title)}${e.sub ? `<small>${esc(e.sub)}</small>` : ''}</span><span class="hs-type">${TYPE[e.type]()}</span></a></li>`).join('')
+      ? hits.map((e, i) => `<li role="option" aria-selected="${i === cursor}"><a href="${esc(e.href)}" data-hs-type="${e.type}">${e.icon ? `<img src="${esc(e.icon)}" width="28" height="28" alt="" loading="lazy">` : '<span class="hs-ico" aria-hidden="true">›</span>'}<span class="hs-name">${esc(e.title)}${e.sub ? `<small>${esc(e.sub)}</small>` : ''}</span><span class="hs-type">${e.type === 'item' && e.price ? `<b class="hs-price">${esc(mesos(e.price))}</b>` : TYPE[e.type]()}</span></a></li>`).join('')
       : `<li class="hs-empty">${tr('찾는 결과가 없어요. 한글·영문·초성(ㅈㄱ)·줄임말(장공)로도 찾아져요.', 'No match. Korean, English, initials and short names work too.')}${document.body.dataset.discordUrl ? ` <a href="${esc(document.body.dataset.discordUrl)}" target="_blank" rel="noopener" data-discord="search-empty">${tr('디스코드에서 물어보기', 'Ask on Discord')}</a>` : ''}</li>`;
   }
   const move = (d) => {

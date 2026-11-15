@@ -117,12 +117,12 @@ export function mountCharPanel(el, { routes, classes, finder, korean }) {
     ? { setH: '내 캐릭터 맞춤 홈', setP: '직업과 레벨을 한 번 저장하면 다음부터 사냥터, 경험치 퀘스트, 낄 장비와 시세, 스킬 순서를 바로 보여 줘요. 이 브라우저에만 저장돼요.', job: '직업', lv: '레벨', save: '저장',
       mine: '내 캐릭터', up: '레벨 올리기', down: '레벨 내리기', routesH: '지금 갈 사냥터', questsH: '지금 할 수 있는 퀘스트', gearH: '지금 낄 수 있는 장비', all: '전체 보기', finder: '조건 바꿔 찾기',
       skill: (job) => `${job} 스킬 찍는 순서 보기`, none: '이 레벨에 맞는 경로가 아직 없어요.', noQuest: '공략 퀘스트는 10레벨부터 열려요.', noGear: '이 레벨에 맞는 장비가 아직 없어요.',
-      start: (lv) => `Lv. ${lv}부터`, noPrice: '시세 없음', loading: '불러오는 중…', upload: '내 캐릭터 사진 올리기', change: '사진 바꾸기', reset: '기본 캐릭터로', photoNote: '사진은 이 브라우저에만 저장돼요.', photoFail: '이 파일은 쓸 수 없어요. 다른 사진을 골라 주세요.', guide: '공략',
+      start: (lv) => `Lv. ${lv}부터`, noPrice: '시세 없음', loading: '불러오는 중…', upload: '내 캐릭터 사진 올리기', firstJob: '1차 (전직 전)', change: '사진 바꾸기', reset: '기본 캐릭터로', photoNote: '사진은 이 브라우저에만 저장돼요.', photoFail: '이 파일은 쓸 수 없어요. 다른 사진을 골라 주세요.', guide: '공략',
       skillH: (job, n) => `${job} 스킬 찍는 순서 · ${n}차`, skillAll: '스킬트리 전체 보기', skillNow: '지금', skillBefore: '10레벨에 1차 전직하면 이 순서로 찍어요.', skillPick: '30레벨이 넘었어요. 위에서 2차 직업을 고르면 2차 스킬 순서가 나와요.', master: '마스터' }
     : { setH: tx('Your character home'), setP: tx('Save your class and level once, and the next visit opens on training spots, EXP quests, gear with prices and the skill build for it. Stored in this browser only.'), job: tx('Class'), lv: tx('Level'), save: tx('Save'),
       mine: tx('My character'), up: tx('Level up'), down: tx('Level down'), routesH: tx('Where to train now'), questsH: tx('Quests you can do now'), gearH: tx('Gear you can wear now'), all: tx('See all'), finder: tx('Adjust in the finder'),
       skill: (job) => tx('{job} skill build', { job }), none: tx('No route fits this level yet.'), noQuest: tx('Guided quests open from level 10.'), noGear: tx('No gear fits this level yet.'),
-      start: (lv) => tx('From level {lv}', { lv }), noPrice: tx('No price'), loading: tx('Loading…'), upload: tx('Add a picture of your character'), change: tx('Change picture'), reset: tx('Use the default character'), photoNote: tx('The picture stays in this browser only.'), photoFail: tx('That file cannot be used. Pick another picture.'), guide: tx('Guide'),
+      start: (lv) => tx('From level {lv}', { lv }), noPrice: tx('No price'), loading: tx('Loading…'), upload: tx('Add a picture of your character'), firstJob: tx('1st job (before the 2nd)'), change: tx('Change picture'), reset: tx('Use the default character'), photoNote: tx('The picture stays in this browser only.'), photoFail: tx('That file cannot be used. Pick another picture.'), guide: tx('Guide'),
       skillH: (job, n) => tx('{job} skill order · job {n}', { job, n }), skillAll: tx('Full skill trees'), skillNow: tx('Now'), skillBefore: tx('Take your 1st job at level 10, then spend SP in this order.'), skillPick: tx('Past level 30: pick your 2nd job above to see its skill order.'), master: tx('max') };
   const names = korean ? jobNames.ko : jobNames.en;
   const classHref = (job) => classes.find((c) => c.job === family(job))?.href;
@@ -185,8 +185,20 @@ export function mountCharPanel(el, { routes, classes, finder, korean }) {
     return `<figure class="char-avatar${own ? ' is-own' : ''}"><div class="char-avatar-frame"><img src="${esc(avatarSrc(c))}" alt="${esc(t.mine)}" data-char-img></div>${editable
       ? `<figcaption><label class="char-photo-btn"><input type="file" accept="image/*" data-char-upload class="sr-only">${esc(own ? t.change : t.upload)}</label>${own ? `<button type="button" class="char-photo-reset" data-char="reset-img">${esc(t.reset)}</button>` : ''}<small class="muted" data-char-photo-msg>${esc(t.photoNote)}</small></figcaption>` : ''}</figure>`;
   };
+  // Class picker: the site's own menu (the native select looked out of place), grouped by family; the family itself means
+  // "still 1st job".
+  const GROUPS = [['warrior', ['fighter', 'page', 'spear']], ['mage', ['fire', 'ice', 'cleric']], ['archer', ['hunter', 'crossbow']], ['thief', ['assassin', 'bandit']]];
+  const jobPicker = (c) => `<div class="char-job" data-jobpick><button type="button" class="char-job-btn" data-char="job-open" aria-haspopup="true" aria-expanded="false" aria-label="${esc(t.job)}"><span>${esc(names[c.job])}</span><i aria-hidden="true"></i></button>
+<div class="char-job-menu" role="menu" hidden>${GROUPS.map(([fam, subs]) => `<div class="char-job-group"><b>${esc(names[fam])}</b>${[fam, ...subs].map((k) => `<button type="button" role="menuitemradio" aria-checked="${c.job === k}" data-pick-job="${k}">${esc(k === fam ? t.firstJob : names[k])}</button>`).join('')}</div>`).join('')}</div></div>`;
+  const closeJobs = (focus) => {
+    const menu = el.querySelector('.char-job-menu'), btn = el.querySelector('.char-job-btn');
+    if (!menu || menu.hidden) return;
+    menu.hidden = true;
+    btn.setAttribute('aria-expanded', 'false');
+    if (focus) btn.focus();
+  };
   const head = (c) => `<div class="char-head">${avatar(c, true)}<div class="char-head-main"><h2>${esc(t.mine)}</h2><div class="char-controls">
-<label class="char-job"><span class="sr-only">${esc(t.job)}</span><select data-char-job aria-label="${esc(t.job)}">${Object.entries(names).map(([k, v]) => `<option value="${k}"${c.job === k ? ' selected' : ''}>${esc(v)}</option>`).join('')}</select></label>
+${jobPicker(c)}
 <div class="char-lv" role="group" aria-label="${esc(t.lv)}"><button type="button" class="btn ghost" data-char="down" aria-label="${esc(t.down)}">−</button><label><span>Lv.</span><input data-char-lv type="number" min="1" max="200" inputmode="numeric" value="${c.lv}" aria-label="${esc(t.lv)}"></label><button type="button" class="btn ghost" data-char="up" aria-label="${esc(t.up)}">+</button></div>
 </div></div></div><div class="char-body"></div>`;
   const body = (c) => {
@@ -204,7 +216,14 @@ ${skillBody(c)}`;
   };
   const refresh = () => {
     const c = loadChar(), box = el.querySelector('.char-body');
-    if (c && box) box.innerHTML = body(c);
+    if (!c || !box) return;
+    try {
+      box.innerHTML = body(c);
+    } catch (err) {
+      // Old saved data (an older char-hub.json from the cache) should never leave the cards loading forever.
+      hub = { gear: [], quests: [], skills: {}, skillNames: {} };
+      box.innerHTML = body(c);
+    }
   };
 
   const render = () => {
@@ -263,7 +282,24 @@ ${skillBody(c)}`;
     if (v >= 1 && v <= 200) lvTimer = setTimeout(() => change({ lv: v }, 'level'), 400);
   });
   el.addEventListener('click', (e) => {
+    const pick = e.target.closest('[data-pick-job]');
+    if (pick) {
+      const job = pick.dataset.pickJob;
+      el.querySelector('.char-job-btn span').textContent = names[job];
+      el.querySelectorAll('[data-pick-job]').forEach((x) => x.setAttribute('aria-checked', String(x === pick)));
+      closeJobs(true);
+      change({ job }, 'job');
+      return;
+    }
     const b = e.target.closest('[data-char]');
+    if (b?.dataset.char === 'job-open') {
+      const menu = el.querySelector('.char-job-menu');
+      const open = menu.hidden;
+      menu.hidden = !open;
+      b.setAttribute('aria-expanded', String(open));
+      if (open) (menu.querySelector('[aria-checked="true"]') || menu.querySelector('button'))?.focus();
+      return;
+    }
     if (b?.dataset.char === 'reset-img') {
       saveCharImg(null);
       track('my_char_photo', { action: 'reset' });
@@ -279,6 +315,14 @@ ${skillBody(c)}`;
     const c = loadChar();
     if (a.dataset.route) track('my_char_route_click', { route_id: a.dataset.route });
     track('my_char_click', { kind: a.dataset.charLink, item_id: a.dataset.item ? Number(a.dataset.item) : undefined, ui_value: a.dataset.quest, job: c?.job, level: c?.lv });
+  });
+  document.addEventListener('click', (e) => { if (!e.target.closest('[data-jobpick]')) closeJobs(false); });
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeJobs(true);
+    if (!e.target.matches('[data-pick-job]') || !['ArrowDown', 'ArrowUp'].includes(e.key)) return;
+    e.preventDefault();
+    const all = [...el.querySelectorAll('[data-pick-job]')];
+    all[(all.indexOf(e.target) + (e.key === 'ArrowDown' ? 1 : all.length - 1)) % all.length].focus();
   });
   render();
 }

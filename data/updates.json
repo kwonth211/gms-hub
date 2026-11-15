@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest.",
  "updates": [
   {
+   "id": "search-instant-price",
+   "version": "0.6.2",
+   "level": "patch",
+   "date": "2026-11-15",
+   "path": "/",
+   "ko": "검색하면 시세가 바로 — 위 검색창·홈 검색 모두",
+   "en": "Search shows prices at once — header and home search",
+   "desc": {
+    "ko": "아이템을 검색하면 결과에 시세가 기다림 없이 바로 나와요. 내 캐릭터 칸의 직업 선택은 계열별로 묶인 메뉴로 바꿨어요.",
+    "en": "Item results now show their price the moment they appear. The character panel's class picker is now a menu grouped by family."
+   }
+  },
+  {
    "id": "my-character-picture",
    "version": "0.6.1",
    "level": "patch",

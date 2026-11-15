@@ -122,7 +122,8 @@ function loadItems() {
     }))
     .then((rows) => {
       if (!Array.isArray(rows) || !rows.length || rows.some((row) => !Array.isArray(row) || !Number.isInteger(row[0]) || typeof row[2] !== 'string')) throw new Error('Invalid item index');
-      items = rows.map(([id, ko, en, cat, sub]) => ({ id, ko, en, cat, sub, name: korean ? ko || en : en }));
+      items = rows.map(([id, ko, en, cat, sub, , price]) => ({ id, ko, en, cat, sub, price: price || 0, name: korean ? ko || en : en }));
+      items.forEach((it) => { if (it.price) builtPrice.set(it.id, it.price); });
       itemEntries = items.map((it) => indexEntry({
         type: 'item', id: it.id, title: it.name, names: [it.ko, it.en, String(it.id)],
         keywords: `아이템 item ${gearKeywords(it.cat, it.sub)}`, types: gearTypes(it.cat, it.sub), description: korean ? it.en : it.ko,
@@ -138,6 +139,8 @@ function loadItems() {
 // Item rows carry the scanned market price, so a search answers "how much?" without opening the market page.
 const priceApi = document.getElementById('live-market')?.dataset.api || '';
 const prices = new Map();
+// Prices baked into the item index at build time: shown at once, replaced by the live numbers when they arrive.
+const builtPrice = new Map();
 let priceTimer = null;
 function queuePrices(ids) {
   const missing = ids.filter((id) => !prices.has(id)).slice(0, 60);
@@ -152,12 +155,12 @@ function queuePrices(ids) {
       // Re-rendering while a result has focus would drop it; the prices show on the next keystroke instead.
       if (!searchPanel.contains(document.activeElement)) renderSearch();
     } catch (e) {}
-  }, 250);
+  }, 120);
 }
 const priceBasis = korean ? { sold: '거래가', selling: '판매가', buying: '구매가', typical: '대표 시세', mega: '고확 호가' } : { sold: tx('Sold'), selling: tx('Asking'), buying: tx('Buying'), typical: tx('Typical'), mega: tx('Megaphone ask') };
 function priceTag(id) {
   const p = prices.get(id);
-  if (!p?.median) return labels.market;
+  if (!p?.median) return builtPrice.has(id) ? `<b>${mesos(builtPrice.get(id))}</b><small>${korean ? '시세' : tx('Price')}</small>` : labels.market;
   // A reference price has no records of our own behind it, so it shows no count.
   if (p.basis === 'typical') return `<b>${mesos(p.median)}</b><small>${priceBasis.typical}</small>`;
   if (p.basis === 'mega') return `<b>${mesos(p.median)}</b><small>${priceBasis.mega} · ${korean ? `${p.mega.n}건` : tx('{n} seen', { n: p.mega.n })}</small>`;
@@ -171,7 +174,7 @@ function resultRow(entry) {
     : entry.type === 'item'
     ? `<img src="https://maplestory.io/api/MCW/1/item/${entry.id}/icon" alt="" width="30" height="30" loading="lazy">`
     : `<span class="search-result-icon" aria-hidden="true">${external ? '↗' : '⌘'}</span>`;
-  return `<a class="search-result" href="${escHtml(entry.href)}" data-result-type="${entry.type}" data-result-id="${escHtml(entry.id)}"${external ? ` target="_blank" rel="noopener" aria-label="${escHtml(entry.title)} · ${labels.external}"` : ''}>${icon}<span class="search-result-copy"><strong>${escHtml(entry.title)}</strong><small>${escHtml(entry.description || '')}</small></span><span class="search-result-action${entry.type === 'item' && prices.get(entry.id)?.median ? ' priced' : ''}">${entry.type === 'item' ? priceTag(entry.id) : entry.type === 'mob' ? `${labels.mobAction}` : external ? '↗' : '→'}</span></a>`;
+  return `<a class="search-result" href="${escHtml(entry.href)}" data-result-type="${entry.type}" data-result-id="${escHtml(entry.id)}"${external ? ` target="_blank" rel="noopener" aria-label="${escHtml(entry.title)} · ${labels.external}"` : ''}>${icon}<span class="search-result-copy"><strong>${escHtml(entry.title)}</strong><small>${escHtml(entry.description || '')}</small></span><span class="search-result-action${entry.type === 'item' && (prices.get(entry.id)?.median || builtPrice.has(entry.id)) ? ' priced' : ''}">${entry.type === 'item' ? priceTag(entry.id) : entry.type === 'mob' ? `${labels.mobAction}` : external ? '↗' : '→'}</span></a>`;
 }
 
 function sizeSearchPanel() {
