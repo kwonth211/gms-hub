@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest.",
  "updates": [
   {
+   "id": "market-offers-first",
+   "version": "0.6.5",
+   "level": "patch",
+   "date": "2026-11-15",
+   "path": "/tools/market/",
+   "ko": "시세 — 아이템을 열면 지금 파는 곳이 먼저",
+   "en": "Prices — where to buy comes first",
+   "desc": {
+    "ko": "아이템 시세 상세에서 판매 매물 목록이 드롭하는 몬스터보다 위에 나와요. 성공률·능력치 같은 아이템 정보는 가격 바로 아래에 그대로 있어요.",
+    "en": "In an item's price panel the shop listings now come before the monsters that drop it. Item facts like success rate and stats stay right under the price."
+   }
+  },
+  {
    "id": "market-offers-compact",
    "version": "0.6.4",
    "level": "patch",
