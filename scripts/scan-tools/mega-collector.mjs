@@ -1,9 +1,10 @@
-// Megaphone collector for the admin's Mac (macOS only): every 1.5 s it captures the MapleStory window with
-// `screencapture -l` (works even when other windows cover it; maple-window.swift finds the window), finds the chat box by its megaphone bands, reads new megaphones with assets/mega-reader.js and posts them
+// Megaphone collector for the admin's Mac (macOS only): maple-stream.swift keeps one capture stream open on the
+// MapleStory window (works even when other windows cover it) and saves its newest frame; every 1.5 s this reads that
+// frame, finds the chat box by its megaphone bands, reads new megaphones with assets/mega-reader.js and posts them
 // to the worker with the admin key in ~/.config/gms-hub/megaphone-token. Only the recognised text leaves the Mac.
 // Run (from scripts/scan-tools after npm install):  node mega-collector.mjs          # read and post
 //                                                     node mega-collector.mjs --dry  # read and print only
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -20,9 +21,20 @@ const shot = path.join(os.tmpdir(), 'gms-mega-shot.png');
 const LIVE = path.join(os.homedir(), 'gms-hub-samples', 'mega-live');
 fs.mkdirSync(LIVE, { recursive: true });
 const here = path.dirname(new URL(import.meta.url).pathname);
-const helper = path.join(os.tmpdir(), 'gms-maple-window');
-if (!fs.existsSync(helper)) execFileSync('swiftc', ['-O', path.join(here, 'maple-window.swift'), '-o', helper]);
-const windowId = () => { try { return execFileSync(helper, { encoding: 'utf8' }).trim(); } catch { return ''; } };
+const helper = path.join(os.tmpdir(), 'gms-maple-stream');
+const source = path.join(here, 'maple-stream.swift');
+if (!fs.existsSync(helper) || fs.statSync(helper).mtimeMs < fs.statSync(source).mtimeMs) execFileSync('swiftc', ['-O', source, '-o', helper]);
+// The capture helper runs for as long as the game window is there; it ends by itself when this process does (its
+// stdin closes). After it stops (game closed, window resized) it is started again, at most once a minute.
+let cam = null, tried = 0, seen = 0, fresh = 0;
+function camera() {
+  tried = fresh = Date.now();
+  fs.rmSync(shot, { force: true });
+  seen = 0;
+  cam = spawn(helper, [shot], { stdio: ['pipe', 'ignore', 'pipe'] });
+  cam.stderr.on('data', (d) => console.error(new Date().toISOString(), String(d).trim()));
+  cam.on('exit', () => { cam = null; });
+}
 const token = DRY ? '' : fs.readFileSync(path.join(os.homedir(), '.config', 'gms-hub', 'megaphone-token'), 'utf8').trim();
 
 const text = await Tesseract.createWorker('eng');
@@ -59,7 +71,7 @@ function crop(img, b) {
 }
 
 const isRepeat = repeatFilter();
-let box = null, ticks = 0, empty = 0, queue = [], sent = 0, win = '';
+let box = null, ticks = 0, empty = 0, queue = [], sent = 0;
 async function flush() {
   if (DRY || !queue.length) return;
   const rows = queue.splice(0, 50);
@@ -71,9 +83,12 @@ async function flush() {
 }
 
 async function tick() {
-  if (!win || ticks % 40 === 0) win = windowId();
-  if (!win) { if (ticks++ % 40 === 0) console.error(new Date().toISOString(), 'MapleStory window not found'); return; }
-  try { execFileSync('screencapture', ['-x', '-o', '-t', 'png', `-l${win}`, shot]); } catch { win = ''; return; }
+  if (!cam) { if (Date.now() - tried > 60000) camera(); return; }
+  let at = 0;
+  try { at = fs.statSync(shot).mtimeMs; } catch { /* no frame yet */ }
+  // No new frame: nothing on the window changed. A minute without one means the stream is stuck, so start it over.
+  if (at === seen) { if (Date.now() - fresh > 60000) cam.kill(); return; }
+  seen = at; fresh = Date.now();
   const img = PNG.sync.read(fs.readFileSync(shot));
   if (!box || ticks++ % 40 === 0 || empty > 20) { const found = findChatBox(img); if (found) { box = found; empty = 0; } }
   if (!box) return;

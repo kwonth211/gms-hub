@@ -26,11 +26,11 @@ case $1 in
     # Copy the collector from a checkout into ~/gms-hub-mega (a fixed folder) and restart it there.
     REPO=${2:-~/gms-hub}; DEST=~/gms-hub-mega
     mkdir -p $DEST/scripts/scan-tools $DEST/assets
-    cp $REPO/scripts/scan-tools/{mega-collector.mjs,mega-check.mjs,mega-learn.mjs,maple-window.swift,mega.sh,package.json} $DEST/scripts/scan-tools/
+    cp $REPO/scripts/scan-tools/{mega-collector.mjs,mega-check.mjs,mega-learn.mjs,maple-stream.swift,mega.sh,package.json} $DEST/scripts/scan-tools/
     cp $REPO/assets/mega-reader.js $REPO/assets/mega-glyphs.json $DEST/assets/
     node -e "const d=require('$REPO/data/items.json');console.log(JSON.stringify([...new Set(d.items.map(i=>i.en))]))" > $DEST/assets/items-names.json
     [[ -e $DEST/scripts/scan-tools/node_modules ]] || ln -s ~/gms-hub/scripts/scan-tools/node_modules $DEST/scripts/scan-tools/node_modules
-    rm -f ${TMPDIR:-/tmp}/gms-maple-window
+    rm -f ${TMPDIR:-/tmp}/gms-maple-window ${TMPDIR:-/tmp}/gms-maple-stream
     $DEST/scripts/scan-tools/mega.sh stop; $DEST/scripts/scan-tools/mega.sh start ;;
   *) echo "사용법: ./mega.sh start | stop | status | log | check | learn | install <repo>"; exit 1 ;;
 esac
