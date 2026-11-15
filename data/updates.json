@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "item-answers",
+   "version": "0.7.6",
+   "level": "minor",
+   "date": "2026-11-16",
+   "path": "/items/",
+   "ko": "아이템 페이지 — 시세·드롭 몬스터·NPC 판매를 문장으로 한눈에",
+   "en": "Item pages — price, droppers and NPC-or-market answered in plain sentences",
+   "desc": {
+    "ko": "아이템 페이지 가격 아래에 '한눈에 보기'가 생겼어요. 지금 판매 중 중앙값과 최저가, 매물 수, 최근 14일 가격 범위, 드롭 제보가 있는 몬스터, NPC 상점에 파는 게 나은지를 문장으로 바로 읽을 수 있어요. 금비 표창, 장갑 공격력 주문서처럼 거래가 많은 아이템 페이지는 다시 검색에 나오고, 영어 주문서 페이지에는 성공 확률(100%·60%·10%)이 이름 옆에 붙어요.",
+    "en": "Item pages now carry an 'at a glance' block under the price: the median and lowest ask right now, how many are for sale, the 14-day price range, the monsters reported to drop it and whether an NPC shop pays about as much. The most traded items (Kumbi Throwing Stars, Gloves Attack scrolls and the like) are back in search, and English scroll pages show the success rate (100%, 60%, 10%) beside the name."
+   }
+  },
+  {
    "id": "discord-bot-v2",
    "version": "0.7.5",
    "level": "minor",

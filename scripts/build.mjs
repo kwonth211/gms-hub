@@ -2689,7 +2689,11 @@ function scrollAlias(i) {
   return { short: `${SCROLL_GEAR[m[1]]}${sh} ${tier}`, long: `${m[1]} ${word} 주문서 ${tier}`, tierKo: m[3] };
 }
 // The name a Korean page leads with: the shorthand for scrolls, the client name otherwise.
-const itemSeoName = (lang, i) => { const a = lang === 'ko' && scrollAlias(i); return a ? a.short : itemName(lang, i); };
+// English players search scrolls by success rate ("glove attack 60%"), which the client name hides behind a tier word.
+// The rate goes after the unchanged client name so the name still reads as one game term for the translated pages.
+const SCROLL_TIER_EN = { Lesser: '100%', Intermediate: '60%', Greater: '10%' };
+const scrollRateEn = (i) => SCROLL_TIER_EN[((i.en || '').match(/ Scroll: (Lesser|Intermediate|Greater)\s*$/) || [])[1]] || '';
+const itemSeoName = (lang, i) => { const a = lang === 'ko' && scrollAlias(i); return a ? a.short : lang !== 'ko' && scrollRateEn(i) ? `${i.en.trim()} (${scrollRateEn(i)})` : itemName(lang, i); };
 const PRICED = itemsData.items.filter(priceOf);
 // Items a monster drops also get a page (who drops it, where those monsters live, base stats): "who drops X" is how
 // players, English-speaking ones above all, search for an item.
@@ -2848,7 +2852,7 @@ const itemInfoHtml = (lang, i) => [subLabel(lang, i), i.lv ? `Lv. ${i.lv}` : '']
 function itemDesc(lang, i) {
   const t = IT[lang];
   const p = priceOf(i);
-  const name = itemName(lang, i);
+  const name = lang === 'ko' ? itemName(lang, i) : itemSeoName(lang, i);
   if (!p) return DROP_INDEX.has(i.id) ? fill(t.descDrop, { name, info: itemInfoText(lang, i), n: DROP_INDEX.get(i.id).length }) : fill(t.descNone, { name, info: itemInfoText(lang, i) });
   const a = lang === 'ko' && scrollAlias(i), now = nowOf(i);
   if (now) return fill(t.descNow, { name: a ? `${a.short}(${a.long}, ${i.ko})` : name, median: mesoText(lang, now.median), open: now.open, low: mesoText(lang, now.low) });
@@ -2926,6 +2930,80 @@ const PRICE_CATS = [
 ].map((c) => ({ ...c, items: PRICED.filter((i) => c.test(i) && priceOf(i)?.n >= 1).sort((a, b) => priceOf(b).n - priceOf(a).n || priceOf(b).median - priceOf(a).median) }));
 const priceCatName = (lang, c) => (lang === 'ko' ? c.ko : c.en);
 
+// Plain-sentence answers under the price, written into the page HTML at build time. The live numbers above load in the
+// browser, which search engines and AI assistants do not read; these sentences are what they can quote: how much the
+// item costs, which monsters drop it, and whether an NPC shop pays about as much. Same numbers as the headline, dated.
+const ANS = {
+  ko: {
+    h: '{name} 한눈에 보기',
+    qPrice: '글클메 {name} 시세는 얼마예요?',
+    aNow: '자유시장 상점에 올라온 매물의 중앙값은 {median} 메소예요. 판매 중인 매물은 {open}건이고 가장 싼 매물은 {low} 메소예요 ({date} 기준).',
+    aRange: '최근 14일 동안 올라온 매물은 {low}~{high} 메소 사이였어요.',
+    aLast: '지금 판매 중인 매물은 없고, 마지막으로 확인된 시세는 {median} 메소예요 ({date} 기준).',
+    qDrop: '{name} 드롭 몬스터는?',
+    aDrop: '드롭 제보가 있는 몬스터는 {n}종이에요: {list}.',
+    aDropMore: '드롭 제보가 있는 몬스터는 {n}종이에요. 레벨이 낮은 순으로 {list} 등이 있어요.',
+    qNpc: 'NPC 상점에 파는 게 나아요?',
+    aNpcLow: 'NPC 상점은 {sell} 메소를 줘요. 시세의 {pct}% 정도라 자유시장에 파는 편이 나아요.',
+    aNpcHigh: 'NPC 상점은 {sell} 메소를 줘요. 시세의 {pct}%라서 자유시장에 올리기보다 NPC 상점에 파는 편이 나아요.'
+  },
+  en: {
+    h: '{name} at a glance',
+    qPrice: 'How much is {name} in MapleStory Classic World?',
+    aNow: 'Free Market shops are asking a median of {median} mesos for it. {open} are for sale right now and the cheapest is {low} mesos (as of {date}).',
+    aRange: 'Over the last 14 days listings ran from {low} to {high} mesos.',
+    aLast: 'None are for sale right now. The last known price is {median} mesos (as of {date}).',
+    qDrop: 'Which monsters drop {name}?',
+    aDrop: 'Players have reported it from these monsters ({n}): {list}.',
+    aDropMore: 'Players have reported it from {n} monsters. The lowest-level ones are {list}.',
+    qNpc: 'Is it better to sell {name} to an NPC shop?',
+    aNpcLow: 'An NPC shop pays {sell} mesos, about {pct}% of the market price, so the Free Market is the better place to sell it.',
+    aNpcHigh: 'An NPC shop pays {sell} mesos, {pct}% of the market price, so selling it to the NPC beats listing it.'
+  }
+};
+// [{ q, qHtml, html, text }]: html for the page (monsters linked), text for the FAQ structured data.
+function itemAnswers(lang, i) {
+  const a = ANS[lang] || ANS.en;
+  const p = priceOf(i);
+  if (!p) return [];
+  const nf = new Intl.NumberFormat(lang);
+  const name = itemSeoName(lang, i);
+  const out = [];
+  const add = (q, tpl, vars, htmlVars = vars) => out.push({ q: fill(q, { name }), qHtml: esc(fill(q, { name })), text: fill(tpl, vars), html: fill(esc(tpl), htmlVars) });
+  const now = nowOf(i), last = lastPrice(i);
+  if (now) {
+    const range = p.low && p.high && p.high > p.low ? ' ' + fill(a.aRange, { low: nf.format(p.low), high: nf.format(p.high) }) : '';
+    add(a.qPrice, a.aNow + range.replace(/[{}]/g, ''), { median: nf.format(now.median), open: now.open, low: nf.format(now.low), date: PRICES_DATE });
+  } else if (last) {
+    add(a.qPrice, a.aLast, { median: nf.format(last), date: PRICES_DATE });
+  }
+  const mobs = (DROP_INDEX.get(i.id) || []).filter(({ m }) => m.status === 'active').sort((x, y) => x.m.lv - y.m.lv);
+  if (mobs.length) {
+    const shown = mobs.slice(0, 4);
+    const label = (m) => `${monsterName(m, lang)} (Lv. ${m.lv})`;
+    const tpl = mobs.length > shown.length ? a.aDropMore : a.aDrop;
+    add(a.qDrop, tpl, { n: mobs.length, list: shown.map(({ m }) => label(m)).join(', ') },
+      { n: mobs.length, list: shown.map(({ m }) => `<a href="${href(langPath(lang, monsterPath(m)))}">${esc(label(m))}</a>`).join(', ') });
+  }
+  const sell = ITEM_DETAILS[i.id]?.sell || 0, market = now?.median ?? last;
+  if (sell && market) {
+    const pct = Math.round((sell / market) * 100);
+    if (pct >= 1) add(a.qNpc, pct >= 90 ? a.aNpcHigh : a.aNpcLow, { sell: nf.format(sell), pct });
+  }
+  return out;
+}
+function itemAnswersHtml(lang, i) {
+  const rows = itemAnswers(lang, i);
+  if (!rows.length) return '';
+  const a = ANS[lang] || ANS.en;
+  return `<section class="panel item-answers"><h2>${esc(fill(a.h, { name: itemSeoName(lang, i) }))}</h2>
+${rows.map((r) => `<h3>${r.qHtml}</h3><p>${r.html}</p>`).join('\n')}</section>`;
+}
+function itemFaqLd(lang, i) {
+  const rows = itemAnswers(lang, i);
+  return rows.length ? [{ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: rows.map((r) => ({ '@type': 'Question', name: r.q, acceptedAnswer: { '@type': 'Answer', text: r.text } })) }] : [];
+}
+
 function itemBody(lang, i) {
   const t = IT[lang];
   const p = priceOf(i);
@@ -2966,6 +3044,7 @@ function itemBody(lang, i) {
 <div class="wrap item-page">
 ${dropOnly ? dropMonsters(lang, i) : ''}
 ${p ? marketBrowser(lang, i.id, `<div class="item-price">${price}</div>`) : ``}
+${itemAnswersHtml(lang, i)}
 <section class="panel item-info"><h2>${t.infoH}</h2><dl>${rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
 ${ITEM_DETAILS[i.id] && i.cat === 'Equip' ? `<p class="muted note">${t.stats.base}</p>` : ''}
 ${tools.length ? `<h3>${t.tools}</h3><p>${tools.join(' · ')}</p>` : ''}</section>
@@ -3420,7 +3499,7 @@ for (const lang of LANGS) {
   // Only items with a recent price get a page. A page per item in the game (2,120 × 2 languages) was 99% of the site and
   // mostly a name with no price: the kind of mass-generated thin page that AdSense rejects as low-value content.
   for (const i of ITEM_PAGES) {
-    const name = itemName(lang, i);
+    const name = lang === 'ko' ? itemName(lang, i) : itemSeoName(lang, i);
     const dropOnly = !priceOf(i);
     write(
       path.join(lang, itemPath(i), 'index.html'),
@@ -3435,7 +3514,7 @@ for (const lang of LANGS) {
         body: itemBody(lang, i),
         modules: priceOf(i) ? ['market.js'] : [],
         noindex: !INDEXABLE.includes(i),
-        ld: [breadcrumbLd(lang, fill(dropOnly ? it.h1Drop : it.h1, { name: itemSeoName(lang, i) }), itemPath(i))]
+        ld: [breadcrumbLd(lang, fill(dropOnly ? it.h1Drop : it.h1, { name: itemSeoName(lang, i) }), itemPath(i)), ...itemFaqLd(lang, i)]
       })
     );
   }

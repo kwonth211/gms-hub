@@ -3145,3 +3145,8 @@ body.exp-running .exp-stop { display: inline-flex; }
 #mk-detail[data-ready="1"] > :not(.mk-head):not(.mb-wait) { animation: mb-in 0.2s ease-out both; }
 #mk-detail[data-ready="1"] :is(#mb-history, #mb-facts, #md-rows, #mb-info, #mb-megas, #mk-charts) > * { animation: none; }
 @media (prefers-reduced-motion: reduce) { #mk-detail[data-ready="1"] > * { animation: none; } }
+
+/* Item page: plain-sentence answers under the price (how much, who drops it, NPC or market). */
+.item-answers h3 { margin: 16px 0 4px; font-size: 1rem; }
+.item-answers h2 + h3 { margin-top: 4px; }
+.item-answers p { margin: 0; color: var(--text-2); line-height: 1.7; }
