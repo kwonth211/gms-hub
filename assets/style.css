@@ -2150,11 +2150,11 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-hist-legend .k.med { width: 16px; border-top: 2.5px solid var(--accent-fill); }
 /* Where to buy: listing cards in the item panel, and channel/room chips everywhere listings show. */
 .mb-ch { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap;
-  color: hsl(var(--h) 55% 28%); background: hsl(var(--h) 75% 90%); border: 1px solid hsl(var(--h) 50% 78%); }
-[data-theme='dark'] .mb-ch { color: hsl(var(--h) 80% 82%); background: hsl(var(--h) 35% 22%); border-color: hsl(var(--h) 35% 34%); }
+  color: var(--text); background: var(--panel-2); border: 1px solid var(--line-strong); }
+/* One colour for every channel (2026-11-15, owner): per-channel hues made the rows read as noise. */
 .mb-room { display: inline-block; margin-left: 4px; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; color: var(--text-2); background: var(--panel-2); border: 1px solid var(--line); }
 .mb-offers { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; }
-.mb-offer { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 5px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); box-shadow: inset 3px 0 0 var(--fresh, var(--line-strong)); font-size: 0.76rem; line-height: 1.3; }
+.mb-offer { display: grid; grid-template-columns: 6.6em 3.4em 4.4em minmax(0, 1fr) 5.4em 7.4em; align-items: center; gap: 8px; min-width: 0; padding: 5px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); box-shadow: inset 3px 0 0 var(--fresh, var(--line-strong)); font-size: 0.76rem; line-height: 1.3; }
 .mb-offer.fresh { --fresh: #2e9d5b; } .mb-offer.warm { --fresh: #d9a520; } .mb-offer.old { --fresh: var(--line-strong); opacity: 0.82; } .mb-offer.sold { --fresh: var(--muted); opacity: 0.6; }
 .mb-opts { display: inline-flex; flex-wrap: wrap; gap: 3px; flex: 0 1 auto; min-width: 0; }
 .mb-opt { padding: 0 5px; border: 1px solid var(--line); border-radius: 5px; background: var(--panel-2); color: var(--text-2); font-size: 0.72rem; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -2166,7 +2166,8 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-opt.grade.hi { border-color: var(--up); color: var(--up); }
 .mb-opt.grade.lo { border-color: var(--down); color: var(--down); }
 /* The option word sits beside the price, on the card's one line. */
-.mb-offer-price .mb-opts { align-self: center; margin-left: 2px; }
+.mb-offer-tag, .mb-offer-opt { display: flex; min-width: 0; }
+.mb-offer-opt .mb-opts { flex-wrap: nowrap; }
 /* All-listings table: the option word sits on the item name line, not under it. */
 .mb-item-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .mb-item-row .mb-item-link { min-width: 0; }
@@ -2179,17 +2180,20 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-optsum li b { margin-left: auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .mb-optsum li small { white-space: nowrap; }
 .mb-optsum li small { color: var(--muted); }
-.mb-offer-price { display: flex; align-items: baseline; gap: 4px; flex: none; min-width: 88px; white-space: nowrap; }
+.mb-offer-price { display: flex; flex-direction: column; align-items: flex-end; min-width: 0; white-space: nowrap; }
+.mb-offer-price small { line-height: 1.1; }
 .mb-offer-price strong { font-size: 0.9rem; font-variant-numeric: tabular-nums; }
 .mb-offer-price small { color: var(--muted); font-size: 0.7rem; }
-.mb-deal { display: inline-block; margin-left: 2px; padding: 0 5px; border-radius: 4px; font-size: 0.66rem; line-height: 1.5; }
+.mb-deal { display: inline-block; padding: 0 5px; border-radius: 4px; font-size: 0.66rem; line-height: 1.5; }
 .mb-deal.cheap { color: #fff; background: #2e9d5b; } .mb-deal.fair { color: var(--accent-ink); background: color-mix(in srgb, var(--accent-fill) 35%, transparent); } .mb-deal.pricey { color: var(--muted); background: var(--panel-2); }
-.mb-offer .mb-seller { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; font-weight: 700; font-size: 0.76rem; padding: 0; }
-.mb-fresh { display: flex; align-items: center; gap: 5px; flex: none; font-size: 0.7rem; color: var(--muted); white-space: nowrap; }
+.mb-offer .mb-seller { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; font-weight: 700; font-size: 0.76rem; padding: 0; }
+.mb-fresh { display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 0.7rem; color: var(--muted); white-space: nowrap; }
 .mb-fresh i { width: 6px; height: 6px; border-radius: 50%; background: var(--fresh, var(--muted)); flex: none; }
-.mb-offer-where { flex: none; white-space: nowrap; font-size: 0.7rem; }
-.mb-offer-where .mb-ch, .mb-offer-where .mb-room { padding: 0 5px; font-size: 0.68rem; }
-@media (max-width: 420px) { .mb-offer { gap: 7px; padding: 5px 8px; } .mb-offer-price { min-width: 0; } }
+.mb-offer-where { display: flex; justify-content: flex-end; white-space: nowrap; font-size: 0.7rem; }
+.mb-offer-where .mb-ch, .mb-offer-where .mb-room { padding: 0 5px; font-size: 0.68rem; text-align: center; }
+.mb-offer-where .mb-ch { min-width: 4.6em; box-sizing: border-box; }
+.mb-offer-where .mb-room { min-width: 4.2em; box-sizing: border-box; }
+@media (max-width: 520px) { .mb-offer { grid-template-columns: 6em 3.2em 4em minmax(0, 1fr) 7.2em; gap: 6px; padding: 5px 8px; } .mb-offer .mb-fresh { display: none; } }
 /* Header search: a button in the header and a search sheet over the page. */
 .hs-open { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--text-2); font: inherit; font-size: 0.85rem; cursor: pointer; }
 .hs-open:hover { color: var(--text); border-color: var(--line-strong); }
@@ -2846,7 +2850,8 @@ body.exp-running .exp-stop { display: inline-flex; }
 .map-legend small { color: var(--muted); }
 
 /* Before the first list arrives, hold room for it so the footer and ads below do not jump when it fills in. */
-#mb-results[aria-busy="true"]:has(> p:only-child) { min-height: 60vh; }
+#mb-results[aria-busy="true"]:has(> p:only-child), #mb-results:has(> .sk-list) { min-height: 60vh; }
+.sk-list li { height: 52px; }
 
 /* Home "just listed" feed: a LIVE badge, a thin bar that fills until the next refresh, and new rows that glow as they drop in. */
 .recent-head { display: flex; align-items: center; gap: 8px; }
@@ -2983,4 +2988,17 @@ body.exp-running .exp-stop { display: inline-flex; }
   .fm-line { order: 1; flex: 1 1 calc(100% - 110px); }
   .fm-send { order: 2; }
 }
-}
+
+/* Loading placeholders in the market's item panel (market.js SK): soft grey blocks in the shape of what is coming. */
+.sk { display: block; border-radius: 6px; background: linear-gradient(90deg, var(--line) 0%, var(--panel-2) 50%, var(--line) 100%); background-size: 200% 100%; animation: sk-shine 1.4s ease-in-out infinite; }
+.sk-wrap { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.sk-block { width: 100%; }
+.sk-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.sk-chips .sk { border-radius: 999px; }
+.sk-offers li { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; }
+@keyframes sk-shine { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+/* What replaces a placeholder fades in instead of snapping into place. */
+@keyframes mb-in { from { opacity: 0; transform: translateY(3px); } }
+#mk-detail :is(#mb-history, #mb-facts, #md-rows, #mb-info, #mb-megas, #mk-charts) > :not(.sk-wrap), #mb-results > :not(.sk-wrap) { animation: mb-in 0.22s ease-out both; }
+#md-rows[aria-busy="true"] > :not(.sk-wrap) { opacity: 0.55; transition: opacity 0.15s; }
+@media (prefers-reduced-motion: reduce) { .sk { animation: none; } #mk-detail :is(#mb-history, #mb-facts, #md-rows, #mb-info, #mb-megas, #mk-charts) > * { animation: none; } }

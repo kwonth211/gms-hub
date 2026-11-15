@@ -245,6 +245,15 @@ function optionSummary(rows) {
   const list = [...groups.values()].sort((a, b) => b.sort - a.sort || a.low - b.low).slice(0, 8);
   return `<div class="mb-optsum"><h4>${tr("옵션별 시세", "Price by option")}</h4><ul>${list.map((g) => `<li><span class="opt-${g.cls}">${esc(g.key)}</span><b>${money(g.low)}</b><small>${tr(`${g.n}건`, `${g.n}`)}</small></li>`).join("")}</ul></div>`;
 }
+// Loading placeholders: grey blocks in the shape of what is coming (style.css .sk), so the panel keeps its layout while
+// its parts arrive one by one instead of text popping in and pushing everything down.
+const SK = {
+  line: (w, h = 12) => `<span class="sk" style="width:${w};height:${h}px"></span>`,
+  history: () => `<div class="sk-wrap sk-history" aria-hidden="true">${SK.line("30%", 11)}${SK.line("55%", 30)}${SK.line("40%", 11)}<span class="sk sk-block" style="height:44px"></span>${SK.line("50%", 11)}<span class="sk sk-block" style="height:170px"></span></div>`,
+  facts: () => `<p class="sk-wrap sk-chips" aria-hidden="true">${["22%", "14%", "30%", "18%"].map((w) => SK.line(w, 26)).join("")}</p>`,
+  offers: (n = 6) => `<ul class="sk-wrap sk-offers" aria-hidden="true">${Array.from({ length: n }, () => `<li><span class="sk" style="width:22%;height:14px"></span><span class="sk" style="width:18%;height:14px"></span><span class="sk" style="width:16%;height:14px;margin-left:auto"></span></li>`).join("")}</ul>`,
+  block: (h) => `<div class="sk-wrap" aria-hidden="true"><span class="sk sk-block" style="height:${h}px"></span></div>`,
+};
 function offerCards(rows) {
   lastOffers = rows;
   if (!rows.length)
@@ -258,7 +267,7 @@ function offerCards(rows) {
     const status = { sold: tr("판매 완료 표시", "Marked sold"), fresh: tr("1시간 안에 확인", "Seen within the hour"), warm: tr("몇 시간 전 확인", "Seen a few hours ago"), old: tr("팔렸을 수도 있어요", "May have sold") }[fresh];
     const tag = r.sold ? `<b class="mb-deal pricey">${tr("판매 완료", "Sold")}</b>` : r25 == null ? "" : r.price < r25 ? `<b class="mb-deal cheap">${tr("싼 편", "Cheap")}</b>` : r.price > r75 ? `<b class="mb-deal pricey">${tr("비싼 편", "Pricey")}</b>` : "";
     const chips = optionChips(r);
-    return `<li class="mb-offer ${fresh}${chips ? " has-opts" : ""}"${chips ? ` data-item-id="${r.item}" data-opts="${esc(JSON.stringify(r.opts))}"` : ""}><span class="mb-offer-price"><strong>${money(r.price)}</strong>${r.qty > 1 ? `<small>×${money(r.qty)}</small>` : ""}${tag}${chips}</span><button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)}</button><span class="mb-fresh" title="${esc(status)}"><i aria-hidden="true"></i>${when(r.seen)}<span class="sr-only"> · ${esc(status)}</span></span><span class="mb-offer-where">${placeChips(r)}</span></li>`;
+    return `<li class="mb-offer ${fresh}${chips ? " has-opts" : ""}"${chips ? ` data-item-id="${r.item}" data-opts="${esc(JSON.stringify(r.opts))}"` : ""}><span class="mb-offer-price"><strong>${money(r.price)}</strong>${r.qty > 1 ? `<small>×${money(r.qty)}</small>` : ""}</span><span class="mb-offer-tag">${tag}</span><span class="mb-offer-opt">${chips}</span><button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)}</button><span class="mb-fresh" title="${esc(status)}"><i aria-hidden="true"></i>${when(r.seen)}<span class="sr-only"> · ${esc(status)}</span></span><span class="mb-offer-where">${placeChips(r)}</span></li>`;
   }).join("")}</ul>`;
 }
 function listingTable(rows, { showItem = true, shopButtons = true } = {}) {
@@ -666,11 +675,11 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
   fillItemInfo(id);
   fillMegaphones(id);
   $("mk-detail").innerHTML =
-    `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(it.name)}</h2><small>${esc(it.en)}</small></div>${starButton(id, "mb-star-detail")}${D.alerts || document.body.dataset.discordUrl ? `<button type="button" class="btn ghost small-btn" data-alert-open="${id}">🔔 ${tr("가격 알림", "Price alert")}</button>` : ""}${pageLink}<button class="btn ghost small-btn" data-share-item="${id}" title="${tr("이 아이템 링크 복사", "Copy a link to this item")}">${tr("링크 복사", "Copy link")}</button><button class="btn ghost small-btn" data-close-item aria-label="${tr("상세 닫기", "Close details")}">×</button></header><p class="share-status mb-share-status" id="mb-share-status" role="status" aria-live="polite"></p><section class="mb-alert" id="mb-alert" hidden></section><section class="mb-history" id="mb-history" aria-label="${tr("가격 한눈에 보기", "Price at a glance")}"><p class="muted note">${T.loading}</p></section>${stats}<section class="mb-info mb-facts" id="mb-facts"></section>${changed || reset ? visitNote(id) : ""}
+    `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(it.name)}</h2><small>${esc(it.en)}</small></div>${starButton(id, "mb-star-detail")}${D.alerts || document.body.dataset.discordUrl ? `<button type="button" class="btn ghost small-btn" data-alert-open="${id}">🔔 ${tr("가격 알림", "Price alert")}</button>` : ""}${pageLink}<button class="btn ghost small-btn" data-share-item="${id}" title="${tr("이 아이템 링크 복사", "Copy a link to this item")}">${tr("링크 복사", "Copy link")}</button><button class="btn ghost small-btn" data-close-item aria-label="${tr("상세 닫기", "Close details")}">×</button></header><p class="share-status mb-share-status" id="mb-share-status" role="status" aria-live="polite"></p><section class="mb-alert" id="mb-alert" hidden></section><section class="mb-history" id="mb-history" aria-label="${tr("가격 한눈에 보기", "Price at a glance")}" aria-busy="true">${SK.history()}</section>${stats}<section class="mb-info mb-facts" id="mb-facts">${SK.facts()}</section>${changed || reset ? visitNote(id) : ""}
  <div class="mb-tabs" role="tablist" aria-label="${tr("아이템 상세", "Item details")}"><button data-detail-tab="listings" role="tab" aria-selected="${detailTab === "listings"}" aria-controls="mb-detail-listings">${tr("판매 매물", "Shop listings")}</button><button data-detail-tab="charts" role="tab" aria-selected="${detailTab === "charts"}" aria-controls="mb-detail-charts">${tr("가격 추이·매물대", "Trends & depth")}</button><button class="mb-detail-refresh" data-refresh-item>${tr("새로고침", "Refresh")}</button></div>
- <div id="mb-detail-listings" role="tabpanel" aria-label="${tr("판매 매물", "Shop listings")}"><p class="muted note">${T.whereNote}</p><div class="mb-detail-filters"><label id="md-opt-wrap" hidden>${tr("옵션", "Option")}<select id="md-opt"></select></label><label>${tr("정렬", "Sort")}<select id="md-sort"><option value="price">${T.sortPrice}</option><option value="recent">${T.sortRecent}</option><option value="high">${tr("높은 가격순", "Highest price")}</option></select></label><label>${tr("상태", "Status")}<select id="md-state"><option value="open">${tr("판매 중 · 24h", "Asking · 24h")}</option><option value="all">${tr("전체 기록 · 7일", "All records · 7d")}</option><option value="sold">${tr("판매 완료 표시", "Marked sold")}</option><option value="stale">${tr("24시간 경과", "Over 24h old")}</option></select></label></div><div class="price-band-filter" id="md-price-band" hidden><span></span><button class="btn ghost small-btn" data-clear-band>${tr("가격대 해제", "Clear price band")}</button></div><p id="md-count" class="muted note" role="status"></p><div id="md-rows"></div><div id="md-pages" class="mb-pagination"></div></div>
- <div id="mb-detail-charts" role="tabpanel" aria-label="${tr("가격 추이와 매물대", "Trends and depth")}"><div id="mk-charts"><p>${T.loading}</p></div></div>
- <section class="mb-info" id="mb-info" aria-live="polite"></section><section class="mb-megas" id="mb-megas" hidden></section>`;
+ <div id="mb-detail-listings" role="tabpanel" aria-label="${tr("판매 매물", "Shop listings")}"><p class="muted note">${T.whereNote}</p><div class="mb-detail-filters"><label id="md-opt-wrap" hidden>${tr("옵션", "Option")}<select id="md-opt"></select></label><label>${tr("정렬", "Sort")}<select id="md-sort"><option value="price">${T.sortPrice}</option><option value="recent">${T.sortRecent}</option><option value="high">${tr("높은 가격순", "Highest price")}</option></select></label><label>${tr("상태", "Status")}<select id="md-state"><option value="open">${tr("판매 중 · 24h", "Asking · 24h")}</option><option value="all">${tr("전체 기록 · 7일", "All records · 7d")}</option><option value="sold">${tr("판매 완료 표시", "Marked sold")}</option><option value="stale">${tr("24시간 경과", "Over 24h old")}</option></select></label></div><div class="price-band-filter" id="md-price-band" hidden><span></span><button class="btn ghost small-btn" data-clear-band>${tr("가격대 해제", "Clear price band")}</button></div><p id="md-count" class="muted note" role="status"></p><div id="md-rows">${SK.offers()}</div><div id="md-pages" class="mb-pagination"></div></div>
+ <div id="mb-detail-charts" role="tabpanel" aria-label="${tr("가격 추이와 매물대", "Trends and depth")}"><div id="mk-charts">${SK.block(260)}</div></div>
+ <section class="mb-info" id="mb-info" aria-live="polite">${SK.block(90)}</section><section class="mb-megas" id="mb-megas" hidden></section>`;
   $("md-sort").value = detailState.sort;
   $("md-state").value = detailState.state;
   discordResult(id);
@@ -782,7 +791,9 @@ async function loadDetailRows() {
   }
   fillOptMenu(id);
   $("md-rows").setAttribute("aria-busy", "true");
-  $("md-count").textContent = T.loading;
+  // First load shows placeholder rows; a filter change keeps the old rows (dimmed by aria-busy) until the new ones arrive.
+  if (!$("md-rows").children.length) $("md-rows").innerHTML = SK.offers();
+  if (!$("md-count").textContent) $("md-count").innerHTML = SK.line("40%", 11);
   $("md-price-band").hidden = !priceBand;
   $("md-price-band").querySelector("span").textContent = priceBand?.label || "";
   try {
@@ -1162,7 +1173,13 @@ async function fillItemInfo(id) {
   if (lastOffers?.some((r) => r.opts) && $("md-rows")?.querySelector(".mb-offers")) $("md-rows").innerHTML = offerCards(lastOffers);
   const box = $("mb-info");
   const t = data?.items?.[id];
-  if (!box || !t || selected !== id) return;
+  if (!box || selected !== id) return;
+  // No game data for this item: drop the placeholders instead of leaving them grey.
+  if (!t) {
+    box.innerHTML = "";
+    if ($("mb-facts")) $("mb-facts").innerHTML = "";
+    return;
+  }
   const [, , cat, , lv, job, req, inc, slots, sell, scroll, drops, dropN, questN] = t;
   const facts = [];
   if (scroll) facts.push(`${tr("성공률", "Success")} ${scroll[1]}%${scroll[2] ? ` · ${tr("실패 시 파괴", "Boom on fail")} ${scroll[2]}%` : ""}`);
@@ -1254,6 +1271,7 @@ ${dayTicks.map((s, i) => `<text class="ax" x="${[L, (L + W - R) / 2, W - R][i]}"
 <p class="mb-hist-legend"><span class="k ask"></span>${tr("매물", "Listing")} <span class="k band"></span>${tr("보통 가격대", "Typical range")} <span class="k med"></span>${tr("하루 중앙값", "Daily median")}${pts.some((r) => r.p > hi || r.p < lo) ? ` <span>▲▼ ${tr("범위 밖 가격", "off the scale")}</span>` : ""}</p>`;
   } else chart = `<p class="muted note">${tr("아직 기록이 적어서 추이를 그리기 어려워요. 매일 쌓이면 여기에 그려져요.", "Too few records for a trend yet; it fills in as days add up.")}</p>`;
   const ranges = [[7, tr("7일", "7d")], [30, tr("30일", "30d")], ["all", tr("전체", "All")]];
+  box.removeAttribute("aria-busy");
   box.innerHTML = `${head}${npcLine(selected, open.length ? quant(open, 0.5) : lastDay?.median ?? megaAsk?.median ?? null)}${dist}<div class="mb-hist-head"><h3>${tr("가격 추이", "Price history")}</h3><div class="mb-hist-range" role="group">${ranges.map(([v, l]) => `<button type="button" data-hist-range="${v}" aria-pressed="${histRange === v}">${l}</button>`).join("")}</div></div>${chart}`;
 }
 
