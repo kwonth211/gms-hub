@@ -140,7 +140,7 @@ function render() {
   const dailyMax = Math.max(1, ...d.daily.map((x) => x.visits));
   root.innerHTML = `${head}
 <div class="td-body${state.loading ? ' busy' : ''}">
-${d.coarse ? '<p class="td-err small">Cloudflare가 일부 숫자를 대략적으로 보내왔어요. 잠시 뒤 새로고침하면 정확해져요.</p>' : ''}<p class="muted small">${esc(cutNote)} · Cloudflare 표본 추정값 · ${esc(new Date(d.at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }))} 기준</p>
+<p class="muted small">${esc(cutNote)} · Cloudflare 표본 추정값 · ${esc(new Date(d.at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }))} 기준</p>
 <div class="td-cards">
 <div class="td-card"><span>방문</span><b>${nf(v0)}</b><small>${d.isToday ? '같은 시각 어제' : '전날'} ${nf(v1)} (${pct(v0, v1)}) · 지난주 같은 요일 ${nf(v7)} (${pct(v0, v7)})</small></div>
 <div class="td-card"><span>페이지뷰</span><b>${nf(p0)}</b><small>${d.isToday ? '같은 시각 어제' : '전날'} ${nf(p1)} (${pct(p0, p1)}) · 방문당 ${v0 ? (p0 / v0).toFixed(1) : '–'}쪽</small></div>
@@ -181,7 +181,12 @@ async function load() {
     const j = await r.json().catch(() => ({}));
     if (r.status === 403) { store.set(''); state.error = '키가 맞지 않아요.'; }
     else if (!r.ok) state.error = j.error === 'analytics token not set' ? '서버에 Cloudflare 통계 읽기 토큰이 아직 없어요.' : `불러오지 못했어요 (${j.error || r.status}).`;
-    else state.data = j;
+    else {
+      state.data = j;
+      // Cloudflare sometimes answers from a rough sample; ask again quietly a little later (at most three times).
+      if (j.coarse && (state.retries = (state.retries || 0) + 1) <= 3) setTimeout(load, 15000);
+      else if (!j.coarse) state.retries = 0;
+    }
   } catch (e) { state.error = '불러오지 못했어요.'; }
   state.loading = false; render();
 }
