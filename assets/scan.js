@@ -33,6 +33,13 @@ let mapData = null;
 // Once read, channel and room stay until a different one is read (2026-11-15, owner): switching to the inventory, chat or
 // another window hides the minimap and the channel, and that is no reason to forget where the shop is. They also survive
 // stopping and restarting the share, and a page reload within three hours.
+// Scanning your own shop: the owner box of your own store window often reads blank, which made every frame a new shop
+// (the same items listed again and again) and blocked the upload. The name typed here fills in for an unreadable owner.
+const ME_KEY = 'gmshub_scan_me';
+const meInput = document.getElementById('scan-me');
+try { if (meInput) meInput.value = localStorage.getItem(ME_KEY) || ''; } catch {}
+meInput?.addEventListener('change', () => { try { localStorage.setItem(ME_KEY, meInput.value.trim()); } catch {} track('scan_me_set'); });
+const me = () => { const v = (meInput?.value || '').trim(); return /^[A-Za-z0-9]{2,13}$/.test(v) ? v : ''; };
 const LOC_KEY = 'gmshub_scan_loc';
 let { channel = null, room = null } = (() => {
   try {
@@ -264,6 +271,7 @@ async function recognize(canvas) {
   if (!SELLER.test(owner)) {
     try { owner = await ownerByOcr(rows[0].x0, listTop); } catch { /* Keep the row available for manual correction. */ }
   }
+  if (!SELLER.test(owner) && me()) owner = me();
   const out = [];
   for (const row of rows) {
     let name = readLine(img, row, 0, table);
@@ -291,6 +299,10 @@ async function recognize(canvas) {
     // A line that matches no item and holds no word (a cut-off row, a cursor or tooltip over it) is shown as unreadable
     // rather than as the stray marks OCR made of it.
     if (!match && !/[A-Za-z가-힣]{2}/.test(name)) name = '';
+    // Not shop goods: the sold-items log beside your own store ("Buyer: name", "40,998 mesos"), and lines with no item and no
+    // price, or no price at all (a frame caught mid-scroll). They never upload, so they are not listed either.
+    if (!match && /^\s*buyer\b|\bmesos?\b/i.test(name)) continue;
+    if (!p) continue;
     // "100 for 5,000 mesos" is 100 items at 50 each: prices are kept per item so bundles compare with single listings.
     // Throwing stars and bullets are the exception: the number on them is how many stars the one set holds (a 500-star
     // Wolbi set for 2,000), and the market prices them per set, so the whole price stays on one item.
@@ -429,6 +441,9 @@ const listings = new Map();
 const correctedKeys = new Set();
 // Rows the player removed as misread: the same row read again is not added back.
 const removedKeys = new Set();
+const sigKeys = new Map();
+const removedSigs = new Set();
+const rowSig = (r) => [r.owner || '', r.channel, r.room, r.item?.id || r.name, r.price, r.qty].join('|');
 
 // Market medians for the items read, fetched once per item so each row shows how far the asking price is from the market.
 const medians = new Map();
@@ -592,7 +607,11 @@ function show(found) {
   });
   // Prepending in reverse keeps the rows in the same order as on screen.
   for (const r of [...found].reverse()) {
+    // The same goods in the same place are one row even when they were first read under another shop record.
+    const sig = rowSig(r), seenKey = sigKeys.get(sig);
+    if (removedSigs.has(sig) || (seenKey && seenKey !== listingKey(r) && listings.has(seenKey))) continue;
     const key = listingKey(r);
+    sigKeys.set(sig, key);
     if (correctedKeys.has(key) || removedKeys.has(key)) continue;
     let entry = listings.get(key);
     if (!entry) {
@@ -626,6 +645,7 @@ async function removeRow(entry) {
   const key = listingKey(entry.r);
   const wasSent = sent.has(key) && validListing(entry.r);
   removedKeys.add(key);
+  removedSigs.add(rowSig(entry.r));
   listings.delete(key);
   entry.tr.remove();
   updateSummary();

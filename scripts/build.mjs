@@ -1904,6 +1904,7 @@ function scanBody(lang) {
 <fieldset class="scan-location"><legend>${lang === 'ko' ? '현재 상점 위치' : 'Current shop location'}</legend>
 <label>${t.i.channelLabel}<select id="scan-channel">${locationChoices(lang, 'CH')}</select></label>
 <label>${t.i.roomLabel}<select id="scan-room">${locationChoices(lang, 'FM')}</select></label>
+<label>${lang === 'ko' ? '내 캐릭터 이름 (내 상점일 때)' : 'My character name (for my own shop)'}<input id="scan-me" type="text" maxlength="13" autocomplete="off" spellcheck="false" placeholder="${lang === 'ko' ? '예: hookstk' : 'e.g. hookstk'}"></label>
 <p class="muted">${lang === 'ko' ? '인식이 안 되면 직접 선택하세요. 직접 선택한 값이 우선하며, 채널·방을 이동하면 변경해 주세요.' : 'Choose manually if detection fails. Manual choices take priority; update them when you move.'}</p>
 </fieldset>
 <div class="scan-actions">
@@ -2158,7 +2159,7 @@ ${jsonScript('mk-data', { ...{ lang, api: config.voteApi, itemsUrl: href(`/asset
 }
 function marketBody(lang) {
   const t = MK[lang], tr = (ko,en) => lang === 'ko' ? ko : en;
-  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 확인하세요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="char-links"><a href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 리포트', "Today's price report")}</a><a href="${href(langPath(lang, '/tools/scan/'))}">${tr('화면 스캔으로 내 상점 올리기', 'Upload my shop with the scan')}</a></p></section>
+  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 확인하세요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="mb-head-actions"><a class="btn mb-scan-cta" href="${href(langPath(lang, '/tools/scan/'))}" data-scan-cta="market-head">● ${tr('내 상점 올리기', 'Upload my shop')}</a><a class="btn ghost" href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 리포트', "Today's price report")}</a></p></section>
 ${marketBrowser(lang, 0)}
 ${marketGuide(lang)}`;
 }

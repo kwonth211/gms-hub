@@ -3172,3 +3172,9 @@ body.exp-running .exp-stop { display: inline-flex; }
 .item-answers h2 + h3 { margin-top: 4px; }
 .item-answers p { margin: 0; color: var(--text-2); line-height: 1.7; }
 
+
+/* Market head: "upload my shop" as a real button (2026-11-16, owner: the text link was too hidden). */
+.mb-head-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }
+.mb-head-actions .btn { font-size: 0.95rem; }
+.mb-scan-cta { background: var(--accent-fill); color: var(--accent-ink); }
+.scan-location input[type='text'] { font: inherit; padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--panel); color: var(--text); min-width: 0; }
