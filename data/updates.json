@@ -76,8 +76,8 @@
    "ko": "무료 고확 — 사이트에서 팝니다·삽니다를 공짜로 쏘면 맨 위 띠에도 흘러가요",
    "en": "Free megaphones — post selling or buying on the site for free, and it rolls across the top bar too",
    "desc": {
-    "ko": "실시간 확성기 페이지에서 팝니다·삽니다·한마디를 골라 아이템과 가격, 게임 닉네임만 넣으면 무료 고확이 나가요. 게임 고확과 같은 목록에 섞여 보이고, 모든 페이지 맨 위 띠에도 바로 흘러가요. 아이템을 고르면 지금 시세가 같이 보이고, 보는 사람은 귓말 명령어를 바로 복사할 수 있어요. 24시간 동안 떠 있고, 2분에 한 번 쏠 수 있어요.",
-    "en": "On the live megaphone page pick selling, buying or chat, add the item, price and your game name, and a free megaphone goes out. It shows in the same list as game megaphones and rolls across the top bar of every page at once. Picking an item shows its market price, and readers copy the whisper command in one tap. Posts stay up for 24 hours, one every 2 minutes."
+    "ko": "실시간 확성기 페이지에서 팝니다·삽니다·한마디를 골라 아이템과 가격, 게임 닉네임만 넣으면 무료 고확이 나가요. 게임 고확과 같은 목록에 섞여 보이고, 모든 페이지 맨 위 띠에도 바로 흘러가요(띠에는 처음 1시간 동안). 아이템을 고르면 지금 시세가 같이 보이고, 보는 사람은 귓말 명령어를 바로 복사할 수 있어요. 확성기 페이지에는 24시간 동안 떠 있고, 2분에 한 번 쏠 수 있어요.",
+    "en": "On the live megaphone page pick selling, buying or chat, add the item, price and your game name, and a free megaphone goes out. It shows in the same list as game megaphones and rolls across the top bar of every page at once (for its first hour). Picking an item shows its market price, and readers copy the whisper command in one tap. Posts stay on the megaphone page for 24 hours, one every 2 minutes."
    }
   },
   {

@@ -257,6 +257,9 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   const keyOf = (r) => `${r.free ? 'f' : 'm'}${r.id}`;
   const seenKeys = new Set();
   const atOf = (r) => Date.parse(`${String(r.seen).replace(' ', 'T')}Z`) || 0;
+  // A free megaphone rides the strip for its first hour only (2026-11-16, owner); the megaphone page keeps it for a day.
+  const FREE_TTL = 3600e3;
+  const live = (r) => !r.free || Date.now() - atOf(r) < FREE_TTL;
   const ko = lang === 'ko';
   const mesos = (n) => (ko ? (n >= 1e8 ? `${+(n / 1e8).toFixed(2)}억` : n >= 1e4 ? `${+(n / 1e4).toFixed(n >= 1e6 ? 0 : 1)}만` : String(n)) : n >= 1e9 ? `${+(n / 1e9).toFixed(2)}b` : n >= 1e6 ? `${+(n / 1e6).toFixed(2)}m` : n >= 1e3 ? `${+(n / 1e3).toFixed(1)}k` : String(n));
   // A site post as one ticker line: "팝니다 [장갑 공격 주문서 60%] 300만 1개 급처".
@@ -290,6 +293,8 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   async function replay() {
     if (refilling || !kept.length) return;
     refilling = true;
+    kept = kept.filter(live);
+    if (!kept.length) { refilling = false; return; }
     const html = await itemsHtml(kept.slice(-8));
     set.insertAdjacentHTML('beforeend', html.replace(/class="mg-tk-item /g, 'class="mg-tk-item mg-tk-re '));
     stale = true;
@@ -315,7 +320,7 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   const go = () => { if (!calm && !frame) frame = requestAnimationFrame(step); };
   const settle = () => { x = calm ? 0 : stopAt(); run.style.transform = `translateX(${x}px)`; };
   async function add(rows, fresh) {
-    const next = rows.filter((r) => !seenKeys.has(keyOf(r))).sort((a, b) => atOf(a) - atOf(b) || a.id - b.id);
+    const next = rows.filter((r) => live(r) && !seenKeys.has(keyOf(r))).sort((a, b) => atOf(a) - atOf(b) || a.id - b.id);
     if (!next.length) return;
     for (const r of next) seenKeys.add(keyOf(r));
     kept = kept.concat(next).slice(-20);
