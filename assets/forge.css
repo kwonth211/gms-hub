@@ -51,12 +51,12 @@
 .fg-shelf input[type='search'] { width: 100%; padding: 9px 12px; border-radius: var(--radius-control); border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit; }
 .fg-shelf input:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
 .fg-cats { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 8px; }
-.fg-cat { border: 1px solid var(--line); background: var(--bg); color: var(--text); border-radius: 999px; padding: 4px 10px; font: inherit; font-size: .82rem; cursor: pointer; }
+.fg-cat { border: 1px solid var(--line); background: var(--bg); color: var(--text); border-radius: 999px; padding: 4px 10px; font: inherit; font-size: .82rem; cursor: var(--cur-hand, pointer); }
 .fg-cat[aria-pressed='true'] { background: var(--accent-wash); border-color: var(--accent-fill); font-weight: 700; }
 .fg-cat:focus-visible, .fg-eq:focus-visible, .fg-sc:focus-visible, .fg-actions button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .fg-check { display: flex; gap: 6px; align-items: center; font-size: .85rem; color: var(--muted); margin-bottom: 8px; }
 .fg-list { list-style: none; margin: 0; padding: 0; max-height: 640px; overflow: auto; overscroll-behavior: contain; }
-.fg-eq { width: 100%; display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 10px; align-items: center; text-align: left; padding: 6px 8px; border: 0; border-radius: 10px; background: transparent; color: var(--text); font: inherit; cursor: pointer; }
+.fg-eq { width: 100%; display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 10px; align-items: center; text-align: left; padding: 6px 8px; border: 0; border-radius: 10px; background: transparent; color: var(--text); font: inherit; cursor: var(--cur-hand, pointer); }
 .fg-eq img { image-rendering: pixelated; width: 32px; height: 32px; object-fit: contain; }
 .fg-eq b { display: block; font-size: .92rem; overflow-wrap: anywhere; }
 .fg-eq small { color: var(--muted); font-size: .76rem; }

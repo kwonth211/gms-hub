@@ -163,7 +163,7 @@
 .fh-map-why { margin: 0; line-height: 1.6; }
 .fh-map-hidden { color: var(--fh-fairy); }
 .fh-more { margin-top: 12px; }
-.fh-more summary { cursor: pointer; color: var(--fh-glow); padding: 8px 0; }
+.fh-more summary { cursor: var(--cur-hand, pointer); color: var(--fh-glow); padding: 8px 0; }
 .fh-more .fh-maps { margin-top: 8px; }
 
 /* ---------- monsters ---------- */

@@ -81,7 +81,7 @@
 .sk-builds, .sk-jobs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
 .sk-build-btn, .sk-job-btn {
   display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: var(--radius-control);
-  border: 2px solid var(--line); background: var(--panel); color: var(--text); font: inherit; font-weight: 600; cursor: pointer;
+  border: 2px solid var(--line); background: var(--panel); color: var(--text); font: inherit; font-weight: 600; cursor: var(--cur-hand, pointer);
 }
 .sk-build-btn small { font-weight: 500; color: var(--muted); font-size: .78rem; }
 .sk-job-btn img { image-rendering: pixelated; }
@@ -152,7 +152,7 @@
 .sk-steps { list-style: none; margin: 0; padding: 0; counter-reset: step; }
 .sk-steps li {
   counter-increment: step; display: grid; grid-template-columns: 74px 24px minmax(0, 1fr); gap: 8px; align-items: center;
-  padding: 6px 8px; border-radius: 8px; cursor: pointer; font-size: .92rem;
+  padding: 6px 8px; border-radius: 8px; cursor: var(--cur-hand, pointer); font-size: .92rem;
 }
 .sk-steps li:hover { background: var(--accent-soft); }
 .sk-steps img { image-rendering: pixelated; }

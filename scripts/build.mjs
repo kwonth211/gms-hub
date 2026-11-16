@@ -719,8 +719,8 @@ ${ld.map(ldScript).join('\n')}
 const THEME_BOOT = `(function(){try{localStorage.removeItem('gms-theme');var t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;if(localStorage.getItem('gms-charm')==='off')document.documentElement.dataset.charm='off';var m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='dark'?'#0f1420':'#f6f1e7';}catch(e){}})();`;
 const THEME_ICON = `<svg class="theme-icon" viewBox="0 0 16 16" width="18" height="18" shape-rendering="crispEdges" aria-hidden="true"><g class="sun"><rect x="6" y="6" width="4" height="4"/><rect x="7" y="1" width="2" height="3"/><rect x="7" y="12" width="2" height="3"/><rect x="1" y="7" width="3" height="2"/><rect x="12" y="7" width="3" height="2"/><rect x="3" y="3" width="2" height="2"/><rect x="11" y="3" width="2" height="2"/><rect x="3" y="11" width="2" height="2"/><rect x="11" y="11" width="2" height="2"/></g><g class="moon"><rect x="6" y="2" width="5" height="2"/><rect x="4" y="4" width="3" height="2"/><rect x="3" y="6" width="3" height="4"/><rect x="4" y="10" width="3" height="2"/><rect x="6" y="12" width="5" height="2"/><rect x="11" y="10" width="2" height="2"/></g></svg>`;
 
-// Our own pixel art for the small touches (assets/common.js, style.css "Charm"): cursors and the maple leaf.
-const CHARM_VARS = `:root{--cur:url("${spriteDataPng('cursor', 2)}") 1 1,auto;--cur-on:url("${spriteDataPng('cursorOn', 2)}") 1 1,pointer;--leaf:url("${spriteDataPng('leaf', 2)}")}`;
+// Our own pixel art for the small touches (assets/common.js, style.css "Charm"): the maple leaf. Cursors are PNGs in assets/cursors.
+const CHARM_VARS = `:root{--leaf:url("${spriteDataPng('leaf', 2)}")}`;
 
 function header(lang, pagePath, only) {
   const t = T[lang];
