@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "weekly-report-finished-week",
+   "version": "0.7.10",
+   "level": "patch",
+   "date": "2026-11-16",
+   "path": "/report/",
+   "ko": "주간 리포트 — 끝난 한 주를 정리해요",
+   "en": "Weekly report — covers the week that just ended",
+   "desc": {
+    "ko": "주간 리포트가 진행 중인 주가 아니라 지난 월요일~일요일을 정리해요. 월요일에 막 시작한 주를 보여 주느라 오른 템·내린 템이 비어 보이던 문제를 고쳤어요. 새 호는 매주 월요일에 나와요.",
+    "en": "The weekly report now looks back on the last full Monday to Sunday instead of the week in progress, so Monday no longer shows an almost empty issue. A new issue comes out every Monday."
+   }
+  },
+  {
    "id": "scan-own-shop",
    "version": "0.7.9",
    "level": "patch",

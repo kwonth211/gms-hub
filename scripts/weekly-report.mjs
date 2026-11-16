@@ -10,11 +10,13 @@ const median = (xs) => {
 };
 const dayOf = (ms) => new Date(ms).toISOString().slice(0, 10);
 
-// The week the report covers: the last Monday-to-Sunday (KST) that has started, ending at the newest day in the data.
+// The week the report covers: the last Monday-to-Sunday (KST) that has fully ended before the newest day in the data.
+// A weekly report looks back on a finished week; covering the week in progress made Monday's issue a near-empty
+// "11/16 ~ 11/22" page with no movers (owner, 2026-11-16). The issue therefore changes once a week, on Monday.
 export function reportWeek(days) {
   const last = days.at(-1);
   const d = new Date(`${last}T00:00:00Z`);
-  const monday = new Date(d.getTime() - ((d.getUTCDay() + 6) % 7) * DAY);
+  const monday = new Date(d.getTime() - (((d.getUTCDay() + 6) % 7) + 7) * DAY);
   const start = dayOf(monday.getTime());
   const end = dayOf(monday.getTime() + 6 * DAY);
   const prevStart = dayOf(monday.getTime() - 7 * DAY);
