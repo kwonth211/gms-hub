@@ -3267,3 +3267,9 @@ body.exp-running .exp-stop { display: inline-flex; }
 .td-chart .td-lab { fill: none; stroke: var(--text-2); stroke-width: 2.2; stroke-linejoin: round; opacity: .8; }
 .td-chart .td-dkr { fill: var(--accent-fill); }
 .td-chart .td-dab { fill: var(--text-2); }
+
+.traffic-dash .td-bot{fill:#c2410c;opacity:.75}
+.traffic-dash .td-botlist{list-style:none;margin:10px 0 4px;padding:0;font-size:13px}
+.traffic-dash .td-botlist li{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-top:1px solid var(--line,#e5e7eb)}
+.traffic-dash .td-botlist li span{min-width:0;overflow-wrap:anywhere}
+.traffic-dash .td-botlist code{font-size:12px}

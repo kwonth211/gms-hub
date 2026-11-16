@@ -80,6 +80,27 @@ function koreaChart(d) {
 <p class="td-legend"><span class="k kr"></span>한국 ${nf(kSum)} <span class="k ab"></span>해외 ${nf(aSum)} <span class="muted">· 해외 ${kSum + aSum ? Math.round((aSum / (kSum + aSum)) * 100) : 0}%</span></p>`;
 }
 
+// Automated browsers (headless Chrome, crawlers) by hour: an estimate already included in every other number.
+function botChart(d) {
+  const b = d.bots;
+  if (!b) return '';
+  const W = 720, H = 150, P = 30, bw = (W - P) / 24;
+  const rows = b.hourly, all = d.hourly.day, max = Math.max(5, ...rows.map(([v]) => v));
+  const base = H - 20, ky = (v) => (v / max) * (H - 30);
+  const ticks = [0, 0.5, 1].map((f) => Math.round(max * f)).map((v) => `<text x="0" y="${base - ky(v) + 4}" class="td-ax">${v}</text><line x1="${P}" x2="${W}" y1="${base - ky(v)}" y2="${base - ky(v)}" class="td-grid"/>`).join('');
+  const bars = rows.map(([v, p], i) => {
+    const tot = all[i]?.[0] || 0;
+    const tip = tipLines([`${i}시`, `자동 접속 방문 ${nf(v)} · 페이지뷰 ${nf(p)}`, tot ? `이 시간 전체 방문 ${nf(tot)} 중 ${Math.round((v / tot) * 100)}%` : '']);
+    return `<rect x="${P + i * bw + 2}" y="${base - ky(v)}" width="${bw - 4}" height="${ky(v)}" class="td-bot"/><rect x="${P + i * bw}" y="0" width="${bw}" height="${H}" class="td-hit" data-tip="${tip}"/>`;
+  }).join('');
+  const total = sum(rows), share = sum(all) ? Math.round((total / sum(all)) * 100) : 0;
+  const top = b.top.filter((r) => r.visits > 0).slice(0, 6).map((r) => `<li><span>${esc(r.browser === 'ChromeHeadless' ? '화면 없는 크롬' : r.browser)} · ${esc(COUNTRY[r.country] || r.country)} · <code>${esc(r.path)}</code></span><b>${nf(r.visits)}</b></li>`).join('');
+  return `<section class="panel"><h2>자동 접속(봇) 추정 <small class="muted">방문 ${nf(total)} · 전체의 ${share}%</small></h2>
+<svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="시간대별 자동 접속 추정">${ticks}${bars}${Array.from({ length: 12 }, (_, i) => i * 2).map((h) => `<text x="${P + h * bw + bw / 2}" y="${H - 4}" class="td-ax mid">${h}시</text>`).join('')}</svg>
+${top ? `<ul class="td-botlist">${top}</ul>` : ''}
+<p class="muted small">위 방문·나라·페이지 숫자에는 이 자동 접속이 포함돼 있어요. 브라우저 이름으로 가려낸 추정이라, 이름을 숨긴 봇은 빠져요.</p></section>`;
+}
+
 // The last 7 days against the 7 before them, day by day (same weekday side by side). Today is still running, so its
 // last-week partner is cut at the same clock time.
 function weekChart(d, upto) {
@@ -151,6 +172,7 @@ ${live}
 <section class="panel"><h2>시간대별 방문</h2>${hourChart(d)}</section>
 <section class="panel"><h2>한국과 해외, 시간대별</h2>${koreaChart(d)}</section>
 ${weekChart(d, upto)}
+${botChart(d)}
 <div class="td-grid2">
 <section class="panel"><h2>나라별 방문</h2>${bars(d.countries.slice(0, 12), { label: (c) => esc(COUNTRY[c.country] || c.country), value: (c) => c.visits })}</section>
 <section class="panel"><h2>들어온 경로</h2>${bars(d.sources.slice(0, 12), { label: (s) => esc(SOURCE[s.source] || s.source), value: (s) => s.visits, accent: true })}

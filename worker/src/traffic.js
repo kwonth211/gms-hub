@@ -13,7 +13,7 @@ const utcStart = (day) => Date.parse(`${day}T00:00:00Z`) - KST;
 const iso = (ms) => new Date(ms).toISOString().replace(/\.\d{3}Z$/, 'Z');
 
 async function rum(env, from, to, dims, { limit = 1000, order = 'sum_visits_DESC', where = '' } = {}) {
-  const query = `{viewer{accounts(filter:{accountTag:"${env.CF_ACCOUNT_ID}"}){rumPageloadEventsAdaptiveGroups(limit:${limit},filter:{datetime_geq:"${iso(from)}",datetime_leq:"${iso(to - 1000)}",requestHost:"${HOST}",userAgentBrowser_notin:${BOTS}${where}},orderBy:[${order}]){count sum{visits} avg{sampleInterval} dimensions{${dims}}}}}}`;
+  const query = `{viewer{accounts(filter:{accountTag:"${env.CF_ACCOUNT_ID}"}){rumPageloadEventsAdaptiveGroups(limit:${limit},filter:{datetime_geq:"${iso(from)}",datetime_leq:"${iso(to - 1000)}",requestHost:"${HOST}"${where}},orderBy:[${order}]){count sum{visits} avg{sampleInterval} dimensions{${dims}}}}}}`;
   const r = await fetch(GQL, { method: 'POST', headers: { Authorization: `Bearer ${env.CF_ANALYTICS_TOKEN}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
   const j = await r.json().catch(() => null);
   if (!r.ok || !j || j.errors?.length) throw new Error(`analytics ${r.status}: ${j?.errors?.[0]?.message || 'no data'}`);
@@ -52,7 +52,7 @@ async function hourly(env, day, upto, where = '') {
 // Cloudflare about today (Cloudflare answers at a coarser sample rate once many queries have run in a short time).
 async function pastDay(env, day) {
   const cache = globalThis.caches?.default;
-  const key = new Request(`https://cache.gms-hub.internal/traffic-day3/${day}`);
+  const key = new Request(`https://cache.gms-hub.internal/traffic-day4/${day}`);
   const hit = cache && (await cache.match(key));
   if (hit) { const j = await hit.json(); const h = j.h; h.coarse = j.coarse; return h; }
   // A coarse answer is retried after a pause; one that stays coarse (old, already down-sampled days) is kept but
@@ -72,8 +72,8 @@ const SOURCES = [
   [/arca\.live/, 'Arca.live'], [/daum|kakao/, 'Daum/Kakao'], [/yahoo/, 'Yahoo'], [/duckduckgo/, 'DuckDuckGo'], [/tistory/, 'Tistory']
 ];
 const sourceOf = (host) => (!host ? 'Direct / app' : (SOURCES.find(([re]) => re.test(host)) || [null, host])[1]);
-// Automated browsers are left out everywhere: a headless Chrome in Israel opened /en/tools/market/ 74 times on
-// 2026-11-16 (a price scraper), which made "abroad" look bigger than Korea.
+// Every count includes automated browsers (owner's choice); they are also reported on their own as an estimate, since a
+// headless Chrome in Israel opened /en/tools/market/ 74 times on 2026-11-16 (a price scraper) and swung "abroad".
 const BOTS = JSON.stringify(['ChromeHeadless', 'BingBot', 'Googlebot', 'YandexBot', 'Baiduspider', 'DuckDuckBot', 'AhrefsBot', 'SemrushBot', 'PetalBot', 'Bytespider']);
 const pageKey = (p) => p.replace(/^\/(ko|en|zh|ja)(?=\/|$)/, '') || '/';
 
@@ -92,13 +92,15 @@ export async function trafficReport(env, dayParam, now = Date.now()) {
     () => fine(env, from, to, 'requestPath', { limit: 300, order: 'count_DESC' }),
     () => fine(env, from, to, 'refererHost', { limit: 60 }),
     () => fine(env, from, to, 'deviceType', { limit: 5 }),
+    () => hourly(env, day, isToday ? now : to, `,userAgentBrowser_in:${BOTS}`),
+    () => fine(env, from, to, 'userAgentBrowser countryName requestPath', { limit: 12, where: `,userAgentBrowser_in:${BOTS}` }),
     ...past.map((d) => () => pastDay(env, d).then((h) => [d, h]))
   ];
   // A few at a time: twenty queries in flight at once come back at a coarse sample rate (hours read as 0 or 100).
   const results = [];
   for (let k = 0; k < jobs.length; k += 3) results.push(...(await Promise.all(jobs.slice(k, k + 3).map((f) => f()))));
   // Busiest-hour record ignores coarse days, and the day record is only as good as each day's sample.
-  const [h0, krHours, countries, paths, refs, devices, ...days] = results;
+  const [h0, krHours, countries, paths, refs, devices, botHours, botRows, ...days] = results;
   const dayMap = new Map(days);
   const h1 = dayMap.get(minus(day, 1)), h7 = dayMap.get(minus(day, 7));
   days.push([day, h0]);
@@ -135,6 +137,10 @@ export async function trafficReport(env, dayParam, now = Date.now()) {
     sources: [...sources.entries()].map(([source, visits]) => ({ source, visits })).sort((a, b) => b.visits - a.visits),
     devices: devices.map((r) => ({ device: r.dimensions.deviceType || '?', visits: r.sum.visits, views: r.count })),
     coarse: [countries, paths, refs, devices].some((r) => r.coarse) || h0.coarse || undefined,
+    bots: {
+      hourly: botHours.map(([v, p]) => [v, p]),
+      top: botRows.map((r) => ({ browser: r.dimensions.userAgentBrowser, country: r.dimensions.countryName || '??', path: r.dimensions.requestPath, visits: r.sum.visits, views: r.count }))
+    },
     daily: [...daily.entries()].sort().map(([d, [visits, views]]) => ({ day: d, visits, views })),
     live
   };
