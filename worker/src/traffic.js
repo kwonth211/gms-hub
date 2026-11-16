@@ -146,6 +146,14 @@ export async function trafficReport(env, dayParam, now = Date.now()) {
   };
 }
 
+const sha = async (t) => new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)));
+// Compares digests so the time taken does not depend on how much of the key matched.
+async function same(a, b) {
+  const [x, y] = await Promise.all([sha(a), sha(b)]);
+  let d = 0; for (let i = 0; i < x.length; i++) d |= x[i] ^ y[i];
+  return d === 0;
+}
+
 export async function handleTraffic(req, env, ctx, allowedOrigins) {
   const origin = req.headers.get('Origin') || '';
   const cors = {
@@ -158,7 +166,9 @@ export async function handleTraffic(req, env, ctx, allowedOrigins) {
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
   if (req.method !== 'POST') return reply({ error: 'method' }, 405);
   const body = await req.json().catch(() => ({}));
-  if (!env.MAIL_ADMIN_TOKEN || body.token !== env.MAIL_ADMIN_TOKEN) return reply({ error: 'forbidden' }, 403);
+  // Its own read-only key (DASH_TOKEN), never the mail key: this one sits in the owner's browser storage on gms-hub.com,
+  // where ad and analytics scripts also run, so a leak can only show traffic numbers.
+  if (!env.DASH_TOKEN || typeof body.token !== 'string' || body.token.length > 256 || !(await same(body.token, env.DASH_TOKEN))) return reply({ error: 'forbidden' }, 403);
   if (!env.CF_ANALYTICS_TOKEN || !env.CF_ACCOUNT_ID) return reply({ error: 'analytics token not set' }, 503);
   const key = new Request(`https://cache.gms-hub.internal/traffic/${body.day || 'today'}`);
   const cache = globalThis.caches?.default;

@@ -49,3 +49,17 @@ class_name = "Presence"
 [[migrations]]
 tag = "presence-v1"
 new_sqlite_classes = ["Presence"]
+
+# Per-IP rate limits (src/index.js): public writes (votes, price reports, shop uploads, free megaphones, the dashboard
+# login) and reads. A flood from one address is answered 429 before any database work.
+[[unsafe.bindings]]
+name = "RL_WRITE"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 40, period = 60 }
+
+[[unsafe.bindings]]
+name = "RL_READ"
+type = "ratelimit"
+namespace_id = "1002"
+simple = { limit = 400, period = 60 }

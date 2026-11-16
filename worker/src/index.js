@@ -43,6 +43,9 @@ import { createAlert, listAlerts, deleteAlert, takeHits, checkAlerts } from './a
 export { Presence };
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
 
+// Paths that carry their own credential (collector tokens, Discord signatures) and are not rate limited per IP.
+const TRUSTED = new Set(['/internal/market-batch', '/internal/shop-scan', '/internal/megaphone', '/internal/mail/send', '/internal/presence-peak', '/discord/interactions']);
+
 function corsHeaders(origin) {
   return {
     'Access-Control-Allow-Origin': ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0],
@@ -355,6 +358,16 @@ const api = {
     const url = new URL(req.url);
     const origin = req.headers.get('Origin') || '';
     const cors = corsHeaders(origin);
+    // Per-IP rate limits (Workers rate limiting, counted per Cloudflare location). The collectors and Discord carry their
+    // own credentials and skip this. Limits are loose because many Korean players share a few VPN exits.
+    if (!TRUSTED.has(url.pathname) && req.method !== 'OPTIONS') {
+      const ip = req.headers.get('CF-Connecting-IP') || '';
+      const write = req.method !== 'GET' && req.method !== 'HEAD';
+      const rl = write ? env.RL_WRITE : null; // reads (prices, listings) are never limited (owner's call)
+      const verdict = rl && ip ? await rl.limit({ key: ip }).catch((e) => { console.log('ratelimit error', String(e)); return { success: true }; }) : null;
+      if (verdict && !verdict.success)
+        return json({ error: 'too many requests' }, { ...cors, 'Retry-After': '60' }, 429);
+    }
     // Private extension service worker uses a narrowly scoped ingestion token, never public CORS.
     if (url.pathname === '/internal/market-batch') return handleMarketBatch(req, env, knownItems, (rows) => {
       if (rows.length && ctx?.waitUntil) ctx.waitUntil(itemLabel().then((nameOf) => notifyListings(env, rows, nameOf)).catch(() => null));
