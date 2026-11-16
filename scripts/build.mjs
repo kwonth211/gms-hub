@@ -2469,7 +2469,8 @@ function botBody(lang) {
   // lets you use them anywhere, DMs included. Both ask only for slash commands.
   const install = (type) => `${config.discordBotInstall}${config.discordBotInstall.includes('?') ? '&' : '?'}scope=applications.commands&integration_type=${type}`;
   const check = '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 8.5l3 3 7-7"/></svg>';
-  const bot = `<span class="dc-av dc-av-bot">${spriteSvg('mushroom', 26)}</span>`;
+  // The bot's Discord avatar (3D voxel mushroom, ~/gms-hub-discord/brand), so the example replies look like the real bot.
+  const bot = `<img class="dc-av dc-av-bot" src="${href('/assets/brand/discord-bot.png')}" alt="" width="38" height="38">`;
   const you = `<span class="dc-av dc-av-you" aria-hidden="true">${tr('나', 'Me')}</span>`;
   // A Discord-style window: a slash command and the bot's reply. Replies are filled from live data by bot-page.js.
   const win = (channel, cmd, args, slot, h) => `<figure class="dc-win" aria-label="${esc(tr(`${cmd} 명령어 예시`, `${cmd} example`))}"><div class="dc-bar"><span class="dc-hash">${channel.startsWith('@') ? '@' : '#'}</span>${esc(channel.replace(/^@/, ''))}</div>
