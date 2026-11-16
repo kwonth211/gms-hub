@@ -13,7 +13,7 @@ const utcStart = (day) => Date.parse(`${day}T00:00:00Z`) - KST;
 const iso = (ms) => new Date(ms).toISOString().replace(/\.\d{3}Z$/, 'Z');
 
 async function rum(env, from, to, dims, { limit = 1000, order = 'sum_visits_DESC', where = '' } = {}) {
-  const query = `{viewer{accounts(filter:{accountTag:"${env.CF_ACCOUNT_ID}"}){rumPageloadEventsAdaptiveGroups(limit:${limit},filter:{datetime_geq:"${iso(from)}",datetime_leq:"${iso(to - 1000)}",requestHost:"${HOST}"${where}},orderBy:[${order}]){count sum{visits} avg{sampleInterval} dimensions{${dims}}}}}}`;
+  const query = `{viewer{accounts(filter:{accountTag:"${env.CF_ACCOUNT_ID}"}){rumPageloadEventsAdaptiveGroups(limit:${limit},filter:{datetime_geq:"${iso(from)}",datetime_leq:"${iso(to - 1000)}",requestHost:"${HOST}",userAgentBrowser_notin:${BOTS}${where}},orderBy:[${order}]){count sum{visits} avg{sampleInterval} dimensions{${dims}}}}}}`;
   const r = await fetch(GQL, { method: 'POST', headers: { Authorization: `Bearer ${env.CF_ANALYTICS_TOKEN}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
   const j = await r.json().catch(() => null);
   if (!r.ok || !j || j.errors?.length) throw new Error(`analytics ${r.status}: ${j?.errors?.[0]?.message || 'no data'}`);
@@ -52,7 +52,7 @@ async function hourly(env, day, upto, where = '') {
 // Cloudflare about today (Cloudflare answers at a coarser sample rate once many queries have run in a short time).
 async function pastDay(env, day) {
   const cache = globalThis.caches?.default;
-  const key = new Request(`https://cache.gms-hub.internal/traffic-day2/${day}`);
+  const key = new Request(`https://cache.gms-hub.internal/traffic-day3/${day}`);
   const hit = cache && (await cache.match(key));
   if (hit) { const j = await hit.json(); const h = j.h; h.coarse = j.coarse; return h; }
   // A coarse answer is retried after a pause; one that stays coarse (old, already down-sampled days) is kept but
@@ -72,6 +72,9 @@ const SOURCES = [
   [/arca\.live/, 'Arca.live'], [/daum|kakao/, 'Daum/Kakao'], [/yahoo/, 'Yahoo'], [/duckduckgo/, 'DuckDuckGo'], [/tistory/, 'Tistory']
 ];
 const sourceOf = (host) => (!host ? 'Direct / app' : (SOURCES.find(([re]) => re.test(host)) || [null, host])[1]);
+// Automated browsers are left out everywhere: a headless Chrome in Israel opened /en/tools/market/ 74 times on
+// 2026-11-16 (a price scraper), which made "abroad" look bigger than Korea.
+const BOTS = JSON.stringify(['ChromeHeadless', 'BingBot', 'Googlebot', 'YandexBot', 'Baiduspider', 'DuckDuckBot', 'AhrefsBot', 'SemrushBot', 'PetalBot', 'Bytespider']);
 const pageKey = (p) => p.replace(/^\/(ko|en|zh|ja)(?=\/|$)/, '') || '/';
 
 export async function trafficReport(env, dayParam, now = Date.now()) {
