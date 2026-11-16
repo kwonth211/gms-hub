@@ -30,30 +30,55 @@ function bars(rows, { max, label, value, fmt = nf, accent = false }) {
   return `<ul class="td-bars">${rows.map((r) => `<li><span class="td-bl">${label(r)}</span><span class="td-bt"><i style="width:${(value(r) / m) * 100}%" class="${accent ? 'acc' : ''}"></i></span><b>${fmt(value(r))}</b></li>`).join('')}</ul>`;
 }
 
-// 24 columns: the chosen day (filled) against yesterday and last week (lines), same hours.
+// Hover tips: every chart column carries data-tip (plain lines joined with "\n"); one floating box follows the pointer.
+const tipLines = (rows) => esc(rows.filter(Boolean).join('\n'));
+const diff = (a, b) => (b ? ` (${a >= b ? '+' : ''}${nf(a - b)}, ${pct(a, b)})` : '');
+
+// 24 columns: the chosen day (filled) against yesterday and last week (lines), same hours. Hovering an hour shows its
+// visits, pageviews, pages per visit, Korea/abroad and both comparisons.
 function hourChart(d) {
-  const W = 720, H = 200, P = 26, bw = (W - P) / 24;
-  const cut = d.cutHour;
+  const W = 720, H = 210, P = 30, bw = (W - P) / 24;
+  const cut = d.isToday ? d.cutHour : 99;
   const day = d.hourly.day.map((r) => r[0]), y = d.hourly.yesterday.map((r) => r[0]), w = d.hourly.lastWeek.map((r) => r[0]);
   const max = Math.max(5, ...day, ...y, ...w);
-  const ky = (v) => H - 18 - (v / max) * (H - 30);
+  const ky = (v) => H - 20 - (v / max) * (H - 34);
   const line = (arr, cls) => `<polyline class="${cls}" points="${arr.map((v, i) => `${P + i * bw + bw / 2},${ky(v)}`).join(' ')}"/>`;
-  const ticks = [0, Math.round(max / 2), max].map((v) => `<text x="0" y="${ky(v) + 4}" class="td-ax">${v}</text><line x1="${P}" x2="${W}" y1="${ky(v)}" y2="${ky(v)}" class="td-grid"/>`).join('');
-  const cols = day.map((v, i) => `<rect x="${P + i * bw + 2}" y="${ky(v)}" width="${bw - 4}" height="${Math.max(0, H - 18 - ky(v))}" class="td-col${i === cut ? ' now' : ''}"><title>${i}시 · ${v}회 (어제 ${y[i]}, 지난주 ${w[i]})</title></rect>`).join('');
-  const hours = [0, 3, 6, 9, 12, 15, 18, 21].map((h) => `<text x="${P + h * bw + bw / 2}" y="${H - 3}" class="td-ax mid">${h}시</text>`).join('');
-  return `<svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="시간대별 방문">${ticks}${cols}${line(y, 'td-ly')}${line(w, 'td-lw')}${hours}</svg>
-<p class="td-legend"><span class="k day"></span>${esc(d.day)} <span class="k y"></span>어제 ${esc(d.compare.yesterday.slice(5))} <span class="k w"></span>지난주 같은 요일 ${esc(d.compare.lastWeek.slice(5))}</p>`;
+  const dots = (arr, cls) => arr.map((v, i) => `<circle cx="${P + i * bw + bw / 2}" cy="${ky(v)}" r="2.2" class="${cls}"/>`).join('');
+  const ticks = [0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(max * f)).map((v) => `<text x="0" y="${ky(v) + 4}" class="td-ax">${v}</text><line x1="${P}" x2="${W}" y1="${ky(v)}" y2="${ky(v)}" class="td-grid"/>`).join('');
+  // Today as the main line (up to the current hour), with a soft area under it and its value on every point.
+  const shown = day.map((v, i) => [v, i]).filter(([, i]) => i <= cut);
+  const xs = (i) => P + i * bw + bw / 2;
+  const area = shown.length ? `<polygon class="td-area" points="${xs(shown[0][1])},${H - 20} ${shown.map(([v, i]) => `${xs(i)},${ky(v)}`).join(' ')} ${xs(shown.at(-1)[1])},${H - 20}"/>` : '';
+  const cols = `${area}<polyline class="td-lt" points="${shown.map(([v, i]) => `${xs(i)},${ky(v)}`).join(' ')}"/>${shown.map(([v, i]) => `<circle cx="${xs(i)}" cy="${ky(v)}" r="3.2" class="td-dt${i === cut ? ' now' : ''}"/>`).join('')}`;
+  const labels = shown.map(([v, i]) => (v ? `<text x="${xs(i)}" y="${ky(v) - 7}" class="td-ax mid td-val">${v}</text>` : '')).join('');
+  const hits = day.map((v, i) => {
+    const views = d.hourly.day[i][1], [k, a] = d.hourly.koreaAbroad[i] || [0, 0];
+    const tip = tipLines([
+      `${i}시${i === cut ? ' (진행 중)' : ''}`,
+      `방문 ${nf(v)} · 페이지뷰 ${nf(views)}${v ? ` · 방문당 ${(views / v).toFixed(1)}쪽` : ''}`,
+      `한국 ${nf(k)} · 해외 ${nf(a)}`,
+      `어제 ${nf(y[i])}${diff(v, y[i])}`,
+      `지난주 ${nf(w[i])}${diff(v, w[i])}`
+    ]);
+    return `<rect x="${P + i * bw}" y="0" width="${bw}" height="${H}" class="td-hit" data-tip="${tip}"/>`;
+  }).join('');
+  const hours = Array.from({ length: 24 }, (_, h) => h).filter((h) => h % 2 === 0).map((h) => `<text x="${P + h * bw + bw / 2}" y="${H - 4}" class="td-ax mid">${h}시</text>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="시간대별 방문">${ticks}${line(w, 'td-lw')}${line(y, 'td-ly')}${dots(y, 'td-dy')}${cols}${labels}${hours}${hits}</svg>
+<p class="td-legend"><span class="k day"></span>${esc(d.day)} <span class="k y"></span>어제 ${esc(d.compare.yesterday.slice(5))} <span class="k w"></span>지난주 같은 요일 ${esc(d.compare.lastWeek.slice(5))} <span class="muted">· 그래프에 마우스를 올리면 자세히 보여요</span></p>`;
 }
 
 function koreaChart(d) {
-  const W = 720, H = 150, P = 26, bw = (W - P) / 24;
-  const rows = d.hourly.koreaAbroad, max = Math.max(5, ...rows.map(([a, b]) => a + b));
-  const ky = (v) => (v / max) * (H - 26);
-  return `<svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="한국·해외 시간대별 방문">${rows.map(([k, a], i) => {
-    const x = P + i * bw + 2, base = H - 18;
-    return `<rect x="${x}" y="${base - ky(k)}" width="${bw - 4}" height="${ky(k)}" class="td-kr"><title>${i}시 · 한국 ${k} · 해외 ${a}</title></rect><rect x="${x}" y="${base - ky(k) - ky(a)}" width="${bw - 4}" height="${ky(a)}" class="td-ab"><title>${i}시 · 한국 ${k} · 해외 ${a}</title></rect>`;
-  }).join('')}${[0, 6, 12, 18].map((h) => `<text x="${P + h * bw + bw / 2}" y="${H - 3}" class="td-ax mid">${h}시</text>`).join('')}</svg>
-<p class="td-legend"><span class="k kr"></span>한국 <span class="k ab"></span>해외</p>`;
+  const W = 720, H = 180, P = 30, bw = (W - P) / 24;
+  const cut = d.isToday ? d.cutHour : 23;
+  const rows = d.hourly.koreaAbroad.slice(0, cut + 1), max = Math.max(5, ...rows.map(([a, b]) => Math.max(a, b)));
+  const base = H - 20, ky = (v) => base - (v / max) * (H - 38), xs = (i) => P + i * bw + bw / 2;
+  const ticks = [0, 0.5, 1].map((f) => Math.round(max * f)).map((v) => `<text x="0" y="${ky(v) + 4}" class="td-ax">${v}</text><line x1="${P}" x2="${W}" y1="${ky(v)}" y2="${ky(v)}" class="td-grid"/>`).join('');
+  const line = (k, cls, dot) => `<polyline class="${cls}" points="${rows.map((r, i) => `${xs(i)},${ky(r[k])}`).join(' ')}"/>${rows.map((r, i) => `<circle cx="${xs(i)}" cy="${ky(r[k])}" r="2.6" class="${dot}"/>`).join('')}`;
+  const labels = rows.map(([k, a], i) => `<text x="${xs(i)}" y="${Math.min(ky(k), ky(a)) - 6}" class="td-ax mid td-val">${k}·${a}</text>`).join('');
+  const hits = rows.map(([k, a], i) => `<rect x="${P + i * bw}" y="0" width="${bw}" height="${H}" class="td-hit" data-tip="${tipLines([`${i}시`, `한국 ${nf(k)} · 해외 ${nf(a)}`, k + a ? `해외 비율 ${Math.round((a / (k + a)) * 100)}%` : ''])}"/>`).join('');
+  const kSum = rows.reduce((a, r) => a + r[0], 0), aSum = rows.reduce((a, r) => a + r[1], 0);
+  return `<svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="한국·해외 시간대별 방문">${ticks}${line(1, 'td-lab', 'td-dab')}${line(0, 'td-lkr', 'td-dkr')}${labels}${Array.from({ length: 12 }, (_, i) => i * 2).map((h) => `<text x="${xs(h)}" y="${H - 4}" class="td-ax mid">${h}시</text>`).join('')}${hits}</svg>
+<p class="td-legend"><span class="k day"></span>한국 ${nf(kSum)} <span class="k y"></span>해외 ${nf(aSum)} <span class="muted">· 해외 ${kSum + aSum ? Math.round((aSum / (kSum + aSum)) * 100) : 0}% · 점 위 숫자는 한국·해외</span></p>`;
 }
 
 // The last 7 days against the 7 before them, day by day (same weekday side by side). Today is still running, so its
@@ -62,24 +87,35 @@ function weekChart(d, upto) {
   const days = d.daily;
   if (days.length < 14) return '';
   const cur = days.slice(7), prev = days.slice(0, 7);
-  const prevVal = (i) => (d.isToday && i === 6 ? upto(d.hourly.lastWeek) : prev[i].visits);
-  const W = 720, H = 190, P = 26, bw = (W - P) / 7;
+  const today = (i) => d.isToday && i === 6;
+  const prevVal = (i) => (today(i) ? upto(d.hourly.lastWeek) : prev[i].visits);
+  const prevViews = (i) => (today(i) ? upto(d.hourly.lastWeek, 1) : prev[i].views);
+  const W = 720, H = 200, P = 30, bw = (W - P) / 7;
   const max = Math.max(5, ...cur.map((x) => x.visits), ...prev.map((x, i) => prevVal(i)));
-  const ky = (v) => (v / max) * (H - 44);
-  const base = H - 30;
+  const ky = (v) => (v / max) * (H - 54);
+  const base = H - 32;
   const wd = (day) => '일월화수목금토'[new Date(`${day}T00:00:00Z`).getUTCDay()];
+  const ticks = [0, 0.5, 1].map((f) => Math.round(max * f)).map((v) => `<text x="0" y="${base - ky(v) + 4}" class="td-ax">${v}</text><line x1="${P}" x2="${W}" y1="${base - ky(v)}" y2="${base - ky(v)}" class="td-grid"/>`).join('');
   const cols = cur.map((x, i) => {
     const pv = prevVal(i), x0 = P + i * bw;
     const ch = pv ? Math.round((x.visits / pv - 1) * 100) : null;
-    return `<rect x="${x0 + 6}" y="${base - ky(pv)}" width="${bw / 2 - 8}" height="${ky(pv)}" class="td-prev"><title>${prev[i].day} ${pv}회</title></rect>
-<rect x="${x0 + bw / 2 + 2}" y="${base - ky(x.visits)}" width="${bw / 2 - 8}" height="${ky(x.visits)}" class="td-cur${d.isToday && i === 6 ? ' now' : ''}"><title>${x.day} ${x.visits}회</title></rect>
+    const tip = tipLines([
+      `${x.day} (${wd(x.day)})${today(i) ? ' · 진행 중' : ''}`,
+      `방문 ${nf(x.visits)} · 페이지뷰 ${nf(x.views)}${x.visits ? ` · 방문당 ${(x.views / x.visits).toFixed(1)}쪽` : ''}`,
+      `지난주 ${prev[i].day}${today(i) ? ' (같은 시각까지)' : ''}: 방문 ${nf(pv)} · 페이지뷰 ${nf(prevViews(i))}`,
+      `방문 차이 ${diff(x.visits, pv).replace(/^ \(|\)$/g, '') || '–'}`
+    ]);
+    return `<rect x="${x0 + 6}" y="${base - ky(pv)}" width="${bw / 2 - 8}" height="${ky(pv)}" class="td-prev"/>
+<rect x="${x0 + bw / 2 + 2}" y="${base - ky(x.visits)}" width="${bw / 2 - 8}" height="${ky(x.visits)}" class="td-cur${today(i) ? ' now' : ''}"/>
 <text x="${x0 + bw / 2}" y="${base - Math.max(ky(pv), ky(x.visits)) - 6}" class="td-ax mid td-delta ${ch == null ? '' : ch >= 0 ? 'up' : 'down'}">${ch == null ? '' : `${ch >= 0 ? '+' : ''}${ch}%`}</text>
-<text x="${x0 + bw / 2}" y="${H - 14}" class="td-ax mid">${x.day.slice(5).replace('-', '/')} ${wd(x.day)}</text>
-<text x="${x0 + bw / 2}" y="${H - 2}" class="td-ax mid">${x.visits} / ${pv}</text>`;
+<text x="${x0 + bw / 2}" y="${H - 16}" class="td-ax mid">${x.day.slice(5).replace('-', '/')} ${wd(x.day)}</text>
+<text x="${x0 + bw / 2}" y="${H - 3}" class="td-ax mid">${nf(x.visits)} / ${nf(pv)}</text>
+<rect x="${x0}" y="0" width="${bw}" height="${H}" class="td-hit" data-tip="${tip}"/>`;
   }).join('');
   const sc = cur.reduce((a, x) => a + x.visits, 0), sp = prev.reduce((a, x, i) => a + prevVal(i), 0);
-  return `<section class="panel"><h2>이번 7일과 지난 7일 <small class="muted">요일별 방문 · 이번 ${nf(sc)} / 지난 ${nf(sp)} (${pct(sc, sp)})</small></h2>
-<svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="최근 7일과 그 전 7일 요일별 방문">${cols}</svg>
+  const vc = cur.reduce((a, x) => a + x.views, 0), vp = prev.reduce((a, x, i) => a + prevViews(i), 0);
+  return `<section class="panel"><h2>이번 7일과 지난 7일 <small class="muted">방문 ${nf(sc)} / ${nf(sp)} (${pct(sc, sp)}) · 페이지뷰 ${nf(vc)} / ${nf(vp)} (${pct(vc, vp)})</small></h2>
+<svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="최근 7일과 그 전 7일 요일별 방문">${ticks}${cols}</svg>
 <p class="td-legend"><span class="k prev"></span>지난주 같은 요일 <span class="k day"></span>이번 주${d.isToday ? ' (오늘은 같은 시각까지)' : ''}</p></section>`;
 }
 
@@ -93,9 +129,10 @@ function render() {
   }
   const d = state.data;
   const head = `<div class="td-head"><h1>트래픽</h1><div class="td-tools"><input type="date" id="td-day" value="${esc(state.day || d?.day || '')}" max="${esc(d?.today || '')}">
-<button class="btn ghost small-btn" id="td-reload">${state.loading ? '불러오는 중…' : '새로고침'}</button><button class="btn ghost small-btn" id="td-out">키 지우기</button></div></div>`;
+<button class="btn ghost small-btn" id="td-reload"${state.loading ? ' disabled' : ''}>${state.loading ? '<span class="td-spin sm" aria-hidden="true"></span>불러오는 중' : '새로고침'}</button><button class="btn ghost small-btn" id="td-out">키 지우기</button></div></div>`;
   if (state.error) { root.innerHTML = `${head}<p class="td-err">${esc(state.error)}</p>`; bind(); return; }
-  if (!d) { root.innerHTML = `${head}<p class="muted">불러오는 중…</p>`; bind(); return; }
+  if (!d) { root.innerHTML = `${head}<div class="td-loading"><span class="td-spin" aria-hidden="true"></span><span>통계를 불러오는 중이에요… 처음엔 10초쯤 걸려요</span></div>
+<div class="td-cards">${'<div class="td-card td-skel"></div>'.repeat(4)}</div><div class="panel td-skel tall"></div><div class="panel td-skel"></div>`; bind(); return; }
   // Yesterday and last week are whole days; cut them at today's clock time (the current hour by its elapsed minutes).
   const upto = (h, i = 0) => (d.isToday ? h.slice(0, d.cutHour).reduce((a, r) => a + r[i], 0) + Math.round((h[d.cutHour]?.[i] || 0) * (d.cutMinute / 60)) : sum(h, i));
   const v0 = sum(d.hourly.day), v1 = upto(d.hourly.yesterday), v7 = upto(d.hourly.lastWeek);
@@ -105,6 +142,7 @@ function render() {
   const live = d.live ? `<div class="td-card"><span>지금 열린 페이지</span><b>${nf(d.live.now)}</b><small>최고 ${nf(d.live.peak)} · ${esc(new Date(d.live.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }))}</small></div>` : '';
   const dailyMax = Math.max(1, ...d.daily.map((x) => x.visits));
   root.innerHTML = `${head}
+<div class="td-body${state.loading ? ' busy' : ''}">
 <p class="muted small">${esc(cutNote)} · Cloudflare 표본 추정값 · ${esc(new Date(d.at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }))} 기준</p>
 <div class="td-cards">
 <div class="td-card"><span>방문</span><b>${nf(v0)}</b><small>${d.isToday ? '같은 시각 어제' : '전날'} ${nf(v1)} (${pct(v0, v1)}) · 지난주 같은 요일 ${nf(v7)} (${pct(v0, v7)})</small></div>
@@ -125,8 +163,9 @@ ${weekChart(d, upto)}
 <section class="panel"><h2>처음 들어온 페이지 <small class="muted">방문</small></h2>${bars(d.landings.slice(0, 15), { label: (p) => `${esc(pageName(p.path.replace(/^\/(ko|en|zh|ja)(?=\/)/, '')))}<small> ${esc((p.path.match(/^\/(ko|en|zh|ja)\//) || [, ''])[1])}</small>`, value: (p) => p.landings, accent: true })}</section>
 </div>
 <div class="td-grid2">
-<section class="panel"><h2>최근 14일 방문</h2><ul class="td-bars">${d.daily.map((x) => `<li${x.day === d.day ? ' class="on"' : ''}><span class="td-bl">${esc(x.day.slice(5))} ${'일월화수목금토'[new Date(`${x.day}T00:00:00Z`).getUTCDay()]}</span><span class="td-bt"><i style="width:${(x.visits / dailyMax) * 100}%"></i></span><b>${nf(x.visits)}</b></li>`).join('')}</ul></section>
+<section class="panel"><h2>최근 14일 방문</h2><ul class="td-bars">${d.daily.map((x) => `<li${x.day === d.day ? ' class="on"' : ''} data-tip="${tipLines([`${x.day} (${'일월화수목금토'[new Date(`${x.day}T00:00:00Z`).getUTCDay()]})`, `방문 ${nf(x.visits)} · 페이지뷰 ${nf(x.views)}`, x.visits ? `방문당 ${(x.views / x.visits).toFixed(1)}쪽` : ''])}"><span class="td-bl">${esc(x.day.slice(5))} ${'일월화수목금토'[new Date(`${x.day}T00:00:00Z`).getUTCDay()]}</span><span class="td-bt"><i style="width:${(x.visits / dailyMax) * 100}%"></i></span><b>${nf(x.visits)}</b></li>`).join('')}</ul></section>
 <section class="panel"><h2>기기</h2>${bars(d.devices, { label: (x) => esc({ desktop: 'PC', mobile: '모바일', tablet: '태블릿' }[x.device] || x.device), value: (x) => x.visits })}</section>
+</div>
 </div>`;
   bind();
 }
@@ -148,6 +187,22 @@ async function load() {
   } catch (e) { state.error = '불러오지 못했어요.'; }
   state.loading = false; render();
 }
+
+// One floating box for every [data-tip] (chart columns, day rows); follows the pointer, stays inside the window.
+const tip = document.createElement('div');
+tip.className = 'td-tip';
+tip.hidden = true;
+document.body.append(tip);
+root.addEventListener('pointermove', (e) => {
+  const el = e.target.closest?.('[data-tip]');
+  if (!el) { tip.hidden = true; return; }
+  tip.textContent = el.getAttribute('data-tip');
+  tip.hidden = false;
+  const r = tip.getBoundingClientRect();
+  const x = Math.min(e.clientX + 14, innerWidth - r.width - 8), y = e.clientY + 16 + r.height > innerHeight ? e.clientY - r.height - 12 : e.clientY + 16;
+  tip.style.transform = `translate(${Math.max(8, x)}px, ${y}px)`;
+});
+root.addEventListener('pointerleave', () => { tip.hidden = true; });
 
 render();
 if (store.get()) load();

@@ -3237,3 +3237,33 @@ body.exp-running .exp-stop { display: inline-flex; }
 .td-err { color: var(--danger, #c0392b); }
 .td-login form { display: flex; gap: 8px; flex-wrap: wrap; }
 .td-login input { flex: 1; min-width: 200px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--text); }
+
+.td-chart .td-hit { fill: transparent; cursor: crosshair; }
+.td-chart .td-hit:hover { fill: var(--text-2); fill-opacity: .06; }
+.td-chart .td-val { font-size: 8.5px; fill: var(--text-2); }
+.td-chart .td-dy { fill: var(--text-2); }
+.td-tip { position: fixed; left: 0; top: 0; z-index: 50; pointer-events: none; white-space: pre-line; background: var(--text); color: var(--bg); font-size: .8rem; line-height: 1.5; padding: 8px 10px; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.18); max-width: 300px; font-variant-numeric: tabular-nums; }
+.td-tip[hidden] { display: none; }
+.td-bars li[data-tip] { cursor: default; }
+.td-loading { display: flex; align-items: center; gap: 10px; color: var(--text-2); margin: 14px 0; }
+.td-spin { width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid var(--line); border-top-color: var(--accent-fill); animation: td-spin .8s linear infinite; display: inline-block; flex: none; }
+.td-spin.sm { width: 12px; height: 12px; border-width: 2px; margin-right: 6px; vertical-align: -1px; }
+@keyframes td-spin { to { transform: rotate(360deg); } }
+.td-skel { background: linear-gradient(90deg, var(--panel) 0%, var(--line) 50%, var(--panel) 100%); background-size: 200% 100%; animation: td-shimmer 1.2s ease-in-out infinite; min-height: 86px; border-color: var(--line); }
+.td-skel.tall { min-height: 220px; margin-bottom: 14px; }
+@keyframes td-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.td-body { transition: opacity .2s; }
+.td-body.busy { opacity: .45; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .td-spin, .td-skel { animation: none; } }
+
+.td-chart .td-lt { fill: none; stroke: var(--accent-fill); stroke-width: 3; stroke-linejoin: round; }
+.td-chart .td-area { fill: var(--accent-fill); opacity: .12; }
+.td-chart .td-dt { fill: var(--accent-fill); stroke: var(--panel); stroke-width: 1.5; }
+.td-chart .td-dt.now { fill: var(--panel); stroke: var(--accent-fill); stroke-width: 2; }
+.td-chart .td-ly { stroke-width: 1.6; opacity: .75; }
+.td-legend .k.day { height: 4px; }
+
+.td-chart .td-lkr { fill: none; stroke: var(--accent-fill); stroke-width: 2.6; stroke-linejoin: round; }
+.td-chart .td-lab { fill: none; stroke: var(--text-2); stroke-width: 2.2; stroke-linejoin: round; opacity: .8; }
+.td-chart .td-dkr { fill: var(--accent-fill); }
+.td-chart .td-dab { fill: var(--text-2); }
