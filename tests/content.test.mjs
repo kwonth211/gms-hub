@@ -213,7 +213,8 @@ test('monster drops get item database pages with droppers, farm maps and stats',
   // Map names are proper names: derived locales keep them as written instead of minting a translation key per map.
   assert.ok(read('dist/ja/items/1002003-red-headband/index.html').includes('translate="no"'));
   const ko=read('dist/ko/items/1002003-red-headband/index.html');
-  assert.match(ko,/<title>글클메 빨간색 머리띠: 드롭 몬스터/);
+  // Same as the English title: a live listing in CI puts the price first.
+  assert.match(ko,/<title>[^<]*빨간색 머리띠[^<]*(드롭 몬스터|시세|메소)/);
 });
 
 test('map pages turn monster spawns around: monsters, spawn counts, full-clear EXP and drops',()=>{
