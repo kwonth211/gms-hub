@@ -13,11 +13,23 @@ const utcStart = (day) => Date.parse(`${day}T00:00:00Z`) - KST;
 const iso = (ms) => new Date(ms).toISOString().replace(/\.\d{3}Z$/, 'Z');
 
 async function rum(env, from, to, dims, { limit = 1000, order = 'sum_visits_DESC', where = '' } = {}) {
-  const query = `{viewer{accounts(filter:{accountTag:"${env.CF_ACCOUNT_ID}"}){rumPageloadEventsAdaptiveGroups(limit:${limit},filter:{datetime_geq:"${iso(from)}",datetime_leq:"${iso(to - 1000)}",requestHost:"${HOST}"${where}},orderBy:[${order}]){count sum{visits} dimensions{${dims}}}}}}`;
+  const query = `{viewer{accounts(filter:{accountTag:"${env.CF_ACCOUNT_ID}"}){rumPageloadEventsAdaptiveGroups(limit:${limit},filter:{datetime_geq:"${iso(from)}",datetime_leq:"${iso(to - 1000)}",requestHost:"${HOST}"${where}},orderBy:[${order}]){count sum{visits} avg{sampleInterval} dimensions{${dims}}}}}}`;
   const r = await fetch(GQL, { method: 'POST', headers: { Authorization: `Bearer ${env.CF_ANALYTICS_TOKEN}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
   const j = await r.json().catch(() => null);
   if (!r.ok || !j || j.errors?.length) throw new Error(`analytics ${r.status}: ${j?.errors?.[0]?.message || 'no data'}`);
   return j.data.viewer.accounts[0]?.rumPageloadEventsAdaptiveGroups || [];
+}
+
+// A dimension breakdown answered from a coarse sample (countries read "US 0 visits, 10000 views") is asked again after
+// a pause, up to twice; the last answer is used either way and the report is then marked so it is not cached.
+async function fine(env, from, to, dims, opts) {
+  let rows = await rum(env, from, to, dims, opts);
+  for (let i = 0; i < 2 && rows.some((r) => (r.avg?.sampleInterval || 1) > 3); i++) {
+    await new Promise((r) => setTimeout(r, 1500));
+    rows = await rum(env, from, to, dims, opts);
+  }
+  rows.coarse = rows.some((r) => (r.avg?.sampleInterval || 1) > 3);
+  return rows;
 }
 
 // 24 hourly [visits, views] for one KST day, cut at `upto` (now) when the day is today.
@@ -25,10 +37,14 @@ async function hourly(env, day, upto, where = '') {
   const from = utcStart(day), to = Math.min(from + 24 * HOUR, upto);
   const out = Array.from({ length: 24 }, () => [0, 0]);
   if (to <= from) return out;
+  let coarse = false;
   for (const r of await rum(env, from, to, 'datetimeHour', { order: 'datetimeHour_ASC', where })) {
     const h = new Date(Date.parse(r.dimensions.datetimeHour) + KST).getUTCHours();
     out[h][0] += r.sum.visits; out[h][1] += r.count;
+    // Cloudflare answers some queries from a 1-in-10 or 1-in-100 sample (hours read as 0 / 100); flag those.
+    if ((r.avg?.sampleInterval || 1) > 3) coarse = true;
   }
+  out.coarse = coarse;
   return out;
 }
 
@@ -36,11 +52,17 @@ async function hourly(env, day, upto, where = '') {
 // Cloudflare about today (Cloudflare answers at a coarser sample rate once many queries have run in a short time).
 async function pastDay(env, day) {
   const cache = globalThis.caches?.default;
-  const key = new Request(`https://cache.gms-hub.internal/traffic-day/${day}`);
+  const key = new Request(`https://cache.gms-hub.internal/traffic-day2/${day}`);
   const hit = cache && (await cache.match(key));
-  if (hit) return hit.json();
-  const h = await hourly(env, day, utcStart(day) + 24 * HOUR);
-  if (cache && h.some(([v]) => v > 0)) await cache.put(key, new Response(JSON.stringify(h), { headers: { 'Cache-Control': 'max-age=2592000' } })).catch(() => null);
+  if (hit) { const j = await hit.json(); const h = j.h; h.coarse = j.coarse; return h; }
+  // A coarse answer is retried after a pause; one that stays coarse (old, already down-sampled days) is kept but
+  // flagged, so it never sets the busiest-hour record.
+  let h = await hourly(env, day, utcStart(day) + 24 * HOUR);
+  for (let i = 0; i < 2 && h.coarse; i++) {
+    await new Promise((r) => setTimeout(r, 1500));
+    h = await hourly(env, day, utcStart(day) + 24 * HOUR);
+  }
+  if (cache && h.some(([v]) => v > 0)) await cache.put(key, new Response(JSON.stringify({ h, coarse: h.coarse }), { headers: { 'Cache-Control': 'max-age=2592000' } })).catch(() => null);
   return h;
 }
 
@@ -63,15 +85,16 @@ export async function trafficReport(env, dayParam, now = Date.now()) {
   const jobs = [
     () => (isToday ? hourly(env, day, now) : pastDay(env, day)),
     () => hourly(env, day, isToday ? now : to, ',countryName:"KR"'),
-    () => rum(env, from, to, 'countryName', { limit: 40 }),
-    () => rum(env, from, to, 'requestPath', { limit: 300, order: 'count_DESC' }),
-    () => rum(env, from, to, 'refererHost', { limit: 60 }),
-    () => rum(env, from, to, 'deviceType', { limit: 5 }),
+    () => fine(env, from, to, 'countryName', { limit: 40 }),
+    () => fine(env, from, to, 'requestPath', { limit: 300, order: 'count_DESC' }),
+    () => fine(env, from, to, 'refererHost', { limit: 60 }),
+    () => fine(env, from, to, 'deviceType', { limit: 5 }),
     ...past.map((d) => () => pastDay(env, d).then((h) => [d, h]))
   ];
   // A few at a time: twenty queries in flight at once come back at a coarse sample rate (hours read as 0 or 100).
   const results = [];
   for (let k = 0; k < jobs.length; k += 3) results.push(...(await Promise.all(jobs.slice(k, k + 3).map((f) => f()))));
+  // Busiest-hour record ignores coarse days, and the day record is only as good as each day's sample.
   const [h0, krHours, countries, paths, refs, devices, ...days] = results;
   const dayMap = new Map(days);
   const h1 = dayMap.get(minus(day, 1)), h7 = dayMap.get(minus(day, 7));
@@ -108,6 +131,7 @@ export async function trafficReport(env, dayParam, now = Date.now()) {
     landings: pageRows.filter((p) => p.landings > 0).sort((a, b) => b.landings - a.landings).slice(0, 20),
     sources: [...sources.entries()].map(([source, visits]) => ({ source, visits })).sort((a, b) => b.visits - a.visits),
     devices: devices.map((r) => ({ device: r.dimensions.deviceType || '?', visits: r.sum.visits, views: r.count })),
+    coarse: [countries, paths, refs, devices].some((r) => r.coarse) || h0.coarse || undefined,
     daily: [...daily.entries()].sort().map(([d, [visits, views]]) => ({ day: d, visits, views })),
     live
   };
@@ -133,7 +157,7 @@ export async function handleTraffic(req, env, ctx, allowedOrigins) {
   if (hit) return reply(await hit.json());
   try {
     const data = await trafficReport(env, body.day);
-    if (cache) ctx?.waitUntil?.(cache.put(key, new Response(JSON.stringify(data), { headers: { 'Cache-Control': 'max-age=120' } })));
+    if (cache && !data.coarse) ctx?.waitUntil?.(cache.put(key, new Response(JSON.stringify(data), { headers: { 'Cache-Control': 'max-age=120' } })));
     return reply(data);
   } catch (e) {
     return reply({ error: String(e.message || e) }, 502);

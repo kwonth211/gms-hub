@@ -50,7 +50,6 @@ function hourChart(d) {
   const xs = (i) => P + i * bw + bw / 2;
   const area = shown.length ? `<polygon class="td-area" points="${xs(shown[0][1])},${H - 20} ${shown.map(([v, i]) => `${xs(i)},${ky(v)}`).join(' ')} ${xs(shown.at(-1)[1])},${H - 20}"/>` : '';
   const cols = `${area}<polyline class="td-lt" points="${shown.map(([v, i]) => `${xs(i)},${ky(v)}`).join(' ')}"/>${shown.map(([v, i]) => `<circle cx="${xs(i)}" cy="${ky(v)}" r="3.2" class="td-dt${i === cut ? ' now' : ''}"/>`).join('')}`;
-  const labels = shown.map(([v, i]) => (v ? `<text x="${xs(i)}" y="${ky(v) - 7}" class="td-ax mid td-val">${v}</text>` : '')).join('');
   const hits = day.map((v, i) => {
     const views = d.hourly.day[i][1], [k, a] = d.hourly.koreaAbroad[i] || [0, 0];
     const tip = tipLines([
@@ -63,22 +62,22 @@ function hourChart(d) {
     return `<rect x="${P + i * bw}" y="0" width="${bw}" height="${H}" class="td-hit" data-tip="${tip}"/>`;
   }).join('');
   const hours = Array.from({ length: 24 }, (_, h) => h).filter((h) => h % 2 === 0).map((h) => `<text x="${P + h * bw + bw / 2}" y="${H - 4}" class="td-ax mid">${h}시</text>`).join('');
-  return `<svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="시간대별 방문">${ticks}${line(w, 'td-lw')}${line(y, 'td-ly')}${dots(y, 'td-dy')}${cols}${labels}${hours}${hits}</svg>
+  return `<svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="시간대별 방문">${ticks}${line(w, 'td-lw')}${line(y, 'td-ly')}${dots(y, 'td-dy')}${cols}${hours}${hits}</svg>
 <p class="td-legend"><span class="k day"></span>${esc(d.day)} <span class="k y"></span>어제 ${esc(d.compare.yesterday.slice(5))} <span class="k w"></span>지난주 같은 요일 ${esc(d.compare.lastWeek.slice(5))} <span class="muted">· 그래프에 마우스를 올리면 자세히 보여요</span></p>`;
 }
 
 function koreaChart(d) {
-  const W = 720, H = 180, P = 30, bw = (W - P) / 24;
-  const cut = d.isToday ? d.cutHour : 23;
-  const rows = d.hourly.koreaAbroad.slice(0, cut + 1), max = Math.max(5, ...rows.map(([a, b]) => Math.max(a, b)));
-  const base = H - 20, ky = (v) => base - (v / max) * (H - 38), xs = (i) => P + i * bw + bw / 2;
-  const ticks = [0, 0.5, 1].map((f) => Math.round(max * f)).map((v) => `<text x="0" y="${ky(v) + 4}" class="td-ax">${v}</text><line x1="${P}" x2="${W}" y1="${ky(v)}" y2="${ky(v)}" class="td-grid"/>`).join('');
-  const line = (k, cls, dot) => `<polyline class="${cls}" points="${rows.map((r, i) => `${xs(i)},${ky(r[k])}`).join(' ')}"/>${rows.map((r, i) => `<circle cx="${xs(i)}" cy="${ky(r[k])}" r="2.6" class="${dot}"/>`).join('')}`;
-  const labels = rows.map(([k, a], i) => `<text x="${xs(i)}" y="${Math.min(ky(k), ky(a)) - 6}" class="td-ax mid td-val">${k}·${a}</text>`).join('');
-  const hits = rows.map(([k, a], i) => `<rect x="${P + i * bw}" y="0" width="${bw}" height="${H}" class="td-hit" data-tip="${tipLines([`${i}시`, `한국 ${nf(k)} · 해외 ${nf(a)}`, k + a ? `해외 비율 ${Math.round((a / (k + a)) * 100)}%` : ''])}"/>`).join('');
+  const W = 720, H = 170, P = 30, bw = (W - P) / 24;
+  const rows = d.hourly.koreaAbroad, max = Math.max(5, ...rows.map(([a, b]) => a + b));
+  const base = H - 20, ky = (v) => (v / max) * (H - 30);
+  const ticks = [0, 0.5, 1].map((f) => Math.round(max * f)).map((v) => `<text x="0" y="${base - ky(v) + 4}" class="td-ax">${v}</text><line x1="${P}" x2="${W}" y1="${base - ky(v)}" y2="${base - ky(v)}" class="td-grid"/>`).join('');
   const kSum = rows.reduce((a, r) => a + r[0], 0), aSum = rows.reduce((a, r) => a + r[1], 0);
-  return `<svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="한국·해외 시간대별 방문">${ticks}${line(1, 'td-lab', 'td-dab')}${line(0, 'td-lkr', 'td-dkr')}${labels}${Array.from({ length: 12 }, (_, i) => i * 2).map((h) => `<text x="${xs(h)}" y="${H - 4}" class="td-ax mid">${h}시</text>`).join('')}${hits}</svg>
-<p class="td-legend"><span class="k day"></span>한국 ${nf(kSum)} <span class="k y"></span>해외 ${nf(aSum)} <span class="muted">· 해외 ${kSum + aSum ? Math.round((aSum / (kSum + aSum)) * 100) : 0}% · 점 위 숫자는 한국·해외</span></p>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="한국·해외 시간대별 방문">${ticks}${rows.map(([k, a], i) => {
+    const x = P + i * bw + 2;
+    const tip = tipLines([`${i}시`, `한국 ${nf(k)} · 해외 ${nf(a)}`, k + a ? `해외 비율 ${Math.round((a / (k + a)) * 100)}%` : '']);
+    return `<rect x="${x}" y="${base - ky(k)}" width="${bw - 4}" height="${ky(k)}" class="td-kr"/><rect x="${x}" y="${base - ky(k) - ky(a)}" width="${bw - 4}" height="${ky(a)}" class="td-ab"/><rect x="${P + i * bw}" y="0" width="${bw}" height="${H}" class="td-hit" data-tip="${tip}"/>`;
+  }).join('')}${Array.from({ length: 12 }, (_, i) => i * 2).map((h) => `<text x="${P + h * bw + bw / 2}" y="${H - 4}" class="td-ax mid">${h}시</text>`).join('')}</svg>
+<p class="td-legend"><span class="k kr"></span>한국 ${nf(kSum)} <span class="k ab"></span>해외 ${nf(aSum)} <span class="muted">· 해외 ${kSum + aSum ? Math.round((aSum / (kSum + aSum)) * 100) : 0}%</span></p>`;
 }
 
 // The last 7 days against the 7 before them, day by day (same weekday side by side). Today is still running, so its
@@ -107,9 +106,7 @@ function weekChart(d, upto) {
     ]);
     return `<rect x="${x0 + 6}" y="${base - ky(pv)}" width="${bw / 2 - 8}" height="${ky(pv)}" class="td-prev"/>
 <rect x="${x0 + bw / 2 + 2}" y="${base - ky(x.visits)}" width="${bw / 2 - 8}" height="${ky(x.visits)}" class="td-cur${today(i) ? ' now' : ''}"/>
-<text x="${x0 + bw / 2}" y="${base - Math.max(ky(pv), ky(x.visits)) - 6}" class="td-ax mid td-delta ${ch == null ? '' : ch >= 0 ? 'up' : 'down'}">${ch == null ? '' : `${ch >= 0 ? '+' : ''}${ch}%`}</text>
-<text x="${x0 + bw / 2}" y="${H - 16}" class="td-ax mid">${x.day.slice(5).replace('-', '/')} ${wd(x.day)}</text>
-<text x="${x0 + bw / 2}" y="${H - 3}" class="td-ax mid">${nf(x.visits)} / ${nf(pv)}</text>
+<text x="${x0 + bw / 2}" y="${H - 10}" class="td-ax mid">${x.day.slice(5).replace('-', '/')} ${wd(x.day)}</text>
 <rect x="${x0}" y="0" width="${bw}" height="${H}" class="td-hit" data-tip="${tip}"/>`;
   }).join('');
   const sc = cur.reduce((a, x) => a + x.visits, 0), sp = prev.reduce((a, x, i) => a + prevVal(i), 0);
@@ -139,16 +136,17 @@ function render() {
   const p0 = sum(d.hourly.day, 1), p1 = upto(d.hourly.yesterday, 1);
   const kr = d.countries.find((c) => c.country === 'KR')?.visits || 0, abroad = d.countries.reduce((a, c) => a + c.visits, 0) - kr;
   const cutNote = d.isToday ? `오늘 ${d.cutHour}시 ${d.cutMinute}분까지 · 어제·지난주도 같은 시각까지 잘라 비교` : '하루 전체';
-  const live = d.live ? `<div class="td-card"><span>지금 열린 페이지</span><b>${nf(d.live.now)}</b><small>최고 ${nf(d.live.peak)} · ${esc(new Date(d.live.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }))}</small></div>` : '';
+  const live = d.live ? `<div class="td-card"><span>지금 열린 페이지</span><b>${nf(d.live.now)}</b><small>지금 이 순간 사이트를 열어 둔 탭 수</small></div><div class="td-card"><span>최대 동시 접속</span><b>${nf(d.live.peak)}</b><small>${esc(new Date(d.live.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }))} · 기록은 11/15 밤 9시 25분부터</small></div>` : '';
   const dailyMax = Math.max(1, ...d.daily.map((x) => x.visits));
   root.innerHTML = `${head}
 <div class="td-body${state.loading ? ' busy' : ''}">
-<p class="muted small">${esc(cutNote)} · Cloudflare 표본 추정값 · ${esc(new Date(d.at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }))} 기준</p>
+${d.coarse ? '<p class="td-err small">Cloudflare가 일부 숫자를 대략적으로 보내왔어요. 잠시 뒤 새로고침하면 정확해져요.</p>' : ''}<p class="muted small">${esc(cutNote)} · Cloudflare 표본 추정값 · ${esc(new Date(d.at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }))} 기준</p>
 <div class="td-cards">
 <div class="td-card"><span>방문</span><b>${nf(v0)}</b><small>${d.isToday ? '같은 시각 어제' : '전날'} ${nf(v1)} (${pct(v0, v1)}) · 지난주 같은 요일 ${nf(v7)} (${pct(v0, v7)})</small></div>
 <div class="td-card"><span>페이지뷰</span><b>${nf(p0)}</b><small>${d.isToday ? '같은 시각 어제' : '전날'} ${nf(p1)} (${pct(p0, p1)}) · 방문당 ${v0 ? (p0 / v0).toFixed(1) : '–'}쪽</small></div>
 <div class="td-card"><span>한국 / 해외 방문</span><b>${nf(kr)} / ${nf(abroad)}</b><small>해외 ${v0 ? Math.round((abroad / (kr + abroad || 1)) * 100) : 0}%</small></div>
 ${live}
+
 </div>
 <section class="panel"><h2>시간대별 방문</h2>${hourChart(d)}</section>
 <section class="panel"><h2>한국과 해외, 시간대별</h2>${koreaChart(d)}</section>
