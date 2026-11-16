@@ -7,11 +7,11 @@
    "level": "patch",
    "date": "2026-11-16",
    "path": "/",
-   "ko": "메이플 느낌 마우스 커서 — 링크 위에선 장갑 손, 누르면 꾹",
-   "en": "Maple-style mouse cursor — a glove over links that presses when you click",
+   "ko": "메이플 느낌 마우스 커서 — 늘 장갑 손, 누르면 꾹",
+   "en": "Maple-style mouse cursor — always a glove, pressed while you click",
    "desc": {
-    "ko": "사이트 커서를 메이플 느낌의 픽셀 화살표로 바꿨어요. 누를 수 있는 곳에 올리면 장갑 손이 되고, 클릭하는 순간 손가락이 눌려요. 마우스를 쓰는 화면에서만 바뀌고, 글자 입력칸은 그대로예요.",
-    "en": "The site cursor is now a Maple-style pixel arrow. Over anything clickable it turns into a pointing glove that presses when you click. Mouse screens only; text fields keep the text cursor."
+    "ko": "사이트 커서를 게임처럼 늘 장갑 손으로 바꿨어요. 마우스를 누르고 있는 동안은 손가락이 꾹 눌린 모양이 돼요. 마우스를 쓰는 화면에서만 바뀌고, 글자 입력칸은 그대로예요.",
+    "en": "Like the game, the cursor is now always a pixel glove, and it presses down while the mouse button is held. Mouse screens only; text fields keep the text cursor."
    }
   },
   {

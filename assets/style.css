@@ -292,7 +292,7 @@ h2 { font-size: 1.35rem; margin: 48px 0 16px; }
 .card-foot { margin-top: auto; padding-top: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .vote { font: inherit; font-size: 0.82rem; font-weight: 700; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); color: var(--text); cursor: var(--cur-hand, pointer); }
 .vote:hover { border-color: var(--accent); }
-.vote[aria-pressed='true'] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-2); cursor: default; }
+.vote[aria-pressed='true'] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-2); cursor: var(--cur-hand, default); }
 .vote b { font-variant-numeric: tabular-nums; }
 .visit { align-self: center; font-weight: 800; font-size: 0.88rem; text-decoration: none; color: var(--accent); }
 .visit:hover { color: var(--accent-2); }
@@ -811,7 +811,7 @@ a.band-link:hover { border-color: var(--accent); }
 .price-profile { display: flex; flex-direction: column; gap: 3px; }
 .profile-band { display: block; width: 100%; padding: 8px; background: transparent; color: var(--text); font: inherit; border: 1px solid transparent; border-radius: 7px; cursor: var(--cur-hand, pointer); text-align: left; }
 .profile-band:hover, .profile-band[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
-.profile-band:disabled { cursor: default; }
+.profile-band:disabled { cursor: var(--cur-hand, default); }
 .profile-label { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 10px; font-size: 0.75rem; font-variant-numeric: tabular-nums; }
 .profile-label small { color: var(--muted); font-size: 0.75rem; }
 .profile-track { display: block; height: 7px; border-radius: 3px; background: var(--panel-2); margin-top: 6px; overflow: hidden; }
@@ -1865,19 +1865,20 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 
 /* Charm: our own pixel cursor, falling maple leaves on the home hero, click sparkles and a walking mushroom in the
    footer. Reduced motion limits animation; the footer switch controls only falling leaves. */
-/* Cursors (2026-11-16, Maple style, drawn for the site in assets/cursors): an arrow, a pointing glove over anything
-   clickable (every "cursor: pointer" rule reads --cur-hand) and a pressed glove while clicking. Mouse pointers only. */
+/* Cursors (2026-11-16, Maple style, drawn for the site in assets/cursors): like the game, the pointer is always the glove,
+   and it presses down while the mouse button is held, wherever you click. Text fields keep the text cursor. Mouse
+   pointers only. Every "cursor: pointer" rule reads --cur-hand, so clickable things show the same glove. */
 @media (pointer: fine) {
   :root {
-    --cur-arrow: url("cursors/arrow.png") 1 1, auto;
-    --cur-hand: url("cursors/hand.png") 9 1, pointer;
-    --cur-down: url("cursors/hand-down.png") 9 5, pointer;
+    --cur-hand: url("cursors/hand.png") 9 1, auto;
+    --cur-down: url("cursors/hand-down.png") 9 5, auto;
   }
-  body { cursor: var(--cur-arrow); }
-  :where(a[href], button:not(:disabled), summary, select, label[for], [role='button'], [role='tab'], input[type='checkbox'], input[type='radio'], input[type='range']) { cursor: var(--cur-hand); }
-  :where(a[href], button:not(:disabled), summary, [role='button'], [role='tab']):active { cursor: var(--cur-down); }
-  :is(input:not([type='checkbox']):not([type='radio']):not([type='range']), textarea) { cursor: text; }
+  body { cursor: var(--cur-hand); }
+  :root:active, :root:active * { cursor: var(--cur-down) !important; }
+  :is(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='button']):not([type='submit']), textarea),
+  :root:active :is(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='button']):not([type='submit']), textarea) { cursor: text !important; }
 }
+
 .charm-leaves { position: fixed; inset: 0; z-index: 15; overflow: hidden; pointer-events: none; --fall: calc(100vh + 60px); }
 .charm-leaf { position: absolute; top: -30px; width: 22px; height: 24px; background: var(--leaf) center / contain no-repeat; image-rendering: pixelated; opacity: 0.7;
   scale: var(--size); animation: leaf-fall var(--dur) linear var(--delay) infinite; }
@@ -2807,7 +2808,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 .upd-pager button:active:not(:disabled) { transform: translateY(1px); }
 .upd-pager button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .upd-pager button[aria-current] { background: var(--accent-fill); border-color: var(--accent-edge); color: var(--accent-ink); }
-.upd-pager button:disabled { opacity: 0.45; cursor: default; }
+.upd-pager button:disabled { opacity: 0.45; cursor: var(--cur-hand, default); }
 .upd-list li[hidden] { display: none; }
 .upd-ver { margin-left: auto; flex: none; font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
 /* Item price table: the drop icons never spill into the price column. With an item open the list is half width, so
@@ -2900,7 +2901,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 .mb-ad-mid.on { position: absolute; left: 0; right: 0; }
 .mb-ad-mid.on .ad-slot { margin: 0 auto; }
 .mb-workspace.has-selection .mb-ad-mid:not(.on) { height: 0; overflow: hidden; }
-.mb-table tbody tr.mb-ad-gap, .mb-table tbody tr.mb-ad-gap:hover { background: var(--panel); cursor: default; }
+.mb-table tbody tr.mb-ad-gap, .mb-table tbody tr.mb-ad-gap:hover { background: var(--panel); cursor: var(--cur-hand, default); }
 .mb-table tr.mb-ad-gap td { padding: 0; display: table-cell; }
 
 /* Key updates the owner flags ("highlight": true in data/updates.json): a badge and a tinted row. */
@@ -2909,7 +2910,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 .upd-list li.is-hl { background: var(--warn-soft); border-radius: 8px; }
 .pn-item.is-hl { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent); background: var(--warn-soft); }
 .pn-item.is-hl h3 .upd-hl { margin-right: 6px; }
-.mb-offer.has-opts { cursor: default; }
+.mb-offer.has-opts { cursor: var(--cur-hand, default); }
 
 /* Home: the weekly report fold above the update list (scripts/weekly-report.mjs weeklyTeaser). Closed by default; the
    summary is the week's headline so a glance is enough, and opening it gives four lines and the way to the report. */
@@ -2966,7 +2967,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 .fm-act { margin: 4px 0 0 8px; padding: 0; border: 0; background: none; font: inherit; font-size: 0.74rem; color: var(--muted); cursor: var(--cur-hand, pointer); text-decoration: underline; text-underline-offset: 2px; }
 .fm-act:hover { color: var(--text); }
 .fm-act:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 3px; }
-.fm-act[disabled] { cursor: default; text-decoration: none; }
+.fm-act[disabled] { cursor: var(--cur-hand, default); text-decoration: none; }
 
 .fm-form { margin: 0 0 12px; }
 .fm-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--panel); box-shadow: inset 3px 0 0 var(--accent-fill); }

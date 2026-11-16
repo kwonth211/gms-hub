@@ -214,8 +214,8 @@
 .fh-plain b { display: block; }
 .fh-plain span { color: var(--fh-muted); }
 .fh .fh-chain { display: grid; gap: 8px; list-style: none; padding: 0; margin: 0; }
-.fh .fh-q { cursor: default; }
-.fh .fh-q .gq-step-head { cursor: default; }
+.fh .fh-q { cursor: var(--cur-hand, default); }
+.fh .fh-q .gq-step-head { cursor: var(--cur-hand, default); }
 .fh .fh-q .gq-step-body { display: grid; }
 .fh .gq-npcs img { background: var(--fh-bg-2); }
 
