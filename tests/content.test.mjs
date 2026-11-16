@@ -316,3 +316,11 @@ test('root and localized share cards resolve to current, correctly sized artwork
     }
   }
 });
+
+test('header Discord icon opens the Discord page, not the invite (owner request)', () => {
+  for (const lang of ['ko', 'en']) {
+    const html = read(`dist/${lang}/index.html`);
+    const a = html.match(/<a class="theme-toggle discord-link" href="([^"]+)"/);
+    assert.ok(a && a[1].endsWith(`/${lang}/discord-bot/`), `${lang} header discord link: ${a && a[1]}`);
+  }
+});
