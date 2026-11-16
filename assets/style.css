@@ -1865,15 +1865,23 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 
 /* Charm: our own pixel cursor, falling maple leaves on the home hero, click sparkles and a walking mushroom in the
    footer. Reduced motion limits animation; the footer switch controls only falling leaves. */
-/* Cursors (2026-11-16, Maple style, drawn for the site in assets/cursors): like the game, the pointer is always the glove,
+/* Cursors (2026-11-16): the game's own cursor (UI/Basic.img/Cursor 0 and 12 from the Classic World data, hotspots from
+   their origins); like the game, the pointer is always the glove,
    and it presses down while the mouse button is held, wherever you click. Text fields keep the text cursor. Mouse
    pointers only. Every "cursor: pointer" rule reads --cur-hand, so clickable things show the same glove. */
 @media (pointer: fine) {
   :root {
-    --cur-hand: url("cursors/hand.png") 9 1, auto;
-    --cur-down: url("cursors/hand-down.png") 9 5, auto;
+    --cur-hand: url("cursors/hand.png") 0 3, auto;
+    --cur-down: url("cursors/hand-down.png") 4 1, auto;
   }
-  body { cursor: var(--cur-hand); }
+  /* Zero specificity: beats the browser's own link and button cursors, loses to any rule on this site. */
+  :where(*) { cursor: var(--cur-hand); }
+  @supports (cursor: -webkit-image-set(url("cursors/hand.png") 1x) 0 3, auto) {
+    :root {
+      --cur-hand: -webkit-image-set(url("cursors/hand.png") 1x, url("cursors/hand@2x.png") 2x) 0 3, auto;
+      --cur-down: -webkit-image-set(url("cursors/hand-down.png") 1x, url("cursors/hand-down@2x.png") 2x) 4 1, auto;
+    }
+  }
   :root:active, :root:active * { cursor: var(--cur-down) !important; }
   :is(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='button']):not([type='submit']), textarea),
   :root:active :is(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='button']):not([type='submit']), textarea) { cursor: text !important; }
