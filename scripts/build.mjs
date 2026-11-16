@@ -3623,6 +3623,19 @@ ${jsonScript('admin-config', config.github)}
 </body></html>`
 );
 
+// Owner-only traffic dashboard: Cloudflare Web Analytics through the worker (assets/traffic-dash.js). Noindex, under
+// /admin/ (disallowed in robots.txt), and useless without the owner key.
+write(
+  'admin/traffic/index.html',
+  `${head({ lang: 'ko', title: '트래픽 | GMS Hub', desc: 'GMS Hub 트래픽', noindex: true })}
+<body data-page="traffic">
+<header class="site-header"><div class="wrap header-inner"><a class="brand" href="${href('/ko/')}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>트래픽</small></span></a></div></header>
+<main class="wrap traffic-dash" id="traffic-root"></main>
+${jsonScript('traffic-config', { api: config.voteApi })}
+<script src="${href('/assets/traffic-dash.js')}" defer></script>
+</body></html>`
+);
+
 // Derived locales: translate every finished English page. Game names stay in English (the GMS client's own names)
 // and are masked so one memory entry covers every item and monster page.
 const ENTITIES = entityMatcher([

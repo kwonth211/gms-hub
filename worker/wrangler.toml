@@ -3,6 +3,8 @@ main = "src/index.js"
 compatibility_date = "2026-10-01"
 
 [vars]
+# Cloudflare account that holds the gms-hub.com Web Analytics site (read by src/traffic.js with the CF_ANALYTICS_TOKEN secret).
+CF_ACCOUNT_ID = "2d797e9348660f2d5a228739b19cd956"
 # Small hourly batches; existing daily usage is retained across a policy change. D1 free allows 100,000 rows written a
 # day and every index entry counts, so a listing costs about four: 9,000 listings a day leaves room for megaphones.
 MARKET_BATCH_PAUSED = "false"
