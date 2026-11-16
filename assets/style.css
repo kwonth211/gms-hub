@@ -2964,16 +2964,18 @@ body.exp-running .exp-stop { display: inline-flex; }
 .profile-opt .opt-mid, .mb-optsum .opt-mid { color: var(--text-2); }
 .mb-optsum .opt-plus { color: var(--accent); }
 
-/* 무료 고확: site posts share the megaphone feed and the header ticker. Their own green (no game megaphone is green) and
-   a filled background, so they stand out from yellow, pink and blue game megaphones (2026-11-16, owner). */
-:root { --free: #12a06c; --free-ink: #ffffff; --free-soft: color-mix(in srgb, var(--free) 18%, var(--panel)); }
-:root[data-theme='dark'] { --free: #2bc48a; --free-ink: #08160f; --free-soft: color-mix(in srgb, var(--free) 22%, var(--panel)); }
+/* 무료 고확: site posts share the megaphone feed and the header ticker. A golden amber (owner's pick, 2026-11-16) with a
+   filled background: a solid block in the ticker, a tinted row with a thick band on the megaphone page. */
+:root { --free: #e8b23a; --free-ink: #2a1d05; --free-soft: color-mix(in srgb, var(--free) 22%, var(--panel)); }
+:root[data-theme='dark'] { --free: #e8b23a; --free-ink: #2a1d05; --free-soft: color-mix(in srgb, var(--free) 20%, var(--panel)); }
 .mg-page { --mg-F: var(--free); }
 .mg-F { --band: var(--mg-F); }
 .mg-msg.mg-F { background: var(--free-soft); box-shadow: inset 6px 0 0 var(--free); }
 .mg-ticker { --tk-F: var(--free); }
-.mg-tk-F { --band: var(--tk-F); background: color-mix(in srgb, var(--free) 32%, transparent); box-shadow: inset 4px 0 0 var(--free); }
-.mg-tk-free { font-style: normal; font-size: 0.68rem; font-weight: 800; padding: 0 5px; border-radius: 4px; color: var(--free-ink); background: var(--free); }
+.mg-tk-F { --band: var(--free-ink); background: var(--free); box-shadow: none; color: var(--free-ink); }
+.mg-tk-F:hover { background: color-mix(in srgb, var(--free) 88%, #000); color: var(--free-ink); }
+.mg-tk-F :is(time, span, strong, b) { color: var(--free-ink); }
+.mg-tk-free { font-style: normal; font-size: 0.68rem; font-weight: 800; padding: 0 5px; border-radius: 4px; color: var(--free); background: var(--free-ink); }
 .mg-k-free .mg-kind { color: var(--free-ink); background: var(--free); font-weight: 800; }
 .fm-price { font-weight: 800; }
 .fm-act { margin: 4px 0 0 8px; padding: 0; border: 0; background: none; font: inherit; font-size: 0.74rem; color: var(--muted); cursor: var(--cur-hand, pointer); text-decoration: underline; text-underline-offset: 2px; }
