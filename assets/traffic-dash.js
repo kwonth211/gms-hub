@@ -56,6 +56,33 @@ function koreaChart(d) {
 <p class="td-legend"><span class="k kr"></span>한국 <span class="k ab"></span>해외</p>`;
 }
 
+// The last 7 days against the 7 before them, day by day (same weekday side by side). Today is still running, so its
+// last-week partner is cut at the same clock time.
+function weekChart(d, upto) {
+  const days = d.daily;
+  if (days.length < 14) return '';
+  const cur = days.slice(7), prev = days.slice(0, 7);
+  const prevVal = (i) => (d.isToday && i === 6 ? upto(d.hourly.lastWeek) : prev[i].visits);
+  const W = 720, H = 190, P = 26, bw = (W - P) / 7;
+  const max = Math.max(5, ...cur.map((x) => x.visits), ...prev.map((x, i) => prevVal(i)));
+  const ky = (v) => (v / max) * (H - 44);
+  const base = H - 30;
+  const wd = (day) => '일월화수목금토'[new Date(`${day}T00:00:00Z`).getUTCDay()];
+  const cols = cur.map((x, i) => {
+    const pv = prevVal(i), x0 = P + i * bw;
+    const ch = pv ? Math.round((x.visits / pv - 1) * 100) : null;
+    return `<rect x="${x0 + 6}" y="${base - ky(pv)}" width="${bw / 2 - 8}" height="${ky(pv)}" class="td-prev"><title>${prev[i].day} ${pv}회</title></rect>
+<rect x="${x0 + bw / 2 + 2}" y="${base - ky(x.visits)}" width="${bw / 2 - 8}" height="${ky(x.visits)}" class="td-cur${d.isToday && i === 6 ? ' now' : ''}"><title>${x.day} ${x.visits}회</title></rect>
+<text x="${x0 + bw / 2}" y="${base - Math.max(ky(pv), ky(x.visits)) - 6}" class="td-ax mid td-delta ${ch == null ? '' : ch >= 0 ? 'up' : 'down'}">${ch == null ? '' : `${ch >= 0 ? '+' : ''}${ch}%`}</text>
+<text x="${x0 + bw / 2}" y="${H - 14}" class="td-ax mid">${x.day.slice(5).replace('-', '/')} ${wd(x.day)}</text>
+<text x="${x0 + bw / 2}" y="${H - 2}" class="td-ax mid">${x.visits} / ${pv}</text>`;
+  }).join('');
+  const sc = cur.reduce((a, x) => a + x.visits, 0), sp = prev.reduce((a, x, i) => a + prevVal(i), 0);
+  return `<section class="panel"><h2>이번 7일과 지난 7일 <small class="muted">요일별 방문 · 이번 ${nf(sc)} / 지난 ${nf(sp)} (${pct(sc, sp)})</small></h2>
+<svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="최근 7일과 그 전 7일 요일별 방문">${cols}</svg>
+<p class="td-legend"><span class="k prev"></span>지난주 같은 요일 <span class="k day"></span>이번 주${d.isToday ? ' (오늘은 같은 시각까지)' : ''}</p></section>`;
+}
+
 function render() {
   const key = store.get();
   if (!key) {
@@ -87,6 +114,7 @@ ${live}
 </div>
 <section class="panel"><h2>시간대별 방문</h2>${hourChart(d)}</section>
 <section class="panel"><h2>한국과 해외, 시간대별</h2>${koreaChart(d)}</section>
+${weekChart(d, upto)}
 <div class="td-grid2">
 <section class="panel"><h2>나라별 방문</h2>${bars(d.countries.slice(0, 12), { label: (c) => esc(COUNTRY[c.country] || c.country), value: (c) => c.visits })}</section>
 <section class="panel"><h2>들어온 경로</h2>${bars(d.sources.slice(0, 12), { label: (s) => esc(SOURCE[s.source] || s.source), value: (s) => s.visits, accent: true })}

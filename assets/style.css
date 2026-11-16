@@ -3210,6 +3210,13 @@ body.exp-running .exp-stop { display: inline-flex; }
 .td-chart .td-lw { stroke: var(--muted); stroke-dasharray: 4 4; }
 .td-chart .td-kr { fill: var(--accent-fill); }
 .td-chart .td-ab { fill: var(--text-2); opacity: .55; }
+.td-chart .td-prev { fill: var(--text-2); opacity: .35; }
+.td-chart .td-cur { fill: var(--accent-fill); }
+.td-chart .td-cur.now { opacity: .6; }
+.td-chart .td-delta { font-weight: 700; font-size: 11px; }
+.td-chart .td-delta.up { fill: var(--ok, #2e7d32); }
+.td-chart .td-delta.down { fill: var(--danger, #c0392b); }
+.td-legend .k.prev { background: var(--text-2); opacity: .35; height: 10px; }
 .td-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; font-size: .8rem; color: var(--text-2); margin: 6px 0 0; }
 .td-legend .k { display: inline-block; width: 14px; height: 4px; border-radius: 2px; margin-right: -8px; }
 .td-legend .k.day, .td-legend .k.kr { background: var(--accent-fill); height: 10px; }
