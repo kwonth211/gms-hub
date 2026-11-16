@@ -3632,7 +3632,7 @@ write(
 <header class="site-header"><div class="wrap header-inner"><a class="brand" href="${href('/ko/')}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>트래픽</small></span></a></div></header>
 <main class="wrap traffic-dash" id="traffic-root"></main>
 ${jsonScript('traffic-config', { api: config.voteApi })}
-<script src="${href('/assets/traffic-dash.js')}" defer></script>
+<script src="${scriptSrc('traffic-dash.js')}" defer></script>
 </body></html>`
 );
 
