@@ -201,7 +201,8 @@ test('monster drops get item database pages with droppers, farm maps and stats',
   const slugs=fs.readdirSync(dir).filter(n=>/^\d/.test(n));
   assert.ok(slugs.length>600,`only ${slugs.length} item pages`);
   const html=read('dist/en/items/1002003-red-headband/index.html');
-  assert.match(html,/<title>Red Headband: Who Drops It, Stats &amp; Where to Farm/);
+  // The title leads with the price once someone lists it, else with who drops it; either is right (live data in CI).
+  assert.match(html,/<title>Red Headband(: Who Drops It, Stats &amp; Where to Farm| Price: )/);
   assert.ok(html.includes('Dropped by')&&html.includes('farm-maps')&&html.includes('Weapon defense'));
   // Item pages stay for visitors but only data/item-index-keep.json items are in search (2026-11-15).
   const keep=new Set(JSON.parse(fs.readFileSync(new URL('data/item-index-keep.json',root),'utf8')).ids);
