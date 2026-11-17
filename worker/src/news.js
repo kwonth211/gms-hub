@@ -117,7 +117,35 @@ export function maintPoints(body, done) {
 const slug = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80) || 'news';
 const CATS = new Set(['maintenance', 'update', 'events', 'sale', 'general']);
 
-export async function officialNews(fetcher = fetch, now = Date.now(), limit = 10) {
+// Posts the official Discord's Classic World announcement channel sends to our #공지 (the channel is followed, so each
+// arrives as a crosspost). They are read with the bot token at request time, nothing is stored. A post that only points
+// at a notice already in the list is dropped; the rest become notices of their own: the first real line is the title,
+// the next few lines the summary.
+const plain = (s) => String(s || '').replace(/<a?:\w+:\d+>/g, '').replace(/<@[&!]?\d+>|<#\d+>|@ClassicWorld News/g, '')
+  .replace(/<t:(\d+)(?::\w)?>/g, (_, t) => `${new Date(Number(t) * 1000).toISOString().slice(0, 16).replace('T', ' ')} UTC`)
+  .replace(/\[([^\]]+)\]\((?:<)?https?:[^)]+\)/g, '$1').replace(/[*_~`]{1,3}|^#{1,3} |^> ?/gm, '').replace(/[ \t]+/g, ' ');
+export function discordNotice(m, known = new Set(), invite = '') {
+  if (!m || !(m.flags & 2) || !m.content) return null; // crossposts only: our own #공지 posts are not game notices
+  const linked = [...m.content.matchAll(/nexon\.com\/maplestory\/news\/[a-z-]+\/(\d+)/g)].map((x) => Number(x[1]));
+  if (linked.some((id) => known.has(id))) return null;
+  const lines = plain(m.content).split('\n').map((l) => l.trim()).filter((l) => l && !/^(hi|hello|hey|dear)\b[^.!?]{0,30}[,!]?$/i.test(l));
+  if (!lines.length) return null;
+  const cut = (t, n) => (t.length > n ? `${t.slice(0, n - 1).replace(/\s+\S*$/, '')}…` : t);
+  const title = cut(lines[0].replace(/[.:]$/, ''), 90);
+  const sum = [];
+  for (const l of lines[0].length > 90 ? lines : lines.slice(1)) { if (sum.join(' ').length > 320 || sum.length >= 4) break; sum.push(cut(l, 220)); }
+  const id = `d${m.id}`, hand = KO_POINTS[id] || {};
+  return { id, src: 'discord', cat: /maintenance|patch|hotfix|server (?:is|are) (?:back|down)/i.test(lines.join(' ')) ? 'maintenance' : 'general', date: m.timestamp,
+    en: title, ko: KO[id] || title, url: invite, sum: { en: sum, ko: hand.p || sum }, ...(hand.link ? { link: hand.link } : {}) };
+}
+async function discordNews(env, fetcher, known) {
+  if (!env?.DISCORD_BOT_TOKEN || !env.DISCORD_NEWS_CHANNEL) return [];
+  const r = await fetcher(`https://discord.com/api/v10/channels/${env.DISCORD_NEWS_CHANNEL}/messages?limit=30`, { headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }, signal: AbortSignal.timeout(6000) });
+  if (!r.ok) return [];
+  return (await r.json()).map((m) => discordNotice(m, known, env.DISCORD_INVITE || '')).filter(Boolean);
+}
+
+export async function officialNews(fetcher = fetch, now = Date.now(), limit = 10, env = null) {
   const get = async (url) => {
     const r = await fetcher(url, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(8000) });
     if (!r.ok) throw new Error(`news feed HTTP ${r.status}`);
@@ -125,8 +153,9 @@ export async function officialNews(fetcher = fetch, now = Date.now(), limit = 10
   };
   const list = await get(FEED);
   if (!Array.isArray(list)) throw new Error('news feed shape');
-  const items = list.filter((x) => x && x.isMSCW && x.id && x.name && x.liveDate && Date.parse(x.liveDate) <= now)
-    .sort((a, b) => Date.parse(b.liveDate) - Date.parse(a.liveDate)).slice(0, limit)
+  const site = list.filter((x) => x && x.isMSCW && x.id && x.name && x.liveDate && Date.parse(x.liveDate) <= now)
+    .sort((a, b) => Date.parse(b.liveDate) - Date.parse(a.liveDate));
+  let items = site.slice(0, limit)
     .map((x) => {
       const cat = CATS.has(x.category) ? x.category : 'general';
       const hand = KO_POINTS[x.id] || {};
@@ -145,5 +174,7 @@ export async function officialNews(fetcher = fetch, now = Date.now(), limit = 10
     const w = !done && now - Date.parse(x.date) < 7 * 86400000 ? maintWindow(d.body) : null;
     if (w) x.maint = w;
   }));
+  const extra = await discordNews(env, fetcher, new Set(site.map((x) => Number(x.id)))).catch(() => []);
+  if (extra.length) items = [...items, ...extra].sort((a, b) => Date.parse(b.date) - Date.parse(a.date)).slice(0, limit);
   return { at: new Date(now).toISOString(), items };
 }

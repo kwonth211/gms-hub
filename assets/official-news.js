@@ -41,7 +41,7 @@ ${maint}<ol class="upd-list gn-list">${items.map((x) => {
     const pts = (ko ? x.sum?.ko : x.sum?.en) || [];
     const more = site && x.link ? `<a class="gn-more" href="${esc(site(x.link))}">${tr('공략 보기', 'Open the guide')} →</a>` : '';
     return `<li><details data-news="${x.id}"><summary><time datetime="${esc(x.date)}" translate="no">${date(x.date)}</time><span class="gn-cat" data-cat="${esc(x.cat)}">${cat[x.cat] || cat.general}</span>${now - Date.parse(x.date) < 2 * 86400000 ? '<span class="upd-new" translate="no">NEW</span>' : ''}<span class="gn-title" translate="no">${esc(ko ? x.ko : x.en)}</span></summary>
-<div class="gn-body">${pts.length ? `<ul translate="no">${pts.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}<p>${more}<a class="gn-src" href="${esc(x.url)}" target="_blank" rel="noopener" data-news="${x.id}">${tr('공식 공지 원문 보기', 'Read the official notice')} →</a></p></div></details></li>`;
+<div class="gn-body">${pts.length ? `<ul translate="no">${pts.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}<p>${more}<a class="gn-src" href="${esc(x.url)}" target="_blank" rel="noopener" data-news="${x.id}">${x.src === 'discord' ? tr('디스코드에서 보기', 'See it on Discord') : tr('공식 공지 원문 보기', 'Read the official notice')} →</a></p></div></details></li>`;
   }).join('')}</ol>`;
 }
 
@@ -63,7 +63,7 @@ if (typeof document !== 'undefined') {
       box.innerHTML = html; box.hidden = false;
       for (const id of open) box.querySelector(`details[data-news="${id}"]`)?.setAttribute('open', '');
     }).catch(() => {});
-    box.addEventListener('click', (e) => { const a = e.target.closest('a[data-news]'); if (a) window.track?.('game_news_click', { news_id: Number(a.dataset.news) }); });
-    box.addEventListener('toggle', (e) => { if (e.target.open && e.isTrusted) window.track?.('game_news_open', { news_id: Number(e.target.dataset.news) }); }, true);
+    box.addEventListener('click', (e) => { const a = e.target.closest('a[data-news]'); if (a) window.track?.('game_news_click', { news_id: String(a.dataset.news) }); });
+    box.addEventListener('toggle', (e) => { if (e.target.open && e.isTrusted) window.track?.('game_news_open', { news_id: String(e.target.dataset.news) }); }, true);
   }
 }

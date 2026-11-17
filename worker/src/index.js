@@ -542,7 +542,7 @@ const api = {
 
     // Official game notices for the home page: read from the game's public news list, edge-cached, nothing stored.
     if (url.pathname === '/news' && req.method === 'GET') {
-      try { return json(await officialNews(), cors, 200, 'public, max-age=600'); }
+      try { return json(await officialNews(fetch, Date.now(), 10, env), cors, 200, 'public, max-age=600'); }
       catch (e) { return json({ error: 'news unavailable' }, cors, 502); }
     }
 

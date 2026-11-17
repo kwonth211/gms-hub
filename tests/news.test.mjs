@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { koTitle, maintWindow, officialNews } from '../worker/src/news.js';
+import { koTitle, maintWindow, officialNews, discordNotice } from '../worker/src/news.js';
 import { newsInner } from '../assets/official-news.js';
 
 test('formulaic notice titles get Korean wording, the rest stay as written', () => {
@@ -54,4 +54,14 @@ test('home list: Korean titles and Korea time on Korean pages, the maintenance l
   const en = newsInner(data, { ko: false, tr: (k, e) => e, now: Date.parse('2026-11-18T00:00:00Z'), tz: 'UTC' });
   assert.match(en, /1:00 PM – 6:00 PM UTC/); assert.match(en, /Scheduled &lt;b&gt;Game/); assert.match(en, /<li>Servers are down\.<\/li>/);
   assert.equal(newsInner({ items: [] }, { ko: true, tr }), '');
+});
+
+test('followed Discord announcements become notices; our own posts and pointers to listed notices are skipped', () => {
+  const m = { id: '9', flags: 2, timestamp: '2026-11-17T02:32:00Z', content: 'Hi Classic Maplers,\n\nWe are aware of players who believe their bans are false-positive bans.\n\nWe would like to clarify that mass reporting does **NOT** trigger automatic bans.\n<@&123>' };
+  const n = discordNotice(m, new Set(), 'https://discord.gg/x');
+  assert.equal(n.id, 'd9'); assert.equal(n.src, 'discord'); assert.equal(n.url, 'https://discord.gg/x');
+  assert.equal(n.en, 'We are aware of players who believe their bans are false-positive bans');
+  assert.deepEqual(n.sum.en, ['We would like to clarify that mass reporting does NOT trigger automatic bans.']);
+  assert.equal(discordNotice({ ...m, flags: 0 }), null);
+  assert.equal(discordNotice({ ...m, content: 'Check out [HERE](https://www.nexon.com/maplestory/news/events/48552/x)' }, new Set([48552])), null);
 });

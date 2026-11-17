@@ -27,6 +27,8 @@ DISCORD_FEEDBACK_CHANNEL = "1570460324203602010"
 # The client secret is the DISCORD_CLIENT_SECRET secret; the redirect URI <worker>/discord/oauth is set on the Developer Portal.
 DISCORD_APP_ID = "1570465541343150292"
 DISCORD_GUILD_ID = "1570460084230955018"
+# #공지: the official Discord's Classic World announcements are followed into it; /news reads them from here.
+DISCORD_NEWS_CHANNEL = "1570460197812572280"
 
 # Email Service: send as contact@gms-hub.com (src/inbox.js handleSendMail).
 [[send_email]]
