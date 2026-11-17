@@ -141,12 +141,15 @@ export function discordNotice(m, known = new Set(), invite = '') {
   const sum = [];
   for (const l of lines[0].length > 90 ? lines : lines.slice(1)) { if (sum.join(' ').length > 320 || sum.length >= 4) break; sum.push(cut(l, 220)); }
   const id = `d${m.id}`, hand = KO_POINTS[id] || {};
+  // The link opens the announcement itself in the official server (its members can read it); the invite is the fallback.
+  const ref = m.message_reference;
+  const url = ref?.guild_id && ref.channel_id && ref.message_id ? `https://discord.com/channels/${ref.guild_id}/${ref.channel_id}/${ref.message_id}` : invite;
   return { id, src: 'discord', cat: /maintenance|patch|hotfix|server (?:is|are) (?:back|down)/i.test(lines.join(' ')) ? 'maintenance' : 'general', date: m.timestamp,
-    en: title, ko: KO[id] || title, url: invite, sum: { en: sum, ko: hand.p || sum }, ...(hand.link ? { link: hand.link } : {}) };
+    en: title, ko: KO[id] || title, url, sum: { en: sum, ko: hand.p || sum }, ...(hand.link ? { link: hand.link } : {}) };
 }
 // Announcements posted on the official Discord before the channel was followed (a follow only brings later posts).
 const DISCORD_SEED = [
-  { id: '1572077114297942107', flags: 2, timestamp: '2026-11-17T02:33:11Z', content: 'Hi Classic Maplers,\n\nBan clarification: mass reporting does not trigger automatic bans\n\nMultiple layers of checks are in place before any ban is applied, and neither the number of in-game reports nor a single failed Lie Detector Test alone results in an automatic ban.' },
+  { id: '1572077114297942107', flags: 2, timestamp: '2026-11-17T02:33:11Z', message_reference: { guild_id: '309809230095843328', channel_id: '1450563647578439920', message_id: '1572077114297942107' }, content: 'Hi Classic Maplers,\n\nBan clarification: mass reporting does not trigger automatic bans\n\nMultiple layers of checks are in place before any ban is applied, and neither the number of in-game reports nor a single failed Lie Detector Test alone results in an automatic ban.' },
 ];
 async function discordNews(env, fetcher, known) {
   if (!env?.DISCORD_BOT_TOKEN || !env.DISCORD_NEWS_CHANNEL) return [];

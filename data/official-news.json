@@ -1,5 +1,5 @@
 {
- "at": "2026-11-17T17:11:33.156Z",
+ "at": "2026-11-17T17:19:06.547Z",
  "items": [
   {
    "id": "d1572077114297942107",
@@ -8,7 +8,7 @@
    "date": "2026-11-17T02:33:11Z",
    "en": "Ban clarification: mass reporting does not trigger automatic bans",
    "ko": "정지 관련 안내: 신고를 많이 받는다고 자동 정지되지 않아요",
-   "url": "https://discord.gg/maplestory",
+   "url": "https://discord.com/channels/309809230095843328/1450563647578439920/1572077114297942107",
    "sum": {
     "en": [
      "Multiple layers of checks are in place before any ban is applied, and neither the number of in-game reports nor a single failed Lie Detector Test alone results in an automatic ban."

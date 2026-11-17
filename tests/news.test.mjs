@@ -62,6 +62,7 @@ test('followed Discord announcements become notices; our own posts and pointers 
   assert.equal(n.id, 'd9'); assert.equal(n.src, 'discord'); assert.equal(n.url, 'https://discord.gg/x');
   assert.equal(n.en, 'We are aware of players who believe their bans are false-positive bans');
   assert.deepEqual(n.sum.en, ['We would like to clarify that mass reporting does NOT trigger automatic bans.']);
+  assert.equal(discordNotice({ ...m, message_reference: { guild_id: '1', channel_id: '2', message_id: '3' } }).url, 'https://discord.com/channels/1/2/3');
   assert.equal(discordNotice({ ...m, flags: 0 }), null);
   assert.equal(discordNotice({ ...m, content: 'Check out [HERE](https://www.nexon.com/maplestory/news/events/48552/x)' }, new Set([48552])), null);
 });
