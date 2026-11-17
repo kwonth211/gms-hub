@@ -324,3 +324,7 @@ test('header Discord icon opens the Discord page, not the invite (owner request)
     assert.ok(a && a[1].endsWith(`/${lang}/discord-bot/`), `${lang} header discord link: ${a && a[1]}`);
   }
 });
+
+test('the More menu links the site directory (owner request)', () => {
+  for (const lang of ['ko', 'en']) assert.ok(read(`dist/${lang}/index.html`).match(/class="more-menu"[\s\S]*?href="\/[a-z]{2}\/sites\/"/), `${lang} more menu lacks /sites/`);
+});

@@ -812,6 +812,8 @@ function moreMenu(lang, moved = []) {
   const ko = lang === 'ko';
   const links = [
     ['/updates/', ko ? '패치노트' : 'Patch notes'],
+    // The site directory is back in this menu at the owner's request (2026-11-17); keep it here.
+    ['/sites/', ko ? '다른 사이트 모음' : 'Other Classic World sites'],
     ...moved.map(([p, , label]) => [p, label]),
     ['/rank/', ko ? '캐릭터 랭킹' : 'Character ranking'],
     ['/items/', ko ? '아이템 도감' : 'Item database'],
