@@ -24,12 +24,17 @@ export class Presence {
       for (const ws of this.state.getWebSockets()) if (!this.state.getTags(ws).includes('chat')) { try { ws.send(out); } catch (e) {} }
       return new Response(null, { status: 204 });
     }
-    // Internal read of the record (the worker checks the owner's token before asking): { peak, at, now }.
+    // Internal read of the record (the worker checks the owner's token before asking): { peak, at, now, pages }.
     if (new URL(req.url).pathname === '/peak') {
-      const now = this.state.getWebSockets().filter((ws) => ws.readyState === 1 && !this.state.getTags(ws).includes('chat')).length;
+      const open = this.state.getWebSockets().filter((ws) => ws.readyState === 1 && !this.state.getTags(ws).includes('chat'));
+      const now = open.length;
       await this.notePeak(now);
       const peak = await this.loadPeak();
-      return Response.json({ peak: peak.n, at: peak.at, now });
+      // Which pages are open right now (owner's dashboard): [[page, tabs], ...], busiest first. Language is not kept.
+      const by = new Map();
+      for (const ws of open) { const pg = this.state.getTags(ws)[0] || '/'; by.set(pg, (by.get(pg) || 0) + 1); }
+      const pages = [...by].sort((a, b) => b[1] - a[1]).slice(0, 20);
+      return Response.json({ peak: peak.n, at: peak.at, now, pages });
     }
     if (req.headers.get('Upgrade') !== 'websocket') return new Response('expected websocket', { status: 426 });
     if (new URL(req.url).pathname === '/chat') return this.joinChat();

@@ -158,6 +158,8 @@ function render() {
   const kr = d.countries.find((c) => c.country === 'KR')?.visits || 0, abroad = d.countries.reduce((a, c) => a + c.visits, 0) - kr;
   const cutNote = d.isToday ? `오늘 ${d.cutHour}시 ${d.cutMinute}분까지 · 어제·지난주도 같은 시각까지 잘라 비교` : '하루 전체';
   const live = d.live ? `<div class="td-card"><span>지금 열린 페이지</span><b>${nf(d.live.now)}</b><small>지금 이 순간 사이트를 열어 둔 탭 수</small></div><div class="td-card"><span>최대 동시 접속</span><b>${nf(d.live.peak)}</b><small>${esc(new Date(d.live.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }))} · 기록은 11/15 밤 9시 25분부터</small></div>` : '';
+  // Pages open at this moment, from the live presence room (tabs, all languages together).
+  const nowPages = d.live?.pages?.length ? `<section class="panel"><h2>지금 보고 있는 페이지 <small class="muted">열려 있는 탭 ${nf(d.live.now)}개 · 언어 합산</small></h2><ul class="td-botlist">${d.live.pages.map(([pg, n]) => `<li><span>${esc(pageName(pg))} <code>${esc(pg)}</code></span><b>${nf(n)}</b></li>`).join('')}</ul><p class="muted small">탭을 열어 둔 채 다른 창을 보고 있는 경우도 포함돼요.</p></section>` : '';
   const dailyMax = Math.max(1, ...d.daily.map((x) => x.visits));
   root.innerHTML = `${head}
 <div class="td-body${state.loading ? ' busy' : ''}">
@@ -169,6 +171,7 @@ function render() {
 ${live}
 
 </div>
+${nowPages}
 <section class="panel"><h2>시간대별 방문</h2>${hourChart(d)}</section>
 <section class="panel"><h2>한국과 해외, 시간대별</h2>${koreaChart(d)}</section>
 ${weekChart(d, upto)}
