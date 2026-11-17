@@ -755,9 +755,13 @@ function header(lang, pagePath, only) {
     ['/equipment/', 'bag', ko ? '직업별 장비' : 'Gear by class'],
     ['/bosses/', 'crown', ko ? '보스' : 'Bosses']
   ].filter(Boolean);
+  // Training spots open a dropdown with two kinds (owner, 2026-11-17): where to level and where to make mesos.
+  const huntItems = [
+    ['/tools/training/', 'sword', ko ? '경험치 사냥터' : 'EXP training spots'],
+    ['/tools/meso-farm/', 'coin', ko ? '메소 사냥터 (쌀먹)' : 'Meso farming spots']
+  ];
   const toolItems = [
     ['/tools/market/today/', 'coin', ko ? '오늘의 시세 · 맥박' : "Today's prices & pulse"],
-    ['/tools/meso-farm/', 'bag', ko ? '메소 벌이 사냥터' : 'Meso farming'],
     ['/tools/forge/', 'hammer', ko ? '작 시뮬레이터' : 'Scroll forge'],
     ['/tools/exp/', 'clock', EXP[lang].nav],
     ['/tools/scroll/', 'scroll', t.navScroll],
@@ -771,26 +775,27 @@ function header(lang, pagePath, only) {
   const sitesEntry = ['/sites/', 'star', lang === 'ko' ? '사이트 모음' : 'Other Classic World sites'];
   // English labels that would break mid-word on a phone ("Calcul/ator") get a one-word form there.
   // The newest tab carries a small N so returning visitors notice it.
-  const NEW_TAB = UPDATES.find((u) => [...tabs, ...toolItems, ...guideItems].some(([p]) => p === u.path.split('#')[0]))?.path.split('#')[0] || '/quests/';
+  const NEW_TAB = UPDATES.find((u) => [...tabs, ...huntItems, ...toolItems, ...guideItems].some(([p]) => p === u.path.split('#')[0]))?.path.split('#')[0] || '/quests/';
   const SHORT_EN = { '/': 'Home', '/monsters/': 'Mobs', '/tools/training/': 'Spots', '/tools/scroll/': 'Scrolls', '/tools/drop-rate/': 'Odds', '/tools/damage/': 'Hits', '/tools/market/': 'Market', '/megaphone/': 'Megas', '/tools/exp/': 'EXP', '/guides/': 'Guides', '/quests/': 'Quests' };
-  const tabHtml = tabs
-    .map(
-      ([p, icon, label]) =>
-        `<a class="tab" href="${href(langPath(lang, p))}"${(p === pagePath || (p !== '/' && pagePath?.startsWith(p))) ? ' aria-current="page"' : ''}${lang === 'ko' ? '' : ` title="${esc(label)}"`}>${p === NEW_TAB ? `<span class="tab-ico">${spriteSvg(icon, 20)}<span class="tab-new" title="${lang === 'ko' ? '새 기능' : 'New'}">N</span></span>` : spriteSvg(icon, 20)}${lang === 'ko' ? `<span>${label}</span>` : `<span class="tab-full">${label}</span><span class="tab-short" aria-hidden="true">${SHORT_EN[p]}</span>`}</a>`
-    )
-    .join('');
   const dropMenu = (items, icon, label, shortEn) => {
     const on = items.some(([p]) => p === '/guides/' ? pagePath?.startsWith('/guides/') : pagePath?.startsWith(p));
     const isNew = items.some(([p]) => p === NEW_TAB);
     return `<details class="tool-menu"><summary class="tab"${on ? ' aria-current="page"' : ''}${ko ? '' : ` title="${esc(label)}"`}>${isNew ? `<span class="tab-ico">${spriteSvg(icon, 20)}<span class="tab-new">N</span></span>` : spriteSvg(icon, 20)}${ko ? `<span>${label}</span>` : `<span class="tab-full">${label}</span><span class="tab-short" aria-hidden="true">${shortEn}</span>`}<span class="tool-caret" aria-hidden="true"></span></summary><div class="tool-list">${items.map(([p, ic, l]) => `<a class="tool-opt" href="${href(langPath(lang, p))}"${pagePath?.startsWith(p) ? ' aria-current="page"' : ''}>${spriteSvg(ic, 20)}<span>${esc(l)}</span>${p === NEW_TAB ? '<span class="tab-new tool-new">N</span>' : ''}</a>`).join('')}</div></details>`;
   };
+  const huntMenu = dropMenu(huntItems, 'sword', ko ? '사냥터' : 'Training', 'Spots');
+  const tabHtml = tabs
+    .map(
+      ([p, icon, label]) => p === '/tools/training/' ? huntMenu :
+        `<a class="tab" href="${href(langPath(lang, p))}"${(p === pagePath || (p !== '/' && pagePath?.startsWith(p))) ? ' aria-current="page"' : ''}${lang === 'ko' ? '' : ` title="${esc(label)}"`}>${p === NEW_TAB ? `<span class="tab-ico">${spriteSvg(icon, 20)}<span class="tab-new" title="${lang === 'ko' ? '새 기능' : 'New'}">N</span></span>` : spriteSvg(icon, 20)}${lang === 'ko' ? `<span>${label}</span>` : `<span class="tab-full">${label}</span><span class="tab-short" aria-hidden="true">${SHORT_EN[p]}</span>`}</a>`
+    )
+    .join('');
   const guideMenu = dropMenu(guideItems, 'book', ko ? '가이드' : t.navGuides, 'Guides');
   const toolMenu = dropMenu(toolItems, 'hammer', ko ? '계산기' : 'Tools', 'Tools');
   return `${megaTicker(lang)}<header class="site-header"><div class="wrap header-inner">
 <a class="brand" href="${href(langPath(lang, '/'))}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>${esc(t.gameName)}</small></span></a>
 <nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}${guideMenu}${toolMenu}</nav>
 ${presencePill(lang)}
-${headerSearch(lang, [...tabs, ...guideItems, ...toolItems, ...moved, sitesEntry])}
+${headerSearch(lang, [...tabs, ...huntItems.slice(1), ...guideItems, ...toolItems, ...moved, sitesEntry])}
 ${'' /* Header Discord icon opens the Discord page first (owner, 2026-11-15/16): it offers both adding the bot and joining
    the community. Do not point it straight at the invite (tests/content.test.mjs checks this). */}
 ${config.discord ? `<a class="theme-toggle discord-link" href="${href(langPath(lang, config.discordBotInstall ? '/discord-bot/' : '/contact/'))}" data-discord="header" aria-label="${lang === 'ko' ? '디스코드 커뮤니티' : 'Discord community'}" title="${lang === 'ko' ? '디스코드 커뮤니티' : 'Discord community'}">${DISCORD_ICON(20)}</a>` : ''}
