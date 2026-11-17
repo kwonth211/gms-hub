@@ -928,8 +928,8 @@ async function refresh() {
       $("mk-stat-" + k).textContent = money(catalog.stats[k]);
     // The time goes in as a variable so derived locales match their translation key.
     $("mk-status").textContent = ko
-      ? `목록 기준 ${clock(Date.parse(catalog.asOf))} · 60초마다 확인`
-      : tx("Directory as of {at} · checks every 60s", { at: clock(Date.parse(catalog.asOf)) });
+      ? `목록 기준 ${clock(Date.parse(catalog.asOf))} · 5분마다 확인`
+      : tx("Directory as of {at} · checks every 5 min", { at: clock(Date.parse(catalog.asOf)) });
     if (view === "items") renderDirectory();
     else renderSummary();
   } catch {
@@ -1476,7 +1476,9 @@ async function initialize() {
     $("mb-results").innerHTML = `<p>${T.failed}</p>`;
   }
 }
-setInterval(refresh, 60000);
+// Every 5 minutes: the catalog is edge-cached for 5 minutes and recomputed at most every 15, so a shorter interval only
+// re-downloads the same ~290 KB (2026-11-17).
+setInterval(refresh, 300000);
 document.addEventListener("visibilitychange", refresh);
 renderMine();
 initialize();
