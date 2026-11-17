@@ -56,7 +56,9 @@ elif cmd == 'send':
     data = json.dumps({'to': to, 'subject': subject, 'text': sys.stdin.read()}).encode()
     token = open(os.path.expanduser('~/.config/gms-hub/mail-token')).read().strip()
     req = urllib.request.Request(WORKER + '/internal/mail/send', data=data, method='POST',
-                                 headers={'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'})
+                                 headers={'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json',
+                                          # Cloudflare answers 403 to the default Python-urllib name on workers.dev.
+                                          'User-Agent': 'gms-hub-mail/1.0'})
     print(urllib.request.urlopen(req).read().decode())
 else:
     print(__doc__)
