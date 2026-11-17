@@ -99,7 +99,8 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
 
 // Live viewer count: each open tab holds one WebSocket to the worker's presence room, which sends back how many pages are
 // open on the site. The header pill shows it once someone else is here too.
-// A tab hidden for 30 seconds lets go, so background tabs are not counted.
+// Every open tab counts, also in the background (owner 2026-11-17: count people who have the site open). The socket is
+// cheap to hold: the room hibernates and answers pings on its own. A tab left hidden for 6 hours lets go.
 (() => {
   const spots = document.querySelectorAll('.presence');
   const api = document.body.dataset.priceApi;
@@ -125,7 +126,7 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   try { const last = Number(sessionStorage.getItem(PR_KEY)); if (last >= 1) show(last, true); } catch (x) {}
   const remember = (site) => { try { sessionStorage.setItem(PR_KEY, String(site)); } catch (x) {} };
   const open = () => {
-    if (ws || document.hidden) return;
+    if (ws) return;
     ws = new WebSocket(`${api.replace(/^http/, 'ws')}/presence?p=${encodeURIComponent(location.pathname)}`);
     ws.onmessage = (e) => {
       retry = 0;
@@ -143,14 +144,14 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
       clearInterval(ping);
       ws = null;
       show(0);
-      if (!document.hidden && retry < 5) setTimeout(open, 3000 * 2 ** retry++);
+      if (retry < 5) setTimeout(open, 3000 * 2 ** retry++);
     };
     ping = setInterval(() => ws?.readyState === 1 && ws.send('ping'), 45000);
   };
   document.addEventListener('visibilitychange', () => {
     clearTimeout(idle);
-    if (document.hidden) idle = setTimeout(() => ws?.close(), 30000);
-    else open();
+    if (document.hidden) idle = setTimeout(() => { retry = 9; ws?.close(); }, 6 * 3600000);
+    else { retry = 0; open(); }
   });
   open();
 })();
