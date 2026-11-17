@@ -20,6 +20,7 @@ import { selectRoutes, routeCards, publicTrainingData, publicRates, rateNum, job
 import { loadLocales, loadMemory, entityMatcher, localizePage, clientKeys, TX_RUNTIME } from './i18n.mjs';
 import { SKILLS as DMG_SKILLS, windowRange as dmgWindow, hitRange as dmgHit, hitsToKill as dmgKill, accuracyNeeded as dmgAccNeed } from '../assets/damage-calc.js';
 import { indexEntry } from '../assets/search-index.js';
+import { newsInner } from '../assets/official-news.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const out = path.join(root, 'dist');
@@ -1150,6 +1151,16 @@ ${collectionStatus(lang)}
 </section>`;
 }
 
+// Home: the game's own notices (maintenance, updates, events, Cash Shop) from the snapshot fetched before the build
+// (scripts/fetch-official-news.mjs); assets/official-news.js redraws it from the live list. English pages are built with
+// UTC times and the page switches them to the viewer's own.
+const OFFICIAL_NEWS = fs.existsSync(path.join(root, 'data/official-news.json')) ? readJson('data/official-news.json') : null;
+function gameNews(lang) {
+  const ko = lang === 'ko';
+  const inner = newsInner(OFFICIAL_NEWS, { ko, tr: (k, e) => (ko ? k : e), tz: 'UTC', site: (p) => href(langPath(lang, p)) });
+  return `<section class="wrap game-news" id="game-news" data-game-news data-api="${esc(config.voteApi)}" data-base="${esc(href(langPath(lang, '/')).replace(/\/$/, ''))}"${inner ? '' : ' hidden'}>${inner}</section>`;
+}
+
 // Site updates (data/updates.json, newest first): the three newest as NEW chips in the hero, the rest in a short
 // "what's new" list further down. Every new feature or visible improvement gets an entry.
 const UPDATES = readJson('data/updates.json').updates;
@@ -1355,6 +1366,7 @@ ${jsonScript('home-routes', training.routes.map((r) => ({ id: r.id, title: r.tit
   mobs: r.mobs.flatMap((m) => [m.ko, m.en]), href: href(langPath(lang, `/tools/training/?lv=${r.level.min}#route-${r.id}`)) })))}
 ${jsonScript('home-classes', TR_CLASSES.map((c) => ({ slug: c.slug, job: c.job, title: lang === 'ko' ? `${c.ko} 사냥터` : `${c.en} training routes`, n: classRoutes(c).length,
   href: href(langPath(lang, classPath(c))), keywords: `${c.ko} ${c.en} ${jobNames.ko[c.job]} ${jobNames.en[c.job]}` })))}
+${gameNews(lang)}
 ${updatesSection(lang)}
 ${body[0]}
 ${AD_MID}
@@ -3230,7 +3242,7 @@ for (const lang of LANGS) {
   });
 
   const defs = {
-    home: { title: t.homeTitle, desc: t.homeDesc, body: homeBody(lang), modules: ['home.js', 'mega-trends.js', 'hero-storm.js', 'updates-pager.js'], ld: [websiteLd, faqLd] },
+    home: { title: t.homeTitle, desc: t.homeDesc, body: homeBody(lang), modules: ['home.js', 'mega-trends.js', 'official-news.js', 'hero-storm.js', 'updates-pager.js'], ld: [websiteLd, faqLd] },
     training: {
       title: t.trTitle,
       desc: t.trDesc,

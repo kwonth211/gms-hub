@@ -1,0 +1,195 @@
+{
+ "at": "2026-11-17T16:32:45.183Z",
+ "items": [
+  {
+   "id": 48557,
+   "cat": "maintenance",
+   "date": "2026-11-16T19:00:22Z",
+   "en": "Scheduled Game Update - November 18, 2026",
+   "ko": "11월 18일 업데이트 점검",
+   "url": "https://www.nexon.com/maplestory/news/maintenance/48557/scheduled-game-update-november-18-2026",
+   "sum": {
+    "en": [
+     "MapleStory Classic World will be performing a scheduled maintenance starting on Wednesday, November 18, 2026 at 5:00 AM PST."
+    ],
+    "ko": [
+     "점검 시간: 11월 18일(수) 22:00 ~ 19일(목) 03:00 (한국 시간, 약 5시간)",
+     "점검하는 동안에는 게임 서버에 접속할 수 없어요.",
+     "게임이 v.2.0.0 버전으로 업데이트돼요.",
+     "패치 노트는 곧 공개될 예정이에요."
+    ]
+   },
+   "maint": {
+    "start": "2026-11-18T13:00:00.000Z",
+    "end": "2026-11-18T18:00:00.000Z"
+   }
+  },
+  {
+   "id": 48552,
+   "cat": "events",
+   "date": "2026-11-16T14:00:53Z",
+   "en": "November Update: Special Events",
+   "ko": "11월 업데이트: 이벤트 안내",
+   "url": "https://www.nexon.com/maplestory/news/events/48552/november-update-special-events",
+   "sum": {
+    "en": [
+     "A new world opens and a new journey begins!"
+    ],
+    "ko": [
+     "새 월드 제니스(Zenith)가 11월 18일 점검이 끝나면 열려요. 채널 10개로 시작하고 파티 퀘스트도 있어요.",
+     "윈디아가 최대치인 40채널까지 늘어나서 새 월드를 여는 거예요.",
+     "출석 이벤트 \"새로운 여정의 시작\"이 돌아와요. 점검 후부터 12월 17일 08:59(한국 시간)까지예요.",
+     "10레벨 이상이면 월드마다 한 번 참여할 수 있어요. 메이플 운영자에게 퀘스트를 받고, 10레벨 이상 몬스터에게서 단풍잎 30개를 모아 가면 그날 보상을 받아요.",
+     "보상은 1일차 달팽이 펫과 물약, 4일차 일반 상점 허가증, 6일차 확성기 3개 등이에요.",
+     "하루를 빠져도 진행도는 그대로예요. 정식 출시 때 이미 받은 윈디아 유저도 1일차부터 다시 받을 수 있어요."
+    ]
+   }
+  },
+  {
+   "id": 48256,
+   "cat": "update",
+   "date": "2026-11-12T16:00:00Z",
+   "en": "November Update: Forgotten Hollow Preview",
+   "ko": "11월 업데이트: 포가튼 할로우 미리보기",
+   "url": "https://www.nexon.com/maplestory/news/update/48256/november-update-forgotten-hollow-preview",
+   "sum": {
+    "en": [
+     "Get a preview of the November Update for MapleStory Classic World!"
+    ],
+    "ko": [
+     "빅토리아 아일랜드에 새 지역 포가튼 할로우가 열려요. 누구나 들어갈 수 있지만 본격적인 콘텐츠는 39레벨부터예요.",
+     "39레벨 이상 퀘스트 34개, 새 몬스터, 새 상점과 이 지역에서만 나오는 가구가 추가돼요.",
+     "60레벨 필드 보스 썩은 머쉬맘이 나와요.",
+     "추수감사절 이벤트도 함께 열려요. 벤슨 할머니의 호박파이 재료 모으기, 달아난 칠면조 잡기, 헤네시스 월묘의 떡이에요."
+    ]
+   },
+   "link": "/forgotten-hollow/"
+  },
+  {
+   "id": 47069,
+   "cat": "sale",
+   "date": "2026-11-10T16:00:00Z",
+   "en": "Classic World Cash Shop Update: Nov. 11",
+   "ko": "11월 11일 캐시샵 업데이트",
+   "url": "https://www.nexon.com/maplestory/news/sale/47069/classic-world-cash-shop-update-nov-11",
+   "sum": {
+    "en": [
+     "Mystery Styles Update!"
+    ],
+    "ko": [
+     "미스터리 헤어 쿠폰 5,500 NX, 미스터리 성형 쿠폰 3,500 NX가 나왔어요.",
+     "판매 기간은 11월 11일 17:00부터 11월 25일 16:59까지예요(한국 시간).",
+     "쿠폰을 쓰면 정해진 목록 안에서 헤어나 얼굴이 무작위로 바뀌어요.",
+     "미스터리 패션 상자는 11월 18일 점검 전까지 계속 팔아요."
+    ]
+   }
+  },
+  {
+   "id": 47580,
+   "cat": "maintenance",
+   "date": "2026-11-04T17:00:00Z",
+   "en": "[Completed] Unscheduled Maintenance - November 4, 2026",
+   "ko": "[완료] 11월 4일 임시 점검",
+   "url": "https://www.nexon.com/maplestory/news/maintenance/47580/completed-unscheduled-maintenance-november-4-2026",
+   "sum": {
+    "en": [
+     "The maintenance has been completed and we have extended Cash Shop items in your inventory for 2 hours."
+    ],
+    "ko": [
+     "점검 시간: 11월 5일(목) 08:00 ~ 10:00 (한국 시간, 약 2시간)",
+     "점검이 끝났어요. 넥슨 런처나 스팀을 다시 켜면 최신 버전을 받아요.",
+     "갖고 있던 캐시 아이템의 기간이 2시간 늘어났어요.",
+     "봇 탐지와 차단 시스템이 개선됐어요.",
+     "NX를 처음 결제하면 96시간 캐시 아이템 거래 제한이 걸리는데, 그동안 확성기(일반·고확·아이템·더블 아이템)도 쓸 수 없게 됐어요. 그 월드의 계정 내 모든 캐릭터에 적용돼요."
+    ]
+   }
+  },
+  {
+   "id": 47031,
+   "cat": "sale",
+   "date": "2026-11-03T16:00:00Z",
+   "en": "Classic World Cash Shop Update: Nov. 4",
+   "ko": "11월 4일 캐시샵 업데이트",
+   "url": "https://www.nexon.com/maplestory/news/sale/47031/classic-world-cash-shop-update-nov-4",
+   "sum": {
+    "en": [
+     "Mystery Fashion Crate Update!"
+    ],
+    "ko": [
+     "미스터리 패션 상자가 새로 나왔어요. 1개 3,500 NX, 11개 묶음 35,000 NX예요.",
+     "판매 기간은 11월 4일 17:00(한국 시간)부터 11월 18일 점검 전까지예요.",
+     "열면 테디베어 세트를 비롯한 코디 장비 중 하나가 무작위로 나와요."
+    ]
+   }
+  },
+  {
+   "id": 47370,
+   "cat": "maintenance",
+   "date": "2026-10-30T16:00:03Z",
+   "en": "[Completed] Unscheduled Emergency Maintenance - October 30, 2026",
+   "ko": "[완료] 10월 30일 긴급 점검",
+   "url": "https://www.nexon.com/maplestory/news/maintenance/47370/completed-unscheduled-emergency-maintenance-october-30-2026",
+   "sum": {
+    "en": [
+     "The maintenance has been completed and we have extended Cash Shop items in your inventory for 2 hours. Please restart your Nexon Launcher or Steam to ensure you receive the latest client update."
+    ],
+    "ko": [
+     "점검 시간: 10월 31일(토) 07:00 ~ 09:00 (한국 시간, 약 2시간)",
+     "점검이 끝났어요. 넥슨 런처나 스팀을 다시 켜면 최신 버전을 받아요.",
+     "갖고 있던 캐시 아이템의 기간이 2시간 늘어났어요."
+    ]
+   }
+  },
+  {
+   "id": 47298,
+   "cat": "maintenance",
+   "date": "2026-10-29T08:00:47Z",
+   "en": "[Completed] Scheduled Maintenance - October 29, 2026",
+   "ko": "[완료] 10월 29일 정기 점검",
+   "url": "https://www.nexon.com/maplestory/news/maintenance/47298/completed-scheduled-maintenance-october-29-2026",
+   "sum": {
+    "en": [
+     "The maintenance has been completed and we have extended Cash Shop items in your inventory for 4 hours."
+    ],
+    "ko": [
+     "점검 시간: 10월 29일(목) 21:00 ~ 30일(금) 01:00 (한국 시간, 약 4시간)",
+     "점검이 끝났어요. 넥슨 런처나 스팀을 다시 켜면 최신 버전을 받아요.",
+     "갖고 있던 캐시 아이템의 기간이 4시간 늘어났어요.",
+     "게임이 v.1.1.0 버전으로 업데이트됐어요."
+    ]
+   }
+  },
+  {
+   "id": 46602,
+   "cat": "sale",
+   "date": "2026-10-27T16:00:00Z",
+   "en": "[Update Oct 28] Classic World Cash Shop Update: Oct. 28",
+   "ko": "[10/28 수정] 10월 28일 캐시샵 업데이트",
+   "url": "https://www.nexon.com/maplestory/news/sale/46602/update-oct-28-classic-world-cash-shop-update-oct-28",
+   "sum": {
+    "en": [
+     "Halloween Mystery Fashion Crate, Mystery Styles Update, and more!"
+    ],
+    "ko": [
+     "Halloween Mystery Fashion Crate, Mystery Styles Update, and more!"
+    ]
+   }
+  },
+  {
+   "id": 47102,
+   "cat": "general",
+   "date": "2026-10-22T14:00:07Z",
+   "en": "Introducing the Debt System in MapleStory Classic World",
+   "ko": "클래식 월드 부채(Debt) 시스템 안내",
+   "url": "https://www.nexon.com/maplestory/news/general/47102/introducing-the-debt-system-in-maplestory-classic-world",
+   "sum": {
+    "en": [
+     "Click here for the details of the new Debt System!"
+    ],
+    "ko": [
+     "Click here for the details of the new Debt System!"
+    ]
+   }
+  }
+ ]
+}

@@ -2693,6 +2693,39 @@ body.exp-running .exp-stop { display: inline-flex; }
 .upd-list a { color: var(--text); text-decoration: none; font-weight: 700; min-width: 0; }
 .upd-list a:hover { color: var(--accent-2); text-decoration: underline; }
 
+/* Home game notices: official maintenance, update, event and Cash Shop notices (assets/official-news.js). */
+.game-news { margin-top: 18px; margin-bottom: 18px; }
+.game-news h2 small { color: var(--muted); font-weight: 600; font-size: 0.8rem; margin-left: 4px; }
+.gn-list > li { display: block; padding: 0; }
+.gn-list summary { display: flex; align-items: center; gap: 8px; padding: 9px 14px; cursor: pointer; list-style: none; }
+.gn-list summary::-webkit-details-marker { display: none; }
+.gn-list summary::after { content: ''; flex: none; margin-left: auto; width: 7px; height: 7px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg) translate(-2px, -2px); transition: transform 0.15s; }
+.gn-list details[open] summary::after { transform: rotate(-135deg) translate(-2px, -2px); }
+.gn-list summary:hover .gn-title { color: var(--accent-2); }
+.gn-list summary:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.gn-title { font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gn-list details[open] .gn-title { white-space: normal; }
+.gn-body { padding: 2px 14px 12px 66px; font-size: 0.9rem; line-height: 1.55; }
+.gn-body ul { margin: 0 0 8px; padding-left: 18px; display: grid; gap: 3px; }
+.gn-body li { display: list-item; padding: 0; border: 0; font-size: inherit; }
+.gn-body p { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.gn-body a { font-weight: 700; font-size: 0.85rem; color: var(--accent); text-decoration: none; }
+.gn-body a:hover { text-decoration: underline; }
+.gn-cat { flex: none; min-width: 46px; text-align: center; font-size: 0.7rem; font-weight: 800; padding: 1px 6px; border-radius: 4px; white-space: nowrap; color: var(--text); background: color-mix(in srgb, var(--muted) 18%, transparent); }
+.gn-cat[data-cat='maintenance'] { background: color-mix(in srgb, #d9534f 24%, transparent); }
+.gn-cat[data-cat='update'] { background: color-mix(in srgb, #2fb3cf 26%, transparent); }
+.gn-cat[data-cat='events'] { background: color-mix(in srgb, #3fae5a 26%, transparent); }
+.gn-cat[data-cat='sale'] { background: color-mix(in srgb, #d9a520 34%, transparent); }
+.gn-maint { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; margin: 0 0 8px; padding: 9px 14px; border-radius: 12px; border: 1px solid color-mix(in srgb, #d9534f 45%, var(--line)); background: color-mix(in srgb, #d9534f 9%, var(--panel)); color: var(--text); text-decoration: none; font-size: 0.94rem; }
+.gn-maint b { color: var(--danger); white-space: nowrap; }
+.gn-maint span { font-weight: 700; font-variant-numeric: tabular-nums; }
+.gn-maint small { color: var(--muted); font-weight: 600; margin-left: 4px; }
+.gn-maint:hover { border-color: var(--danger); }
+.gn-maint:focus-visible, .gn-body a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+@media (max-width: 640px) { .gn-title { white-space: normal; overflow: visible; } .gn-body { padding-left: 14px; } }
+@media (max-width: 480px) { :root:not(:lang(ko)) .gn-list summary { flex-wrap: wrap; row-gap: 3px; } :root:not(:lang(ko)) .gn-title { flex-basis: 100%; order: 5; } }
+@media (max-width: 480px) { .gn-list summary { padding: 9px 10px; } .gn-list time { width: 38px; } .gn-cat { min-width: 0; } .gn-body { padding-left: 10px; padding-right: 10px; } }
+
 /* Quest guide cards on /quests/ */
 .qg-pics { display: flex; align-items: flex-end; gap: 10px; min-height: 48px; }
 .qg-pics img { object-fit: contain; }

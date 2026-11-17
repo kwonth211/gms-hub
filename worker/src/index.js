@@ -17,6 +17,7 @@ import { handleEmail, handleSendMail } from './inbox.js';
 // GET  /megaphones?after=<id> -> { rows: [{ id, seen, kind, channel, nick, text }] }  (newest first)
 // POST /internal/megaphone {rows} (Bearer MEGAPHONE_TOKEN)  (admin collector)
 // GET  /rank -> { at, source, stats, rows: [top 1,000 by level] }  (ClassicRank, refreshed hourly by the schedule)
+// GET  /news -> { at, items: [{ id, cat, date, en, ko, url, maint? }] }  (official Classic World notices, edge-cached 10 min; news.js)
 // GET  /rank/lookup?name= -> { data: one character }  (ClassicRank, cached an hour)
 // POST /internal/traffic {token, day?} -> owner-only traffic dashboard data from Cloudflare Web Analytics (see traffic.js)
 // GET  /internal/presence-peak (Bearer MAIL_ADMIN_TOKEN) -> { peak, at, now }: record of pages open at once (owner only)
@@ -27,6 +28,7 @@ import { handleShopScan } from './shop-scan.js';
 import { parseOptions } from './item-options.js';
 import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoints, openShops, archiveListings, refreshItemMarket, reconcileItemMarket } from './market-browser.js';
 import { cachedPublicResponse } from './public-cache.js';
+import { officialNews } from './news.js';
 import { Presence, handlePresence, handlePresencePeak } from './presence.js';
 import { handleTraffic } from './traffic.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
@@ -536,6 +538,12 @@ const api = {
       else if (req.method === 'GET') out = await listAlerts(env, endpoint);
       else out = [{ error: 'method' }, 405];
       return json(out[0], cors, out[1], 'no-store');
+    }
+
+    // Official game notices for the home page: read from the game's public news list, edge-cached, nothing stored.
+    if (url.pathname === '/news' && req.method === 'GET') {
+      try { return json(await officialNews(), cors, 200, 'public, max-age=600'); }
+      catch (e) { return json({ error: 'news unavailable' }, cors, 502); }
     }
 
     if (url.pathname === '/megaphones/stats' && req.method === 'GET') {
