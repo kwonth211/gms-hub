@@ -23,12 +23,18 @@ const KO = {
   45819: '파운더스 액세스 캐시샵',
   45621: '파운더스 액세스 패치 노트',
   45385: '클래식 월드 자주 묻는 질문(FAQ)',
+  d1572077114297942107: '정지 관련 안내: 신고를 많이 받는다고 자동 정지되지 않아요',
 };
 // What each notice says, in Korean, written by hand (the home list opens these). Maintenance notices get their time,
 // version and compensation lines from the notice itself (maintPoints) and these are added after them. `link` is a page
 // of ours on the same subject. A notice with no entry shows the feed's own one-line summary.
 const KO_POINTS = {
   48557: { p: ['패치 노트는 곧 공개될 예정이에요.'] },
+  d1572077114297942107: { p: [
+    '억울하게 정지됐다는 이야기와, 신고를 많이 받으면 정지된다는 소문에 대한 공식 안내예요.',
+    '여러 사람이 한꺼번에 신고해도 자동으로 정지되지는 않아요.',
+    '정지하기 전에 메타데이터, 서버 로그, 게임 활동 등을 여러 단계로 확인해요.',
+    '게임 안 신고 횟수나 거짓말 탐지기 한 번 실패만으로는 자동 정지가 되지 않아요.'] },
   48552: { p: [
     '새 월드 제니스(Zenith)가 11월 18일 점검이 끝나면 열려요. 채널 10개로 시작하고 파티 퀘스트도 있어요.',
     '윈디아가 최대치인 40채널까지 늘어나서 새 월드를 여는 거예요.',
@@ -138,6 +144,10 @@ export function discordNotice(m, known = new Set(), invite = '') {
   return { id, src: 'discord', cat: /maintenance|patch|hotfix|server (?:is|are) (?:back|down)/i.test(lines.join(' ')) ? 'maintenance' : 'general', date: m.timestamp,
     en: title, ko: KO[id] || title, url: invite, sum: { en: sum, ko: hand.p || sum }, ...(hand.link ? { link: hand.link } : {}) };
 }
+// Announcements posted on the official Discord before the channel was followed (a follow only brings later posts).
+const DISCORD_SEED = [
+  { id: '1572077114297942107', flags: 2, timestamp: '2026-11-17T02:33:11Z', content: 'Hi Classic Maplers,\n\nBan clarification: mass reporting does not trigger automatic bans\n\nMultiple layers of checks are in place before any ban is applied, and neither the number of in-game reports nor a single failed Lie Detector Test alone results in an automatic ban.' },
+];
 async function discordNews(env, fetcher, known) {
   if (!env?.DISCORD_BOT_TOKEN || !env.DISCORD_NEWS_CHANNEL) return [];
   const r = await fetcher(`https://discord.com/api/v10/channels/${env.DISCORD_NEWS_CHANNEL}/messages?limit=30`, { headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }, signal: AbortSignal.timeout(6000) });
@@ -174,7 +184,9 @@ export async function officialNews(fetcher = fetch, now = Date.now(), limit = 10
     const w = !done && now - Date.parse(x.date) < 7 * 86400000 ? maintWindow(d.body) : null;
     if (w) x.maint = w;
   }));
-  const extra = await discordNews(env, fetcher, new Set(site.map((x) => Number(x.id)))).catch(() => []);
+  const known = new Set(site.map((x) => Number(x.id)));
+  const extra = [...DISCORD_SEED.filter((m) => Date.parse(m.timestamp) <= now).map((m) => discordNotice(m, known, env?.DISCORD_INVITE || 'https://discord.gg/maplestory')),
+    ...await discordNews(env, fetcher, known).catch(() => [])].filter((x, i, all) => x && all.findIndex((y) => y && y.id === x.id) === i);
   if (extra.length) items = [...items, ...extra].sort((a, b) => Date.parse(b.date) - Date.parse(a.date)).slice(0, limit);
   return { at: new Date(now).toISOString(), items };
 }

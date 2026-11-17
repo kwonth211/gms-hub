@@ -2716,6 +2716,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 .gn-cat[data-cat='update'] { background: color-mix(in srgb, #2fb3cf 26%, transparent); }
 .gn-cat[data-cat='events'] { background: color-mix(in srgb, #3fae5a 26%, transparent); }
 .gn-cat[data-cat='sale'] { background: color-mix(in srgb, #d9a520 34%, transparent); }
+.gn-dc { flex: none; display: inline-flex; align-items: center; gap: 4px; font-size: 0.7rem; font-weight: 800; padding: 1px 7px 1px 5px; border-radius: 4px; color: #fff; background: #5865f2; white-space: nowrap; }
 .gn-maint { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; margin: 0 0 8px; padding: 9px 14px; border-radius: 12px; border: 1px solid color-mix(in srgb, #d9534f 45%, var(--line)); background: color-mix(in srgb, #d9534f 9%, var(--panel)); color: var(--text); text-decoration: none; font-size: 0.94rem; }
 .gn-maint b { color: var(--danger); white-space: nowrap; }
 .gn-maint span { font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -2724,6 +2725,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 .gn-maint:focus-visible, .gn-body a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 @media (max-width: 640px) { .gn-title { white-space: normal; overflow: visible; } .gn-body { padding-left: 14px; } }
 @media (max-width: 480px) { :root:not(:lang(ko)) .gn-list summary { flex-wrap: wrap; row-gap: 3px; } :root:not(:lang(ko)) .gn-title { flex-basis: 100%; order: 5; } }
+@media (max-width: 480px) { .gn-list summary:has(.gn-dc) { flex-wrap: wrap; row-gap: 3px; } .gn-list summary:has(.gn-dc) .gn-title { flex-basis: 100%; order: 5; } }
 @media (max-width: 480px) { .gn-list summary { padding: 9px 10px; } .gn-list time { width: 38px; } .gn-cat { min-width: 0; } .gn-body { padding-left: 10px; padding-right: 10px; } }
 
 /* Quest guide cards on /quests/ */

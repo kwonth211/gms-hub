@@ -5,6 +5,8 @@
 // A maintenance that has not ended gets a line with its start and end: Korea time on Korean pages, the viewer's own
 // time elsewhere (UTC in the built HTML until the page redraws it).
 export const NEWS_ROWS = 5;
+// Notices that came from the official Discord carry its mark in front of the title.
+const DISCORD_MARK = '<span class="gn-dc" title="Discord" role="img" aria-label="Discord"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M20.3 4.4A19.8 19.8 0 0 0 15.4 2.9l-.6 1.2a18.3 18.3 0 0 0-5.5 0L8.6 2.9a19.7 19.7 0 0 0-4.9 1.5C.6 9 .1 13.6.4 18a19.9 19.9 0 0 0 6 3l1.300-1.800a13 13 0 0 1-2-1l.5-.4a14.200 14.200 0 0 0 12.200 0l.5.4a13 13 0 0 1-2 1l1.300 1.800a19.900 19.900 0 0 0 6-3c.4-5.200-.700-9.700-3.300-13.600ZM8.300 15.300c-1.200 0-2.200-1.100-2.200-2.400s1-2.400 2.200-2.400 2.200 1.100 2.200 2.400-1 2.400-2.200 2.400Zm7.400 0c-1.200 0-2.200-1.100-2.200-2.400s1-2.400 2.200-2.400 2.200 1.100 2.200 2.400-1 2.400-2.200 2.400Z"/></svg>Discord</span>';
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const parts = (iso, loc, opts) => Object.fromEntries(new Intl.DateTimeFormat(loc, opts).formatToParts(new Date(iso)).map((p) => [p.type, p.value]));
 
@@ -40,7 +42,7 @@ export function newsInner(data, { ko, tr, now = Date.now(), tz, site } = {}) {
 ${maint}<ol class="upd-list gn-list">${items.map((x) => {
     const pts = (ko ? x.sum?.ko : x.sum?.en) || [];
     const more = site && x.link ? `<a class="gn-more" href="${esc(site(x.link))}">${tr('공략 보기', 'Open the guide')} →</a>` : '';
-    return `<li><details data-news="${x.id}"><summary><time datetime="${esc(x.date)}" translate="no">${date(x.date)}</time><span class="gn-cat" data-cat="${esc(x.cat)}">${cat[x.cat] || cat.general}</span>${now - Date.parse(x.date) < 2 * 86400000 ? '<span class="upd-new" translate="no">NEW</span>' : ''}<span class="gn-title" translate="no">${esc(ko ? x.ko : x.en)}</span></summary>
+    return `<li><details data-news="${x.id}"><summary><time datetime="${esc(x.date)}" translate="no">${date(x.date)}</time><span class="gn-cat" data-cat="${esc(x.cat)}">${cat[x.cat] || cat.general}</span>${now - Date.parse(x.date) < 2 * 86400000 ? '<span class="upd-new" translate="no">NEW</span>' : ''}${x.src === 'discord' ? DISCORD_MARK : ''}<span class="gn-title" translate="no">${esc(ko ? x.ko : x.en)}</span></summary>
 <div class="gn-body">${pts.length ? `<ul translate="no">${pts.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}<p>${more}<a class="gn-src" href="${esc(x.url)}" target="_blank" rel="noopener" data-news="${x.id}">${x.src === 'discord' ? tr('디스코드에서 보기', 'See it on Discord') : tr('공식 공지 원문 보기', 'Read the official notice')} →</a></p></div></details></li>`;
   }).join('')}</ol>`;
 }

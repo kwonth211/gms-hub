@@ -33,11 +33,11 @@ test('only live Classic World notices are listed, newest first, with the open ma
   const calls = [];
   const fetcher = async (url) => { calls.push(url); return Response.json(url.endsWith('/3') ? { body: BODY } : list); };
   const d = await officialNews(fetcher, now);
-  assert.deepEqual(d.items.map((x) => x.id), [3, 2]);
-  assert.equal(d.items[0].maint.start, '2026-11-18T13:00:00.000Z');
-  assert.equal(d.items[1].ko, '11월 11일 캐시샵 업데이트');
-  assert.deepEqual(d.items[0].sum.ko.slice(0, 2), ['점검 시간: 11월 18일(수) 22:00 ~ 19일(목) 03:00 (한국 시간, 약 5시간)', '점검하는 동안에는 게임 서버에 접속할 수 없어요.']);
-  assert.match(d.items[0].url, /^https:\/\/www\.nexon\.com\/maplestory\/news\/maintenance\/3\/scheduled-game-update/);
+  assert.deepEqual(d.items.map((x) => x.id), ['d1572077114297942107', 3, 2]);
+  assert.equal(d.items[1].maint.start, '2026-11-18T13:00:00.000Z');
+  assert.equal(d.items[2].ko, '11월 11일 캐시샵 업데이트');
+  assert.deepEqual(d.items[1].sum.ko.slice(0, 2), ['점검 시간: 11월 18일(수) 22:00 ~ 19일(목) 03:00 (한국 시간, 약 5시간)', '점검하는 동안에는 게임 서버에 접속할 수 없어요.']);
+  assert.match(d.items[1].url, /^https:\/\/www\.nexon\.com\/maplestory\/news\/maintenance\/3\/scheduled-game-update/);
   assert.equal(calls.length, 2);
   await assert.rejects(officialNews(async () => new Response('no', { status: 500 }), now));
 });
