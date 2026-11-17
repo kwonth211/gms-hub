@@ -85,7 +85,7 @@ const T = {
     navGuides: '가이드',
     switchLang: 'English',
     homeTitle: '글클메 허브: 실시간 시세·사냥터 추천·몬스터 DB·스킬트리 | GMS Hub',
-    homeDesc: '글로벌 메이플스토리 클래식 월드(글클메) 실시간 자유시장 시세와 확성기, 직업·레벨별 사냥터 추천, 경험치 퀘스트, 몬스터 드롭과 장비, 스킬 찍는 순서까지 한곳에서 찾아요.',
+    homeDesc: '글클메(글로벌 메이플스토리 클래식 월드) 정보 사이트. 실시간 자유시장 시세와 확성기, 직업·레벨별 사냥터 추천, 퀘스트 공략, 몬스터 드롭과 장비 DB, 스킬트리까지 한곳에서 찾아요.',
     heroKicker: '글클메 유저를 위한 길잡이',
     heroTitle: '시세·사냥터·내 캐릭터, <br>한 번에 찾아보세요',
     heroSub: '아이템 시세와 드롭, 내 레벨에 맞는 사냥터·퀘스트·장비까지 한곳에서 찾아요.',
@@ -125,7 +125,7 @@ const T = {
     faqHeading: '자주 묻는 질문',
     sourcesLabel: '출처',
 
-    trTitle: "글클메 사냥터 추천 · 직업별 동선·물약 비용 | GMS Hub",
+    trTitle: "글클메 사냥터 추천·정리: 레벨별·직업별 사냥터와 물약 비용 | GMS Hub",
     trDesc: "직업과 레벨에 맞는 사냥터의 진입 조건, 위치, 층별 동선, 물약 비용, 다음 이동 시점과 대체 장소를 비교하세요.",
     trH1: "사냥터 추천",
     trLead: "내 직업과 레벨에 맞춰, 무리 없이 잡히는 다음 사냥터를 찾아보세요.",
@@ -151,7 +151,7 @@ const T = {
     trBandFinder: "내 조건으로 사냥터 찾기",
     noDate: '날짜 표기 없음',
 
-    scTitle: '글클메 주문서 계산기 · 확률 (Lesser·Intermediate·Greater·Chaos) | GMS Hub',
+    scTitle: '글클메 주문서 확률 계산기: 하급 100%·중급 60%·상급 10%·혼돈 10% | GMS Hub',
     scDesc: '글로벌 메이플스토리 클래식 월드 주문서 성공률(Lesser 100%, Intermediate 60%, Greater 10%, Chaos 10%)로 성공 횟수 분포, 파괴 확률, 평균 상승치를 계산해요.',
     scH1: '주문서 계산기',
     scLead: '자료에 적힌 성공률을 입력값으로 사용한 확률 모델이에요.',
@@ -2098,7 +2098,7 @@ ${jsonScript('dm-data', { lang, t: { ...t.i, hits: t.hits, never: t.never, lines
 // and where to buy it now; next to the live top 10 and the scrolling feed of scanned listings.
 const MK = {
   ko: {
-    title: '글클메 시세: 실시간 자유시장 가격·추이·지금 파는 곳 | GMS Hub',
+    title: '글클메 시세: 실시간 자유시장 상점 가격·추이·지금 파는 곳 | GMS Hub',
     desc: '글로벌 메이플스토리 클래식 월드 자유시장 실시간 시세. 유저들이 스캔한 상점 매물로 판매 중·판매 완료 중앙값, 7일 가격 추이, 최근 확인한 매물의 채널·방을 보여 줘요.',
     h1: '실시간 시세',
     lead: '유저들이 스캔한 자유시장 상점을 모아 아이템별 시세를 보여 줘요. 아이템을 검색해 보세요.',
@@ -2593,7 +2593,7 @@ const GUIDE_T = {
   ko: { toolsChip: '같이 쓰는 도구', toolsHeading: '이 글과 같이 쓰는 도구', more: '다른 가이드', sources: '참고한 자료', byline: (g) => `GMS Hub 작성 · 처음 쓴 날 ${fmtDate(g.published)} · 수정 ${fmtDate(g.updated)}`,
     note: '잘못된 내용은 {mail}이나 {issues}로 알려 주세요.', issues: 'GitHub 이슈',
     indexH1: '글클메 가이드', indexLead: '시작 준비부터 직업별 육성, 퀘스트와 거래까지. 필요한 단계의 가이드를 골라 보세요.',
-    indexTitle: '글클메 가이드 모음 | GMS Hub', indexDesc: '글로벌 클래식 메이플 직업별 육성, 사냥 동선, 퀘스트와 시세 이용 가이드.' },
+    indexTitle: '글클메 공략 모음: 직업 추천·육성·사냥터·퀘스트 | GMS Hub', indexDesc: '글클메 공략과 가이드 모음. 직업 추천, 직업별 육성과 스킬트리, 레벨별 사냥 동선, 퀘스트, 시세 보는 법까지.' },
   en: { toolsChip: 'Tools for this guide', toolsHeading: 'Tools to use with this guide', more: 'More guides', sources: 'Sources', byline: (g) => `By GMS Hub · Published ${g.published} · Updated ${g.updated}`,
     note: 'Report corrections to {mail} or on {issues}.', issues: 'GitHub issues',
     indexH1: 'MapleStory Classic World Guides', indexLead: 'Getting started, class progression, quests and market tools. Choose the guide for your next step.',
@@ -3287,7 +3287,7 @@ for (const lang of LANGS) {
       ld: [breadcrumbLd(lang, lang === 'ko' ? '문의·협찬·후원' : 'Contact', '/contact/')]
     },
     bot: {
-      title: lang === 'ko' ? '글클메 디스코드 봇: 시세·매물·급등락·사냥터 명령어 | GMS Hub' : 'MapleStory Classic World Discord Bot: Prices, Listings, Movers, Training | GMS Hub',
+      title: lang === 'ko' ? '글클메 디스코드(디코) 봇: 시세·매물·급등락·사냥터 명령어 | GMS Hub' : 'MapleStory Classic World Discord Bot: Prices, Listings, Movers, Training | GMS Hub',
       desc: lang === 'ko' ? '디스코드에서 /시세, /매물, /급등락, /아이템, /몬스터, /사냥터로 글로벌 클래식 메이플 정보를 바로 찾는 무료 봇. 원하는 가격 매물 DM 알림도 받아요.' : 'A free Discord bot for MapleStory Classic World: /price, /listings, /movers, /item, /mob and /train answer from live Free Market data, plus price alerts by DM.',
       body: botBody(lang),
       modules: ['bot-page.js'],
@@ -3433,7 +3433,7 @@ for (const lang of LANGS) {
     const mobSprite = (m) => href(`/assets/monsters/${m.id}.gif`);
     write(path.join(lang, 'quests', 'index.html'), page({
       lang, pageKey: 'quests', pagePath: '/quests/',
-      title: lang === 'ko' ? '글클메 퀘스트 목록: 레벨·보상·필요 아이템 | GMS Hub' : 'MapleStory Classic World Quests: Levels, Rewards & Requirements | GMS Hub',
+      title: lang === 'ko' ? '글클메 퀘스트 정리: 레벨별 퀘스트 343개·보상·필요 아이템 | GMS Hub' : 'MapleStory Classic World Quests: Levels, Rewards & Requirements | GMS Hub',
       desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드 퀘스트 ${QUESTS.length}개를 지역별로 정리했어요. 시작 레벨, 모아 올 아이템과 그 아이템을 떨어뜨리는 몬스터, 보상 EXP와 메소까지.` : `All ${QUESTS.length} MapleStory Classic World quests by area: start level, items to bring and who drops them, monsters to hunt, EXP and meso rewards.`,
       body: questIndex({ lang, quests: QUESTS, link, guides: QUEST_GUIDES, promo: fhPromo(lang) }),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '퀘스트' : 'Quests', '/quests/')]
@@ -3449,7 +3449,7 @@ for (const lang of LANGS) {
     }));
     write(path.join(lang, 'rank', 'index.html'), page({
       lang, pageKey: 'rank', pagePath: '/rank/', modules: ['rank.js'],
-      title: lang === 'ko' ? '글클메 캐릭터 랭킹: 레벨 순위·직업 분포·내 캐릭터 찾기 | GMS Hub' : 'MapleStory Classic World Rankings: Top 1,000, Class Breakdown & Character Lookup | GMS Hub',
+      title: lang === 'ko' ? '글클메 랭킹: 레벨 순위·직업별 인원 순위·내 캐릭터 찾기 | GMS Hub' : 'MapleStory Classic World Rankings: Top 1,000, Class Breakdown & Character Lookup | GMS Hub',
       desc: lang === 'ko' ? '윈디아(클래식 월드) 레벨 순위 상위 1,000명, 상위권 직업·레벨 분포, 내 캐릭터 순위 찾기. 찾은 캐릭터의 레벨·직업에 맞는 사냥터와 가이드로 바로 이어져요.' : 'Top 1,000 Windia (MapleStory Classic World) characters by level, which classes they play, and a character lookup that links your rank to training spots and the guide for your class.',
       body: rankBody({ lang, link, classes: TR_CLASSES, snapshot: readJson('data/rank-snapshot.json') }),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '캐릭터 랭킹' : 'Character rankings', '/rank/')]
@@ -3506,10 +3506,10 @@ for (const lang of LANGS) {
     const ko = lang === 'ko';
     const labPages = [
       ['/tools/meso-farm/', 'meso-farm',
-        ko ? '글클메 메소 벌이 사냥터: 레벨별 돈 되는 드롭 몬스터 | GMS Hub' : 'MapleStory Classic World Meso Farming: Monsters With the Most Valuable Drops | GMS Hub',
-        ko ? '내 레벨 근처 몬스터를 지금 자유시장 시세로 비싼 드롭이 있는 순서로 보여 줘요. 드롭마다 개당 메소, 많이 나오는 맵까지.' : 'Monsters near your level ranked by what their drops sell for on the Free Market right now, with the price per item and where they spawn.',
+        ko ? '글클메 쌀먹 사냥터: 레벨별 돈 되는 몬스터와 드롭 시세 | GMS Hub' : 'MapleStory Classic World Meso Farming: Monsters With the Most Valuable Drops | GMS Hub',
+        ko ? '글클메 쌀먹(메소 벌이) 사냥터 찾기. 내 레벨 근처 몬스터를 지금 자유시장 시세로 비싼 드롭이 있는 순서로 보여 줘요. 드롭마다 개당 메소, 많이 나오는 맵까지.' : 'Monsters near your level ranked by what their drops sell for on the Free Market right now, with the price per item and where they spawn.',
         ko ? '메소 벌이 사냥터' : 'Meso farming spots',
-        ko ? '레벨을 넣으면 그 근처 몬스터가 떨어뜨리는 아이템 중 지금 시세가 높은 것부터 보여 줘요. 가격은 아이템 1개당 최근 판매 완료 가격(없으면 보통 판매 가격)이고, 드롭 확률은 알 수 없어서 "떨어지면 돈이 되는 것"만 알려 줘요.' : 'Enter a level to see the monsters around it, ranked by the market price of what they drop. Prices are per item (recent sold price, else the typical asking price). Drop rates are unknown, so this shows what is worth money if it drops.']
+        ko ? '쌀먹(메소 벌이)에 좋은 몬스터를 찾는 페이지예요. 레벨을 넣으면 그 근처 몬스터가 떨어뜨리는 아이템 중 지금 시세가 높은 것부터 보여 줘요. 가격은 아이템 1개당 최근 판매 완료 가격(없으면 보통 판매 가격)이고, 드롭 확률은 알 수 없어서 "떨어지면 돈이 되는 것"만 알려 줘요.' : 'Enter a level to see the monsters around it, ranked by the market price of what they drop. Prices are per item (recent sold price, else the typical asking price). Drop rates are unknown, so this shows what is worth money if it drops.']
     ];
     for (const [p, view, title, desc, h1, lead] of labPages) {
       write(path.join(lang, ...p.split('/').filter(Boolean), 'index.html'), page({
