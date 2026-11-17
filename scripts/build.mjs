@@ -3463,7 +3463,6 @@ for (const lang of LANGS) {
     // sitemap, noindex) until the owner decides. Data: assets/lab-data.json (written once below); the pages draw it.
     for (const [slug, mod, ko, en] of [
       ['', 'lab.js', '실험실', 'Lab'],
-      ['quest-run/', 'lab.js', '퀘스트 루트 체크리스트', 'Quest run checklist'],
       ['meso-farm/', 'lab.js', '메소 벌이 사냥터', 'Meso farming spots'],
       ['market-pulse/', 'lab.js', '시세 맥박', 'Market pulse']
     ]) {
@@ -3921,20 +3920,15 @@ write('assets/bot.json', JSON.stringify({
   const questsOf = {};
   for (const q of QUESTS) if (!q.expired) for (const g of q.gets) if (tips[g.id]) (questsOf[g.id] ||= []).length < 6 && questsOf[g.id].push([questPath(q), q.name, q.lv]); // path null: no guide
   write('assets/item-tips.json', JSON.stringify({ mobs, items: tips, quests: questsOf }));
-  // Lab data (see the lab pages): one-time quests with what they ask and give, and every placed monster with its full
-  // drop list and busiest maps, names in both languages.
+  // Lab data (see the lab pages): every placed monster with its full drop list and busiest maps, names in both languages.
   const nameOf = (id) => { const i = byId.get(id); return i ? [i.ko || '', i.en] : null; };
-  const labQuests = QUESTS.filter((q) => !q.expired && !q.repeat).map((q) => ({ id: q.id, name: q.name, lv: q.lv, jobs: q.jobs, area: q.area, areaKo: questArea(q.area, 'ko'),
-    prereq: q.prereq, exp: q.exp, meso: q.meso, hunt: q.hunt.map(({ id, count }) => [id, count]), bring: q.bring.map(({ id, count }) => [id, count]),
-    gets: q.gets.map(({ id, count }) => [id, count]), guide: questPath(q) }));
   const labItems = {};
-  for (const q of labQuests) for (const [id] of [...q.bring, ...q.gets]) { const n = nameOf(id); if (n) labItems[id] = n; }
   const labMobs = tipMobs.filter((m) => m.status === 'active' || m.locations.some((l) => l.availability === 'open')).map((m) => {
     const open = m.locations.filter((l) => l.availability === 'open');
     for (const d of m.drops) { const n = nameOf(d.itemId); if (n) labItems[d.itemId] = n; }
     return { id: m.id, ko: m.ko || '', en: m.en, lv: m.lv, hp: m.hp, exp: m.exp, boss: m.boss ? 1 : 0, maps: open.slice(0, 2).map((l) => [l.ko || '', l.en]), drops: m.drops.map((d) => d.itemId) };
   });
-  write('assets/lab-data.json', JSON.stringify({ quests: labQuests, mobs: labMobs, items: labItems }));
+  write('assets/lab-data.json', JSON.stringify({ mobs: labMobs, items: labItems }));
 }
 
 

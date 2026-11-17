@@ -1,5 +1,4 @@
 // Lab pages (unlisted, owner only; build.mjs "Lab"): three features benchmarked from other Classic World sites.
-//  - quest-run: one-time quests you can do at your level, grouped by area, checked off in this browser
 //  - meso-farm: monsters at your level ranked by what their drops sell for right now (no drop rates are claimed)
 //  - market-pulse: biggest risers and fallers (sample-size guarded), most traded, and listings marked sold just now
 const root = document.querySelector('.lab');
@@ -30,65 +29,20 @@ function head(title, sub) {
 // ---------- index ----------
 function viewIndex() {
   const cards = [
-    ['quest-run/', tr('퀘스트 루트 체크리스트', 'Quest run checklist'), tr('내 레벨·직업으로 지금 할 수 있는 1회성 퀘스트를 지역별로 묶고, 끝낸 건 체크해 두는 목록. 남은 경험치 합계와 진행률을 보여 줘요.', 'One-time quests you can do now, grouped by area, with checkboxes, remaining EXP and progress.')],
-    ['meso-farm/', tr('메소 벌이 사냥터', 'Meso farming spots'), tr('내 레벨 근처 몬스터를 지금 시세로 비싼 드롭이 있는 순서로 줄 세워요. 드롭 확률은 모르니 "무엇이 돈이 되나"만 보여 줘요.', 'Monsters near your level ranked by what their drops sell for now. Drop rates are not claimed.')],
-    ['market-pulse/', tr('시세 맥박', 'Market pulse'), tr('하루 사이 많이 오르고 내린 아이템(매물 적은 건 제외), 많이 팔린 아이템, 방금 판매 완료된 매물을 한 화면에.', 'Biggest risers and fallers (thin items left out), most traded and just-sold listings on one screen.')]
+    ['meso-farm/', tr('메소 벌이 사냥터', 'Meso farming spots'), tr('내 레벨 근처 몬스터를 지금 시세로 비싼 드롭이 있는 순서로 보여 줘요. 드롭 확률은 모르니 "무엇이 떨어지면 돈이 되나"만 보여 줘요.', 'Monsters near your level ranked by what their drops sell for now. Drop rates are not claimed.')],
+    ['market-pulse/', tr('시세 맥박', 'Market pulse'), tr('오늘 많이 오르고 내린 아이템, 많이 팔린 아이템, 방금 판매 완료된 매물을 실시간으로.', 'Today’s risers and fallers, most sold and just-sold listings, live.')]
   ];
   root.innerHTML = `${head(tr('실험실', 'Lab'), tr('다른 클래식 월드 사이트들을 보고 우리 사이트에 맞게 만든 기능이에요. 메뉴와 검색에는 아직 안 보여요.', 'Features adapted from other Classic World sites. Not in the menu or search yet.'))}<ul class="lab-cards">${cards.map(([p, t, d]) => `<li><a href="${root.dataset.root}${p}"><strong>${t}</strong><span>${d}</span></a></li>`).join('')}</ul>`;
 }
 
-// ---------- quest run ----------
-const FAM = [['', tr('모든 직업', 'All classes')], ['1', tr('전사', 'Warrior')], ['2', tr('마법사', 'Magician')], ['3', tr('궁수', 'Bowman')], ['4', tr('도적', 'Thief')]];
-const forClass = (jobs, fam) => !fam || !jobs.length || jobs.some((j) => j >= 100 && String(Math.floor(j / 100)) === fam);
-async function viewQuests(data) {
-  const done = new Set(store.get('gmshub_lab_quests_done', []));
-  const state = store.get('gmshub_lab_quest_filter', { lv: 30, fam: '', low: false });
-  const items = data.items;
-  const mobs = new Map(data.mobs.map((m) => [m.id, m]));
-  const byId = new Map(data.quests.map((q) => [q.id, q]));
-  root.innerHTML = `${head(tr('퀘스트 루트 체크리스트', 'Quest run checklist'), tr('레벨과 직업을 고르면 지금 받을 수 있는 1회성 퀘스트를 지역별로 보여 줘요. 끝낸 퀘스트를 체크하면 이 브라우저에 저장돼요.', 'Pick your level and class to see the one-time quests you can take now, by area. Checks are saved in this browser.'))}
-<div class="lab-controls"><label>${tr('레벨', 'Level')}<input id="lq-lv" type="number" min="1" max="200" value="${state.lv}"></label><label>${tr('직업', 'Class')}<select id="lq-fam">${FAM.map(([v, l]) => `<option value="${v}"${v === state.fam ? ' selected' : ''}>${l}</option>`).join('')}</select></label><label class="lab-check"><input id="lq-low" type="checkbox"${state.low ? ' checked' : ''}>${tr('15레벨 아래 퀘스트도', 'Include quests 15+ levels below')}</label><label class="lab-check"><input id="lq-hide" type="checkbox" checked>${tr('끝낸 퀘스트 숨기기', 'Hide done')}</label></div>
-<div id="lq-sum" class="lab-sum"></div><div id="lq-list"></div>`;
-  const draw = () => {
-    const lv = Math.max(1, Math.min(200, Number(document.getElementById('lq-lv').value) || 1)), fam = document.getElementById('lq-fam').value, low = document.getElementById('lq-low').checked, hide = document.getElementById('lq-hide').checked;
-    store.set('gmshub_lab_quest_filter', { lv, fam, low });
-    const pool = data.quests.filter((q) => q.lv <= lv && (low || q.lv >= lv - 15) && forClass(q.jobs, fam));
-    const left = pool.filter((q) => !done.has(q.id));
-    const expLeft = left.reduce((a, q) => a + q.exp, 0), mesoLeft = left.reduce((a, q) => a + q.meso, 0);
-    document.getElementById('lq-sum').innerHTML = `<div><b>${pool.length - left.length}</b> / ${pool.length}<small>${tr('끝낸 퀘스트', 'done')}</small></div><div><b>${nf.format(expLeft)}</b><small>${tr('남은 경험치', 'EXP left')}</small></div><div><b>${kmoney(mesoLeft)}</b><small>${tr('남은 메소 보상', 'Mesos left')}</small></div><span class="lab-bar"><i style="width:${pool.length ? Math.round(100 * (pool.length - left.length) / pool.length) : 0}%"></i></span>`;
-    const show = hide ? left : pool;
-    const areas = new Map();
-    for (const q of show.sort((a, b) => b.exp - a.exp)) { const a = ko && q.areaKo ? q.areaKo : q.area; (areas.get(a) || areas.set(a, []).get(a)).push(q); }
-    const line = (q) => {
-      const lock = q.prereq.filter((id) => byId.has(id) && !done.has(id));
-      const hunt = q.hunt.map(([id, n]) => { const m = mobs.get(id); return `<span>${esc(m ? (ko && m.ko ? m.ko : m.en) : `#${id}`)} ×${n}</span>`; }).join('');
-      const bring = q.bring.map(([id, n]) => `<span>${icon(id, 18)}${esc(pick(items[id]) || `#${id}`)} ×${n}</span>`).join('');
-      const gets = q.gets.map(([id, n]) => `<span>${icon(id, 18)}${esc(pick(items[id]) || `#${id}`)}${n > 1 ? ` ×${n}` : ''}</span>`).join('');
-      return `<li class="${done.has(q.id) ? 'is-done' : ''}${lock.length ? ' is-locked' : ''}"><label class="lab-q"><input type="checkbox" data-q="${q.id}"${done.has(q.id) ? ' checked' : ''}><span class="lab-q-name">${q.guide ? `<a href="${root.dataset.root.replace(/lab\/$/, '')}${q.guide.replace(/^\//, '')}">${esc(q.name)}</a>` : esc(q.name)}<small>Lv. ${q.lv || 1}</small></span><span class="lab-q-rew">${q.exp ? `<b>${nf.format(q.exp)}</b> EXP` : ''}${q.meso ? ` · ${kmoney(q.meso)}${tr('메소', ' mesos')}` : ''}</span></label>${lock.length ? `<p class="lab-q-lock">${tr('먼저', 'First')}: ${lock.map((id) => esc(byId.get(id).name)).join(', ')}</p>` : ''}${hunt ? `<p class="lab-q-row"><em>${tr('사냥', 'Hunt')}</em>${hunt}</p>` : ''}${bring ? `<p class="lab-q-row"><em>${tr('모으기', 'Bring')}</em>${bring}</p>` : ''}${gets ? `<p class="lab-q-row"><em>${tr('보상', 'Reward')}</em>${gets}</p>` : ''}</li>`;
-    };
-    document.getElementById('lq-list').innerHTML = show.length ? [...areas].map(([a, qs]) => `<section class="lab-area"><h2>${esc(a)} <small>${qs.length}${tr('개', '')} · ${nf.format(qs.reduce((x, q) => x + (done.has(q.id) ? 0 : q.exp), 0))} EXP</small></h2><ul class="lab-qs">${qs.map(line).join('')}</ul></section>`).join('') : `<p class="muted">${tr('조건에 맞는 퀘스트가 없어요. 레벨을 바꾸거나 낮은 레벨 퀘스트도 켜 보세요.', 'No quests match. Change the level or include lower ones.')}</p>`;
-  };
-  root.addEventListener('change', (e) => {
-    const q = e.target.closest('[data-q]');
-    if (q) {
-      const id = Number(q.dataset.q);
-      q.checked ? done.add(id) : done.delete(id);
-      store.set('gmshub_lab_quests_done', [...done]);
-      track('lab_quest_check', { quest_id: id, done: q.checked });
-    }
-    draw();
-  });
-  root.addEventListener('input', (e) => { if (e.target.id === 'lq-lv') draw(); });
-  draw();
-}
-
 // ---------- meso farm ----------
+const sprite = (id) => `${document.body.dataset.sprites || '/assets/monsters/'}${id}.gif`;
 async function viewFarm(data) {
   const cat = await get(`${api}/market/catalog`);
   const price = new Map((cat?.items || []).map((r) => [r.item, { p: r.soldMedian || r.typical || r.median, sold: r.sold || 0, open: r.open || 0 }]));
   const state = store.get('gmshub_lab_farm', { lv: 40, boss: false });
-  root.innerHTML = `${head(tr('메소 벌이 사냥터', 'Meso farming spots'), tr('내 레벨 근처 몬스터를 지금 시세로 비싼 드롭이 있는 순서로 보여 줘요. 드롭 확률은 알 수 없어서 "무엇이 떨어지면 돈이 되나"만 알려 줘요. 시세는 최근 판매 완료 가격(없으면 보통 가격)이에요.', 'Monsters near your level ranked by what their drops sell for now. Drop rates are unknown, so this shows what is worth money if it drops. Prices are recent sold prices (else the typical asking price).'))}
-<div class="lab-controls"><label>${tr('레벨', 'Level')}<input id="lf-lv" type="number" min="1" max="200" value="${state.lv}"></label><label class="lab-check"><input id="lf-boss" type="checkbox"${state.boss ? ' checked' : ''}>${tr('보스 포함', 'Include bosses')}</label></div><div id="lf-list"></div>`;
+  root.innerHTML = `${head(tr('메소 벌이 사냥터', 'Meso farming spots'), tr('내 레벨 근처 몬스터를 지금 시세로 비싼 드롭이 있는 순서로 보여 줘요. 드롭 확률은 알 수 없어서 "무엇이 떨어지면 돈이 되나"만 알려 줘요. 가격은 아이템 1개당 최근 판매 완료 가격(없으면 보통 가격)이에요.', 'Monsters near your level ranked by what their drops sell for now. Drop rates are unknown, so this shows what is worth money if it drops. Prices are per item: recent sold price, else the typical asking price.'))}
+<div class="lab-controls"><label>${tr('레벨', 'Level')}<input id="lf-lv" type="number" min="1" max="200" value="${state.lv}"></label><label class="lab-check"><input id="lf-boss" type="checkbox"${state.boss ? ' checked' : ''}>${tr('보스 포함', 'Include bosses')}</label></div><ul id="lf-list" class="lab-farm"></ul>`;
   const draw = () => {
     const lv = Number(document.getElementById('lf-lv').value) || 1, boss = document.getElementById('lf-boss').checked;
     store.set('gmshub_lab_farm', { lv, boss });
@@ -96,7 +50,7 @@ async function viewFarm(data) {
       const drops = [...new Set(m.drops)].map((id) => ({ id, ...(price.get(id) || {}) })).filter((d) => d.p >= 1000 && (d.sold >= 3 || d.open >= 5)).sort((a, b) => b.p - a.p);
       return { m, drops, score: drops.slice(0, 3).reduce((a, d) => a + d.p, 0) };
     }).filter((r) => r.drops.length).sort((a, b) => b.score - a.score).slice(0, 30);
-    document.getElementById('lf-list').innerHTML = rows.length ? `<ol class="lab-farm">${rows.map(({ m, drops }, i) => `<li><span class="lab-rank">${i + 1}</span><div class="lab-farm-mob"><a href="${root.dataset.mobs}${m.id}/"><strong>${esc(ko && m.ko ? m.ko : m.en)}</strong></a><small>Lv. ${m.lv} · HP ${nf.format(m.hp)} · EXP ${nf.format(m.exp)}</small>${m.maps.length ? `<small class="lab-maps">${m.maps.map((x) => esc(pick(x))).join(' · ')}</small>` : ''}</div><ul class="lab-drops">${drops.slice(0, 5).map((d) => `<li><a href="${root.dataset.market}?item=${d.id}">${icon(d.id, 24)}<span>${esc(pick(data.items[d.id]) || `#${d.id}`)}</span><b>${kmoney(d.p)}</b></a></li>`).join('')}${drops.length > 5 ? `<li class="lab-more">+${drops.length - 5}</li>` : ''}</ul></li>`).join('')}</ol>` : `<p class="muted">${tr('이 레벨 근처에 시세가 있는 드롭을 가진 몬스터가 없어요.', 'No monsters near this level drop anything with a price yet.')}</p>`;
+    document.getElementById('lf-list').innerHTML = rows.length ? rows.map(({ m, drops }) => `<li><a class="lab-farm-pic" href="${root.dataset.mobs}${m.id}/"><img src="${sprite(m.id)}" alt="" loading="lazy"></a><div class="lab-farm-mob"><a href="${root.dataset.mobs}${m.id}/"><strong>${esc(ko && m.ko ? m.ko : m.en)}</strong></a><small>Lv. ${m.lv} · HP ${nf.format(m.hp)} · EXP ${nf.format(m.exp)}</small>${m.maps.length ? `<small class="lab-maps">${m.maps.map((x) => esc(pick(x))).join(' · ')}</small>` : ''}</div><ul class="lab-drops">${drops.slice(0, 5).map((d) => `<li><a href="${root.dataset.market}?item=${d.id}">${icon(d.id, 24)}<span>${esc(pick(data.items[d.id]) || `#${d.id}`)}</span><b>${tr(`개당 ${kmoney(d.p)} 메소`, `${kmoney(d.p)} mesos each`)}</b></a></li>`).join('')}${drops.length > 5 ? `<li class="lab-more">+${drops.length - 5}</li>` : ''}</ul></li>`).join('') : `<li class="muted">${tr('이 레벨 근처에 시세가 있는 드롭을 가진 몬스터가 없어요.', 'No monsters near this level drop anything with a price yet.')}</li>`;
   };
   root.addEventListener('input', draw);
   root.addEventListener('change', draw);
@@ -105,21 +59,59 @@ async function viewFarm(data) {
 }
 
 // ---------- market pulse ----------
+// A live board: headline tiles (biggest riser, faller, best seller), movers with bars sized by the move, and a just-sold
+// feed where new sales slide in. Refreshes every 60 s with a visible countdown; times tick every second.
 async function viewPulse() {
-  root.innerHTML = `${head(tr('시세 맥박', 'Market pulse'), tr('하루 사이 많이 오르고 내린 아이템, 많이 팔린 아이템, 방금 판매 완료된 매물을 한 화면에 모았어요. 매물이 10건 안 되는 아이템은 값이 튀기 쉬워서 오르내림에서 뺐어요. 1분마다 새로 고쳐요.', 'Biggest movers of the day, most traded items and listings just marked sold. Items with under 10 open listings are left out of the movers. Refreshes every minute.'))}<div class="lab-pulse"><section><h2>${tr('오른 아이템', 'Rising')}</h2><ol id="lp-up" class="lab-list"></ol></section><section><h2>${tr('내린 아이템', 'Falling')}</h2><ol id="lp-down" class="lab-list"></ol></section><section><h2>${tr('많이 팔린 아이템 (7일)', 'Most sold (7 days)')}</h2><ol id="lp-sold" class="lab-list"></ol></section><section><h2>${tr('방금 팔린 매물', 'Just sold')}</h2><ol id="lp-feed" class="lab-list lab-feed"></ol></section></div>`;
+  root.innerHTML = `${head(tr('시세 맥박', 'Market pulse'), tr('오늘 자유시장에서 많이 오르고 내린 아이템, 많이 팔린 아이템, 방금 판매 완료된 매물을 실시간으로 보여 줘요. 매물이 10건 안 되는 아이템은 값이 튀기 쉬워서 오르내림에서 뺐어요.', 'Today’s biggest movers, best sellers and just-sold listings, live. Items with under 10 open listings are left out of the movers.'))}
+<div class="lp-live"><span class="lp-dot" aria-hidden="true"></span><b>${tr('실시간', 'Live')}</b><span id="lp-next"></span><span class="lp-timer"><i id="lp-bar"></i></span></div>
+<div class="lp-tiles" id="lp-tiles"></div>
+<div class="lp-grid"><section class="lp-card"><h2>${tr('오른 아이템', 'Rising')}</h2><ol id="lp-up" class="lp-movers"></ol></section><section class="lp-card"><h2>${tr('내린 아이템', 'Falling')}</h2><ol id="lp-down" class="lp-movers"></ol></section><section class="lp-card"><h2>${tr('많이 팔린 아이템', 'Best sellers')} <small>${tr('7일', '7 days')}</small></h2><ol id="lp-sold" class="lp-movers"></ol></section><section class="lp-card"><h2>${tr('방금 팔린 매물', 'Just sold')}</h2><ol id="lp-feed" class="lp-feed"></ol></section></div>`;
+  let nm, seenSold = new Set(), first = true, nextAt = 0;
+  const ago = (s) => { const sec = Math.max(0, Math.round((Date.now() - Date.parse(`${String(s).replace(' ', 'T')}Z`)) / 1000)); return sec < 60 ? tr(`${sec}초 전`, `${sec}s ago`) : sec < 3600 ? tr(`${Math.floor(sec / 60)}분 전`, `${Math.floor(sec / 60)}m ago`) : tr(`${Math.floor(sec / 3600)}시간 전`, `${Math.floor(sec / 3600)}h ago`); };
+  const n = (id) => esc(nm.get(id) || `#${id}`);
+  const countUp = (el) => {
+    const to = Number(el.dataset.to), pre = el.dataset.pre || '', suf = el.dataset.suf || '';
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = pre + nf.format(to) + suf; return; }
+    const t0 = performance.now();
+    const step = (t) => { const k = Math.min(1, (t - t0) / 700), v = Math.round(to * (1 - Math.pow(1 - k, 3))); el.textContent = pre + nf.format(v) + suf; if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  };
   const draw = async () => {
-    const [cat, sold, nm] = await Promise.all([get(`${api}/market/catalog`), get(`${api}/market/listings?state=sold&sort=recent&limit=25&days=1`), itemNames()]);
-    const n = (id) => esc(nm.get(id) || `#${id}`);
-    const rows = (cat?.items || []).filter((r) => r.typicalDay != null && r.open >= 10 && Math.abs(r.typicalDay) <= 300);
-    const mv = (r) => `<li><a href="${root.dataset.market}?item=${r.item}">${icon(r.item, 24)}<span>${n(r.item)}</span><b class="${r.typicalDay > 0 ? 'up' : 'down'}">${r.typicalDay > 0 ? '▲ +' : '▼ '}${r.typicalDay}%</b><small>${kmoney(r.typical)} · ${tr(`매물 ${r.open}`, `${r.open} open`)}</small></a></li>`;
-    document.getElementById('lp-up').innerHTML = rows.filter((r) => r.typicalDay > 0).sort((a, b) => b.typicalDay - a.typicalDay).slice(0, 10).map(mv).join('') || `<li class="muted">—</li>`;
-    document.getElementById('lp-down').innerHTML = rows.filter((r) => r.typicalDay < 0).sort((a, b) => a.typicalDay - b.typicalDay).slice(0, 10).map(mv).join('') || `<li class="muted">—</li>`;
-    document.getElementById('lp-sold').innerHTML = (cat?.items || []).filter((r) => r.sold).sort((a, b) => b.sold - a.sold).slice(0, 10).map((r) => `<li><a href="${root.dataset.market}?item=${r.item}">${icon(r.item, 24)}<span>${n(r.item)}</span><b>${tr(`${nf.format(r.sold)}건`, nf.format(r.sold))}</b><small>${kmoney(r.soldMedian || r.typical)}</small></a></li>`).join('');
-    const ago = (s) => { const m = Math.max(0, Math.round((Date.now() - Date.parse(`${String(s).replace(' ', 'T')}Z`)) / 60000)); return m < 60 ? tr(`${m}분 전`, `${m}m ago`) : tr(`${Math.round(m / 60)}시간 전`, `${Math.round(m / 60)}h ago`); };
-    document.getElementById('lp-feed').innerHTML = (sold?.rows || []).map((r) => `<li><a href="${root.dataset.market}?item=${r.item}">${icon(r.item, 24)}<span>${n(r.item)}</span><b>${kmoney(r.price)}</b><small>CH ${r.channel} · ${ago(r.seen)}</small></a></li>`).join('') || `<li class="muted">—</li>`;
+    const [cat, sold, names] = await Promise.all([get(`${api}/market/catalog`), get(`${api}/market/listings?state=sold&sort=recent&limit=20&days=1`), itemNames()]);
+    nm = names;
+    const items = cat?.items || [];
+    const rows = items.filter((r) => r.typicalDay != null && r.open >= 10 && Math.abs(r.typicalDay) <= 300);
+    const up = rows.filter((r) => r.typicalDay > 0).sort((a, b) => b.typicalDay - a.typicalDay).slice(0, 8);
+    const down = rows.filter((r) => r.typicalDay < 0).sort((a, b) => a.typicalDay - b.typicalDay).slice(0, 8);
+    const best = items.filter((r) => r.sold).sort((a, b) => b.sold - a.sold).slice(0, 8);
+    const tile = (cls, label, r, val, valAttrs, sub) => r ? `<a class="lp-tile ${cls}" href="${root.dataset.market}?item=${r.item}"><span class="lp-tile-label">${label}</span><span class="lp-tile-item">${icon(r.item, 40)}<strong>${n(r.item)}</strong></span><b class="lp-tile-val" ${valAttrs}>${val}</b><small>${sub}</small></a>` : '';
+    if (first || true) document.getElementById('lp-tiles').innerHTML =
+      tile('up', tr('오늘 가장 오른', 'Top riser'), up[0], `+${up[0]?.typicalDay}%`, `data-to="${up[0]?.typicalDay}" data-pre="+" data-suf="%"`, up[0] ? tr(`보통 ${kmoney(up[0].typical)} 메소`, `typical ${kmoney(up[0].typical)}`) : '') +
+      tile('down', tr('오늘 가장 내린', 'Top faller'), down[0], `${down[0]?.typicalDay}%`, `data-to="${Math.abs(down[0]?.typicalDay)}" data-pre="−" data-suf="%"`, down[0] ? tr(`보통 ${kmoney(down[0].typical)} 메소`, `typical ${kmoney(down[0].typical)}`) : '') +
+      tile('best', tr('가장 많이 팔린', 'Best seller'), best[0], `${best[0]?.sold}`, `data-to="${best[0]?.sold}" data-suf="${tr('건', '')}"`, best[0] ? tr(`개당 ${kmoney(best[0].soldMedian || best[0].typical)} 메소 · 7일`, `${kmoney(best[0].soldMedian || best[0].typical)} each · 7d`) : '');
+    root.querySelectorAll('.lp-tile-val').forEach(countUp);
+    const maxUp = Math.max(1, ...up.map((r) => r.typicalDay)), maxDown = Math.max(1, ...down.map((r) => -r.typicalDay)), maxSold = Math.max(1, ...best.map((r) => r.sold));
+    const mover = (r, pct, cls, val, sub) => `<li><a href="${root.dataset.market}?item=${r.item}">${icon(r.item, 28)}<span class="lp-name">${n(r.item)}<small>${sub}</small></span><b class="${cls}">${val}</b><span class="lp-track"><i class="${cls}" style="--w:${pct}%"></i></span></a></li>`;
+    document.getElementById('lp-up').innerHTML = up.map((r) => mover(r, (r.typicalDay / maxUp) * 100, 'up', `▲ ${r.typicalDay}%`, tr(`${kmoney(r.typical)} 메소 · 매물 ${r.open}`, `${kmoney(r.typical)} · ${r.open} open`))).join('') || '<li class="muted">—</li>';
+    document.getElementById('lp-down').innerHTML = down.map((r) => mover(r, (-r.typicalDay / maxDown) * 100, 'down', `▼ ${-r.typicalDay}%`, tr(`${kmoney(r.typical)} 메소 · 매물 ${r.open}`, `${kmoney(r.typical)} · ${r.open} open`))).join('') || '<li class="muted">—</li>';
+    document.getElementById('lp-sold').innerHTML = best.map((r) => mover(r, (r.sold / maxSold) * 100, 'best', tr(`${nf.format(r.sold)}건`, nf.format(r.sold)), tr(`개당 ${kmoney(r.soldMedian || r.typical)} 메소`, `${kmoney(r.soldMedian || r.typical)} each`))).join('');
+    const feed = document.getElementById('lp-feed');
+    const fresh = (sold?.rows || []).filter((r) => !seenSold.has(r.id));
+    const li = (r, isNew) => `<li class="${isNew ? 'is-new' : ''}"><a href="${root.dataset.market}?item=${r.item}">${icon(r.item, 28)}<span class="lp-name">${n(r.item)}<small>CH ${r.channel} · <time data-seen="${esc(r.seen)}">${ago(r.seen)}</time></small></span><b>${tr(`${kmoney(r.price)} 메소`, kmoney(r.price))}</b></a></li>`;
+    if (first) feed.innerHTML = (sold?.rows || []).map((r) => li(r, false)).join('') || '<li class="muted">—</li>';
+    else if (fresh.length) { feed.insertAdjacentHTML('afterbegin', fresh.map((r) => li(r, true)).join('')); while (feed.children.length > 20) feed.lastElementChild.remove(); }
+    for (const r of sold?.rows || []) seenSold.add(r.id);
+    first = false;
+    nextAt = Date.now() + 60000;
   };
   await draw();
-  setInterval(() => !document.hidden && draw(), 60000);
+  setInterval(() => {
+    const left = Math.max(0, Math.ceil((nextAt - Date.now()) / 1000));
+    document.getElementById('lp-next').textContent = tr(`${left}초 뒤 새로고침`, `refresh in ${left}s`);
+    document.getElementById('lp-bar').style.width = `${100 - (left / 60) * 100}%`;
+    document.querySelectorAll('#lp-feed time[data-seen]').forEach((t) => (t.textContent = ago(t.dataset.seen)));
+    if (left === 0 && !document.hidden) draw();
+  }, 1000);
   track('lab_open', { lab: 'market-pulse' });
 }
 
@@ -130,6 +122,5 @@ async function viewPulse() {
   if (view === 'market-pulse') return viewPulse();
   const data = await get(root.dataset.data);
   if (!data) { root.innerHTML = `<p class="muted">${tr('데이터를 불러오지 못했어요.', 'Could not load the data.')}</p>`; return; }
-  if (view === 'quest-run') { track('lab_open', { lab: 'quest-run' }); return viewQuests(data); }
   if (view === 'meso-farm') return viewFarm(data);
 })();
