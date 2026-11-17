@@ -31,7 +31,7 @@ function guide(ko, snap, itemName, itemHref) {
 <li><strong>시세 비교</strong>: 아이템이 걸린 확성기에는 지금 자유시장 중간값이 함께 나와서, 부른 값이 싼지 비싼지 바로 보여요.</li>
 <li><strong>귓말 복사</strong>: 버튼 한 번이면 /w 닉네임 명령어가 복사돼요. 게임 채팅창에 붙여 넣으면 돼요.</li></ul>
 <div class="faq"><details><summary>확성기는 얼마나 빨리 올라오나요?</summary><p>수집기가 게임 화면에서 읽는 대로 바로 들어와요. 페이지를 열어 두면 새 확성기가 위에 자동으로 붙어요.</p></details>
-<details><summary>글자가 가끔 틀린 이유는?</summary><p>게임 화면의 글자를 읽어서 모으기 때문에 비슷한 글자를 헷갈릴 때가 있어요. 가격과 닉네임은 거래 전에 게임에서 한 번 더 확인하세요.</p></details>
+<details><summary>글자가 가끔 틀린 이유는?</summary><p>게임 화면의 글자를 읽어서 모으기 때문에 비슷한 글자를 헷갈릴 때가 있어요.</p></details>
 <details><summary>한국어 풀이는 어떻게 만드나요?</summary><p>위 표의 거래 용어를 기준으로 자동으로 풀어요. 아이템 이름은 게임의 한국어 이름으로 바꿔 보여 줘요.</p></details></div></section>`
     : `<section class="panel mg-guide"><h2>How to read a megaphone</h2>
 <p>Classic World megaphones are mostly shorthand. Know these and you can read nearly every trade megaphone.</p>

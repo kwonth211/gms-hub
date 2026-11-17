@@ -154,7 +154,7 @@ const T = {
     scTitle: '글클메 주문서 계산기 · 확률 (Lesser·Intermediate·Greater·Chaos) | GMS Hub',
     scDesc: '글로벌 메이플스토리 클래식 월드 주문서 성공률(Lesser 100%, Intermediate 60%, Greater 10%, Chaos 10%)로 성공 횟수 분포, 파괴 확률, 평균 상승치를 계산해요.',
     scH1: '주문서 계산기',
-    scLead: '자료에 적힌 성공률을 입력값으로 사용한 확률 모델이에요. 현재 아이템 툴팁을 함께 확인하세요.',
+    scLead: '자료에 적힌 성공률을 입력값으로 사용한 확률 모델이에요.',
     scTier: '주문서 등급',
     scLadder: '주문서 종류 (상승치)',
     scCustom: '직접 입력',

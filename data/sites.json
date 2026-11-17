@@ -549,7 +549,7 @@
             "en"
           ],
           "desc": {
-            "ko": "윈디아 유저들이 쓰는 클래식 월드 공략. 직업, 보스, 사냥, 거래, 뉴스를 다뤄요. 개별 글의 원문 근거를 확인하세요.",
+            "ko": "윈디아 유저들이 쓰는 클래식 월드 공략. 직업, 보스, 사냥, 거래, 뉴스를 다뤄요.",
             "en": "Classic World guides by players on Windia: jobs, bosses, training, trading and news."
           },
           "features": {
@@ -1085,7 +1085,7 @@
         "en": "Can I use guides for old GMS or other MapleStory versions?"
       },
       "a": {
-        "ko": "게임 버전과 작성 시점, 직접 플레이한 조건을 먼저 확인하세요. 원문이 없는 동선표와 이론상 최대 경험치를 현재 내 캐릭터의 사냥 효율로 해석하지 마세요.",
+        "ko": "원문이 없는 동선표와 이론상 최대 경험치를 현재 내 캐릭터의 사냥 효율로 해석하지 마세요.",
         "en": "Check the game version, publication context and firsthand conditions. Unsourced routes and theoretical maximum EXP do not establish your current character's efficiency."
       },
       "sources": [
