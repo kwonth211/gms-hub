@@ -443,6 +443,26 @@ const correctedKeys = new Set();
 const removedKeys = new Set();
 const sigKeys = new Map();
 const removedSigs = new Set();
+// Player corrections are remembered by what was read (place, item read, price, quantity), here and in this browser, so the
+// same line read again later (a new pass over the shop, another visit) comes in already corrected, e.g. a DEX scroll that
+// OCR keeps reading as DEF. The corrected row itself is never touched again.
+const FIX_KEY = 'gms-scan-fixes';
+const fixSig = (r) => [r.channel, r.room, r.item?.id || r.name, r.price, r.qty].join('|');
+const fixes = (() => { try { return new Map(JSON.parse(localStorage.getItem(FIX_KEY) || '[]')); } catch { return new Map(); } })();
+function rememberFix(from, r) {
+  fixes.delete(from);
+  fixes.set(from, { item: r.item?.id, price: r.price, qty: r.qty });
+  while (fixes.size > 300) fixes.delete(fixes.keys().next().value);
+  try { localStorage.setItem(FIX_KEY, JSON.stringify([...fixes])); } catch {}
+}
+function applyKnownFix(r) {
+  const f = fixes.get(fixSig(r));
+  const item = f && items.find((it) => it.id === f.item);
+  if (!item) return;
+  r.fixFrom = fixSig(r);
+  Object.assign(r, { item, price: f.price, qty: f.qty, alternatives: null, fixed: true });
+  r.sure = validListing(r);
+}
 const rowSig = (r) => [r.owner || '', r.channel, r.room, r.item?.id || r.name, r.price, r.qty].join('|');
 
 // Market medians for the items read, fetched once per item so each row shows how far the asking price is from the market.
@@ -486,7 +506,7 @@ ${marketCells(r)}
 <td class="seller">${esc(r.owner.replace(/\?/g, '·')) || '—'}</td>
 <td>${where(r.channel, r.room).map((w) => `<span class="where">${w}</span>`).join(' ') || '—'}</td>
 <td>${r.sold ? i18n.sold : i18n.selling}</td>
-<td><span class="badge ${r.sure ? 'ok' : 'check'}">${r.edited ? i18n.edited : r.sure ? i18n.ok : i18n.check}</span></td>
+<td><span class="badge ${r.sure ? 'ok' : 'check'}">${r.edited || r.fixed ? i18n.edited : r.sure ? i18n.ok : i18n.check}</span></td>
 <td class="row-actions"><button type="button" class="edit-btn" aria-label="${esc(i18n.edit)}" title="${esc(i18n.edit)}">✎</button><button type="button" class="del-btn" aria-label="${esc(i18n.remove)}" title="${esc(i18n.remove)}">✕</button></td>`;
   if (r.alternatives && !r.sure) {
     const pick = document.createElement('select');
@@ -568,12 +588,15 @@ function applyEdit(r, tr, change) {
   const before = payload(r);
   const wasSent = sent.has(oldKey);
   const next = { ...r, ...change };
+  const from = r.fixFrom || fixSig(r);
   if (listingKey(next) !== oldKey && listings.has(listingKey(next))) {
     check('upload', 'warn', i18n.duplicateEdit);
     render(r, tr);
     return;
   }
   Object.assign(r, change, { alternatives: null, edited: true });
+  r.fixFrom = from;
+  if (r.item) rememberFix(from, r);
   r.sure = validListing(r);
   if (wasSent) r.pendingCorrection ||= before;
   const entry = listings.get(oldKey);
@@ -607,6 +630,7 @@ function show(found) {
   });
   // Prepending in reverse keeps the rows in the same order as on screen.
   for (const r of [...found].reverse()) {
+    applyKnownFix(r);
     // The same goods in the same place are one row even when they were first read under another shop record.
     const sig = rowSig(r), seenKey = sigKeys.get(sig);
     if (removedSigs.has(sig) || (seenKey && seenKey !== listingKey(r) && listings.has(seenKey))) continue;
