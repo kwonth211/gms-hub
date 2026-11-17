@@ -35,9 +35,9 @@ function insights() {
 function render() {
   const q = $('rank-filter').value.trim().toLowerCase();
   const list = rows.filter((r) => (!family || r.family === family) && (!q || r.name.toLowerCase().includes(q)));
-  $('rank-rows').innerHTML = list.slice(0, shown).map((r) => `<tr><td class="num">${r.rank}</td>
+  $('rank-rows').innerHTML = list.slice(0, shown).map((r) => `<tr><td class="num">${esc(r.rank)}</td>
 <td><a class="rank-char" href="${profile(r.name)}" target="_blank" rel="noopener"><img src="${esc(r.photo)}" alt="" width="32" height="32" loading="lazy"><span>${esc(r.name)}</span>${r.verified ? `<i class="rank-ok" title="${esc(tr('ClassicRank 인증', 'Verified on ClassicRank'))}">✔</i>` : ''}</a></td>
-<td>${esc(jobName(r.job))}</td><td class="num"><b>${r.level}</b></td><td class="num">${r.fame ?? '–'}</td></tr>`).join('');
+<td>${esc(jobName(r.job))}</td><td class="num"><b>${esc(r.level)}</b></td><td class="num">${esc(r.fame ?? '–')}</td></tr>`).join('');
   $('rank-count').textContent = tr('{n}명 중 {s}명 표시', '{s} of {n} shown', { n: nf.format(list.length), s: nf.format(Math.min(shown, list.length)) });
   $('rank-more').hidden = list.length <= shown;
 }
@@ -61,7 +61,7 @@ function showMe(c, total) {
   const pct = total && c.rank ? Math.max(0.01, (c.rank / total) * 100) : null;
   const train = `${root.dataset.train}?lv=${c.level}${link ? `&job=${link.job}` : ''}`;
   me.innerHTML = `<div class="rank-me-card"><img src="${esc(c.photo)}" alt="" width="64" height="64">
-<div><strong>${esc(c.name)}</strong> <span class="muted">${esc(jobName(c.job))} · Lv. ${c.level}</span>
+<div><strong>${esc(c.name)}</strong> <span class="muted">${esc(jobName(c.job))} · Lv. ${esc(c.level)}</span>
 <p>${tr('종합 {r}위', 'Overall #{r}', { r: nf.format(c.rank) })}${c.jobRank ? ` · ${tr('{j} {r}위', '#{r} {j}', { j: jobName(c.job), r: nf.format(c.jobRank) })}` : ''}${pct ? ` · ${tr('상위 {p}%', 'top {p}%', { p: pct < 1 ? pct.toFixed(2) : pct.toFixed(1) })}` : ''}</p>
 <p class="rank-me-links"><a class="btn small-btn" href="${esc(train)}">${tr('Lv. {l} 사냥터 추천 보기', 'Training spots for level {l}', { l: c.level })}</a>${link?.guide ? `<a class="btn ghost small-btn" href="${esc(link.guide)}">${tr('{j} 가이드', '{j} guide', { j: jobName(c.job) })}</a>` : ''}<a class="btn ghost small-btn" href="${profile(c.name)}" target="_blank" rel="noopener">ClassicRank</a></p></div></div>`;
   me.hidden = false;

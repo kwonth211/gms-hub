@@ -10,8 +10,13 @@ const HEADERS = { 'User-Agent': 'GMS Hub (https://gms-hub.com) ranking snapshot'
 const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // Keep only the fields the page shows; anything ClassicRank adds later is ignored.
-const pick = (c) => ({ name: c.name, level: c.level, job: c.job, tier: c.job_tier, family: c.family, fame: c.fame,
-  rank: c.overall_rank, jobRank: c.job_rank, photo: c.photo, verified: !!c.verified, checked: c.last_checked });
+// Every field is forced to the type the page prints (numbers, short plain strings, an https picture), so nothing the
+// other site sends can reach a page as markup (the page escapes the strings).
+const num = (v) => (Number.isFinite(Number(v)) && v !== null && v !== '' ? Number(v) : null);
+const str = (v, n = 40) => (v == null ? null : String(v).slice(0, n));
+const picture = (v) => (typeof v === 'string' && /^https:\/\/[A-Za-z0-9.-]+\/[^\s"'<>`]*$/.test(v) && v.length <= 300 ? v : '');
+const pick = (c) => ({ name: str(c.name, 13), level: num(c.level), job: str(c.job), tier: num(c.job_tier), family: str(c.family), fame: num(c.fame),
+  rank: num(c.overall_rank), jobRank: num(c.job_rank), photo: picture(c.photo), verified: !!c.verified, checked: str(c.last_checked, 40) });
 
 export async function refreshRank(env, now = Date.now(), fetcher = fetch, wait = pause) {
   const last = await env.DB.prepare("SELECT at FROM snapshots WHERE key = 'rank'").first().catch(() => null);

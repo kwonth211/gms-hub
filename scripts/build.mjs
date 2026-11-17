@@ -640,7 +640,7 @@ function shareImageTags(lang) {
 <meta name="twitter:image:alt" content="${esc(SHARE_ALT[lang])}">`;
 }
 
-function head({ lang, title, desc, pagePath, noindex, ld = [], only }) {
+function head({ lang, title, desc, pagePath, noindex, ld = [], only, bare }) {
   const alternates = only
     ? ''
     : pagePath
@@ -708,10 +708,10 @@ ${pagePath === '/tools/market/' ? `<link rel="preload" as="fetch" href="${esc(co
 <link rel="stylesheet" href="${scriptSrc('style.css')}">
 <style>${CHARM_VARS}</style>
 <script type="speculationrules">${SPECULATION}</script>
-${adsense}
+${bare ? '' : `${adsense}
 ${ga}
 ${clarity}
-${cfBeacon}
+${cfBeacon}`}
 ${ld.map(ldScript).join('\n')}
 </head>`;
 }
@@ -3623,10 +3623,11 @@ write(
 <p class="choice"><a class="btn" href="${href('/ko/')}">${T.ko.backHome}</a> <a class="btn ghost" href="${href('/en/')}">${T.en.backHome}</a>${LOCALES.map((l) => ` <a class="btn ghost" href="${href(`/${l.code}/`)}" lang="${l.hreflang}">${l.name}</a>`).join('')}</p></main></body></html>`
 );
 
-// Admin is a client-side editor that commits data files through the GitHub API.
+// Admin is a client-side editor that commits data files through the GitHub API. The owner pages (this and the traffic
+// dashboard) take a key, so they load no ad, analytics or session-recording script at all (head `bare`).
 write(
   'admin/index.html',
-  `${head({ lang: 'ko', title: '관리자 | GMS Hub', desc: 'GMS Hub 데이터 관리', noindex: true })}
+  `${head({ lang: 'ko', title: '관리자 | GMS Hub', desc: 'GMS Hub 데이터 관리', noindex: true, bare: true })}
 <body data-page="admin">
 <header class="site-header"><div class="wrap header-inner"><a class="brand" href="${href('/ko/')}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>관리자</small></span></a></div></header>
 <main class="wrap" id="admin-root"></main>
@@ -3639,7 +3640,7 @@ ${jsonScript('admin-config', config.github)}
 // /admin/ (disallowed in robots.txt), and useless without the owner key.
 write(
   'admin/traffic/index.html',
-  `${head({ lang: 'ko', title: '트래픽 | GMS Hub', desc: 'GMS Hub 트래픽', noindex: true })}
+  `${head({ lang: 'ko', title: '트래픽 | GMS Hub', desc: 'GMS Hub 트래픽', noindex: true, bare: true })}
 <body data-page="traffic">
 <header class="site-header"><div class="wrap header-inner"><a class="brand" href="${href('/ko/')}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>트래픽</small></span></a></div></header>
 <main class="wrap traffic-dash" id="traffic-root"></main>

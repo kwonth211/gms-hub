@@ -5,6 +5,7 @@
 // Needs the DISCORD_CLIENT_SECRET secret and the redirect URI registered on the Developer Portal; without the secret
 // the start route sends the visitor back with dalert=off and the page explains the /alert command instead.
 import { addAlert, sendDm, priceLabel } from './discord-alerts.js';
+import { sameSecret } from './secure.js';
 
 const API = 'https://discord.com/api/v10';
 const SITE = 'https://gms-hub.com';
@@ -24,7 +25,7 @@ export async function signState(secret, data) {
 }
 export async function readState(secret, state) {
   const [body, sig] = String(state || '').split('.');
-  if (!body || !sig || sig !== (await hmac(secret, body))) return null;
+  if (!body || !sig || !(await sameSecret(sig, await hmac(secret, body)))) return null;
   try {
     const d = JSON.parse(fromB64url(body));
     return Date.now() - d.t < STATE_TTL ? d : null;

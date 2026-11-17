@@ -2,6 +2,7 @@
 // so the object sleeps between joins and leaves (no duration billed while idle). The only thing kept in storage is the
 // all-time peak (one value: the highest number of open pages and when it happened), written only when it is beaten.
 // The keep-alive ping is answered by the runtime itself without waking the object.
+import { sameSecret } from './secure.js';
 export const PRESENCE_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
 
 // One room per page regardless of language or query: /ko/tools/market/?item=1 and /en/tools/market/ are the same page.
@@ -118,7 +119,7 @@ export function chatLine(m, last, now = Date.now()) {
 // right now. Owner only; read it with scripts/peak.py.
 export async function handlePresencePeak(req, env) {
   const auth = req.headers.get('Authorization') || '';
-  if (!env.MAIL_ADMIN_TOKEN || auth !== `Bearer ${env.MAIL_ADMIN_TOKEN}`) return new Response('forbidden', { status: 403 });
+  if (!env.MAIL_ADMIN_TOKEN || !(await sameSecret(auth, `Bearer ${env.MAIL_ADMIN_TOKEN}`))) return new Response('forbidden', { status: 403 });
   if (!env.PRESENCE) return new Response('presence off', { status: 503 });
   return env.PRESENCE.get(env.PRESENCE.idFromName('site')).fetch('https://presence/peak');
 }

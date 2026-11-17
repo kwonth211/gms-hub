@@ -40,6 +40,7 @@ import { listFreeMegas, postFreeMega, deleteFreeMega, reportFreeMega, pruneFreeM
 import { storeDailyRollups, reportRaw } from './report.js';
 import { count, flushUsage, isOver, meterDb, usageView } from './usage-guard.js';
 import { createAlert, listAlerts, deleteAlert, takeHits, checkAlerts } from './alerts.js';
+import { bodyTooLarge } from './secure.js';
 export { Presence };
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
 
@@ -58,7 +59,7 @@ function corsHeaders(origin) {
 function json(data, headers, status = 200, cache = 'no-store') {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...headers, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': cache }
+    headers: { ...headers, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': cache, 'X-Content-Type-Options': 'nosniff' }
   });
 }
 
@@ -367,6 +368,8 @@ const api = {
       const verdict = rl && ip ? await rl.limit({ key: ip }).catch((e) => { console.log('ratelimit error', String(e)); return { success: true }; }) : null;
       if (verdict && !verdict.success)
         return json({ error: 'too many requests' }, { ...cors, 'Retry-After': '60' }, 429);
+      // Public forms are small; an oversized body is turned away before any of it is parsed.
+      if (write && bodyTooLarge(req)) return json({ error: 'body too large' }, cors, 413);
     }
     // Private extension service worker uses a narrowly scoped ingestion token, never public CORS.
     if (url.pathname === '/internal/market-batch') return handleMarketBatch(req, env, knownItems, (rows) => {
@@ -522,6 +525,7 @@ const api = {
 
     if (url.pathname === '/alerts' || url.pathname === '/alerts/hits') {
       const endpoint = url.searchParams.get('endpoint') || '';
+      if (req.method !== 'GET' && !ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
       let out;
       if (url.pathname === '/alerts/hits' && req.method === 'GET') out = await takeHits(env, endpoint);
       else if (req.method === 'POST') out = await createAlert(env, await req.json().catch(() => null));
@@ -550,6 +554,8 @@ const api = {
       // Item names ride along so the header ticker can print a post without loading the item index.
       const named = async (rows) => { const nameOf = await itemLabel(); return rows.map((r) => (r.item ? { ...r, en: nameOf(r.item, 'en') || null, ko: nameOf(r.item, 'ko') || null } : r)); };
       if (req.method === 'GET' && url.pathname === '/free-megas') { const d = await listFreeMegas(env, url.searchParams); return json({ ...d, rows: await named(d.rows) }, cors, 200, 'public, max-age=10'); }
+      // Posting, deleting and reporting only from the site's own pages, like every other public write.
+      if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
       const who = await visitorHash(req.headers.get('CF-Connecting-IP') || '', 'free-mega', env.VOTE_SALT);
       if (req.method === 'POST' && url.pathname === '/free-megas') {
         const [out, status] = await postFreeMega(env, await req.json().catch(() => null), who, await knownItems().catch(() => null));
@@ -745,6 +751,14 @@ const api = {
 // Every entry point runs on a metered D1 binding (src/usage-guard.js): it counts rows read and written and, past 98% of
 // the plan's monthly included amounts, refuses (owner's call 2026-11-15: never pay more than the $5 plan).
 const metered = (env) => ({ ...env, DB: meterDb(env.DB) });
+// One address opening live-count sockets in a flood is refused before it reaches the room (each join wakes the room and
+// messages every open page). 400 joins a minute per address is far above any real visitor, shared VPN exits included.
+async function joinPresence(req, env) {
+  const ip = req.headers.get('CF-Connecting-IP') || '';
+  const verdict = env.RL_READ && ip ? await env.RL_READ.limit({ key: `ws:${ip}` }).catch(() => ({ success: true })) : null;
+  if (verdict && !verdict.success) return new Response('too many requests', { status: 429, headers: { 'Retry-After': '60' } });
+  return handlePresence(req, env);
+}
 const paused = () => new Response(JSON.stringify({ error: 'paused: monthly budget reached' }), { status: 503, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' } });
 
 export default {
@@ -757,7 +771,9 @@ export default {
   // The live viewer count is a WebSocket upgrade, so it skips the public response cache.
   fetch: (req, env, ctx) => {
     const path = new URL(req.url).pathname;
-    const live = path === '/presence' || path === '/chat';
+    // Site chat has no page any more, so its socket route is closed (the room code stays in presence.js).
+    if (path === '/chat') return new Response('not found', { status: 404 });
+    const live = path === '/presence';
     count('q');
     if (live) count('d');
     // Without an execution context (tests) there is nothing to flush into.
@@ -765,6 +781,6 @@ export default {
     if (isOver('q') || (live && isOver('d'))) return paused();
     if (path === '/usage') return new Response(JSON.stringify(usageView() || { checking: true }), { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
     const e = metered(env);
-    return live ? handlePresence(req, e) : cachedPublicResponse(req, () => api.fetch(req, e, ctx), ctx);
+    return live ? joinPresence(req, e) : cachedPublicResponse(req, () => api.fetch(req, e, ctx), ctx);
   }
 };

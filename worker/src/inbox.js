@@ -1,6 +1,7 @@
 // contact@gms-hub.com: Email Routing hands each message to this handler. It is forwarded to the owner's verified
 // address (FORWARD_TO) and a copy is stored in D1 (table inbox) so mail can be read and sorted from the command line.
 // Storing never blocks delivery: a D1 failure still forwards.
+import { sameSecret } from './secure.js';
 const MAX_RAW = 256 * 1024;
 
 export async function handleEmail(message, env) {
@@ -22,7 +23,7 @@ export async function handleEmail(message, env) {
 // (mail_from = contact@gms-hub.com) so the thread can be read back. Only the owner's scripts call this; no CORS.
 export async function handleSendMail(req, env) {
   const auth = req.headers.get('Authorization') || '';
-  if (!env.MAIL_ADMIN_TOKEN || auth !== `Bearer ${env.MAIL_ADMIN_TOKEN}`) return new Response('forbidden', { status: 403 });
+  if (!env.MAIL_ADMIN_TOKEN || !(await sameSecret(auth, `Bearer ${env.MAIL_ADMIN_TOKEN}`))) return new Response('forbidden', { status: 403 });
   let b;
   try { b = await req.json(); } catch { return new Response('bad json', { status: 400 }); }
   if (!b.to || !b.subject || !(b.text || b.html)) return new Response('to, subject and text are required', { status: 400 });
