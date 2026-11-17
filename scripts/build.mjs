@@ -7,7 +7,7 @@ import { spriteSvg, heroScene, spritePng, spriteDataPng } from './sprites.mjs';
 import { monsterIndex, monsterDetail, monsterPath, monsterName, mapPath, bossIndex } from './monster-pages.mjs';
 import { buildWorkbooks } from './workbooks.mjs';
 import { collectMaps, mapDetail, mapIndex, mapName } from './map-pages.mjs';
-import { collectQuests, questIndex, questBestBody, questPath, questName, setQuestGuides, areaName as questArea } from './quest-pages.mjs';
+import { collectQuests, questIndex, questBestBody, questMoneyBody, questPath, questName, setQuestGuides, areaName as questArea } from './quest-pages.mjs';
 import { questGuideData, questGuideBody } from './quest-guide.mjs';
 import { fhBody } from './forgotten-hollow.mjs';
 import { computeReport, reportBody, weeklyTeaser } from './weekly-report.mjs';
@@ -750,6 +750,7 @@ function header(lang, pagePath, only) {
     guides.some((g) => g.lang === lang) && ['/guides/', 'book', ko ? '직업·육성 가이드' : 'Class and levelling guides'],
     ['/skills/', 'star', ko ? '스킬트리 정석' : 'Skill builds'],
     ['/forgotten-hollow/', 'tree', ko ? '포가튼 할로우 공략' : 'Forgotten Hollow guide'],
+    ['/quests/best-meso/', 'coin', ko ? '돈 버는 퀘스트' : 'Best meso quests'],
     ['/quests/best-exp/', 'scroll', ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests'],
     ['/equipment/', 'bag', ko ? '직업별 장비' : 'Gear by class'],
     ['/bosses/', 'crown', ko ? '보스' : 'Bosses']
@@ -3533,6 +3534,20 @@ for (const lang of LANGS) {
       body: skillsBody({ lang, skills: SKILLS, data: SKILL_BUILDS, link, icon: (id) => href(`/assets/skills/${id}.png`) }).replace('__SK_CSS__', scriptSrc('skills.css')),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '스킬트리 정석' : 'Skill builds', '/skills/')]
     }));
+    // /quests/best-meso/: quests ranked by what is left after material costs, at the prices fetched for this build.
+    {
+      const pr = itemPrices.prices || {};
+      const price = (id) => { const p = pr[id]; if (!p) return null; if (p.sold?.n >= 2 && p.sold.median) return p.sold.median; return (p.selling?.n ?? p.n) >= 3 ? (p.selling?.median ?? p.median) : null; };
+      const itemById = new Map(itemsData.items.map((i) => [i.id, i]));
+      const itemName = (id, l) => { const i = itemById.get(id); return i ? (l === 'ko' && i.ko ? i.ko : i.en) : `#${id}`; };
+      write(path.join(lang, 'quests', 'best-meso', 'index.html'), page({
+        lang, pageKey: 'questBest', pagePath: '/quests/best-meso/',
+        title: lang === 'ko' ? '글클메 돈 버는 퀘스트 순위: 메소 많이 남는 퀘스트 (쌀먹) | GMS Hub' : 'MapleStory Classic World Quests That Make the Most Mesos | GMS Hub',
+        desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드에서 메소가 가장 많이 남는 퀘스트 순위. 보상 아이템을 오늘 자유시장 시세로 계산하고 재료값을 빼서 레벨별로 정리했어요.' : 'MapleStory Classic World quests ranked by profit: reward items priced at today\'s Free Market value minus material costs, by level band.',
+        body: questMoneyBody({ lang, quests: QUESTS, link, price, itemName, updated: itemPrices.updated }),
+        ld: [breadcrumbLd(lang, lang === 'ko' ? '돈 버는 퀘스트' : 'Best meso quests', '/quests/best-meso/')]
+      }));
+    }
     write(path.join(lang, 'quests', 'best-exp', 'index.html'), page({
       lang, pageKey: 'questBest', pagePath: '/quests/best-exp/',
       title: lang === 'ko' ? '글클메 경험치 퀘스트 추천: 레벨별 보상 EXP 순위 | GMS Hub' : 'MapleStory Classic World Best EXP Quests by Level | GMS Hub',
@@ -3766,7 +3781,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
   )
 ).concat(
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
-  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/forgotten-hollow/'}, {path:'/skills/'}, {path:'/tools/forge/'}, {path:'/tools/meso-farm/'}, {path:'/updates/'}, ...(WEEKLY ? [{path:'/report/'}] : [])].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, {path:'/quests/best-meso/'}, ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/forgotten-hollow/'}, {path:'/skills/'}, {path:'/tools/forge/'}, {path:'/tools/meso-farm/'}, {path:'/updates/'}, ...(WEEKLY ? [{path:'/report/'}] : [])].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/bosses/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/quests/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
   [{path:'/maps/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),

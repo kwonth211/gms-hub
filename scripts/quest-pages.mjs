@@ -117,7 +117,7 @@ export function questIndex({ lang, quests, link, guides = [], promo = '' }) {
   const live = quests.filter((q) => !q.expired);
   return `<section class="page-head wrap"><h1>${ko ? '퀘스트' : 'Quests'}</h1>
 <p class="lead">${ko ? `글클메 퀘스트 ${live.length}개의 시작 레벨, 필요한 아이템과 몬스터, 보상 EXP·메소를 지역별로 정리했어요.` : `${live.length} Classic World quests by area: start level, what to bring or hunt, and the EXP and mesos they pay.`}</p>
-<p class="char-links"><a href="${link('/quests/best-exp/')}">${ko ? '레벨별 경험치 퀘스트' : 'Best EXP quests by level'}</a><a href="${link('/equipment/')}">${ko ? '장비 찾기' : 'Equipment finder'}</a></p>
+<p class="char-links"><a href="${link('/quests/best-meso/')}">${ko ? '돈 버는 퀘스트 순위' : 'Quests that make the most mesos'}</a><a href="${link('/quests/best-exp/')}">${ko ? '레벨별 경험치 퀘스트' : 'Best EXP quests by level'}</a><a href="${link('/equipment/')}">${ko ? '장비 찾기' : 'Equipment finder'}</a></p>
 <nav class="band-nav" aria-label="${ko ? '지역' : 'Areas'}"><div>${guides.length ? `<a class="band-link" href="#guides">${ko ? '퀘스트 공략' : 'Quest guides'}</a>` : ''}${areas.map((a) => `<a class="band-link" href="#area-${encodeURIComponent(a)}">${esc(areaName(a, lang))}</a>`).join('')}</div></nav></section>
 <div class="wrap quest-page">
 ${promo}
@@ -150,6 +150,66 @@ function questGuideCards({ lang, guides, link }) {
 // "Which quests are worth doing at my level": the biggest EXP payouts per 10-level band, from the same client data.
 // Forgotten Hollow quests wait until the area opens; repeatable and ended quests are left out.
 export const QUEST_BANDS = [[1, 10], [11, 20], [21, 30], [31, 40], [41, 50], [51, 200]];
+// The two quest rankings point at each other, so "which quests are worth it" reads as one place with two orders.
+const rankTabs = (ko, link, on) => `<p class="char-links quest-rank-tabs"><a href="${link('/quests/best-meso/')}"${on === 'meso' ? ' aria-current="page"' : ''}>${ko ? '돈 버는 퀘스트 (메소 순)' : 'Best meso quests'}</a><a href="${link('/quests/best-exp/')}"${on === 'exp' ? ' aria-current="page"' : ''}>${ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests'}</a><a href="${link('/quests/')}">${ko ? '전체 퀘스트·공략' : 'All quests and guides'}</a></p>`;
+
+// "Which quests make money": reward value minus what the materials would sell for, at current Free Market prices.
+// price(id) -> mesos or null (data/item-prices.json: recent sold median, else the asking median with 3+ listings).
+// Several rewards of the same count are one pick (see quest-guide.mjs), so their average is used; materials handed
+// over at the start cost nothing; a material with no price counts as 0 and is named in the row.
+export function questMoney(q, price) {
+  const gets = q.gets.map((g) => ({ ...g, p: price(g.id) }));
+  const onePick = gets.length > 1 && (new Set(gets.map((g) => g.count)).size === 1 || gets.some((g) => g.job != null));
+  const priced = gets.filter((g) => g.p != null);
+  const reward = !priced.length ? 0 : onePick ? Math.round(priced.reduce((a, g) => a + g.p * g.count, 0) / priced.length) : priced.reduce((a, g) => a + g.p * g.count, 0);
+  const given = new Set(q.starts.map((i) => i.id));
+  const mats = q.bring.filter((i) => !given.has(i.id)).map((i) => ({ ...i, p: price(i.id) }));
+  const cost = mats.reduce((a, i) => a + (i.p || 0) * i.count, 0);
+  return { reward, cost, net: q.meso + reward - cost, onePick, priced, mats, best: priced.slice().sort((a, b) => b.p * b.count - a.p * a.count)[0] || null };
+}
+export function questMoneyBody({ lang, quests, link, price, itemName, updated }) {
+  const ko = lang === 'ko';
+  const kmoney = (n) => (ko ? (Math.abs(n) >= 1e8 ? `${+(n / 1e8).toFixed(2)}억` : Math.abs(n) >= 1e4 ? `${+(n / 1e4).toFixed(Math.abs(n) >= 1e6 ? 0 : 1)}만` : nf(n)) : Math.abs(n) >= 1e6 ? `${+(n / 1e6).toFixed(2)}m` : Math.abs(n) >= 1e3 ? `${+(n / 1e3).toFixed(1)}k` : nf(n));
+  const pool = quests.filter((q) => !q.expired && !q.repeat && q.area !== 'Forgotten Hollow')
+    .map((q) => ({ q, m: questMoney(q, price) })).filter((x) => x.m.reward > 0 && x.m.net > 0)
+    .sort((x, y) => y.m.net - x.m.net).filter((x, i, all) => all.findIndex((y) => y.q.name === x.q.name) === i);
+  const task = (q) => {
+    const parts = [];
+    if (q.hunt.length) parts.push(ko ? `몬스터 ${q.hunt.length}종 처치` : `hunt ${q.hunt.length} monster type${q.hunt.length > 1 ? 's' : ''}`);
+    if (q.bring.length) parts.push(ko ? `아이템 ${q.bring.length}종 모으기` : `bring ${q.bring.length} item type${q.bring.length > 1 ? 's' : ''}`);
+    if (!parts.length) parts.push(ko ? '전달·대화' : 'talk or deliver');
+    if (q.prereq.length) parts.push(ko ? '선행 퀘스트 있음' : 'needs an earlier quest');
+    return `<ul class="quest-task">${parts.map((x) => `<li>${x}</li>`).join('')}</ul>`;
+  };
+  const row = ({ q, m }) => {
+    const b = m.best, name = b ? itemName(b.id, lang) : '';
+    const rewardCell = `${b ? `<span translate="no">${esc(name)}${b.count > 1 ? ` ×${b.count}` : ''}</span>` : ''}${m.onePick && m.priced.length > 1 ? `<small>${ko ? `${m.priced.length}개 중 하나 · 평균` : `one of ${m.priced.length} · average`}</small>` : m.priced.length > 1 ? `<small>${ko ? `외 ${m.priced.length - 1}종` : `+${m.priced.length - 1} more`}</small>` : ''}`;
+    const unpriced = m.mats.filter((i) => i.p == null);
+    const costCell = m.cost ? `−${kmoney(m.cost)}` : unpriced.length ? (ko ? '직접 모음' : 'farmed') : '0';
+    return `<tr><th scope="row">${questName(q, link, ' translate="no"')}<small>${esc(areaName(q.area, lang))}</small></th><td class="num">Lv. ${q.lv || 1}</td><td>${rewardCell}</td><td class="num">${kmoney(q.meso + m.reward)}</td><td class="num">${costCell}</td><td class="num"><b>${kmoney(m.net)}</b></td><td>${task(q)}</td></tr>`;
+  };
+  const table = (list) => `<div class="table-wrap"><table class="data quest-best quest-money"><thead><tr><th scope="col">${ko ? '퀘스트' : 'Quest'}</th><th scope="col">${ko ? '시작' : 'Starts'}</th><th scope="col">${ko ? '주요 보상' : 'Main reward'}</th><th scope="col">${ko ? '보상 값' : 'Reward value'}</th><th scope="col">${ko ? '재료값' : 'Materials'}</th><th scope="col">${ko ? '남는 메소' : 'Profit'}</th><th scope="col">${ko ? '할 일' : 'What you do'}</th></tr></thead><tbody>${list.map(row).join('')}</tbody></table></div>`;
+  const top = pool.slice(0, 10);
+  const sections = QUEST_BANDS.map(([a, b]) => {
+    const list = pool.filter(({ q }) => Math.max(q.lv, 1) >= a && Math.max(q.lv, 1) <= b).slice(0, 10);
+    if (!list.length) return '';
+    const label = b >= 200 ? (ko ? `${a}레벨 이상` : `Level ${a}+`) : (ko ? `${a}~${b}레벨` : `Level ${a}–${b}`);
+    return `<section class="panel" id="lv-${a}"><h2>${label}</h2>${table(list)}</section>`;
+  }).join('');
+  const day = (updated || '').slice(0, 10);
+  return `<section class="page-head wrap"><h1>${ko ? '돈 버는 퀘스트 순위' : 'Quests that make the most mesos'}</h1>
+<p class="lead">${ko ? `보상으로 받는 아이템을 지금 자유시장 시세로 바꿔서, 재료값을 빼고 메소가 가장 많이 남는 퀘스트부터 줄 세웠어요. 시세는 ${esc(day)} 기준이고 매일 다시 계산해요.` : `Quest rewards priced at today's Free Market value, minus what the materials would sell for, ranked by what is left. Prices are from ${esc(day)} and recalculated every day.`}</p>
+${rankTabs(ko, link, 'meso')}
+<nav class="band-nav" aria-label="${ko ? '레벨' : 'Level'}"><div><a class="band-link" href="#top">TOP 10</a>${QUEST_BANDS.map(([a, b]) => `<a class="band-link" href="#lv-${a}">${b >= 200 ? `${a}+` : `${a}–${b}`}</a>`).join('')}</div></nav></section>
+<div class="wrap quest-page"><section class="panel" id="top"><h2>${ko ? '전체 TOP 10' : 'Top 10 overall'}</h2>${table(top)}</section>
+${sections}
+<section class="panel"><h2>${ko ? '이렇게 계산했어요' : 'How it is worked out'}</h2><ul>
+<li>${ko ? '남는 메소 = 보상 메소 + 보상 아이템 시세 − 재료 시세예요. 재료를 직접 사냥해서 모으면 재료값만큼 더 남아요.' : 'Profit = meso reward + reward items at market price − materials at market price. Farm the materials yourself and you keep that cost too.'}</li>
+<li>${ko ? '보상이 여러 개 중 하나로 나오는 퀘스트는 그 평균값으로 계산했어요. 표에 "N개 중 하나"로 표시돼요.' : 'When a quest gives one of several rewards, the average is used; the row says "one of N".'}</li>
+<li>${ko ? '아이템 값은 최근 판매 완료 가격을 쓰고, 없으면 매물 3건 이상인 판매가의 중앙값을 써요. 시세가 없는 보상과 재료는 0으로 계산했어요.' : 'Item values use recent sold prices, otherwise the median asking price when there are three or more listings. Rewards and materials with no price count as 0.'}</li>
+<li>${ko ? '반복 퀘스트, 끝난 이벤트, 포가튼 할로우 퀘스트는 뺐어요.' : 'Repeatable quests, ended events and Forgotten Hollow quests are left out.'}</li></ul></section></div>`;
+}
+
 export function questBestBody({ lang, quests, link }) {
   const ko = lang === 'ko';
   const pool = quests.filter((q) => !q.expired && !q.repeat && q.exp > 0 && q.area !== 'Forgotten Hollow');
@@ -173,6 +233,7 @@ export function questBestBody({ lang, quests, link }) {
   }).join('');
   return `<section class="page-head wrap"><h1>${ko ? '레벨별 경험치 많이 주는 퀘스트' : 'Best EXP quests by level'}</h1>
 <p class="lead">${ko ? '레벨 구간마다 보상 경험치가 큰 퀘스트를 10개씩 골랐어요. 사냥하다 지칠 때 끼워 넣기 좋아요.' : 'The ten biggest EXP rewards in each level band, from the game data. Good to slot in between grinding sessions.'}</p>
+${rankTabs(ko, link, 'exp')}
 <nav class="band-nav" aria-label="${ko ? '레벨' : 'Level'}"><div>${QUEST_BANDS.map(([a, b]) => `<a class="band-link" href="#lv-${a}">${b >= 200 ? `${a}+` : `${a}–${b}`}</a>`).join('')}</div></nav></section>
 <div class="wrap quest-page">${sections}
 <p class="muted small">${ko ? '보상은 게임 클라이언트 데이터 기준이에요. 반복 퀘스트, 끝난 이벤트, 아직 열리지 않은 포가튼 할로우 퀘스트는 뺐어요.' : 'Rewards are from the game client data. Repeatable quests, ended events and Forgotten Hollow quests (not open yet) are left out.'} <a href="${link('/quests/')}">${ko ? '전체 퀘스트' : 'All quests'}</a></p></div>`;
