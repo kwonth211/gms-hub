@@ -222,6 +222,11 @@
    "name": "Classic Maple Wiki — Citizenship 101: Henesys vs Kerning City",
    "url": "https://classicmaplewiki.com/guides/citizenship-henesys-vs-kerning-city/",
    "date": "2026-10-27"
+  },
+  {
+   "name": "아카라이브 클래식 메이플스토리 채널 — 글로벌 클래식 메이플 제작과 시민권에 대해 알아보자",
+   "url": "https://arca.live/b/maplestoryclassic/186823726",
+   "date": "2026-10-23"
   }
  ],
  "chains": [
@@ -240,13 +245,15 @@
      "시민 등급은 10단계예요. 등급마다 캐릭터 레벨 조건이 있어요: 1등급 12, 2등급 17, 3등급 22, 4등급 27, 5등급 32, 6등급 37, 7등급 42, 8등급 47, 9등급 52, 10등급 57레벨.",
      "기여도는 2등급까지 1,500, 3등급까지 3,500이 필요해요. 기여도가 차면 담당 NPC에게 말을 걸어 승급해요.",
      "매일 게시판의 주민 인사 1개(1등급 100, 등급마다 25씩 늘어 10등급 325)와 매주 기부 1개(재료 30개, 700~2,100)가 기본 수입이에요. 이 둘만 하면 2등급까지 8일쯤 걸려요.",
-     "한 번에 한 마을의 시민만 될 수 있어요. 마을을 옮기면 5만~10만 메소가 든다고 알려져 있으니 처음에 잘 고르세요."
+     "시민권은 계정 전체가 함께 써요. 마을을 옮길 수 있고 예전 마을의 등급은 그대로 남아요. 다시 가입할 때는 5만 메소가 들어요.",
+     "등급과 기여도는 내 캐릭터 정보 창에서 볼 수 있어요. 계정 공유라서 12레벨 부캐를 마을에 세워 두고 매일 인사만 시켜도 돼요."
     ],
     "en": [
      "There are ten citizen grades, each with a character level: grade 1 at Lv 12, 2 at 17, 3 at 22, 4 at 27, 5 at 32, 6 at 37, 7 at 42, 8 at 47, 9 at 52 and 10 at 57.",
      "Grade 2 takes 1,500 Contribution and grade 3 takes 3,500. When you have enough, talk to the clerk to be promoted.",
      "The steady income is one resident greeting from the board each day (100 at grade 1, 25 more per grade, 325 at grade 10) and one donation each week (30 materials, 700 to 2,100). Those two alone reach grade 2 in about eight days.",
-     "You can be a citizen of one town at a time. Moving is reported to cost 50,000 to 100,000 mesos, so choose carefully."
+     "Citizenship is shared by the whole account. You can move to the other town and keep the grade you had in the old one; re-joining costs 50,000 mesos.",
+     "Your grade and Contribution show in the character info window. Because it is account-wide, a Lv 12 alt parked in town can do the daily greeting."
     ]
    },
    "steps": [
@@ -785,8 +792,8 @@
      },
      "go": "n427",
      "tip": {
-      "ko": "집은 스칼렛에게 메소로 사요. 계정에 한 채이고 모든 캐릭터가 같이 써요.",
-      "en": "Scarlett sells the house for mesos: one per account, shared by all your characters."
+      "ko": "집은 스칼렛에게 15,000메소에 사요. 계정에 한 채이고 모든 캐릭터가 같이 써요. 집에는 제작 작업대와 창고 가구를 놓을 수 있어요.",
+      "en": "Scarlett sells the house for 15,000 mesos: one per account, shared by all your characters. Crafting stations and storage furniture can be placed inside."
      },
      "big": true
     }
