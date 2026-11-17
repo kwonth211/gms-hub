@@ -28,7 +28,7 @@ import { handleShopScan } from './shop-scan.js';
 import { parseOptions } from './item-options.js';
 import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoints, openShops, archiveListings, refreshItemMarket, reconcileItemMarket } from './market-browser.js';
 import { cachedPublicResponse } from './public-cache.js';
-import { officialNews } from './news.js';
+import { refreshNews } from './news.js';
 import { Presence, handlePresence, handlePresencePeak } from './presence.js';
 import { handleTraffic } from './traffic.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
@@ -340,6 +340,8 @@ const api = {
     // The home top-10 snapshot reads the whole 8-day listings window, so it is remade hourly, not every tick.
     ctx.waitUntil(freshSnapshot(env, 'market', 50).then((data) => data || refreshSnapshot(env)));
     ctx.waitUntil(refreshRank(env).catch(() => null));
+    // Official notices (site + followed Discord channel), with Korean for new ones: one row read, one or two writes.
+    ctx.waitUntil(refreshNews(env).catch((e) => console.log('news refresh failed', String(e))));
     // Once a day (the 16:00 UTC run, a quiet hour in Korea): old megaphones are dropped by a table scan. The megaphone
     // trend snapshot is refreshed once an hour. Both are read-heavy, so they are not run on every tick.
     const now = new Date();
@@ -540,9 +542,10 @@ const api = {
       return json(out[0], cors, out[1], 'no-store');
     }
 
-    // Official game notices for the home page: read from the game's public news list, edge-cached, nothing stored.
+    // Official game notices for the home page: the snapshot the schedule stores every 15 minutes (rebuilt here only
+    // when it is missing or stale), edge-cached.
     if (url.pathname === '/news' && req.method === 'GET') {
-      try { return json(await officialNews(fetch, Date.now(), 10, env), cors, 200, 'public, max-age=600'); }
+      try { return json((await freshSnapshot(env, 'news', 40)) || (await refreshNews(env)), cors, 200, 'public, max-age=600'); }
       catch (e) { return json({ error: 'news unavailable' }, cors, 502); }
     }
 

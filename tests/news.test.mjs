@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { koTitle, maintWindow, officialNews, discordNotice } from '../worker/src/news.js';
+import { koTitle, maintWindow, officialNews, discordNotice, refreshNews, noticeText, polishKo } from '../worker/src/news.js';
 import { newsInner } from '../assets/official-news.js';
 
 test('formulaic notice titles get Korean wording, the rest stay as written', () => {
@@ -65,4 +65,39 @@ test('followed Discord announcements become notices; our own posts and pointers 
   assert.equal(discordNotice({ ...m, message_reference: { guild_id: '1', channel_id: '2', message_id: '3' } }).url, 'https://discord.com/channels/1/2/3');
   assert.equal(discordNotice({ ...m, flags: 0 }), null);
   assert.equal(discordNotice({ ...m, content: 'Check out [HERE](https://www.nexon.com/maplestory/news/events/48552/x)' }, new Set([48552])), null);
+});
+
+test('the schedule stores the list; a notice with no Korean yet is summarized once and the answer is reused', async () => {
+  const now = Date.parse('2026-11-18T00:00:00Z');
+  const list = [{ id: 7, name: 'A Brand New Thing', summary: 'Something new.', liveDate: '2026-11-17T10:00:00Z', category: 'general', isMSCW: true }];
+  const fetcher = async (url) => Response.json(url.endsWith('/7') ? { body: '<p>Details of the new thing.</p>' } : list);
+  const rows = new Map(); let asked = 0;
+  const env = {
+    DB: { prepare: (sql) => ({ first: async () => (rows.has('news-ko') ? { json: rows.get('news-ko') } : null),
+      bind: (json) => ({ run: async () => { rows.set(/'(news(?:-ko)?)'/.exec(sql)[1], json); } }) }) },
+    AI: { run: async () => { asked++; return { response: 'Sure: {"title": "새로운 소식", "points": ["새로운 것이 나와요."]}' }; } },
+  };
+  const first = await refreshNews(env, fetcher, now);
+  const mine = first.items.find((x) => x.id === 7);
+  assert.equal(mine.ko, '새로운 소식'); assert.deepEqual(mine.sum.ko, ['새로운 것이 나와요.']); assert.equal(mine.auto, undefined);
+  assert.equal(JSON.parse(rows.get('news')).items.length, first.items.length);
+  await refreshNews(env, fetcher, now);
+  assert.equal(asked, 1);
+  list[0].name = '[Update Nov 18] A Brand New Thing';
+  await refreshNews(env, fetcher, now); await refreshNews(env, fetcher, now);
+  assert.equal(asked, 2);
+  list[0].name = 'A Brand New Thing';
+  const bad = await refreshNews({ ...env, DB: { prepare: (sql) => ({ first: async () => null, bind: () => ({ run: async () => {} }) }) }, AI: { run: async () => ({ response: 'no json' }) } }, fetcher, now);
+  assert.equal(bad.items.find((x) => x.id === 7).ko, 'A Brand New Thing');
+});
+
+test('a crossed-out price never reaches the model', () => {
+  const t = noticeText('<li>Price (11): <span style="text-decoration: line-through;">53,900 NX</span> <span style="color: #ff6600;">49,000 NX</span></li><li>Old <s>1 NX</s></li>');
+  assert.match(t, /Price \(11\): 49,000 NX/); assert.doesNotMatch(t, /53,900|1 NX/);
+});
+
+test('model-written lines show Korea time and tidy spelling', () => {
+  assert.equal(polishKo('크레이트가 10월 28일 8:00 AM UTC부터 11월 4일 7:59 AM UTC까지 판매되요', 2026), '크레이트가 10월 28일 17:00(한국 시간)부터 11월 4일 16:59(한국 시간)까지 판매돼요.');
+  assert.equal(polishKo('12월 31일 11:59 PM UTC에 끝나요.', 2026), '1월 1일 08:59(한국 시간)에 끝나요.');
+  assert.equal(polishKo('가격은 3,500 NX예요', 2026), '가격은 3,500 NX예요.');
 });

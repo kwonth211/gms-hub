@@ -145,7 +145,7 @@ export function discordNotice(m, known = new Set(), invite = '') {
   const ref = m.message_reference;
   const url = ref?.guild_id && ref.channel_id && ref.message_id ? `https://discord.com/channels/${ref.guild_id}/${ref.channel_id}/${ref.message_id}` : invite;
   return { id, src: 'discord', cat: /maintenance|patch|hotfix|server (?:is|are) (?:back|down)/i.test(lines.join(' ')) ? 'maintenance' : 'general', date: m.timestamp,
-    en: title, ko: KO[id] || title, url, sum: { en: sum, ko: hand.p || sum }, ...(hand.link ? { link: hand.link } : {}) };
+    en: title, ko: KO[id] || title, url, sum: { en: sum, ko: hand.p || sum }, ...(hand.link ? { link: hand.link } : {}), ...(hand.p ? {} : { auto: true, raw: lines.join('\n').slice(0, 3000) }) };
 }
 // Announcements posted on the official Discord before the channel was followed (a follow only brings later posts).
 const DISCORD_SEED = [
@@ -174,7 +174,7 @@ export async function officialNews(fetcher = fetch, now = Date.now(), limit = 10
       const hand = KO_POINTS[x.id] || {};
       return { id: Number(x.id), cat, date: x.liveDate, en: String(x.name).trim(), ko: koTitle(x.id, x.name),
         url: `https://www.nexon.com/maplestory/news/${cat}/${Number(x.id)}/${slug(x.name)}`,
-        sum: { en: x.summary ? [String(x.summary).trim().slice(0, 240)] : [], ko: hand.p || (x.summary ? [String(x.summary).trim().slice(0, 240)] : []) }, ...(hand.link ? { link: hand.link } : {}) };
+        sum: { en: x.summary ? [String(x.summary).trim().slice(0, 240)] : [], ko: hand.p || (x.summary ? [String(x.summary).trim().slice(0, 240)] : []) }, ...(hand.link ? { link: hand.link } : {}) , ...(!hand.p && cat !== 'maintenance' ? { auto: true } : {}) };
     });
   // Maintenance notices are read in full for their Korean lines; one that has not finished also carries its window
   // for the line above the list. A failed read leaves the notice with its summary only.
@@ -192,4 +192,66 @@ export async function officialNews(fetcher = fetch, now = Date.now(), limit = 10
     ...await discordNews(env, fetcher, known).catch(() => [])].filter((x, i, all) => x && all.findIndex((y) => y && y.id === x.id) === i);
   if (extra.length) items = [...items, ...extra].sort((a, b) => Date.parse(b.date) - Date.parse(a.date)).slice(0, limit);
   return { at: new Date(now).toISOString(), items };
+}
+
+// Korean for notices nobody has written up yet: once per notice, Workers AI reads the notice and returns a Korean title
+// and a few lines; the result is kept in the snapshots table (key news-ko) and reused. Hand-written entries (KO,
+// KO_POINTS) always win, and a failed or odd answer leaves the notice in English until the next run.
+const AI_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
+export async function koByAi(env, title, body) {
+  const out = await env.AI.run(AI_MODEL, { max_tokens: 700, temperature: 0.2, messages: [
+    { role: 'system', content: 'You summarize official MapleStory Classic World notices for Korean players. Reply with JSON only, no other text: {"title": "<Korean title, under 40 characters>", "points": ["<3 to 5 short Korean sentences>"]}. Write natural Korean in 해요체: every sentence ends in 요 (예: 판매해요, 3,500 NX예요), never in 니다. Lead with what is new and what it costs or gives; leave out legal notes and country restrictions. Keep the facts players need: dates and times exactly as the notice states them with their time zone, prices, level limits, rewards, what changes. Keep item, monster, map and NPC names in English. Never add anything the notice does not say.' },
+    { role: 'user', content: `Title: ${title}\n\n${String(body).slice(0, 6000)}` }] });
+  const raw = typeof out?.response === 'string' ? out.response : JSON.stringify(out?.response ?? '');
+  const j = JSON.parse(raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1));
+  const points = (Array.isArray(j.points) ? j.points : []).filter((p) => typeof p === 'string' && p.trim()).map((p) => p.trim().slice(0, 300)).slice(0, 5);
+  const t = typeof j.title === 'string' ? j.title.trim().slice(0, 80) : '';
+  if (!t || !points.length || !/[가-힣]/.test(t + points.join(''))) throw new Error('unusable answer');
+  return { title: t, points };
+}
+// The notice as plain text for the model. A crossed-out price is dropped (only the price that applies is left), so the
+// summary never quotes the old one.
+export const noticeText = (body) => text(String(body || '')
+  .replace(/<(s|del|strike)\b[^>]*>[\s\S]*?<\/\1>/gi, ' ').replace(/<span[^>]*line-through[^>]*>[\s\S]*?<\/span>/gi, ' ')
+  .replace(/<\/(p|li|h\d|tr|div)>|<br[^>]*>/gi, ' / '));
+// Bump when the prompt or the text given to the model changes: stored summaries made by an older version are redone.
+const AI_VERSION = 2;
+// Tidies a model-written line: UTC clock times become Korea time, the common 되요 misspelling is fixed, and the line
+// ends with a full stop.
+export function polishKo(line, year) {
+  const two = (n) => String(n).padStart(2, '0');
+  let s = String(line).replace(/(\d{1,2})월 (\d{1,2})일 (?:(오전|오후) )?(\d{1,2}):(\d{2}) ?(AM|PM)? ?UTC/gi, (all, mo, d, ap1, h, mi, ap2) => {
+    const pm = /PM/i.test(ap2 || '') || ap1 === '오후', ap = ap1 || ap2;
+    const t = new Date(Date.UTC(year, Number(mo) - 1, Number(d), (ap ? Number(h) % 12 : Number(h)) + (pm ? 12 : 0) + 9, Number(mi)));
+    return Number.isNaN(t.getTime()) ? all : `${t.getUTCMonth() + 1}월 ${t.getUTCDate()}일 ${two(t.getUTCHours())}:${two(t.getUTCMinutes())}(한국 시간)`;
+  }).replace(/되요/g, '돼요').trim();
+  return /[.!?…)]$/.test(s) ? s : `${s}.`;
+}
+const served = (d) => ({ at: d.at, items: d.items.map(({ auto, raw, ...x }) => x) });
+
+// Run by the schedule (every 15 minutes): reads the notices, fills in stored Korean, asks the model for at most two new
+// ones, and stores the finished list (snapshots key news) so GET /news is one row read and no visitor waits on it.
+export async function refreshNews(env, fetcher = fetch, now = Date.now()) {
+  const d = await officialNews(fetcher, now, 10, env);
+  const row = await env.DB.prepare("SELECT json FROM snapshots WHERE key = 'news-ko'").first().catch(() => null);
+  const made = row ? JSON.parse(row.json) : {};
+  let added = 0;
+  for (const x of d.items) {
+    if (!x.auto) continue;
+    // A notice whose title was edited ("[Update Oct 28] …") is summarized again.
+    if ((!made[x.id] || made[x.id].v !== AI_VERSION || made[x.id].en !== x.en) && env.AI && added < 2) {
+      const body = x.raw || await fetcher(`${FEED}/${x.id}`, { signal: AbortSignal.timeout(8000) }).then((r) => r.json()).then((j) => noticeText(j.body)).catch(() => '');
+      const k = body ? await koByAi(env, x.en, body).catch((e) => { console.log('news ko failed', x.id, String(e)); return null; }) : null;
+      if (k) { made[x.id] = { ...k, en: x.en, v: AI_VERSION }; added++; }
+    }
+    const k = made[x.id];
+    if (k) { if (x.ko === x.en) x.ko = k.title; x.sum.ko = k.points.map((p) => polishKo(p, new Date(x.date).getUTCFullYear())); }
+  }
+  if (added) {
+    const keep = Object.fromEntries(Object.entries(made).slice(-80));
+    await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key, json, at) VALUES ('news-ko', ?, datetime('now'))").bind(JSON.stringify(keep)).run();
+  }
+  const out = served(d);
+  await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key, json, at) VALUES ('news', ?, datetime('now'))").bind(JSON.stringify(out)).run();
+  return out;
 }

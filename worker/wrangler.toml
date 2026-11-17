@@ -31,6 +31,10 @@ DISCORD_GUILD_ID = "1570460084230955018"
 DISCORD_NEWS_CHANNEL = "1570460197812572280"
 
 # Email Service: send as contact@gms-hub.com (src/inbox.js handleSendMail).
+# Workers AI: Korean summaries for new official notices (news.js), a few calls a week.
+[ai]
+binding = "AI"
+
 [[send_email]]
 name = "EMAIL"
 
