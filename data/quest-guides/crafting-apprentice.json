@@ -148,6 +148,11 @@
    "name": "xBucc — A Beginner's Guide to Crafting in MapleStory Classic",
    "url": "https://www.youtube.com/watch?v=_qjLYT0k13k",
    "date": "2026-09-16"
+  },
+  {
+   "name": "MistaWigglez — MapleStory Classic World Crafting Guide | Everything You Need to Know",
+   "url": "https://www.youtube.com/watch?v=QCvQq09Pdyg",
+   "date": "2026-10-25"
   }
  ],
  "chains": [
@@ -164,12 +169,12 @@
    "notes": {
     "ko": [
      "제작 레벨을 올리려면 캐릭터 레벨이 제작 레벨의 5배여야 해요. 제작 5레벨은 캐릭터 25레벨부터예요. 캐릭터 레벨이 모자라면 제작 경험치가 100%에서 멈추고, 그 뒤에 쌓은 경험치는 사라져요.",
-     "제작할 때마다 메소가 들어요. 재료 조합은 출시 전(9월) 영상 기준이라, 실제 게임의 제작 창에서 한 번 더 확인하세요.",
+     "제작할 때마다 메소가 들어요. 재료를 자유시장에서 사는 값과 직접 모으는 시간을 비교해서 고르세요.",
      "대장 5레벨(캐릭터 25레벨)이면 모든 주괴 조합이 열려요."
     ],
     "en": [
      "A crafting level needs a character level five times as high: crafting 5 opens at character Lv 25. If your character is too low, crafting EXP stops at 100% and anything earned past that is lost.",
-     "Every craft costs mesos. The recipes here come from a pre-launch (September) video; check the in-game crafting window before buying materials.",
+     "Every craft costs mesos, so compare buying the material on the Free Market with gathering it yourself.",
      "Smithing 5 (character Lv 25) unlocks every ingot recipe."
     ]
    },
@@ -204,9 +209,9 @@
       "ko": "버블링 25마리를 잡고 미스릴 1개를 가져가요. 버블링이 미스릴 원석을 떨구니, 5개를 모아 대장으로 주괴를 만들어요.",
       "en": "Kill 25 Bubblings and bring 1 Mithril Ingot. Bubblings drop Mithril Ore; smelt five into the ingot."
      },
-     "warn": {
-      "ko": "미스릴 주괴 조합이 대장 몇 레벨에 열리는지는 확인하지 못했어요. 아직 안 열렸으면 자유시장에서 사는 게 빨라요.",
-      "en": "We could not confirm which Smithing level opens the Mithril Ingot recipe. If it is still locked, buying one is quicker."
+     "tip": {
+      "ko": "미스릴은 자유시장에서 850메소 안팎이에요(11월 17일 기준). 원석 5개를 모으는 것보다 사는 게 빠를 수 있어요.",
+      "en": "A Mithril Ingot sells for about 850 mesos on the Free Market (Nov 17), which can be quicker than gathering five ores."
      }
     },
     {
@@ -222,8 +227,8 @@
       "en": "Kill 30 Dark Axe Stumps and 30 Zombie Mushrooms and bring 1 Orihalcon Ingot and 1 Gold Ingot. Dark Axe Stumps drop Orihalcon Ore and Zombie Mushrooms drop Gold Ore."
      },
      "tip": {
-      "ko": "두 주괴 모두 원석 5개씩이에요. 대장 5레벨이면 조합이 전부 열려요.",
-      "en": "Both ingots take five ores each; every recipe is open at Smithing 5."
+      "ko": "두 주괴 모두 원석 5개씩이고, 대장 5레벨이면 조합이 전부 열려요. 자유시장에서는 오리할콘 500메소, 금 650메소 안팎이에요(11월 17일 기준).",
+      "en": "Both ingots take five ores each, and every recipe is open at Smithing 5. On the Free Market, Orihalcon is about 500 mesos and Gold about 650 (Nov 17)."
      }
     }
    ]
@@ -241,11 +246,11 @@
    "notes": {
     "ko": [
      "제작 레벨을 올리려면 캐릭터 레벨이 제작 레벨의 5배여야 해요. 제작 5레벨은 캐릭터 25레벨부터예요. 캐릭터 레벨이 모자라면 제작 경험치가 100%에서 멈추고, 그 뒤에 쌓은 경험치는 사라져요.",
-     "제작할 때마다 메소가 들어요. 재료 조합은 출시 전(9월) 영상 기준이라, 실제 게임의 제작 창에서 한 번 더 확인하세요."
+     "제작할 때마다 메소가 들어요. 재료를 자유시장에서 사는 값과 직접 모으는 시간을 비교해서 고르세요."
     ],
     "en": [
      "A crafting level needs a character level five times as high: crafting 5 opens at character Lv 25. If your character is too low, crafting EXP stops at 100% and anything earned past that is lost.",
-     "Every craft costs mesos. The recipes here come from a pre-launch (September) video; check the in-game crafting window before buying materials."
+     "Every craft costs mesos, so compare buying the material on the Free Market with gathering it yourself."
     ]
    },
    "steps": [
@@ -259,6 +264,10 @@
      "do": {
       "ko": "청동 1개와 철 주괴 1개를 가져가요. 사냥은 없어요. 청동의 원석 5개, 철 원석 5개를 대장으로 녹여 만들어요.",
       "en": "Bring 1 Bronze Ingot and 1 Iron Ingot; there is nothing to kill. Smelt five Bronze Ore and five Iron Ore."
+     },
+     "tip": {
+      "ko": "주괴를 사서 끝낼 수도 있어요. 자유시장에서 청동 300메소, 철 주괴 1,700메소 안팎이에요(11월 17일 기준).",
+      "en": "You can also just buy them: about 300 mesos for Bronze and 1,700 for Iron on the Free Market (Nov 17)."
      }
     },
     {
@@ -270,6 +279,10 @@
      "do": {
       "ko": "도끼 나무기둥 25마리를 잡고 나사 10개를 가져가요. 무기 제작에서 청동 1개와 철 주괴 1개로 나사 10개를 만들어요.",
       "en": "Kill 25 Axe Stumps and bring 10 Screws. Weaponcrafting turns 1 Bronze Ingot and 1 Iron Ingot into 10 Screws."
+     },
+     "tip": {
+      "ko": "나사는 자유시장에서 개당 155메소 안팎이에요(11월 17일 기준). 목공 15레벨 퀘스트도 도끼 나무기둥 25마리라 같이 받으세요.",
+      "en": "Screws sell for about 155 mesos each (Nov 17). The Lv 15 Woodcrafting quest is also 25 Axe Stumps, so take both."
      }
     },
     {
@@ -280,12 +293,12 @@
      ],
      "big": true,
      "do": {
-      "ko": "아이언호그 30마리를 잡고 몽키 스페너 1개를 가져가요.",
-      "en": "Kill 30 Iron Hogs and bring 1 Monkey Wrench."
+      "ko": "아이언호그 30마리를 잡고 몽키 스페너 1개를 가져가요. 몽키 스페너는 몬스터가 떨구지 않아서 자유시장에서 구해요.",
+      "en": "Kill 30 Iron Hogs and bring 1 Monkey Wrench. No monster drops it, so get one on the Free Market."
      },
-     "warn": {
-      "ko": "몽키 스페너는 우리 드롭 자료에 떨구는 몬스터가 없어요. 무기 제작 목록에서 만드는 것으로 보이지만 확인하지 못했어요. 제작 창에 없으면 자유시장에서 구하세요.",
-      "en": "No monster in our drop data gives a Monkey Wrench. It is most likely a Weaponcrafting recipe, but we could not confirm it; if it is not in your crafting window, buy one."
+     "tip": {
+      "ko": "몽키 스페너는 자유시장에서 6,000메소 안팎이에요(11월 17일 기준, 매물 6개).",
+      "en": "A Monkey Wrench is about 6,000 mesos on the Free Market (Nov 17, six on sale)."
      }
     }
    ]
@@ -303,11 +316,11 @@
    "notes": {
     "ko": [
      "제작 레벨을 올리려면 캐릭터 레벨이 제작 레벨의 5배여야 해요. 제작 5레벨은 캐릭터 25레벨부터예요. 캐릭터 레벨이 모자라면 제작 경험치가 100%에서 멈추고, 그 뒤에 쌓은 경험치는 사라져요.",
-     "제작할 때마다 메소가 들어요. 재료 조합은 출시 전(9월) 영상 기준이라, 실제 게임의 제작 창에서 한 번 더 확인하세요."
+     "제작할 때마다 메소가 들어요. 재료를 자유시장에서 사는 값과 직접 모으는 시간을 비교해서 고르세요."
     ],
     "en": [
      "A crafting level needs a character level five times as high: crafting 5 opens at character Lv 25. If your character is too low, crafting EXP stops at 100% and anything earned past that is lost.",
-     "Every craft costs mesos. The recipes here come from a pre-launch (September) video; check the in-game crafting window before buying materials."
+     "Every craft costs mesos, so compare buying the material on the Free Market with gathering it yourself."
     ]
    },
    "steps": [
@@ -342,8 +355,8 @@
       "en": "Kill 25 Green Mushrooms and bring 10 Spools of Thread. Tailoring makes 10 spools from 1 Animal Fur Bundle, which Pigs, Ribbon Pigs, Stirges and Wild Boars drop."
      },
      "tip": {
-      "ko": "아크포징 15레벨 퀘스트도 초록버섯 25마리예요. 같이 받으세요.",
-      "en": "The Lv 15 Arcforging quest is also 25 Green Mushrooms; take it at the same time."
+      "ko": "실타래는 자유시장에서 개당 10메소 안팎이라 사도 부담이 없어요. 아크포징 15레벨 퀘스트도 초록버섯 25마리니 같이 받으세요.",
+      "en": "Spools of Thread are about 10 mesos each on the Free Market. The Lv 15 Arcforging quest is also 25 Green Mushrooms; take it at the same time."
      }
     },
     {
@@ -359,8 +372,8 @@
       "en": "Kill 30 Wild Boars and bring 1 Red Starry Bandana. Stirges in the Kerning subway drop it."
      },
      "tip": {
-      "ko": "가죽 25레벨 퀘스트도 와일드보어 30마리라 같이 하면 좋아요.",
-      "en": "The Lv 25 Leatherworking quest is also 30 Wild Boars."
+      "ko": "빨간색 별 두건은 자유시장에서 3,500메소 안팎이에요(11월 17일 기준). 가죽 25레벨 퀘스트도 와일드보어 30마리라 같이 하면 좋아요.",
+      "en": "A Red Starry Bandana is about 3,500 mesos on the Free Market (Nov 17). The Lv 25 Leatherworking quest is also 30 Wild Boars."
      }
     }
    ]
@@ -378,12 +391,12 @@
    "notes": {
     "ko": [
      "제작 레벨을 올리려면 캐릭터 레벨이 제작 레벨의 5배여야 해요. 제작 5레벨은 캐릭터 25레벨부터예요. 캐릭터 레벨이 모자라면 제작 경험치가 100%에서 멈추고, 그 뒤에 쌓은 경험치는 사라져요.",
-     "제작할 때마다 메소가 들어요. 재료 조합은 출시 전(9월) 영상 기준이라, 실제 게임의 제작 창에서 한 번 더 확인하세요.",
+     "제작할 때마다 메소가 들어요. 재료를 자유시장에서 사는 값과 직접 모으는 시간을 비교해서 고르세요.",
      "가공된 목재 1개와 뻣뻣한 깃털 1개로 화살 500발을 만들 수 있어요. 다만 화살 제작은 목공 경험치를 주지 않아요."
     ],
     "en": [
      "A crafting level needs a character level five times as high: crafting 5 opens at character Lv 25. If your character is too low, crafting EXP stops at 100% and anything earned past that is lost.",
-     "Every craft costs mesos. The recipes here come from a pre-launch (September) video; check the in-game crafting window before buying materials.",
+     "Every craft costs mesos, so compare buying the material on the Free Market with gathering it yourself.",
      "One Processed Wood and one Stiff Feather make 500 arrows, but crafting arrows gives no Woodcrafting EXP."
     ]
    },
@@ -395,8 +408,8 @@
       "stumpfield"
      ],
      "where": {
-      "ko": "퀘스트 설명에 헤네시스의 목수로 나와요. 마을 안 정확한 자리는 아직 확인하지 못했어요. 목공 작업대 근처에서 찾아보세요.",
-      "en": "The quest text calls him the carpenter of Henesys. We have not confirmed his exact spot in town; look near the woodcrafting station."
+      "ko": "헤네시스 시장으로 들어가요. 활 같은 궁수 장비를 파는 쪽에 목공 작업대가 있어요. 비셔스는 헤네시스의 목수예요.",
+      "en": "Go into the Henesys Market. The woodcrafting station is on the side that sells bows and other archer gear; Vicious is the town's carpenter."
      },
      "do": {
       "ko": "나무기둥 30마리를 잡고 나뭇가지 20개를 가져가요. 나뭇가지는 나무기둥이 떨궈요.",
@@ -418,8 +431,8 @@
       "en": "Kill 25 Axe Stumps and bring 1 Processed Wood: Woodcrafting 1 makes it from 10 Tree Branches for 100 mesos."
      },
      "tip": {
-      "ko": "무기 제작 15레벨 퀘스트도 도끼 나무기둥 25마리예요.",
-      "en": "The Lv 15 Weaponcrafting quest is also 25 Axe Stumps."
+      "ko": "가공된 목재는 자유시장에서 200메소 안팎이에요(11월 17일 기준). 무기 제작 15레벨 퀘스트도 도끼 나무기둥 25마리예요.",
+      "en": "Processed Wood is about 200 mesos on the Free Market (Nov 17). The Lv 15 Weaponcrafting quest is also 25 Axe Stumps."
      }
     },
     {
@@ -453,11 +466,11 @@
    "notes": {
     "ko": [
      "제작 레벨을 올리려면 캐릭터 레벨이 제작 레벨의 5배여야 해요. 제작 5레벨은 캐릭터 25레벨부터예요. 캐릭터 레벨이 모자라면 제작 경험치가 100%에서 멈추고, 그 뒤에 쌓은 경험치는 사라져요.",
-     "제작할 때마다 메소가 들어요. 재료 조합은 출시 전(9월) 영상 기준이라, 실제 게임의 제작 창에서 한 번 더 확인하세요."
+     "제작할 때마다 메소가 들어요. 재료를 자유시장에서 사는 값과 직접 모으는 시간을 비교해서 고르세요."
     ],
     "en": [
      "A crafting level needs a character level five times as high: crafting 5 opens at character Lv 25. If your character is too low, crafting EXP stops at 100% and anything earned past that is lost.",
-     "Every craft costs mesos. The recipes here come from a pre-launch (September) video; check the in-game crafting window before buying materials."
+     "Every craft costs mesos, so compare buying the material on the Free Market with gathering it yourself."
     ]
    },
    "steps": [
@@ -501,6 +514,10 @@
      "do": {
       "ko": "와일드보어 30마리를 잡고 빨간 의자 1개를 가져가요. 빨간 의자는 가죽 5레벨 조합이에요.",
       "en": "Kill 30 Wild Boars and bring 1 Red Chair, a Leatherworking 5 recipe."
+     },
+     "tip": {
+      "ko": "빨간 의자는 자유시장에서 3만 메소 안팎이에요(11월 17일 기준). 가죽을 5레벨까지 올릴 생각이 없으면 사는 쪽이 빨라요.",
+      "en": "A Red Chair is about 30,000 mesos on the Free Market (Nov 17); buying is quicker if you do not plan to reach Leatherworking 5."
      }
     }
    ]
@@ -518,13 +535,13 @@
    "notes": {
     "ko": [
      "제작 레벨을 올리려면 캐릭터 레벨이 제작 레벨의 5배여야 해요. 제작 5레벨은 캐릭터 25레벨부터예요. 캐릭터 레벨이 모자라면 제작 경험치가 100%에서 멈추고, 그 뒤에 쌓은 경험치는 사라져요.",
-     "제작할 때마다 메소가 들어요. 재료 조합은 출시 전(9월) 영상 기준이라, 실제 게임의 제작 창에서 한 번 더 확인하세요.",
+     "제작할 때마다 메소가 들어요. 재료를 자유시장에서 사는 값과 직접 모으는 시간을 비교해서 고르세요.",
      "아크포징 6레벨이면 모든 보석 원석 조합이 열려요.",
      "10레벨에 슬리피우드까지 내려가면 메소가 없어 못 나올 수 있어요. 귀환 수단이나 택시비를 챙겨 가세요."
     ],
     "en": [
      "A crafting level needs a character level five times as high: crafting 5 opens at character Lv 25. If your character is too low, crafting EXP stops at 100% and anything earned past that is lost.",
-     "Every craft costs mesos. The recipes here come from a pre-launch (September) video; check the in-game crafting window before buying materials.",
+     "Every craft costs mesos, so compare buying the material on the Free Market with gathering it yourself.",
      "Arcforging 6 unlocks every gem ore recipe.",
      "A Lv 10 character can get stuck in Sleepywood without mesos: bring a way back."
     ]
@@ -543,6 +560,10 @@
      "do": {
       "ko": "어둠의 나무기둥 30마리를 잡고 가넷의 원석 1개를 가져가요. 가넷의 원석은 어둠의 나무기둥이 떨궈요.",
       "en": "Kill 30 Dark Stumps and bring 1 Garnet Ore; the Dark Stumps drop it."
+     },
+     "tip": {
+      "ko": "가넷의 원석 1개와 200메소로 가넷 1개를 만드는 게 아크포징의 첫 조합이에요.",
+      "en": "One Garnet Ore and 200 mesos make one Garnet: Arcforging's first recipe."
      }
     },
     {
@@ -567,9 +588,9 @@
       "ko": "뿔버섯 30마리를 잡고 토파즈 1개를 가져가요. 뿔버섯이 토파즈의 원석을 떨구고, 아크포징에서 원석 1개를 토파즈 1개로 바꿔요.",
       "en": "Kill 30 Horny Mushrooms and bring 1 Topaz. They drop Topaz Ore, and Arcforging refines one ore into one Topaz."
      },
-     "warn": {
-      "ko": "토파즈 조합이 아크포징 몇 레벨에 열리는지는 확인하지 못했어요(6레벨이면 전부 열려요).",
-      "en": "We could not confirm which Arcforging level opens Topaz (everything is open at 6)."
+     "tip": {
+      "ko": "토파즈는 자유시장에서 400메소 안팎이에요(11월 17일 기준). 아크포징 6레벨이면 보석 조합이 전부 열려요.",
+      "en": "A Topaz is about 400 mesos on the Free Market (Nov 17). Every gem recipe is open at Arcforging 6."
      }
     }
    ]
