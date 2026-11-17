@@ -750,8 +750,6 @@ function header(lang, pagePath, only) {
     guides.some((g) => g.lang === lang) && ['/guides/', 'book', ko ? '직업·육성 가이드' : 'Class and levelling guides'],
     ['/skills/', 'star', ko ? '스킬트리 정석' : 'Skill builds'],
     ['/forgotten-hollow/', 'tree', ko ? '포가튼 할로우 공략' : 'Forgotten Hollow guide'],
-    ['/quests/best-meso/', 'coin', ko ? '돈 버는 퀘스트' : 'Best meso quests'],
-    ['/quests/best-exp/', 'scroll', ko ? '경험치 많이 주는 퀘스트' : 'Best EXP quests'],
     ['/equipment/', 'bag', ko ? '직업별 장비' : 'Gear by class'],
     ['/bosses/', 'crown', ko ? '보스' : 'Bosses']
   ].filter(Boolean);
@@ -759,6 +757,12 @@ function header(lang, pagePath, only) {
   const huntItems = [
     ['/tools/training/', 'sword', ko ? '경험치 사냥터' : 'EXP training spots'],
     ['/tools/meso-farm/', 'coin', ko ? '메소 사냥터 (쌀먹)' : 'Meso farming spots']
+  ];
+  // Quests open a dropdown the same way (owner, 2026-11-17): the full list plus the two rankings.
+  const questItems = [
+    ['/quests/', 'scroll', ko ? '전체 퀘스트·공략' : 'All quests and guides'],
+    ['/quests/best-meso/', 'coin', ko ? '돈 버는 퀘스트' : 'Best meso quests'],
+    ['/quests/best-exp/', 'star', ko ? '경험치 퀘스트' : 'Best EXP quests']
   ];
   const toolItems = [
     ['/tools/market/today/', 'coin', ko ? '오늘의 시세 · 맥박' : "Today's prices & pulse"],
@@ -775,17 +779,20 @@ function header(lang, pagePath, only) {
   const sitesEntry = ['/sites/', 'star', lang === 'ko' ? '사이트 모음' : 'Other Classic World sites'];
   // English labels that would break mid-word on a phone ("Calcul/ator") get a one-word form there.
   // The newest tab carries a small N so returning visitors notice it.
-  const NEW_TAB = UPDATES.find((u) => [...tabs, ...huntItems, ...toolItems, ...guideItems].some(([p]) => p === u.path.split('#')[0]))?.path.split('#')[0] || '/quests/';
+  const NEW_TAB = UPDATES.find((u) => [...tabs, ...huntItems, ...questItems, ...toolItems, ...guideItems].some(([p]) => p === u.path.split('#')[0]))?.path.split('#')[0] || '/quests/';
   const SHORT_EN = { '/': 'Home', '/monsters/': 'Mobs', '/tools/training/': 'Spots', '/tools/scroll/': 'Scrolls', '/tools/drop-rate/': 'Odds', '/tools/damage/': 'Hits', '/tools/market/': 'Market', '/megaphone/': 'Megas', '/tools/exp/': 'EXP', '/guides/': 'Guides', '/quests/': 'Quests' };
   const dropMenu = (items, icon, label, shortEn) => {
     const on = items.some(([p]) => p === '/guides/' ? pagePath?.startsWith('/guides/') : pagePath?.startsWith(p));
     const isNew = items.some(([p]) => p === NEW_TAB);
-    return `<details class="tool-menu"><summary class="tab"${on ? ' aria-current="page"' : ''}${ko ? '' : ` title="${esc(label)}"`}>${isNew ? `<span class="tab-ico">${spriteSvg(icon, 20)}<span class="tab-new">N</span></span>` : spriteSvg(icon, 20)}${ko ? `<span>${label}</span>` : `<span class="tab-full">${label}</span><span class="tab-short" aria-hidden="true">${shortEn}</span>`}<span class="tool-caret" aria-hidden="true"></span></summary><div class="tool-list">${items.map(([p, ic, l]) => `<a class="tool-opt" href="${href(langPath(lang, p))}"${pagePath?.startsWith(p) ? ' aria-current="page"' : ''}>${spriteSvg(ic, 20)}<span>${esc(l)}</span>${p === NEW_TAB ? '<span class="tab-new tool-new">N</span>' : ''}</a>`).join('')}</div></details>`;
+    // Only the closest entry is marked: on /quests/best-meso/ the list entry /quests/ is not the current page.
+    const here = items.map(([p]) => p).filter((p) => pagePath?.startsWith(p)).sort((x, y) => y.length - x.length)[0];
+    return `<details class="tool-menu"><summary class="tab"${on ? ' aria-current="page"' : ''}${ko ? '' : ` title="${esc(label)}"`}>${isNew ? `<span class="tab-ico">${spriteSvg(icon, 20)}<span class="tab-new">N</span></span>` : spriteSvg(icon, 20)}${ko ? `<span>${label}</span>` : `<span class="tab-full">${label}</span><span class="tab-short" aria-hidden="true">${shortEn}</span>`}<span class="tool-caret" aria-hidden="true"></span></summary><div class="tool-list">${items.map(([p, ic, l]) => `<a class="tool-opt" href="${href(langPath(lang, p))}"${p === here ? ' aria-current="page"' : ''}>${spriteSvg(ic, 20)}<span>${esc(l)}</span>${p === NEW_TAB ? '<span class="tab-new tool-new">N</span>' : ''}</a>`).join('')}</div></details>`;
   };
   const huntMenu = dropMenu(huntItems, 'sword', ko ? '사냥터' : 'Training', 'Spots');
+  const questMenu = dropMenu(questItems, 'scroll', ko ? '퀘스트' : 'Quests', 'Quests');
   const tabHtml = tabs
     .map(
-      ([p, icon, label]) => p === '/tools/training/' ? huntMenu :
+      ([p, icon, label]) => p === '/tools/training/' ? huntMenu : p === '/quests/' ? questMenu :
         `<a class="tab" href="${href(langPath(lang, p))}"${(p === pagePath || (p !== '/' && pagePath?.startsWith(p))) ? ' aria-current="page"' : ''}${lang === 'ko' ? '' : ` title="${esc(label)}"`}>${p === NEW_TAB ? `<span class="tab-ico">${spriteSvg(icon, 20)}<span class="tab-new" title="${lang === 'ko' ? '새 기능' : 'New'}">N</span></span>` : spriteSvg(icon, 20)}${lang === 'ko' ? `<span>${label}</span>` : `<span class="tab-full">${label}</span><span class="tab-short" aria-hidden="true">${SHORT_EN[p]}</span>`}</a>`
     )
     .join('');
@@ -795,7 +802,7 @@ function header(lang, pagePath, only) {
 <a class="brand" href="${href(langPath(lang, '/'))}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>${esc(t.gameName)}</small></span></a>
 <nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}${guideMenu}${toolMenu}</nav>
 ${presencePill(lang)}
-${headerSearch(lang, [...tabs, ...huntItems.slice(1), ...guideItems, ...toolItems, ...moved, sitesEntry])}
+${headerSearch(lang, [...tabs, ...huntItems.slice(1), ...questItems.slice(1), ...guideItems, ...toolItems, ...moved, sitesEntry])}
 ${'' /* Header Discord icon opens the Discord page first (owner, 2026-11-15/16): it offers both adding the bot and joining
    the community. Do not point it straight at the invite (tests/content.test.mjs checks this). */}
 ${config.discord ? `<a class="theme-toggle discord-link" href="${href(langPath(lang, config.discordBotInstall ? '/discord-bot/' : '/contact/'))}" data-discord="header" aria-label="${lang === 'ko' ? '디스코드 커뮤니티' : 'Discord community'}" title="${lang === 'ko' ? '디스코드 커뮤니티' : 'Discord community'}">${DISCORD_ICON(20)}</a>` : ''}
@@ -3547,8 +3554,8 @@ for (const lang of LANGS) {
       const itemName = (id, l) => { const i = itemById.get(id); return i ? (l === 'ko' && i.ko ? i.ko : i.en) : `#${id}`; };
       write(path.join(lang, 'quests', 'best-meso', 'index.html'), page({
         lang, pageKey: 'questBest', pagePath: '/quests/best-meso/',
-        title: lang === 'ko' ? '글클메 돈 버는 퀘스트 순위: 메소 많이 남는 퀘스트 (쌀먹) | GMS Hub' : 'MapleStory Classic World Quests That Make the Most Mesos | GMS Hub',
-        desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드에서 메소가 가장 많이 남는 퀘스트 순위. 보상 아이템을 오늘 자유시장 시세로 계산하고 재료값을 빼서 레벨별로 정리했어요.' : 'MapleStory Classic World quests ranked by profit: reward items priced at today\'s Free Market value minus material costs, by level band.',
+        title: lang === 'ko' ? '글클메 돈 버는 퀘스트 순위: 메소 많이 남는 퀘스트로 쌀먹 하는 법 | GMS Hub' : 'MapleStory Classic World Quests That Make the Most Mesos | GMS Hub',
+        desc: lang === 'ko' ? '글클메(글로벌 메이플스토리 클래식 월드) 쌀먹 방법 중 퀘스트로 메소 버는 법. 보상 아이템을 오늘 자유시장 시세로 계산하고 재료값을 빼서, 메소가 많이 남는 퀘스트 순위를 레벨별로 정리했어요.' : 'MapleStory Classic World quests ranked by profit: reward items priced at today\'s Free Market value minus material costs, by level band.',
         body: questMoneyBody({ lang, quests: QUESTS, link, price, itemName, updated: itemPrices.updated }),
         ld: [breadcrumbLd(lang, lang === 'ko' ? '돈 버는 퀘스트' : 'Best meso quests', '/quests/best-meso/')]
       }));
