@@ -984,6 +984,9 @@ input.dm-filled { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset
 .mb-tabs button[aria-selected="true"] { color:var(--accent); border-bottom-color:var(--accent); background:var(--panel-2); }
 .mb-workspace { display:grid; grid-template-columns:minmax(0,1fr); align-items:start; gap:18px; }
 .mb-workspace.has-selection { grid-template-columns:minmax(0,1fr) minmax(400px,1fr); }
+/* With an item open, the item list scrolls inside its own panel like the detail beside it (2026-11-17, owner), so the
+   list stays in view while the detail is read and either side scrolls on its own. Wide screens only. */
+@media (min-width:1051px){ #mb-workspace.has-selection #mb-browser { position:sticky; top:calc(80px + var(--tk-h)); max-height:calc(100vh - 100px - var(--tk-h)); overflow:auto; overscroll-behavior:contain; } }
 .mb-browser,.mb-detail { min-width:0; }
 .mb-detail { position:sticky; top:calc(80px + var(--tk-h)); max-height:calc(100vh - 100px - var(--tk-h)); overflow:auto; overscroll-behavior:contain; }
 .mb-search label { display:block; font-weight:700; font-size:.84rem; margin-bottom:8px; }
