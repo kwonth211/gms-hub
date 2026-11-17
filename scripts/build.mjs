@@ -1014,10 +1014,8 @@ function marketTodayBody(lang) {
 <section class="wrap lab lab-embed" data-lab="market-pulse" data-embed="1" data-lang="${lang}" data-h1="${esc(tr('지금 시세 맥박', 'Live market pulse'))}" data-lead="${esc(tr('하루 전보다 많이 오르고 내린 아이템, 최근 24시간에 많이 팔린 아이템, 방금 판매 완료된 매물이에요. 1분마다 새로 불러오고, 매물이 10건 안 되는 아이템은 오르내림에서 빼요.', 'Biggest moves against a day ago, best sellers of the last 24 hours and the listings just marked sold. Refreshed every minute; items with under 10 open listings are left out of the movers.'))}" data-api="${esc(config.voteApi)}" data-market="${market}"><h2>${tr('지금 시세 맥박', 'Live market pulse')}</h2><p class="muted">${tr('불러오는 중…', 'Loading…')}</p></section>
 <div class="wrap market-today">
 <dl class="mt-stats">${[[tr('판매 중 매물', 'Open listings'), stats.listings], [tr('아이템 종류', 'Items'), stats.items], [tr('상점', 'Shops'), stats.shops]].filter(([, v]) => v).map(([k, v]) => `<div><dt>${k}</dt><dd>${nf(v)}</dd></div>`).join('')}</dl>
-<section class="panel"><h2>${tr('매물이 가장 많은 아이템', 'Most listed items')}</h2>
-<div class="table-wrap"><table class="data mt-table"><thead><tr><th scope="col">#</th><th scope="col">${tr('아이템', 'Item')}</th><th scope="col">${tr('판매가 중앙값', 'Asking median')}</th><th scope="col">${tr('최저가', 'Lowest')}</th><th scope="col">${tr('매물', 'Listings')}</th></tr></thead><tbody>
-${listed.map((r, n) => `<tr><td>${n + 1}</td><th scope="row">${link(r.i)}</th><td class="num">${mesos(r.median)}</td><td class="num">${r.low ? mesos(r.low) : '—'}</td><td class="num">${nf(r.open)}</td></tr>`).join('')}
-</tbody></table></div></section>
+<section class="panel mt-listed"><h2>${tr('매물이 가장 많은 아이템', 'Most listed items')}</h2>
+<ol class="mt-rank">${(() => { const top = Math.max(1, ...listed.map((r) => r.open)); return listed.map((r, n) => `<li${n < 3 ? ` class="mt-top mt-top-${n + 1}"` : ''}><a href="${market}?item=${r.i.id}"><b class="mt-no" translate="no">${n + 1}</b>${icon(r.i.id)}<span class="mt-name">${esc(name(r.i))}<small>${tr('중앙값', 'Median')} ${mesos(r.median)}${r.low ? ` · ${tr('최저', 'Low')} ${mesos(r.low)}` : ''}</small></span><strong class="mt-open"><span translate="no">${nf(r.open)}</span><small>${tr('매물', 'listings')}</small></strong><span class="mt-track"><i style="--w:${Math.max(4, Math.round((r.open / top) * 100))}%;--d:${n * 40}ms"></i></span></a></li>`).join(''); })()}</ol></section>
 ${said.length ? `<section class="panel"><h2>${tr('최근 고확에 많이 나온 아이템', 'Most named in recent megaphones')}</h2>
 <ul class="mt-said">${said.map((r) => `<li>${link(r.i)}<small>${tr(`고확 ${r.n}번`, `${r.n} megaphones`)}${median.has(r.i.id) ? ` · ${tr('시세', 'market')} ${mesos(median.get(r.i.id))}` : ''}</small></li>`).join('')}</ul>
 <p class="muted small">${tr('최근 고확 200개 기준이에요.', 'Based on the latest 200 megaphones.')} <a href="${href(langPath(lang, '/megaphone/'))}">${tr('실시간 확성기 보기', 'Open live megaphones')}</a></p></section>` : ''}
@@ -2174,7 +2172,7 @@ ${jsonScript('mk-data', { ...{ lang, api: config.voteApi, itemsUrl: href(`/asset
 }
 function marketBody(lang) {
   const t = MK[lang], tr = (ko,en) => lang === 'ko' ? ko : en;
-  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 확인하세요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="mb-head-actions"><a class="btn mb-scan-cta" href="${href(langPath(lang, '/tools/scan/'))}" data-scan-cta="market-head">● ${tr('내 상점 올리기', 'Upload my shop')}</a><a class="btn ghost" href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 · 맥박', "Today's prices & pulse")}</a><a class="btn ghost" href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 리포트', "Today's price report")}</a></p></section>
+  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 확인하세요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="mb-head-actions"><a class="btn mb-scan-cta" href="${href(langPath(lang, '/tools/scan/'))}" data-scan-cta="market-head">● ${tr('내 상점 올리기', 'Upload my shop')}</a><a class="btn ghost" href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 리포트', "Today's price report")}</a></p></section>
 ${marketBrowser(lang, 0)}
 ${marketGuide(lang)}`;
 }

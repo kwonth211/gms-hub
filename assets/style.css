@@ -3389,3 +3389,20 @@ body.exp-running .exp-stop { display: inline-flex; }
 /* The live board as the first section of the daily price page. */
 .lab.lab-embed { padding-top: 8px; padding-bottom: 8px; }
 .lab.lab-embed h2 { margin: 4px 0 6px; }
+
+/* Today's prices: "most listed" as a ranked list with bars sized by listings that grow in on load (2026-11-17, owner). */
+.mt-rank { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 18px; }
+.mt-rank a { display: grid; grid-template-columns: 26px 32px minmax(0, 1fr) auto; grid-template-areas: "no ic name open" "no ic bar bar"; column-gap: 10px; align-items: center; padding: 8px 8px; border-radius: 12px; color: var(--text); text-decoration: none; transition: background-color 0.15s ease, transform 0.15s ease; }
+.mt-rank a:hover { background: var(--panel-2); transform: translateX(2px); }
+.mt-rank img { grid-area: ic; width: 32px; height: 32px; image-rendering: pixelated; }
+.mt-no { grid-area: no; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; font-size: 0.8rem; background: var(--panel-2); color: var(--text-2); font-variant-numeric: tabular-nums; }
+.mt-top-1 .mt-no { background: #f5c242; color: #3a2a00; } .mt-top-2 .mt-no { background: #cfd6de; color: #24303a; } .mt-top-3 .mt-no { background: #e3a26f; color: #3a1d06; }
+.mt-name { grid-area: name; display: grid; justify-items: start; text-align: left; min-width: 0; font-weight: 700; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.mt-name small { color: var(--muted); font-weight: 500; font-size: 0.76rem; }
+.mt-open { grid-area: open; display: flex; align-items: baseline; gap: 3px; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.mt-open small { color: var(--muted); font-size: 0.72rem; font-weight: 500; }
+.mt-track { grid-area: bar; height: 5px; margin-top: 5px; border-radius: 99px; background: var(--panel-2); overflow: hidden; }
+.mt-track i { display: block; height: 100%; width: var(--w); border-radius: 99px; background: linear-gradient(90deg, var(--accent-fill), color-mix(in srgb, var(--accent-fill) 60%, #ffd27a)); animation: lp-grow 0.9s cubic-bezier(.2,.8,.2,1) var(--d, 0ms) both; }
+.mt-top a { background: color-mix(in srgb, var(--accent-fill) 7%, transparent); }
+@media (max-width: 760px) { .mt-rank { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { .mt-track i { animation: none; } .mt-rank a { transition: none; } .mt-rank a:hover { transform: none; } }
