@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "crafting-apprentice-guide",
+   "version": "0.7.13",
+   "level": "minor",
+   "date": "2026-11-17",
+   "path": "/quests/crafting-apprentice/",
+   "ko": "제작 견습 퀘스트 공략 — 6개 직종 배우는 법",
+   "en": "Crafting apprentice quests — how to unlock all six professions",
+   "desc": {
+    "ko": "대장, 무기 제작, 재봉, 목공, 가죽, 아크포징의 견습·도움·독립 퀘스트 18개를 한 페이지에 정리했어요. NPC 위치, 잡을 몬스터와 마릿수, 재료가 어디서 나오는지, 키트와 촉매제 보상까지 볼 수 있어요.",
+    "en": "All 18 quests for Smithing, Weaponcrafting, Tailoring, Woodcrafting, Leatherworking and Arcforging on one page: NPC spots, kill counts, where each material comes from, and the kit and catalyst rewards."
+   }
+  },
+  {
    "id": "market-today-pulse",
    "version": "0.7.12",
    "level": "minor",

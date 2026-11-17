@@ -1,0 +1,578 @@
+{
+ "slug": "crafting-apprentice",
+ "order": 12,
+ "icon": "scroll",
+ "level": {
+  "ko": "Lv 10 · 15 · 25",
+  "en": "Lv 10 · 15 · 25"
+ },
+ "title": {
+  "ko": "제작 견습 퀘스트 공략 (6개 직종)",
+  "en": "Crafting apprentice quests (all 6 professions)"
+ },
+ "h1": {
+  "ko": "제작 견습 퀘스트 공략: 대장·무기 제작·재봉·목공·가죽·아크포징 배우는 법",
+  "en": "In Need of an Apprentice: how to unlock all six crafting professions"
+ },
+ "lead": {
+  "ko": "10레벨이 되면 마을마다 있는 장인에게 견습 퀘스트를 받아 제작을 배울 수 있어요. 직종은 여섯 개이고 한 캐릭터가 전부 배울 수 있어요. 직종마다 10레벨 견습, 15레벨 도움, 25레벨 독립 퀘스트 세 개가 이어져요. 잡을 몬스터가 필요한 재료를 같이 떨구게 짜여 있어서, 아래 순서대로 하면 따로 사냥할 일이 거의 없어요.",
+  "en": "From Lv 10 the craftsmen in each town take you on as an apprentice. There are six professions and one character can learn all of them. Each has three quests: the apprentice test at 10, a favour at 15 and the 'in My Own Right!' quest at 25. The monsters you are sent to kill mostly drop the very material the quest wants, so the steps below rarely need extra hunting."
+ },
+ "seoTitle": {
+  "ko": "글클메 제작 견습 퀘스트 공략: 비셔스·프랑소와·사일러스 아이언스·미스터 썬더·JM·크리슈라마 | GMS Hub",
+  "en": "In Need of an Apprentice Quests (Vicious, Francois, Silas Irons, Mr. Thunder, JM, Chrishrama): MapleStory Classic World Crafting Guide | GMS Hub"
+ },
+ "desc": {
+  "ko": "글로벌 메이플스토리 클래식 월드 제작 6개 직종의 견습·도움·독립 퀘스트 18개: NPC 위치, 잡을 몬스터와 마릿수, 재료 구하는 법, 키트·촉매제 보상까지.",
+  "en": "All 18 crafting quests in MapleStory Classic World: Vicious, Francois, Silas Irons, Mr. Thunder, JM From tha Streetz and Chrishrama in Need of an Apprentice, the Lv 15 'in Need of Help' and the Lv 25 'in My Own Right!' quests, with NPC spots, kill counts, where each material comes from and the kit and catalyst rewards."
+ },
+ "card": {
+  "ko": "10레벨에 여는 제작 6개 직종. 견습·도움·독립 퀘스트 18개와 키트·촉매제 보상.",
+  "en": "Six crafting professions from Lv 10: 18 quests with kit and catalyst rewards."
+ },
+ "reward": {
+  "ko": "제작 직종 6개 · 키트 · 제작 촉매제",
+  "en": "6 professions · kits · crafting catalysts"
+ },
+ "rewardItem": 4130002,
+ "updated": "2026-11-17",
+ "places": {
+  "silas": {
+   "ko": "페리온 · 사일러스 아이언스",
+   "en": "Perion · Silas Irons"
+  },
+  "thunder": {
+   "ko": "페리온 · 미스터 썬더",
+   "en": "Perion · Mr. Thunder"
+  },
+  "francois": {
+   "ko": "엘리니아 · 프랑소와",
+   "en": "Ellinia · Francois"
+  },
+  "vicious": {
+   "ko": "헤네시스 · 비셔스",
+   "en": "Henesys · Vicious"
+  },
+  "jm": {
+   "ko": "커닝시티 · JM",
+   "en": "Kerning City · JM From tha Streetz"
+  },
+  "stumpfield": {
+   "ko": "엘리니아 남쪽 들판 · 자라난 나무 II",
+   "en": "The Field South of Ellinia · The Tree That Grew II"
+  },
+  "darkstump": {
+   "ko": "페리온 서쪽 영역",
+   "en": "West Domain of Perion"
+  },
+  "bubbling": {
+   "ko": "커닝 지하철 1호선 1구역",
+   "en": "Kerning Subway Line 1, Area 1"
+  },
+  "axestump": {
+   "ko": "동쪽 바위산 II·III · 엘리니아 북쪽 숲",
+   "en": "East Rocky Mountain II·III · the forest north of Ellinia"
+  },
+  "greenmush": {
+   "ko": "서쪽 바위산 III · 지혜의 숲",
+   "en": "West Rocky Mountain III · Forest of Wisdom"
+  },
+  "ironhog": {
+   "ko": "돼지 공원 I·II",
+   "en": "Pig Park I·II"
+  },
+  "boar": {
+   "ko": "와일드보어의 땅 I·II",
+   "en": "The Land of Wild Boar I·II"
+  }
+ },
+ "npcs": {
+  "503": "미스터 썬더",
+  "303": "프랑소와",
+  "208": "비셔스",
+  "401": "JM",
+  "602": "크리슈라마"
+ },
+ "itemNotes": {
+  "4010100": {
+   "ko": "몬스터가 떨구지 않아요. 제작으로 만들거나 자유시장에서 사요",
+   "en": "No monster drops it: craft it or buy it on the free market"
+  },
+  "4010101": {
+   "ko": "몬스터가 떨구지 않아요. 제작으로 만들거나 자유시장에서 사요",
+   "en": "No monster drops it: craft it or buy it on the free market"
+  },
+  "4010102": {
+   "ko": "몬스터가 떨구지 않아요. 제작으로 만들거나 자유시장에서 사요",
+   "en": "No monster drops it: craft it or buy it on the free market"
+  },
+  "4010105": {
+   "ko": "몬스터가 떨구지 않아요. 제작으로 만들거나 자유시장에서 사요",
+   "en": "No monster drops it: craft it or buy it on the free market"
+  },
+  "4010106": {
+   "ko": "몬스터가 떨구지 않아요. 제작으로 만들거나 자유시장에서 사요",
+   "en": "No monster drops it: craft it or buy it on the free market"
+  },
+  "4003000": {
+   "ko": "몬스터가 떨구지 않아요. 제작으로 만들거나 자유시장에서 사요",
+   "en": "No monster drops it: craft it or buy it on the free market"
+  },
+  "4003007": {
+   "ko": "몬스터가 떨구지 않아요. 제작으로 만들거나 자유시장에서 사요",
+   "en": "No monster drops it: craft it or buy it on the free market"
+  },
+  "4003001": {
+   "ko": "몬스터가 떨구지 않아요. 제작으로 만들거나 자유시장에서 사요",
+   "en": "No monster drops it: craft it or buy it on the free market"
+  },
+  "1422003": {
+   "ko": "몬스터가 떨구지 않아요. 제작으로 만들거나 자유시장에서 사요",
+   "en": "No monster drops it: craft it or buy it on the free market"
+  },
+  "3015007": {
+   "ko": "몬스터가 떨구지 않아요. 제작으로 만들거나 자유시장에서 사요",
+   "en": "No monster drops it: craft it or buy it on the free market"
+  },
+  "3010005": {
+   "ko": "몬스터가 떨구지 않아요. 제작으로 만들거나 자유시장에서 사요",
+   "en": "No monster drops it: craft it or buy it on the free market"
+  },
+  "4020106": {
+   "ko": "몬스터가 떨구지 않아요. 제작으로 만들거나 자유시장에서 사요",
+   "en": "No monster drops it: craft it or buy it on the free market"
+  }
+ },
+ "sources": [
+  {
+   "name": "xBucc — A Beginner's Guide to Crafting in MapleStory Classic",
+   "url": "https://www.youtube.com/watch?v=_qjLYT0k13k",
+   "date": "2026-09-16"
+  }
+ ],
+ "chains": [
+  {
+   "id": "smith",
+   "title": {
+    "ko": "대장 (사일러스 아이언스, 페리온) — 원석을 주괴로",
+    "en": "Smithing (Silas Irons, Perion) — ores into ingots"
+   },
+   "lead": {
+    "ko": "원석 5개로 주괴 1개를 만드는 직종이에요. 다른 직종 재료의 바탕이라 가장 먼저 배우는 게 좋고, 미스터 썬더의 견습 퀘스트도 이걸 끝내야 받을 수 있어요.",
+    "en": "Five ores make one ingot. Other professions build on it, so learn it first; Mr. Thunder's apprentice quest also requires it."
+   },
+   "notes": {
+    "ko": [
+     "제작 레벨을 올리려면 캐릭터 레벨이 제작 레벨의 5배여야 해요. 제작 5레벨은 캐릭터 25레벨부터예요. 캐릭터 레벨이 모자라면 제작 경험치가 100%에서 멈추고, 그 뒤에 쌓은 경험치는 사라져요.",
+     "제작할 때마다 메소가 들어요. 재료 조합은 출시 전(9월) 영상 기준이라, 실제 게임의 제작 창에서 한 번 더 확인하세요.",
+     "대장 5레벨(캐릭터 25레벨)이면 모든 주괴 조합이 열려요."
+    ],
+    "en": [
+     "A crafting level needs a character level five times as high: crafting 5 opens at character Lv 25. If your character is too low, crafting EXP stops at 100% and anything earned past that is lost.",
+     "Every craft costs mesos. The recipes here come from a pre-launch (September) video; check the in-game crafting window before buying materials.",
+     "Smithing 5 (character Lv 25) unlocks every ingot recipe."
+    ]
+   },
+   "steps": [
+    {
+     "q": 80008,
+     "at": "silas",
+     "hunt": [
+      "stumpfield",
+      "darkstump"
+     ],
+     "where": {
+      "ko": "페리온 위쪽 왼쪽 끝, 모루 옆에 서 있어요. 만지와 가까운 자리예요.",
+      "en": "At the far left of upper Perion, next to the anvil, not far from Manji."
+     },
+     "do": {
+      "ko": "나무기둥 20마리, 어둠의 나무기둥 20마리를 잡고 청동의 원석 5개를 가져가요. 청동의 원석은 나무기둥이 떨궈요.",
+      "en": "Kill 20 Stumps and 20 Dark Stumps and bring 5 Bronze Ore. Stumps drop the ore."
+     },
+     "tip": {
+      "ko": "어둠의 나무기둥은 철 원석도 떨궈요. 미스터 썬더 견습에 철 주괴가 필요하니 5개를 같이 모아 두세요.",
+      "en": "Dark Stumps also drop Iron Ore; keep five for the Iron Ingot Mr. Thunder asks for."
+     }
+    },
+    {
+     "q": 80010,
+     "at": "silas",
+     "hunt": [
+      "bubbling"
+     ],
+     "do": {
+      "ko": "버블링 25마리를 잡고 미스릴 1개를 가져가요. 버블링이 미스릴 원석을 떨구니, 5개를 모아 대장으로 주괴를 만들어요.",
+      "en": "Kill 25 Bubblings and bring 1 Mithril Ingot. Bubblings drop Mithril Ore; smelt five into the ingot."
+     },
+     "warn": {
+      "ko": "미스릴 주괴 조합이 대장 몇 레벨에 열리는지는 확인하지 못했어요. 아직 안 열렸으면 자유시장에서 사는 게 빨라요.",
+      "en": "We could not confirm which Smithing level opens the Mithril Ingot recipe. If it is still locked, buying one is quicker."
+     }
+    },
+    {
+     "q": 80009,
+     "at": "silas",
+     "hunt": [
+      "eastrocky",
+      "ant"
+     ],
+     "big": true,
+     "do": {
+      "ko": "다크 엑스텀프 30마리, 좀비버섯 30마리를 잡고 오리할콘 1개와 금 1개를 가져가요. 다크 엑스텀프가 오리할콘 원석을, 좀비버섯이 금 원석을 떨궈요.",
+      "en": "Kill 30 Dark Axe Stumps and 30 Zombie Mushrooms and bring 1 Orihalcon Ingot and 1 Gold Ingot. Dark Axe Stumps drop Orihalcon Ore and Zombie Mushrooms drop Gold Ore."
+     },
+     "tip": {
+      "ko": "두 주괴 모두 원석 5개씩이에요. 대장 5레벨이면 조합이 전부 열려요.",
+      "en": "Both ingots take five ores each; every recipe is open at Smithing 5."
+     }
+    }
+   ]
+  },
+  {
+   "id": "weapon",
+   "title": {
+    "ko": "무기 제작 (미스터 썬더, 페리온) — 주괴로 나사와 무기",
+    "en": "Weaponcrafting (Mr. Thunder, Perion) — screws and weapons"
+   },
+   "lead": {
+    "ko": "사일러스 아이언스의 견습 퀘스트를 끝내야 받을 수 있어요. 첫 퀘스트부터 주괴를 요구해서 대장을 먼저 배워야 해요.",
+    "en": "Only after Silas Irons' apprentice quest: the first step already asks for ingots, so Smithing comes first."
+   },
+   "notes": {
+    "ko": [
+     "제작 레벨을 올리려면 캐릭터 레벨이 제작 레벨의 5배여야 해요. 제작 5레벨은 캐릭터 25레벨부터예요. 캐릭터 레벨이 모자라면 제작 경험치가 100%에서 멈추고, 그 뒤에 쌓은 경험치는 사라져요.",
+     "제작할 때마다 메소가 들어요. 재료 조합은 출시 전(9월) 영상 기준이라, 실제 게임의 제작 창에서 한 번 더 확인하세요."
+    ],
+    "en": [
+     "A crafting level needs a character level five times as high: crafting 5 opens at character Lv 25. If your character is too low, crafting EXP stops at 100% and anything earned past that is lost.",
+     "Every craft costs mesos. The recipes here come from a pre-launch (September) video; check the in-game crafting window before buying materials."
+    ]
+   },
+   "steps": [
+    {
+     "q": 80011,
+     "at": "thunder",
+     "where": {
+      "ko": "사일러스 아이언스와 같은 높이에서 오른쪽으로 가면 무기 제작대 옆에 있어요.",
+      "en": "On the same level as Silas Irons, further right, beside the Weaponcrafting Station."
+     },
+     "do": {
+      "ko": "청동 1개와 철 주괴 1개를 가져가요. 사냥은 없어요. 청동의 원석 5개, 철 원석 5개를 대장으로 녹여 만들어요.",
+      "en": "Bring 1 Bronze Ingot and 1 Iron Ingot; there is nothing to kill. Smelt five Bronze Ore and five Iron Ore."
+     }
+    },
+    {
+     "q": 80013,
+     "at": "thunder",
+     "hunt": [
+      "axestump"
+     ],
+     "do": {
+      "ko": "도끼 나무기둥 25마리를 잡고 나사 10개를 가져가요. 무기 제작에서 청동 1개와 철 주괴 1개로 나사 10개를 만들어요.",
+      "en": "Kill 25 Axe Stumps and bring 10 Screws. Weaponcrafting turns 1 Bronze Ingot and 1 Iron Ingot into 10 Screws."
+     }
+    },
+    {
+     "q": 80012,
+     "at": "thunder",
+     "hunt": [
+      "ironhog"
+     ],
+     "big": true,
+     "do": {
+      "ko": "아이언호그 30마리를 잡고 몽키 스페너 1개를 가져가요.",
+      "en": "Kill 30 Iron Hogs and bring 1 Monkey Wrench."
+     },
+     "warn": {
+      "ko": "몽키 스페너는 우리 드롭 자료에 떨구는 몬스터가 없어요. 무기 제작 목록에서 만드는 것으로 보이지만 확인하지 못했어요. 제작 창에 없으면 자유시장에서 구하세요.",
+      "en": "No monster in our drop data gives a Monkey Wrench. It is most likely a Weaponcrafting recipe, but we could not confirm it; if it is not in your crafting window, buy one."
+     }
+    }
+   ]
+  },
+  {
+   "id": "tailor",
+   "title": {
+    "ko": "재봉 (프랑소와, 엘리니아) — 천과 실, 법사 장비",
+    "en": "Tailoring (Francois, Ellinia) — cloth, thread and mage gear"
+   },
+   "lead": {
+    "ko": "나뭇잎이나 돼지 리본, 동물 털 뭉치로 가공된 천과 실타래를 만드는 직종이에요.",
+    "en": "Turns leaves, pig ribbons and Animal Fur Bundles into Processed Cloth and Spools of Thread."
+   },
+   "notes": {
+    "ko": [
+     "제작 레벨을 올리려면 캐릭터 레벨이 제작 레벨의 5배여야 해요. 제작 5레벨은 캐릭터 25레벨부터예요. 캐릭터 레벨이 모자라면 제작 경험치가 100%에서 멈추고, 그 뒤에 쌓은 경험치는 사라져요.",
+     "제작할 때마다 메소가 들어요. 재료 조합은 출시 전(9월) 영상 기준이라, 실제 게임의 제작 창에서 한 번 더 확인하세요."
+    ],
+    "en": [
+     "A crafting level needs a character level five times as high: crafting 5 opens at character Lv 25. If your character is too low, crafting EXP stops at 100% and anything earned past that is lost.",
+     "Every craft costs mesos. The recipes here come from a pre-launch (September) video; check the in-game crafting window before buying materials."
+    ]
+   },
+   "steps": [
+    {
+     "q": 80014,
+     "at": "francois",
+     "hunt": [
+      "darkstump"
+     ],
+     "where": {
+      "ko": "엘리니아 위쪽이에요. 마을 높이의 4분의 1쯤, 가운데에서 살짝 오른쪽 발판의 작업대 옆에 있어요.",
+      "en": "Upper Ellinia: about a quarter of the way down from the top, slightly right of centre, next to the crafting station."
+     },
+     "do": {
+      "ko": "어둠의 나무기둥 30마리를 잡고 나뭇잎 20개를 가져가요. 나뭇잎은 어둠의 나무기둥이 떨궈요.",
+      "en": "Kill 30 Dark Stumps and bring 20 Leaves; the Dark Stumps drop them."
+     },
+     "tip": {
+      "ko": "아크포징 견습도 어둠의 나무기둥 30마리예요. 두 퀘스트를 같이 받아 두면 한 번에 끝나요.",
+      "en": "The Arcforging apprentice quest also wants 30 Dark Stumps: take both and finish them together."
+     }
+    },
+    {
+     "q": 80016,
+     "at": "francois",
+     "hunt": [
+      "greenmush",
+      "pigs"
+     ],
+     "do": {
+      "ko": "초록버섯 25마리를 잡고 실타래 10개를 가져가요. 재봉에서 동물 털 뭉치 1개로 실타래 10개를 만들어요. 동물 털 뭉치는 돼지, 리본돼지, 스티지, 와일드보어가 떨궈요.",
+      "en": "Kill 25 Green Mushrooms and bring 10 Spools of Thread. Tailoring makes 10 spools from 1 Animal Fur Bundle, which Pigs, Ribbon Pigs, Stirges and Wild Boars drop."
+     },
+     "tip": {
+      "ko": "아크포징 15레벨 퀘스트도 초록버섯 25마리예요. 같이 받으세요.",
+      "en": "The Lv 15 Arcforging quest is also 25 Green Mushrooms; take it at the same time."
+     }
+    },
+    {
+     "q": 80015,
+     "at": "francois",
+     "hunt": [
+      "boar",
+      "kerning"
+     ],
+     "big": true,
+     "do": {
+      "ko": "와일드보어 30마리를 잡고 빨간색 별 두건 1개를 가져가요. 빨간색 별 두건은 커닝 지하철의 스티지가 떨궈요.",
+      "en": "Kill 30 Wild Boars and bring 1 Red Starry Bandana. Stirges in the Kerning subway drop it."
+     },
+     "tip": {
+      "ko": "가죽 25레벨 퀘스트도 와일드보어 30마리라 같이 하면 좋아요.",
+      "en": "The Lv 25 Leatherworking quest is also 30 Wild Boars."
+     }
+    }
+   ]
+  },
+  {
+   "id": "wood",
+   "title": {
+    "ko": "목공 (비셔스, 헤네시스) — 목재와 화살, 활",
+    "en": "Woodcrafting (Vicious, Henesys) — wood, arrows and bows"
+   },
+   "lead": {
+    "ko": "나뭇가지로 가공된 목재를 만들고, 그걸로 화살과 활·석궁을 만드는 직종이에요.",
+    "en": "Turns Tree Branches into Processed Wood, then into arrows, bows and crossbows."
+   },
+   "notes": {
+    "ko": [
+     "제작 레벨을 올리려면 캐릭터 레벨이 제작 레벨의 5배여야 해요. 제작 5레벨은 캐릭터 25레벨부터예요. 캐릭터 레벨이 모자라면 제작 경험치가 100%에서 멈추고, 그 뒤에 쌓은 경험치는 사라져요.",
+     "제작할 때마다 메소가 들어요. 재료 조합은 출시 전(9월) 영상 기준이라, 실제 게임의 제작 창에서 한 번 더 확인하세요.",
+     "가공된 목재 1개와 뻣뻣한 깃털 1개로 화살 500발을 만들 수 있어요. 다만 화살 제작은 목공 경험치를 주지 않아요."
+    ],
+    "en": [
+     "A crafting level needs a character level five times as high: crafting 5 opens at character Lv 25. If your character is too low, crafting EXP stops at 100% and anything earned past that is lost.",
+     "Every craft costs mesos. The recipes here come from a pre-launch (September) video; check the in-game crafting window before buying materials.",
+     "One Processed Wood and one Stiff Feather make 500 arrows, but crafting arrows gives no Woodcrafting EXP."
+    ]
+   },
+   "steps": [
+    {
+     "q": 80017,
+     "at": "vicious",
+     "hunt": [
+      "stumpfield"
+     ],
+     "where": {
+      "ko": "퀘스트 설명에 헤네시스의 목수로 나와요. 마을 안 정확한 자리는 아직 확인하지 못했어요. 목공 작업대 근처에서 찾아보세요.",
+      "en": "The quest text calls him the carpenter of Henesys. We have not confirmed his exact spot in town; look near the woodcrafting station."
+     },
+     "do": {
+      "ko": "나무기둥 30마리를 잡고 나뭇가지 20개를 가져가요. 나뭇가지는 나무기둥이 떨궈요.",
+      "en": "Kill 30 Stumps and bring 20 Tree Branches; the Stumps drop them."
+     },
+     "tip": {
+      "ko": "나뭇가지를 10개 더 모아 두면 15레벨 퀘스트의 가공된 목재를 바로 만들 수 있어요.",
+      "en": "Collect 10 more branches and you can craft the Processed Wood for the Lv 15 quest straight away."
+     }
+    },
+    {
+     "q": 80019,
+     "at": "vicious",
+     "hunt": [
+      "axestump"
+     ],
+     "do": {
+      "ko": "도끼 나무기둥 25마리를 잡고 가공된 목재 1개를 가져가요. 목공 1레벨에서 나뭇가지 10개로 1개를 만들어요(제작비 100메소).",
+      "en": "Kill 25 Axe Stumps and bring 1 Processed Wood: Woodcrafting 1 makes it from 10 Tree Branches for 100 mesos."
+     },
+     "tip": {
+      "ko": "무기 제작 15레벨 퀘스트도 도끼 나무기둥 25마리예요.",
+      "en": "The Lv 15 Weaponcrafting quest is also 25 Axe Stumps."
+     }
+    },
+    {
+     "q": 80018,
+     "at": "vicious",
+     "hunt": [
+      "eastrocky"
+     ],
+     "big": true,
+     "do": {
+      "ko": "다크 엑스텀프 30마리를 잡고 빨간 릴랙서 1개를 가져가요. 빨간 릴랙서는 목공 5레벨 조합이에요.",
+      "en": "Kill 30 Dark Axe Stumps and bring 1 Red Relaxer, a Woodcrafting 5 recipe."
+     },
+     "tip": {
+      "ko": "대장 25레벨 퀘스트도 다크 엑스텀프 30마리예요.",
+      "en": "The Lv 25 Smithing quest also wants 30 Dark Axe Stumps."
+     }
+    }
+   ]
+  },
+  {
+   "id": "leather",
+   "title": {
+    "ko": "가죽 (JM, 커닝시티) — 가죽 가공, 궁수·도적 장갑과 신발",
+    "en": "Leatherworking (JM From tha Streetz, Kerning City) — leather, archer and thief gloves and shoes"
+   },
+   "lead": {
+    "ko": "동물의 가죽 5개로 가공된 가죽 1개를 만드는 직종이에요.",
+    "en": "Five Leathers make one Processed Leather."
+   },
+   "notes": {
+    "ko": [
+     "제작 레벨을 올리려면 캐릭터 레벨이 제작 레벨의 5배여야 해요. 제작 5레벨은 캐릭터 25레벨부터예요. 캐릭터 레벨이 모자라면 제작 경험치가 100%에서 멈추고, 그 뒤에 쌓은 경험치는 사라져요.",
+     "제작할 때마다 메소가 들어요. 재료 조합은 출시 전(9월) 영상 기준이라, 실제 게임의 제작 창에서 한 번 더 확인하세요."
+    ],
+    "en": [
+     "A crafting level needs a character level five times as high: crafting 5 opens at character Lv 25. If your character is too low, crafting EXP stops at 100% and anything earned past that is lost.",
+     "Every craft costs mesos. The recipes here come from a pre-launch (September) video; check the in-game crafting window before buying materials."
+    ]
+   },
+   "steps": [
+    {
+     "q": 80020,
+     "at": "jm",
+     "hunt": [
+      "pigs"
+     ],
+     "where": {
+      "ko": "커닝시티 왼쪽이에요. 바닥 길에서 한두 층 올라간 발판의 작업대 옆에 있어요.",
+      "en": "On the left side of Kerning City, a level or two above the street, next to the crafting station."
+     },
+     "do": {
+      "ko": "돼지 30마리를 잡고 동물의 가죽 5개를 가져가요. 동물의 가죽은 돼지가 떨궈요.",
+      "en": "Kill 30 Pigs and bring 5 Leather; the Pigs drop it."
+     }
+    },
+    {
+     "q": 80022,
+     "at": "jm",
+     "hunt": [
+      "croco"
+     ],
+     "do": {
+      "ko": "주니어 네키 25마리를 잡고 주니어 네키의 가죽 10개를 가져가요. 가죽은 주니어 네키만 떨궈요.",
+      "en": "Kill 25 Jr. Neckis and bring 10 Jr. Necki Skins; only Jr. Neckis drop them."
+     },
+     "warn": {
+      "ko": "주니어 네키는 21레벨이에요. 15레벨에 바로 가면 맞기 힘들 수 있어요.",
+      "en": "Jr. Neckis are Lv 21, so they can be hard to hit right at Lv 15."
+     }
+    },
+    {
+     "q": 80021,
+     "at": "jm",
+     "hunt": [
+      "boar"
+     ],
+     "big": true,
+     "do": {
+      "ko": "와일드보어 30마리를 잡고 빨간 의자 1개를 가져가요. 빨간 의자는 가죽 5레벨 조합이에요.",
+      "en": "Kill 30 Wild Boars and bring 1 Red Chair, a Leatherworking 5 recipe."
+     }
+    }
+   ]
+  },
+  {
+   "id": "arc",
+   "title": {
+    "ko": "아크포징 (크리슈라마, 슬리피우드) — 보석과 주문서",
+    "en": "Arcforging (Chrishrama, Sleepywood) — gems and scrolls"
+   },
+   "lead": {
+    "ko": "가넷, 토파즈 같은 보석 원석을 1대1로 보석으로 바꾸고, 높은 레벨에서는 주문서를 만드는 직종이에요.",
+    "en": "Refines gem ores such as Garnet and Topaz one for one, and crafts scrolls at higher levels."
+   },
+   "notes": {
+    "ko": [
+     "제작 레벨을 올리려면 캐릭터 레벨이 제작 레벨의 5배여야 해요. 제작 5레벨은 캐릭터 25레벨부터예요. 캐릭터 레벨이 모자라면 제작 경험치가 100%에서 멈추고, 그 뒤에 쌓은 경험치는 사라져요.",
+     "제작할 때마다 메소가 들어요. 재료 조합은 출시 전(9월) 영상 기준이라, 실제 게임의 제작 창에서 한 번 더 확인하세요.",
+     "아크포징 6레벨이면 모든 보석 원석 조합이 열려요.",
+     "10레벨에 슬리피우드까지 내려가면 메소가 없어 못 나올 수 있어요. 귀환 수단이나 택시비를 챙겨 가세요."
+    ],
+    "en": [
+     "A crafting level needs a character level five times as high: crafting 5 opens at character Lv 25. If your character is too low, crafting EXP stops at 100% and anything earned past that is lost.",
+     "Every craft costs mesos. The recipes here come from a pre-launch (September) video; check the in-game crafting window before buying materials.",
+     "Arcforging 6 unlocks every gem ore recipe.",
+     "A Lv 10 character can get stuck in Sleepywood without mesos: bring a way back."
+    ]
+   },
+   "steps": [
+    {
+     "q": 80023,
+     "at": "temple",
+     "hunt": [
+      "darkstump"
+     ],
+     "where": {
+      "ko": "슬리피우드 마을 맨 위층 가운데, 작업대 옆에 있어요.",
+      "en": "Top floor of Sleepywood, in the middle, next to the crafting station."
+     },
+     "do": {
+      "ko": "어둠의 나무기둥 30마리를 잡고 가넷의 원석 1개를 가져가요. 가넷의 원석은 어둠의 나무기둥이 떨궈요.",
+      "en": "Kill 30 Dark Stumps and bring 1 Garnet Ore; the Dark Stumps drop it."
+     }
+    },
+    {
+     "q": 80025,
+     "at": "temple",
+     "hunt": [
+      "greenmush"
+     ],
+     "do": {
+      "ko": "초록버섯 25마리를 잡고 마법의 조각 10개를 가져가요. 마법의 조각은 초록버섯이 떨궈요.",
+      "en": "Kill 25 Green Mushrooms and bring 10 Fragments of Magic; the Green Mushrooms drop them."
+     }
+    },
+    {
+     "q": 80024,
+     "at": "temple",
+     "hunt": [
+      "ant"
+     ],
+     "big": true,
+     "do": {
+      "ko": "뿔버섯 30마리를 잡고 토파즈 1개를 가져가요. 뿔버섯이 토파즈의 원석을 떨구고, 아크포징에서 원석 1개를 토파즈 1개로 바꿔요.",
+      "en": "Kill 30 Horny Mushrooms and bring 1 Topaz. They drop Topaz Ore, and Arcforging refines one ore into one Topaz."
+     },
+     "warn": {
+      "ko": "토파즈 조합이 아크포징 몇 레벨에 열리는지는 확인하지 못했어요(6레벨이면 전부 열려요).",
+      "en": "We could not confirm which Arcforging level opens Topaz (everything is open at 6)."
+     }
+    }
+   ]
+  }
+ ]
+}
