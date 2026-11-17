@@ -2193,9 +2193,27 @@ ${jsonScript('mk-data', { ...{ lang, api: config.voteApi, itemsUrl: href(`/asset
 }
 function marketBody(lang) {
   const t = MK[lang], tr = (ko,en) => lang === 'ko' ? ko : en;
-  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 확인하세요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="mb-head-actions"><a class="btn mb-scan-cta" href="${href(langPath(lang, '/tools/scan/'))}" data-scan-cta="market-head">● ${tr('내 상점 올리기', 'Upload my shop')}</a><a class="btn ghost" href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 리포트', "Today's price report")}</a></p></section>
+  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 볼 수 있어요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="mb-head-actions"><a class="btn mb-scan-cta" href="${href(langPath(lang, '/tools/scan/'))}" data-scan-cta="market-head">● ${tr('내 상점 올리기', 'Upload my shop')}</a><a class="btn ghost" href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 리포트', "Today's price report")}</a></p></section>
 ${marketBrowser(lang, 0)}
+${marketSnapshot(lang)}
 ${marketGuide(lang)}`;
+}
+
+// The live list above is drawn in the browser, so the page's own HTML used to name no item at all (Search Console,
+// 28 days to 2026-11-16: 50 impressions for the most used page). This block is built from the nightly market report:
+// the 30 most listed items with their asking prices, readable without running any script.
+function marketSnapshot(lang) {
+  const R = MARKET_REPORT;
+  if (!R?.listed?.length) return '';
+  const ko = lang === 'ko', byId = new Map(itemsData.items.map((i) => [i.id, i]));
+  const nf = (n) => Number(n).toLocaleString(ko ? 'ko' : 'en-US');
+  const mesos = (n) => `<span translate="no">${ko ? (n >= 1e8 ? `${+(n / 1e8).toFixed(2)}억` : n >= 1e4 ? `${+(n / 1e4).toFixed(n >= 1e6 ? 0 : 1)}만` : nf(n)) : n >= 1e6 ? `${+(n / 1e6).toFixed(2)}m` : n >= 1e3 ? `${+(n / 1e3).toFixed(1)}k` : nf(n)}</span>`;
+  const market = href(langPath(lang, '/tools/market/'));
+  const rows = R.listed.map((r) => ({ ...r, i: byId.get(r.item) })).filter((r) => r.i);
+  const day = (R.updated || BUILD_DATE).slice(0, 10);
+  return `<section class="wrap panel mb-snapshot"><h2>${ko ? '지금 매물이 많은 아이템과 시세' : 'Most listed items and their prices'} <small class="muted" translate="no">${esc(day)}</small></h2>
+<p class="muted small">${ko ? `자유시장에 매물이 가장 많은 아이템 ${rows.length}개의 판매가 중앙값과 최저가예요. 이름을 누르면 위 목록에서 그 아이템의 매물과 채널·방이 열려요.` : `The ${rows.length} items with the most Free Market listings, with their median and lowest asking price. Click a name to open its listings, channels and rooms above.`} <a href="${href(langPath(lang, '/tools/market/today/'))}">${ko ? '오늘의 시세 · 맥박 보기' : "Today's prices & pulse"}</a></p>
+<ul class="mt-said">${rows.map((r) => `<li><a class="mt-item" href="${market}?item=${r.i.id}"><img src="https://maplestory.io/api/MCW/1/item/${r.i.id}/icon" width="28" height="28" alt="" loading="lazy"><span>${esc(ko && r.i.ko ? r.i.ko : r.i.en)}</span></a><small>${ko ? '중앙값' : 'median'} ${mesos(r.median)} · ${ko ? '최저' : 'low'} ${mesos(r.low)} · ${ko ? `매물 ${nf(r.open)}` : `${nf(r.open)} listed`}</small></li>`).join('')}</ul></section>`;
 }
 
 // "Drop rate" visitors mostly want to know which monster drops an item (Clarity: half of them went straight back), so the
