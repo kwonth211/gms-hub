@@ -359,11 +359,6 @@ const api = {
     const url = new URL(req.url);
     const origin = req.headers.get('Origin') || '';
     const cors = corsHeaders(origin);
-    // Headless Chrome is refused on the public API, the same as the Cloudflare rule on gms-hub.com ("Block headless
-    // browsers", 2026-11-17): a scraper in Israel was opening the market page hundreds of times a day. Our own collectors
-    // use the /internal/ paths with a token and are never refused here.
-    if (!url.pathname.startsWith('/internal/') && !TRUSTED.has(url.pathname) && (req.headers.get('User-Agent') || '').includes('HeadlessChrome'))
-      return json({ error: 'automated browsers are not allowed' }, cors, 403);
     // Per-IP rate limits (Workers rate limiting, counted per Cloudflare location). The collectors and Discord carry their
     // own credentials and skip this. Limits are loose because many Korean players share a few VPN exits.
     if (!TRUSTED.has(url.pathname) && req.method !== 'OPTIONS') {
@@ -788,6 +783,11 @@ export default {
   // The live viewer count is a WebSocket upgrade, so it skips the public response cache.
   fetch: (req, env, ctx) => {
     const path = new URL(req.url).pathname;
+    // Headless Chrome is refused on the public API, the same as the Cloudflare rule on gms-hub.com ("Block headless
+    // browsers", 2026-11-17): a scraper in Israel was opening the market page hundreds of times a day. Checked here, ahead
+    // of the public response cache. Our own collectors use the /internal/ paths with a token and are never refused.
+    if (!path.startsWith('/internal/') && !TRUSTED.has(path) && (req.headers.get('User-Agent') || '').includes('HeadlessChrome'))
+      return new Response(JSON.stringify({ error: 'automated browsers are not allowed' }), { status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
     // Site chat has no page any more, so its socket route is closed (the room code stays in presence.js).
     if (path === '/chat') return new Response('not found', { status: 404 });
     const live = path === '/presence';
