@@ -313,7 +313,11 @@ function syncURL() {
   if (page > 1) p.set("page", page);
   if ($("mb-favorites").checked) p.set("fav", "1");
   for (const [key, id, def] of URL_FIELDS) if ($(id).value && $(id).value !== def) p.set(key, $(id).value);
-  history.replaceState(null, "", location.pathname + (p.size ? "?" + p : ""));
+  // Only when the address really changes: Cloudflare Web Analytics counts every history change as a page view, and the
+  // 60-second refresh redraws the list (and calls this) with the same address, so an open tab used to log ~60 views an
+  // hour (2026-11-17: 4,980 market "page views" from 108 visits).
+  const next = location.pathname + (p.size ? "?" + p : "");
+  if (next !== location.pathname + location.search) history.replaceState(null, "", next);
 }
 function restoreFilters(p) {
   for (const [key, id] of URL_FIELDS) {
