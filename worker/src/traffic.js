@@ -136,7 +136,10 @@ export async function trafficReport(env, dayParam, now = Date.now()) {
     landings: pageRows.filter((p) => p.landings > 0).sort((a, b) => b.landings - a.landings).slice(0, 20),
     sources: [...sources.entries()].map(([source, visits]) => ({ source, visits })).sort((a, b) => b.visits - a.visits),
     devices: devices.map((r) => ({ device: r.dimensions.deviceType || '?', visits: r.sum.visits, views: r.count })),
-    coarse: [countries, paths, refs, devices].some((r) => r.coarse) || h0.coarse || undefined,
+    // The Korea split is one more query: a coarse or empty answer (Korea read 0 for a whole day on 2026-11-17 while the
+    // day had 500 visits) marks the report so the page asks again instead of showing "Korea 0".
+    coarse: [countries, paths, refs, devices].some((r) => r.coarse) || h0.coarse || krHours.coarse
+      || (h0.some(([v]) => v > 0) && !krHours.some(([v]) => v > 0)) || undefined,
     bots: {
       hourly: botHours.map(([v, p]) => [v, p]),
       top: botRows.map((r) => ({ browser: r.dimensions.userAgentBrowser, country: r.dimensions.countryName || '??', path: r.dimensions.requestPath, visits: r.sum.visits, views: r.count }))
