@@ -758,7 +758,9 @@ function header(lang, pagePath, only) {
   // <title> and meta descriptions only, for search.
   const huntItems = [
     ['/tools/training/', 'sword', ko ? '경험치 사냥터' : 'EXP training spots'],
-    ['/tools/meso-farm/', 'coin', ko ? '메소벌이 사냥터' : 'Meso farming spots']
+    ['/tools/meso-farm/', 'coin', ko ? '메소벌이 사냥터' : 'Meso farming spots'],
+    // The monster database joins the hunting menu (owner, 2026-11-18: no room for its own tab; it belongs with hunting).
+    ['/monsters/', 'slime', ko ? '몬스터 도감' : 'Monster database']
   ];
   // Quests open a dropdown the same way (owner, 2026-11-17): the full list plus the two rankings.
   const questItems = [
@@ -776,7 +778,7 @@ function header(lang, pagePath, only) {
   ];
   // Live megaphones are a main feature and keep a tab; the monster database moved to the "more" menu (2026-11-13, user
   // request) so the tabs fit beside the live-viewer pill. Monsters stay one search away.
-  const moved = [['/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monsters']];
+  const moved = []; // the monster database now sits in the hunting menu (2026-11-18)
   // The site directory left the menu (owner, 2026-11-15); the header search still finds it.
   const sitesEntry = ['/sites/', 'star', lang === 'ko' ? '사이트 모음' : 'Other Classic World sites'];
   // English labels that would break mid-word on a phone ("Calcul/ator") get a one-word form there.
