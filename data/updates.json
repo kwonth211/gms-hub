@@ -2,6 +2,20 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "market-today-pulse",
+   "version": "0.7.12",
+   "level": "minor",
+   "highlight": true,
+   "date": "2026-11-17",
+   "path": "/tools/market/today/",
+   "ko": "오늘의 시세 · 맥박 — 한 페이지로 합쳤어요",
+   "en": "Today's prices & pulse — now one page",
+   "desc": {
+    "ko": "시세 맥박이 오늘의 시세 페이지 맨 위로 들어왔어요. 오른·내린 아이템은 이제 우리가 모은 상점 기록의 하루 전 가격과 직접 비교해서 계산하고, 많이 팔린 아이템은 최근 24시간 기준이에요. 예전 시세 맥박 주소로 들어와도 이 페이지로 넘어와요.",
+    "en": "The market pulse now sits at the top of the daily price page. Risers and fallers are computed from our own shop records against the day before, and best sellers cover the last 24 hours. The old pulse address forwards here."
+   }
+  },
+  {
    "id": "meso-farm-market-pulse",
    "version": "0.7.11",
    "level": "minor",

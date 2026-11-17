@@ -136,13 +136,27 @@ export async function marketCatalog(env) {
   // Reference prices cover items with no scans of our own, so the catalogue lists (nearly) every traded item.
   const refs = await all(env, "SELECT item, typical, day, week, sales FROM item_summary", []).catch(() => []);
   const refBy = new Map(refs.map((r) => [r.item, r]));
+  // Day-over-day move from OUR daily medians (item_daily, one row per item and UTC day, kept current by every collector
+  // run), not the reference summary's `day`: that column stopped being refreshed on 2026-11-13, so "today's risers"
+  // were four days old. The latest day with enough asking prices is compared with the day before it.
+  const d0 = end.slice(0, 10), d1 = stamp(now - DAY).slice(0, 10), d2 = stamp(now - 2 * DAY).slice(0, 10);
+  const daily = await all(env, "SELECT item, day, median FROM item_daily WHERE day >= ? AND n >= 8 AND median > 0", [d2]).catch(() => []);
+  const medBy = new Map();
+  for (const r of daily) (medBy.get(r.item) || medBy.set(r.item, {}).get(r.item))[r.day] = r.median;
+  const ownDay = (item) => {
+    const m = medBy.get(item);
+    if (!m) return null;
+    const cur = m[d0] != null ? d0 : m[d1] != null ? d1 : null;
+    const prev = cur === d0 ? m[d1] : cur === d1 ? m[d2] : null;
+    return cur && prev ? Math.round((m[cur] / prev - 1) * 1000) / 10 : null;
+  };
   for (const r of refs) if (!groups.has(r.item)) groups.set(r.item, null);
   const items = [...groups]
     .map(([item, m]) => ({
       ...(m || { item, open: 0, records: 0, median: null, low: null, soldMedian: null, sold: 0, shops: 0, last: null }),
       reports: reportCounts.get(item) || 0,
       typical: refBy.get(item)?.typical ?? null,
-      typicalDay: refBy.get(item)?.day ?? null,
+      typicalDay: ownDay(item),
       sales: refBy.get(item)?.sales ?? null,
     }))
     .sort((a, b) => b.open - a.open || a.item - b.item);

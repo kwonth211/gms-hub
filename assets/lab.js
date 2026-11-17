@@ -1,4 +1,4 @@
-// Meso farming spots (/tools/meso-farm/) and the market pulse (/tools/market/pulse/), benchmarked from other Classic
+// Meso farming spots (/tools/meso-farm/) and the market pulse (on /tools/market/today/, where the old /tools/market/pulse/ now lands), benchmarked from other Classic
 // World sites (build.mjs "Meso farming spots and the market pulse").
 //  - meso-farm: monsters at your level ranked by what their drops sell for right now (no drop rates are claimed)
 //  - market-pulse: biggest risers and fallers (sample-size guarded), most traded, and listings marked sold just now
@@ -23,8 +23,10 @@ async function itemNames() {
 }
 const pick = (pair) => (pair ? (ko && pair[0] ? pair[0] : pair[1]) : '');
 
+// Embedded in another page (the daily price report), the board is a section of it: an h2, not a second h1.
 function head() {
-  return `<h1>${esc(root.dataset.h1)}</h1><p class="lab-sub">${esc(root.dataset.lead)}</p>`;
+  const h = root.dataset.embed ? 'h2' : 'h1';
+  return `<${h}>${esc(root.dataset.h1)}</${h}><p class="lab-sub">${esc(root.dataset.lead)}</p>`;
 }
 
 // ---------- meso farm ----------
@@ -57,7 +59,7 @@ async function viewPulse() {
   root.innerHTML = `${head()}
 <div class="lp-live"><span class="lp-dot" aria-hidden="true"></span><b>${tr('실시간', 'Live')}</b><span id="lp-next"></span><span class="lp-timer"><i id="lp-bar"></i></span></div>
 <div class="lp-tiles" id="lp-tiles"></div>
-<div class="lp-grid"><section class="lp-card"><h2>${tr('오른 아이템', 'Rising')}</h2><ol id="lp-up" class="lp-movers"></ol></section><section class="lp-card"><h2>${tr('내린 아이템', 'Falling')}</h2><ol id="lp-down" class="lp-movers"></ol></section><section class="lp-card"><h2>${tr('많이 팔린 아이템', 'Best sellers')} <small>${tr('7일', '7 days')}</small></h2><ol id="lp-sold" class="lp-movers"></ol></section><section class="lp-card"><h2>${tr('방금 팔린 매물', 'Just sold')}</h2><ol id="lp-feed" class="lp-feed"></ol></section></div>`;
+<div class="lp-grid"><section class="lp-card"><h2>${tr('오른 아이템', 'Rising')}</h2><ol id="lp-up" class="lp-movers"></ol></section><section class="lp-card"><h2>${tr('내린 아이템', 'Falling')}</h2><ol id="lp-down" class="lp-movers"></ol></section><section class="lp-card"><h2>${tr('많이 팔린 아이템', 'Best sellers')} <small>${tr('24시간', '24 hours')}</small></h2><ol id="lp-sold" class="lp-movers"></ol></section><section class="lp-card"><h2>${tr('방금 팔린 매물', 'Just sold')}</h2><ol id="lp-feed" class="lp-feed"></ol></section></div>`;
   let nm, seenSold = new Set(), first = true, nextAt = 0;
   const ago = (s) => { const sec = Math.max(0, Math.round((Date.now() - Date.parse(`${String(s).replace(' ', 'T')}Z`)) / 1000)); return sec < 60 ? tr(`${sec}초 전`, `${sec}s ago`) : sec < 3600 ? tr(`${Math.floor(sec / 60)}분 전`, `${Math.floor(sec / 60)}m ago`) : tr(`${Math.floor(sec / 3600)}시간 전`, `${Math.floor(sec / 3600)}h ago`); };
   const n = (id) => esc(nm.get(id) || `#${id}`);
@@ -78,14 +80,14 @@ async function viewPulse() {
     const best = items.filter((r) => r.sold).sort((a, b) => b.sold - a.sold).slice(0, 8);
     const tile = (cls, label, r, val, valAttrs, sub) => r ? `<a class="lp-tile ${cls}" href="${root.dataset.market}?item=${r.item}"><span class="lp-tile-label">${label}</span><span class="lp-tile-item">${icon(r.item, 40)}<strong>${n(r.item)}</strong></span><b class="lp-tile-val" ${valAttrs}>${val}</b><small>${sub}</small></a>` : '';
     if (first || true) document.getElementById('lp-tiles').innerHTML =
-      tile('up', tr('오늘 가장 오른', 'Top riser'), up[0], `+${up[0]?.typicalDay}%`, `data-to="${up[0]?.typicalDay}" data-pre="+" data-suf="%"`, up[0] ? tr(`보통 ${kmoney(up[0].typical)} 메소`, `typical ${kmoney(up[0].typical)}`) : '') +
-      tile('down', tr('오늘 가장 내린', 'Top faller'), down[0], `${down[0]?.typicalDay}%`, `data-to="${Math.abs(down[0]?.typicalDay)}" data-pre="−" data-suf="%"`, down[0] ? tr(`보통 ${kmoney(down[0].typical)} 메소`, `typical ${kmoney(down[0].typical)}`) : '') +
-      tile('best', tr('가장 많이 팔린', 'Best seller'), best[0], `${best[0]?.sold}`, `data-to="${best[0]?.sold}" data-suf="${tr('건', '')}"`, best[0] ? tr(`개당 ${kmoney(best[0].soldMedian || best[0].typical)} 메소 · 7일`, `${kmoney(best[0].soldMedian || best[0].typical)} each · 7d`) : '');
+      tile('up', tr('오늘 가장 오른', 'Top riser'), up[0], `+${up[0]?.typicalDay}%`, `data-to="${up[0]?.typicalDay}" data-pre="+" data-suf="%"`, up[0] ? tr(`지금 ${kmoney(up[0].median ?? up[0].typical)} 메소 · 하루 전 대비`, `now ${kmoney(up[0].median ?? up[0].typical)} · vs a day ago`) : '') +
+      tile('down', tr('오늘 가장 내린', 'Top faller'), down[0], `${down[0]?.typicalDay}%`, `data-to="${Math.abs(down[0]?.typicalDay)}" data-pre="−" data-suf="%"`, down[0] ? tr(`지금 ${kmoney(down[0].median ?? down[0].typical)} 메소 · 하루 전 대비`, `now ${kmoney(down[0].median ?? down[0].typical)} · vs a day ago`) : '') +
+      tile('best', tr('가장 많이 팔린', 'Best seller'), best[0], `${best[0]?.sold}`, `data-to="${best[0]?.sold}" data-suf="${tr('건', '')}"`, best[0] ? tr(`개당 ${kmoney(best[0].soldMedian || best[0].typical)} 메소 · 24시간`, `${kmoney(best[0].soldMedian || best[0].typical)} each · 7d`) : '');
     root.querySelectorAll('.lp-tile-val').forEach(countUp);
     const maxUp = Math.max(1, ...up.map((r) => r.typicalDay)), maxDown = Math.max(1, ...down.map((r) => -r.typicalDay)), maxSold = Math.max(1, ...best.map((r) => r.sold));
     const mover = (r, pct, cls, val, sub) => `<li><a href="${root.dataset.market}?item=${r.item}">${icon(r.item, 28)}<span class="lp-name">${n(r.item)}<small>${sub}</small></span><b class="${cls}">${val}</b><span class="lp-track"><i class="${cls}" style="--w:${pct}%"></i></span></a></li>`;
-    document.getElementById('lp-up').innerHTML = up.map((r) => mover(r, (r.typicalDay / maxUp) * 100, 'up', `▲ ${r.typicalDay}%`, tr(`${kmoney(r.typical)} 메소 · 매물 ${r.open}`, `${kmoney(r.typical)} · ${r.open} open`))).join('') || '<li class="muted">—</li>';
-    document.getElementById('lp-down').innerHTML = down.map((r) => mover(r, (-r.typicalDay / maxDown) * 100, 'down', `▼ ${-r.typicalDay}%`, tr(`${kmoney(r.typical)} 메소 · 매물 ${r.open}`, `${kmoney(r.typical)} · ${r.open} open`))).join('') || '<li class="muted">—</li>';
+    document.getElementById('lp-up').innerHTML = up.map((r) => mover(r, (r.typicalDay / maxUp) * 100, 'up', `▲ ${r.typicalDay}%`, tr(`${kmoney(r.median ?? r.typical)} 메소 · 매물 ${r.open}`, `${kmoney(r.median ?? r.typical)} · ${r.open} open`))).join('') || '<li class="muted">—</li>';
+    document.getElementById('lp-down').innerHTML = down.map((r) => mover(r, (-r.typicalDay / maxDown) * 100, 'down', `▼ ${-r.typicalDay}%`, tr(`${kmoney(r.median ?? r.typical)} 메소 · 매물 ${r.open}`, `${kmoney(r.median ?? r.typical)} · ${r.open} open`))).join('') || '<li class="muted">—</li>';
     document.getElementById('lp-sold').innerHTML = best.map((r) => mover(r, (r.sold / maxSold) * 100, 'best', tr(`${nf.format(r.sold)}건`, nf.format(r.sold)), tr(`개당 ${kmoney(r.soldMedian || r.typical)} 메소`, `${kmoney(r.soldMedian || r.typical)} each`))).join('');
     const feed = document.getElementById('lp-feed');
     const fresh = (sold?.rows || []).filter((r) => !seenSold.has(r.id));

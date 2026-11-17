@@ -755,7 +755,7 @@ function header(lang, pagePath, only) {
     ['/bosses/', 'crown', ko ? '보스' : 'Bosses']
   ].filter(Boolean);
   const toolItems = [
-    ['/tools/market/pulse/', 'coin', ko ? '시세 맥박' : 'Market pulse'],
+    ['/tools/market/today/', 'coin', ko ? '오늘의 시세 · 맥박' : "Today's prices & pulse"],
     ['/tools/meso-farm/', 'bag', ko ? '메소 벌이 사냥터' : 'Meso farming'],
     ['/tools/forge/', 'hammer', ko ? '작 시뮬레이터' : 'Scroll forge'],
     ['/tools/exp/', 'clock', EXP[lang].nav],
@@ -1011,6 +1011,7 @@ function marketTodayBody(lang) {
   const movers = (R.movers || []).filter((r) => Math.abs(r.change) >= 3 && byId.has(r.item));
   const stats = R.stats || {};
   return `${pageHead(lang, 'coin', `${tr('오늘의 글클메 시세', "Today's MapleStory Classic prices")} <small class="mt-date" translate="no">${esc(dayText)}</small>`, tr('자유시장에서 지금 가장 많이 팔리는 아이템과 최근 고확에 자주 나온 아이템을 매일 정리해요. 모든 숫자는 플레이어 상점 스캔과 게임 확성기에서 모은 실제 기록이에요.', 'Every day: the most listed items in the Free Market and the items named most in recent megaphones. Every number comes from scanned player shops and in-game megaphones.'))}
+<section class="wrap lab lab-embed" data-lab="market-pulse" data-embed="1" data-lang="${lang}" data-h1="${esc(tr('지금 시세 맥박', 'Live market pulse'))}" data-lead="${esc(tr('하루 전보다 많이 오르고 내린 아이템, 최근 24시간에 많이 팔린 아이템, 방금 판매 완료된 매물이에요. 1분마다 새로 불러오고, 매물이 10건 안 되는 아이템은 오르내림에서 빼요.', 'Biggest moves against a day ago, best sellers of the last 24 hours and the listings just marked sold. Refreshed every minute; items with under 10 open listings are left out of the movers.'))}" data-api="${esc(config.voteApi)}" data-market="${market}"><h2>${tr('지금 시세 맥박', 'Live market pulse')}</h2><p class="muted">${tr('불러오는 중…', 'Loading…')}</p></section>
 <div class="wrap market-today">
 <dl class="mt-stats">${[[tr('판매 중 매물', 'Open listings'), stats.listings], [tr('아이템 종류', 'Items'), stats.items], [tr('상점', 'Shops'), stats.shops]].filter(([, v]) => v).map(([k, v]) => `<div><dt>${k}</dt><dd>${nf(v)}</dd></div>`).join('')}</dl>
 <section class="panel"><h2>${tr('매물이 가장 많은 아이템', 'Most listed items')}</h2>
@@ -2173,7 +2174,7 @@ ${jsonScript('mk-data', { ...{ lang, api: config.voteApi, itemsUrl: href(`/asset
 }
 function marketBody(lang) {
   const t = MK[lang], tr = (ko,en) => lang === 'ko' ? ko : en;
-  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 확인하세요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="mb-head-actions"><a class="btn mb-scan-cta" href="${href(langPath(lang, '/tools/scan/'))}" data-scan-cta="market-head">● ${tr('내 상점 올리기', 'Upload my shop')}</a><a class="btn ghost" href="${href(langPath(lang, '/tools/market/pulse/'))}">${tr('시세 맥박', 'Market pulse')}</a><a class="btn ghost" href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 리포트', "Today's price report")}</a></p></section>
+  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 확인하세요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="mb-head-actions"><a class="btn mb-scan-cta" href="${href(langPath(lang, '/tools/scan/'))}" data-scan-cta="market-head">● ${tr('내 상점 올리기', 'Upload my shop')}</a><a class="btn ghost" href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 · 맥박', "Today's prices & pulse")}</a><a class="btn ghost" href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 리포트', "Today's price report")}</a></p></section>
 ${marketBrowser(lang, 0)}
 ${marketGuide(lang)}`;
 }
@@ -3215,6 +3216,7 @@ for (const lang of LANGS) {
       title: lang === 'ko' ? '오늘의 글클메 시세: 매물 많은 아이템·고확 인기 아이템 | GMS Hub' : "Today's MapleStory Classic World Prices: Most Listed and Most Megaphoned Items | GMS Hub",
       desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드 자유시장에서 오늘 매물이 가장 많은 아이템과 시세, 최근 고확에 많이 나온 아이템을 매일 정리해요.' : 'Daily MapleStory Classic World Free Market report: the most listed items with their asking prices, and the items named most in recent megaphones.',
       body: marketTodayBody(lang),
+      modules: ['lab.js'],
       ld: [breadcrumbLd(lang, lang === 'ko' ? '오늘의 글클메 시세' : "Today's prices", '/tools/market/today/')]
     },
     scan: {
@@ -3462,7 +3464,7 @@ for (const lang of LANGS) {
       body: directoryBody(lang)
     }));
     // Meso farming spots and the market pulse (built unlisted as a lab on 2026-11-17, public since the owner's OK the same
-    // day). Data for the farm: assets/lab-data.json (written once below). Both pages draw in assets/lab.js; the static
+    // day). Data for the farm: assets/lab-data.json (written once below). The farm draws in assets/lab.js (the pulse board too, embedded in the daily price page); the static
     // text here is what search engines and no-JS visitors read.
     const ko = lang === 'ko';
     const labPages = [
@@ -3470,12 +3472,7 @@ for (const lang of LANGS) {
         ko ? '글클메 메소 벌이 사냥터: 레벨별 돈 되는 드롭 몬스터 | GMS Hub' : 'MapleStory Classic World Meso Farming: Monsters With the Most Valuable Drops | GMS Hub',
         ko ? '내 레벨 근처 몬스터를 지금 자유시장 시세로 비싼 드롭이 있는 순서로 보여 줘요. 드롭마다 개당 메소, 많이 나오는 맵까지.' : 'Monsters near your level ranked by what their drops sell for on the Free Market right now, with the price per item and where they spawn.',
         ko ? '메소 벌이 사냥터' : 'Meso farming spots',
-        ko ? '레벨을 넣으면 그 근처 몬스터가 떨어뜨리는 아이템 중 지금 시세가 높은 것부터 보여 줘요. 가격은 아이템 1개당 최근 판매 완료 가격(없으면 보통 판매 가격)이고, 드롭 확률은 알 수 없어서 "떨어지면 돈이 되는 것"만 알려 줘요.' : 'Enter a level to see the monsters around it, ranked by the market price of what they drop. Prices are per item (recent sold price, else the typical asking price). Drop rates are unknown, so this shows what is worth money if it drops.'],
-      ['/tools/market/pulse/', 'market-pulse',
-        ko ? '글클메 시세 맥박: 오늘 오른 아이템·내린 아이템·방금 팔린 매물 | GMS Hub' : 'MapleStory Classic World Market Pulse: Today’s Risers, Fallers and Just-Sold Items | GMS Hub',
-        ko ? '글로벌 메이플스토리 클래식 월드 자유시장에서 오늘 많이 오르고 내린 아이템, 많이 팔린 아이템, 방금 판매 완료된 매물을 실시간으로 보여 줘요.' : 'Today’s biggest risers and fallers on the MapleStory Classic World Free Market, the best sellers and the listings just marked sold, live.',
-        ko ? '시세 맥박' : 'Market pulse',
-        ko ? '오늘 자유시장에서 많이 오르고 내린 아이템, 많이 팔린 아이템, 방금 판매 완료된 매물을 1분마다 새로 보여 줘요. 매물이 10건 안 되는 아이템은 값이 튀기 쉬워서 오르내림에서 뺐어요.' : 'Today’s biggest movers, best sellers and just-sold listings, refreshed every minute. Items with under 10 open listings are left out of the movers.']
+        ko ? '레벨을 넣으면 그 근처 몬스터가 떨어뜨리는 아이템 중 지금 시세가 높은 것부터 보여 줘요. 가격은 아이템 1개당 최근 판매 완료 가격(없으면 보통 판매 가격)이고, 드롭 확률은 알 수 없어서 "떨어지면 돈이 되는 것"만 알려 줘요.' : 'Enter a level to see the monsters around it, ranked by the market price of what they drop. Prices are per item (recent sold price, else the typical asking price). Drop rates are unknown, so this shows what is worth money if it drops.']
     ];
     for (const [p, view, title, desc, h1, lead] of labPages) {
       write(path.join(lang, ...p.split('/').filter(Boolean), 'index.html'), page({
@@ -3567,6 +3564,12 @@ for (const lang of LANGS) {
       })
     );
   }
+}
+
+// /tools/market/pulse/ was folded into the daily price page (2026-11-17, owner: one page, the live board on top).
+for (const lang of LANGS) {
+  const url = absUrl(langPath(lang, '/tools/market/today/'));
+  write(`${lang}/tools/market/pulse/index.html`, `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><title>GMS Hub</title><meta name="robots" content="noindex"><link rel="canonical" href="${url}"><meta http-equiv="refresh" content="0; url=${url}"></head><body><a href="${url}">${url}</a><script>location.replace(${JSON.stringify(langPath(lang, '/tools/market/today/'))})</script></body></html>`);
 }
 
 // /tools/my-shop/ was folded into the scan page (its per-item "vs market" column); old links land there.
@@ -3726,7 +3729,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
   )
 ).concat(
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
-  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/forgotten-hollow/'}, {path:'/skills/'}, {path:'/tools/forge/'}, {path:'/tools/meso-farm/'}, {path:'/tools/market/pulse/'}, {path:'/updates/'}, ...(WEEKLY ? [{path:'/report/'}] : [])].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/forgotten-hollow/'}, {path:'/skills/'}, {path:'/tools/forge/'}, {path:'/tools/meso-farm/'}, {path:'/updates/'}, ...(WEEKLY ? [{path:'/report/'}] : [])].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/bosses/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/quests/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
   [{path:'/maps/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),

@@ -3381,3 +3381,6 @@ body.exp-running .exp-stop { display: inline-flex; }
 .mb-refresh-bar { margin: 4px 0 8px; font-size: 0.82rem; color: var(--muted); }
 #md-count .mb-fetched { color: var(--muted); }
 #md-count .btn, .mb-refresh-bar .btn { margin-left: auto; }
+/* The live board as the first section of the daily price page. */
+.lab.lab-embed { padding-top: 8px; padding-bottom: 8px; }
+.lab.lab-embed h2 { margin: 4px 0 6px; }
