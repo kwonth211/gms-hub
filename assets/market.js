@@ -1477,19 +1477,19 @@ document.addEventListener("visibilitychange", refresh);
 renderMine();
 initialize();
 
-// One ad inside the list, after the 10th row, where people actually look (the old end-of-page slot was seen ~10% of the time).
+// One ad inside the list, after the 5th row, where people actually look (the old end-of-page slot was seen ~10% of the time).
 // The ad never moves in the DOM (moving its iframe would reload it, which counts as a refresh); a spacer row reserves
 // room in whatever table is showing and the ad sits over it. Until then (or when the list is narrower than the ad) it stays
 // below the list, as the old end slot did.
 (() => {
   const box = $("mb-ad-mid"), results = $("mb-results"), panel = $("mb-browser");
   if (!box || !results || !panel) return;
-  const AFTER = 10;
+  const AFTER = 5; // was 10: two screens down, seen 8% of the time on phones and 17% on PC (AdFit, 2026-11-16)
   const place = () => {
     const ad = box.querySelector("ins.kakao_ad_area");
     const body = results.querySelector("tbody");
     let gap = results.querySelector(".mb-ad-gap");
-    if (!ad || !body?.rows.length || panel.clientWidth < Number(ad.dataset.adWidth) + 16) {
+    if (!ad || !body?.rows.length || panel.clientWidth < Number(ad.dataset.adWidth)) {
       gap?.remove();
       box.classList.remove("on");
       box.style.top = "";
