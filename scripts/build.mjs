@@ -754,9 +754,11 @@ function header(lang, pagePath, only) {
     ['/bosses/', 'crown', ko ? '보스' : 'Bosses']
   ].filter(Boolean);
   // Training spots open a dropdown with two kinds (owner, 2026-11-17): where to level and where to make mesos.
+  // The word 쌀먹 stays out of menus and page text (owner, 2026-11-17: it is officially banned); it may appear in
+  // <title> and meta descriptions only, for search.
   const huntItems = [
     ['/tools/training/', 'sword', ko ? '경험치 사냥터' : 'EXP training spots'],
-    ['/tools/meso-farm/', 'coin', ko ? '메소 사냥터 (쌀먹)' : 'Meso farming spots']
+    ['/tools/meso-farm/', 'coin', ko ? '메소벌이 사냥터' : 'Meso farming spots']
   ];
   // Quests open a dropdown the same way (owner, 2026-11-17): the full list plus the two rankings.
   const questItems = [
@@ -3522,7 +3524,7 @@ for (const lang of LANGS) {
         ko ? '글클메 쌀먹 사냥터: 레벨별 돈 되는 몬스터와 드롭 시세 | GMS Hub' : 'MapleStory Classic World Meso Farming: Monsters With the Most Valuable Drops | GMS Hub',
         ko ? '글클메 쌀먹(메소 벌이) 사냥터 찾기. 내 레벨 근처 몬스터를 지금 자유시장 시세로 비싼 드롭이 있는 순서로 보여 줘요. 드롭마다 개당 메소, 많이 나오는 맵까지.' : 'Monsters near your level ranked by what their drops sell for on the Free Market right now, with the price per item and where they spawn.',
         ko ? '메소 벌이 사냥터' : 'Meso farming spots',
-        ko ? '쌀먹(메소 벌이)에 좋은 몬스터를 찾는 페이지예요. 레벨을 넣으면 그 근처 몬스터가 떨어뜨리는 아이템 중 지금 시세가 높은 것부터 보여 줘요. 가격은 아이템 1개당 최근 판매 완료 가격(없으면 보통 판매 가격)이고, 드롭 확률은 알 수 없어서 "떨어지면 돈이 되는 것"만 알려 줘요.' : 'Enter a level to see the monsters around it, ranked by the market price of what they drop. Prices are per item (recent sold price, else the typical asking price). Drop rates are unknown, so this shows what is worth money if it drops.']
+        ko ? '메소 벌이에 좋은 몬스터를 찾는 페이지예요. 레벨을 넣으면 그 근처 몬스터가 떨어뜨리는 아이템 중 지금 시세가 높은 것부터 보여 줘요. 가격은 아이템 1개당 최근 판매 완료 가격(없으면 보통 판매 가격)이고, 드롭 확률은 알 수 없어서 "떨어지면 돈이 되는 것"만 알려 줘요.' : 'Enter a level to see the monsters around it, ranked by the market price of what they drop. Prices are per item (recent sold price, else the typical asking price). Drop rates are unknown, so this shows what is worth money if it drops.']
     ];
     for (const [p, view, title, desc, h1, lead] of labPages) {
       write(path.join(lang, ...p.split('/').filter(Boolean), 'index.html'), page({
