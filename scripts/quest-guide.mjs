@@ -34,8 +34,8 @@ export function questGuideData({ guide, raw, items, monsters }) {
         // No random flag in the data: several rewards of the same count are one pick (Arwen 1/1, Rowen's ores 7/7);
         // different counts (Shumi's return scrolls 5/3/3, potions plus scrolls) are all given.
         : gets.length > 1 && new Set(gets.map((g) => g.count)).size === 1 ? 'random' : 'all';
-      return { ...s, pick: s.pick || pick, id: q.id, name: q.name, lv: start.levelMinimum || null, startNpc: start.npcId, endNpc: done.npcId,
-        npcStart: npc(start.npcId), npcEnd: npc(done.npcId),
+      return { ...s, pick: s.pick || pick, id: q.id, name: q.name, lv: start.levelMinimum || null, startNpc: start.npcId ?? done.npcId, endNpc: done.npcId, // a quest that starts by itself (no start NPC) shows the NPC it ends with
+        npcStart: npc(start.npcId ?? done.npcId), npcEnd: npc(done.npcId),
         kills, bring, exp: rw.exp || 0, meso: rw.meso || 0, fame: rw.fame || 0, gets,
         receive: [...startGives].map((id) => ({ id, ...itemName(id) })) };
     })
