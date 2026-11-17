@@ -3375,3 +3375,9 @@ body.exp-running .exp-stop { display: inline-flex; }
 @keyframes lp-flash { 0% { background: color-mix(in srgb, var(--accent-fill) 22%, transparent); } 100% { background: transparent; } }
 @media (max-width: 760px) { .lp-tiles, .lp-grid { grid-template-columns: minmax(0, 1fr); } .lp-tile-val { font-size: 1.7rem; } }
 @media (prefers-reduced-motion: reduce) { .lp-dot, .lp-track i, .lp-feed li.is-new a { animation: none; } .lp-tile { transition: none; } }
+
+/* Refresh bars for the parts that do not refresh by themselves (all listings, an item's listings). */
+.mb-refresh-bar, #md-count { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.mb-refresh-bar { margin: 4px 0 8px; font-size: 0.82rem; color: var(--muted); }
+#md-count .mb-fetched { color: var(--muted); }
+#md-count .btn, .mb-refresh-bar .btn { margin-left: auto; }

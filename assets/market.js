@@ -561,6 +561,8 @@ async function renderRecords() {
       data.total ? tr(`${first}–${last}건 표시`, `showing ${first}–${last}`) : "",
       ko ? `${ago(data.asOf)} 기준` : `${tx("as of")} ${ago(data.asOf)}`,
     ].filter(Boolean).join(" · ");
+    listFetchedAt = Date.now();
+    paintFetched();
     if (!data.total && $("mk-q").value.trim()) noResults($("mk-q").value.trim());
     searched($("mk-q").value.trim(), data.total);
     // Option chips compare against base stats, which live in the tips file.
@@ -622,6 +624,7 @@ function setView(next, keepPage = false) {
   $("mb-browser").setAttribute("aria-labelledby", "mb-tab-" + view);
   $("mb-item-controls").hidden = view !== "items";
   $("mb-list-controls").hidden = view !== "listings";
+  $("mb-list-refresh").hidden = view !== "listings";
   $("mb-report-controls").hidden = view !== "reports";
   $("mb-range").hidden = view === "items";
   $("mb-list-note").textContent =
@@ -773,6 +776,19 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
         `<p>${T.failed}</p><button class="btn small-btn" data-refresh-item>${T.retry}</button>`;
   }
 }
+// "Updated 3 min ago (14:05)" for the parts that do not refresh by themselves (all listings, an item's listings): when this
+// browser last fetched them, ticking every 15 s, next to a refresh button (2026-11-17, owner).
+let listFetchedAt = 0, detailFetchedAt = 0;
+const fetchedLabel = (t) => {
+  if (!t) return "";
+  const m = Math.floor((Date.now() - t) / 60000), hm = new Date(t).toLocaleTimeString(ko ? "ko-KR" : "en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+  return ko ? `마지막 갱신 ${m < 1 ? "방금" : `${m}분 전`} (${hm})` : `Updated ${m < 1 ? "just now" : `${m} min ago`} (${hm})`;
+};
+function paintFetched() {
+  if ($("mb-list-at")) $("mb-list-at").textContent = fetchedLabel(listFetchedAt);
+  if ($("md-at")) $("md-at").textContent = fetchedLabel(detailFetchedAt);
+}
+setInterval(paintFetched, 15000);
 let detailListSeq = 0, lastStatTrack = "";
 // The item panel's "옵션" menu: every main-stat value among the item's open listings with options (from the price
 // profile), best first, with its roll word and count ("53 · ▲ 1상 (18)"), plus the URL's value if none is listed now.
@@ -827,10 +843,8 @@ async function loadDetailRows() {
       detailState.page = Math.max(1, data.pages);
       return loadDetailRows();
     }
-    $("md-count").textContent = tr(
-      `조건에 맞는 매물 ${data.total}건 · ${ago(data.asOf)}`,
-      `${data.total} matching listings · ${ago(data.asOf)}`,
-    );
+    detailFetchedAt = Date.now();
+    $("md-count").innerHTML = `<span>${tr(`조건에 맞는 매물 ${data.total}건`, `${data.total} matching listings`)}</span><span class="mb-fetched" id="md-at">${fetchedLabel(detailFetchedAt)}</span><button type="button" class="btn ghost small-btn" data-refresh-detail>${tr("새로고침", "Refresh")}</button>`;
     $("md-rows").innerHTML = offerCards(data.rows);
     panelPart("rows", id);
     $("md-pages").innerHTML = pager(data, "detail");
@@ -1067,6 +1081,8 @@ document.querySelector(".market-browser").addEventListener("click", (e) => {
     detailPanels();
     return;
   }
+  if (el.hasAttribute("data-refresh-list")) { track("market_refresh", { scope: "listings" }); return renderRecords(); }
+  if (el.hasAttribute("data-refresh-detail")) { track("market_refresh", { scope: "detail", item_id: selected }); return loadDetailRows(); }
   if (el.hasAttribute("data-refresh-item"))
     return loadItem(selected, { reset: false });
   if (el.dataset.shop)
