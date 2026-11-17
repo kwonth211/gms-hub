@@ -223,8 +223,11 @@ const T = {
     aboutBody: `<p>GMS Hub는 <strong>글로벌 메이플스토리 클래식 월드</strong>를 하는 한국어·영어 유저를 위한 <strong>비공식 팬 사이트</strong>예요. 처음에는 흩어져 있는 공략·시세·계산기 사이트를 한곳에 모으려고 시작했고, 지금은 직접 만든 도구와 가이드를 함께 운영해요.</p>
 <h2>무엇이 있나요</h2>
 <ul><li><strong>계산기:</strong> <a href="/ko/tools/scroll/">주문서 계산기</a>, <a href="/ko/tools/drop-rate/">확률 계산기</a>, <a href="/ko/tools/damage/">몇 방 컷 계산기</a>는 공개 데이터와 계산 모델을 사용해요. 공식과 예시는 각 페이지 아래에 적어 두었어요.</li><li><strong>사냥터 추천:</strong> <a href="/ko/tools/training/">직업별 조건과 동선</a>을 정리해요. 실제 플레이와 공략을 바탕으로 해요.</li><li><strong>실시간 시세:</strong> 유저가 상점 스캐너로 읽은 자유시장 매물을 모아 <a href="/ko/tools/market/">아이템별 시세</a>를 계산해요. 계산 방법은 시세 페이지 아래에 있어요.</li><li><strong>가이드:</strong> 육성, 전직, 파티 퀘스트, 주문서, 거래를 다룬 <a href="/ko/guides/">한국어 가이드</a>를 직접 써요.</li><li><strong>사이트 모음:</strong> 클래식 월드 관련 사이트를 용도별로 정리해요.</li></ul>
+<h2>누가, 어떻게 운영하나요</h2>
+<p>GMS Hub는 클래식 월드를 직접 플레이하는 <strong>개인 개발자 한 명</strong>이 운영해요. 2026년 10월에 문을 열었고, 넥슨이나 다른 회사의 지원은 받지 않아요. 사이트에 붙는 광고는 서버 운영비에 써요.</p>
+<ul><li><strong>시세:</strong> 유저가 올린 상점 매물과 게임 확성기를 계속 모아요. <a href="/ko/tools/market/today/">오늘의 시세</a>는 매일 밤, <a href="/ko/report/">주간 리포트</a>는 매주 월요일에 새로 정리해요.</li><li><strong>공략과 데이터:</strong> 게임 패치가 나오면 바뀐 내용을 반영해요. 무엇을 언제 고쳤는지는 <a href="/ko/updates/">업데이트 소식</a>에 날짜와 함께 남겨요.</li><li><strong>오류 제보:</strong> 틀린 내용을 알려 주시면 확인해서 고치고, 고친 내용도 업데이트 소식에 적어요.</li></ul>
 <h2>원칙</h2>
-<ul><li><strong>자료의 성격과 한계를 구분해요.</strong> 플레이 기록과 공략을 검토하고 장비·파티 조건을 붙여 재구성해요. 모든 조건에서 같은 결과를 재현한 실험은 아니에요.</li><li>자료가 충돌하면 조건과 정정 내용을 확인하고.</li><li>현금 거래 사이트는 올리지 않아요.</li></ul>
+<ul><li><strong>자료의 성격과 한계를 구분해요.</strong> 플레이 기록과 공략을 검토하고 장비·파티 조건을 붙여 재구성해요. 모든 조건에서 같은 결과를 재현한 실험은 아니에요.</li><li>자료가 충돌하면 조건과 정정 내용을 확인하고, 고정된 수익이나 순위를 약속하지 않아요.</li><li>현금 거래 사이트는 올리지 않아요.</li></ul>
 <h2>다루는 게임</h2>
 <p>클래식 월드 하나만 다뤄요. 다른 메이플스토리 버전과는 맵, 몬스터, 강화 시스템이 달라서 섞지 않아요.</p>
 <h2>사이트 추가·오류 제보·문의</h2>
@@ -439,6 +442,9 @@ const T = {
     aboutBody: `<p>GMS Hub is an <strong>unofficial fan site</strong> for English- and Korean-speaking <strong>Global MapleStory Classic World</strong> players. It started as one place to find the scattered guide, price and calculator sites, and now also runs its own tools and guides.</p>
 <h2>What's here</h2>
 <ul><li><strong>Calculators:</strong> the <a href="/en/tools/scroll/">scroll calculator</a>, <a href="/en/tools/drop-rate/">odds calculator</a> and <a href="/en/tools/damage/">hits-to-kill calculator</a> use public data and mathematical models, with results conditional on their inputs and assumptions. Each page explains its formulas with a worked example.</li><li><strong>Training routes:</strong> <a href="/en/tools/training/">class-specific entry conditions, rotations and costs</a>, without theoretical EXP rankings.</li><li><strong>Live prices:</strong> Free Market listings that players read with the shop scanner, turned into <a href="/en/tools/market/">per-item prices</a>. The method is described under the market page.</li><li><strong>Guides:</strong> Detailed Korean and English progression, quest and tool guides.</li><li><strong>Site directory:</strong> Classic World sites grouped by purpose.</li></ul>
+<h2>Who runs it, and how</h2>
+<p>GMS Hub is run by <strong>one independent developer</strong> who plays Classic World. It opened in October 2026 and has no backing from Nexon or any other company. Ads on the site go toward server costs.</p>
+<ul><li><strong>Prices:</strong> shop listings sent by players and in-game megaphones are collected continuously. <a href="/en/tools/market/today/">Today's prices</a> are rebuilt every night and the <a href="/en/report/">weekly report</a> every Monday.</li><li><strong>Guides and data:</strong> when a game patch lands, the changes are worked in. What changed and when is logged on the <a href="/en/updates/">updates page</a>.</li><li><strong>Corrections:</strong> report a mistake and it gets checked and fixed, and the fix is logged on the updates page too.</li></ul>
 <h2>Principles</h2>
 <ul><li><strong>Evidence has limits.</strong> We synthesize gameplay and guides with explicit gear and party conditions; these are not controlled benchmarks for every setup.</li><li>We check corrections and conflicting conditions instead of promising fixed profit or rankings.</li><li>We never list real-money trading sites.</li></ul>
 <h2>Which game</h2>
