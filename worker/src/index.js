@@ -786,7 +786,10 @@ export default {
     // Headless Chrome is refused on the public API, the same as the Cloudflare rule on gms-hub.com ("Block headless
     // browsers", 2026-11-17): a scraper in Israel was opening the market page hundreds of times a day. Checked here, ahead
     // of the public response cache. Our own collectors use the /internal/ paths with a token and are never refused.
-    if (!path.startsWith('/internal/') && !TRUSTED.has(path) && (req.headers.get('User-Agent') || '').includes('HeadlessChrome'))
+    // Verified search-engine crawlers stay allowed: Bing renders pages with a HeadlessChrome user agent (seen blocked
+    // from msnbot addresses on 2026-11-17), and a blocked renderer sees the pages without their live data.
+    const goodBot = !!(req.cf && (req.cf.verifiedBotCategory || req.cf.botManagement?.verifiedBot));
+    if (!goodBot && !path.startsWith('/internal/') && !TRUSTED.has(path) && (req.headers.get('User-Agent') || '').includes('HeadlessChrome'))
       return new Response(JSON.stringify({ error: 'automated browsers are not allowed' }), { status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
     // Site chat has no page any more, so its socket route is closed (the room code stays in presence.js).
     if (path === '/chat') return new Response('not found', { status: 404 });
