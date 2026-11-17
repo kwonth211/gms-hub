@@ -3459,6 +3459,20 @@ for (const lang of LANGS) {
       desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드 공식 채널, 커뮤니티, DB·위키, 시세 사이트를 용도별로 모았어요.' : 'MapleStory Classic World official channels, communities, databases and price sites, grouped by purpose.',
       body: directoryBody(lang)
     }));
+    // Lab (owner only, 2026-11-17): three features benchmarked from other Classic World sites, unlisted (no menu, no
+    // sitemap, noindex) until the owner decides. Data: assets/lab-data.json (written once below); the pages draw it.
+    for (const [slug, mod, ko, en] of [
+      ['', 'lab.js', '실험실', 'Lab'],
+      ['quest-run/', 'lab.js', '퀘스트 루트 체크리스트', 'Quest run checklist'],
+      ['meso-farm/', 'lab.js', '메소 벌이 사냥터', 'Meso farming spots'],
+      ['market-pulse/', 'lab.js', '시세 맥박', 'Market pulse']
+    ]) {
+      write(path.join(lang, 'lab', slug, 'index.html'), page({
+        lang, pageKey: 'lab', pagePath: `/lab/${slug}`, modules: [mod], noindex: true,
+        title: `${lang === 'ko' ? ko : en} (lab) | GMS Hub`, desc: lang === 'ko' ? ko : en,
+        body: `<section class="wrap lab" data-lab="${slug.replace('/', '') || 'index'}" data-lang="${lang}" data-api="${esc(config.voteApi)}" data-data="${esc(href(`/assets/lab-data.json?v=${BUILD_DATE}`))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-root="${esc(href(langPath(lang, '/lab/')))}" data-mobs="${esc(href(langPath(lang, '/monsters/')))}"><p class="muted">${lang === 'ko' ? '불러오는 중…' : 'Loading…'}</p></section>`
+      }));
+    }
     write(path.join(lang, 'tools', 'forge', 'index.html'), page({
       lang, pageKey: 'forge', pagePath: '/tools/forge/', modules: ['forge.js'],
       title: lang === 'ko' ? '글클메 주문서 작 시뮬레이터: 장공·귀힘·혼돈 주문서 직접 발라 보기 | GMS Hub' : 'MapleStory Classic World Scroll Simulator: Scroll Your Gear Like In-Game | GMS Hub',
@@ -3907,6 +3921,20 @@ write('assets/bot.json', JSON.stringify({
   const questsOf = {};
   for (const q of QUESTS) if (!q.expired) for (const g of q.gets) if (tips[g.id]) (questsOf[g.id] ||= []).length < 6 && questsOf[g.id].push([questPath(q), q.name, q.lv]); // path null: no guide
   write('assets/item-tips.json', JSON.stringify({ mobs, items: tips, quests: questsOf }));
+  // Lab data (see the lab pages): one-time quests with what they ask and give, and every placed monster with its full
+  // drop list and busiest maps, names in both languages.
+  const nameOf = (id) => { const i = byId.get(id); return i ? [i.ko || '', i.en] : null; };
+  const labQuests = QUESTS.filter((q) => !q.expired && !q.repeat).map((q) => ({ id: q.id, name: q.name, lv: q.lv, jobs: q.jobs, area: q.area, areaKo: questArea(q.area, 'ko'),
+    prereq: q.prereq, exp: q.exp, meso: q.meso, hunt: q.hunt.map(({ id, count }) => [id, count]), bring: q.bring.map(({ id, count }) => [id, count]),
+    gets: q.gets.map(({ id, count }) => [id, count]), guide: questPath(q) }));
+  const labItems = {};
+  for (const q of labQuests) for (const [id] of [...q.bring, ...q.gets]) { const n = nameOf(id); if (n) labItems[id] = n; }
+  const labMobs = tipMobs.filter((m) => m.status === 'active' || m.locations.some((l) => l.availability === 'open')).map((m) => {
+    const open = m.locations.filter((l) => l.availability === 'open');
+    for (const d of m.drops) { const n = nameOf(d.itemId); if (n) labItems[d.itemId] = n; }
+    return { id: m.id, ko: m.ko || '', en: m.en, lv: m.lv, hp: m.hp, exp: m.exp, boss: m.boss ? 1 : 0, maps: open.slice(0, 2).map((l) => [l.ko || '', l.en]), drops: m.drops.map((d) => d.itemId) };
+  });
+  write('assets/lab-data.json', JSON.stringify({ quests: labQuests, mobs: labMobs, items: labItems }));
 }
 
 
