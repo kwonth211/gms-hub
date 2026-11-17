@@ -14,19 +14,18 @@ const FILES = [
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const today = () => new Date().toISOString().slice(0, 10);
-// The GitHub key can change the whole site, so it is kept for this tab only (sessionStorage) and never in localStorage,
-// which every script on every page of the site can read. A copy left there by an older version is removed on sight.
-try { localStorage.removeItem(TOKEN_KEY); } catch (e) {}
+// The GitHub key stays in this browser (localStorage) so the owner does not type it again (owner's call 2026-11-17).
+// The owner pages themselves load no third-party script (build.mjs head `bare`).
 const getToken = () => {
   try {
-    return sessionStorage.getItem(TOKEN_KEY) || '';
+    return localStorage.getItem(TOKEN_KEY) || '';
   } catch (e) {
     return '';
   }
 };
 const setToken = (v) => {
   try {
-    v ? sessionStorage.setItem(TOKEN_KEY, v) : sessionStorage.removeItem(TOKEN_KEY);
+    v ? localStorage.setItem(TOKEN_KEY, v) : localStorage.removeItem(TOKEN_KEY);
   } catch (e) {}
 };
 
@@ -57,7 +56,7 @@ function loginView() {
   rootEl.innerHTML = `<section class="prose">
 <h1>관리자 로그인</h1>
 <p>GitHub <strong>Fine-grained personal access token</strong>을 입력하세요. 권한은 <code>${esc(repo.owner)}/${esc(repo.repo)}</code> 저장소의 <strong>Contents: Read and write</strong> 하나만 주면 돼요.</p>
-<p class="muted small">토큰은 이 탭을 닫으면 지워지고, GitHub API 말고는 어디로도 전송되지 않아요.</p>
+<p class="muted small">토큰은 이 브라우저에만 저장되고, GitHub API 말고는 어디로도 전송되지 않아요.</p>
 <form id="login" class="form panel">
 <label>토큰<input type="password" name="token" autocomplete="off" required placeholder="github_pat_..."></label>
 <button class="btn">로그인</button>

@@ -52,10 +52,7 @@ test('ranking rows from the other site are forced to numbers, short strings and 
   assert.equal(row.level, null); assert.equal(row.fame, null); assert.equal(row.rank, 1); assert.equal(row.jobRank, null); assert.equal(row.photo, '');
 });
 
-test('the owner pages load no third-party script and the GitHub key is never kept in localStorage', () => {
-  const admin = fs.readFileSync(new URL('../assets/admin.js', import.meta.url), 'utf8');
-  assert.ok(!/localStorage\.setItem\(TOKEN_KEY/.test(admin));
-  assert.ok(/sessionStorage\.setItem\(TOKEN_KEY/.test(admin));
+test('the owner pages load no third-party script', () => {
   const build = fs.readFileSync(new URL('../scripts/build.mjs', import.meta.url), 'utf8');
   assert.equal((build.match(/noindex: true, bare: true/g) || []).length, 2);
 });
