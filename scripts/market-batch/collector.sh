@@ -46,9 +46,10 @@ case $1 in
     if running; then echo "수집 브라우저 실행 중 (pid $(cat $PID))"; else echo "수집 브라우저: 이 스크립트로 띄운 것 없음 (launchd로 돌면 정상)"; fi
     pgrep -fl "Google Chrome for Testing" | head -1 | awk '{print "브라우저 프로세스 pid", $1}'
     [[ $(launchctl getenv GMS_COLLECTOR_HEADLESS) == 1 ]] && echo "창 없는 모드 (보안 화면에 막히면 ./collector.sh show)"
-    curl -s --max-time 10 "$API/market/collector" | python3 -c '
+    curl -s --max-time 10 -H "Authorization: Bearer $(cat ~/.config/gms-hub/mail-token 2>/dev/null)" "$API/market/collector" | python3 -c '
 import json, sys, time
 d = json.load(sys.stdin); h = d.get("heartbeat")
+if d.get("error"): print("서버 상태는 운영자 키가 있는 컴퓨터에서만 보여요 (~/.config/gms-hub/mail-token)"); sys.exit()
 if h:
     el = (time.time() * 1000 - (h.get("startedAt") or time.time() * 1000)) / 60000
     print("확장 %s · %s · 상점 %s · 매물 %s · %.1f분 경과 · 가려짐 %s · 보고 %s초 전 · 오류 %s" % (h.get("version"), h.get("phase"), h.get("shops"), h.get("rows"), el, h.get("hidden"), h.get("ageSeconds"), h.get("error")))

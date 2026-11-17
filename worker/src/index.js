@@ -40,7 +40,7 @@ import { listFreeMegas, postFreeMega, deleteFreeMega, reportFreeMega, pruneFreeM
 import { storeDailyRollups, reportRaw } from './report.js';
 import { count, flushUsage, isOver, meterDb, usageView } from './usage-guard.js';
 import { createAlert, listAlerts, deleteAlert, takeHits, checkAlerts } from './alerts.js';
-import { bodyTooLarge } from './secure.js';
+import { bodyTooLarge, sameSecret } from './secure.js';
 export { Presence };
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
 
@@ -359,6 +359,11 @@ const api = {
     const url = new URL(req.url);
     const origin = req.headers.get('Origin') || '';
     const cors = corsHeaders(origin);
+    // Headless Chrome is refused on the public API, the same as the Cloudflare rule on gms-hub.com ("Block headless
+    // browsers", 2026-11-17): a scraper in Israel was opening the market page hundreds of times a day. Our own collectors
+    // use the /internal/ paths with a token and are never refused here.
+    if (!url.pathname.startsWith('/internal/') && !TRUSTED.has(url.pathname) && (req.headers.get('User-Agent') || '').includes('HeadlessChrome'))
+      return json({ error: 'automated browsers are not allowed' }, cors, 403);
     // Per-IP rate limits (Workers rate limiting, counted per Cloudflare location). The collectors and Discord carry their
     // own credentials and skip this. Limits are loose because many Korean players share a few VPN exits.
     if (!TRUSTED.has(url.pathname) && req.method !== 'OPTIONS') {
@@ -421,7 +426,10 @@ const api = {
     if (url.pathname === '/report/raw' && req.method === 'GET') {
       try { return json(await reportRaw(env), cors, 200, 'public, max-age=3600'); } catch { return json({ error: 'report unavailable' }, cors, 503); }
     }
-    if (url.pathname === '/market/collector' && req.method === 'GET') return json(await collectorView(env), cors, 200, 'public, max-age=20');
+    if (url.pathname === '/market/collector' && req.method === 'GET') {
+      if (!(await ownerOnly(req, env))) return json({ error: 'forbidden' }, cors, 403);
+      return json(await collectorView(env), cors, 200, 'no-store');
+    }
 
     if (url.pathname === '/votes' && req.method === 'GET') {
       const { results } = await env.DB.prepare('SELECT site, count FROM votes').all();
@@ -748,6 +756,15 @@ const api = {
   }
 };
 
+// Operator views (collector heartbeat, budget meter) answer only to the owner's key (Bearer MAIL_ADMIN_TOKEN).
+const ownerOnly = (req, env) => sameSecret(req.headers.get('Authorization') || '', `Bearer ${env.MAIL_ADMIN_TOKEN || ''}`);
+
+async function usageAnswer(req, env) {
+  const h = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
+  if (!(await ownerOnly(req, env))) return new Response('{"error":"forbidden"}', { status: 403, headers: h });
+  return new Response(JSON.stringify(usageView() || { checking: true }), { headers: h });
+}
+
 // Every entry point runs on a metered D1 binding (src/usage-guard.js): it counts rows read and written and, past 98% of
 // the plan's monthly included amounts, refuses (owner's call 2026-11-15: never pay more than the $5 plan).
 const metered = (env) => ({ ...env, DB: meterDb(env.DB) });
@@ -779,7 +796,7 @@ export default {
     // Without an execution context (tests) there is nothing to flush into.
     ctx?.waitUntil?.(flushUsage(env.DB).catch(() => null));
     if (isOver('q') || (live && isOver('d'))) return paused();
-    if (path === '/usage') return new Response(JSON.stringify(usageView() || { checking: true }), { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+    if (path === '/usage') return usageAnswer(req, env);
     const e = metered(env);
     return live ? joinPresence(req, e) : cachedPublicResponse(req, () => api.fetch(req, e, ctx), ctx);
   }

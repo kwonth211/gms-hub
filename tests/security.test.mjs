@@ -56,3 +56,17 @@ test('the owner pages load no third-party script', () => {
   const build = fs.readFileSync(new URL('../scripts/build.mjs', import.meta.url), 'utf8');
   assert.equal((build.match(/noindex: true, bare: true/g) || []).length, 2);
 });
+
+test('the collector watch and the budget meter answer only to the owner key and are never cached', async () => {
+  const env = { ...noDb, MAIL_ADMIN_TOKEN: 'owner-key-for-tests' };
+  for (const p of ['/market/collector', '/usage']) {
+    for (const h of [{}, { Authorization: 'Bearer wrong' }, { Authorization: 'Bearer ' }]) {
+      assert.equal((await worker.fetch(new Request('https://test.invalid' + p, { headers: h }), env)).status, 403, p);
+    }
+    assert.equal((await worker.fetch(new Request('https://test.invalid' + p, { headers: { Authorization: 'Bearer owner-key-for-tests' } }), noDb)).status, 403, p + ' without a configured key');
+  }
+  const ok = await worker.fetch(new Request('https://test.invalid/usage', { headers: { Authorization: 'Bearer owner-key-for-tests' } }), env);
+  assert.equal(ok.status, 200);
+  assert.equal(ok.headers.get('Cache-Control'), 'no-store');
+  assert.doesNotMatch(fs.readFileSync(new URL('../worker/src/public-cache.js', import.meta.url), 'utf8'), /market\/collector/);
+});

@@ -91,7 +91,10 @@ async function d1() {
 
 // ---------- collectors ----------
 async function collectors() {
-  const market = await getJson(`${API}/market/collector`);
+  // Owner-only view: the key is the one scripts/peak.py uses (~/.config/gms-hub/mail-token).
+  let ownerKey = ''; try { ownerKey = fs.readFileSync(path.join(os.homedir(), '.config/gms-hub/mail-token'), 'utf8').trim(); } catch {}
+  const market = await fetch(`${API}/market/collector`, { headers: { Authorization: `Bearer ${ownerKey}` }, signal: AbortSignal.timeout(15000) })
+    .then((r) => (r.ok ? r.json() : { error: r.status })).catch((e) => ({ error: e.message }));
   const megaLog = path.join(HOME, 'gms-hub-samples/mega-collector.log');
   const megaLines = sh(`grep -E '^[0-9]{2}:[0-9]{2}:[0-9]{2} ' "${megaLog}" | tail -3`).split('\n').filter(Boolean);
   const megaPid = sh('cat ~/.config/gms-hub/mega-collector.pid');
