@@ -469,6 +469,9 @@ function filteredIds() {
 }
 async function renderRecords() {
   const seq = ++listSeq;
+  const reloadBtn = document.querySelector("[data-refresh-list]");
+  reloadBtn?.classList.add("is-busy");
+  setTimeout(() => reloadBtn?.classList.remove("is-busy"), 10000);
   listAbort?.abort();
   listAbort = new AbortController();
   $("mb-results").setAttribute("aria-busy", "true");
@@ -562,6 +565,7 @@ async function renderRecords() {
       ko ? `${ago(data.asOf)} 기준` : `${tx("as of")} ${ago(data.asOf)}`,
     ].filter(Boolean).join(" · ");
     listFetchedAt = Date.now();
+    document.querySelector("[data-refresh-list]")?.classList.remove("is-busy");
     paintFetched();
     if (!data.total && $("mk-q").value.trim()) noResults($("mk-q").value.trim());
     searched($("mk-q").value.trim(), data.total);
@@ -702,7 +706,7 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
   panelWait();
   $("mk-detail").innerHTML =
     `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(it.name)}</h2><small>${esc(it.en)}</small></div>${starButton(id, "mb-star-detail")}${D.alerts || document.body.dataset.discordUrl ? `<button type="button" class="btn ghost small-btn" data-alert-open="${id}">🔔 ${tr("가격 알림", "Price alert")}</button>` : ""}${pageLink}<button class="btn ghost small-btn" data-share-item="${id}" title="${tr("이 아이템 링크 복사", "Copy a link to this item")}">${tr("링크 복사", "Copy link")}</button><button class="btn ghost small-btn" data-close-item aria-label="${tr("상세 닫기", "Close details")}">×</button></header><p class="share-status mb-share-status" id="mb-share-status" role="status" aria-live="polite"></p><div class="mb-wait" aria-hidden="true">${SK.history()}${SK.facts()}${SK.offers()}</div><section class="mb-alert" id="mb-alert" hidden></section><section class="mb-history" id="mb-history" aria-label="${tr("가격 한눈에 보기", "Price at a glance")}" aria-busy="true">${SK.history()}</section>${stats}<section class="mb-info mb-facts" id="mb-facts">${SK.facts()}</section>${changed || reset ? visitNote(id) : ""}
- <div class="mb-tabs" role="tablist" aria-label="${tr("아이템 상세", "Item details")}"><button data-detail-tab="listings" role="tab" aria-selected="${detailTab === "listings"}" aria-controls="mb-detail-listings">${tr("판매 매물", "Shop listings")}</button><button data-detail-tab="charts" role="tab" aria-selected="${detailTab === "charts"}" aria-controls="mb-detail-charts">${tr("가격 추이·매물대", "Trends & depth")}</button><button class="mb-detail-refresh" data-refresh-item>${tr("새로고침", "Refresh")}</button></div>
+ <div class="mb-tabs" role="tablist" aria-label="${tr("아이템 상세", "Item details")}"><button data-detail-tab="listings" role="tab" aria-selected="${detailTab === "listings"}" aria-controls="mb-detail-listings">${tr("판매 매물", "Shop listings")}</button><button data-detail-tab="charts" role="tab" aria-selected="${detailTab === "charts"}" aria-controls="mb-detail-charts">${tr("가격 추이·매물대", "Trends & depth")}</button></div>
  <div id="mb-detail-listings" role="tabpanel" aria-label="${tr("판매 매물", "Shop listings")}"><p class="muted note">${T.whereNote}</p><div class="mb-detail-filters"><label id="md-opt-wrap" hidden>${tr("옵션", "Option")}<select id="md-opt"></select></label><label>${tr("정렬", "Sort")}<select id="md-sort"><option value="price">${T.sortPrice}</option><option value="recent">${T.sortRecent}</option><option value="high">${tr("높은 가격순", "Highest price")}</option></select></label><label>${tr("상태", "Status")}<select id="md-state"><option value="open">${tr("판매 중 · 24h", "Asking · 24h")}</option><option value="all">${tr("전체 기록 · 7일", "All records · 7d")}</option><option value="sold">${tr("판매 완료 표시", "Marked sold")}</option><option value="stale">${tr("24시간 경과", "Over 24h old")}</option></select></label></div><div class="price-band-filter" id="md-price-band" hidden><span></span><button class="btn ghost small-btn" data-clear-band>${tr("가격대 해제", "Clear price band")}</button></div><p id="md-count" class="muted note" role="status"></p><div id="md-rows">${SK.offers()}</div><div id="md-pages" class="mb-pagination"></div></div>
  <div id="mb-detail-charts" role="tabpanel" aria-label="${tr("가격 추이와 매물대", "Trends and depth")}"><div id="mk-charts">${SK.block(260)}</div></div>
  <section class="mb-info" id="mb-info" aria-live="polite">${SK.block(90)}</section><section class="mb-megas" id="mb-megas" hidden></section>`;
@@ -779,6 +783,7 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
 // "Updated 3 min ago (14:05)" for the parts that do not refresh by themselves (all listings, an item's listings): when this
 // browser last fetched them, ticking every 15 s, next to a refresh button (2026-11-17, owner).
 let listFetchedAt = 0, detailFetchedAt = 0;
+const RELOAD_ICON = '<svg class="mb-reload-ico" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2.5v3h-3"/></svg>';
 const fetchedLabel = (t) => {
   if (!t) return "";
   const m = Math.floor((Date.now() - t) / 60000), hm = new Date(t).toLocaleTimeString(ko ? "ko-KR" : "en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
@@ -831,6 +836,7 @@ async function loadDetailRows() {
   }
   fillOptMenu(id);
   $("md-rows").setAttribute("aria-busy", "true");
+  document.querySelector("[data-refresh-detail]")?.classList.add("is-busy");
   // First load shows placeholder rows; a filter change keeps the old rows (dimmed by aria-busy) until the new ones arrive.
   if (!$("md-rows").children.length) $("md-rows").innerHTML = SK.offers();
   if (!$("md-count").textContent) $("md-count").innerHTML = SK.line("40%", 11);
@@ -844,7 +850,7 @@ async function loadDetailRows() {
       return loadDetailRows();
     }
     detailFetchedAt = Date.now();
-    $("md-count").innerHTML = `<span>${tr(`조건에 맞는 매물 ${data.total}건`, `${data.total} matching listings`)}</span><span class="mb-fetched" id="md-at">${fetchedLabel(detailFetchedAt)}</span><button type="button" class="btn ghost small-btn" data-refresh-detail>${tr("새로고침", "Refresh")}</button>`;
+    $("md-count").innerHTML = `<span>${tr(`조건에 맞는 매물 ${data.total}건`, `${data.total} matching listings`)}</span><span class="mb-fetched" id="md-at">${fetchedLabel(detailFetchedAt)}</span><button type="button" class="mb-reload" data-refresh-detail>${RELOAD_ICON}${tr("새로고침", "Refresh")}</button>`;
     $("md-rows").innerHTML = offerCards(data.rows);
     panelPart("rows", id);
     $("md-pages").innerHTML = pager(data, "detail");

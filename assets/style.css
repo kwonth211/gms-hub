@@ -3380,7 +3380,12 @@ body.exp-running .exp-stop { display: inline-flex; }
 .mb-refresh-bar, #md-count { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .mb-refresh-bar { margin: 4px 0 8px; font-size: 0.82rem; color: var(--muted); }
 #md-count .mb-fetched { color: var(--muted); }
-#md-count .btn, .mb-refresh-bar .btn { margin-left: auto; }
+.mb-reload { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border: 0; border-radius: 6px; background: none; font: inherit; font-size: 0.82rem; font-weight: 700; color: var(--accent); cursor: var(--cur-hand, pointer); }
+.mb-reload:hover { background: var(--accent-soft); }
+.mb-reload:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.mb-reload.is-busy .mb-reload-ico { animation: mb-spin 0.8s linear infinite; }
+@keyframes mb-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .mb-reload.is-busy .mb-reload-ico { animation: none; } }
 /* The live board as the first section of the daily price page. */
 .lab.lab-embed { padding-top: 8px; padding-bottom: 8px; }
 .lab.lab-embed h2 { margin: 4px 0 6px; }
