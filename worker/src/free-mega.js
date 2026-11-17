@@ -1,7 +1,7 @@
 // 무료 고확 (free megaphones): trade posts written on the site, shown with the game megaphones on /megaphone/ and in the
 // header ticker. Stored apart from them (table free_megaphones) so a typed price never reaches price summaries, trends or
 // alerts. No login: the poster's IP hash limits the pace, a random key returned once lets them delete their own post,
-// and three reports from different visitors hide a post. Posts show for 24 hours; the daily run drops them after two days.
+// and three reports from different visitors hide a post. Posts stay (owner 2026-11-17): no time limit, only the poster's delete or three reports take one down.
 //   GET    /free-megas?after=<id>&limit=     -> { rows: [{ id, at, nick, intent, item, price, text, channel }] } (newest first)
 //   POST   /free-megas {nick, intent, item?, price?, text?, channel?} -> { row, key }
 //   DELETE /free-megas?id=&key=             -> { ok }
@@ -54,7 +54,7 @@ export async function listFreeMegas(env, params) {
   const after = Math.max(0, Number(params.get('after')) || 0);
   const limit = Math.min(100, Math.max(1, Number(params.get('limit')) || 60));
   const { results } = await env.DB.prepare(`SELECT id, at, nick, intent, item, price, text, channel FROM free_megaphones
-    WHERE id > ? AND hidden = 0 AND at >= datetime('now', '-1 day') ORDER BY id DESC LIMIT ?`).bind(after, limit).all();
+    WHERE id > ? AND hidden = 0 ORDER BY id DESC LIMIT ?`).bind(after, limit).all();
   return { rows: results, at: new Date().toISOString() };
 }
 
@@ -89,6 +89,6 @@ export async function reportFreeMega(env, id, reporter) {
 }
 
 export async function pruneFreeMegas(env) {
-  await env.DB.prepare("DELETE FROM free_megaphones WHERE at < datetime('now', '-2 days')").run();
-  await env.DB.prepare('DELETE FROM free_megaphone_reports WHERE post < (SELECT COALESCE(MIN(id), 0) FROM free_megaphones)').run();
+  // Posts are kept; only reports of posts their writer deleted are cleared.
+  await env.DB.prepare('DELETE FROM free_megaphone_reports WHERE post NOT IN (SELECT id FROM free_megaphones)').run();
 }

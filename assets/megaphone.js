@@ -424,7 +424,7 @@ document.querySelectorAll('[data-mg-view]').forEach((group) => group.addEventLis
       addFree([out.row], true);
       dispatchEvent(new CustomEvent('gms-free', { detail: [out.row] }));
       f.text.value = ''; picked = null;
-      f.status.textContent = tr('무료 고확을 쐈어요! 24시간 동안 모두에게 보여요.', 'Sent! Everyone sees it for 24 hours.');
+      f.status.textContent = tr('무료 고확을 쐈어요! 이제 모두에게 보여요.', 'Sent! Everyone can see it now.');
       track('free_mega_post', { intent, item: body.item ? 1 : 0, price: body.price ? 1 : 0 });
     } catch (x) {
       f.status.textContent = tr('올리지 못했어요. 잠시 뒤 다시 시도해 주세요.', 'Could not post. Please try again.');

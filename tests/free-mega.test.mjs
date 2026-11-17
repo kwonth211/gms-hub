@@ -45,7 +45,7 @@ test('one post per two minutes and ten a day per visitor; the list shows the new
   assert.equal((await listFreeMegas(e, new URLSearchParams({ after: String(list.rows[1].id) }))).rows.length, 1);
 });
 
-test('only the key deletes a post; three different reporters hide it; old posts leave the list and are pruned', async () => {
+test('only the key deletes a post; three different reporters hide it; old posts stay listed and are never pruned (owner 2026-11-17)', async () => {
   const e = environment();
   const [{ row, key }] = await postFreeMega(e, sell, 'v1', known);
   assert.equal((await deleteFreeMega(e, row.id, 'nope'))[1], 404);
@@ -57,8 +57,8 @@ test('only the key deletes a post; three different reporters hide it; old posts 
   assert.equal((await deleteFreeMega(e, row.id, key))[1], 200);
   const [{ row: old }] = await postFreeMega(e, sell, 'v2', known);
   e.sqlite.exec(`UPDATE free_megaphones SET at = datetime('now', '-25 hours') WHERE id = ${old.id}`);
-  assert.equal((await listFreeMegas(e, new URLSearchParams())).rows.length, 0);
+  assert.equal((await listFreeMegas(e, new URLSearchParams())).rows.length, 1);
   e.sqlite.exec(`UPDATE free_megaphones SET at = datetime('now', '-3 days') WHERE id = ${old.id}`);
   await pruneFreeMegas(e);
-  assert.equal(e.sqlite.prepare('SELECT COUNT(*) n FROM free_megaphones').get().n, 0);
+  assert.equal(e.sqlite.prepare('SELECT COUNT(*) n FROM free_megaphones').get().n, 1);
 });

@@ -250,7 +250,7 @@ const T = {
 <h2>시세 제보</h2>
 <p>시세 검색에서 가격을 올리면 아이템·가격·종류(팔림/파는 중/삽니다)·시각을 Cloudflare에 저장하고 모든 방문자에게 통계로 보여 줘요. 도배를 막기 위해 IP 주소를 추천 기능과 같은 방식의 되돌릴 수 없는 해시로 바꿔 함께 저장하며, IP 주소 원문은 저장하지 않아요.</p>` : ''}
 <h2>무료 고확</h2>
-<p>확성기 페이지에서 무료 고확을 쏘면 게임 닉네임, 종류(팝니다·삽니다·한마디), 고른 아이템, 가격, 한마디, 채널을 Cloudflare에 저장하고 24시간 동안 모든 방문자에게 보여 줘요. 이틀이 지나면 지워져요. 도배를 막기 위해 IP 주소를 되돌릴 수 없는 해시로 바꿔 함께 저장하며, IP 주소 원문은 저장하지 않아요. 내 글을 지울 수 있는 열쇠는 이 브라우저에만 저장돼요.</p>
+<p>확성기 페이지에서 무료 고확을 쏘면 게임 닉네임, 종류(팝니다·삽니다·한마디), 고른 아이템, 가격, 한마디, 채널을 Cloudflare에 저장하고 모든 방문자에게 보여 줘요. 내가 지우거나 신고로 숨겨지기 전까지 남아 있어요. 도배를 막기 위해 IP 주소를 되돌릴 수 없는 해시로 바꿔 함께 저장하며, IP 주소 원문은 저장하지 않아요. 내 글을 지울 수 있는 열쇠는 이 브라우저에만 저장돼요.</p>
 <h2>상점 스캔</h2>
 <p>상점 스캔에서 공유한 게임 화면은 사용자의 브라우저 안에서만 읽고, 화면 이미지는 어디에도 보내지 않아요. 읽어 낸 아이템·가격·판매 여부와 함께 게임 안에 공개적으로 표시되는 상점 주인의 캐릭터 이름, 채널, 자유시장 방 번호를 Cloudflare에 저장하고 시세 통계와 '방금 올라온 매물'로 보여 줘요. 도배를 막기 위해 IP 주소를 되돌릴 수 없는 해시로 바꿔 함께 저장하며, IP 주소 원문은 저장하지 않아요. 자신의 캐릭터 정보 삭제를 원하면 아래 연락처로 알려 주세요.</p>
 <h2>브라우저 저장소</h2>
@@ -469,7 +469,7 @@ const T = {
 <h2>Price reports</h2>
 <p>When you add a price in Price Search, we store the item, price, type (sold/selling/buying) and time on Cloudflare and show them to everyone as statistics. To stop spam we also store the same kind of salted, irreversible IP hash used for recommendations. The raw IP address is never stored.</p>` : ''}
 <h2>Free megaphones</h2>
-<p>A free megaphone sent from the megaphone page stores your game name, its kind (selling, buying or chat), the item, price, note and channel in Cloudflare and shows them to every visitor for 24 hours; it is deleted after two days. To stop spam, your IP address is stored only as a one-way hash, never in plain form. The key that lets you delete your own post is kept in this browser only.</p>
+<p>A free megaphone sent from the megaphone page stores your game name, its kind (selling, buying or chat), the item, price, note and channel in Cloudflare and shows them to every visitor. It stays until you delete it or reports hide it. To stop spam, your IP address is stored only as a one-way hash, never in plain form. The key that lets you delete your own post is kept in this browser only.</p>
 <h2>Shop scan</h2>
 <p>The game screen you share in Shop Scan is read only inside your browser and the image is never sent anywhere. What it reads (item, price, sold or not) is stored on Cloudflare together with the shop owner's character name as shown publicly in the game, the channel and the Free Market room, and shown as price statistics and "Just listed". To stop spam we also store a salted, irreversible hash of your IP address; the raw IP is never stored. To have your character's listings removed, email us below.</p>
 <h2>Browser storage</h2>
