@@ -138,9 +138,10 @@ export async function marketCatalog(env) {
   const refBy = new Map(refs.map((r) => [r.item, r]));
   // Day-over-day move from OUR daily medians (item_daily, one row per item and UTC day, kept current by every collector
   // run), not the reference summary's `day`: that column stopped being refreshed on 2026-11-13, so "today's risers"
-  // were four days old. The latest day with enough asking prices is compared with the day before it.
+  // were four days old. The latest day with enough asking prices (20 or more, so a handful of odd listings cannot swing it) is compared with
+  // the day before it. Gear whose price depends on its options can still swing with the mix of listings seen.
   const d0 = end.slice(0, 10), d1 = stamp(now - DAY).slice(0, 10), d2 = stamp(now - 2 * DAY).slice(0, 10);
-  const daily = await all(env, "SELECT item, day, median FROM item_daily WHERE day >= ? AND n >= 8 AND median > 0", [d2]).catch(() => []);
+  const daily = await all(env, "SELECT item, day, median FROM item_daily WHERE day >= ? AND n >= 20 AND median > 0", [d2]).catch(() => []);
   const medBy = new Map();
   for (const r of daily) (medBy.get(r.item) || medBy.set(r.item, {}).get(r.item))[r.day] = r.median;
   const ownDay = (item) => {
