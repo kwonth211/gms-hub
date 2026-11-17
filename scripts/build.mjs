@@ -648,7 +648,9 @@ function head({ lang, title, desc, pagePath, noindex, ld = [], only }) {
       `\n<link rel="alternate" hreflang="x-default" href="${absUrl(langPath(config.defaultLang, pagePath))}">`
     : '';
   const canonical = pagePath ? absUrl(langPath(lang, pagePath)) : absUrl('/');
-  const adsense = config.adsenseClient
+  // Pages kept out of search (thin detail pages, machine-translated zh/ja) carry no ad code at all: the AdSense crawler
+  // reads every page that has the tag, noindex or not.
+  const adsense = config.adsenseClient && !noindex
     ? `<meta name="google-adsense-account" content="${esc(config.adsenseClient)}">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${esc(config.adsenseClient)}" crossorigin="anonymous"></script>`
     : '';
@@ -937,9 +939,9 @@ function withMidAd(body, ads) {
 }
 const NO_AD_PAGES = new Set(['about', 'bot', 'contact']);
 function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], modules = [], ld = [], only, noindex }) {
-  // Every page carries ads (owner's call 2026-11-14), including thin noindex detail pages, except About, the Discord bot
-  // page and Contact/sponsorship.
-  const ads = !NO_AD_PAGES.has(pageKey) && Object.values(config.adfit || {}).some(Boolean);
+  // Indexed pages carry ads, except About, the Discord bot page and Contact/sponsorship. Pages kept out of search
+  // (noindex: thin item/map detail pages) carry none since 2026-11-17, for the AdSense review ("must pass", owner).
+  const ads = !noindex && !NO_AD_PAGES.has(pageKey) && Object.values(config.adfit || {}).some(Boolean);
   return `${head({ lang, title, desc, pagePath, ld, only, noindex })}
 <body data-page="${pageKey}"${ads && (config.adfit?.railLeft || config.adfit?.railRight) ? ' data-rails' : ''} data-price-api="${esc(config.voteApi)}"${config.discord ? ` data-discord-url="${esc(config.discord)}"` : ''} data-tips="${esc(href('/assets/item-tips.json'))}" data-sprites="${esc(href('/assets/monsters/'))}">
 ${header(lang, pagePath, only)}
@@ -3106,6 +3108,16 @@ function shareSprites(html) {
 // behind them (mobile first paint 1.2 s or 5 s from one test to the next, 2026-11-15). The files are still fetched early
 // (preload); a small loader adds them, in the same order, right after the first frame — at once in a background tab, and
 // after 2.5 s at the latest.
+// A page derived from an English one but kept out of search (zh/ja) loses every ad slot, the AdFit loader and the
+// AdSense tag, the same as a page built with noindex.
+function stripAds(html) {
+  return html
+    .replace(/<aside class="ad-(?:slot|rails)[\s\S]*?<\/aside>\n?/g, '')
+    .replace(/<meta name="google-adsense-account"[^>]*>\n<script async src="https:\/\/pagead2[^>]*><\/script>\n?/, '')
+    .replace(/<link rel="preload" as="script" href="[^"]*\/adfit\.js[^"]*">\n?/, '')
+    .replace(/,\["[^"]*\/adfit\.js[^"]*",0\]/, '')
+    .replace(/(<body[^>]*?) data-rails/, '$1');
+}
 function lateScripts(list) {
   const hints = list.map(([src, mod]) => (mod ? `<link rel="modulepreload" href="${src}">` : `<link rel="preload" as="script" href="${src}">`)).join('\n');
   return `${hints}
@@ -3658,7 +3670,7 @@ for (const loc of LOCALES) {
     // Band redirect stubs only need their paths moved.
     let content = html.includes('http-equiv="refresh"') ? html.replaceAll('/en/', `/${loc.code}/`).replace('lang="en"', `lang="${loc.hreflang}"`) : localizePage(html, loc, ctx);
     if (!indexedIn(loc.code, `/${path.posix.dirname(rel.replace(/^en\//, ''))}/`))
-      content = content.replace(/<meta name="robots" content="index[^"]*">\n<link rel="canonical" href="[^"]*">/, '<meta name="robots" content="noindex">');
+      content = stripAds(content.replace(/<meta name="robots" content="index[^"]*">\n<link rel="canonical" href="[^"]*">/, '<meta name="robots" content="noindex">'));
     content = content.replace(shareImageTags('en'), shareImageTags(loc.code));
     write(target, content);
   }
