@@ -1,0 +1,1116 @@
+{
+ "slug": "citizenship-henesys",
+ "order": 13,
+ "icon": "scroll",
+ "level": {
+  "ko": "Lv 12 ~ 57",
+  "en": "Lv 12–57"
+ },
+ "title": {
+  "ko": "헤네시스 시민권 퀘스트 공략",
+  "en": "Henesys citizenship quests"
+ },
+ "h1": {
+  "ko": "헤네시스 시민권 퀘스트 공략: 가입부터 명예 시민까지",
+  "en": "To Henesys, the Prairie Town: every Henesys citizenship quest up to Citizen of Honor"
+ },
+ "lead": {
+  "ko": "12레벨에 헤네시스 시청의 아서에게서 시작하는 시민권 퀘스트를 한 페이지에 모았어요. 매일 하는 주민 인사, 매주 하는 기부, 집, 등급마다 열리는 스토리 퀘스트 다섯 줄까지 순서대로 따라가면 돼요. 헤네시스 시민 상점은 전신 갑옷 힘·민첩 주문서와 귀고리 크리티컬 데미지 주문서를 팔아서 전사와 궁수에게 맞아요.",
+  "en": "Everything that starts with Arthur in the Henesys Town Hall at Lv 12: the daily greetings, the weekly donations, the house and the five story lines that open as your grade rises. The Henesys citizen shop sells Overall STR and DEX scrolls and Earring Crit. Damage scrolls, which suits warriors and bowmen."
+ },
+ "seoTitle": {
+  "ko": "글클메 헤네시스 시민권 퀘스트 공략: 가입·주민 인사·기부·집·스토리 퀘스트 | GMS Hub",
+  "en": "To Henesys, the Prairie Town & Donating to Henesys: MapleStory Classic World Henesys Citizenship Quest Guide | GMS Hub"
+ },
+ "desc": {
+  "ko": "헤네시스 시민권 퀘스트 전부: 12레벨 가입, 게시판 주민 인사 18개, 주간 기부 재료 17종과 모으는 곳, 집 퀘스트, 17·27·37·47·57레벨 스토리와 헤네시스 귀고리.",
+  "en": "Every Henesys citizenship quest in MapleStory Classic World: To Henesys, the Prairie Town at Lv 12, the 18 resident greetings, all 17 Donating to Henesys materials and where to farm them, the housing quests and the Lv 17 to 57 story lines ending in the Henesys Earrings."
+ },
+ "card": {
+  "ko": "12레벨 가입부터 57레벨 헤네시스 귀고리까지, 헤네시스 시민권 퀘스트 전부.",
+  "en": "From enrolling at Lv 12 to the Lv 57 Henesys Earrings: every Henesys citizenship quest."
+ },
+ "reward": {
+  "ko": "헤네시스 귀고리 · 주문서 4종 · 집",
+  "en": "Henesys Earrings · four scrolls · a house"
+ },
+ "updated": "2026-11-17",
+ "places": {
+  "hall": {
+   "ko": "헤네시스 시청 · 아서",
+   "en": "Henesys Town Hall · Arthur"
+  },
+  "board": {
+   "ko": "헤네시스 커뮤니티 게시판",
+   "en": "Henesys Community Board"
+  },
+  "mingming": {
+   "ko": "헤네시스 · 밍밍 부인",
+   "en": "Henesys · Mrs. Ming Ming"
+  },
+  "camila": {
+   "ko": "헤네시스 · 카밀라",
+   "en": "Henesys · Camila"
+  },
+  "anne": {
+   "ko": "헤네시스 · 앤",
+   "en": "Henesys · Anne"
+  },
+  "stan": {
+   "ko": "헤네시스 · 촌장 스탄",
+   "en": "Henesys · Chief Stan"
+  },
+  "athena": {
+   "ko": "헤네시스 · 아테나 피어스",
+   "en": "Henesys · Athena Pierce"
+  },
+  "n230": {
+   "ko": "헤네시스 시청 · 토미",
+   "en": "Henesys Town Hall · Tommy"
+  },
+  "n231": {
+   "ko": "헤네시스 · 비안카",
+   "en": "Henesys · Bianca"
+  },
+  "n506": {
+   "ko": "페리온 · 아얀",
+   "en": "Perion · Ayan"
+  },
+  "n205": {
+   "ko": "헤네시스 · 제이",
+   "en": "Henesys · Jay"
+  },
+  "n602": {
+   "ko": "슬리피우드 · 크리슈라마",
+   "en": "Sleepywood · Chrishrama"
+  },
+  "n502": {
+   "ko": "페리온 · 만지",
+   "en": "Perion · Manji"
+  },
+  "n208": {
+   "ko": "헤네시스 시장 · 비셔스",
+   "en": "Henesys Market · Vicious"
+  }
+ },
+ "npcs": {
+  "201": "리나",
+  "203": "밍밍 부인",
+  "204": "카밀라",
+  "206": "브루스",
+  "207": "마야",
+  "218": "피아",
+  "224": "앤",
+  "202": "촌장 스탄",
+  "221": "아테나 피어스",
+  "111": "미스터 골드스타인",
+  "205": "제이",
+  "208": "비셔스",
+  "230": "토미",
+  "231": "비안카",
+  "401": "뒷골목 제이엠",
+  "404": "콩에서 온 몽",
+  "426": "잭",
+  "427": "스칼렛",
+  "436": "슬레이드",
+  "502": "만지",
+  "506": "아얀",
+  "602": "크리슈라마",
+  "229": "아서",
+  "425": "록시",
+  "235": "커뮤니티 게시판",
+  "431": "커뮤니티 게시판"
+ },
+ "itemNames": {
+  "4031111": {
+   "ko": "Mrs. Ming Ming's Cooking Recipe",
+   "en": "Mrs. Ming Ming's Cooking Recipe"
+  },
+  "4031112": {
+   "ko": "Bruce's Special Cake",
+   "en": "Bruce's Special Cake"
+  },
+  "4031113": {
+   "ko": "Vitamin Gummy",
+   "en": "Vitamin Gummy"
+  },
+  "4031114": {
+   "ko": "Special Stirge Phobia Cure",
+   "en": "Special Stirge Phobia Cure"
+  },
+  "4031116": {
+   "ko": "Old Chief Stan's Hammer",
+   "en": "Old Chief Stan's Hammer"
+  },
+  "4031117": {
+   "ko": "Chief Stan's Hammer",
+   "en": "Chief Stan's Hammer"
+  },
+  "4031121": {
+   "ko": "Smooth Horn Marble",
+   "en": "Smooth Horn Marble"
+  },
+  "4031122": {
+   "ko": "Torn Note",
+   "en": "Torn Note"
+  },
+  "4031123": {
+   "ko": "Athena Pierce's Box",
+   "en": "Athena Pierce's Box"
+  },
+  "4031124": {
+   "ko": "Broken Wooden Bow",
+   "en": "Broken Wooden Bow"
+  },
+  "4031125": {
+   "ko": "Repaired Wooden Bow",
+   "en": "Repaired Wooden Bow"
+  },
+  "4031126": {
+   "ko": "Alex's Gift Sack",
+   "en": "Alex's Gift Sack"
+  },
+  "4031127": {
+   "ko": "A Gift for Nella",
+   "en": "A Gift for Nella"
+  },
+  "4031128": {
+   "ko": "A Gift for JM",
+   "en": "A Gift for JM"
+  },
+  "4031131": {
+   "ko": "Encrypted Document",
+   "en": "Encrypted Document"
+  },
+  "4031132": {
+   "ko": "Encrypted Document",
+   "en": "Encrypted Document"
+  },
+  "4031133": {
+   "ko": "Ink of Truth",
+   "en": "Ink of Truth"
+  },
+  "4031135": {
+   "ko": "Deciphered Document",
+   "en": "Deciphered Document"
+  }
+ },
+ "sources": [
+  {
+   "name": "클메CM — 글클메 시민 9등급 되면 장공 하급이 4만 메소?｜시민권·집 총정리",
+   "url": "https://www.youtube.com/watch?v=P1fUwQ8gAQc",
+   "date": "2026-11-02"
+  },
+  {
+   "name": "Maple Classic Guide — Citizenship Guide: Henesys or Kerning?",
+   "url": "https://www.mapleclassicguide.com/citizenship/",
+   "date": "2026-11-12"
+  },
+  {
+   "name": "Classic Maple Wiki — Citizenship 101: Henesys vs Kerning City",
+   "url": "https://classicmaplewiki.com/guides/citizenship-henesys-vs-kerning-city/",
+   "date": "2026-10-27"
+  }
+ ],
+ "chains": [
+  {
+   "id": "join",
+   "title": {
+    "ko": "가입 (12레벨) — 헤네시스 시민 되기",
+    "en": "Enrolling (Lv 12) — becoming a citizen of Henesys"
+   },
+   "lead": {
+    "ko": "헤네시스 시청의 아서에게서 시작해요. 가입한 마을에서만 기여도가 쌓이고, 등급이 오르면 상점 할인과 시민 상점, 집, 스토리 퀘스트가 차례로 열려요.",
+    "en": "It starts with Arthur in the Henesys Town Hall. Contribution counts only in the town you joined; higher grades open shop discounts, the citizen shops, a house and the story quests."
+   },
+   "notes": {
+    "ko": [
+     "시민 등급은 10단계예요. 등급마다 캐릭터 레벨 조건이 있어요: 1등급 12, 2등급 17, 3등급 22, 4등급 27, 5등급 32, 6등급 37, 7등급 42, 8등급 47, 9등급 52, 10등급 57레벨.",
+     "기여도는 2등급까지 1,500, 3등급까지 3,500이 필요해요. 기여도가 차면 담당 NPC에게 말을 걸어 승급해요.",
+     "매일 게시판의 주민 인사 1개(1등급 100, 등급마다 25씩 늘어 10등급 325)와 매주 기부 1개(재료 30개, 700~2,100)가 기본 수입이에요. 이 둘만 하면 2등급까지 8일쯤 걸려요.",
+     "한 번에 한 마을의 시민만 될 수 있어요. 마을을 옮기면 5만~10만 메소가 든다고 알려져 있으니 처음에 잘 고르세요."
+    ],
+    "en": [
+     "There are ten citizen grades, each with a character level: grade 1 at Lv 12, 2 at 17, 3 at 22, 4 at 27, 5 at 32, 6 at 37, 7 at 42, 8 at 47, 9 at 52 and 10 at 57.",
+     "Grade 2 takes 1,500 Contribution and grade 3 takes 3,500. When you have enough, talk to the clerk to be promoted.",
+     "The steady income is one resident greeting from the board each day (100 at grade 1, 25 more per grade, 325 at grade 10) and one donation each week (30 materials, 700 to 2,100). Those two alone reach grade 2 in about eight days.",
+     "You can be a citizen of one town at a time. Moving is reported to cost 50,000 to 100,000 mesos, so choose carefully."
+    ]
+   },
+   "steps": [
+    {
+     "q": 506000,
+     "at": "hall",
+     "where": {
+      "ko": "커뮤니티 게시판 옆 문으로 들어가면 시청이에요. 아서는 시청 안에 있어요.",
+      "en": "The door beside the Community Board leads into the Town Hall; Arthur is inside."
+     },
+     "do": {
+      "ko": "12레벨이 되면 자동으로 받아져요. 헤네시스 시청으로 가서 아서에게 말을 걸면 끝나요. 아서가 헤네시스 시민이 되라고 권해요.",
+      "en": "It starts by itself at Lv 12. Go to the Henesys Town Hall and talk to Arthur, who invites you to become a resident."
+     },
+     "tip": {
+      "ko": "끝내면 아서가 커닝시티 설명도 듣고 고르라며 다음 퀘스트(To the Gray City, Kerning City)를 줘요. 두 마을을 다 본 뒤에 가입할 마을의 담당자에게 말을 걸면 돼요.",
+      "en": "Arthur then offers 'To the Gray City, Kerning City' so you hear both towns out. Enrol by talking to the clerk of the town you choose."
+     }
+    }
+   ]
+  },
+  {
+   "id": "greet",
+   "title": {
+    "ko": "매일 하는 것 — 게시판 주민 인사",
+    "en": "Every day — resident greetings from the board"
+   },
+   "lead": {
+    "ko": "커뮤니티 게시판에 하루에 주민 한 명의 인사 퀘스트가 떠요. 게시판에서 받고 그 주민에게 가서 말을 걸면 끝나요. 재료도 사냥도 없어서 매일 1분이면 돼요.",
+    "en": "The Community Board shows one resident's greeting each day. Take it there and go talk to that resident: no materials, no hunting, a minute a day."
+   },
+   "notes": {
+    "ko": [
+     "주민마다 한 번만 하는 '첫 인사'(First Greeting)와 그 뒤 반복되는 '안부 묻기'(Asking After)가 있어요.",
+     "인사 한 번의 기여도는 1등급 100이고 등급마다 25씩 늘어요.",
+     "5등급(32레벨)이 되면 마을 대표 두 명의 인사가 추가돼요."
+    ],
+    "en": [
+     "Each resident has a one-time First Greeting and then a repeatable Asking After.",
+     "One greeting pays 100 Contribution at grade 1 and 25 more per grade.",
+     "Grade 5 (Lv 32) adds the two town leaders."
+    ]
+   },
+   "steps": [
+    {
+     "q": 506001,
+     "at": "board",
+     "go": "rina",
+     "do": {
+      "ko": "게시판에서 받고 리나에게 가서 말을 걸면 끝나요. 한 번만 하는 퀘스트예요.",
+      "en": "Take it from the board and talk to Rina. It is done once."
+     },
+     "where": {
+      "ko": "헤네시스 마을 가운데에서 살짝 왼쪽, 시청 문 바로 옆에 서 있어요.",
+      "en": "Slightly left of the middle of Henesys, right beside the Town Hall door."
+     },
+     "tip": {
+      "ko": "리나: 헤네시스 마을 왼쪽, 건초더미 옆 버섯집 앞이에요.",
+      "en": "Rina: Left side of Henesys, in front of the mushroom house by the haystacks."
+     }
+    },
+    {
+     "q": 506002,
+     "at": "board",
+     "go": "rina",
+     "do": {
+      "ko": "첫 인사를 끝낸 뒤 게시판에 뜨는 반복 퀘스트예요. 리나에게 가서 말을 걸면 기여도를 줘요.",
+      "en": "The repeatable follow-up on the board once the first greeting is done: talk to Rina for Contribution."
+     }
+    },
+    {
+     "q": 506003,
+     "at": "board",
+     "go": "mingming",
+     "do": {
+      "ko": "게시판에서 받고 밍밍 부인에게 가서 말을 걸면 끝나요. 한 번만 하는 퀘스트예요.",
+      "en": "Take it from the board and talk to Mrs. Ming Ming. It is done once."
+     },
+     "tip": {
+      "ko": "밍밍 부인: 헤네시스 마을 오른쪽, 한 층 위 발판에 있어요.",
+      "en": "Mrs. Ming Ming: Right side of Henesys, on the platform one level up."
+     }
+    },
+    {
+     "q": 506004,
+     "at": "board",
+     "go": "mingming",
+     "do": {
+      "ko": "첫 인사를 끝낸 뒤 게시판에 뜨는 반복 퀘스트예요. 밍밍 부인에게 가서 말을 걸면 기여도를 줘요.",
+      "en": "The repeatable follow-up on the board once the first greeting is done: talk to Mrs. Ming Ming for Contribution."
+     }
+    },
+    {
+     "q": 506005,
+     "at": "board",
+     "go": "camila",
+     "do": {
+      "ko": "게시판에서 받고 카밀라에게 가서 말을 걸면 끝나요. 한 번만 하는 퀘스트예요.",
+      "en": "Take it from the board and talk to Camila. It is done once."
+     },
+     "tip": {
+      "ko": "카밀라: 헤네시스 마을 오른쪽 끝, 가장 높은 발판에 있어요.",
+      "en": "Camila: Far right of Henesys, on the highest platform."
+     }
+    },
+    {
+     "q": 506006,
+     "at": "board",
+     "go": "camila",
+     "do": {
+      "ko": "첫 인사를 끝낸 뒤 게시판에 뜨는 반복 퀘스트예요. 카밀라에게 가서 말을 걸면 기여도를 줘요.",
+      "en": "The repeatable follow-up on the board once the first greeting is done: talk to Camila for Contribution."
+     }
+    },
+    {
+     "q": 506007,
+     "at": "board",
+     "go": "bruce",
+     "do": {
+      "ko": "게시판에서 받고 브루스에게 가서 말을 걸면 끝나요. 한 번만 하는 퀘스트예요.",
+      "en": "Take it from the board and talk to Bruce. It is done once."
+     },
+     "tip": {
+      "ko": "브루스: 헤네시스 마을 오른쪽, 바닥 길에 있어요.",
+      "en": "Bruce: Right side of Henesys, at street level."
+     }
+    },
+    {
+     "q": 506008,
+     "at": "board",
+     "go": "bruce",
+     "do": {
+      "ko": "첫 인사를 끝낸 뒤 게시판에 뜨는 반복 퀘스트예요. 브루스에게 가서 말을 걸면 기여도를 줘요.",
+      "en": "The repeatable follow-up on the board once the first greeting is done: talk to Bruce for Contribution."
+     }
+    },
+    {
+     "q": 506009,
+     "at": "board",
+     "go": "maya",
+     "do": {
+      "ko": "게시판에서 받고 마야에게 가서 말을 걸면 끝나요. 한 번만 하는 퀘스트예요.",
+      "en": "Take it from the board and talk to Maya. It is done once."
+     },
+     "tip": {
+      "ko": "마야: 헤네시스 마을길의 작은 버섯집에 살아요.",
+      "en": "Maya: She lives in the little mushroom house on Henesys Townstreet."
+     }
+    },
+    {
+     "q": 506010,
+     "at": "board",
+     "go": "maya",
+     "do": {
+      "ko": "첫 인사를 끝낸 뒤 게시판에 뜨는 반복 퀘스트예요. 마야에게 가서 말을 걸면 기여도를 줘요.",
+      "en": "The repeatable follow-up on the board once the first greeting is done: talk to Maya for Contribution."
+     }
+    },
+    {
+     "q": 506011,
+     "at": "board",
+     "go": "henesys-park",
+     "do": {
+      "ko": "게시판에서 받고 피아에게 가서 말을 걸면 끝나요. 한 번만 하는 퀘스트예요.",
+      "en": "Take it from the board and talk to Pia. It is done once."
+     },
+     "tip": {
+      "ko": "피아: 헤네시스 공원 가운데, 곰 인형을 든 아이예요.",
+      "en": "Pia: The child with a teddy bear in the middle of Henesys Park."
+     }
+    },
+    {
+     "q": 506012,
+     "at": "board",
+     "go": "henesys-park",
+     "do": {
+      "ko": "첫 인사를 끝낸 뒤 게시판에 뜨는 반복 퀘스트예요. 피아에게 가서 말을 걸면 기여도를 줘요.",
+      "en": "The repeatable follow-up on the board once the first greeting is done: talk to Pia for Contribution."
+     }
+    },
+    {
+     "q": 506013,
+     "at": "board",
+     "go": "anne",
+     "do": {
+      "ko": "게시판에서 받고 앤에게 가서 말을 걸면 끝나요. 한 번만 하는 퀘스트예요.",
+      "en": "Take it from the board and talk to Anne. It is done once."
+     }
+    },
+    {
+     "q": 506014,
+     "at": "board",
+     "go": "anne",
+     "do": {
+      "ko": "첫 인사를 끝낸 뒤 게시판에 뜨는 반복 퀘스트예요. 앤에게 가서 말을 걸면 기여도를 줘요.",
+      "en": "The repeatable follow-up on the board once the first greeting is done: talk to Anne for Contribution."
+     }
+    },
+    {
+     "q": 506015,
+     "at": "board",
+     "go": "stan",
+     "do": {
+      "ko": "게시판에서 받고 촌장 스탄에게 가서 말을 걸면 끝나요. 한 번만 하는 퀘스트예요. 5등급(32레벨)부터 게시판에 떠요.",
+      "en": "Take it from the board and talk to Chief Stan. It is done once. It appears from grade 5 (Lv 32)."
+     },
+     "tip": {
+      "ko": "촌장 스탄: 헤네시스 마을 가운데에서 오른쪽, 한 층 위 발판에 있어요.",
+      "en": "Chief Stan: Right of centre in Henesys, on the platform one level up."
+     }
+    },
+    {
+     "q": 506016,
+     "at": "board",
+     "go": "stan",
+     "do": {
+      "ko": "첫 인사를 끝낸 뒤 게시판에 뜨는 반복 퀘스트예요. 촌장 스탄에게 가서 말을 걸면 기여도를 줘요.",
+      "en": "The repeatable follow-up on the board once the first greeting is done: talk to Chief Stan for Contribution."
+     }
+    },
+    {
+     "q": 506017,
+     "at": "board",
+     "go": "athena",
+     "do": {
+      "ko": "게시판에서 받고 아테나 피어스에게 가서 말을 걸면 끝나요. 한 번만 하는 퀘스트예요. 5등급(32레벨)부터 게시판에 떠요.",
+      "en": "Take it from the board and talk to Athena Pierce. It is done once. It appears from grade 5 (Lv 32)."
+     },
+     "tip": {
+      "ko": "아테나 피어스: 헤네시스 궁수 교육원의 전직 교관이에요.",
+      "en": "Athena Pierce: The bowman job instructor, inside the Bowman Instructional School."
+     }
+    },
+    {
+     "q": 506018,
+     "at": "board",
+     "go": "athena",
+     "do": {
+      "ko": "첫 인사를 끝낸 뒤 게시판에 뜨는 반복 퀘스트예요. 아테나 피어스에게 가서 말을 걸면 기여도를 줘요.",
+      "en": "The repeatable follow-up on the board once the first greeting is done: talk to Athena Pierce for Contribution."
+     }
+    }
+   ]
+  },
+  {
+   "id": "donate",
+   "title": {
+    "ko": "매주 하는 것 — 마을 기부",
+    "en": "Every week — donating to the town"
+   },
+   "lead": {
+    "ko": "게시판에서 기부 퀘스트를 받아 몬스터 재료 30개를 아서에게 가져가요. 주마다 재료 하나가 정해지고, 등급이 오르면 더 높은 재료가 목록에 들어와요.",
+    "en": "Take the donation from the board and bring 30 of a monster material to Arthur. One material is set each week, and higher grades add harder materials to the pool."
+   },
+   "notes": {
+    "ko": [
+     "기부 한 번의 기여도는 재료 등급에 따라 700(1등급 재료)에서 2,100(9등급 재료)까지예요. 파란 포션 20개와 경험치, 메소도 같이 받아요.",
+     "재료는 자유시장에서 사서 내도 돼요."
+    ],
+    "en": [
+     "A donation pays 700 Contribution for a grade 1 material up to 2,100 for a grade 9 one, plus 20 Blue Potions, EXP and mesos.",
+     "Buying the material on the Free Market works too."
+    ]
+   },
+   "steps": [
+    {
+     "q": 506019,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "파란 달팽이의 껍질 30개를 모아 아서에게 가져가요. 파란 달팽이(Lv 2)가 떨구고, 달팽이 사냥터 III에 21마리로 가장 많아요.",
+      "en": "Bring 30 Blue Snail Shell to Arthur. Blue Snail (Lv 2) drops it; the densest map is Snail Hunting Ground III with 21."
+     },
+     "tip": {
+      "ko": "1등급 기부라 기여도 700을 줘요.",
+      "en": "A grade 1 donation: 700 Contribution."
+     }
+    },
+    {
+     "q": 506020,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "버섯의 포자 30개를 모아 아서에게 가져가요. 스포아(Lv 3)가 떨구고, 버섯 정원에 23마리로 가장 많아요.",
+      "en": "Bring 30 Mushroom Spore to Arthur. Shroom (Lv 3) drops it; the densest map is Mushroom Garden with 23."
+     },
+     "tip": {
+      "ko": "1등급 기부라 기여도 700을 줘요.",
+      "en": "A grade 1 donation: 700 Contribution."
+     }
+    },
+    {
+     "q": 506021,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "빨간 달팽이의 껍질 30개를 모아 아서에게 가져가요. 빨간 달팽이(Lv 4)가 떨구고, 암허스트 서쪽 들판에 24마리로 가장 많아요.",
+      "en": "Bring 30 Red Snail Shell to Arthur. Red Snail (Lv 4) drops it; the densest map is The Field West of Amherst with 24."
+     },
+     "tip": {
+      "ko": "1등급 기부라 기여도 700을 줘요.",
+      "en": "A grade 1 donation: 700 Contribution."
+     }
+    },
+    {
+     "q": 506022,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "물컹물컹한 액체 30개를 모아 아서에게 가져가요. 슬라임(Lv 6)가 떨구고, 자라난 나무 II에 30마리로 가장 많아요.",
+      "en": "Bring 30 Squishy Liquid to Arthur. Slime (Lv 6) drops it; the densest map is The Tree That Grew II with 30."
+     },
+     "tip": {
+      "ko": "1등급 기부라 기여도 700을 줘요.",
+      "en": "A grade 1 donation: 700 Contribution."
+     }
+    },
+    {
+     "q": 506023,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "주황버섯의 갓 30개를 모아 아서에게 가져가요. 주황버섯(Lv 8)가 떨구고, 버섯 정원에 15마리로 가장 많아요.",
+      "en": "Bring 30 Orange Mushroom Cap to Arthur. Orange Mushroom (Lv 8) drops it; the densest map is Mushroom Garden with 15."
+     },
+     "tip": {
+      "ko": "1등급 기부라 기여도 700을 줘요.",
+      "en": "A grade 1 donation: 700 Contribution."
+     }
+    },
+    {
+     "q": 506024,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "초록버섯의 갓 30개를 모아 아서에게 가져가요. 초록버섯(Lv 14)가 떨구고, 서쪽 바위산 III에 32마리로 가장 많아요.",
+      "en": "Bring 30 Green Mushroom Cap to Arthur. Green Mushroom (Lv 14) drops it; the densest map is West Rocky Mountain III with 32."
+     },
+     "tip": {
+      "ko": "1등급 기부라 기여도 700을 줘요.",
+      "en": "A grade 1 donation: 700 Contribution."
+     }
+    },
+    {
+     "q": 506025,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "파란 버섯의 갓 30개를 모아 아서에게 가져가요. 파란버섯(Lv 19)가 떨구고, 파란버섯 숲에 16마리로 가장 많아요.",
+      "en": "Bring 30 Blue Mushroom Cap to Arthur. Blue Mushroom (Lv 19) drops it; the densest map is The Blue Mushroom Forest with 16."
+     },
+     "tip": {
+      "ko": "2등급 기부라 기여도 875을 줘요.",
+      "en": "A grade 2 donation: 875 Contribution."
+     }
+    },
+    {
+     "q": 506026,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "뿔버섯의 갓 30개를 모아 아서에게 가져가요. 뿔버섯(Lv 22)가 떨구고, 개미 터널 IV에 41마리로 가장 많아요.",
+      "en": "Bring 30 Horny Mushroom Cap to Arthur. Horny Mushroom (Lv 22) drops it; the densest map is Ant Tunnel IV with 41."
+     },
+     "tip": {
+      "ko": "3등급 기부라 기여도 1,050을 줘요.",
+      "en": "A grade 3 donation: 1,050 Contribution."
+     }
+    },
+    {
+     "q": 506027,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "죽은 자의 부적 30개를 모아 아서에게 가져가요. 좀비버섯(Lv 24)가 떨구고, 개미 터널 III에 61마리로 가장 많아요.",
+      "en": "Bring 30 Charm of the Undead to Arthur. Zombie Mushroom (Lv 24) drops it; the densest map is Ant Tunnel III with 61."
+     },
+     "tip": {
+      "ko": "3등급 기부라 기여도 1,050을 줘요.",
+      "en": "A grade 3 donation: 1,050 Contribution."
+     }
+    },
+    {
+     "q": 506028,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "와일드보어의 송곳니 30개를 모아 아서에게 가져가요. 와일드보어(Lv 25)가 떨구고, 와일드보어의 땅 II에 23마리로 가장 많아요.",
+      "en": "Bring 30 Wild Boar Tooth to Arthur. Wild Boar (Lv 25) drops it; the densest map is The Land of Wild Boar II with 23."
+     },
+     "tip": {
+      "ko": "3등급 기부라 기여도 1,050을 줘요.",
+      "en": "A grade 3 donation: 1,050 Contribution."
+     }
+    },
+    {
+     "q": 506029,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "이블아이의 꼬리 30개를 모아 아서에게 가져가요. 이블아이(Lv 27)가 떨구고, 이블아이의 동굴 III에 38마리로 가장 많아요.",
+      "en": "Bring 30 Evil Eye Tail to Arthur. Evil Eye (Lv 27) drops it; the densest map is The Cave of Evil Eye III with 38."
+     },
+     "tip": {
+      "ko": "4등급 기부라 기여도 1,225을 줘요.",
+      "en": "A grade 4 donation: 1,225 Contribution."
+     }
+    },
+    {
+     "q": 506030,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "리게이터의 가죽 30개를 모아 아서에게 가져가요. 리게이터(Lv 31)가 떨구고, 절망의 늪 I에 41마리로 가장 많아요.",
+      "en": "Bring 30 Ligator Skin to Arthur. Ligator (Lv 31) drops it; the densest map is The Swamp of Despair I with 41."
+     },
+     "tip": {
+      "ko": "5등급 기부라 기여도 1,400을 줘요.",
+      "en": "A grade 5 donation: 1,400 Contribution."
+     }
+    },
+    {
+     "q": 506031,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "커즈아이의 꼬리 30개를 모아 아서에게 가져가요. 커즈아이(Lv 33)가 떨구고, 슬리피 던전 V에 23마리로 가장 많아요.",
+      "en": "Bring 30 Curse Eye Tail to Arthur. Curse Eye (Lv 33) drops it; the densest map is Sleepy Dungeon V with 23."
+     },
+     "tip": {
+      "ko": "5등급 기부라 기여도 1,400을 줘요.",
+      "en": "A grade 5 donation: 1,400 Contribution."
+     }
+    },
+    {
+     "q": 506032,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "로랑의 집게발 30개를 모아 아서에게 가져가요. 로랑(Lv 38)가 떨구고, 해변 주변 전망 오두막에 36마리로 가장 많아요.",
+      "en": "Bring 30 Lorang Claw to Arthur. Lorang (Lv 38) drops it; the densest map is A Look-Out Shed Around the Beach with 36."
+     },
+     "tip": {
+      "ko": "6등급 기부라 기여도 1,575을 줘요.",
+      "en": "A grade 6 donation: 1,575 Contribution."
+     }
+    },
+    {
+     "q": 506033,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "콜드아이의 꼬리 30개를 모아 아서에게 가져가요. 콜드아이(Lv 40)가 떨구고, 빛을 잃은 터널 I에 32마리로 가장 많아요.",
+      "en": "Bring 30 Cold Eye Tail to Arthur. Cold Eye (Lv 40) drops it; the densest map is The Tunnel That Lost Light I with 32."
+     },
+     "tip": {
+      "ko": "7등급 기부라 기여도 1,750을 줘요.",
+      "en": "A grade 7 donation: 1,750 Contribution."
+     }
+    },
+    {
+     "q": 506034,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "토티의 등껍질 30개를 모아 아서에게 가져가요. 엄티(Lv 46)가 떨구고, 뜨거운 모래에 25마리로 가장 많아요.",
+      "en": "Bring 30 Tortie Shell to Arthur. Tortie (Lv 46) drops it; the densest map is Hot Sand with 25."
+     },
+     "tip": {
+      "ko": "8등급 기부라 기여도 1,925을 줘요.",
+      "en": "A grade 8 donation: 1,925 Contribution."
+     }
+    },
+    {
+     "q": 506035,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "드레이크의 머리뼈 30개를 모아 아서에게 가져가요. 카파 드레이크(Lv 45)가 떨구고, 동쪽 바위산 VII에 22마리로 가장 많아요.",
+      "en": "Bring 30 Drake Skull to Arthur. Copper Drake (Lv 45) drops it; the densest map is East Rocky Mountain VII with 22."
+     },
+     "tip": {
+      "ko": "9등급 기부라 기여도 2,100을 줘요.",
+      "en": "A grade 9 donation: 2,100 Contribution."
+     }
+    }
+   ]
+  },
+  {
+   "id": "house",
+   "title": {
+    "ko": "집 (17레벨) — 노란 버섯집",
+    "en": "A house (Lv 17) — the Yellow Mushroom House"
+   },
+   "lead": {
+    "ko": "2등급 방문객이 되면 집을 살 수 있어요. 퀘스트 두 개로 기여도 200과 첫 가구를 받아요.",
+    "en": "From grade 2 (Visitor) you can buy a house. Two quests pay 200 Contribution and your first furniture."
+   },
+   "steps": [
+    {
+     "q": 506061,
+     "at": "hall",
+     "do": {
+      "ko": "아서가 집을 가질 자격이 생겼다고 알려 줘요. 같은 시청 안의 토미에게 가요.",
+      "en": "Arthur says you may now own a house. Talk to Tommy in the same Town Hall."
+     },
+     "go": "n230",
+     "tip": {
+      "ko": "2등급(17레벨)부터 받을 수 있고 기여도 100을 줘요.",
+      "en": "Available from grade 2 (Lv 17); it pays 100 Contribution."
+     }
+    },
+    {
+     "q": 506062,
+     "at": "n230",
+     "do": {
+      "ko": "토미가 헤네시스 동쪽의 비안카를 소개해 줘요. 비안카는 마을 오른쪽 노란 버섯집 앞에 있어요. 가구 세 개와 기여도 100을 받아요.",
+      "en": "Tommy sends you to Bianca, in front of the yellow mushroom house on the east side of Henesys. You get three pieces of furniture and 100 Contribution."
+     },
+     "go": "n231",
+     "tip": {
+      "ko": "집은 비안카에게 메소로 사요. 계정에 한 채이고 모든 캐릭터가 같이 써요.",
+      "en": "Bianca sells the house for mesos: one per account, shared by all your characters."
+     },
+     "big": true
+    }
+   ]
+  },
+  {
+   "id": "s17",
+   "title": {
+    "ko": "스토리 ① 17레벨 (2등급) — 펫 장비 주문서",
+    "en": "Story ① Lv 17 (grade 2) — Pet Equip scroll"
+   },
+   "lead": {
+    "ko": "브루스와 딸 아얀의 이야기예요. 다섯 단계 모두 심부름이고 재료는 한 번만 모아요.",
+    "en": "Bruce and his daughter Ayan: five errands with one round of materials."
+   },
+   "steps": [
+    {
+     "q": 506036,
+     "at": "bruce",
+     "do": {
+      "ko": "브루스가 딸에게 마음을 전하고 싶어 해요. 밍밍 부인에게 가서 방법을 물어봐요.",
+      "en": "Bruce wants to show his daughter how he feels. Go ask Mrs. Ming Ming for advice."
+     },
+     "go": "mingming",
+     "tip": {
+      "ko": "'I Need to Find My Daughter 2'와 브루스 첫 인사를 끝내야 받을 수 있어요.",
+      "en": "Needs 'I Need to Find My Daughter 2' and the First Greeting with Bruce."
+     }
+    },
+    {
+     "q": 506037,
+     "at": "mingming",
+     "do": {
+      "ko": "밍밍 부인이 준 요리 레시피를 브루스에게 가져다줘요.",
+      "en": "Take Mrs. Ming Ming's Cooking Recipe to Bruce."
+     },
+     "go": "bruce"
+    },
+    {
+     "q": 506038,
+     "at": "bruce",
+     "do": {
+      "ko": "장작 15개, 달걀 3개, 사과 3개, 오렌지 3개를 브루스에게 가져가요. 달걀·사과·오렌지는 헤네시스 잡화점에서 사고(사과 20, 달걀 30, 오렌지 50메소), 장작은 도끼 나무기둥과 다크 엑스텀프가 떨궈요.",
+      "en": "Bring Bruce 15 Firewood, 3 Eggs, 3 Apples and 3 Oranges. Buy the food at the Henesys general store (Apple 20, Egg 30, Orange 50 mesos); Axe Stumps and Dark Axe Stumps drop Firewood."
+     },
+     "tip": {
+      "ko": "장작은 자유시장에서 개당 20메소 안팎이에요(11월 17일 기준).",
+      "en": "Firewood is about 20 mesos each on the Free Market (Nov 17)."
+     }
+    },
+    {
+     "q": 506039,
+     "at": "bruce",
+     "do": {
+      "ko": "브루스가 만든 특제 케이크를 페리온의 아얀에게 전해 줘요.",
+      "en": "Deliver Bruce's Special Cake to Ayan in Perion."
+     },
+     "go": "n506"
+    },
+    {
+     "q": 506040,
+     "at": "n506",
+     "do": {
+      "ko": "아얀의 답을 듣고 브루스에게 돌아가면 끝나요. 펫 장비 주문서 하나를 받아요.",
+      "en": "Go back to Bruce with Ayan's answer. You receive one Pet Equip scroll."
+     },
+     "go": "bruce",
+     "big": true
+    }
+   ]
+  },
+  {
+   "id": "s27",
+   "title": {
+    "ko": "스토리 ② 27레벨 (4등급) — 귀고리 주문서",
+    "en": "Story ② Lv 27 (grade 4) — Earring scroll"
+   },
+   "lead": {
+    "ko": "밍밍 부인과 촌장 스탄의 이야기예요. 개미굴에서 망치를 찾는 단계가 하나 있어요.",
+    "en": "Mrs. Ming Ming and Chief Stan, with one hunt in the Ant Tunnel."
+   },
+   "steps": [
+    {
+     "q": 506041,
+     "at": "mingming",
+     "do": {
+      "ko": "밍밍 부인이 촌장 스탄을 걱정해요. 제이에게 가서 이야기를 들어요.",
+      "en": "Mrs. Ming Ming is worried about Chief Stan. Go and hear what Jay knows."
+     },
+     "go": "n205",
+     "tip": {
+      "ko": "'Estelle's Special Sauce'와 밍밍 부인 첫 인사를 끝내야 받을 수 있어요.",
+      "en": "Needs 'Estelle's Special Sauce' and the First Greeting with Mrs. Ming Ming."
+     }
+    },
+    {
+     "q": 506042,
+     "at": "n205",
+     "do": {
+      "ko": "제이에게 들은 촌장의 옛이야기를 밍밍 부인에게 전해요.",
+      "en": "Bring Jay's story about the chief back to Mrs. Ming Ming."
+     },
+     "go": "mingming"
+    },
+    {
+     "q": 506043,
+     "at": "mingming",
+     "do": {
+      "ko": "개미굴 깊은 곳의 이블아이를 잡아 낡은 촌장 스탄의 망치를 찾아와요. 이블아이의 동굴 II·III에 많아요.",
+      "en": "Hunt Evil Eyes deep in the Ant Tunnel until Old Chief Stan's Hammer drops; Evil Eye's Cave II and III have the most."
+     }
+    },
+    {
+     "q": 506044,
+     "at": "mingming",
+     "do": {
+      "ko": "밍밍 부인이 손질한 망치를 촌장 스탄에게 가져다줘요.",
+      "en": "Take the restored hammer to Chief Stan."
+     },
+     "go": "stan"
+    },
+    {
+     "q": 506045,
+     "at": "stan",
+     "do": {
+      "ko": "촌장 스탄의 답을 밍밍 부인에게 전하면 끝나요. 귀고리 주문서(힘·민첩·지력 중급) 하나를 받아요.",
+      "en": "Report back to Mrs. Ming Ming. You receive one intermediate Earring scroll (STR, DEX or INT)."
+     },
+     "go": "mingming",
+     "big": true
+    }
+   ]
+  },
+  {
+   "id": "s37",
+   "title": {
+    "ko": "스토리 ③ 37레벨 (6등급) — 전신 갑옷 주문서",
+    "en": "Story ③ Lv 37 (grade 6) — Overall Armor scroll"
+   },
+   "lead": {
+    "ko": "카밀라와 피아의 이야기예요.",
+    "en": "Camila and Pia."
+   },
+   "steps": [
+    {
+     "q": 506046,
+     "at": "camila",
+     "do": {
+      "ko": "카밀라가 피아에게 줄 선물을 고민해요. 헤네시스 공원의 피아에게 가서 뭘 갖고 싶은지 물어봐요.",
+      "en": "Camila wants a gift for Pia. Ask Pia in Henesys Park what she would like."
+     },
+     "go": "henesys-park",
+     "tip": {
+      "ko": "'Camila's Gem'과 카밀라 첫 인사를 끝내야 받을 수 있어요.",
+      "en": "Needs 'Camila's Gem' and the First Greeting with Camila."
+     }
+    },
+    {
+     "q": 506047,
+     "at": "henesys-park",
+     "do": {
+      "ko": "피아의 소원을 카밀라에게 전해요.",
+      "en": "Tell Camila what Pia wished for."
+     },
+     "go": "camila"
+    },
+    {
+     "q": 506048,
+     "at": "camila",
+     "do": {
+      "ko": "주니어 부기의 뿔 10개를 카밀라에게 가져가요.",
+      "en": "Bring Camila 10 Jr. Boogie Horns."
+     }
+    },
+    {
+     "q": 506049,
+     "at": "camila",
+     "do": {
+      "ko": "카밀라가 만든 매끈한 뿔 구슬을 피아에게 전해 줘요.",
+      "en": "Deliver the Smooth Horn Marble to Pia."
+     },
+     "go": "henesys-park"
+    },
+    {
+     "q": 506050,
+     "at": "henesys-park",
+     "do": {
+      "ko": "피아의 답을 카밀라에게 전하면 끝나요. 전신 갑옷 주문서(방어·힘·민첩 중급) 하나를 받아요.",
+      "en": "Report back to Camila. You receive one intermediate Overall Armor scroll (DEF, STR or DEX)."
+     },
+     "go": "camila",
+     "big": true
+    }
+   ]
+  },
+  {
+   "id": "s47",
+   "title": {
+    "ko": "스토리 ④ 47레벨 (8등급) — 장갑 크리티컬 주문서",
+    "en": "Story ④ Lv 47 (grade 8) — Gloves Crit. Rate scroll"
+   },
+   "lead": {
+    "ko": "마야를 구해 준 사람을 찾는 이야기예요. 머쉬맘을 잡고 드레이크의 머리뼈 50개를 모아요.",
+    "en": "Finding the stranger who saved Maya: Mushmom, then 50 Drake Skulls."
+   },
+   "steps": [
+    {
+     "q": 506051,
+     "at": "maya",
+     "do": {
+      "ko": "헤네시스의 '다른 사람의 집'에 나오는 머쉬맘을 잡아 찢어진 쪽지를 얻고 마야에게 돌아가요.",
+      "en": "Defeat Mushmom at Someone Else's House near Henesys for the Torn Note, then return to Maya."
+     },
+     "tip": {
+      "ko": "'Delivering the Weird Medicine'과 마야 첫 인사를 끝내야 받을 수 있어요. 머쉬맘은 40레벨 보스예요.",
+      "en": "Needs 'Delivering the Weird Medicine' and the First Greeting with Maya. Mushmom is a Lv 40 boss."
+     }
+    },
+    {
+     "q": 506052,
+     "at": "maya",
+     "do": {
+      "ko": "쪽지에 적힌 이름을 따라 슬리피우드의 크리슈라마에게 가요.",
+      "en": "Follow the name on the note to Chrishrama in Sleepywood."
+     },
+     "go": "n602"
+    },
+    {
+     "q": 506053,
+     "at": "n602",
+     "do": {
+      "ko": "드레이크의 머리뼈 50개를 크리슈라마에게 가져가요. 드레이크와 카파 드레이크가 떨궈요.",
+      "en": "Bring Chrishrama 50 Drake Skulls; Drakes and Copper Drakes drop them."
+     }
+    },
+    {
+     "q": 506054,
+     "at": "n602",
+     "do": {
+      "ko": "크리슈라마가 알려 준 대로 페리온 꼭대기에 있는 만지를 찾아가요.",
+      "en": "Chrishrama points you to the man at the top of Perion: go and see Manji."
+     },
+     "go": "n502"
+    },
+    {
+     "q": 506055,
+     "at": "n502",
+     "do": {
+      "ko": "만지의 이야기를 마야에게 전하면 끝나요. 장갑 크리티컬 확률 주문서 하나를 받아요.",
+      "en": "Bring Manji's story back to Maya. You receive one Gloves Crit. Rate scroll."
+     },
+     "go": "maya",
+     "big": true
+    }
+   ]
+  },
+  {
+   "id": "s57",
+   "title": {
+    "ko": "스토리 ⑤ 57레벨 (10등급) — 헤네시스 귀고리",
+    "en": "Story ⑤ Lv 57 (grade 10) — Henesys Earrings"
+   },
+   "lead": {
+    "ko": "명예 시민이 되면 아테나 피어스가 부르는 마지막 이야기예요. 헤네시스 귀고리는 57레벨 귀고리예요.",
+    "en": "The Citizen of Honor line with Athena Pierce, ending in the Lv 57 Henesys Earrings."
+   },
+   "steps": [
+    {
+     "q": 506056,
+     "at": "athena",
+     "do": {
+      "ko": "57레벨이 되면 받아져요. 헤네시스를 이끄는 아테나 피어스에게 가요.",
+      "en": "Offered at Lv 57: go and see Athena Pierce, who leads the town."
+     },
+     "tip": {
+      "ko": "10등급(명예 시민)에 열리는 마지막 스토리예요.",
+      "en": "The last story line, opened at grade 10 (Citizen of Honor)."
+     }
+    },
+    {
+     "q": 506057,
+     "at": "athena",
+     "do": {
+      "ko": "스톤골렘이나 다크 스톤골렘을 잡아 아테나 피어스의 상자를 찾아와요. 스톤골렘은 골렘의 사원, 다크 스톤골렘은 슬리피 던전 V에 많아요.",
+      "en": "Hunt Stone Golems or Dark Stone Golems until Athena Pierce's Box drops. Stone Golems fill the Golem's Temple; Dark Stone Golems are thickest in Sleepy Dungeon V."
+     }
+    },
+    {
+     "q": 506058,
+     "at": "athena",
+     "do": {
+      "ko": "상자에서 나온 부서진 나무 활을 헤네시스 시장의 비셔스에게 가져가요.",
+      "en": "Take the Broken Wooden Bow from the box to Vicious in the Henesys Market."
+     },
+     "go": "n208"
+    },
+    {
+     "q": 506059,
+     "at": "n208",
+     "do": {
+      "ko": "용의 가죽 10개와 마법의 조각 10개를 비셔스에게 가져가요.",
+      "en": "Bring Vicious 10 Dragon Skins and 10 Fragments of Magic."
+     }
+    },
+    {
+     "q": 506060,
+     "at": "n208",
+     "do": {
+      "ko": "수리된 나무 활을 아테나 피어스에게 전하면 헤네시스 귀고리를 받아요.",
+      "en": "Return the Repaired Wooden Bow to Athena Pierce for the Henesys Earrings."
+     },
+     "go": "athena",
+     "big": true
+    }
+   ]
+  }
+ ],
+ "itemNotes": {
+  "4031116": {
+   "ko": "이블아이를 잡으면 나와요",
+   "en": "Drops from Evil Eyes during the quest"
+  },
+  "4031122": {
+   "ko": "머쉬맘을 잡으면 나와요",
+   "en": "Drops from Mushmom during the quest"
+  },
+  "4031123": {
+   "ko": "스톤골렘·다크 스톤골렘을 잡으면 나와요",
+   "en": "Drops from Stone Golems and Dark Stone Golems during the quest"
+  },
+  "4031126": {
+   "ko": "리게이터를 잡으면 나와요",
+   "en": "Drops from Ligators during the quest"
+  },
+  "4031131": {
+   "ko": "크로코를 잡으면 나와요",
+   "en": "Drops from Crocos during the quest"
+  },
+  "4031133": {
+   "ko": "멜러디를 잡으면 나와요",
+   "en": "Drops from Maladies during the quest"
+  },
+  "2010001": {
+   "ko": "헤네시스 잡화점에서 팔아요",
+   "en": "Sold at the Henesys general store"
+  },
+  "2010002": {
+   "ko": "헤네시스 잡화점에서 팔아요",
+   "en": "Sold at the Henesys general store"
+  },
+  "2010004": {
+   "ko": "헤네시스 잡화점에서 팔아요",
+   "en": "Sold at the Henesys general store"
+  }
+ }
+}

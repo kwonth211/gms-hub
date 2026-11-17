@@ -1,0 +1,1129 @@
+{
+ "slug": "citizenship-kerning",
+ "order": 14,
+ "icon": "scroll",
+ "level": {
+  "ko": "Lv 12 ~ 57",
+  "en": "Lv 12–57"
+ },
+ "title": {
+  "ko": "커닝시티 시민권 퀘스트 공략",
+  "en": "Kerning City citizenship quests"
+ },
+ "h1": {
+  "ko": "커닝시티 시민권 퀘스트 공략: 가입부터 명예 시민까지",
+  "en": "To the Gray City, Kerning City: every Kerning City citizenship quest up to Citizen of Honor"
+ },
+ "lead": {
+  "ko": "헤네시스 시청의 아서가 주는 To the Gray City, Kerning City로 시작해 커닝시티 시민회관의 록시에게 가입하는 시민권 퀘스트를 한 페이지에 모았어요. 매일 하는 주민 인사, 매주 하는 기부, 집, 등급마다 열리는 스토리 퀘스트 다섯 줄까지 순서대로 따라가면 돼요.",
+  "en": "Everything that follows \"To the Gray City, Kerning City\": enrolling with Roxy in the Kerning City Civic Center, the daily greetings, the weekly donations, the house and the five story lines that open as your grade rises."
+ },
+ "seoTitle": {
+  "ko": "글클메 커닝시티 시민권 퀘스트 공략: 가입·주민 인사·기부·집·스토리 퀘스트 | GMS Hub",
+  "en": "To the Gray City, Kerning City & Donating to Kerning City: MapleStory Classic World Citizenship Quest Guide | GMS Hub"
+ },
+ "desc": {
+  "ko": "커닝시티 시민권 퀘스트 전부: 12레벨 가입, 게시판 주민 인사 18개, 주간 기부 재료 18종과 모으는 곳, 집 퀘스트, 17·27·37·47·57레벨 스토리와 커닝시티 귀고리.",
+  "en": "Every Kerning City citizenship quest in MapleStory Classic World: To the Gray City, Kerning City at Lv 12, the 18 resident greetings, all 18 Donating to Kerning City materials and where to farm them, the housing quests and the Lv 17 to 57 story lines ending in the Kerning City Earrings."
+ },
+ "card": {
+  "ko": "12레벨 가입부터 57레벨 커닝시티 귀고리까지, 커닝시티 시민권 퀘스트 전부.",
+  "en": "From enrolling at Lv 12 to the Lv 57 Kerning City Earrings: every Kerning City citizenship quest."
+ },
+ "reward": {
+  "ko": "커닝시티 귀고리 · 주문서 4종 · 집",
+  "en": "Kerning City Earrings · four scrolls · a house"
+ },
+ "updated": "2026-11-17",
+ "places": {
+  "hall": {
+   "ko": "커닝시티 시민회관 · 록시",
+   "en": "Kerning City Civic Center · Roxy"
+  },
+  "board": {
+   "ko": "커닝시티 커뮤니티 게시판",
+   "en": "Kerning City Community Board"
+  },
+  "alex": {
+   "ko": "커닝시티 · 알렉스",
+   "en": "Kerning City · Alex"
+  },
+  "nella": {
+   "ko": "커닝시티 · 넬라",
+   "en": "Kerning City · Nella"
+  },
+  "icarus": {
+   "ko": "커닝시티 · 이카루스",
+   "en": "Kerning City · Icarus"
+  },
+  "janedoe": {
+   "ko": "커닝시티 · 제인 도",
+   "en": "Kerning City · Jane Doe"
+  },
+  "jake": {
+   "ko": "커닝시티 · 제이크",
+   "en": "Kerning City · Jake"
+  },
+  "pickall": {
+   "ko": "커닝시티 · 미스터 픽올",
+   "en": "Kerning City · Mr. Pickall"
+  },
+  "chunji": {
+   "ko": "커닝시티 · 천지",
+   "en": "Kerning City · Chun Ji"
+  },
+  "darklord": {
+   "ko": "커닝시티 · 다크로드",
+   "en": "Kerning City · Dark Lord"
+  },
+  "n426": {
+   "ko": "커닝시티 시민회관 · 잭",
+   "en": "Kerning City Civic Center · Jack"
+  },
+  "n427": {
+   "ko": "커닝시티 · 스칼렛",
+   "en": "Kerning City · Scarlett"
+  },
+  "n404": {
+   "ko": "커닝시티 · 콩에서 온 몽",
+   "en": "Kerning City · Mong from Kong"
+  },
+  "n111": {
+   "ko": "리스항구 · 미스터 골드스타인",
+   "en": "Lith Harbor · Mr. Goldstein"
+  },
+  "n401": {
+   "ko": "커닝시티 · 뒷골목 제이엠",
+   "en": "Kerning City · JM From tha Streetz"
+  },
+  "n436": {
+   "ko": "은둔자의 오두막 · 슬레이드",
+   "en": "The Hermit's Cabin · Slade"
+  }
+ },
+ "npcs": {
+  "402": "알렉스",
+  "403": "슈미",
+  "406": "넬라",
+  "407": "이카루스",
+  "412": "제인 도",
+  "417": "제이크",
+  "900015": "미스터 픽올",
+  "900014": "천지",
+  "411": "다크로드",
+  "111": "미스터 골드스타인",
+  "205": "제이",
+  "208": "비셔스",
+  "230": "토미",
+  "231": "비안카",
+  "401": "뒷골목 제이엠",
+  "404": "콩에서 온 몽",
+  "426": "잭",
+  "427": "스칼렛",
+  "436": "슬레이드",
+  "502": "만지",
+  "506": "아얀",
+  "602": "크리슈라마",
+  "229": "아서",
+  "425": "록시",
+  "202": "촌장 스탄",
+  "203": "밍밍 부인",
+  "204": "카밀라",
+  "206": "브루스",
+  "235": "커뮤니티 게시판",
+  "431": "커뮤니티 게시판"
+ },
+ "itemNames": {
+  "4031111": {
+   "ko": "Mrs. Ming Ming's Cooking Recipe",
+   "en": "Mrs. Ming Ming's Cooking Recipe"
+  },
+  "4031112": {
+   "ko": "Bruce's Special Cake",
+   "en": "Bruce's Special Cake"
+  },
+  "4031113": {
+   "ko": "Vitamin Gummy",
+   "en": "Vitamin Gummy"
+  },
+  "4031114": {
+   "ko": "Special Stirge Phobia Cure",
+   "en": "Special Stirge Phobia Cure"
+  },
+  "4031116": {
+   "ko": "Old Chief Stan's Hammer",
+   "en": "Old Chief Stan's Hammer"
+  },
+  "4031117": {
+   "ko": "Chief Stan's Hammer",
+   "en": "Chief Stan's Hammer"
+  },
+  "4031121": {
+   "ko": "Smooth Horn Marble",
+   "en": "Smooth Horn Marble"
+  },
+  "4031122": {
+   "ko": "Torn Note",
+   "en": "Torn Note"
+  },
+  "4031123": {
+   "ko": "Athena Pierce's Box",
+   "en": "Athena Pierce's Box"
+  },
+  "4031124": {
+   "ko": "Broken Wooden Bow",
+   "en": "Broken Wooden Bow"
+  },
+  "4031125": {
+   "ko": "Repaired Wooden Bow",
+   "en": "Repaired Wooden Bow"
+  },
+  "4031126": {
+   "ko": "Alex's Gift Sack",
+   "en": "Alex's Gift Sack"
+  },
+  "4031127": {
+   "ko": "A Gift for Nella",
+   "en": "A Gift for Nella"
+  },
+  "4031128": {
+   "ko": "A Gift for JM",
+   "en": "A Gift for JM"
+  },
+  "4031131": {
+   "ko": "Encrypted Document",
+   "en": "Encrypted Document"
+  },
+  "4031132": {
+   "ko": "Encrypted Document",
+   "en": "Encrypted Document"
+  },
+  "4031133": {
+   "ko": "Ink of Truth",
+   "en": "Ink of Truth"
+  },
+  "4031135": {
+   "ko": "Deciphered Document",
+   "en": "Deciphered Document"
+  }
+ },
+ "sources": [
+  {
+   "name": "클메CM — 글클메 시민 9등급 되면 장공 하급이 4만 메소?｜시민권·집 총정리",
+   "url": "https://www.youtube.com/watch?v=P1fUwQ8gAQc",
+   "date": "2026-11-02"
+  },
+  {
+   "name": "Maple Classic Guide — Citizenship Guide: Henesys or Kerning?",
+   "url": "https://www.mapleclassicguide.com/citizenship/",
+   "date": "2026-11-12"
+  },
+  {
+   "name": "Classic Maple Wiki — Citizenship 101: Henesys vs Kerning City",
+   "url": "https://classicmaplewiki.com/guides/citizenship-henesys-vs-kerning-city/",
+   "date": "2026-10-27"
+  }
+ ],
+ "chains": [
+  {
+   "id": "join",
+   "title": {
+    "ko": "가입 (12레벨) — 커닝시티 시민 되기",
+    "en": "Enrolling (Lv 12) — becoming a citizen of Kerning City"
+   },
+   "lead": {
+    "ko": "커닝시티 시민회관의 록시에게서 시작해요. 가입한 마을에서만 기여도가 쌓이고, 등급이 오르면 상점 할인과 시민 상점, 집, 스토리 퀘스트가 차례로 열려요.",
+    "en": "It starts with Roxy in the Kerning City Civic Center. Contribution counts only in the town you joined; higher grades open shop discounts, the citizen shops, a house and the story quests."
+   },
+   "notes": {
+    "ko": [
+     "시민 등급은 10단계예요. 등급마다 캐릭터 레벨 조건이 있어요: 1등급 12, 2등급 17, 3등급 22, 4등급 27, 5등급 32, 6등급 37, 7등급 42, 8등급 47, 9등급 52, 10등급 57레벨.",
+     "기여도는 2등급까지 1,500, 3등급까지 3,500이 필요해요. 기여도가 차면 담당 NPC에게 말을 걸어 승급해요.",
+     "매일 게시판의 주민 인사 1개(1등급 100, 등급마다 25씩 늘어 10등급 325)와 매주 기부 1개(재료 30개, 700~2,100)가 기본 수입이에요. 이 둘만 하면 2등급까지 8일쯤 걸려요.",
+     "한 번에 한 마을의 시민만 될 수 있어요. 마을을 옮기면 5만~10만 메소가 든다고 알려져 있으니 처음에 잘 고르세요."
+    ],
+    "en": [
+     "There are ten citizen grades, each with a character level: grade 1 at Lv 12, 2 at 17, 3 at 22, 4 at 27, 5 at 32, 6 at 37, 7 at 42, 8 at 47, 9 at 52 and 10 at 57.",
+     "Grade 2 takes 1,500 Contribution and grade 3 takes 3,500. When you have enough, talk to the clerk to be promoted.",
+     "The steady income is one resident greeting from the board each day (100 at grade 1, 25 more per grade, 325 at grade 10) and one donation each week (30 materials, 700 to 2,100). Those two alone reach grade 2 in about eight days.",
+     "You can be a citizen of one town at a time. Moving is reported to cost 50,000 to 100,000 mesos, so choose carefully."
+    ]
+   },
+   "steps": [
+    {
+     "q": 506100,
+     "at": "hall",
+     "where": {
+      "ko": "커닝시티 오른쪽 끝, 커뮤니티 게시판 옆 문으로 들어가면 시민회관이에요. 록시는 그 안에 있어요.",
+      "en": "At the far right of Kerning City, the door beside the Community Board leads into the Civic Center; Roxy is inside."
+     },
+     "do": {
+      "ko": "헤네시스 시청의 아서에게서 받아요(12레벨에 자동으로 뜨는 To Henesys, the Prairie Town을 먼저 끝내야 해요). 커닝시티 시민회관으로 가서 록시에게 말을 걸면 끝나요.",
+      "en": "Arthur in the Henesys Town Hall gives it once 'To Henesys, the Prairie Town' (automatic at Lv 12) is done. Go to the Kerning City Civic Center and talk to Roxy."
+     },
+     "tip": {
+      "ko": "록시에게 말을 걸어 커닝시티 시민으로 가입할 수 있어요. 커닝시티 상점은 전신 갑옷 LUK·INT 주문서와 귀고리 회피 주문서를 팔아서 도적과 마법사에게 맞아요.",
+      "en": "Talk to Roxy to enrol in Kerning City. Its citizen shop sells Overall LUK and INT scrolls and Earring Avoidability scrolls, which suits thieves and magicians."
+     }
+    }
+   ]
+  },
+  {
+   "id": "greet",
+   "title": {
+    "ko": "매일 하는 것 — 게시판 주민 인사",
+    "en": "Every day — resident greetings from the board"
+   },
+   "lead": {
+    "ko": "커뮤니티 게시판에 하루에 주민 한 명의 인사 퀘스트가 떠요. 게시판에서 받고 그 주민에게 가서 말을 걸면 끝나요. 재료도 사냥도 없어서 매일 1분이면 돼요.",
+    "en": "The Community Board shows one resident's greeting each day. Take it there and go talk to that resident: no materials, no hunting, a minute a day."
+   },
+   "notes": {
+    "ko": [
+     "주민마다 한 번만 하는 '첫 인사'(First Greeting)와 그 뒤 반복되는 '안부 묻기'(Asking After)가 있어요.",
+     "인사 한 번의 기여도는 1등급 100이고 등급마다 25씩 늘어요.",
+     "5등급(32레벨)이 되면 마을 대표 두 명의 인사가 추가돼요."
+    ],
+    "en": [
+     "Each resident has a one-time First Greeting and then a repeatable Asking After.",
+     "One greeting pays 100 Contribution at grade 1 and 25 more per grade.",
+     "Grade 5 (Lv 32) adds the two town leaders."
+    ]
+   },
+   "steps": [
+    {
+     "q": 506101,
+     "at": "board",
+     "go": "alex",
+     "do": {
+      "ko": "게시판에서 받고 알렉스에게 가서 말을 걸면 끝나요. 한 번만 하는 퀘스트예요.",
+      "en": "Take it from the board and talk to Alex. It is done once."
+     },
+     "where": {
+      "ko": "커닝시티 오른쪽 끝, 시민회관 문이 있는 높은 통로에 있어요.",
+      "en": "At the far right of Kerning City, on the raised walkway by the Civic Center doors."
+     },
+     "tip": {
+      "ko": "알렉스: 커닝시티 가운데에서 오른쪽, 높은 층 발판에 있어요.",
+      "en": "Alex: Right of centre in Kerning City, on an upper platform."
+     }
+    },
+    {
+     "q": 506102,
+     "at": "board",
+     "go": "alex",
+     "do": {
+      "ko": "첫 인사를 끝낸 뒤 게시판에 뜨는 반복 퀘스트예요. 알렉스에게 가서 말을 걸면 기여도를 줘요.",
+      "en": "The repeatable follow-up on the board once the first greeting is done: talk to Alex for Contribution."
+     }
+    },
+    {
+     "q": 506103,
+     "at": "board",
+     "go": "subway",
+     "do": {
+      "ko": "게시판에서 받고 슈미에게 가서 말을 걸면 끝나요. 한 번만 하는 퀘스트예요.",
+      "en": "Take it from the board and talk to Shumi. It is done once."
+     },
+     "tip": {
+      "ko": "슈미: 커닝시티 아래쪽 가운데, 지하철 입구 근처예요.",
+      "en": "Shumi: Bottom centre of Kerning City, near the subway entrance."
+     }
+    },
+    {
+     "q": 506104,
+     "at": "board",
+     "go": "subway",
+     "do": {
+      "ko": "첫 인사를 끝낸 뒤 게시판에 뜨는 반복 퀘스트예요. 슈미에게 가서 말을 걸면 기여도를 줘요.",
+      "en": "The repeatable follow-up on the board once the first greeting is done: talk to Shumi for Contribution."
+     }
+    },
+    {
+     "q": 506105,
+     "at": "board",
+     "go": "nella",
+     "do": {
+      "ko": "게시판에서 받고 넬라에게 가서 말을 걸면 끝나요. 한 번만 하는 퀘스트예요.",
+      "en": "Take it from the board and talk to Nella. It is done once."
+     },
+     "tip": {
+      "ko": "넬라: 커닝시티 한가운데, 중간 높이 발판에 있어요.",
+      "en": "Nella: In the middle of Kerning City, on a mid-level platform."
+     }
+    },
+    {
+     "q": 506106,
+     "at": "board",
+     "go": "nella",
+     "do": {
+      "ko": "첫 인사를 끝낸 뒤 게시판에 뜨는 반복 퀘스트예요. 넬라에게 가서 말을 걸면 기여도를 줘요.",
+      "en": "The repeatable follow-up on the board once the first greeting is done: talk to Nella for Contribution."
+     }
+    },
+    {
+     "q": 506107,
+     "at": "board",
+     "go": "icarus",
+     "do": {
+      "ko": "게시판에서 받고 이카루스에게 가서 말을 걸면 끝나요. 한 번만 하는 퀘스트예요.",
+      "en": "Take it from the board and talk to Icarus. It is done once."
+     },
+     "tip": {
+      "ko": "이카루스: 커닝시티 가운데 건물의 가장 높은 곳에 있어요.",
+      "en": "Icarus: At the very top of the central buildings in Kerning City."
+     }
+    },
+    {
+     "q": 506108,
+     "at": "board",
+     "go": "icarus",
+     "do": {
+      "ko": "첫 인사를 끝낸 뒤 게시판에 뜨는 반복 퀘스트예요. 이카루스에게 가서 말을 걸면 기여도를 줘요.",
+      "en": "The repeatable follow-up on the board once the first greeting is done: talk to Icarus for Contribution."
+     }
+    },
+    {
+     "q": 506109,
+     "at": "board",
+     "go": "janedoe",
+     "do": {
+      "ko": "게시판에서 받고 제인 도에게 가서 말을 걸면 끝나요. 한 번만 하는 퀘스트예요.",
+      "en": "Take it from the board and talk to Jane Doe. It is done once."
+     },
+     "tip": {
+      "ko": "제인 도: 커닝시티의 니오라 병원 안에 있어요.",
+      "en": "Jane Doe: Inside Niora Hospital in Kerning City."
+     }
+    },
+    {
+     "q": 506110,
+     "at": "board",
+     "go": "janedoe",
+     "do": {
+      "ko": "첫 인사를 끝낸 뒤 게시판에 뜨는 반복 퀘스트예요. 제인 도에게 가서 말을 걸면 기여도를 줘요.",
+      "en": "The repeatable follow-up on the board once the first greeting is done: talk to Jane Doe for Contribution."
+     }
+    },
+    {
+     "q": 506111,
+     "at": "board",
+     "go": "jake",
+     "do": {
+      "ko": "게시판에서 받고 제이크에게 가서 말을 걸면 끝나요. 한 번만 하는 퀘스트예요.",
+      "en": "Take it from the board and talk to Jake. It is done once."
+     },
+     "tip": {
+      "ko": "제이크: 커닝시티 지하철 매표소에 있어요.",
+      "en": "Jake: At the Kerning City subway ticketing booth."
+     }
+    },
+    {
+     "q": 506112,
+     "at": "board",
+     "go": "jake",
+     "do": {
+      "ko": "첫 인사를 끝낸 뒤 게시판에 뜨는 반복 퀘스트예요. 제이크에게 가서 말을 걸면 기여도를 줘요.",
+      "en": "The repeatable follow-up on the board once the first greeting is done: talk to Jake for Contribution."
+     }
+    },
+    {
+     "q": 506113,
+     "at": "board",
+     "go": "pickall",
+     "do": {
+      "ko": "게시판에서 받고 미스터 픽올에게 가서 말을 걸면 끝나요. 한 번만 하는 퀘스트예요.",
+      "en": "Take it from the board and talk to Mr. Pickall. It is done once."
+     },
+     "tip": {
+      "ko": "미스터 픽올: 커닝시티 오른쪽 아래, 바닥 길에 있어요.",
+      "en": "Mr. Pickall: Lower right of Kerning City, at street level."
+     }
+    },
+    {
+     "q": 506114,
+     "at": "board",
+     "go": "pickall",
+     "do": {
+      "ko": "첫 인사를 끝낸 뒤 게시판에 뜨는 반복 퀘스트예요. 미스터 픽올에게 가서 말을 걸면 기여도를 줘요.",
+      "en": "The repeatable follow-up on the board once the first greeting is done: talk to Mr. Pickall for Contribution."
+     }
+    },
+    {
+     "q": 506115,
+     "at": "board",
+     "go": "chunji",
+     "do": {
+      "ko": "게시판에서 받고 천지에게 가서 말을 걸면 끝나요. 한 번만 하는 퀘스트예요. 5등급(32레벨)부터 게시판에 떠요.",
+      "en": "Take it from the board and talk to Chun Ji. It is done once. It appears from grade 5 (Lv 32)."
+     },
+     "tip": {
+      "ko": "천지: 커닝시티 공사장에 있어요.",
+      "en": "Chun Ji: At the Kerning City Construction Site."
+     }
+    },
+    {
+     "q": 506116,
+     "at": "board",
+     "go": "chunji",
+     "do": {
+      "ko": "첫 인사를 끝낸 뒤 게시판에 뜨는 반복 퀘스트예요. 천지에게 가서 말을 걸면 기여도를 줘요.",
+      "en": "The repeatable follow-up on the board once the first greeting is done: talk to Chun Ji for Contribution."
+     }
+    },
+    {
+     "q": 506117,
+     "at": "board",
+     "go": "darklord",
+     "do": {
+      "ko": "게시판에서 받고 다크로드에게 가서 말을 걸면 끝나요. 한 번만 하는 퀘스트예요. 5등급(32레벨)부터 게시판에 떠요.",
+      "en": "Take it from the board and talk to Dark Lord. It is done once. It appears from grade 5 (Lv 32)."
+     },
+     "tip": {
+      "ko": "다크로드: 커닝시티 도적 아지트의 전직 교관이에요.",
+      "en": "Dark Lord: The thief job instructor in the Thieves' Hideout."
+     }
+    },
+    {
+     "q": 506118,
+     "at": "board",
+     "go": "darklord",
+     "do": {
+      "ko": "첫 인사를 끝낸 뒤 게시판에 뜨는 반복 퀘스트예요. 다크로드에게 가서 말을 걸면 기여도를 줘요.",
+      "en": "The repeatable follow-up on the board once the first greeting is done: talk to Dark Lord for Contribution."
+     }
+    }
+   ]
+  },
+  {
+   "id": "donate",
+   "title": {
+    "ko": "매주 하는 것 — 마을 기부",
+    "en": "Every week — donating to the town"
+   },
+   "lead": {
+    "ko": "게시판에서 기부 퀘스트를 받아 몬스터 재료 30개를 록시에게 가져가요. 주마다 재료 하나가 정해지고, 등급이 오르면 더 높은 재료가 목록에 들어와요.",
+    "en": "Take the donation from the board and bring 30 of a monster material to Roxy. One material is set each week, and higher grades add harder materials to the pool."
+   },
+   "notes": {
+    "ko": [
+     "기부 한 번의 기여도는 재료 등급에 따라 700(1등급 재료)에서 2,100(9등급 재료)까지예요. 파란 포션 20개와 경험치, 메소도 같이 받아요.",
+     "재료는 자유시장에서 사서 내도 돼요."
+    ],
+    "en": [
+     "A donation pays 700 Contribution for a grade 1 material up to 2,100 for a grade 9 one, plus 20 Blue Potions, EXP and mesos.",
+     "Buying the material on the Free Market works too."
+    ]
+   },
+   "steps": [
+    {
+     "q": 506119,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "빨간 달팽이의 껍질 30개를 모아 록시에게 가져가요. 빨간 달팽이(Lv 4)가 떨구고, 암허스트 서쪽 들판에 24마리로 가장 많아요.",
+      "en": "Bring 30 Red Snail Shell to Roxy. Red Snail (Lv 4) drops it; the densest map is The Field West of Amherst with 24."
+     },
+     "tip": {
+      "ko": "1등급 기부라 기여도 700을 줘요.",
+      "en": "A grade 1 donation: 700 Contribution."
+     }
+    },
+    {
+     "q": 506120,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "주황버섯의 갓 30개를 모아 록시에게 가져가요. 주황버섯(Lv 8)가 떨구고, 버섯 정원에 15마리로 가장 많아요.",
+      "en": "Bring 30 Orange Mushroom Cap to Roxy. Orange Mushroom (Lv 8) drops it; the densest map is Mushroom Garden with 15."
+     },
+     "tip": {
+      "ko": "1등급 기부라 기여도 700을 줘요.",
+      "en": "A grade 1 donation: 700 Contribution."
+     }
+    },
+    {
+     "q": 506121,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "나뭇잎 30개를 모아 록시에게 가져가요. 어둠의 나무기둥(Lv 11)가 떨구고, 페리온 서쪽 영역에 21마리로 가장 많아요.",
+      "en": "Bring 30 Leaf to Roxy. Dark Stump (Lv 11) drops it; the densest map is West Domain of Perion with 21."
+     },
+     "tip": {
+      "ko": "1등급 기부라 기여도 700을 줘요.",
+      "en": "A grade 1 donation: 700 Contribution."
+     }
+    },
+    {
+     "q": 506122,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "돼지의 리본 30개를 모아 록시에게 가져가요. 리본돼지(Lv 10)가 떨구고, L 숲 I에 21마리로 가장 많아요.",
+      "en": "Bring 30 Pig's Ribbon to Roxy. Ribbon Pig (Lv 10) drops it; the densest map is L Forest I with 21."
+     },
+     "tip": {
+      "ko": "1등급 기부라 기여도 700을 줘요.",
+      "en": "A grade 1 donation: 700 Contribution."
+     }
+    },
+    {
+     "q": 506123,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "옥토퍼스의 다리 30개를 모아 록시에게 가져가요. 문어(Lv 12)가 떨구고, 축축한 나무숲에 19마리로 가장 많아요.",
+      "en": "Bring 30 Octopus Leg to Roxy. Octopus (Lv 12) drops it; the densest map is Damp Tree-Forest with 19."
+     },
+     "tip": {
+      "ko": "1등급 기부라 기여도 700을 줘요.",
+      "en": "A grade 1 donation: 700 Contribution."
+     }
+    },
+    {
+     "q": 506124,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "버블링의 큰 방울 30개를 모아 록시에게 가져가요. 버블링(Lv 15)가 떨구고, 1호선 <1구역>에 64마리로 가장 많아요.",
+      "en": "Bring 30 Bubbling's Huge Bubble to Roxy. Bubbling (Lv 15) drops it; the densest map is Line 1 <Area 1> with 64."
+     },
+     "tip": {
+      "ko": "1등급 기부라 기여도 700을 줘요.",
+      "en": "A grade 1 donation: 700 Contribution."
+     }
+    },
+    {
+     "q": 506125,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "장작 30개를 모아 록시에게 가져가요. 도끼 나무기둥(Lv 17)가 떨구고, 엘리니아 북쪽 숲에 13마리로 가장 많아요.",
+      "en": "Bring 30 Firewood to Roxy. Axe Stump (Lv 17) drops it; the densest map is The Forest North of Ellinia with 13."
+     },
+     "tip": {
+      "ko": "2등급 기부라 기여도 875을 줘요.",
+      "en": "A grade 2 donation: 875 Contribution."
+     }
+    },
+    {
+     "q": 506126,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "스티지의 날개 30개를 모아 록시에게 가져가요. 스티지(Lv 20)가 떨구고, 환승 구역에 38마리로 가장 많아요.",
+      "en": "Bring 30 Stirge Wing to Roxy. Stirge (Lv 20) drops it; the densest map is Transfer Area with 38."
+     },
+     "tip": {
+      "ko": "3등급 기부라 기여도 1,050을 줘요.",
+      "en": "A grade 3 donation: 1,050 Contribution."
+     }
+    },
+    {
+     "q": 506127,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "죽은 자의 부적 30개를 모아 록시에게 가져가요. 좀비버섯(Lv 24)가 떨구고, 개미 터널 III에 61마리로 가장 많아요.",
+      "en": "Bring 30 Charm of the Undead to Roxy. Zombie Mushroom (Lv 24) drops it; the densest map is Ant Tunnel III with 61."
+     },
+     "tip": {
+      "ko": "3등급 기부라 기여도 1,050을 줘요.",
+      "en": "A grade 3 donation: 1,050 Contribution."
+     }
+    },
+    {
+     "q": 506128,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "와일드보어의 송곳니 30개를 모아 록시에게 가져가요. 와일드보어(Lv 25)가 떨구고, 와일드보어의 땅 II에 23마리로 가장 많아요.",
+      "en": "Bring 30 Wild Boar Tooth to Roxy. Wild Boar (Lv 25) drops it; the densest map is The Land of Wild Boar II with 23."
+     },
+     "tip": {
+      "ko": "3등급 기부라 기여도 1,050을 줘요.",
+      "en": "A grade 3 donation: 1,050 Contribution."
+     }
+    },
+    {
+     "q": 506129,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "이블아이의 꼬리 30개를 모아 록시에게 가져가요. 이블아이(Lv 27)가 떨구고, 이블아이의 동굴 III에 38마리로 가장 많아요.",
+      "en": "Bring 30 Evil Eye Tail to Roxy. Evil Eye (Lv 27) drops it; the densest map is The Cave of Evil Eye III with 38."
+     },
+     "tip": {
+      "ko": "4등급 기부라 기여도 1,225을 줘요.",
+      "en": "A grade 4 donation: 1,225 Contribution."
+     }
+    },
+    {
+     "q": 506130,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "리게이터의 가죽 30개를 모아 록시에게 가져가요. 리게이터(Lv 31)가 떨구고, 절망의 늪 I에 41마리로 가장 많아요.",
+      "en": "Bring 30 Ligator Skin to Roxy. Ligator (Lv 31) drops it; the densest map is The Swamp of Despair I with 41."
+     },
+     "tip": {
+      "ko": "5등급 기부라 기여도 1,400을 줘요.",
+      "en": "A grade 5 donation: 1,400 Contribution."
+     }
+    },
+    {
+     "q": 506131,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "파이어보어의 송곳니 30개를 모아 록시에게 가져가요. 파이어보어(Lv 32)가 떨구고, 불탄 땅 V에 26마리로 가장 많아요.",
+      "en": "Bring 30 Fire Boar's Tooth to Roxy. Fire Boar (Lv 32) drops it; the densest map is The Burnt Land V with 26."
+     },
+     "tip": {
+      "ko": "5등급 기부라 기여도 1,400을 줘요.",
+      "en": "A grade 5 donation: 1,400 Contribution."
+     }
+    },
+    {
+     "q": 506132,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "식탁보 30개를 모아 록시에게 가져가요. 주니어 레이스(Lv 34)가 떨구고, 2호선 <1구역>에 83마리로 가장 많아요.",
+      "en": "Bring 30 Tablecloth to Roxy. Jr. Wraith (Lv 34) drops it; the densest map is Line 2 <Area 1> with 83."
+     },
+     "tip": {
+      "ko": "5등급 기부라 기여도 1,400을 줘요.",
+      "en": "A grade 5 donation: 1,400 Contribution."
+     }
+    },
+    {
+     "q": 506133,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "루팡의 바나나 30개를 모아 록시에게 가져가요. 루팡(Lv 37)가 떨구고, 원숭이 늪 I에 28마리로 가장 많아요.",
+      "en": "Bring 30 Lupin's Banana to Roxy. Lupin (Lv 37) drops it; the densest map is Monkey Swamp I with 28."
+     },
+     "tip": {
+      "ko": "6등급 기부라 기여도 1,575을 줘요.",
+      "en": "A grade 6 donation: 1,575 Contribution."
+     }
+    },
+    {
+     "q": 506134,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "콜드아이의 꼬리 30개를 모아 록시에게 가져가요. 콜드아이(Lv 40)가 떨구고, 빛을 잃은 터널 I에 32마리로 가장 많아요.",
+      "en": "Bring 30 Cold Eye Tail to Roxy. Cold Eye (Lv 40) drops it; the densest map is The Tunnel That Lost Light I with 32."
+     },
+     "tip": {
+      "ko": "7등급 기부라 기여도 1,750을 줘요.",
+      "en": "A grade 7 donation: 1,750 Contribution."
+     }
+    },
+    {
+     "q": 506135,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "토티의 등껍질 30개를 모아 록시에게 가져가요. 엄티(Lv 46)가 떨구고, 뜨거운 모래에 25마리로 가장 많아요.",
+      "en": "Bring 30 Tortie Shell to Roxy. Tortie (Lv 46) drops it; the densest map is Hot Sand with 25."
+     },
+     "tip": {
+      "ko": "8등급 기부라 기여도 1,925을 줘요.",
+      "en": "A grade 8 donation: 1,925 Contribution."
+     }
+    },
+    {
+     "q": 506136,
+     "at": "board",
+     "go": "hall",
+     "do": {
+      "ko": "이상한 느낌의 약 30개를 모아 록시에게 가져가요. 레이스(Lv 48)가 떨구고, 2호선 <3구역>에 68마리로 가장 많아요.",
+      "en": "Bring 30 Medicine With Weird Vibes to Roxy. Wraith (Lv 48) drops it; the densest map is Line 2 <Area 3> with 68."
+     },
+     "tip": {
+      "ko": "9등급 기부라 기여도 2,100을 줘요.",
+      "en": "A grade 9 donation: 2,100 Contribution."
+     }
+    }
+   ]
+  },
+  {
+   "id": "house",
+   "title": {
+    "ko": "집 (17레벨) — 뒷골목 반지하",
+    "en": "A house (Lv 17) — the Backalley Semi-Basement"
+   },
+   "lead": {
+    "ko": "2등급 방문객이 되면 집을 살 수 있어요. 퀘스트 두 개로 기여도 200과 첫 가구를 받아요.",
+    "en": "From grade 2 (Visitor) you can buy a house. Two quests pay 200 Contribution and your first furniture."
+   },
+   "steps": [
+    {
+     "q": 506162,
+     "at": "hall",
+     "do": {
+      "ko": "록시가 집을 가질 자격이 생겼다고 알려 줘요. 같은 시민회관 안의 잭에게 가요.",
+      "en": "Roxy says you may now own a house. Talk to Jack in the same Civic Center."
+     },
+     "go": "n426",
+     "tip": {
+      "ko": "2등급(17레벨)부터 받을 수 있고 기여도 100을 줘요.",
+      "en": "Available from grade 2 (Lv 17); it pays 100 Contribution."
+     }
+    },
+    {
+     "q": 506163,
+     "at": "n426",
+     "do": {
+      "ko": "잭이 스칼렛을 소개해 줘요. 스칼렛은 커닝시티 가운데에서 오른쪽, 바닥 길에 있어요. 가구 세 개와 기여도 100을 받아요.",
+      "en": "Jack sends you to Scarlett, at street level right of centre in Kerning City. You get three pieces of furniture and 100 Contribution."
+     },
+     "go": "n427",
+     "tip": {
+      "ko": "집은 스칼렛에게 메소로 사요. 계정에 한 채이고 모든 캐릭터가 같이 써요.",
+      "en": "Scarlett sells the house for mesos: one per account, shared by all your characters."
+     },
+     "big": true
+    }
+   ]
+  },
+  {
+   "id": "s17",
+   "title": {
+    "ko": "스토리 ① 17레벨 (2등급) — 펫 장비 주문서",
+    "en": "Story ① Lv 17 (grade 2) — Pet Equip scroll"
+   },
+   "lead": {
+    "ko": "스티지를 무서워하는 제이크의 이야기예요.",
+    "en": "Jake and his fear of Stirges."
+   },
+   "steps": [
+    {
+     "q": 506137,
+     "at": "jake",
+     "do": {
+      "ko": "제이크가 스티지를 무서워해요. 콩에서 온 몽에게 가서 약을 부탁해요.",
+      "en": "Jake is terrified of Stirges. Ask Mong from Kong for a cure."
+     },
+     "go": "n404",
+     "tip": {
+      "ko": "제이크 첫 인사를 끝내야 받을 수 있어요.",
+      "en": "Needs the First Greeting with Jake."
+     }
+    },
+    {
+     "q": 506138,
+     "at": "n404",
+     "do": {
+      "ko": "버블링의 큰 방울 10개와 스티지의 날개 10개를 몽에게 가져가요. 둘 다 커닝 지하철에서 나와요.",
+      "en": "Bring Mong 10 Bubbling's Huge Bubbles and 10 Stirge Wings; both drop in the Kerning subway."
+     }
+    },
+    {
+     "q": 506139,
+     "at": "n404",
+     "do": {
+      "ko": "마지막 재료를 구하러 리스항구의 미스터 골드스타인에게 가요.",
+      "en": "Go to Mr. Goldstein in Lith Harbor for the final ingredient."
+     },
+     "go": "n111"
+    },
+    {
+     "q": 506140,
+     "at": "n111",
+     "do": {
+      "ko": "받은 비타민 젤리를 몽에게 가져다줘요.",
+      "en": "Take the Vitamin Gummy back to Mong."
+     },
+     "go": "n404"
+    },
+    {
+     "q": 506141,
+     "at": "n404",
+     "do": {
+      "ko": "완성된 스티지 공포증 치료약을 제이크에게 전하면 끝나요. 펫 장비 주문서 하나를 받아요.",
+      "en": "Deliver the Special Stirge Phobia Cure to Jake. You receive one Pet Equip scroll."
+     },
+     "go": "jake",
+     "big": true
+    }
+   ]
+  },
+  {
+   "id": "s27",
+   "title": {
+    "ko": "스토리 ② 27레벨 (4등급) — 귀고리 주문서",
+    "en": "Story ② Lv 27 (grade 4) — Earring scroll"
+   },
+   "lead": {
+    "ko": "알렉스가 신세 진 사람들에게 선물을 전하는 이야기예요.",
+    "en": "Alex repays the people who helped him."
+   },
+   "steps": [
+    {
+     "q": 506142,
+     "at": "alex",
+     "do": {
+      "ko": "커닝시티 근처 늪지대의 리게이터를 잡아 알렉스의 선물 자루를 찾아와요. 절망의 늪 I·II에 많아요.",
+      "en": "Hunt Ligators in the swamp near Kerning City until Alex's Gift Sack drops; Swamp of Despair I and II have the most."
+     },
+     "tip": {
+      "ko": "'Mother's Gold Watch'와 알렉스 첫 인사를 끝내야 받을 수 있어요.",
+      "en": "Needs 'Mother's Gold Watch' and the First Greeting with Alex."
+     }
+    },
+    {
+     "q": 506143,
+     "at": "alex",
+     "do": {
+      "ko": "알렉스 대신 선물을 넬라에게 전해 줘요.",
+      "en": "Deliver Alex's gift to Nella."
+     },
+     "go": "nella"
+    },
+    {
+     "q": 506144,
+     "at": "nella",
+     "do": {
+      "ko": "넬라의 이야기를 알렉스에게 전해요. 레몬 15개를 받아요.",
+      "en": "Bring Nella's story back to Alex. You get 15 Lemons."
+     },
+     "go": "alex"
+    },
+    {
+     "q": 506145,
+     "at": "alex",
+     "do": {
+      "ko": "알렉스의 두 번째 선물을 뒷골목 제이엠에게 전해 줘요.",
+      "en": "Deliver Alex's second gift to JM From tha Streetz."
+     },
+     "go": "n401"
+    },
+    {
+     "q": 506146,
+     "at": "n401",
+     "do": {
+      "ko": "제이엠의 답을 알렉스에게 전하면 끝나요. 귀고리 주문서(힘·민첩·지력 중급) 하나를 받아요.",
+      "en": "Report back to Alex. You receive one intermediate Earring scroll (STR, DEX or INT)."
+     },
+     "go": "alex",
+     "big": true
+    }
+   ]
+  },
+  {
+   "id": "s37",
+   "title": {
+    "ko": "스토리 ③ 37레벨 (6등급) — 전신 갑옷 주문서",
+    "en": "Story ③ Lv 37 (grade 6) — Overall Armor scroll"
+   },
+   "lead": {
+    "ko": "제인 도와 사라진 의사 니오라의 이야기예요.",
+    "en": "Jane Doe and the vanished Dr. Niora."
+   },
+   "steps": [
+    {
+     "q": 506147,
+     "at": "janedoe",
+     "do": {
+      "ko": "식탁보 35개를 니오라 병원의 제인 도에게 가져가요. 식탁보는 주니어 레이스가 떨궈요.",
+      "en": "Bring 35 Tablecloths to Jane Doe in Niora Hospital; Jr. Wraiths drop them."
+     },
+     "tip": {
+      "ko": "'Stranger's Identity'와 제인 도 첫 인사를 끝내야 받을 수 있어요.",
+      "en": "Needs 'Stranger's Identity' and the First Greeting with Jane Doe."
+     }
+    },
+    {
+     "q": 506148,
+     "at": "janedoe",
+     "do": {
+      "ko": "제인 도가 찾은 편지 조각을 들고 시민회관의 록시에게 가요.",
+      "en": "Take the torn letter Jane Doe found to Roxy in the Civic Center."
+     },
+     "go": "hall"
+    },
+    {
+     "q": 506149,
+     "at": "hall",
+     "do": {
+      "ko": "록시가 넬라를 찾아가 보라고 해요.",
+      "en": "Roxy sends you on to Nella."
+     },
+     "go": "nella"
+    },
+    {
+     "q": 506150,
+     "at": "nella",
+     "do": {
+      "ko": "페어리의 더듬이 10개를 넬라에게 가져가요.",
+      "en": "Bring Nella 10 Fairy's Tentacles."
+     }
+    },
+    {
+     "q": 506151,
+     "at": "nella",
+     "do": {
+      "ko": "넬라에게 들은 사실을 제인 도에게 전하면 끝나요. 전신 갑옷 주문서(방어·힘·민첩 중급) 하나를 받아요.",
+      "en": "Tell Jane Doe what Nella revealed. You receive one intermediate Overall Armor scroll (DEF, STR or DEX)."
+     },
+     "go": "janedoe",
+     "big": true
+    }
+   ]
+  },
+  {
+   "id": "s47",
+   "title": {
+    "ko": "스토리 ④ 47레벨 (8등급) — 장갑 크리티컬 주문서",
+    "en": "Story ④ Lv 47 (grade 8) — Gloves Crit. Rate scroll"
+   },
+   "lead": {
+    "ko": "천지가 느낀 악령의 정체를 찾는 이야기예요. 레이스 50마리와 셰이드를 잡아요.",
+    "en": "Chun Ji and the evil spirit: 50 Wraiths, then Shade."
+   },
+   "steps": [
+    {
+     "q": 506152,
+     "at": "chunji",
+     "do": {
+      "ko": "커닝 지하철에서 레이스 50마리를 잡고 공사장의 천지에게 돌아가요.",
+      "en": "Defeat 50 Wraiths in the Kerning subway and return to Chun Ji at the Construction Site."
+     },
+     "tip": {
+      "ko": "천지 첫 인사를 끝내야 받을 수 있어요. 천지는 5등급부터 게시판에 떠요.",
+      "en": "Needs the First Greeting with Chun Ji, who appears on the board from grade 5."
+     }
+    },
+    {
+     "q": 506153,
+     "at": "chunji",
+     "do": {
+      "ko": "천지가 느낀 기운을 시민회관의 록시에게 알려요.",
+      "en": "Tell Roxy in the Civic Center what Chun Ji sensed."
+     },
+     "go": "hall"
+    },
+    {
+     "q": 506154,
+     "at": "hall",
+     "do": {
+      "ko": "록시가 짚은 대로 니오라 병원의 제인 도를 찾아가요.",
+      "en": "Roxy points to Jane Doe in Niora Hospital: go and check on her."
+     },
+     "go": "janedoe"
+    },
+    {
+     "q": 506155,
+     "at": "janedoe",
+     "do": {
+      "ko": "니오라 병원 1층의 숨은 통로로 들어가 쉐이드를 잡고 록시에게 돌아가요. 쉐이드는 '버림받은 자들의 오두막'에 나오는 48레벨 몬스터예요.",
+      "en": "Enter the hidden passage on the first floor of Niora Hospital, defeat Shade and return to Roxy. Shade is a Lv 48 monster found in the Cabin of the Forsaken."
+     },
+     "go": "hall"
+    },
+    {
+     "q": 506156,
+     "at": "hall",
+     "do": {
+      "ko": "록시의 이야기를 천지에게 전하면 끝나요. 장갑 크리티컬 확률 주문서 하나를 받아요.",
+      "en": "Bring Roxy's story back to Chun Ji. You receive one Gloves Crit. Rate scroll."
+     },
+     "go": "chunji",
+     "big": true
+    }
+   ]
+  },
+  {
+   "id": "s57",
+   "title": {
+    "ko": "스토리 ⑤ 57레벨 (10등급) — 커닝시티 귀고리",
+    "en": "Story ⑤ Lv 57 (grade 10) — Kerning City Earrings"
+   },
+   "lead": {
+    "ko": "명예 시민이 되면 다크로드가 부르는 마지막 이야기예요. 커닝시티 귀고리는 57레벨 귀고리예요.",
+    "en": "The Citizen of Honor line with the Dark Lord, ending in the Lv 57 Kerning City Earrings."
+   },
+   "steps": [
+    {
+     "q": 506157,
+     "at": "darklord",
+     "do": {
+      "ko": "57레벨이 되면 받아져요. 커닝시티의 숨은 지도자 다크로드에게 가요.",
+      "en": "Offered at Lv 57: go and see the Dark Lord, the city's hidden leader."
+     },
+     "tip": {
+      "ko": "10등급(명예 시민)에 열리는 마지막 스토리예요.",
+      "en": "The last story line, opened at grade 10 (Citizen of Honor)."
+     }
+    },
+    {
+     "q": 506158,
+     "at": "darklord",
+     "do": {
+      "ko": "늪지대 깊은 곳의 크로코를 잡아 암호 문서를 찾아와요. 위험한 크로코 II에 가장 많아요.",
+      "en": "Hunt Crocos deep in the swamp until the Encrypted Document drops; Dangerous Croco II has the most."
+     }
+    },
+    {
+     "q": 506159,
+     "at": "darklord",
+     "do": {
+      "ko": "암호 문서를 은둔자의 오두막에 있는 슬레이드에게 가져가요.",
+      "en": "Take the Encrypted Document to Slade in the Hermit's Cabin."
+     },
+     "go": "n436"
+    },
+    {
+     "q": 506160,
+     "at": "n436",
+     "do": {
+      "ko": "엘리니아 근처 악의 숲의 멜러디를 잡아 진실의 잉크를 구해 와요.",
+      "en": "Hunt Maladies in the Forest of Evil near Ellinia until the Ink of Truth drops."
+     }
+    },
+    {
+     "q": 506161,
+     "at": "n436",
+     "do": {
+      "ko": "해독된 문서를 다크로드에게 전하면 커닝시티 귀고리를 받아요.",
+      "en": "Return the Deciphered Document to the Dark Lord for the Kerning City Earrings."
+     },
+     "go": "darklord",
+     "big": true
+    }
+   ]
+  }
+ ],
+ "itemNotes": {
+  "4031116": {
+   "ko": "이블아이를 잡으면 나와요",
+   "en": "Drops from Evil Eyes during the quest"
+  },
+  "4031122": {
+   "ko": "머쉬맘을 잡으면 나와요",
+   "en": "Drops from Mushmom during the quest"
+  },
+  "4031123": {
+   "ko": "스톤골렘·다크 스톤골렘을 잡으면 나와요",
+   "en": "Drops from Stone Golems and Dark Stone Golems during the quest"
+  },
+  "4031126": {
+   "ko": "리게이터를 잡으면 나와요",
+   "en": "Drops from Ligators during the quest"
+  },
+  "4031131": {
+   "ko": "크로코를 잡으면 나와요",
+   "en": "Drops from Crocos during the quest"
+  },
+  "4031133": {
+   "ko": "멜러디를 잡으면 나와요",
+   "en": "Drops from Maladies during the quest"
+  }
+ }
+}
