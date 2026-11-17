@@ -2,6 +2,20 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "meso-farm-market-pulse",
+   "version": "0.7.11",
+   "level": "minor",
+   "highlight": true,
+   "date": "2026-11-17",
+   "path": "/tools/meso-farm/",
+   "ko": "메소 벌이 사냥터 · 시세 맥박 — 돈 되는 몬스터와 오늘 움직인 시세",
+   "en": "Meso farming spots and Market pulse — monsters worth farming and today's price moves",
+   "desc": {
+    "ko": "메소 벌이 사냥터는 내 레벨 근처 몬스터를 지금 시세로 비싼 드롭이 있는 순서로 보여 줘요. 드롭마다 개당 메소와 많이 나오는 맵까지 나와요. 시세 맥박은 오늘 많이 오르고 내린 아이템, 많이 팔린 아이템, 방금 판매 완료된 매물을 1분마다 새로 보여 줘요. 위쪽 계산기 메뉴와 시세 페이지에서 바로 갈 수 있어요.",
+    "en": "Meso farming spots ranks the monsters near your level by what their drops sell for now, with the price per item and where they spawn. Market pulse shows today's biggest risers and fallers, best sellers and just-sold listings, refreshed every minute. Both are in the Tools menu and on the market page."
+   }
+  },
+  {
    "id": "weekly-report-finished-week",
    "version": "0.7.10",
    "level": "patch",

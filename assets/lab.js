@@ -1,4 +1,5 @@
-// Lab pages (unlisted, owner only; build.mjs "Lab"): three features benchmarked from other Classic World sites.
+// Meso farming spots (/tools/meso-farm/) and the market pulse (/tools/market/pulse/), benchmarked from other Classic
+// World sites (build.mjs "Meso farming spots and the market pulse").
 //  - meso-farm: monsters at your level ranked by what their drops sell for right now (no drop rates are claimed)
 //  - market-pulse: biggest risers and fallers (sample-size guarded), most traded, and listings marked sold just now
 const root = document.querySelector('.lab');
@@ -22,17 +23,8 @@ async function itemNames() {
 }
 const pick = (pair) => (pair ? (ko && pair[0] ? pair[0] : pair[1]) : '');
 
-function head(title, sub) {
-  return `<p class="lab-crumb"><a href="${root.dataset.root}">${tr('실험실', 'Lab')}</a> · ${tr('아직 공개 전 기능이에요', 'Not public yet')}</p><h1>${esc(title)}</h1><p class="lab-sub">${sub}</p>`;
-}
-
-// ---------- index ----------
-function viewIndex() {
-  const cards = [
-    ['meso-farm/', tr('메소 벌이 사냥터', 'Meso farming spots'), tr('내 레벨 근처 몬스터를 지금 시세로 비싼 드롭이 있는 순서로 보여 줘요. 드롭 확률은 모르니 "무엇이 떨어지면 돈이 되나"만 보여 줘요.', 'Monsters near your level ranked by what their drops sell for now. Drop rates are not claimed.')],
-    ['market-pulse/', tr('시세 맥박', 'Market pulse'), tr('오늘 많이 오르고 내린 아이템, 많이 팔린 아이템, 방금 판매 완료된 매물을 실시간으로.', 'Today’s risers and fallers, most sold and just-sold listings, live.')]
-  ];
-  root.innerHTML = `${head(tr('실험실', 'Lab'), tr('다른 클래식 월드 사이트들을 보고 우리 사이트에 맞게 만든 기능이에요. 메뉴와 검색에는 아직 안 보여요.', 'Features adapted from other Classic World sites. Not in the menu or search yet.'))}<ul class="lab-cards">${cards.map(([p, t, d]) => `<li><a href="${root.dataset.root}${p}"><strong>${t}</strong><span>${d}</span></a></li>`).join('')}</ul>`;
+function head() {
+  return `<h1>${esc(root.dataset.h1)}</h1><p class="lab-sub">${esc(root.dataset.lead)}</p>`;
 }
 
 // ---------- meso farm ----------
@@ -41,7 +33,7 @@ async function viewFarm(data) {
   const cat = await get(`${api}/market/catalog`);
   const price = new Map((cat?.items || []).map((r) => [r.item, { p: r.soldMedian || r.typical || r.median, sold: r.sold || 0, open: r.open || 0 }]));
   const state = store.get('gmshub_lab_farm', { lv: 40, boss: false });
-  root.innerHTML = `${head(tr('메소 벌이 사냥터', 'Meso farming spots'), tr('내 레벨 근처 몬스터를 지금 시세로 비싼 드롭이 있는 순서로 보여 줘요. 드롭 확률은 알 수 없어서 "무엇이 떨어지면 돈이 되나"만 알려 줘요. 가격은 아이템 1개당 최근 판매 완료 가격(없으면 보통 가격)이에요.', 'Monsters near your level ranked by what their drops sell for now. Drop rates are unknown, so this shows what is worth money if it drops. Prices are per item: recent sold price, else the typical asking price.'))}
+  root.innerHTML = `${head()}
 <div class="lab-controls"><label>${tr('레벨', 'Level')}<input id="lf-lv" type="number" min="1" max="200" value="${state.lv}"></label><label class="lab-check"><input id="lf-boss" type="checkbox"${state.boss ? ' checked' : ''}>${tr('보스 포함', 'Include bosses')}</label></div><ul id="lf-list" class="lab-farm"></ul>`;
   const draw = () => {
     const lv = Number(document.getElementById('lf-lv').value) || 1, boss = document.getElementById('lf-boss').checked;
@@ -62,7 +54,7 @@ async function viewFarm(data) {
 // A live board: headline tiles (biggest riser, faller, best seller), movers with bars sized by the move, and a just-sold
 // feed where new sales slide in. Refreshes every 60 s with a visible countdown; times tick every second.
 async function viewPulse() {
-  root.innerHTML = `${head(tr('시세 맥박', 'Market pulse'), tr('오늘 자유시장에서 많이 오르고 내린 아이템, 많이 팔린 아이템, 방금 판매 완료된 매물을 실시간으로 보여 줘요. 매물이 10건 안 되는 아이템은 값이 튀기 쉬워서 오르내림에서 뺐어요.', 'Today’s biggest movers, best sellers and just-sold listings, live. Items with under 10 open listings are left out of the movers.'))}
+  root.innerHTML = `${head()}
 <div class="lp-live"><span class="lp-dot" aria-hidden="true"></span><b>${tr('실시간', 'Live')}</b><span id="lp-next"></span><span class="lp-timer"><i id="lp-bar"></i></span></div>
 <div class="lp-tiles" id="lp-tiles"></div>
 <div class="lp-grid"><section class="lp-card"><h2>${tr('오른 아이템', 'Rising')}</h2><ol id="lp-up" class="lp-movers"></ol></section><section class="lp-card"><h2>${tr('내린 아이템', 'Falling')}</h2><ol id="lp-down" class="lp-movers"></ol></section><section class="lp-card"><h2>${tr('많이 팔린 아이템', 'Best sellers')} <small>${tr('7일', '7 days')}</small></h2><ol id="lp-sold" class="lp-movers"></ol></section><section class="lp-card"><h2>${tr('방금 팔린 매물', 'Just sold')}</h2><ol id="lp-feed" class="lp-feed"></ol></section></div>`;
@@ -118,8 +110,7 @@ async function viewPulse() {
 (async () => {
   if (!root) return;
   const view = root.dataset.lab;
-  if (view === 'index') return viewIndex();
-  if (view === 'market-pulse') return viewPulse();
+    if (view === 'market-pulse') return viewPulse();
   const data = await get(root.dataset.data);
   if (!data) { root.innerHTML = `<p class="muted">${tr('데이터를 불러오지 못했어요.', 'Could not load the data.')}</p>`; return; }
   if (view === 'meso-farm') return viewFarm(data);
