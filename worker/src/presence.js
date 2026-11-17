@@ -34,13 +34,37 @@ export class Presence {
       const by = new Map();
       for (const ws of open) { const pg = this.state.getTags(ws)[0] || '/'; by.set(pg, (by.get(pg) || 0) + 1); }
       const pages = [...by].sort((a, b) => b[1] - a[1]).slice(0, 20);
-      return Response.json({ peak: peak.n, at: peak.at, now, pages });
+      // Per holder: tabs, pages, how long open and how long since the last keep-alive ping (a tab that stopped pinging is a
+      // dead connection the browser never closed).
+      const t = Date.now(), groups = new Map();
+      let silent = 0;
+      for (const ws of open) {
+        let a = {};
+        try { a = ws.deserializeAttachment() || {}; } catch (e) {}
+        let ping = null;
+        try { ping = this.state.getWebSocketAutoResponseTimestamp?.(ws)?.getTime() || null; } catch (e) {}
+        const quiet = Math.round((t - (ping || a.t || t)) / 1000);
+        if (quiet > 150) silent++;
+        const k = a.who || 'before-log';
+        const g = groups.get(k) || { who: k, tabs: 0, country: a.c || '', org: a.org || '', ua: a.ua || '', pages: {}, oldestMin: 0, quietSec: [] };
+        g.tabs++;
+        const pg = this.state.getTags(ws)[0] || '/';
+        g.pages[pg] = (g.pages[pg] || 0) + 1;
+        if (a.t) g.oldestMin = Math.max(g.oldestMin, Math.round((t - a.t) / 60000));
+        g.quietSec.push(quiet);
+        groups.set(k, g);
+      }
+      const who = [...groups.values()].sort((x, y) => y.tabs - x.tabs).slice(0, 40);
+      return Response.json({ peak: peak.n, at: peak.at, now, pages, silent, who });
     }
     if (req.headers.get('Upgrade') !== 'websocket') return new Response('expected websocket', { status: 426 });
     if (new URL(req.url).pathname === '/chat') return this.joinChat();
     const page = pageKey(new URL(req.url).searchParams.get('p'));
     const [client, server] = Object.values(new WebSocketPair());
     this.state.acceptWebSocket(server, [page]);
+    // Who holds the tab (owner's check, 2026-11-18): a salted hash of the IP (never the IP), country, network and a short
+    // browser label, kept only on the socket while it is open. No storage, no D1.
+    try { server.serializeAttachment({ t: Date.now(), who: req.headers.get('x-gms-who') || '', c: req.headers.get('x-gms-country') || '', org: req.headers.get('x-gms-org') || '', ua: req.headers.get('x-gms-ua') || '' }); } catch (e) {}
     this.broadcast();
     return new Response(null, { status: 101, webSocket: client });
   }
@@ -129,10 +153,28 @@ export async function handlePresencePeak(req, env) {
   return env.PRESENCE.get(env.PRESENCE.idFromName('site')).fetch('https://presence/peak');
 }
 
-export function handlePresence(req, env) {
+export async function handlePresence(req, env) {
   const origin = req.headers.get('Origin') || '';
   if (!PRESENCE_ORIGINS.includes(origin)) return new Response('forbidden', { status: 403 });
   if (!env.PRESENCE) return new Response('presence off', { status: 503 });
   const room = new URL(req.url).pathname === '/chat' ? 'chat' : 'site';
-  return env.PRESENCE.get(env.PRESENCE.idFromName(room)).fetch(req);
+  let fwd = req;
+  if (room === 'site') {
+    const h = new Headers(req.headers);
+    const ip = req.headers.get('CF-Connecting-IP') || '';
+    const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${env.VOTE_SALT || ''}:presence:${ip}`));
+    h.set('x-gms-who', [...new Uint8Array(d)].slice(0, 5).map((b) => b.toString(16).padStart(2, '0')).join(''));
+    h.set('x-gms-country', String(req.cf?.country || ''));
+    h.set('x-gms-org', String(req.cf?.asOrganization || '').slice(0, 60));
+    h.set('x-gms-ua', uaLabel(req.headers.get('User-Agent') || ''));
+    fwd = new Request(req, { headers: h });
+  }
+  return env.PRESENCE.get(env.PRESENCE.idFromName(room)).fetch(fwd);
+}
+
+// "Windows Chrome", "iPhone Safari", "Linux HeadlessChrome": enough to tell people from bots, nothing more.
+export function uaLabel(ua) {
+  const os = /iPhone|iPad/.test(ua) ? 'iPhone/iPad' : /Android/.test(ua) ? 'Android' : /Windows/.test(ua) ? 'Windows' : /Mac OS X/.test(ua) ? 'Mac' : /Linux/.test(ua) ? 'Linux' : 'other';
+  const br = /HeadlessChrome/.test(ua) ? 'HeadlessChrome' : /bot|crawl|spider|facebookexternalhit/i.test(ua) ? 'bot' : /Edg\//.test(ua) ? 'Edge' : /Whale\//.test(ua) ? 'Whale' : /SamsungBrowser/.test(ua) ? 'Samsung' : /Firefox\//.test(ua) ? 'Firefox' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : 'other';
+  return `${os} ${br}`;
 }
