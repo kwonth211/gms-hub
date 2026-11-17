@@ -1417,6 +1417,26 @@ function classNav(lang, current) {
     return current && c.slug === current.slug ? `<strong class="band-link current" aria-current="page">${label}</strong>` : `<a class="band-link" href="${href(langPath(lang, classPath(c)))}">${label}</a>`;
   }).join('')}</div></nav>`;
 }
+// What people searching a class by name also want (Search Console, 2026-11-09..15: "글클메 사수", "글클메 헌터 스킬트리"
+// sat at rank 6-9 and the class pages linked to none of it): the skill tree, the gear list, the calculators.
+const CLASS_HUB = { warrior: ['warrior', 'warrior'], fighter: ['warrior', 'warrior-110'], page: ['warrior', 'warrior-120'], spear: ['warrior', 'warrior-130'],
+  archer: ['bowman', 'bowman'], hunter: ['bowman', 'bowman-310'], crossbow: ['bowman', 'bowman-320'],
+  mage: ['magician', 'magician'], fire: ['magician', 'magician-210'], ice: ['magician', 'magician-220'], cleric: ['magician', 'magician-230'],
+  thief: ['thief', 'thief'], assassin: ['thief', 'thief-410'], bandit: ['thief', 'thief-420'] };
+function classHub(lang, cls) {
+  const hub = CLASS_HUB[cls.job];
+  if (!hub) return '';
+  const ko = lang === 'ko', name = ko ? cls.ko : cls.en, eq = EQ_CLASSES.find((c) => c.slug === hub[0]);
+  const link = (path, label) => `<a class="btn ghost small-btn" href="${href(langPath(lang, path))}">${esc(label)}</a>`;
+  return `<nav class="tr-class-hub" aria-label="${ko ? `${name} 육성에 같이 보는 것` : `More for ${name}`}"><strong>${ko ? `${name} 육성에 같이 보는 것` : `More for ${name}`}</strong>${[
+    link(`/skills/#${hub[1]}`, ko ? `${name} 스킬트리` : `${name} skill build`),
+    link(equipPath(eq), ko ? `${eq.ko} 장비` : `${eq.en} equipment`),
+    link('/tools/damage/', ko ? '몇 방 컷 계산기' : 'Hits-to-kill calculator'),
+    link('/tools/meso-farm/', ko ? '메소 벌이 사냥터' : 'Meso farming spots'),
+    link('/tools/market/', ko ? '장비·주문서 시세' : 'Gear and scroll prices')
+  ].join('')}</nav>`;
+}
+
 function trainingClassBody(lang, cls) {
   const tr = (ko, en) => (lang === 'ko' ? ko : en);
   const name = lang === 'ko' ? cls.ko : cls.en;
@@ -1430,6 +1450,7 @@ function trainingClassBody(lang, cls) {
     .join('')}</tbody></table></div>`;
   const guide = guides.find((g) => g.slug === cls.guide && g.lang === lang && g.status === 'published');
   return `${pageHead(lang, 'sword', tr(`${name} 사냥터`, `${name} training routes`), tr(`레벨 구간마다 ${name}에게 맞는 사냥 경로 ${rows.length}곳이에요. ${name} 전용 ${own}곳과 모든 직업 공통 경로를 함께 담았어요.`, `${rows.length} routes by level: ${own} for this class, the rest open to every class.`))}<div class="wrap tr-page">
+${classHub(lang, cls)}
 <p class="tr-review-note">${tr('레벨은 이동을 검토하는 구간이에요. 카드마다 진입 기준, 잡을 몬스터와 필요한 명중, 물약 비용, 자리가 없을 때 대안을 적어 두었어요.', 'Levels are trial windows. Each card lists entry conditions, the monsters and the accuracy they need, supply costs and a fallback when the map is busy.')}</p>
 ${groups.map((g) => `<h2>${bandLabel(g.band)}</h2>${routeCards(g.rows, lang)}`).join('\n')}
 <p class="tr-result-actions"><a class="btn" href="${href(langPath(lang, '/tools/training/'))}?job=${cls.job}">${tr(`내 레벨로 ${name} 사냥터 찾기`, 'Find routes for my level')}</a>${guide ? `<a href="${href(langPath(lang, guidePath(guide)))}">${esc(guide.h1 || guide.title)}</a>` : ''}</p>
@@ -3275,8 +3296,8 @@ for (const lang of LANGS) {
     const top = Math.max(...rows.map((r) => r.level.max));
     const h1 = lang === 'ko' ? `${name} 사냥터` : `${name} training routes`;
     return {
-      title: lang === 'ko' ? `글클메 ${name} 사냥터 추천: 레벨별 ${rows.length}곳 (1~${top}) | GMS Hub` : `MapleStory Classic World ${name} Training Routes by Level (1–${top}) | GMS Hub`,
-      desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드 ${name} 레벨별 사냥터 ${rows.length}곳. 진입 레벨, 잡을 몬스터와 필요 명중, 물약 비용, 다음 이동 시점을 정리했어요.` : `${name} training in MapleStory Classic World: ${rows.length} routes by level with entry conditions, monsters and the accuracy they need, supply costs and what to do next.`,
+      title: lang === 'ko' ? `글클메 ${name} 사냥터 추천·육성 루트: 레벨별 ${rows.length}곳 (1~${top}) | GMS Hub` : `MapleStory Classic World ${name} Training Routes by Level (1–${top}) | GMS Hub`,
+      desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드 ${name} 레벨별 사냥터 ${rows.length}곳. 진입 레벨, 잡을 몬스터와 필요 명중, 물약 비용, 다음 이동 시점을 정리했어요. ${name} 스킬트리와 장비도 바로 이어져요.` : `${name} training in MapleStory Classic World: ${rows.length} routes by level with entry conditions, monsters and the accuracy they need, supply costs and what to do next.`,
       body: trainingClassBody(lang, cls), modules: ['exp-community.js'],
       ld: [breadcrumbLd(lang, h1, classPath(cls))]
     };

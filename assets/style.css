@@ -3406,3 +3406,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 .mt-top a { background: color-mix(in srgb, var(--accent-fill) 7%, transparent); }
 @media (max-width: 760px) { .mt-rank { grid-template-columns: minmax(0, 1fr); } }
 @media (prefers-reduced-motion: reduce) { .mt-track i { animation: none; } .mt-rank a { transition: none; } .mt-rank a:hover { transform: none; } }
+
+/* Class training pages: links to the skill tree, gear and calculators for that class. */
+.tr-class-hub { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 16px; }
+.tr-class-hub strong { font-size: 0.9rem; margin-right: 4px; }
