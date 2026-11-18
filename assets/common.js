@@ -330,6 +330,11 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
     const width = run.parentElement.clientWidth;
     for (const el of [...set.querySelectorAll('.mg-tk-re')]) if (x + el.offsetLeft >= width) el.remove();
     set.insertAdjacentHTML('beforeend', html);
+    // Megaphones can come in faster than the strip shows them (about nine a minute), and a tab left in the background
+    // piles them up, so the line waiting off the right edge is capped at the newest ten: what rolls in is always recent
+    // instead of twenty minutes old (owner 2026-11-19).
+    const waiting = [...set.children].filter((el) => !el.classList.contains('mg-tk-re') && x + el.offsetLeft >= width);
+    for (const el of waiting.slice(0, Math.max(0, waiting.length - 10))) el.remove();
     stale = true;
     box.classList.add('ready');
     go();
