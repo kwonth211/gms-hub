@@ -350,8 +350,8 @@ const T = {
     faqHeading: 'FAQ',
     sourcesLabel: 'Sources',
 
-    trTitle: "Classic World Training Routes: Conditions and Supply Costs | GMS Hub",
-    trDesc: "Conditional class routes with entry requirements, rotations, supply costs and alternatives.",
+    trTitle: "MapleStory Classic World Training Spots by Level & Class: Where to Grind | GMS Hub",
+    trDesc: "Where to train in MapleStory Classic World: enter your level and class to see spots with the monsters, what each spot needs, potion costs and where to move next.",
     trH1: "Training Routes",
     trLead: "Find a manageable next route for your class, equipment and level.",
     level: 'My level',
@@ -369,14 +369,14 @@ const T = {
     caution: 'Caution',
     trSourcesHeading: 'Sources',
     trBandNav: "Routes by level",
-    trBandTitle: "Classic World Level {a}–{b} Training Routes | GMS Hub",
-    trBandDesc: "Compare {n} conditional routes across levels {a}–{b}, with entry requirements and supply costs.",
+    trBandTitle: "MapleStory Classic World Level {a}–{b} Training Spots: Where to Grind | GMS Hub",
+    trBandDesc: "Where to train at level {a}–{b} in MapleStory Classic World: {n} spots compared by class, with the monsters, what each spot needs and potion costs.",
     trBandH1: "Level {a}–{b} Training Routes",
     trBandLead: "Compare {n} routes in this band. Read class, gear and supply requirements before moving.",
     trBandFinder: "Find routes for your setup",
     noDate: 'undated',
 
-    scTitle: 'Global MapleStory Classic World Scroll Calculator: Lesser, Intermediate, Greater & Chaos Odds | GMS Hub',
+    scTitle: 'MapleStory Classic World Scroll Success Rates: 100%, 60%, 10% & Chaos Calculator | GMS Hub',
     scDesc: 'Classic World scroll odds (Lesser 100%, Intermediate 60%, Greater 10%, Chaos 10%): pass distribution, boom chance and expected stat gain.',
     scH1: 'Scroll Calculator',
     scLead: 'A probability model using sourced preset rates. Compare inputs with the current item tooltip.',
@@ -404,7 +404,7 @@ const T = {
     colLadder: 'Type',
     colExpected: 'Expected gain per scroll',
 
-    dropTitle: 'MapleStory Classic World Drop Rates: Odds Calculator, Box Rates & Monster Drops | GMS Hub',
+    dropTitle: 'MapleStory Classic World Drops: Which Monster Drops It, Box Rates & Odds | GMS Hub',
     dropDesc: 'How many kills or opens does a 1% drop take in MapleStory Classic World? Odds calculator, Nexon\'s official box rates, and which monsters drop each item.',
     dropH1: 'Odds Calculator',
     dropLead: '"It\'s 1% — will 100 tries do it?" Works for box opens and monster kills alike.',
@@ -2639,7 +2639,7 @@ const GUIDE_T = {
   en: { toolsChip: 'Tools for this guide', toolsHeading: 'Tools to use with this guide', more: 'More guides', sources: 'Sources', byline: (g) => `By GMS Hub · Published ${g.published} · Updated ${g.updated}`,
     note: 'Report corrections to {mail} or on {issues}.', issues: 'GitHub issues',
     indexH1: 'MapleStory Classic World Guides', indexLead: 'Getting started, class progression, quests and market tools. Choose the guide for your next step.',
-    indexTitle: 'Classic World Class, Quest and Training Guides | GMS Hub', indexDesc: 'Class progression, training conditions, quest routes, supply costs and market tools.' }
+    indexTitle: 'MapleStory Classic World Guides: Classes, Training, Quests & Kerning PQ | GMS Hub', indexDesc: 'MapleStory Classic World guides: every class build, where to train from level 1 to 70, quest walkthroughs, Kerning PQ and how to read Free Market prices.' }
 };
 // A guide written in both languages gets hreflang links and a language switch to its twin; a single-language guide has none.
 const guideBoth = (slug) => LANGS.every((l) => guides.some((g) => g.slug === slug && g.lang === l));
@@ -3626,7 +3626,7 @@ for (const lang of LANGS) {
       itemHref: (e) => (ITEM_PAGE_IDS.has(e.id) ? link(itemPath(ITEM_PAGES.find((i) => i.id === e.id))) : link(`/tools/market/?item=${e.id}`)) };
     write(path.join(lang, 'equipment', 'index.html'), page({
       lang, pageKey: 'equipment', pagePath: '/equipment/', modules: ['equipment.js'],
-      title: lang === 'ko' ? '글클메 장비 찾기: 직업·레벨별 장비와 드롭 몬스터 | GMS Hub' : 'MapleStory Classic World Equipment by Class & Level: Where to Get It | GMS Hub',
+      title: lang === 'ko' ? '글클메 장비 찾기: 직업·레벨별 장비와 드롭 몬스터 | GMS Hub' : 'MapleStory Classic World Gear by Class & Level: Stats and Where to Get It | GMS Hub',
       desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드에서 지금 얻을 수 있는 장비 ${EQUIPMENT.length}개를 직업·부위·레벨로 찾아요. 능력치, 업그레이드 횟수, 떨어뜨리는 몬스터와 주는 퀘스트까지.` : `${EQUIPMENT.length} pieces of MapleStory Classic World (MSCW) gear you can get right now, by class, slot and level: stats, upgrade slots, the monsters that drop them and the quests that give them.`,
       body: equipmentIndexBody(eqCtx, EQUIPMENT),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '장비 찾기' : 'Equipment finder', '/equipment/')]

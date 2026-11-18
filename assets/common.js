@@ -387,6 +387,39 @@ document.addEventListener('click', (e) => { const a = e.target.closest('[data-di
 
 // Repeat visits take the site's files from a service worker cache (assets/sw.js, served at /sw.js). Registered after
 // load so it never competes with the page, and only on the real site (not on a local build).
+// Language hint (2026-11-18): GA showed English-browser visitors landing on Korean pages (/ko/tools/training/: 60 visits
+// in 8 days, 45 s each) and leaving. When someone arrives from outside the site on a page in a language their browser
+// does not use, and the same page exists in their language, a thin bar offers it. Only on arrival (a visitor who moved
+// within the site chose where they are), only ko <-> en, and a close stays closed.
+(() => {
+  const here = document.documentElement.lang;
+  if (here !== 'ko' && here !== 'en') return;
+  let fromSite = false;
+  try { fromSite = !!document.referrer && new URL(document.referrer).host === location.host; } catch (e) {}
+  if (fromSite || /^\/admin\//.test(location.pathname)) return;
+  const prefs = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || '']).map((l) => String(l).toLowerCase());
+  const wantsKo = prefs.some((l) => l.startsWith('ko'));
+  const want = here === 'ko' && !wantsKo && prefs.some((l) => l.startsWith('en')) ? 'en' : here === 'en' && wantsKo ? 'ko' : '';
+  if (!want) return;
+  const KEY = 'gms-lang-hint-off';
+  try { if (localStorage.getItem(KEY)) return; } catch (e) {}
+  const alt = document.querySelector(`link[rel="alternate"][hreflang="${want}"]`);
+  if (!alt) return;
+  const to = new URL(alt.href, location.href);
+  to.search = location.search; to.hash = location.hash;
+  const bar = document.createElement('div');
+  bar.className = 'lang-hint';
+  bar.setAttribute('lang', want);
+  const text = want === 'en' ? 'This page is also in English.' : '이 페이지는 한국어로도 볼 수 있어요.';
+  const go = want === 'en' ? 'Read it in English' : '한국어로 보기';
+  bar.innerHTML = `<span>${text}</span><a href="${to.pathname + to.search + to.hash}" data-lang-hint="go">${go} →</a><button type="button" aria-label="${want === 'en' ? 'Close' : '닫기'}">×</button>`;
+  bar.querySelector('button').addEventListener('click', () => { bar.remove(); try { localStorage.setItem(KEY, '1'); } catch (e) {} });
+  const header = document.querySelector('.site-header');
+  (header ? header.after(bar) : document.body.prepend(bar));
+  try { window.gtag?.('event', 'lang_hint_shown', { to: want }); } catch (e) {}
+  bar.querySelector('a').addEventListener('click', () => { try { window.gtag?.('event', 'lang_hint_click', { to: want }); } catch (e) {} });
+})();
+
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
   // Page scripts start after the first paint, which can be after the load event.
   const register = () => navigator.serviceWorker.register('/sw.js').catch(() => {});

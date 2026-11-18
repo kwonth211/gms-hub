@@ -281,9 +281,9 @@
     {
       "slug": "trading-and-mesos",
       "lang": "ko",
-      "title": "GMS Hub 시세: 매물과 체결 가격 구분하기",
+      "title": "글클메 시세 보는 법: 자유시장 매물 가격과 실제 판매 가격 구분하기",
       "h1": "GMS Hub 시세: 매물과 체결 가격 구분하기",
-      "desc": "판매자·위치·확인 시각, 판매 중 매물과 관측 이력, 시세 그래프의 해석 범위.",
+      "desc": "글클메 자유시장 시세 보는 법. 판매 중 매물과 판매 완료 가격이 어떻게 다른지, 판매자·채널·방과 확인 시각, 시세 그래프 읽는 법을 정리했어요.",
       "published": "2026-11-02",
       "updated": "2026-11-10",
       "sources": [
@@ -704,9 +704,9 @@
     {
       "slug": "kerning-party-quest",
       "lang": "en",
-      "title": "Kerning PQ: preparation, stages and bonus parties",
+      "title": "Kerning City Party Quest (KPQ) Guide for MapleStory Classic World: Stages, Coupons & King Slime",
       "h1": "Kerning PQ: preparation, stages and bonus parties",
-      "desc": "Prepare for entry, coupon questions, combinations, King Slime and bonus training.",
+      "desc": "How to do Kerning PQ in MapleStory Classic World: entry at level 21, the coupon questions, the platform combinations, King Slime and bonus-stage parties.",
       "published": "2026-11-09",
       "updated": "2026-11-10",
       "sources": [
