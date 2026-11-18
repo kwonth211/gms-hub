@@ -48,7 +48,7 @@ const MOB = (id) => `data:image/gif;base64,${fs.readFileSync(path.join(root, 'as
 function art(key, lang) {
   const ko = lang === 'ko';
   if (key === 'market') {
-    const rows = [[2070006, ko ? '일비 표창' : 'Ilbi Throwing-Stars', 'CH 3 · FM 7', 'up'], [2040801, ko ? '장갑 공격력 60%' : 'Gloves Att 60%', 'CH 12 · FM 2', 'dn'], [1452005, ko ? '레드 바이퍼' : 'Red Viper', 'CH 8 · FM 15', 'up'], [1032007, ko ? '에메랄드 귀고리' : 'Emerald Earrings', 'CH 1 · FM 4', 'dn']];
+    const rows = [[2070005, ko ? '뇌전 수리검' : 'Steely Throwing-Knives', 'CH 3 · FM 7', 'up'], [2040801, ko ? '장갑 공격력 60%' : 'Gloves Att 60%', 'CH 12 · FM 2', 'dn'], [1452005, ko ? '레드 바이퍼' : 'Red Viper', 'CH 8 · FM 15', 'up'], [1032007, ko ? '에메랄드 귀고리' : 'Emerald Earrings', 'CH 1 · FM 4', 'dn']];
     return `<div class="art"><svg style="position:absolute;left:10px;top:330px" width="410" height="120" viewBox="0 0 410 120"><polyline points="0,95 50,80 95,88 140,60 190,68 235,40 285,52 330,25 380,32 410,12" fill="none" stroke="#ffd17b" stroke-width="5" stroke-linejoin="round"/><polyline points="0,95 50,80 95,88 140,60 190,68 235,40 285,52 330,25 380,32 410,12 410,120 0,120" fill="#ffd17b33" stroke="none"/></svg>
 <div class="pnl" style="left:18px;top:30px;width:392px;padding:18px 20px"><h3>${spriteSvg('coin', 26)}${ko ? '지금 파는 상점' : 'Shops selling now'}</h3>${rows.map(([id, n, at, t]) => `<div class="row"><img src="${ICON(id)}"><span class="nm">${n}</span><span class="chip">${at}</span><span class="${t}">${t === 'up' ? '▲' : '▼'}</span></div>`).join('')}</div>
 <div style="position:absolute;left:320px;top:-6px">${spriteSvg('coin', 64)}</div><div style="position:absolute;left:372px;top:22px">${spriteSvg('coin', 44)}</div></div>`;
@@ -74,9 +74,9 @@ function art(key, lang) {
   }
   if (key === 'megaphone') {
     return `<div class="art"><div style="position:absolute;left:20px;top:250px;transform:rotate(-12deg)">${spriteSvg('megaphone', 170)}</div>
-<div class="bub" style="left:120px;top:20px;background:#ffc6dd;border-color:#ffc6dd">S&gt; Ilbi stars 1.2m, w me</div>
+<div class="bub" style="left:120px;top:20px;background:#ffc6dd;border-color:#ffc6dd">S&gt; Steely 1 set, w me</div>
 <div class="bub" style="left:170px;top:110px;background:#ffe39a;border-color:#ffe39a">B&gt; Gloves Att 60%</div>
-<div class="bub" style="left:130px;top:200px;background:#a8ece3;border-color:#a8ece3">T&gt; Red Viper ↔ Steely</div>
+<div class="bub" style="left:130px;top:200px;background:#a8ece3;border-color:#a8ece3">T&gt; Red Viper ↔ Emerald Earrings</div>
 <div class="chip" style="position:absolute;left:220px;top:330px;font-size:17px;padding:7px 14px">${ko ? '실시간 · 시세 비교' : 'Live · price check'}</div></div>`;
   }
   if (key === 'newbie') {
