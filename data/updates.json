@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "listing-gone",
+   "version": "0.7.22",
+   "level": "minor",
+   "date": "2026-11-18",
+   "path": "/tools/market/",
+   "ko": "매물마다 \"팔렸어요\" 버튼 — 가 보니 없던 매물을 한 번에 알리기",
+   "en": "\"Sold out\" button on every listing — tell others a listing was gone in one press",
+   "desc": {
+    "ko": "상점에 찾아갔는데 물건이 없었다면 그 매물의 빨간 \"팔렸어요\"를 눌러 주세요. 로그인 없이 한 번이면 끝나고, 다른 사람에게는 몇 명이 알려 줬는지와 함께 흐리게 보여서 헛걸음이 줄어요. 그 매물이 다시 확인되면 표시는 저절로 사라져요.",
+    "en": "Went to a shop and the item was not there? Press the red \"Sold out\" on that listing. No login, one press; others see it dimmed with how many reported it, so fewer wasted trips. If the listing is seen again, the mark clears itself."
+   }
+  },
+  {
    "id": "lang-hint",
    "version": "0.7.21",
    "level": "patch",

@@ -78,3 +78,4 @@
 - `scan_me_set`: typed "my character name" on the shop scan page (used when the own-store owner box reads blank).
 - `lab_open` (lab): opened an unlisted lab page (quest-run, meso-farm, market-pulse). `lab_quest_check` (quest_id, done): checked a quest on the lab quest checklist.
 - `market_refresh` (scope listings|detail, item_id): pressed the refresh button on the all-listings tab or an item's listings.
+- `market_gone` (item_id, reports): pressed "팔렸어요" on a listing (the shop no longer had it); reports = that listing's count after this press.
