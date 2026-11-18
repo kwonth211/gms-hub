@@ -46,10 +46,13 @@ export class Presence {
         const quiet = Math.round((t - (ping || a.t || t)) / 1000);
         if (quiet > 150) silent++;
         const k = a.who || 'before-log';
-        const g = groups.get(k) || { who: k, tabs: 0, country: a.c || '', org: a.org || '', ua: a.ua || '', pages: {}, oldestMin: 0, quietSec: [] };
+        const g = groups.get(k) || { who: k, tabs: 0, country: a.c || '', org: a.org || '', ua: a.ua || '', pages: {}, langs: {}, oldestMin: 0, quietSec: [] };
         g.tabs++;
         const pg = this.state.getTags(ws)[0] || '/';
         g.pages[pg] = (g.pages[pg] || 0) + 1;
+        // Tabs per page and language: { '/tools/market/': { ko: 2, en: 1 } }; '' = opened before this was recorded.
+        const byLang = g.langs[pg] || (g.langs[pg] = {});
+        byLang[a.lang || ''] = (byLang[a.lang || ''] || 0) + 1;
         if (a.t) g.oldestMin = Math.max(g.oldestMin, Math.round((t - a.t) / 60000));
         g.quietSec.push(quiet);
         groups.set(k, g);
@@ -59,12 +62,15 @@ export class Presence {
     }
     if (req.headers.get('Upgrade') !== 'websocket') return new Response('expected websocket', { status: 426 });
     if (new URL(req.url).pathname === '/chat') return this.joinChat();
-    const page = pageKey(new URL(req.url).searchParams.get('p'));
+    const rawPage = new URL(req.url).searchParams.get('p');
+    const page = pageKey(rawPage);
+    // The language the page was opened in (ko, en, zh, ja), for the owner's who-holds-tabs table. The room itself stays per page.
+    const pageLang = (String(rawPage || '').match(/^\/(ko|en|zh|ja)(?=\/|$)/) || [])[1] || '';
     const [client, server] = Object.values(new WebSocketPair());
     this.state.acceptWebSocket(server, [page]);
     // Who holds the tab (owner's check, 2026-11-18): a salted hash of the IP (never the IP), country, network and a short
     // browser label, kept only on the socket while it is open. No storage, no D1.
-    try { server.serializeAttachment({ t: Date.now(), who: req.headers.get('x-gms-who') || '', c: req.headers.get('x-gms-country') || '', org: req.headers.get('x-gms-org') || '', ua: req.headers.get('x-gms-ua') || '' }); } catch (e) {}
+    try { server.serializeAttachment({ t: Date.now(), who: req.headers.get('x-gms-who') || '', c: req.headers.get('x-gms-country') || '', org: req.headers.get('x-gms-org') || '', ua: req.headers.get('x-gms-ua') || '', lang: pageLang }); } catch (e) {}
     this.broadcast();
     return new Response(null, { status: 101, webSocket: client });
   }

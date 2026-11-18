@@ -225,13 +225,24 @@ function whoHtml(live) {
   const known = rows.filter((g) => g.who !== 'before-log');
   const people = known.length, tabs = rows.reduce((a, g) => a + g.tabs, 0), aliveTabs = rows.reduce((a, g) => a + g.alive, 0);
   const many = known.filter((g) => g.tabs >= 3);
+  // Tabs by page language across everyone (tabs opened before the language was recorded are left out).
+  const byLang = {};
+  for (const g of rows) for (const m of Object.values(g.langs || {})) for (const [l, n] of Object.entries(m)) if (l) byLang[l] = (byLang[l] || 0) + n;
+  const LANG_KO = { ko: '한국어', en: '영어', zh: '중국어', ja: '일본어' };
+  const langSum = Object.entries(byLang).sort((a, b) => b[1] - a[1]).map(([l, n]) => `${LANG_KO[l] || l} 페이지 <b>${nf(n)}</b>`).join(' · ');
   const tr = (g) => {
-    const pages = Object.entries(g.pages || {}).sort((a, b) => b[1] - a[1]).map(([pg, n]) => `${esc(pageName(pg))}${n > 1 ? ` ×${n}` : ''}`).join(', ');
+    // Each page carries the language it was opened in: "실시간 시세 ko ×2 · en".
+    const langTags = (pg) => Object.entries(g.langs?.[pg] || {}).filter(([l]) => l).sort((a, b) => b[1] - a[1])
+      .map(([l, n]) => `<span class="td-lang td-lang-${esc(l)}">${esc(l)}${n > 1 ? ` ×${n}` : ''}</span>`).join('');
+    const pages = Object.entries(g.pages || {}).sort((a, b) => b[1] - a[1]).map(([pg, n]) => {
+      const tags = langTags(pg);
+      return `<span class="td-who-page">${esc(pageName(pg))}${tags ? ` ${tags}` : n > 1 ? ` ×${n}` : ''}</span>`;
+    }).join(', ');
     const whoLabel = g.who === 'before-log' ? '기록 없는 연결 (서버 배포 전부터 열려 있던 탭)' : `${esc(COUNTRY[g.country] || g.country || '?')} · ${esc(g.org || '?')}`;
     return `<tr${g.tabs >= 5 ? ' class="td-who-many"' : ''}><td class="num"><b>${nf(g.tabs)}</b></td><td class="num">${nf(g.alive)}</td><td>${whoLabel}</td><td>${esc(g.ua || '')}</td><td>${pages}</td><td class="num">${g.oldestMin != null ? `${nf(g.oldestMin)}분` : ''}</td></tr>`;
   };
   return `<section class="panel td-who"><h2>지금 누가 탭을 몇 개 열어 뒀나 <small class="muted">15초마다 새로 읽어요</small></h2>
-<p class="td-who-sum">열린 탭 <b>${nf(live.now)}</b>개 · 사람 <b>${nf(people)}</b>명${people ? ` · 한 사람당 평균 <b>${(known.reduce((a, g) => a + g.tabs, 0) / people).toFixed(1)}</b>개` : ''} · 지금 응답 중인 탭 <b>${nf(aliveTabs)}</b>개 · 응답 없는 연결 ${nf(live.silent || 0)}개${many.length ? ` · 3개 이상 연 사람 ${nf(many.length)}명 (합 ${nf(many.reduce((a, g) => a + g.tabs, 0))}개)` : ''}</p>
+<p class="td-who-sum">열린 탭 <b>${nf(live.now)}</b>개 · 사람 <b>${nf(people)}</b>명${people ? ` · 한 사람당 평균 <b>${(known.reduce((a, g) => a + g.tabs, 0) / people).toFixed(1)}</b>개` : ''} · 지금 응답 중인 탭 <b>${nf(aliveTabs)}</b>개 · 응답 없는 연결 ${nf(live.silent || 0)}개${many.length ? ` · 3개 이상 연 사람 ${nf(many.length)}명 (합 ${nf(many.reduce((a, g) => a + g.tabs, 0))}개)` : ''}${langSum ? `<br>${langSum}` : ''}</p>
 <div class="table-wrap"><table class="data td-who-table"><thead><tr><th scope="col">탭</th><th scope="col">응답 중</th><th scope="col">어디서</th><th scope="col">브라우저</th><th scope="col">열어 둔 페이지</th><th scope="col">열린 지</th></tr></thead><tbody>${rows.map(tr).join('')}</tbody></table></div>
 <p class="muted small">같은 주소·같은 브라우저를 한 사람으로 묶었어요. 주소는 저장하지 않고 연결돼 있는 동안만 구분값으로 써요. 많이 연 순서로 40명까지 보여요.</p></section>`;
 }
