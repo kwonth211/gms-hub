@@ -802,6 +802,17 @@ export default {
     const goodBot = !!(req.cf && (req.cf.verifiedBotCategory || req.cf.botManagement?.verifiedBot));
     if (!goodBot && !path.startsWith('/internal/') && !TRUSTED.has(path) && (req.headers.get('User-Agent') || '').includes('HeadlessChrome'))
       return new Response(JSON.stringify({ error: 'automated browsers are not allowed' }), { status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+    // The listing feed is served to the site's own pages only (owner approved, 2026-11-18). A browser on gms-hub.com
+    // always sends Origin to this host and, where it sends fetch metadata, marks the request cross-site + cors. Scripts
+    // paging through every listing do not: one address in Israel asked every 2-3 seconds with a copied Referer, no
+    // Origin and "same-origin" metadata; one in New York sent no headers at all. None of our own tools read this path
+    // from outside the site (CI reads /prices/all and /market/catalog, collectors use /internal/, the Discord bot calls
+    // the inner handler). Every other read path stays open, and verified search crawlers pass.
+    if (path === '/market/listings' && req.method === 'GET' && !goodBot) {
+      const fs = req.headers.get('Sec-Fetch-Site'), fm = req.headers.get('Sec-Fetch-Mode');
+      if (!ALLOWED_ORIGINS.includes(req.headers.get('Origin') || '') || (fs && fs !== 'cross-site') || (fm && fm !== 'cors'))
+        return new Response(JSON.stringify({ error: 'Listings are served to pages on gms-hub.com. Automated collection is not permitted: https://gms-hub.com/en/terms/' }), { status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+    }
     // Site chat has no page any more, so its socket route is closed (the room code stays in presence.js).
     if (path === '/chat') return new Response('not found', { status: 404 });
     const live = path === '/presence';

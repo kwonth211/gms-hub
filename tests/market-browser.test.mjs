@@ -241,6 +241,7 @@ test("catalog searching, categories, favorites and price sort retain all known m
     2040801,
   );
 });
+const SITE = { headers: { Origin: "https://gms-hub.com" } };
 test("public routes return validation errors and page metadata instead of silently falling back to newest rows", async () => {
   const e = env();
   add(e);
@@ -251,13 +252,20 @@ test("public routes return validation errors and page metadata instead of silent
     "/market/history?id=2040801",
   ])
     assert.equal(
-      (await worker.fetch(new Request("https://test" + path), e)).status,
+      (await worker.fetch(new Request("https://test" + path, SITE), e)).status,
       200,
     );
+  // The listing feed answers pages on the site only: no Origin, a copied Referer or another site's Origin is refused.
+  for (const headers of [{}, { Referer: "https://gms-hub.com/" }, { Origin: "https://example.com" }, { Origin: "https://gms-hub.com", "Sec-Fetch-Site": "same-origin" }])
+    assert.equal(
+      (await worker.fetch(new Request("https://test/market/listings", { headers }), e)).status,
+      403,
+    );
+  assert.equal((await worker.fetch(new Request("https://test/market/catalog"), e)).status, 200);
   assert.equal(
     (
       await worker.fetch(
-        new Request("https://test/market/listings?channel=500"),
+        new Request("https://test/market/listings?channel=500", SITE),
         e,
       )
     ).status,
