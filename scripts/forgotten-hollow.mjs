@@ -66,7 +66,7 @@ ${fh.zones.map((z) => `<li class="fh-step"><a href="#zone-${z.id}"><span class="
 <h1 id="fh-title">${tr('포가튼 할로우 공략', 'Forgotten Hollow guide')}</h1>
 <p class="fh-hero-lead">${tr('잊혀진 골짜기의 가는 길, 사냥터, 몬스터, 퀘스트, 보스를 한 페이지에 모았어요.', 'Getting in, where to train, every monster, the quests and the boss, on one page.')}</p>
 <p class="fh-hero-actions"><a class="btn" href="#way-in">${tr('가는 법', 'How to get in')}</a><a class="btn ghost" href="#zone-entry">${tr('레벨별 사냥터', 'Maps by level')}</a></p>
-<p class="fh-dday">${tr('11월 18일 오픈', 'Opens November 18')}, <b>${dday}</b></p>
+<p class="fh-dday">${tr('11월 18일 오픈', 'Opens November 18')}, <b>${dday}</b></p>${days >= -1 && fh.openNote ? `<p class="fh-open-note">${esc(L(fh.openNote))}</p>` : ''}
 </div>
 ${descent}
 </div>
@@ -74,7 +74,7 @@ ${descent}
 
   const toc = `<nav class="fh-toc wrap" aria-label="${tr('이 페이지', 'On this page')}">${[
     ['way-in', tr('가는 법', 'Getting in')], ['town', tr('마을', 'Town')], ['zone-entry', tr('사냥터', 'Maps')], ['monsters', tr('몬스터', 'Monsters')],
-    ['classes', tr('직업별 추천', 'By class')], ['quests', tr('퀘스트', 'Quests')], ['boss', tr('보스', 'Boss')], ['prep', tr('미리 준비', 'Prepare')], ['november', tr('11월 업데이트', 'November update')]
+    ['classes', tr('직업별 추천', 'By class')], ['quests', tr('퀘스트', 'Quests')], ['boss', tr('보스', 'Boss')], ['weapons', tr('새 무기', 'New weapons')], ['events', tr('이벤트', 'Events')], ['prep', tr('미리 준비', 'Prepare')], ['november', tr('바뀌는 것', 'Changes')]
   ].map(([id, t]) => `<a href="#${id}">${t}</a>`).join('')}</nav>`;
 
   const legend = `<section class="fh-legend wrap" aria-label="${tr('정보 표시', 'How sure each fact is')}">
@@ -97,7 +97,8 @@ ${fh.entrances.map((e, i) => `<article class="fh-card"><h3><span class="fh-num">
 <h2>${tr('잊혀진 골짜기 마을', 'The Forgotten Hollow town')}</h2>
 <p class="fh-lead">${tr('마을에는 몬스터가 없어요. 동쪽은 입구 구역, 서쪽 문은 중간 구역으로 이어져요.', 'No monsters in town. East leads back to the entrance; the west gate leads to the middle zone.')} ${tag('video')}</p>
 <ul class="fh-town">${fh.town.map((t) => `<li><b>${esc(L(t.who))}</b><span>${esc(L(t.what))}</span>${tag(t.state)}</li>`).join('')}</ul>
-<p class="fh-note">${tr('공지에 나온 할로우 NPC: 루마, 방랑 모험가 제이미, 토린, 니로스, 실카, 마이라, 타미아, 학자 다니엘, 미엔, 젤리아.', 'NPCs named in the notice: Luma, Jaime the Explorer, Torin, Nyroth, Sylka, Myra, Tamya, Daniel the Scholar, Myen, Zelya.')} ${tag('official')}</p>
+<p class="fh-note">${tr('할로우 NPC는 11명이에요: 루마, 젤리아, 미엔, 마이라, 니로스, 토린, 방랑 모험가 제이미, 학자 다니엘, 타미아, 실카, 글리머.', 'The Hollow has eleven NPCs: Luma, Zelya, Myen, Myra, Nyroth, Torin, Jaime the Explorer, Daniel the Scholar, Tamya, Sylka and Glimmer.')}</p>
+<p class="fh-note">${tr('할로우 가구 14종은 니로스에게 사거나, 제작하거나, 퀘스트 보상으로 얻어요', 'Fourteen pieces of Hollow furniture come from Nyroth, crafting and quest rewards')}: <span translate="no">${fh.furniture.map(esc).join(', ')}</span>. ${tag('official')}</p>
 </section>`;
 
   // ---------- zones ----------
@@ -173,7 +174,7 @@ ${elTags(m) ? `<p class="fh-els">${elTags(m)}</p>` : ''}
   const chain = (ids) => `<ol class="gq-steps fh-chain">${ids.map(qStep).join('')}</ol>`;
   const questsSec = `<section class="fh-sec wrap" id="quests">
 <h2>${tr('퀘스트', 'Quests')}</h2>
-<p class="fh-lead">${tr('39레벨 이상 새 퀘스트가 34개 추가돼요. 지금 확인된 줄기를 레벨 순서로 정리했어요.', '34 new quests for level 39 and up. These are the lines confirmed so far, in level order.')} ${tag('official')}</p>
+<p class="fh-lead">${tr('39레벨 이상 새 퀘스트가 34개, 줄기로는 11개 추가돼요. 내용이 확인된 줄기를 레벨 순서로 정리했어요.', '34 new quests in eleven lines for level 39 and up. The lines with known steps are below, in level order.')} ${tag('official')}</p>
 <article class="fh-qblock"><h3><span class="fh-zone-lv">Lv 39</span>${tr('입장 퀘스트', 'The way in')} ${tag('video')}</h3>
 <ol class="fh-plain">${fh.entryQuest.map((s) => `<li><b>${esc(L(s.who))}</b><span>${esc(L(s.do))}</span></li>`).join('')}</ol>
 <p class="fh-note">${tr('재료는 퀘스트 아이템이라 오픈한 뒤에 모을 수 있어요. 정확한 퀘스트 이름과 개수는 오픈 후 채울게요.', 'The materials are quest items, so they only drop after launch. Exact names and counts will follow after launch.')} ${tag('pending')}</p></article>
@@ -184,7 +185,10 @@ ${elTags(m) ? `<p class="fh-els">${elTags(m)}</p>` : ''}
 <p>${tr('11월 18일부터. 썩은 버섯의 부패한 부적과 스포어우드 60마리. 마지막 보상은 하의 HP 10%, 망토 명중 10%, 엘릭서 20개 중 하나예요.', 'From November 18: Decayed Charms from Rotten Mushrooms and 60 Sporewoods. The last reward is one of Bottomwear HP 10%, Cape Accuracy 10% or 20 Elixirs.')}</p>${chain([10624, 10625, 10626])}</article>
 <article class="fh-qblock"><h3><span class="fh-zone-lv">Lv 45</span>${tr('니로스의 망토 명중 퀘스트', 'Nyroth\'s cape accuracy line')} ${tag('data')}</h3>
 <p>${tr('게임 데이터상 12월 9일에 열려요. 11월 18일에는 할 수 없어요. 첫 퀘스트에서 망토 명중 주문서(60% 또는 10%)가 무작위로 나와요.', 'The game data opens it on December 9, not November 18. The first quest gives a Cape Accuracy scroll, 60% or 10% at random.')}</p>${chain([10617, 10618, 10619, 10620])}</article>
-<p class="fh-note">${tr('공지에 이름만 나온 퀘스트', 'Quests named in the notice')}: <span translate="no">${fh.officialQuests.map(esc).join(', ')}</span>. ${tr('내용은 패치노트가 나오면 채울게요.', 'Details once the patch notes are out.')} ${tag('pending')}</p>
+<article class="fh-qblock"><h3>${tr('할로우 퀘스트 11줄기', 'The Hollow\'s eleven quest lines')} ${tag('official')}</h3>
+<p>${tr('패치노트에 나온 퀘스트 이름이에요. 하나만 단일 퀘스트이고 나머지 10개는 여러 단계로 이어지는 연계 퀘스트예요.', 'The quest names in the patch notes: one single quest and ten chains.')}</p>
+<ul class="fh-qnames">${fh.questChains.map(([name, chained]) => `<li><b translate="no">${esc(name)}</b><small>${chained ? tr('연계', 'chain') : tr('단일', 'single')}</small></li>`).join('')}</ul>
+<p class="fh-note">${tr('단계별 내용과 보상은 오픈 후 확인해서 채울게요.', 'Steps and rewards will follow once it is open.')} ${tag('pending')}</p></article>
 </section>`;
 
   // ---------- boss ----------
@@ -209,13 +213,31 @@ ${elTags(m) ? `<p class="fh-els">${elTags(m)}</p>` : ''}
 <h2>${tr('열리기 전에 준비할 것', 'Before it opens')}</h2>
 <ol class="fh-check">${fh.prep.map((p) => `<li>${esc(L(p))}</li>`).join('')}</ol>
 </section>`;
+  // ---------- new weapons and Crafting Lv 9 (patch notes) ----------
+  const wName = (w) => { const i = w.id ? items.get(w.id) : null; return ko && i?.ko ? `${esc(i.ko)} <small translate="no">${esc(w.en)}</small>` : `<span translate="no">${esc(w.en)}</span>`; };
+  const weapons = `<section class="fh-sec wrap" id="weapons">
+<h2>${tr('새 무기 15종', 'Fifteen new weapons')}</h2>
+<p class="fh-lead">${tr('11월 업데이트에 함께 나오는 무기예요. 다섯 종은 새로 열리는 제작 9레벨로 만들어요.', 'The weapons that arrive with the November update. Five are made with the new Crafting Lv 9.')} ${tag('official')}</p>
+<div class="fh-scroll"><table class="fh-classes fh-weapons"><thead><tr><th>${tr('무기', 'Weapon')}</th><th>${tr('종류', 'Type')}</th><th>${tr('레벨', 'Level')}</th><th>${tr('직업', 'Class')}</th><th>${tr('필요 스탯', 'Requires')}</th><th>${tr('성능', 'Stats')}</th><th>${tr('제작', 'Crafted')}</th></tr></thead>
+<tbody>${fh.weapons.map((w) => `<tr><th scope="row">${wName(w)}</th><td>${esc(L(w.type))}</td><td>${w.lv}</td><td>${esc(L(w.job))}</td><td translate="no">${esc(w.req || '-')}</td><td>${esc(L(w.stat))}</td><td>${w.craft ? esc(L(w.craft)) : '-'}</td></tr>`).join('')}</tbody></table></div>
+<h3 class="fh-sub">${tr('제작 9레벨로 만드는 것', 'What Crafting Lv 9 makes')} ${tag('official')}</h3>
+<ul class="fh-town">${fh.craft9.map((c) => `<li><b>${esc(L(c.prof))}</b><span translate="no">${c.items.map((x) => esc(withRate(x))).join(', ')}</span></li>`).join('')}</ul>
+</section>`;
+
+  // ---------- events with Korea-time end dates ----------
+  const events = `<section class="fh-sec wrap" id="events">
+<h2>${tr('함께 열리는 이벤트', 'Events that open with it')}</h2>
+<p class="fh-lead">${tr('모두 11월 18일 점검이 끝나면 시작해요. 끝나는 시간은 한국 시간으로 바꿔 적었어요.', 'All four start when the November 18 maintenance ends.')} ${tag('official')}</p>
+<div class="fh-two">${fh.events.map((e) => `<article class="fh-card" id="event-${e.id}"><h3>${esc(L(e.name))}</h3><p class="fh-event-until">${esc(L(e.until))}</p><ul class="fh-facts">${L(e.points).map((x) => `<li>${esc(x)}</li>`).join('')}</ul></article>`).join('')}</div>
+</section>`;
+
   const november = `<section class="fh-sec wrap" id="november">
-<h2>${tr('11월 업데이트에 함께 오는 것', 'Also in the November update')}</h2>
-<ul class="fh-facts">${fh.november.map((x) => `<li>${esc(L(x))} ${tag(x.state)}</li>`).join('')}</ul>
+<h2>${tr('11월 업데이트로 바뀌는 것', 'What else the November update changes')}</h2>
+<ul class="fh-facts">${fh.changes.map((x) => `<li>${esc(L(x))} ${tag(x.state || 'official')}</li>`).join('')}</ul>
 <div class="fh-pending"><h3>${tr('아직 준비 중인 정보', 'Still to come')} ${tag('pending')}</h3><ul>${fh.pending.map((p) => `<li>${esc(L(p))}</li>`).join('')}</ul>
-<p class="fh-note">${tr(`패치노트가 나오고 오픈하면 이 페이지를 바로 고쳐요. 마지막 정리: ${fh.updated}`, `We update this page as soon as the patch notes land. Last updated ${fh.updated}.`)}</p></div>
+<p class="fh-note">${tr(`오픈하면 확인되는 대로 이 페이지를 고쳐요. 마지막 정리: ${fh.updated}`, `We update this page as things are confirmed after launch. Last updated ${fh.updated}.`)}</p></div>
 </section>`;
 
   return `<link rel="stylesheet" href="__FH_CSS__">
-<div class="fh">${hero}${toc}${legend}${wayIn}${town}${zones}${monstersSec}${classes}${questsSec}${bossSec}${prep}${november}</div>`;
+<div class="fh">${hero}${toc}${legend}${wayIn}${town}${zones}${monstersSec}${classes}${questsSec}${bossSec}${weapons}${events}${prep}${november}</div>`;
 }

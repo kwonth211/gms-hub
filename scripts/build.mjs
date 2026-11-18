@@ -3518,7 +3518,7 @@ for (const lang of LANGS) {
       write(path.join(lang, 'forgotten-hollow', 'index.html'), page({
         lang, pageKey: 'forgottenHollow', pagePath: '/forgotten-hollow/',
         title: lang === 'ko' ? '글클메 포가튼 할로우(잊혀진 골짜기) 공략: 가는 법·사냥터·몬스터·퀘스트·보스 | GMS Hub' : 'MapleStory Classic World Forgotten Hollow Guide: How to Get In, Best Maps, Monsters, Quests & Boss | GMS Hub',
-        desc: lang === 'ko' ? '11월 18일 열리는 포가튼 할로우(잊혀진 골짜기) 총정리. 입구 두 곳, 39~60레벨 구역별 추천 사냥터와 숨은 맵, 새 몬스터 10종 약점·명중, 직업별 사냥 대상, 퀘스트 보상, 보스 썩은 머쉬맘.' : 'Everything about Forgotten Hollow (opens November 18): both entrances, the best and hidden maps for levels 39–60, the ten new monsters with weaknesses and accuracy, what each class should hunt, quest rewards and the Rotten Mushmom boss.',
+        desc: lang === 'ko' ? '11월 18일 열리는 포가튼 할로우(잊혀진 골짜기) 총정리. 입구 두 곳, 39~60레벨 구역별 추천 사냥터와 숨은 맵, 새 몬스터 10종 약점·명중, 직업별 사냥 대상, 퀘스트 보상, 보스 썩은 머쉬맘, 패치노트의 새 무기 15종과 제작 9레벨, 추수감사절·월묘 이벤트 일정.' : 'Everything about Forgotten Hollow (opens November 18): both entrances, the best and hidden maps for levels 39–60, the ten new monsters with weaknesses and accuracy, what each class should hunt, quest rewards, the Rotten Mushmom boss, plus the patch notes: 15 new weapons, Crafting Lv 9 and the Thanksgiving and Moon Bunny events.',
         body: fhBody({ lang, fh, monsters: MONSTERS.monsters, raw: QUEST_RAW, items, link, mobSprite, accNeed: dmgAccNeed, today }).replace('__FH_CSS__', scriptSrc('forgotten.css')),
         ld: [breadcrumbLd(lang, lang === 'ko' ? '포가튼 할로우 공략' : 'Forgotten Hollow guide', '/forgotten-hollow/')]
       }));

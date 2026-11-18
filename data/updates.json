@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "forgotten-hollow-patch-notes",
+   "version": "0.7.17",
+   "level": "minor",
+   "date": "2026-11-18",
+   "path": "/forgotten-hollow/",
+   "ko": "포가튼 할로우 공략 — 패치노트 반영: 새 무기 15종, 제작 9레벨, 이벤트 일정",
+   "en": "Forgotten Hollow guide — patch notes added: 15 new weapons, Crafting Lv 9, event dates",
+   "desc": {
+    "ko": "공식 패치노트 내용을 공략에 넣었어요. 새 무기 15종의 성능과 제작 9레벨로 만드는 것, 할로우 퀘스트 11줄기, 추수감사절·월묘 파티퀘스트·출석 이벤트의 참여 방법과 끝나는 시간(한국 시간), 파티 줍기 규칙 같은 변경점을 볼 수 있어요.",
+    "en": "The official patch notes are now in the guide: stats for the 15 new weapons, what Crafting Lv 9 makes, the Hollow's eleven quest lines, how the Thanksgiving, Moon Bunny and check-in events work and when they end, and changes such as party loot rules."
+   }
+  },
+  {
    "id": "game-notices",
    "version": "0.7.16",
    "level": "minor",
