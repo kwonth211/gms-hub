@@ -11,6 +11,7 @@ const mon = (s) => MONTHS.indexOf(s.slice(0, 3).toLowerCase()) + 1;
 
 // Titles the rules cannot write. Keyed by the notice id.
 const KO = {
+  47857: '11월 18일 캐시샵 업데이트',
   48552: '11월 업데이트: 이벤트 안내',
   48256: '11월 업데이트: 포가튼 할로우 미리보기',
   48255: '11월 업데이트: 포가튼 할로우 패치 노트',
@@ -30,40 +31,43 @@ const KO = {
 // version and compensation lines from the notice itself (maintPoints) and these are added after them. `link` is a page
 // of ours on the same subject. A notice with no entry shows the feed's own one-line summary.
 const KO_POINTS = {
-  48557: { p: ['패치 노트가 공개됐어요. 새 지역 포가튼 할로우, 새 월드 제니스, 새 무기 15종이 들어와요.'] },
-  48255: { link: '/forgotten-hollow/', p: [
+  // Written by hand (2026-11-18, owner: this round by Claude, later notices by Workers AI). en: lines for English pages.
+  47857: {p: ["미스터리 패션 크레이트를 11월 18일 점검 후부터 12월 2일 16:59(한국 시간)까지 팔아요. 1개 3,500 NX, 11개 35,000 NX(원래 38,500 NX)예요.", "열면 Tania, Strawberry Milk, Leopard Print 세트 등 염색할 수 있는 코디 장비 중 하나가 무작위로 나와요.", "일반 상점 허가증(Regular Store Permit, 90일)이 1,500 NX에서 100 NX로 할인돼요. 12월 9일 점검 전까지, 월드마다 한 번 살 수 있어요.", "시그니처 스킨 컬러 쿠폰(2,000 NX)에 새 피부색 Alabaster, Clay, Green이 추가돼요.", "새 월드 제니스가 열리면서 뷰티(5,900 NX)·편의(9,900 NX)·펫 부스터 에센셜스 팩을 월드마다 한 번씩 살 수 있게 됐어요."], en: ["Mystery Fashion Crate on sale from the end of maintenance on Nov 18 until Dec 2, 07:59 UTC: 3,500 NX for one, 35,000 NX for 11 (was 38,500 NX).", "Each crate gives one random dyeable outfit item, from sets such as Tania, Strawberry Milk and Leopard Print.", "The Regular Store Permit (90 days) is 100 NX instead of 1,500 NX until the Dec 9 maintenance, once per world.", "The Signature Skin Color Coupon (2,000 NX) adds Alabaster, Clay and Green.", "With Zenith opening, the Beauty (5,900 NX), Convenience (9,900 NX) and Pet Booster Essentials Packs can be bought once per world."]},
+  47370: {en: ["Maintenance: Oct 30, 22:00 UTC – Oct 31, 00:00 UTC (about 2 hours). Restart the Nexon Launcher or Steam to get the latest version.", "Cash items you own were extended by 2 hours."]},
+  48557: { en: ["Maintenance: Nov 18, 13:00–18:00 UTC (about 5 hours). Game servers are unavailable during it.", "The game updates to v.2.0.0.", "Patch notes are out: the new area Forgotten Hollow, the new world Zenith and 15 new weapons."], p: ['패치 노트가 공개됐어요. 새 지역 포가튼 할로우, 새 월드 제니스, 새 무기 15종이 들어와요.'] },
+  48255: { en: ["New area Forgotten Hollow and the level 60 field boss Rotting Mushmom; the Hollow questline has 11 chains.", "The new world Zenith opens with 10 channels.", "15 new weapons, and crafting opens up to level 9.", "Party loot rules (by contribution, free for all, leader) and All and Social chat tabs are added.", "Thanksgiving Pumpkin Pie and Runaway Turkey (until Dec 8, 23:59 UTC), the Moon Bunny rice cake party quest (until Dec 9, 23:59 UTC) and an attendance event (until Dec 16, 23:59 UTC) run alongside.", "Defense of 18 existing monsters is adjusted and Kerning City party quest rewards are better."], link: '/forgotten-hollow/', p: [
     '새 지역 포가튼 할로우와 60레벨 필드 보스 썩은 머쉬맘이 추가돼요. 할로우 퀘스트는 11줄기예요.',
     '새 월드 제니스가 채널 10개로 열려요.',
     '새 무기 15종이 나오고, 제작이 9레벨까지 열려요.',
     '파티 줍기 규칙(기여도·전체·파티장)과 채팅창 전체·소셜 탭이 생겨요.',
     '추수감사절 호박 파이·도망친 칠면조(12월 9일 08:59까지), 월묘의 떡 파티퀘스트(12월 10일 08:59까지), 출석 이벤트(12월 17일 08:59까지)가 함께 열려요. 모두 한국 시간이에요.',
     '기존 몬스터 18종의 방어력이 조정되고 커닝시티 파티퀘스트 보상이 좋아져요.'] },
-  d1572077114297942107: { p: [
+  d1572077114297942107: { en: ["An official answer to claims of unfair bans and the rumour that many reports get you banned.", "Many players reporting at once does not ban anyone automatically.", "Before a ban, several layers of checks look at metadata, server logs and gameplay.", "Neither the number of in-game reports nor one failed Lie Detector test leads to an automatic ban."], p: [
     '억울하게 정지됐다는 이야기와, 신고를 많이 받으면 정지된다는 소문에 대한 공식 안내예요.',
     '여러 사람이 한꺼번에 신고해도 자동으로 정지되지는 않아요.',
     '정지하기 전에 메타데이터, 서버 로그, 게임 활동 등을 여러 단계로 확인해요.',
     '게임 안 신고 횟수나 거짓말 탐지기 한 번 실패만으로는 자동 정지가 되지 않아요.'] },
-  48552: { p: [
+  48552: { en: ["The new world Zenith opens after the Nov 18 maintenance with 10 channels and party quests.", "It opens because Windia has reached the maximum of 40 channels.", "The attendance event \"A New Journey Begins\" returns from the end of maintenance until Dec 16, 23:59 UTC.", "Level 10+ characters can join once per world: take the quest from the Maple Administrator, collect 30 Maple Leaves from level 10+ monsters and hand them in for that day's reward.", "Rewards include a Snail pet and potions on day 1, a Regular Store Permit on day 4 and 3 Megaphones on day 6.", "Missing a day keeps your progress, and Windia players who claimed it at launch can start again from day 1."], p: [
     '새 월드 제니스(Zenith)가 11월 18일 점검이 끝나면 열려요. 채널 10개로 시작하고 파티 퀘스트도 있어요.',
     '윈디아가 최대치인 40채널까지 늘어나서 새 월드를 여는 거예요.',
     '출석 이벤트 "새로운 여정의 시작"이 돌아와요. 점검 후부터 12월 17일 08:59(한국 시간)까지예요.',
     '10레벨 이상이면 월드마다 한 번 참여할 수 있어요. 메이플 운영자에게 퀘스트를 받고, 10레벨 이상 몬스터에게서 단풍잎 30개를 모아 가면 그날 보상을 받아요.',
     '보상은 1일차 달팽이 펫과 물약, 4일차 일반 상점 허가증, 6일차 확성기 3개 등이에요.',
     '하루를 빠져도 진행도는 그대로예요. 정식 출시 때 이미 받은 윈디아 유저도 1일차부터 다시 받을 수 있어요.'] },
-  48256: { link: '/forgotten-hollow/', p: [
+  48256: { en: ["The new area Forgotten Hollow opens in Victoria Island; anyone can enter, but the main content starts at level 39.", "34 quests for level 39+, new monsters, a new shop and furniture found only there.", "The level 60 field boss Rotting Mushmom appears.", "Thanksgiving events too: Grandma Benson's pumpkin pie ingredients, catching runaway turkeys and the Henesys Moon Bunny rice cakes."], link: '/forgotten-hollow/', p: [
     '빅토리아 아일랜드에 새 지역 포가튼 할로우가 열려요. 누구나 들어갈 수 있지만 본격적인 콘텐츠는 39레벨부터예요.',
     '39레벨 이상 퀘스트 34개, 새 몬스터, 새 상점과 이 지역에서만 나오는 가구가 추가돼요.',
     '60레벨 필드 보스 썩은 머쉬맘이 나와요.',
     '추수감사절 이벤트도 함께 열려요. 벤슨 할머니의 호박파이 재료 모으기, 달아난 칠면조 잡기, 헤네시스 월묘의 떡이에요.'] },
-  47069: { p: [
+  47069: { en: ["Mystery Hair Coupon (5,500 NX) and Mystery Face Coupon (3,500 NX) are out.", "On sale from Nov 11, 08:00 UTC until Nov 25, 07:59 UTC.", "A coupon changes your hair or face to a random one from a set list.", "The Mystery Fashion Crate stays on sale until the Nov 18 maintenance."], p: [
     '미스터리 헤어 쿠폰 5,500 NX, 미스터리 성형 쿠폰 3,500 NX가 나왔어요.',
     '판매 기간은 11월 11일 17:00부터 11월 25일 16:59까지예요(한국 시간).',
     '쿠폰을 쓰면 정해진 목록 안에서 헤어나 얼굴이 무작위로 바뀌어요.',
     '미스터리 패션 상자는 11월 18일 점검 전까지 계속 팔아요.'] },
-  47580: { p: [
+  47580: { en: ["Maintenance: Nov 4, 23:00 UTC – Nov 5, 01:00 UTC (about 2 hours). Restart the Nexon Launcher or Steam to get the latest version.", "Cash items you own were extended by 2 hours.", "Bot detection and blocking were improved.", "After a first NX purchase, the 96-hour cash item trade lock now also blocks all megaphones (regular, super, item and double item) for every character of the account in that world."], p: [
     '봇 탐지와 차단 시스템이 개선됐어요.',
     'NX를 처음 결제하면 96시간 캐시 아이템 거래 제한이 걸리는데, 그동안 확성기(일반·고확·아이템·더블 아이템)도 쓸 수 없게 됐어요. 그 월드의 계정 내 모든 캐릭터에 적용돼요.'] },
-  47031: { p: [
+  47031: { en: ["The Mystery Fashion Crate is new: 3,500 NX for one, 35,000 NX for 11.", "On sale from Nov 4, 08:00 UTC until the Nov 18 maintenance.", "Opening one gives a random outfit item, such as the Teddy Bear set."], p: [
     '미스터리 패션 상자가 새로 나왔어요. 1개 3,500 NX, 11개 묶음 35,000 NX예요.',
     '판매 기간은 11월 4일 17:00(한국 시간)부터 11월 18일 점검 전까지예요.',
     '열면 테디베어 세트를 비롯한 코디 장비 중 하나가 무작위로 나와요.'] },
@@ -153,7 +157,7 @@ export function discordNotice(m, known = new Set(), invite = '') {
   const ref = m.message_reference;
   const url = ref?.guild_id && ref.channel_id && ref.message_id ? `https://discord.com/channels/${ref.guild_id}/${ref.channel_id}/${ref.message_id}` : invite;
   return { id, src: 'discord', cat: /maintenance|patch|hotfix|server (?:is|are) (?:back|down)/i.test(lines.join(' ')) ? 'maintenance' : 'general', date: m.timestamp,
-    en: title, ko: KO[id] || title, url, sum: { en: sum, ko: hand.p || sum }, ...(hand.link ? { link: hand.link } : {}), ...(hand.p ? {} : { auto: true, raw: lines.join('\n').slice(0, 3000) }) };
+    en: title, ko: KO[id] || title, url, sum: { en: hand.en || sum, ko: hand.p || sum }, ...(hand.link ? { link: hand.link } : {}), ...(hand.p ? {} : { auto: true, raw: lines.join('\n').slice(0, 3000) }) };
 }
 // Announcements posted on the official Discord before the channel was followed (a follow only brings later posts).
 const DISCORD_SEED = [
@@ -182,7 +186,7 @@ export async function officialNews(fetcher = fetch, now = Date.now(), limit = 10
       const hand = KO_POINTS[x.id] || {};
       return { id: Number(x.id), cat, date: x.liveDate, en: String(x.name).trim(), ko: koTitle(x.id, x.name),
         url: `https://www.nexon.com/maplestory/news/${cat}/${Number(x.id)}/${slug(x.name)}`,
-        sum: { en: x.summary ? [String(x.summary).trim().slice(0, 240)] : [], ko: hand.p || (x.summary ? [String(x.summary).trim().slice(0, 240)] : []) }, ...(hand.link ? { link: hand.link } : {}) , ...(!hand.p && cat !== 'maintenance' ? { auto: true } : {}) };
+        sum: { en: hand.en || (x.summary ? [String(x.summary).trim().slice(0, 240)] : []), ko: hand.p || (x.summary ? [String(x.summary).trim().slice(0, 240)] : []) }, ...(hand.link ? { link: hand.link } : {}) , ...(!hand.p && cat !== 'maintenance' ? { auto: true } : {}) };
     });
   // Maintenance notices are read in full for their Korean lines; one that has not finished also carries its window
   // for the line above the list. A failed read leaves the notice with its summary only.
