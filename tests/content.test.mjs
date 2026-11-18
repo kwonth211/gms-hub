@@ -307,7 +307,9 @@ test('root and localized share cards resolve to current, correctly sized artwork
       const html = read(`dist/${page}`);
       const og = /<meta property="og:image" content="([^"]+)"/.exec(html)?.[1];
       assert.ok(og, `${page}: missing share image`);
-      assert.match(og, new RegExp(`/og-autumn-${lang}-[a-f0-9]{12}\\.png$`), page);
+      // The market page carries its own card in ko and en (scripts/og.mjs PAGE_CARDS); zh/ja keep the general one.
+      const card = page.includes('/tools/market/') && (lang === 'ko' || lang === 'en') ? `market-${lang}` : `autumn-${lang}`;
+      assert.match(og, new RegExp(`/og-${card}-[a-f0-9]{12}\\.png$`), page);
       assert.equal(/<meta name="twitter:image" content="([^"]+)"/.exec(html)?.[1], og, page);
       assert.match(html, /<meta property="og:image:alt" content="[^"]+">/);
       const png = fs.readFileSync(new URL(`../dist${new URL(og).pathname}`, import.meta.url));

@@ -3852,7 +3852,9 @@ for (const loc of LOCALES) {
     let content = html.includes('http-equiv="refresh"') ? html.replaceAll('/en/', `/${loc.code}/`).replace('lang="en"', `lang="${loc.hreflang}"`) : localizePage(html, loc, ctx);
     if (!indexedIn(loc.code, `/${path.posix.dirname(rel.replace(/^en\//, ''))}/`))
       content = stripAds(content.replace(/<meta name="robots" content="index[^"]*">\n<link rel="canonical" href="[^"]*">/, '<meta name="robots" content="noindex">'));
-    content = content.replace(shareImageTags('en'), shareImageTags(loc.code));
+    // An English page may carry a page card (market, quests...); zh/ja have no page cards, so they take their general one.
+    const enTags = shareImageTags('en', `/${path.posix.dirname(rel.replace(/^en\//, ''))}/`.replace(/^\/\.\/$/, '/'));
+    content = content.replace(enTags, shareImageTags(loc.code)).replace(shareImageTags('en'), shareImageTags(loc.code));
     write(target, content);
   }
   for (const k of CLIENT_KEYS) if (!client[k]) ctx.missing.add(k);
