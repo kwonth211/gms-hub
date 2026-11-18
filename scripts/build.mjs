@@ -1433,7 +1433,7 @@ function trainingBody(lang) {
   return `${pageHead(lang,'sword',t.trH1,t.trLead)}<div class="wrap tr-page">
 ${fhPromo(lang)}
 <form id="tr-form" class="panel tr-filters">
-<label>${t.level}<input type="number" name="lv" min="1" max="100" value="20" required inputmode="numeric"></label>
+<label>${t.level}<input type="number" name="lv" min="1" max="100" placeholder="${lang === 'ko' ? '전체' : 'All'}" inputmode="numeric"></label>
 <label>${tr('직업','Class')}<select name="job"><option value="">${tr('모든 직업','All classes')}</option>${Object.entries(jobNames[lang]).map(([key,label])=>`<option value="${key}">${label}</option>`).join('')}</select></label>
 <label>${tr('우선순위','Priority')}<select name="goal"><option value="balanced">${tr('전체 비교','Compare all')}</option><option value="economy">${tr('물약 절약','Lower supply cost')}</option></select></label>
 <label>${tr('사냥 방식','Party setup')}<select name="party"><option value="any">${tr('솔로 + 파티','Solo + party')}</option><option value="solo">${tr('솔로 가능한 곳','Solo options')}</option></select></label>
