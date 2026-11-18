@@ -10,7 +10,7 @@ const n = (v, lang) => Number(v).toLocaleString(lang === 'ko' ? 'ko-KR' : 'en-US
 export const FH_MOB_IDS = [54, 55, 56, 57, 58, 59, 60, 61, 62, 63];
 export const FH_BOSS_ID = 700003;
 
-export function fhBody({ lang, fh, monsters, raw, items, link, mobSprite, accNeed, today }) {
+export function fhBody({ lang, fh, monsters, raw, items, link, mobSprite, accNeed, today, img = () => '', hasImg = () => false }) {
   const ko = lang === 'ko';
   const tr = (k, e) => (ko ? k : e);
   const L = (o) => (o ? (ko ? o.ko : o.en) : '');
@@ -23,6 +23,10 @@ export function fhBody({ lang, fh, monsters, raw, items, link, mobSprite, accNee
   const TIER = { 하급: 100, 중급: 60, 상급: 10, Lesser: 100, Intermediate: 60, Greater: 10 };
   const withRate = (name) => { const t = /(하급|중급|상급|Lesser|Intermediate|Greater)\s*$/.exec(name.trim()); return t ? `${name.trim()} ${TIER[t[1]]}%` : name; };
   const itemName = (id) => { const o = fh.itemNames?.[id]; if (o) return L(o); const i = items.get(id); return withRate(ko ? i?.ko || i?.en || `#${id}` : i?.en || `#${id}`); };
+
+  // Official art kept in assets/fh/ under the item's name ("Lion's Fang" -> lions-fang.png). A name with no file shows no picture.
+  const slug = (name) => (name === "Hearthkeeper's Lantern" ? 'hearthkeeper-s-lantern' : String(name).toLowerCase().replace(/['’]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
+  const art = (name, cls = 'fh-ico') => { const f = `${slug(name)}.png`; return hasImg(f) ? `<img class="${cls}" src="${img(f)}" alt="" loading="lazy">` : ''; };
 
   // Every Hollow map from the spawn data: monsters with counts, EXP for one full clear, and the lowest monster level.
   const maps = new Map();
@@ -97,8 +101,12 @@ ${fh.entrances.map((e, i) => `<article class="fh-card"><h3><span class="fh-num">
 <h2>${tr('잊혀진 골짜기 마을', 'The Forgotten Hollow town')}</h2>
 <p class="fh-lead">${tr('마을에는 몬스터가 없어요. 동쪽은 입구 구역, 서쪽 문은 중간 구역으로 이어져요.', 'No monsters in town. East leads back to the entrance; the west gate leads to the middle zone.')} ${tag('video')}</p>
 <ul class="fh-town">${fh.town.map((t) => `<li><b>${esc(L(t.who))}</b><span>${esc(L(t.what))}</span>${tag(t.state)}</li>`).join('')}</ul>
-<p class="fh-note">${tr('할로우 NPC는 11명이에요: 루마, 젤리아, 미엔, 마이라, 니로스, 토린, 방랑 모험가 제이미, 학자 다니엘, 타미아, 실카, 글리머.', 'The Hollow has eleven NPCs: Luma, Zelya, Myen, Myra, Nyroth, Torin, Jaime the Explorer, Daniel the Scholar, Tamya, Sylka and Glimmer.')}</p>
-<p class="fh-note">${tr('할로우 가구 14종은 니로스에게 사거나, 제작하거나, 퀘스트 보상으로 얻어요', 'Fourteen pieces of Hollow furniture come from Nyroth, crafting and quest rewards')}: <span translate="no">${fh.furniture.map(esc).join(', ')}</span>. ${tag('official')}</p>
+<div class="fh-areas">${fh.areas.map(([f, name]) => `<figure><img src="${img(`area-${f}.jpg`)}" alt="${esc(L(name))}" width="900" height="484" loading="lazy"><figcaption>${esc(L(name))}</figcaption></figure>`).join('')}</div>
+<h3 class="fh-sub">${tr('할로우 NPC 11명', 'The Hollow\'s eleven NPCs')} ${tag('official')}</h3>
+<ul class="fh-npcs">${fh.npcList.map(([f, name]) => `<li>${art(f, 'fh-npc')}<span>${esc(L(name))}</span></li>`).join('')}</ul>
+<h3 class="fh-sub">${tr('할로우 가구 14종', 'Fourteen pieces of Hollow furniture')} ${tag('official')}</h3>
+<p class="fh-note">${tr('니로스에게 사거나, 제작하거나, 퀘스트 보상으로 얻어요.', 'From Nyroth, crafting and quest rewards.')}</p>
+<ul class="fh-furn">${fh.furniture.map((name) => `<li>${art(name, 'fh-furn-img')}<span translate="no">${esc(name)}</span></li>`).join('')}</ul>
 </section>`;
 
   // ---------- zones ----------
@@ -219,16 +227,16 @@ ${elTags(m) ? `<p class="fh-els">${elTags(m)}</p>` : ''}
 <h2>${tr('새 무기 15종', 'Fifteen new weapons')}</h2>
 <p class="fh-lead">${tr('11월 업데이트에 함께 나오는 무기예요. 다섯 종은 새로 열리는 제작 9레벨로 만들어요.', 'The weapons that arrive with the November update. Five are made with the new Crafting Lv 9.')} ${tag('official')}</p>
 <div class="fh-scroll"><table class="fh-classes fh-weapons"><thead><tr><th>${tr('무기', 'Weapon')}</th><th>${tr('종류', 'Type')}</th><th>${tr('레벨', 'Level')}</th><th>${tr('직업', 'Class')}</th><th>${tr('필요 스탯', 'Requires')}</th><th>${tr('성능', 'Stats')}</th><th>${tr('제작', 'Crafted')}</th></tr></thead>
-<tbody>${fh.weapons.map((w) => `<tr><th scope="row">${wName(w)}</th><td>${esc(L(w.type))}</td><td>${w.lv}</td><td>${esc(L(w.job))}</td><td translate="no">${esc(w.req || '-')}</td><td>${esc(L(w.stat))}</td><td>${w.craft ? esc(L(w.craft)) : '-'}</td></tr>`).join('')}</tbody></table></div>
+<tbody>${fh.weapons.map((w) => `<tr><th scope="row"><span class="fh-wname">${art(w.en)}<span>${wName(w)}</span></span></th><td>${esc(L(w.type))}</td><td>${w.lv}</td><td>${esc(L(w.job))}</td><td translate="no">${esc(w.req || '-')}</td><td>${esc(L(w.stat))}</td><td>${w.craft ? esc(L(w.craft)) : '-'}</td></tr>`).join('')}</tbody></table></div>
 <h3 class="fh-sub">${tr('제작 9레벨로 만드는 것', 'What Crafting Lv 9 makes')} ${tag('official')}</h3>
-<ul class="fh-town">${fh.craft9.map((c) => `<li><b>${esc(L(c.prof))}</b><span translate="no">${c.items.map((x) => esc(withRate(x))).join(', ')}</span></li>`).join('')}</ul>
+<ul class="fh-town">${fh.craft9.map((c) => `<li><b>${esc(L(c.prof))}</b><span class="fh-chips" translate="no">${c.items.map((x) => `<span class="fh-chip">${art(x)}${esc(withRate(x))}</span>`).join('')}</span></li>`).join('')}</ul>
 </section>`;
 
   // ---------- events with Korea-time end dates ----------
   const events = `<section class="fh-sec wrap" id="events">
 <h2>${tr('함께 열리는 이벤트', 'Events that open with it')}</h2>
 <p class="fh-lead">${tr('모두 11월 18일 점검이 끝나면 시작해요. 끝나는 시간은 한국 시간으로 바꿔 적었어요.', 'All four start when the November 18 maintenance ends.')} ${tag('official')}</p>
-<div class="fh-two">${fh.events.map((e) => `<article class="fh-card" id="event-${e.id}"><h3>${esc(L(e.name))}</h3><p class="fh-event-until">${esc(L(e.until))}</p><ul class="fh-facts">${L(e.points).map((x) => `<li>${esc(x)}</li>`).join('')}</ul></article>`).join('')}</div>
+<div class="fh-two">${fh.events.map((e) => `<article class="fh-card" id="event-${e.id}"><h3>${esc(L(e.name))}</h3><p class="fh-event-until">${esc(L(e.until))}</p><p class="fh-chips fh-event-icons" translate="no">${(e.icons || []).map((x) => `<span class="fh-chip">${art(x)}${esc(x)}</span>`).join('')}</p><ul class="fh-facts">${L(e.points).map((x) => `<li>${esc(x)}</li>`).join('')}</ul></article>`).join('')}</div>
 </section>`;
 
   const november = `<section class="fh-sec wrap" id="november">

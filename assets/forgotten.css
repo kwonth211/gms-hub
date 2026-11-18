@@ -259,3 +259,21 @@
 .fh-weapons th[scope='row'] { white-space: normal; min-width: 150px; text-align: left; }
 .fh-weapons th small { display: block; color: var(--fh-muted); font-weight: 600; font-size: 0.75rem; }
 .fh-event-until { margin: 0 0 10px; color: var(--fh-spore); font-weight: 700; font-size: 0.9rem; }
+
+/* Official art: area shots, NPC portraits, furniture, item icons. */
+.fh-areas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 0 0 18px; }
+.fh-areas figure { margin: 0; }
+.fh-areas img { width: 100%; height: auto; aspect-ratio: 900 / 484; object-fit: cover; border-radius: 12px; border: 1px solid var(--fh-line); display: block; }
+.fh-areas figcaption { margin-top: 6px; color: var(--fh-muted); font-size: 0.85rem; text-align: center; }
+.fh-npcs, .fh-furn { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 10px; }
+.fh-npcs { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+.fh-furn { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+.fh-npcs li, .fh-furn li { display: grid; justify-items: center; align-content: end; gap: 6px; padding: 12px 8px; border: 1px solid var(--fh-line); border-radius: 12px; background: var(--fh-panel); text-align: center; font-size: 0.85rem; line-height: 1.3; }
+.fh-npc { height: 71px; width: auto; image-rendering: pixelated; }
+.fh-furn-img { height: 72px; width: auto; max-width: 100%; object-fit: contain; image-rendering: pixelated; }
+.fh-ico { width: auto; height: 28px; max-width: 44px; object-fit: contain; image-rendering: pixelated; flex: none; }
+.fh-wname { display: inline-flex; align-items: center; gap: 8px; }
+.fh-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.fh-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px 4px 6px; border: 1px solid var(--fh-line); border-radius: 999px; font-size: 0.82rem; color: var(--fh-text); background: color-mix(in srgb, var(--fh-panel) 70%, transparent); }
+.fh-event-icons { margin: 0 0 12px; }
+@media (max-width: 720px) { .fh-areas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

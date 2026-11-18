@@ -1049,7 +1049,17 @@
      "Trade them in for Pumpkin Pie and four pieces of furniture (Roast Turkey Platter, Harvest Feast Table, Harvest Hay Bale, Pumpkin Harvest Wagon); some need extra materials.",
      "Every reward is permanent and tradable within the world."
     ]
-   }
+   },
+   "icons": [
+    "Pumpkin Piece",
+    "Pie Flour",
+    "Milk Jug",
+    "Pumpkin Pie",
+    "Roast Turkey Platter",
+    "Harvest Feast Table",
+    "Harvest Hay Bale",
+    "Pumpkin Harvest Wagon"
+   ]
   },
   {
    "id": "turkey",
@@ -1076,7 +1086,15 @@
      "Pumpkin Pie restores 700 HP and 400 MP with Defense +50 for 10 minutes; Roasted Turkey restores 35% HP and Gravy 35% MP.",
      "The food and the Autumn Leaf Wreath are permanent and tradable within the world."
     ]
-   }
+   },
+   "icons": [
+    "Turkey Leg",
+    "Cranberry Sauce",
+    "Pumpkin Pie",
+    "Roasted Turkey",
+    "Gravy",
+    "Autumn Leaf Wreath"
+   ]
   },
   {
    "id": "bunny",
@@ -1103,7 +1121,14 @@
      "Collecting every rice cake gives EXP, party points and Primrose Seeds. Tory trades seeds for the Moon Bunny Statue (30) and Moon Bunny Hat (10).",
      "Three Moon Bunny's Flower Rice Cakes (2 seeds) give Accuracy +5 for 10 minutes, handy for warriors short on accuracy in the Hollow. Fullmoon Rice Cake gives Evasion +5 for 10 minutes; the plain rice cake restores about 300 MP."
     ]
-   }
+   },
+   "icons": [
+    "Moon Bunny Statue",
+    "Moon Bunny Hat",
+    "Moon Bunny's Rice Cake",
+    "Moon Bunny's Flower Rice Cake",
+    "Moon Bunny's Fullmoon Rice Cake"
+   ]
   },
   {
    "id": "journey",
@@ -1128,7 +1153,14 @@
      "Progress is separate per world, so Windia and Zenith each have their own.",
      "Fourteen days of rewards: Snail pet (day 1), Regular Store Permit (days 4 and 12), 3 Megaphones (days 6 and 13), 2 Item Megaphones (day 14), 3 Safety Charms (days 2 and 10) and more. Permits, megaphones and charms are untradable and last 7 days."
     ]
-   }
+   },
+   "icons": [
+    "Snail Pet",
+    "Regular Store Permit",
+    "Megaphone",
+    "Item Megaphone",
+    "Safety Charm"
+   ]
   }
  ],
  "changes": [
@@ -1169,5 +1201,114 @@
    "en": "Planned for December 9: guilds, the Forgotten Hollow party quest (Lv 41+), Happyville, and Nyroth's cape accuracy quest line.",
    "state": "video"
   }
+ ],
+ "areas": [
+  [
+   "forgotten-hollow",
+   {
+    "ko": "잊혀진 골짜기",
+    "en": "Forgotten Hollow"
+   }
+  ],
+  [
+   "the-faded-threshold",
+   {
+    "ko": "스러진 문턱 (마을)",
+    "en": "The Faded Threshold (town)"
+   }
+  ],
+  [
+   "cave-fairy-store",
+   {
+    "ko": "동굴 요정 상점",
+    "en": "Cave Fairy Store"
+   }
+  ],
+  [
+   "cave-fairy-sanctuary",
+   {
+    "ko": "요정의 안식처",
+    "en": "Cave Fairy Sanctuary"
+   }
+  ]
+ ],
+ "npcList": [
+  [
+   "luma",
+   {
+    "ko": "루마",
+    "en": "Luma"
+   }
+  ],
+  [
+   "zelya",
+   {
+    "ko": "젤리아",
+    "en": "Zelya"
+   }
+  ],
+  [
+   "myen",
+   {
+    "ko": "미엔",
+    "en": "Myen"
+   }
+  ],
+  [
+   "myra",
+   {
+    "ko": "마이라",
+    "en": "Myra"
+   }
+  ],
+  [
+   "nyroth",
+   {
+    "ko": "니로스",
+    "en": "Nyroth"
+   }
+  ],
+  [
+   "torin",
+   {
+    "ko": "토린",
+    "en": "Torin"
+   }
+  ],
+  [
+   "jaime-the-explorer",
+   {
+    "ko": "방랑 모험가 제이미",
+    "en": "Jaime the Explorer"
+   }
+  ],
+  [
+   "daniel-the-scholar",
+   {
+    "ko": "학자 다니엘",
+    "en": "Daniel the Scholar"
+   }
+  ],
+  [
+   "tamya",
+   {
+    "ko": "타미아",
+    "en": "Tamya"
+   }
+  ],
+  [
+   "sylka",
+   {
+    "ko": "실카",
+    "en": "Sylka"
+   }
+  ],
+  [
+   "glimmer",
+   {
+    "ko": "글리머",
+    "en": "Glimmer"
+   }
+  ]
  ]
 }

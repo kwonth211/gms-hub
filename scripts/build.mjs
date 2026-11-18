@@ -279,14 +279,18 @@ const T = {
 <p>MapleStory와 관련 이름은 NEXON Korea Corporation의 상표예요. 사이트 썸네일은 각 사이트 화면을 축소한 미리보기이며, 해당 사이트 운영자가 요청하면 바로 내려요. 아이콘, 배너 그림, 계산 도구와 글은 GMS Hub가 직접 만들었어요.</p>
 <h2>6. 광고</h2>
 <p>사이트는 운영비를 위해 Google AdSense 광고를 게재할 수 있어요. 광고 내용은 광고주가 책임지며, 광고 쿠키 처리는 <a href="/ko/privacy/">개인정보처리방침</a>을 참고하세요.</p>
-<h2>7. 약관 변경</h2>
+<h2>7. 자동 수집·무단 사용 금지</h2>
+<p>사이트의 시세·매물·확성기 데이터와 글, 표, 계산 도구를 프로그램으로 자동 수집(크롤링·스크래핑)하거나, 허락 없이 복제·재배포하거나 다른 서비스에 가져다 쓰는 것을 금지해요. 사이트 화면을 거치지 않고 데이터 서버에 직접 요청하는 것도 여기에 들어가요. 이런 접속은 예고 없이 차단할 수 있어요.</p>
+<p>검색엔진이 검색 결과에 보여 주려고 페이지를 읽는 것은 괜찮아요. 데이터를 쓰고 싶다면 먼저 아래 이메일로 문의해 주세요.</p>
+<h2>8. 약관 변경</h2>
 <p>약관이 바뀌면 이 페이지에 반영하고 시행일을 고쳐 적어요.</p>
-<h2>8. 문의</h2>
+<h2>9. 문의</h2>
 <p>이메일 <a href="mailto:contact@gms-hub.com">contact@gms-hub.com</a> 또는 <a href="{issues}" target="_blank" rel="noopener">GitHub 이슈</a></p>
-<p class="muted">시행일: 2026-10-30</p>`,
+<p class="muted">시행일: 2026-11-18</p>`,
     terms: '이용약관',
     contact: '문의',
     footerDisclaimer: 'GMS Hub는 비공식 팬 사이트이며 넥슨과 관련이 없습니다. MapleStory는 NEXON Korea Corporation의 상표입니다.',
+    footerNoScrape: '사이트의 데이터와 글을 자동으로 수집(크롤링)하거나 허락 없이 가져다 쓰는 것은 금지예요.',
     privacy: '개인정보처리방침',
     home: '홈',
     notFound: '페이지를 찾을 수 없어요.',
@@ -498,14 +502,18 @@ const T = {
 <p>MapleStory and related names are trademarks of NEXON Korea Corporation. Site thumbnails are scaled-down previews and are taken down at the operator's request. Icons, banner art, calculators and text are made by GMS Hub.</p>
 <h2>6. Advertising</h2>
 <p>The site may show Google AdSense ads to cover running costs. Advertisers are responsible for ad content; see the <a href="/en/privacy/">Privacy Policy</a> for how ad cookies are handled.</p>
-<h2>7. Changes</h2>
+<h2>7. No automated collection or unauthorised reuse</h2>
+<p>Do not collect the site's price, listing and megaphone data, text, tables or calculators with automated tools (crawling, scraping), and do not copy, redistribute or reuse them in another service without permission. Requesting the data server directly, without going through the site's pages, is included. Such access may be blocked without notice.</p>
+<p>Search engines reading pages to show them in search results are welcome. If you would like to use the data, email us first at the address below.</p>
+<h2>8. Changes</h2>
 <p>If these terms change, we update this page and the effective date below.</p>
-<h2>8. Contact</h2>
+<h2>9. Contact</h2>
 <p>Email <a href="mailto:contact@gms-hub.com">contact@gms-hub.com</a> or open a <a href="{issues}" target="_blank" rel="noopener">GitHub issue</a></p>
-<p class="muted">Effective: 2026-10-30</p>`,
+<p class="muted">Effective: 2026-11-18</p>`,
     terms: 'Terms',
     contact: 'Contact',
     footerDisclaimer: 'GMS Hub is an unofficial fan site and is not affiliated with NEXON. MapleStory is a trademark of NEXON Korea Corporation.',
+    footerNoScrape: 'Automated collection (crawling, scraping) and unauthorised reuse of this site\'s data and content are not permitted.',
     privacy: 'Privacy',
     home: 'Home',
     notFound: 'Page not found.',
@@ -881,6 +889,7 @@ function footer(lang) {
   return `<footer class="site-footer"><div class="charm-walk" aria-hidden="true"><span class="walker w1">${spriteSvg('mushroom', 30)}</span><span class="walker w2">${spriteSvg('slime', 26)}</span></div><div class="wrap">
 <div class="footer-brand">${spriteSvg('mushroom', 24)}<strong>GMS Hub</strong></div>
 <p>${esc(t.footerDisclaimer)}</p>
+${'' /* No-scraping notice on every page (owner, 2026-11-18); the full clause is section 7 of the terms. */}<p class="footer-noscrape">${esc(t.footerNoScrape || T.en.footerNoScrape)} <a href="${href(langPath(lang, '/terms/'))}">${t.terms}</a></p>
 <p><button type="button" class="charm-toggle" data-charm-toggle><span class="charm-on-label">${lang === 'ko' ? '낙엽 효과 끄기' : 'Turn off falling leaves'}</span><span class="charm-off-label">${lang === 'ko' ? '낙엽 효과 켜기' : 'Turn on falling leaves'}</span></button></p>
 <p>${guides.some((g) => g.lang === lang) ? `<a href="${href(langPath(lang, '/guides/'))}">${t.navGuides}</a> · ` : ''}<a href="${href(langPath(lang, '/about/'))}">${t.navAbout}</a> · <a href="${href(langPath(lang, '/privacy/'))}">${t.privacy}</a> · <a href="${href(langPath(lang, '/terms/'))}">${t.terms}</a> · <a href="${href(langPath(lang, '/contact/'))}">${lang === 'ko' ? '문의·협찬·후원' : 'Contact and support'}</a> · <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub</a>${config.discord ? ` · <a href="${href(langPath(lang, '/discord-bot/'))}" data-discord="footer">${DISCORD_ICON(14)}${lang === 'ko' ? '디스코드' : 'Discord'}</a>` : ''}${Object.values(config.support || {}).some(Boolean) ? ` · <a href="${href(langPath(lang, '/contact/'))}#support" data-support="footer">${lang === 'ko' ? '서버비 후원' : 'Help cover the server bill'}</a>` : ''}</p>
 </div></footer>`;
@@ -1161,6 +1170,8 @@ function gameNews(lang) {
   return `<section class="wrap game-news" id="game-news" data-game-news data-api="${esc(config.voteApi)}" data-base="${esc(href(langPath(lang, '/')).replace(/\/$/, ''))}"${inner ? '' : ' hidden'}>${inner}</section>`;
 }
 
+// Official art for the Forgotten Hollow guide (assets/fh/), by file name.
+const FH_ART = new Set(fs.readdirSync(path.join(root, 'assets', 'fh')));
 // Site updates (data/updates.json, newest first): the three newest as NEW chips in the hero, the rest in a short
 // "what's new" list further down. Every new feature or visible improvement gets an entry.
 const UPDATES = readJson('data/updates.json').updates;
@@ -3519,7 +3530,7 @@ for (const lang of LANGS) {
         lang, pageKey: 'forgottenHollow', pagePath: '/forgotten-hollow/',
         title: lang === 'ko' ? '글클메 포가튼 할로우(잊혀진 골짜기) 공략: 가는 법·사냥터·몬스터·퀘스트·보스 | GMS Hub' : 'MapleStory Classic World Forgotten Hollow Guide: How to Get In, Best Maps, Monsters, Quests & Boss | GMS Hub',
         desc: lang === 'ko' ? '11월 18일 열리는 포가튼 할로우(잊혀진 골짜기) 총정리. 입구 두 곳, 39~60레벨 구역별 추천 사냥터와 숨은 맵, 새 몬스터 10종 약점·명중, 직업별 사냥 대상, 퀘스트 보상, 보스 썩은 머쉬맘, 패치노트의 새 무기 15종과 제작 9레벨, 추수감사절·월묘 이벤트 일정.' : 'Everything about Forgotten Hollow (opens November 18): both entrances, the best and hidden maps for levels 39–60, the ten new monsters with weaknesses and accuracy, what each class should hunt, quest rewards, the Rotten Mushmom boss, plus the patch notes: 15 new weapons, Crafting Lv 9 and the Thanksgiving and Moon Bunny events.',
-        body: fhBody({ lang, fh, monsters: MONSTERS.monsters, raw: QUEST_RAW, items, link, mobSprite, accNeed: dmgAccNeed, today }).replace('__FH_CSS__', scriptSrc('forgotten.css')),
+        body: fhBody({ lang, fh, monsters: MONSTERS.monsters, raw: QUEST_RAW, items, link, mobSprite, accNeed: dmgAccNeed, today, img: (f) => href(`/assets/fh/${f}`), hasImg: (f) => FH_ART.has(f) }).replace('__FH_CSS__', scriptSrc('forgotten.css')),
         ld: [breadcrumbLd(lang, lang === 'ko' ? '포가튼 할로우 공략' : 'Forgotten Hollow guide', '/forgotten-hollow/')]
       }));
     }
