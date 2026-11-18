@@ -207,8 +207,12 @@ export async function koByAi(env, title, body) {
   const points = (Array.isArray(j.points) ? j.points : []).filter((p) => typeof p === 'string' && p.trim()).map((p) => p.trim().slice(0, 300)).slice(0, 5);
   const t = typeof j.title === 'string' ? j.title.trim().slice(0, 80) : '';
   if (!t || !points.length || !/[가-힣]/.test(t + points.join(''))) throw new Error('unusable answer');
+  if (foreignScript(t + points.join(' '))) throw new Error('other script in answer');
   return { title: t, points };
 }
+// The model sometimes slips a word of another language into Korean ("Regular Store परमिट", 2026-11-18). Korean answers
+// may hold only Hangul, Latin letters, digits, punctuation and symbols; anything else is redone.
+export const foreignScript = (s) => /[^\p{Script=Hangul}\p{Script=Latin}\p{N}\p{P}\p{S}\s]/u.test(String(s));
 // The notice as plain text for the model. A crossed-out price is dropped (only the price that applies is left), so the
 // summary never quotes the old one.
 export const noticeText = (body) => text(String(body || '')
@@ -239,13 +243,16 @@ export async function refreshNews(env, fetcher = fetch, now = Date.now()) {
   for (const x of d.items) {
     if (!x.auto) continue;
     // A notice whose title was edited ("[Update Oct 28] …") is summarized again.
-    if ((!made[x.id] || made[x.id].v !== AI_VERSION || made[x.id].en !== x.en) && env.AI && added < 2) {
+    const bad = made[x.id] && foreignScript(`${made[x.id].title} ${(made[x.id].points || []).join(' ')}`);
+    if ((!made[x.id] || bad || made[x.id].v !== AI_VERSION || made[x.id].en !== x.en) && env.AI && added < 2) {
       const body = x.raw || await fetcher(`${FEED}/${x.id}`, { signal: AbortSignal.timeout(8000) }).then((r) => r.json()).then((j) => noticeText(j.body)).catch(() => '');
-      const k = body ? await koByAi(env, x.en, body).catch((e) => { console.log('news ko failed', x.id, String(e)); return null; }) : null;
+      const once = () => koByAi(env, x.en, body).catch((e) => { console.log('news ko failed', x.id, String(e)); return null; });
+      const k = body ? (await once()) || (await once()) : null;
       if (k) { made[x.id] = { ...k, en: x.en, v: AI_VERSION }; added++; }
     }
     const k = made[x.id];
-    if (k) { if (x.ko === x.en) x.ko = k.title; x.sum.ko = k.points.map((p) => polishKo(p, new Date(x.date).getUTCFullYear())); }
+    // A stored summary still in another script is not shown; the English lines stay until a clean one is made.
+    if (k && !foreignScript(`${k.title} ${(k.points || []).join(' ')}`)) { if (x.ko === x.en) x.ko = k.title; x.sum.ko = k.points.map((p) => polishKo(p, new Date(x.date).getUTCFullYear())); }
   }
   if (added) {
     const keep = Object.fromEntries(Object.entries(made).slice(-80));
