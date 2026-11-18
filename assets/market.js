@@ -278,12 +278,13 @@ const GONE_KEY = "gms-gone";
 const goneMine = (() => { try { return new Set(JSON.parse(localStorage.getItem(GONE_KEY) || "[]")); } catch (e) { return new Set(); } })();
 function goneCell(r) {
   if (!r.id || r.sold) return '<span class="mb-gone-cell"></span>';
-  if (goneMine.has(r.id)) return `<span class="mb-gone-cell"><span class="mb-gone-done">✓ ${tr("알렸어요", "Reported")}</span></span>`;
+  if (goneMine.has(r.id)) return `<span class="mb-gone-cell"><span class="mb-gone-done">✓ ${tr("알렸어요", "Reported")}</span><button type="button" class="mb-gone-undo" data-gone-undo="${r.id}" data-gone-item="${r.item}">${tr("취소", "Undo")}</button></span>`;
   const label = r.goneN ? tr(`팔렸어요 ${r.goneN}`, `Gone ${r.goneN}`) : tr("팔렸어요", "Sold out");
   const title = r.goneN ? tr(`${r.goneN}명이 ${when(r.goneAt)} 가 보니 없었다고 알려 줬어요. 나도 없었으면 누르세요.`, `${r.goneN} player(s) found it gone ${when(r.goneAt)}. Press if it was gone for you too.`) : tr("상점에 가 보니 이 물건이 없었으면 눌러 주세요. 다음 사람이 헛걸음하지 않아요.", "Press if the shop no longer had it, so the next buyer does not make the trip.");
-  return `<span class="mb-gone-cell"><button type="button" class="mb-gone-btn${r.goneN ? " is-reported" : ""}" data-gone="${r.id}" data-gone-item="${r.item}" title="${esc(title)}">${label}</button></span>`;
+  const here = r.goneN ? `<button type="button" class="mb-here-btn" data-gone-here="${r.id}" data-gone-item="${r.item}" title="${esc(tr("가 보니 아직 팔고 있었으면 눌러 주세요. 팔렸다는 표시가 지워져요.", "Press if it was still for sale; the sold-out mark is cleared."))}">${tr("아직 있어요", "Still there")}</button>` : "";
+  return `<span class="mb-gone-cell"><button type="button" class="mb-gone-btn${r.goneN ? " is-reported" : ""}" data-gone="${r.id}" data-gone-item="${r.item}" title="${esc(title)}">${label}</button>${here}</span>`;
 }
-const goneRow = (r) => (r.goneN && !goneMine.has(r.id) ? " is-gone" : goneMine.has(r.id) ? " is-gone" : "");
+const goneRow = (r) => (r.goneN || goneMine.has(r.id) ? " is-gone" : "");
 function offerCards(rows) {
   lastOffers = rows;
   if (!rows.length)
@@ -1019,19 +1020,23 @@ document.querySelector(".market-browser").addEventListener("click", (e) => {
   // A click anywhere on an item row opens it, not only on the name.
   const el = e.target.closest("button,a") || (!e.target.closest("input,select,label") && e.target.closest(".mb-catalog tbody tr, .mb-listings-table tbody tr")?.querySelector("a[data-item]"));
   if (!el) return;
-  if (el.dataset.gone) {
+  // 팔렸어요 / 취소 / 아직 있어요: one request each, then the row is redrawn in place from the answer.
+  if (el.dataset.gone || el.dataset.goneUndo || el.dataset.goneHere) {
     e.preventDefault();
     e.stopPropagation();
-    const id = Number(el.dataset.gone), item = Number(el.dataset.goneItem);
+    const mode = el.dataset.goneUndo ? "undo" : el.dataset.goneHere ? "here" : "gone";
+    const id = Number(el.dataset.gone || el.dataset.goneUndo || el.dataset.goneHere), item = Number(el.dataset.goneItem);
+    const cell = el.closest(".mb-gone-cell"), row = el.closest(".mb-offer, tr");
     el.disabled = true;
-    fetch(`${D.api}/listings/gone`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) })
+    fetch(`${D.api}/listings/gone`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, mode: mode === "gone" ? undefined : mode }) })
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((res) => {
-        goneMine.add(id);
+        if (mode === "gone") goneMine.add(id); else goneMine.delete(id);
         try { localStorage.setItem(GONE_KEY, JSON.stringify([...goneMine].slice(-300))); } catch (x) {}
-        el.closest(".mb-offer, tr")?.classList.add("is-gone");
-        el.outerHTML = `<span class="mb-gone-done">✓ ${tr("알렸어요", "Reported")}</span>`;
-        track("market_gone", { item_id: item, reports: res.n || 1 });
+        const n = res.n || 0;
+        row?.classList.toggle("is-gone", mode === "gone" || n > 0);
+        if (cell) cell.outerHTML = mode === "here" ? `<span class="mb-gone-cell"><span class="mb-gone-done">✓ ${tr("고마워요", "Thanks")}</span></span>` : goneCell({ id, item, goneN: n, goneAt: new Date().toISOString().slice(0, 19).replace("T", " ") });
+        track(mode === "gone" ? "market_gone" : mode === "undo" ? "market_gone_undo" : "market_still_there", { item_id: item, reports: n });
       })
       .catch(() => { el.disabled = false; el.textContent = tr("다시 눌러 주세요", "Try again"); });
     return;

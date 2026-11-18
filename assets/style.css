@@ -2179,7 +2179,7 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 /* One colour for every channel, set apart from the grey FM chip (2026-11-15, owner): per-channel hues read as noise. */
 .mb-room { display: inline-block; margin-left: 4px; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; color: var(--text-2); background: var(--panel-2); border: 1px solid var(--line); }
 .mb-offers { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; }
-.mb-offer { display: grid; grid-template-columns: 6.6em 3.4em 4.4em minmax(0, 1fr) 5.4em 7.4em 5.6em; align-items: center; gap: 8px; min-width: 0; padding: 5px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); box-shadow: inset 3px 0 0 var(--fresh, var(--line-strong)); font-size: 0.76rem; line-height: 1.3; }
+.mb-offer { display: grid; grid-template-columns: 6.6em 3.4em 4.4em minmax(0, 1fr) 5.4em 7.4em max-content; align-items: center; gap: 8px; min-width: 0; padding: 5px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); box-shadow: inset 3px 0 0 var(--fresh, var(--line-strong)); font-size: 0.76rem; line-height: 1.3; }
 .mb-offer.fresh { --fresh: #2e9d5b; } .mb-offer.warm { --fresh: #d9a520; } .mb-offer.old { --fresh: var(--line-strong); opacity: 0.82; } .mb-offer.sold { --fresh: var(--muted); opacity: 0.6; }
 .mb-opts { display: inline-flex; flex-wrap: wrap; gap: 3px; flex: 0 1 auto; min-width: 0; }
 .mb-opt { padding: 0 5px; border: 1px solid var(--line); border-radius: 5px; background: var(--panel-2); color: var(--text-2); font-size: 0.72rem; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -2218,7 +2218,7 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-offer-where .mb-ch, .mb-offer-where .mb-room { padding: 0 5px; font-size: 0.68rem; text-align: center; }
 .mb-offer-where .mb-ch { min-width: 4.6em; box-sizing: border-box; }
 .mb-offer-where .mb-room { min-width: 4.2em; box-sizing: border-box; }
-@media (max-width: 520px) { .mb-offer { grid-template-columns: 6em 3.2em 4em minmax(0, 1fr) 7.2em 5.2em; gap: 6px; padding: 5px 8px; } .mb-offer .mb-fresh { display: none; } }
+@media (max-width: 520px) { .mb-offer { grid-template-columns: 6em 3.2em 4em minmax(0, 1fr) 7.2em max-content; gap: 6px; padding: 5px 8px; } .mb-offer .mb-fresh { display: none; } }
 /* Header search: a button in the header and a search sheet over the page. */
 .hs-open { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--text-2); font: inherit; font-size: 0.85rem; cursor: var(--cur-hand, pointer); }
 .hs-open:hover { color: var(--text); border-color: var(--line-strong); }
@@ -3538,16 +3538,21 @@ body.exp-running .exp-stop { display: inline-flex; }
 .lang-hint button:hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
 
 /* "팔렸어요" (2026-11-18): a clearly visible red pill on every open listing; reported rows are dimmed and struck. */
-.mb-gone-cell { display: flex; justify-content: flex-end; }
+.mb-gone-cell { display: flex; justify-content: flex-end; align-items: center; gap: 5px; }
 .mb-gone-btn { padding: 3px 9px; border: 1.5px solid var(--danger); border-radius: 999px; background: color-mix(in srgb, var(--danger) 8%, var(--panel)); color: var(--danger); font: inherit; font-size: 0.74rem; font-weight: 800; white-space: nowrap; cursor: var(--cur-hand, pointer); transition: background-color 0.15s ease, color 0.15s ease; }
 .mb-gone-btn:hover { background: var(--danger); color: #fff; }
 .mb-gone-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .mb-gone-btn:disabled { opacity: 0.6; cursor: progress; }
 .mb-gone-btn.is-reported { background: var(--danger); color: #fff; }
 .mb-gone-done { font-size: 0.72rem; font-weight: 800; color: var(--muted); white-space: nowrap; }
-.mb-offer.is-gone, .mb-listings-table tr.is-gone { opacity: 0.55; }
+.mb-offer.is-gone > :not(.mb-gone-cell), .mb-listings-table tr.is-gone > td:not(.mb-cell-gone) { opacity: 0.5; }
 .mb-offer.is-gone .mb-offer-price strong, .mb-listings-table tr.is-gone .mb-cell-price { text-decoration: line-through; }
 .mb-gone-th { text-align: right; }
 .mb-cell-gone { text-align: right; }
 @media (prefers-reduced-motion: reduce) { .mb-gone-btn { transition: none; } }
 @media (max-width: 600px) { .mb-listings-table .mb-cell-gone { grid-column: 1 / -1; display: flex; justify-content: flex-end; } }
+
+.mb-here-btn, .mb-gone-undo { padding: 3px 8px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--panel); color: var(--text-2); font: inherit; font-size: 0.72rem; font-weight: 700; white-space: nowrap; cursor: var(--cur-hand, pointer); }
+.mb-here-btn:hover, .mb-gone-undo:hover { border-color: var(--ok); color: var(--ok); }
+.mb-here-btn:focus-visible, .mb-gone-undo:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.mb-gone-undo { padding: 2px 7px; }

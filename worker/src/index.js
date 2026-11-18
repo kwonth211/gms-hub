@@ -687,9 +687,23 @@ const api = {
     // visitor (IP hash) per listing; only open listings count. Answers the listing's new count.
     if (url.pathname === '/listings/gone' && req.method === 'POST') {
       if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
-      const id = Number((await req.json().catch(() => null))?.id);
+      const body = await req.json().catch(() => null);
+      const id = Number(body?.id);
       if (!Number.isInteger(id) || id < 1) return json({ error: 'bad input' }, cors, 400);
       const reporter = await visitorHash(req.headers.get('CF-Connecting-IP') || '', 'gone', env.VOTE_SALT);
+      const mode = String(body?.mode || '');
+      // Undo (owner 2026-11-18): the visitor takes back their own report.
+      if (mode === 'undo') {
+        const del = await env.DB.prepare('DELETE FROM listing_gone WHERE listing = ? AND reporter = ?').bind(id, reporter).run();
+        if (!del.meta.changes) return json({ ok: true, n: (await env.DB.prepare('SELECT gone_n FROM listings WHERE id = ?').bind(id).first())?.gone_n || 0 }, cors);
+        const row = await env.DB.prepare("UPDATE listings SET gone_n = MAX(gone_n - 1, 0), gone_at = CASE WHEN gone_n - 1 > 0 THEN gone_at END WHERE id = ? RETURNING gone_n").bind(id).first();
+        return json({ ok: true, n: row?.gone_n || 0 }, cors);
+      }
+      // "아직 있어요": someone at the shop saw it still there, so earlier reports are cleared.
+      if (mode === 'here') {
+        await env.DB.batch([env.DB.prepare('DELETE FROM listing_gone WHERE listing = ?').bind(id), env.DB.prepare('UPDATE listings SET gone_n = 0, gone_at = NULL WHERE id = ? AND gone_n > 0').bind(id)]);
+        return json({ ok: true, n: 0 }, cors);
+      }
       const add = await env.DB.prepare('INSERT OR IGNORE INTO listing_gone (listing, reporter) SELECT id, ? FROM listings WHERE id = ? AND sold = 0').bind(reporter, id).run();
       if (!add.meta.changes) {
         const row = await env.DB.prepare('SELECT gone_n FROM listings WHERE id = ?').bind(id).first();

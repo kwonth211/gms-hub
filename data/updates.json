@@ -10,8 +10,8 @@
    "ko": "매물마다 \"팔렸어요\" 버튼 — 가 보니 없던 매물을 한 번에 알리기",
    "en": "\"Sold out\" button on every listing — tell others a listing was gone in one press",
    "desc": {
-    "ko": "상점에 찾아갔는데 물건이 없었다면 그 매물의 빨간 \"팔렸어요\"를 눌러 주세요. 로그인 없이 한 번이면 끝나고, 다른 사람에게는 몇 명이 알려 줬는지와 함께 흐리게 보여서 헛걸음이 줄어요. 그 매물이 다시 확인되면 표시는 저절로 사라져요.",
-    "en": "Went to a shop and the item was not there? Press the red \"Sold out\" on that listing. No login, one press; others see it dimmed with how many reported it, so fewer wasted trips. If the listing is seen again, the mark clears itself."
+    "ko": "상점에 찾아갔는데 물건이 없었다면 그 매물의 빨간 \"팔렸어요\"를 눌러 주세요. 로그인 없이 한 번이면 끝나고, 다른 사람에게는 몇 명이 알려 줬는지와 함께 흐리게 보여서 헛걸음이 줄어요. 잘못 눌렀으면 \"취소\", 가 보니 아직 팔고 있으면 \"아직 있어요\"로 표시를 지울 수 있고, 그 매물이 다시 확인되면 저절로 사라져요.",
+    "en": "Went to a shop and the item was not there? Press the red \"Sold out\" on that listing. No login, one press; others see it dimmed with how many reported it, so fewer wasted trips. Pressed by mistake? Undo it. Still for sale when you got there? Press \"Still there\" to clear the mark; a new sighting clears it too."
    }
   },
   {
