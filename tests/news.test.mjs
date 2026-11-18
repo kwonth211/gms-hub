@@ -101,3 +101,14 @@ test('model-written lines show Korea time and tidy spelling', () => {
   assert.equal(polishKo('12월 31일 11:59 PM UTC에 끝나요.', 2026), '1월 1일 08:59(한국 시간)에 끝나요.');
   assert.equal(polishKo('가격은 3,500 NX예요', 2026), '가격은 3,500 NX예요.');
 });
+
+test('Korean notice summaries are redone when a clock time has no time zone or another script slips in', async () => {
+  const { bareTime, foreignScript } = await import('../worker/src/news.js');
+  assert.equal(bareTime('12월 2일 7시 59분까지 판매돼요.'), true);
+  assert.equal(bareTime('12월 2일 07:59 UTC까지 판매돼요.'), false);
+  assert.equal(bareTime('12월 2일 16:59(한국 시간)까지'), false);
+  assert.equal(bareTime('11월 18일 오후 4:00 PT부터'), false);
+  assert.equal(bareTime('1시간 동안 경험치 2배예요.'), false);
+  assert.equal(foreignScript('레귤러 스토어 परम릿이 100 NX'), true);
+  assert.equal(foreignScript('Regular Store Permit이 100 NX에 판매돼요. ★'), false);
+});

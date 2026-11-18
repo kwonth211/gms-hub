@@ -208,7 +208,7 @@ export async function officialNews(fetcher = fetch, now = Date.now(), limit = 10
 const AI_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 export async function koByAi(env, title, body) {
   const out = await env.AI.run(AI_MODEL, { max_tokens: 700, temperature: 0.2, messages: [
-    { role: 'system', content: 'You summarize official MapleStory Classic World notices for Korean players. Reply with JSON only, no other text: {"title": "<Korean title, under 40 characters>", "points": ["<3 to 5 short Korean sentences>"]}. Write natural Korean in 해요체: every sentence ends in 요 (예: 판매해요, 3,500 NX예요), never in 니다. Lead with what is new and what it costs or gives; leave out legal notes and country restrictions. Keep the facts players need: dates and times exactly as the notice states them with their time zone, prices, level limits, rewards, what changes. Keep item, monster, map and NPC names in English. Never add anything the notice does not say.' },
+    { role: 'system', content: 'You summarize official MapleStory Classic World notices for Korean players. Reply with JSON only, no other text: {"title": "<Korean title, under 40 characters>", "points": ["<3 to 5 short Korean sentences>"]}. Write natural Korean in 해요체: every sentence ends in 요 (예: 판매해요, 3,500 NX예요), never in 니다. Lead with what is new and what it costs or gives; leave out legal notes and country restrictions. Keep the facts players need: dates and times exactly as the notice states them, and write every clock time as HH:MM followed by its time zone exactly as the notice gives it (for example 12월 2일 07:59 UTC); never drop the time zone, prices, level limits, rewards, what changes. Keep item, monster, map and NPC names in English. Never add anything the notice does not say.' },
     { role: 'user', content: `Title: ${title}\n\n${String(body).slice(0, 6000)}` }] });
   const raw = typeof out?.response === 'string' ? out.response : JSON.stringify(out?.response ?? '');
   const j = JSON.parse(raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1));
@@ -216,18 +216,28 @@ export async function koByAi(env, title, body) {
   const t = typeof j.title === 'string' ? j.title.trim().slice(0, 80) : '';
   if (!t || !points.length || !/[가-힣]/.test(t + points.join(''))) throw new Error('unusable answer');
   if (foreignScript(t + points.join(' '))) throw new Error('other script in answer');
+  if (bareTime(t + ' ' + points.join(' '))) throw new Error('clock time without time zone');
   return { title: t, points };
 }
 // The model sometimes slips a word of another language into Korean ("Regular Store परमिट", 2026-11-18). Korean answers
 // may hold only Hangul, Latin letters, digits, punctuation and symbols; anything else is redone.
 export const foreignScript = (s) => /[^\p{Script=Hangul}\p{Script=Latin}\p{N}\p{P}\p{S}\s]/u.test(String(s));
+// A clock time with no time zone after it ("12월 2일 7시 59분까지", 2026-11-18) is wrong for Korean readers by up to 17
+// hours, so such an answer is redone. Checked on the model's own lines, before UTC is turned into Korea time.
+const ZONE = /^\s*\(?\s*(UTC|GMT|KST|한국 ?시간|PT|PST|PDT|ET|EST|EDT|CT|CST|CDT)(?![A-Za-z])/i;
+export function bareTime(s) {
+  const str = String(s);
+  for (const m of str.matchAll(/\d{1,2}:\d{2}(?:\s*(?:AM|PM))?|(?:오전|오후)?\s*\d{1,2}시(?!간)(?:\s*\d{1,2}분)?/gi))
+    if (!ZONE.test(str.slice(m.index + m[0].length, m.index + m[0].length + 14))) return true;
+  return false;
+}
 // The notice as plain text for the model. A crossed-out price is dropped (only the price that applies is left), so the
 // summary never quotes the old one.
 export const noticeText = (body) => text(String(body || '')
   .replace(/<(s|del|strike)\b[^>]*>[\s\S]*?<\/\1>/gi, ' ').replace(/<span[^>]*line-through[^>]*>[\s\S]*?<\/span>/gi, ' ')
   .replace(/<\/(p|li|h\d|tr|div)>|<br[^>]*>/gi, ' / '));
 // Bump when the prompt or the text given to the model changes: stored summaries made by an older version are redone.
-const AI_VERSION = 2;
+const AI_VERSION = 3;
 // Tidies a model-written line: UTC clock times become Korea time, the common 되요 misspelling is fixed, and the line
 // ends with a full stop.
 export function polishKo(line, year) {
@@ -251,7 +261,8 @@ export async function refreshNews(env, fetcher = fetch, now = Date.now()) {
   for (const x of d.items) {
     if (!x.auto) continue;
     // A notice whose title was edited ("[Update Oct 28] …") is summarized again.
-    const bad = made[x.id] && foreignScript(`${made[x.id].title} ${(made[x.id].points || []).join(' ')}`);
+    const usable = (k) => { const all = `${k.title} ${(k.points || []).join(' ')}`; return !foreignScript(all) && !bareTime(all); };
+    const bad = made[x.id] && !usable(made[x.id]);
     if ((!made[x.id] || bad || made[x.id].v !== AI_VERSION || made[x.id].en !== x.en) && env.AI && added < 2) {
       const body = x.raw || await fetcher(`${FEED}/${x.id}`, { signal: AbortSignal.timeout(8000) }).then((r) => r.json()).then((j) => noticeText(j.body)).catch(() => '');
       const once = () => koByAi(env, x.en, body).catch((e) => { console.log('news ko failed', x.id, String(e)); return null; });
@@ -260,7 +271,7 @@ export async function refreshNews(env, fetcher = fetch, now = Date.now()) {
     }
     const k = made[x.id];
     // A stored summary still in another script is not shown; the English lines stay until a clean one is made.
-    if (k && !foreignScript(`${k.title} ${(k.points || []).join(' ')}`)) { if (x.ko === x.en) x.ko = k.title; x.sum.ko = k.points.map((p) => polishKo(p, new Date(x.date).getUTCFullYear())); }
+    if (k && usable(k)) { if (x.ko === x.en) x.ko = k.title; x.sum.ko = k.points.map((p) => polishKo(p, new Date(x.date).getUTCFullYear())); }
   }
   if (added) {
     const keep = Object.fromEntries(Object.entries(made).slice(-80));
