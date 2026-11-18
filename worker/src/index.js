@@ -33,7 +33,7 @@ import { Presence, handlePresence, handlePresencePeak } from './presence.js';
 import { handleTraffic } from './traffic.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
 import { validRoom } from '../../assets/place.js';
-import { trendsToDiscord } from './discord.js';
+import { trendsToDiscord, marketToDiscord } from './discord.js';
 import { discordInteractions } from './discord-bot.js';
 import { notifyMegaphones, notifyListings } from './discord-alerts.js';
 import { oauthStart, oauthCallback } from './discord-oauth.js';
@@ -356,6 +356,13 @@ const api = {
       await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('mega-stats',?,datetime('now'))").bind(JSON.stringify(d)).run();
       if (now.getUTCHours() % 6 === 0) await trendsToDiscord(env, d, await itemLabel());
     }).catch(() => null));
+    // Daily market summary in #시세-거래-market at 21:00 KST (12:00 UTC run), once a day (snapshot key per KST day).
+    if (now.getUTCHours() === 12 && now.getUTCMinutes() < 15) ctx.waitUntil((async () => {
+      const key = `discord-market:${new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10)}`;
+      if (await env.DB.prepare('SELECT 1 FROM snapshots WHERE key = ?').bind(key).first()) return;
+      const cat = (await freshSnapshot(env, 'market-catalog', 60)) || (await marketCatalog(env));
+      if (await marketToDiscord(env, cat, await itemLabel())) await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES (?,'1',datetime('now'))").bind(key).run();
+    })().catch((e) => console.log('discord market failed', String(e))));
     ctx.waitUntil(checkAlerts(env).catch(() => null));
   },
 
