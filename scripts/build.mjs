@@ -796,7 +796,9 @@ function header(lang, pagePath, only) {
     ['/tools/training/', 'sword', ko ? '경험치 사냥터' : 'EXP training spots'],
     ['/tools/meso-farm/', 'coin', ko ? '메소벌이 사냥터' : 'Meso farming spots'],
     // The monster database joins the hunting menu (owner, 2026-11-18: no room for its own tab; it belongs with hunting).
-    ['/monsters/', 'slime', ko ? '몬스터 도감' : 'Monster database']
+    ['/monsters/', 'slime', ko ? '몬스터 도감' : 'Monster database'],
+    // The new Lv 39+ area sits here as well as under Guides (owner, 2026-11-19).
+    ['/forgotten-hollow/', 'tree', ko ? '포가튼 할로우' : 'Forgotten Hollow']
   ];
   // Quests open a dropdown the same way (owner, 2026-11-17): the full list plus the two rankings.
   const questItems = [
