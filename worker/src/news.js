@@ -208,16 +208,20 @@ export async function officialNews(fetcher = fetch, now = Date.now(), limit = 10
 const AI_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 export async function koByAi(env, title, body) {
   const out = await env.AI.run(AI_MODEL, { max_tokens: 700, temperature: 0.2, messages: [
-    { role: 'system', content: 'You summarize official MapleStory Classic World notices for Korean players. Reply with JSON only, no other text: {"title": "<Korean title, under 40 characters>", "points": ["<3 to 5 short Korean sentences>"]}. Write natural Korean in 해요체: every sentence ends in 요 (예: 판매해요, 3,500 NX예요), never in 니다. Lead with what is new and what it costs or gives; leave out legal notes and country restrictions. Keep the facts players need: dates and times exactly as the notice states them, and write every clock time as HH:MM followed by its time zone exactly as the notice gives it (for example 12월 2일 07:59 UTC); never drop the time zone. Nexon often writes the zone once before a date range ("UTC: Wednesday, November 18 (End of Maintenance) - Wednesday, December 2 7:59 AM"): that zone applies to every time in the range, so write 11월 18일 정기점검 후부터 12월 2일 07:59 UTC까지. Always say when a sale or event starts and ends, prices, level limits, rewards, what changes. Keep item, monster, map and NPC names in English. Never add anything the notice does not say.' },
+    { role: 'system', content: 'You summarize official MapleStory Classic World notices for Korean players. Reply with JSON only, no other text: {"title": "<Korean title, under 40 characters>", "points": ["<3 to 5 short Korean sentences>"], "en": ["<the same 3 to 5 points as short plain English sentences>"]}. Write natural Korean in 해요체: every sentence ends in 요 (예: 판매해요, 3,500 NX예요), never in 니다. Lead with what is new and what it costs or gives; leave out legal notes and country restrictions. Keep the facts players need: dates and times exactly as the notice states them, and write every clock time as HH:MM followed by its time zone exactly as the notice gives it (for example 12월 2일 07:59 UTC); never drop the time zone. Nexon often writes the zone once before a date range ("UTC: Wednesday, November 18 (End of Maintenance) - Wednesday, December 2 7:59 AM"): that zone applies to every time in the range, so write 11월 18일 정기점검 후부터 12월 2일 07:59 UTC까지. Always say when a sale or event starts and ends, prices, level limits, rewards, what changes. Keep item, monster, map and NPC names in English. Never add anything the notice does not say.' },
     { role: 'user', content: `Title: ${title}\n\n${String(body).slice(0, 6000)}` }] });
   const raw = typeof out?.response === 'string' ? out.response : JSON.stringify(out?.response ?? '');
   const j = JSON.parse(raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1));
   const points = (Array.isArray(j.points) ? j.points : []).filter((p) => typeof p === 'string' && p.trim()).map((p) => p.trim().slice(0, 300)).slice(0, 5);
   const t = typeof j.title === 'string' ? j.title.trim().slice(0, 80) : '';
+  // English points for the English pages (owner 2026-11-18: patch notes had only Nexon's one-line teaser in English).
+  // Kept only when every line is Latin script with time zones on its clock times; otherwise the teaser stays.
+  const en = (Array.isArray(j.en) ? j.en : []).filter((p) => typeof p === 'string' && p.trim()).map((p) => p.trim().slice(0, 300)).slice(0, 5);
+  const enOk = en.length && !en.some((p) => /[^\p{Script=Latin}\p{N}\p{P}\p{S}\s]/u.test(p) || bareTime(p));
   if (!t || !points.length || !/[가-힣]/.test(t + points.join(''))) throw new Error('unusable answer');
   if (foreignScript(t + points.join(' '))) throw new Error('other script in answer');
   if (bareTime(t + ' ' + points.join(' '))) throw new Error('clock time without time zone');
-  return { title: t, points };
+  return { title: t, points, ...(enOk ? { en } : {}) };
 }
 // The model sometimes slips a word of another language into Korean ("Regular Store परमिट", 2026-11-18). Korean answers
 // may hold only Hangul, Latin letters, digits, punctuation and symbols; anything else is redone.
@@ -237,7 +241,7 @@ export const noticeText = (body) => text(String(body || '')
   .replace(/<(s|del|strike)\b[^>]*>[\s\S]*?<\/\1>/gi, ' ').replace(/<span[^>]*line-through[^>]*>[\s\S]*?<\/span>/gi, ' ')
   .replace(/<\/(p|li|h\d|tr|div)>|<br[^>]*>/gi, ' / '));
 // Bump when the prompt or the text given to the model changes: stored summaries made by an older version are redone.
-const AI_VERSION = 4;
+const AI_VERSION = 5;
 // Tidies a model-written line: UTC clock times become Korea time, the common 되요 misspelling is fixed, and the line
 // ends with a full stop.
 export function polishKo(line, year) {
@@ -271,6 +275,7 @@ export async function refreshNews(env, fetcher = fetch, now = Date.now()) {
     }
     const k = made[x.id];
     // A stored summary still in another script is not shown; the English lines stay until a clean one is made.
+    if (k?.en?.length) x.sum.en = k.en;
     if (k && usable(k)) { if (x.ko === x.en) x.ko = k.title; x.sum.ko = k.points.map((p) => polishKo(p, new Date(x.date).getUTCFullYear())); }
   }
   if (added) {
