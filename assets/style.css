@@ -2712,7 +2712,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 .gn-body p { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 14px; }
 .gn-body a { font-weight: 700; font-size: 0.85rem; color: var(--accent); text-decoration: none; }
 .gn-body a:hover { text-decoration: underline; }
-.gn-cat { flex: none; min-width: 46px; text-align: center; font-size: 0.7rem; font-weight: 800; padding: 1px 6px; border-radius: 4px; white-space: nowrap; color: var(--text); background: color-mix(in srgb, var(--muted) 18%, transparent); }
+.gn-cat { flex: none; box-sizing: border-box; width: 56px; min-width: 56px; text-align: center; font-size: 0.7rem; font-weight: 800; padding: 1px 6px; border-radius: 4px; white-space: nowrap; color: var(--text); background: color-mix(in srgb, var(--muted) 18%, transparent); }
 .gn-cat[data-cat='maintenance'] { background: color-mix(in srgb, #d9534f 24%, transparent); }
 .gn-cat[data-cat='update'] { background: color-mix(in srgb, #2fb3cf 26%, transparent); }
 .gn-cat[data-cat='events'] { background: color-mix(in srgb, #3fae5a 26%, transparent); }
@@ -2726,8 +2726,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 .gn-maint:focus-visible, .gn-body a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 @media (max-width: 640px) { .gn-title { white-space: normal; overflow: visible; } .gn-body { padding-left: 14px; } }
 @media (max-width: 480px) { :root:not(:lang(ko)) .gn-list summary { flex-wrap: wrap; row-gap: 3px; } :root:not(:lang(ko)) .gn-title { flex-basis: 100%; order: 5; } }
-@media (max-width: 480px) { .gn-list summary:has(.gn-dc) { flex-wrap: wrap; row-gap: 3px; } .gn-list summary:has(.gn-dc) .gn-title { flex-basis: 100%; order: 5; } }
-@media (max-width: 480px) { .gn-list summary { padding: 9px 10px; } .gn-list time { width: 38px; } .gn-cat { min-width: 0; } .gn-body { padding-left: 10px; padding-right: 10px; } }
+@media (max-width: 480px) { .gn-list summary { padding: 9px 10px; } .gn-list time { width: 38px; } .gn-cat { width: 52px; min-width: 52px; padding: 1px 2px; } .gn-body { padding-left: 10px; padding-right: 10px; } }
 
 /* Quest guide cards on /quests/ */
 .qg-pics { display: flex; align-items: flex-end; gap: 10px; min-height: 48px; }
@@ -3482,3 +3481,11 @@ body.exp-running .exp-stop { display: inline-flex; }
 .traffic-dash .td-lang { display: inline-block; padding: 0 5px; border-radius: 6px; font-size: .72rem; font-weight: 700; line-height: 1.5; border: 1px solid var(--line); color: var(--text-2); }
 .traffic-dash .td-lang-ko { background: color-mix(in srgb, #2563eb 14%, transparent); border-color: color-mix(in srgb, #2563eb 35%, transparent); }
 .traffic-dash .td-lang-en { background: color-mix(in srgb, #16a34a 14%, transparent); border-color: color-mix(in srgb, #16a34a 35%, transparent); }
+
+/* Game notices: titles start at one line (owner 2026-11-18). Date and kind have fixed widths; the Discord mark sits after
+   the title instead of pushing it right. */
+.gn-list summary time { flex: none; width: 44px; font-variant-numeric: tabular-nums; }
+.gn-list summary .gn-dc { order: 6; flex: none; }
+.gn-list summary .gn-title { order: 5; }
+.gn-list summary::after { order: 7; }
+:root:not(:lang(ko)) .gn-cat { width: 84px; min-width: 84px; }
