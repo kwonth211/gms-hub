@@ -272,6 +272,18 @@ function panelPart(part, id) {
     $("mk-detail").dataset.ready = "1";
   }
 }
+// "팔렸어요" (owner 2026-11-18): one press when the listing was not at the shop. Listings reported gone are dimmed with
+// how many said so; a later sighting clears it (worker). What this browser reported is kept here so the row stays marked.
+const GONE_KEY = "gms-gone";
+const goneMine = (() => { try { return new Set(JSON.parse(localStorage.getItem(GONE_KEY) || "[]")); } catch (e) { return new Set(); } })();
+function goneCell(r) {
+  if (!r.id || r.sold) return '<span class="mb-gone-cell"></span>';
+  if (goneMine.has(r.id)) return `<span class="mb-gone-cell"><span class="mb-gone-done">✓ ${tr("알렸어요", "Reported")}</span></span>`;
+  const label = r.goneN ? tr(`팔렸어요 ${r.goneN}`, `Gone ${r.goneN}`) : tr("팔렸어요", "Sold out");
+  const title = r.goneN ? tr(`${r.goneN}명이 ${when(r.goneAt)} 가 보니 없었다고 알려 줬어요. 나도 없었으면 누르세요.`, `${r.goneN} player(s) found it gone ${when(r.goneAt)}. Press if it was gone for you too.`) : tr("상점에 가 보니 이 물건이 없었으면 눌러 주세요. 다음 사람이 헛걸음하지 않아요.", "Press if the shop no longer had it, so the next buyer does not make the trip.");
+  return `<span class="mb-gone-cell"><button type="button" class="mb-gone-btn${r.goneN ? " is-reported" : ""}" data-gone="${r.id}" data-gone-item="${r.item}" title="${esc(title)}">${label}</button></span>`;
+}
+const goneRow = (r) => (r.goneN && !goneMine.has(r.id) ? " is-gone" : goneMine.has(r.id) ? " is-gone" : "");
 function offerCards(rows) {
   lastOffers = rows;
   if (!rows.length)
@@ -285,13 +297,13 @@ function offerCards(rows) {
     const status = { sold: tr("판매 완료 표시", "Marked sold"), fresh: tr("1시간 안에 확인", "Seen within the hour"), warm: tr("몇 시간 전 확인", "Seen a few hours ago"), old: tr("팔렸을 수도 있어요", "May have sold") }[fresh];
     const tag = r.sold ? `<b class="mb-deal pricey">${tr("판매 완료", "Sold")}</b>` : r25 == null ? "" : r.price < r25 ? `<b class="mb-deal cheap">${tr("싼 편", "Cheap")}</b>` : r.price > r75 ? `<b class="mb-deal pricey">${tr("비싼 편", "Pricey")}</b>` : "";
     const chips = optionChips(r);
-    return `<li class="mb-offer ${fresh}${chips ? " has-opts" : ""}"${chips ? ` data-item-id="${r.item}" data-opts="${esc(JSON.stringify(r.opts))}"` : ""}><span class="mb-offer-price"><strong>${money(r.price)}</strong>${r.qty > 1 ? `<small>×${money(r.qty)}</small>` : ""}</span><span class="mb-offer-tag">${tag}</span><span class="mb-offer-opt">${chips}</span><button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)}</button><span class="mb-fresh" title="${esc(status)}"><i aria-hidden="true"></i>${when(r.seen)}<span class="sr-only"> · ${esc(status)}</span></span><span class="mb-offer-where">${placeChips(r)}</span></li>`;
+    return `<li class="mb-offer ${fresh}${goneRow(r)}${chips ? " has-opts" : ""}"${chips ? ` data-item-id="${r.item}" data-opts="${esc(JSON.stringify(r.opts))}"` : ""}><span class="mb-offer-price"><strong>${money(r.price)}</strong>${r.qty > 1 ? `<small>×${money(r.qty)}</small>` : ""}</span><span class="mb-offer-tag">${tag}</span><span class="mb-offer-opt">${chips}</span><button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)}</button><span class="mb-fresh" title="${esc(status)}"><i aria-hidden="true"></i>${when(r.seen)}<span class="sr-only"> · ${esc(status)}</span></span><span class="mb-offer-where">${placeChips(r)}</span>${goneCell(r)}</li>`;
   }).join("")}</ul>`;
 }
 function listingTable(rows, { showItem = true, shopButtons = true } = {}) {
   if (!rows.length)
     return `<p class="market-empty">${tr("조건에 맞는 매물이 없어요. 검색어나 필터를 바꿔 보세요.", "No listings match. Try changing the search or filters.")}</p>`;
-  return `<div class="mb-table-wrap"><table class="mb-table mb-listings-table"><thead><tr>${showItem ? `<th>${tr("아이템", "Item")}</th>` : ""}<th>${tr("가격", "Price")}<small>${T.priceUnit}</small></th><th>${tr("수량", "Qty")}</th><th>${T.table.seller}</th><th>${T.table.where}</th><th>${tr("최근 확인", "Last seen")}</th></tr></thead><tbody>${rows.map((r) => `<tr${r.opts ? ` class="has-opts" data-item-id="${r.item}" data-opts="${esc(JSON.stringify(r.opts))}"` : ""}>${showItem ? `<td class="mb-cell-item"><div class="mb-item-row">${itemLink(r.item)}${optionChips(r)}</div></td>` : ""}<td class="num mb-cell-price">${money(r.price)}${r.qty > 1 ? `<small>${T.total} ${money(r.price * r.qty)}</small>` : ""}${showItem ? "" : optionChips(r)}</td><td class="mb-cell-qty"><span class="mb-mobile-label">${tr("수량", "Qty")} </span>${money(r.qty)}</td><td class="mb-cell-seller">${shopButtons ? `<button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)} ↗</button>` : esc(r.seller)}</td><td class="mb-cell-location">${placeChips(r)}</td><td class="mb-cell-seen">${newMark(r.seen)}${when(r.seen)}<small class="${r.sold ? "mb-sold" : ""}">${r.sold ? tr("판매 완료 표시", "Marked sold") : Date.now() - parseUtc(r.seen) >= DAY ? tr("24시간 경과", "Over 24h old") : tr("판매 중 관측", "Seen for sale")}</small></td></tr>`).join("")}</tbody></table></div>`;
+  return `<div class="mb-table-wrap"><table class="mb-table mb-listings-table"><thead><tr>${showItem ? `<th>${tr("아이템", "Item")}</th>` : ""}<th>${tr("가격", "Price")}<small>${T.priceUnit}</small></th><th>${tr("수량", "Qty")}</th><th>${T.table.seller}</th><th>${T.table.where}</th><th>${tr("최근 확인", "Last seen")}</th><th class="mb-gone-th">${tr("없었나요?", "Gone?")}</th></tr></thead><tbody>${rows.map((r) => `<tr class="${r.opts ? "has-opts" : ""}${goneRow(r)}"${r.opts ? ` data-item-id="${r.item}" data-opts="${esc(JSON.stringify(r.opts))}"` : ""}>${showItem ? `<td class="mb-cell-item"><div class="mb-item-row">${itemLink(r.item)}${optionChips(r)}</div></td>` : ""}<td class="num mb-cell-price">${money(r.price)}${r.qty > 1 ? `<small>${T.total} ${money(r.price * r.qty)}</small>` : ""}${showItem ? "" : optionChips(r)}</td><td class="mb-cell-qty"><span class="mb-mobile-label">${tr("수량", "Qty")} </span>${money(r.qty)}</td><td class="mb-cell-seller">${shopButtons ? `<button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)} ↗</button>` : esc(r.seller)}</td><td class="mb-cell-location">${placeChips(r)}</td><td class="mb-cell-seen">${newMark(r.seen)}${when(r.seen)}<small class="${r.sold ? "mb-sold" : ""}">${r.sold ? tr("판매 완료 표시", "Marked sold") : Date.now() - parseUtc(r.seen) >= DAY ? tr("24시간 경과", "Over 24h old") : tr("판매 중 관측", "Seen for sale")}</small></td><td class="mb-cell-gone">${goneCell(r)}</td></tr>`).join("")}</tbody></table></div>`;
 }
 // Every browsing filter lives in the address, so refresh, back and a copied link reopen the same view.
 // Defaults are left out to keep plain visits on the canonical URL.
@@ -1007,6 +1019,23 @@ document.querySelector(".market-browser").addEventListener("click", (e) => {
   // A click anywhere on an item row opens it, not only on the name.
   const el = e.target.closest("button,a") || (!e.target.closest("input,select,label") && e.target.closest(".mb-catalog tbody tr, .mb-listings-table tbody tr")?.querySelector("a[data-item]"));
   if (!el) return;
+  if (el.dataset.gone) {
+    e.preventDefault();
+    e.stopPropagation();
+    const id = Number(el.dataset.gone), item = Number(el.dataset.goneItem);
+    el.disabled = true;
+    fetch(`${D.api}/listings/gone`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) })
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((res) => {
+        goneMine.add(id);
+        try { localStorage.setItem(GONE_KEY, JSON.stringify([...goneMine].slice(-300))); } catch (x) {}
+        el.closest(".mb-offer, tr")?.classList.add("is-gone");
+        el.outerHTML = `<span class="mb-gone-done">✓ ${tr("알렸어요", "Reported")}</span>`;
+        track("market_gone", { item_id: item, reports: res.n || 1 });
+      })
+      .catch(() => { el.disabled = false; el.textContent = tr("다시 눌러 주세요", "Try again"); });
+    return;
+  }
   if (el.dataset.item) {
     if (e.ctrlKey || e.metaKey || e.shiftKey) return;
     e.preventDefault();

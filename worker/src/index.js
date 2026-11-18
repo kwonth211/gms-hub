@@ -347,7 +347,7 @@ const api = {
     const now = new Date();
     // The weekly report's daily rollups (yesterday's megaphones, today's ranking) are written before the prune runs.
     if (now.getUTCHours() === 16 && now.getUTCMinutes() < 15)
-      ctx.waitUntil(storeDailyRollups(env).catch(() => null).then(() => pruneMegaphones(env)).then(() => pruneFreeMegas(env)).catch(() => null));
+      ctx.waitUntil(storeDailyRollups(env).catch(() => null).then(() => pruneMegaphones(env)).then(() => pruneFreeMegas(env)).then(() => env.DB.prepare("DELETE FROM listing_gone WHERE at < datetime('now', '-31 days')").run()).catch(() => null));
     // Retention first, then the safety-net re-summary of everything seen in the last day (one 1-day scan).
     if (now.getUTCHours() === 16 && now.getUTCMinutes() < 15)
       ctx.waitUntil(archiveListings(env).catch(() => null).then(() => reconcileItemMarket(env)).catch(() => null));
@@ -683,6 +683,22 @@ const api = {
 
     // The scan page's "remove this misread line": deletes one listing, only if this same connection reported it (the same
     // reporter hash as /listings and /listings/fix), so nobody can remove other people's or the collectors' rows.
+    // "팔렸어요": one press from a visitor who found the listing gone at the shop (owner 2026-11-18). Counted once per
+    // visitor (IP hash) per listing; only open listings count. Answers the listing's new count.
+    if (url.pathname === '/listings/gone' && req.method === 'POST') {
+      if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
+      const id = Number((await req.json().catch(() => null))?.id);
+      if (!Number.isInteger(id) || id < 1) return json({ error: 'bad input' }, cors, 400);
+      const reporter = await visitorHash(req.headers.get('CF-Connecting-IP') || '', 'gone', env.VOTE_SALT);
+      const add = await env.DB.prepare('INSERT OR IGNORE INTO listing_gone (listing, reporter) SELECT id, ? FROM listings WHERE id = ? AND sold = 0').bind(reporter, id).run();
+      if (!add.meta.changes) {
+        const row = await env.DB.prepare('SELECT gone_n FROM listings WHERE id = ?').bind(id).first();
+        return json({ ok: !!row, n: row?.gone_n || 0, again: !!row }, cors, row ? 200 : 404);
+      }
+      const row = await env.DB.prepare("UPDATE listings SET gone_n = gone_n + 1, gone_at = datetime('now') WHERE id = ? RETURNING gone_n").bind(id).first();
+      return json({ ok: true, n: row?.gone_n || 1 }, cors);
+    }
+
     if (url.pathname === '/listings/remove' && req.method === 'POST') {
       if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
       const l = (await req.json().catch(() => null))?.listing || {};

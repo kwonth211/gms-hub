@@ -302,7 +302,7 @@ export async function browseListings(env, p) {
   }
   const rows = await all(
     env,
-    "SELECT id,item,price,qty,sold,seller,channel,room,first_seen AS firstSeen,last_seen AS seen,opts FROM listings " +
+    "SELECT id,item,price,qty,sold,seller,channel,room,first_seen AS firstSeen,last_seen AS seen,opts,gone_n AS goneN,gone_at AS goneAt FROM listings " +
       // Newest first walks the first_seen index from the top and stops after one page; with an item filter the item index is cheaper.
       (sort === "recent" && !p.get("item") && !p.get("ids") ? "INDEXED BY listings_first " : "") +
       "WHERE " +
@@ -315,7 +315,11 @@ export async function browseListings(env, p) {
   return {
     asOf: new Date(now).toISOString(),
     // Equipment options (item-options.js) as an object, only on rows that have them.
-    rows: rows.map(({ opts, ...r }) => (opts ? { ...r, opts: parseOptions(opts) } : r)),
+    // "팔렸어요" reports count only while no later sighting replaced them (last_seen after the last report = back on sale).
+    rows: rows.map(({ opts, goneN, goneAt, ...r }) => {
+      const out = opts ? { ...r, opts: parseOptions(opts) } : r;
+      return goneN && goneAt && goneAt >= r.seen ? { ...out, goneN, goneAt } : out;
+    }),
     total: count.n,
     page,
     limit,

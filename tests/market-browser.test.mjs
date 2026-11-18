@@ -22,6 +22,7 @@ function env() {
     "migrations/0004_trim_writes.sql",
     "migrations/0005_stop_history_copies.sql",
     "migrations/0019_item_options.sql",
+    "migrations/0021_listing_gone.sql",
   ])
     sqlite.exec(
       fs.readFileSync(new URL("../worker/" + file, import.meta.url), "utf8"),
@@ -291,4 +292,15 @@ test("the NPC filter keeps items an NPC shop buys for at least 90% of the market
   assert.deepEqual(rows.map((r) => r.id), [4000001, 4000002]);
   assert.equal(catalogRows(items, summaries, { category: "npc" }).length, 0, "no NPC prices, nothing claimed");
   assert.equal(catalogRows(items, summaries).length, 4, "other views unchanged");
+});
+
+test('"팔렸어요" reports show on a listing until a later sighting replaces them', async () => {
+  const e = env();
+  const id = add(e, { age: 30 * 60000 });
+  e.sqlite.prepare('UPDATE listings SET gone_n = 2, gone_at = ? WHERE id = ?').run(stamp(Date.now() - 60000), id);
+  let row = (await browseListings(e, p({ item: 2040801 }))).rows.find((r) => r.id === id);
+  assert.equal(row.goneN, 2);
+  e.sqlite.prepare('UPDATE listings SET last_seen = ? WHERE id = ?').run(stamp(Date.now() - 1000), id);
+  row = (await browseListings(e, p({ item: 2040801 }))).rows.find((r) => r.id === id);
+  assert.equal(row.goneN, undefined);
 });
