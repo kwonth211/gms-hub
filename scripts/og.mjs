@@ -13,6 +13,17 @@ const copy = {
   zh: { title: '你的楓之谷旅程，<br>從這裡開始。', sub: '道具・即時價格・練功地點・攻略', badge: '全球楓之谷經典世界' },
   ja: { title: 'メイプルの冒険は、<br>ここから。', sub: 'アイテム・リアルタイム相場・狩場・攻略', badge: 'グローバル メイプルストーリー クラシックワールド' },
 };
+// Page cards (2026-11-18): the main pages get their own share card, so a link pasted in KakaoTalk or Discord says what
+// it opens. Same artwork, the page's own title and line. Keys match SHARE_PAGES in scripts/build.mjs. No numbers that
+// go stale (chat apps cache previews for days).
+export const PAGE_CARDS = {
+  market: { ko: { title: '글클메 실시간<br>자유시장 시세', sub: '지금 가장 싼 상점의 채널·방까지' }, en: { title: 'Live Free Market<br>prices', sub: 'The cheapest shop now, with channel and room' } },
+  training: { ko: { title: '직업·레벨별<br>사냥터 추천', sub: '어디서 사냥할지, 물약값과 다음 이동까지' }, en: { title: 'Where to train,<br>by class and level', sub: 'Spots, potion costs and where to go next' } },
+  quests: { ko: { title: '글클메 퀘스트<br>단계별 공략', sub: 'NPC 위치·사냥터·재료 시세까지' }, en: { title: 'Step-by-step<br>quest guides', sub: 'NPC spots, where to hunt, item prices' } },
+  'best-meso': { ko: { title: '돈 버는<br>퀘스트 순위', sub: '오늘 시세로 계산한 순이익 순서' }, en: { title: 'Quests that make<br>the most mesos', sub: 'Ranked by profit at today\'s prices' } },
+  megaphone: { ko: { title: '실시간 확성기', sub: '검색·시세 비교·귓말 복사' }, en: { title: 'Live megaphones', sub: 'Search, price check, one-tap whisper' } },
+  newbie: { ko: { title: '글클메<br>뉴비 가이드', sub: '고확·자시·떡작 뜻부터 2차 전직까지' }, en: { title: 'Classic World<br>beginner guide', sub: 'Shorthand explained, day one to 2nd job' } }
+};
 const css = fs.readFileSync(path.join(root, 'assets/style.css'), 'utf8');
 // Read the same pixel silhouette as the live animation, so share cards cannot drift to another logo.
 const storm = fs.readFileSync(path.join(root, 'assets/hero-storm.js'), 'utf8');
@@ -47,16 +58,22 @@ if (process.argv.includes('--html-only')) {
   const destination = path.resolve(process.argv[process.argv.indexOf('--html-only') + 1] || '/tmp/gms-og-preview');
   fs.mkdirSync(destination, {recursive:true});
   for (const [lang,c] of Object.entries(copy)) fs.writeFileSync(path.join(destination, `og-${lang}.html`),html(lang,c));
+  for (const [key, card] of Object.entries(PAGE_CARDS)) for (const lang of ['ko', 'en']) fs.writeFileSync(path.join(destination, `og-${key}-${lang}.html`), html(lang, { ...copy[lang], ...card[lang] }));
   console.log(destination);
 } else {
   const { chromium } = await import('playwright-core');
   const browser = await chromium.launch({channel:'chrome'});
   try {
     const page = await browser.newPage({viewport:{width:1200,height:630},deviceScaleFactor:1});
-    for (const [lang,c] of Object.entries(copy)) {
+    const only = process.argv.includes('--pages');
+    if (!only) for (const [lang,c] of Object.entries(copy)) {
       await page.setContent(html(lang,c));
       await page.screenshot({path:path.join(root,`assets/og-${lang}.png`)});
     }
+    for (const [key, card] of Object.entries(PAGE_CARDS)) for (const lang of ['ko', 'en']) {
+      await page.setContent(html(lang, { ...copy[lang], ...card[lang] }));
+      await page.screenshot({path:path.join(root,`assets/og-${key}-${lang}.png`)});
+    }
   } finally { await browser.close(); }
-  console.log('Four autumn share images written');
+  console.log('Share images written');
 }

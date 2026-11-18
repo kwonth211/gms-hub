@@ -645,7 +645,32 @@ const SHARE_ALT = {
   zh: '秋日像素風景與金色楓葉的 GMS Hub — 道具、即時價格、練功地點與攻略',
   ja: '秋のピクセル風景と金色のメイプルの GMS Hub — アイテム、相場、狩場と攻略',
 };
-function shareImageTags(lang) {
+// Page share cards (scripts/og.mjs PAGE_CARDS, ko and en): the longest matching path prefix wins; every other page and
+// language keeps the general card. Content-addressed names, so a new card is not hidden behind a cached old one.
+const SHARE_PAGES = [['/tools/market/', 'market'], ['/tools/training/', 'training'], ['/tools/meso-farm/', 'training'], ['/quests/best-meso/', 'best-meso'],
+  ['/quests/', 'quests'], ['/megaphone/', 'megaphone'], ['/guides/newbie/', 'newbie']].sort((a, b) => b[0].length - a[0].length);
+const PAGE_SHARE_IMAGES = Object.fromEntries(['ko', 'en'].flatMap((lang) => [...new Set(SHARE_PAGES.map(([, key]) => key))].flatMap((key) => {
+  const source = `og-${key}-${lang}.png`;
+  if (!fs.existsSync(path.join(root, 'assets', source))) return [];
+  const hash = createHash('sha256').update(fs.readFileSync(path.join(root, 'assets', source))).digest('hex').slice(0, 12);
+  return [[`${key}-${lang}`, { source, name: `og-${key}-${lang}-${hash}.png` }]];
+})));
+const SHARE_PAGE_ALT = { market: ['실시간 자유시장 시세', 'Live Free Market prices'], training: ['직업·레벨별 사냥터 추천', 'Where to train by class and level'],
+  quests: ['퀘스트 단계별 공략', 'Step-by-step quest guides'], 'best-meso': ['돈 버는 퀘스트 순위', 'Quests that make the most mesos'],
+  megaphone: ['실시간 확성기', 'Live megaphones'], newbie: ['글클메 뉴비 가이드', 'Classic World beginner guide'] };
+function shareImageTags(lang, pagePath) {
+  const key = pagePath && SHARE_PAGES.find(([p]) => pagePath.startsWith(p))?.[1];
+  const card = key && PAGE_SHARE_IMAGES[`${key}-${lang}`];
+  if (card) {
+    const url = absUrl(`/assets/${card.name}`), alt = `GMS Hub — ${SHARE_PAGE_ALT[key][lang === 'ko' ? 0 : 1]}`;
+    return `<meta property="og:image" content="${url}">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="${esc(alt)}">
+<meta name="twitter:image" content="${url}">
+<meta name="twitter:image:alt" content="${esc(alt)}">`;
+  }
   const url = absUrl(`/assets/${SHARE_IMAGES[lang].name}`);
   return `<meta property="og:image" content="${url}">
 <meta property="og:image:type" content="image/png">
@@ -706,7 +731,7 @@ ${alternates}
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:url" content="${canonical}">
-${shareImageTags(lang)}
+${shareImageTags(lang, pagePath)}
 <meta property="og:locale" content="${lang === 'ko' ? 'ko_KR' : 'en_US'}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#f6f1e7">
@@ -3966,6 +3991,7 @@ for (const name of fs.readdirSync(path.join(root, 'assets')).filter((n) => n.end
   fs.writeFileSync(path.join(out, 'assets', name), css.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\n\s+/g, '\n').replace(/\n{2,}/g, '\n').trim() + '\n');
 }
 for (const { source, name } of Object.values(SHARE_IMAGES)) fs.copyFileSync(path.join(root, 'assets', source), path.join(out, 'assets', name));
+for (const { source, name } of Object.values(PAGE_SHARE_IMAGES)) fs.copyFileSync(path.join(root, 'assets', source), path.join(out, 'assets', name));
 for (const name of moduleFiles) {
   const source = fs.readFileSync(path.join(root, 'assets', name), 'utf8');
   write(`assets/${name}`, source.replace(/(from\s+['"])(\.\.?\/[^'"?]+\.js)(['"])/g, `$1$2?v=${moduleVersion}$3`));
