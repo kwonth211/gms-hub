@@ -2,6 +2,20 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "newbie-guide",
+   "version": "0.7.19",
+   "level": "minor",
+   "highlight": true,
+   "date": "2026-11-18",
+   "path": "/guides/newbie/",
+   "ko": "뉴비 가이드 — 용어 사전과 처음 읽는 순서",
+   "en": "Beginner guide — glossary and a reading order",
+   "desc": {
+    "ko": "가이드 메뉴에 뉴비 가이드가 생겼어요. 첫 페이지는 용어 사전이에요. 고확, 자시, 떡작, 정옵, 커파, 겹사, 마통 같은 줄임말 60여 개의 뜻을 거래·주문서·사냥·직업·사냥터로 나눠 정리했어요. 시작부터 2차 전직까지 읽는 순서도 한곳에 모았어요.",
+    "en": "A beginner guide now sits under Guides. Its first page is a glossary of megaphone and trade shorthand (S>, B>, C/O, A/W, clean, slots) with the scroll tiers, and the hub lists what to read from day one to the 2nd job."
+   }
+  },
+  {
    "id": "header-bookmark",
    "version": "0.7.18",
    "level": "patch",

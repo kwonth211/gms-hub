@@ -7,6 +7,7 @@ import { spriteSvg, heroScene, spritePng, spriteDataPng } from './sprites.mjs';
 import { monsterIndex, monsterDetail, monsterPath, monsterName, mapPath, bossIndex } from './monster-pages.mjs';
 import { buildWorkbooks } from './workbooks.mjs';
 import { collectMaps, mapDetail, mapIndex, mapName } from './map-pages.mjs';
+import { NEWBIE_HUB, NEWBIE_PAGES, newbiePath, newbieHubBody, newbiePageBody, newbieTermsLd } from './newbie-pages.mjs';
 import { collectQuests, questIndex, questBestBody, questMoneyBody, questPath, questName, setQuestGuides, areaName as questArea } from './quest-pages.mjs';
 import { questGuideData, questGuideBody } from './quest-guide.mjs';
 import { fhBody } from './forgotten-hollow.mjs';
@@ -757,6 +758,7 @@ function header(lang, pagePath, only) {
   const ko = lang === 'ko';
   const guideItems = [
     guides.some((g) => g.lang === lang) && ['/guides/', 'book', ko ? '직업·육성 가이드' : 'Class and levelling guides'],
+    ['/guides/newbie/', 'mushroom', ko ? '뉴비 가이드' : 'Beginner guide'],
     ['/skills/', 'star', ko ? '스킬트리 정석' : 'Skill builds'],
     ['/forgotten-hollow/', 'tree', ko ? '포가튼 할로우 공략' : 'Forgotten Hollow guide'],
     ['/equipment/', 'bag', ko ? '직업별 장비' : 'Gear by class'],
@@ -2738,6 +2740,7 @@ function guidesIndexBody(lang) {
     .join('');
   return `<article class="wrap prose"><h1>${GUIDE_T[lang].indexH1}</h1>
 <p>${GUIDE_T[lang].indexLead}</p>
+<p class="newbie-entry"><a href="${href(langPath(lang, '/guides/newbie/'))}"><strong>${NEWBIE_HUB[lang].h1}</strong></a> ${lang === 'ko' ? '처음 시작했다면 여기부터 보세요. 용어 뜻과 읽는 순서를 모았어요.' : 'New to the game? Start here: shorthand explained and a reading order.'}</p>
 <ul class="guide-list">${items}</ul></article>`;
 }
 
@@ -3369,6 +3372,30 @@ for (const lang of LANGS) {
   }
 
   const langGuides = guides.filter((g) => g.lang === lang);
+  // Newbie guide (scripts/newbie-pages.mjs): hub at /guides/newbie/ and its pages below it. Breadcrumb: Home > Guides >
+  // Beginner guide > page, so search results show where the page sits.
+  {
+    const crumbs = (...tail) => ({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [[T[lang].home, '/'], [t.navGuides, '/guides/'], ...tail]
+      .map(([name, p], i) => ({ '@type': 'ListItem', position: i + 1, name, item: absUrl(langPath(lang, p)) })) });
+    const hub = NEWBIE_HUB[lang];
+    const link = (p) => href(langPath(lang, p));
+    write(path.join(lang, 'guides', 'newbie', 'index.html'), page({
+      lang, pageKey: 'guides', pagePath: '/guides/newbie/', title: hub.title, desc: hub.desc,
+      body: newbieHubBody({ lang, link, guides: publishedGuides, guideHref: (g) => href(langPath(lang, guidePath(g))) }),
+      ld: [crumbs([hub.nav, '/guides/newbie/']), { '@context': 'https://schema.org', '@type': 'ItemList', name: hub.h1,
+        itemListElement: NEWBIE_PAGES.map((p, i) => ({ '@type': 'ListItem', position: i + 1, name: p[lang].h1, url: absUrl(langPath(lang, newbiePath(p))) })) }]
+    }));
+    for (const p of NEWBIE_PAGES) {
+      const url = absUrl(langPath(lang, newbiePath(p)));
+      write(path.join(lang, 'guides', 'newbie', p.slug, 'index.html'), page({
+        lang, pageKey: 'guides', pagePath: newbiePath(p), title: p[lang].title, desc: p[lang].desc,
+        body: newbiePageBody({ lang, page: p, link }),
+        ld: [crumbs([hub.nav, '/guides/newbie/'], [p[lang].nav, newbiePath(p)]), newbieTermsLd({ lang, page: p, url }),
+          { '@context': 'https://schema.org', '@type': 'Article', headline: p[lang].h1, description: p[lang].desc, inLanguage: lang, dateModified: p.updated, datePublished: p.updated,
+            author: { '@type': 'Organization', name: config.siteName, url: absUrl(langPath(lang, '/about/')) }, mainEntityOfPage: url, about: { '@type': 'VideoGame', name: 'MapleStory Classic World' } }]
+      }));
+    }
+  }
   if (langGuides.length) {
     write(
       path.join(lang, 'guides', 'index.html'),
@@ -3822,7 +3849,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
   )
 ).concat(
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
-  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, {path:'/quests/best-meso/'}, ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/forgotten-hollow/'}, {path:'/skills/'}, {path:'/tools/forge/'}, {path:'/tools/meso-farm/'}, {path:'/updates/'}, ...(WEEKLY ? [{path:'/report/'}] : [])].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, {path:'/quests/best-meso/'}, {path:'/guides/newbie/'}, ...NEWBIE_PAGES.map((p)=>({path:newbiePath(p)})), ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/forgotten-hollow/'}, {path:'/skills/'}, {path:'/tools/forge/'}, {path:'/tools/meso-farm/'}, {path:'/updates/'}, ...(WEEKLY ? [{path:'/report/'}] : [])].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/bosses/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/quests/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
   [{path:'/maps/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),

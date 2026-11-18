@@ -3475,3 +3475,14 @@ body.exp-running .exp-stop { display: inline-flex; }
 @media (prefers-reduced-motion: reduce) { .bookmark-tip { animation: none; } }
 /* The star stays on phones too (the Discord icon is the one that hides there). */
 @media (max-width: 400px) { .site-header .bookmark-btn { display: grid; width: 34px; } }
+
+/* Newbie guide (/guides/newbie/): glossary tables and the hub's reading order. */
+.newbie .newbie-toc { margin: 14px 0 6px; }
+.newbie section { scroll-margin-top: 90px; }
+.newbie-terms th[scope='row'] { background: none; color: var(--text); white-space: nowrap; font-weight: 700; width: 1%; vertical-align: top; }
+.newbie-terms td { line-height: 1.65; }
+.newbie-more { white-space: nowrap; font-size: 0.85rem; margin-left: 4px; }
+.newbie-steps { list-style: decimal; padding-left: 22px; }
+.newbie-entry { padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.newbie-next { margin-top: 28px; }
+@media (max-width: 480px) { .newbie-terms th[scope='row'] { white-space: normal; width: 34%; } }
