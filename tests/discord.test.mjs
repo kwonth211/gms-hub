@@ -49,3 +49,24 @@ test('the daily market card lists moves, best sellers and most listed with Korea
   assert.equal(won(123456789), '1.23억');
   assert.equal(marketEmbed({ items: [] }, nameOf), null);
 });
+
+test('notice cards carry the Korean summary, English and the maintenance window; free megaphone cards show intent, price and nick', async () => {
+  const { noticeEmbed, freeMegaEmbed, newsToDiscord } = await import('../worker/src/discord.js');
+  const e = noticeEmbed({ id: 1, cat: 'maintenance', ko: '11월 18일 업데이트 점검', en: 'Scheduled Game Update', url: 'https://x', date: '2026-11-16T00:00:00Z',
+    sum: { ko: ['점검 시간: 22:00~03:00'], en: ['Maintenance: 13:00–18:00 UTC'] }, maint: { start: '2026-11-18T13:00:00.000Z', end: '2026-11-18T18:00:00.000Z' } });
+  assert.equal(e.title, '🛠 [점검] 11월 18일 업데이트 점검');
+  assert.match(e.fields[0].value, /<t:1795006800:f> ~ <t:1795024800:t>/);
+  assert.equal(e.fields[1].name, 'English');
+  const f = freeMegaEmbed({ id: 7, intent: 'sell', ko: '일비 표창', price: 2500000, channel: 5, nick: 'Hook', text: '싸게 팔아요', at: '2026-11-18 12:00:00' });
+  assert.equal(f.title, '🟢 팝니다 · 일비 표창');
+  assert.match(JSON.stringify(f.fields), /250만/);
+  assert.match(f.url, /\?f=7&/);
+  // First run: remembers the listed notices without posting them.
+  const writes = [];
+  const env = { DISCORD_BOT_TOKEN: 't', DISCORD_NOTICE_CHANNEL: 'c', DB: { prepare: (q) => ({ first: async () => null, bind: (...a) => ({ run: async () => writes.push(a) }) }) } };
+  const real = globalThis.fetch; let calls = 0; globalThis.fetch = async () => { calls++; return new Response('{}'); };
+  await newsToDiscord(env, { items: [{ id: 5, cat: 'general', date: '2026-11-01T00:00:00Z', sum: { ko: ['a'], en: ['b'] } }] }, Date.parse('2026-11-18T00:00:00Z'));
+  globalThis.fetch = real;
+  assert.equal(calls, 0);
+  assert.deepEqual(JSON.parse(writes[0][0]).sent, ['5']);
+});

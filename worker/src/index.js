@@ -33,7 +33,7 @@ import { Presence, handlePresence, handlePresencePeak } from './presence.js';
 import { handleTraffic } from './traffic.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
 import { validRoom } from '../../assets/place.js';
-import { trendsToDiscord, marketToDiscord } from './discord.js';
+import { trendsToDiscord, marketToDiscord, newsToDiscord, freeMegaToDiscord, freeMegaGoneFromDiscord } from './discord.js';
 import { discordInteractions } from './discord-bot.js';
 import { notifyMegaphones, notifyListings } from './discord-alerts.js';
 import { oauthStart, oauthCallback } from './discord-oauth.js';
@@ -341,7 +341,7 @@ const api = {
     ctx.waitUntil(freshSnapshot(env, 'market', 50).then((data) => data || refreshSnapshot(env)));
     ctx.waitUntil(refreshRank(env).catch(() => null));
     // Official notices (site + followed Discord channel), with Korean for new ones: one row read, one or two writes.
-    ctx.waitUntil(refreshNews(env).catch((e) => console.log('news refresh failed', String(e))));
+    ctx.waitUntil(refreshNews(env).then((d) => newsToDiscord(env, d)).catch((e) => console.log('news refresh failed', String(e))));
     // Once a day (the 16:00 UTC run, a quiet hour in Korea): old megaphones are dropped by a table scan. The megaphone
     // trend snapshot is refreshed once an hour. Both are read-heavy, so they are not run on every tick.
     const now = new Date();
@@ -580,19 +580,20 @@ const api = {
       const who = await visitorHash(req.headers.get('CF-Connecting-IP') || '', 'free-mega', env.VOTE_SALT);
       if (req.method === 'POST' && url.pathname === '/free-megas') {
         const [out, status] = await postFreeMega(env, await req.json().catch(() => null), who, await knownItems().catch(() => null));
-        if (out.row) { out.row = (await named([out.row]))[0]; push({ type: 'free', rows: [out.row] }); }
+        if (out.row) { out.row = (await named([out.row]))[0]; push({ type: 'free', rows: [out.row] }); ctx?.waitUntil?.(freeMegaToDiscord(env, out.row).catch(() => null)); }
         return json(out, cors, status, 'no-store');
       }
       if (req.method === 'DELETE' && url.pathname === '/free-megas') {
         const id = Number(url.searchParams.get('id'));
+        const msg = (await env.DB.prepare('SELECT discord_msg FROM free_megaphones WHERE id = ?').bind(id).first().catch(() => null))?.discord_msg;
         const [out, status] = await deleteFreeMega(env, id, url.searchParams.get('key'));
-        if (out.ok) push({ type: 'free-gone', id });
+        if (out.ok) { push({ type: 'free-gone', id }); ctx?.waitUntil?.(freeMegaGoneFromDiscord(env, msg)); }
         return json(out, cors, status, 'no-store');
       }
       if (req.method === 'POST' && url.pathname === '/free-megas/report') {
         const id = Number((await req.json().catch(() => null))?.id);
         const [out, status] = await reportFreeMega(env, id, who);
-        if (out.hidden) push({ type: 'free-gone', id });
+        if (out.hidden) { push({ type: 'free-gone', id }); const msg = (await env.DB.prepare('SELECT discord_msg FROM free_megaphones WHERE id = ?').bind(id).first().catch(() => null))?.discord_msg; ctx?.waitUntil?.(freeMegaGoneFromDiscord(env, msg)); }
         return json(out, cors, status, 'no-store');
       }
       return json({ error: 'method not allowed' }, cors, 405);

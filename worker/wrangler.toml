@@ -7,6 +7,9 @@ compatibility_date = "2026-10-01"
 CF_ACCOUNT_ID = "2d797e9348660f2d5a228739b19cd956"
 # Daily market summary goes to #시세-거래-market in the GMS Hub Discord (src/discord.js marketToDiscord, bot token).
 DISCORD_MARKET_CHANNEL = "1570460864614633533"
+# Game notices (Korean summary cards, maintenance reminders) go to #공지-announcements; 무료 고확 to #한국어-거래.
+DISCORD_NOTICE_CHANNEL = "1570460197812572280"
+DISCORD_TRADE_CHANNEL = "1571870717958430834"
 # Small hourly batches; existing daily usage is retained across a policy change. D1 free allows 100,000 rows written a
 # day and every index entry counts, so a listing costs about four: 9,000 listings a day leaves room for megaphones.
 MARKET_BATCH_PAUSED = "false"

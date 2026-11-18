@@ -103,3 +103,76 @@ export async function marketToDiscord(env, cat, nameOf) {
     body: JSON.stringify({ embeds: [embed], allowed_mentions: { parse: [] }, flags: 4096 }) }).catch(() => null);
   return !!r?.ok;
 }
+
+// ---------- Bot posts: game notices in #공지 and 무료 고확 in #한국어-거래 (owner 2026-11-18) ----------
+const bot = (env, method, path, body) => fetch(`https://discord.com/api/v10${path}`, { method, headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`, 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined }).catch(() => null);
+async function botPost(env, channel, body) {
+  if (!env.DISCORD_BOT_TOKEN || !channel) return null;
+  const r = await bot(env, 'POST', `/channels/${channel}/messages`, { allowed_mentions: { parse: [] }, ...body });
+  return r?.ok ? (await r.json().catch(() => null))?.id || null : null;
+}
+const unix = (iso) => Math.floor(Date.parse(iso) / 1000);
+const NOTICE = { maintenance: ['🛠', '점검', 0xe5534b], update: ['✨', '업데이트', 0x8b5cf6], events: ['🎉', '이벤트', 0xf59e0b], sale: ['🛍', '캐시샵', 0xec4899], general: ['📌', '공지', 0x64748b] };
+const bullets = (xs) => (Array.isArray(xs) ? xs : [xs]).filter(Boolean).map((p) => `• ${p}`).join('\n');
+
+// One official notice as a card: Korean summary first, English under it, the maintenance window in each reader's own
+// clock (Discord timestamps), and the official page as the title link.
+export function noticeEmbed(x) {
+  const [emo, label, color] = NOTICE[x.cat] || NOTICE.general;
+  const ko = bullets(x.sum?.ko), en = bullets(x.sum?.en);
+  const fields = [];
+  if (x.maint?.start && x.maint?.end) fields.push({ name: '🕒 점검 시간 · Maintenance', value: `<t:${unix(x.maint.start)}:f> ~ <t:${unix(x.maint.end)}:t>  (<t:${unix(x.maint.start)}:R>)` });
+  if (en && en !== ko) fields.push({ name: 'English', value: en.slice(0, 1024) });
+  return { title: `${emo} [${label}] ${x.ko || x.en}`.slice(0, 256), url: x.url, color, description: (ko || x.en).slice(0, 4000), fields,
+    footer: { text: 'GMS Hub · 넥슨 공지 한국어 요약' }, timestamp: x.date };
+}
+
+// Called after every news refresh (15 min). The first run only remembers what is already listed, so old notices are not
+// posted. A notice goes out once its Korean summary is ready (or after an hour with whatever it has); an unfinished
+// maintenance also gets a reminder 15–45 minutes before it starts. State: one snapshot row.
+export async function newsToDiscord(env, data, now = Date.now()) {
+  const channel = env.DISCORD_NOTICE_CHANNEL;
+  if (!env.DISCORD_BOT_TOKEN || !channel || !data?.items?.length) return;
+  const row = await env.DB.prepare("SELECT json FROM snapshots WHERE key = 'discord-news'").first().catch(() => null);
+  const save = (s) => env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('discord-news',?,datetime('now'))").bind(JSON.stringify(s)).run();
+  const st = row ? JSON.parse(row.json) : { sent: data.items.map((x) => String(x.id)), reminded: [] };
+  let changed = !row, posted = 0;
+  for (const x of data.items) {
+    const id = String(x.id);
+    if (st.sent.includes(id) || posted >= 2) continue;
+    const ready = (x.sum?.ko?.length && JSON.stringify(x.sum.ko) !== JSON.stringify(x.sum.en)) || now - Date.parse(x.date) > 3600000;
+    if (!ready) continue;
+    if (await botPost(env, channel, { embeds: [noticeEmbed(x)] })) { st.sent.push(id); posted++; changed = true; }
+  }
+  for (const x of data.items) {
+    const id = String(x.id);
+    if (!x.maint?.start || (st.reminded || []).includes(id)) continue;
+    const left = Date.parse(x.maint.start) - now;
+    if (left <= 0 || left > 45 * 60000) continue;
+    const s = unix(x.maint.start), e = unix(x.maint.end);
+    if (await botPost(env, channel, { content: `⏰ **곧 점검이 시작돼요** <t:${s}:R> · <t:${s}:t> ~ <t:${e}:t>\nMaintenance starts <t:${s}:R> and ends <t:${e}:t>.` })) { (st.reminded ||= []).push(id); changed = true; }
+  }
+  if (changed) { st.sent = st.sent.slice(-60); st.reminded = (st.reminded || []).slice(-30); await save(st); }
+}
+
+// 무료 고확 relayed to #한국어-거래: the post as a small card (colour by intent) with a link to it on the site.
+// Player text goes out as plain text with mentions off; the Discord message id is kept so a deleted or hidden post
+// disappears from Discord too.
+const INTENT = { sell: ['🟢 팝니다', 0x2e9d5b], buy: ['🔵 삽니다', 0x3b82f6], chat: ['💬 한마디', 0x94a3b8] };
+export function freeMegaEmbed(r) {
+  const [head, color] = INTENT[r.intent] || INTENT.chat;
+  const item = r.ko || r.en;
+  const fields = [];
+  if (r.price) fields.push({ name: '가격', value: `**${won(r.price)}** 메소`, inline: true });
+  if (r.channel) fields.push({ name: '채널', value: `CH ${r.channel}`, inline: true });
+  fields.push({ name: '닉네임', value: `\`${String(r.nick).replace(/`/g, "'")}\``, inline: true });
+  return { title: `${head}${item ? ` · ${item}` : ''}`.slice(0, 256), url: `https://gms-hub.com/ko/megaphone/?f=${r.id}&utm_source=discord&utm_medium=free-mega`, color,
+    description: r.text ? String(r.text).slice(0, 300) : undefined, fields, footer: { text: 'GMS Hub 무료 고확 · 사이트에서 공짜로 쏠 수 있어요' }, timestamp: new Date(`${String(r.at).replace(' ', 'T')}Z`).toISOString() };
+}
+export async function freeMegaToDiscord(env, r) {
+  const id = await botPost(env, env.DISCORD_TRADE_CHANNEL, { embeds: [freeMegaEmbed(r)], flags: 4096 });
+  if (id) await env.DB.prepare('UPDATE free_megaphones SET discord_msg = ? WHERE id = ?').bind(id, r.id).run().catch(() => null);
+}
+export async function freeMegaGoneFromDiscord(env, msg) {
+  if (msg && env.DISCORD_TRADE_CHANNEL) await bot(env, 'DELETE', `/channels/${env.DISCORD_TRADE_CHANNEL}/messages/${msg}`);
+}
