@@ -818,8 +818,6 @@ function header(lang, pagePath, only) {
 <nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}${guideMenu}${toolMenu}</nav>
 ${presencePill(lang)}
 ${headerSearch(lang, [...tabs, ...huntItems.slice(1), ...questItems.slice(1), ...guideItems, ...toolItems, ...moved, sitesEntry])}
-${'' /* Bookmark (owner 2026-11-18): browsers do not let a page add a bookmark, so the star shows how to on this device
-   (common.js). Sits between search and Discord; on phones, where the Discord icon is hidden, it stays. */}<button type="button" class="theme-toggle bookmark-btn" data-bookmark aria-label="${lang === 'ko' ? '즐겨찾기에 추가' : 'Bookmark this site'}" title="${lang === 'ko' ? '즐겨찾기에 추가' : 'Bookmark this site'}"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg></button>
 ${'' /* Header Discord icon opens the Discord page first (owner, 2026-11-15/16): it offers both adding the bot and joining
    the community. Do not point it straight at the invite (tests/content.test.mjs checks this). */}
 ${config.discord ? `<a class="theme-toggle discord-link" href="${href(langPath(lang, config.discordBotInstall ? '/discord-bot/' : '/contact/'))}" data-discord="header" aria-label="${lang === 'ko' ? '디스코드 커뮤니티' : 'Discord community'}" title="${lang === 'ko' ? '디스코드 커뮤니티' : 'Discord community'}">${DISCORD_ICON(20)}</a>` : ''}

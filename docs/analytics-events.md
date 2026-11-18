@@ -78,6 +78,3 @@
 - `scan_me_set`: typed "my character name" on the shop scan page (used when the own-store owner box reads blank).
 - `lab_open` (lab): opened an unlisted lab page (quest-run, meso-farm, market-pulse). `lab_quest_check` (quest_id, done): checked a quest on the lab quest checklist.
 - `market_refresh` (scope listings|detail, item_id): pressed the refresh button on the all-listings tab or an item's listings.
-- `bookmark_click` (platform ios|android|mac|pc, mode install|howto): pressed the header star; install = the browser's own install prompt opened, howto = the bookmarking how-to bubble.
-- `install_choice` (outcome accepted|dismissed): answer in the browser's install prompt opened by the star.
-- `app_installed`: the site was installed as an app.

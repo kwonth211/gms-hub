@@ -16,19 +16,6 @@
    }
   },
   {
-   "id": "header-bookmark",
-   "version": "0.7.18",
-   "level": "patch",
-   "date": "2026-11-18",
-   "path": "/",
-   "ko": "헤더 별 버튼 — 한 번 눌러 GMS Hub를 바탕화면·홈 화면에 추가",
-   "en": "Header star — add GMS Hub to your desktop or home screen in one press",
-   "desc": {
-    "ko": "헤더의 별 버튼을 누르면 크롬·엣지에서는 설치 창이 떠서 \"설치\"만 누르면 바탕화면이나 홈 화면에 GMS Hub 아이콘이 생겨요. 아이폰 사파리처럼 설치 창이 없는 곳에서는 즐겨찾기하는 방법을 알려 줘요.",
-    "en": "Press the star in the header: in Chrome and Edge the install prompt opens, and one press on Install puts a GMS Hub icon on your desktop or home screen. Where there is no install prompt, such as Safari on iPhone, it shows how to bookmark instead."
-   }
-  },
-  {
    "id": "forgotten-hollow-patch-notes",
    "version": "0.7.17",
    "level": "minor",
