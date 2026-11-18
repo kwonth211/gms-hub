@@ -40,7 +40,9 @@ export function newsInner(data, { ko, tr, now = Date.now(), tz, site } = {}) {
   const maint = (data.items || []).filter((x) => x.maint).map((x) => maintLine(x, ko, tr, now, tz)).join('');
   return `<div class="home-updates-head"><h2>${tr('게임 공지', 'Game notices')} <small>${tr('점검 · 패치 · 이벤트', 'maintenance, patches, events')}</small></h2><a class="home-updates-all" href="https://www.nexon.com/maplestory/news" target="_blank" rel="noopener">${tr('공식 공지 전체 보기', 'All official news')}</a></div>
 ${maint}<ol class="upd-list gn-list">${items.map((x) => {
-    const pts = (ko ? x.sum?.ko : x.sum?.en) || [];
+    // A summary can arrive as one string instead of a list (seen 2026-11-18: the build stopped on it).
+    const raw = (ko ? x.sum?.ko : x.sum?.en) || [];
+    const pts = Array.isArray(raw) ? raw : [String(raw)];
     const more = site && x.link ? `<a class="gn-more" href="${esc(site(x.link))}">${tr('공략 보기', 'Open the guide')} →</a>` : '';
     return `<li><details data-news="${x.id}"><summary><time datetime="${esc(x.date)}" translate="no">${date(x.date)}</time><span class="gn-cat" data-cat="${esc(x.cat)}">${cat[x.cat] || cat.general}</span>${now - Date.parse(x.date) < 2 * 86400000 ? '<span class="upd-new" translate="no">NEW</span>' : ''}${x.src === 'discord' ? DISCORD_MARK : ''}<span class="gn-title" translate="no">${esc(ko ? x.ko : x.en)}</span></summary>
 <div class="gn-body">${pts.length ? `<ul translate="no">${pts.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}<p>${more}<a class="gn-src" href="${esc(x.url)}" target="_blank" rel="noopener" data-news="${x.id}">${x.src === 'discord' ? tr('디스코드에서 보기', 'See it on Discord') : tr('공식 공지 원문 보기', 'Read the official notice')} →</a></p></div></details></li>`;
