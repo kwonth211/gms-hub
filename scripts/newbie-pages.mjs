@@ -13,8 +13,8 @@ export const NEWBIE_HUB = {
     h1: '글클메 뉴비 가이드',
     nav: '뉴비 가이드',
     desc: '글로벌 메이플스토리 클래식 월드를 처음 시작한 뉴비가 가장 많이 찾는 것만 모았어요. 고확·자시·떡작 같은 용어 뜻부터 직업 고르기, 초반 육성, 커닝 파퀘, 2차 전직까지 순서대로 볼 수 있어요.',
-    lead: '처음 시작하면 확성기 글도, 디스코드 대화도 줄임말투성이예요. 뉴비가 실제로 많이 검색하는 것부터 순서대로 묶었어요. 위에서부터 차례로 읽으면 돼요.',
-    newTitle: '뉴비가 가장 먼저 막히는 것',
+    lead: '처음 30레벨까지 메소가 어디서 새고, 어떤 퀘스트로 벌고, 몇 레벨에 어디서 사냥하는지 숫자로 정리했어요. 회복량·퀘스트 보상·몬스터 능력치는 게임 데이터, 아이템 값은 자유시장 실제 시세예요.',
+    newTitle: '용어가 막힐 때',
     pathTitle: '시작부터 2차 전직까지, 읽는 순서',
     toolsTitle: '같이 쓰면 좋은 도구'
   },
@@ -23,8 +23,8 @@ export const NEWBIE_HUB = {
     h1: 'Classic World beginner guide',
     nav: 'Beginner guide',
     desc: 'What new MapleStory Classic World players look up most, in order: trade and megaphone shorthand, picking a job, early levelling, Kerning Party Quest and the 2nd job advancement.',
-    lead: 'Megaphones and Discord chat are mostly shorthand when you start. These pages cover what new players search for most, in the order you will need them.',
-    newTitle: 'Where new players get stuck first',
+    lead: 'Your first 30 levels in numbers: where the mesos go, which quests pay, and where to train at each level. Recovery, quest rewards and monster stats are the game data; item values are real Free Market prices.',
+    newTitle: 'When the shorthand gets you',
     pathTitle: 'From day one to 2nd job: reading order',
     toolsTitle: 'Tools that go with it'
   }
@@ -164,7 +164,7 @@ export const NEWBIE_PAGES = [
 export const newbiePath = (p) => `/guides/newbie/${p.slug}/`;
 export const newbieTermCount = (p, lang) => (p[lang].groups || []).reduce((a, g) => a + g.terms.length, 0);
 
-export function newbieHubBody({ lang, link, guides, guideHref }) {
+export function newbieHubBody({ lang, link, guides, guideHref, roadmap = '' }) {
   const t = NEWBIE_HUB[lang], ko = lang === 'ko';
   const cards = NEWBIE_PAGES.map((p) => `<li><a href="${link(newbiePath(p))}"><strong>${esc(p[lang].h1)}</strong></a><p>${esc(p[lang].card)}</p></li>`).join('');
   const steps = NEWBIE_PATH.map((slug) => guides.find((g) => g.slug === slug && g.lang === lang)).filter(Boolean)
@@ -179,6 +179,7 @@ export function newbieHubBody({ lang, link, guides, guideHref }) {
 <p class="crumbs"><a href="${link('/guides/')}">${ko ? '가이드' : 'Guides'}</a></p>
 <h1>${esc(t.h1)}</h1>
 <p>${esc(t.lead)}</p>
+${roadmap}
 <h2>${esc(t.newTitle)}</h2>
 <ul class="guide-list">${cards}</ul>
 ${steps ? `<h2>${esc(t.pathTitle)}</h2><ol class="guide-list newbie-steps">${steps}</ol>` : ''}
@@ -210,4 +211,116 @@ export function newbieTermsLd({ lang, page, url }) {
     '@context': 'https://schema.org', '@type': 'DefinedTermSet', name: t.h1, url, inLanguage: lang,
     hasDefinedTerm: t.groups.flatMap((g) => g.terms.map(([term, def]) => ({ '@type': 'DefinedTerm', name: term, description: def })))
   };
+}
+
+// ---------- Hub roadmap (owner 2026-11-18: "물약 챙기세요 말고 구체적인 수치, 이미지") ----------
+// Numbers: recovery, quest requirements and rewards from the game client (data/quests-raw.json, maplestory.io item
+// data); monster level/HP/EXP from data/monsters.json; Free Market prices from data/item-prices.json (refreshed on every
+// deploy); NPC shop prices of Meat (80) and Lemon (150), damage taken, EXP per 5 minutes and party shorthand from
+// Korean beginner videos (2026-10/11). No source names on the page (owner rule).
+const icon = (id, size = 32) => `<img class="nb-ico" src="https://maplestory.io/api/MCW/1/item/${id}/icon" width="${size}" height="${size}" alt="" loading="lazy">`;
+export function newbieRoadmap({ lang, link, asset, items, mobs, prices, pricesAt }) {
+  const ko = lang === 'ko';
+  const tr = (k, e) => (ko ? k : e);
+  const nf = (n) => Number(n).toLocaleString(ko ? 'ko-KR' : 'en-US');
+  const name = (id) => { const it = items.get(id); return it ? (ko && it.ko ? it.ko : it.en) : String(id); };
+  const mname = (id) => { const m = mobs.get(id); return m ? (ko && m.ko ? m.ko : m.en) : String(id); };
+  const meso = (n) => (ko ? (n >= 10000 ? `${+(n / 10000).toFixed(n >= 100000 ? 0 : 1)}만` : nf(n)) : n >= 1e6 ? `${+(n / 1e6).toFixed(2)}m` : n >= 1000 ? `${+(n / 1000).toFixed(1)}k` : nf(n));
+  const price = (id) => prices?.[id]?.median || null;
+  const priceTag = (id) => (price(id) ? `<span class="nb-price">${tr('시세', 'market')} ${meso(price(id))}</span>` : '');
+  const sprite = (id) => `<img class="nb-mob" src="${asset(`/assets/monsters/${id}.gif`)}" alt="" loading="lazy">`;
+  const day = String(pricesAt || '').slice(0, 10);
+  const mobCard = (id, note) => { const m = mobs.get(id); if (!m) return ''; return `<li><a href="${link(`/monsters/${id}/`)}">${sprite(id)}<span><strong>${esc(mname(id))}</strong><small>Lv ${m.lv} · HP ${nf(m.hp)} · EXP ${nf(m.exp)}</small>${note ? `<em>${note}</em>` : ''}</span></a></li>`; };
+
+  // 1. Where the mesos go
+  const heal = [
+    [2010003, tr('짐승의 고기', 'Meat'), 'HP 160', 80, '0.5', tr('HP 1당 0.5메소', '0.5 meso per HP')],
+    [2010005, tr('레몬', 'Lemon'), 'MP 150', 150, '1', tr('MP 1당 1메소', '1 meso per MP')],
+    [2000000, name(2000000), 'HP 100', null],
+    [2000001, name(2000001), 'HP 250', null],
+    [2000002, name(2000002), 'HP 500', null],
+    [2000003, name(2000003), 'MP 200', null],
+    [2000004, name(2000004), tr('HP·MP 35%', 'HP and MP 35%'), null],
+    [2000006, name(2000006), 'MP 50%', null]
+  ];
+  const healRows = heal.map(([id, n, eff, shop, , per]) => `<tr><th scope="row">${icon(id, 28)}<span>${esc(n)}</span></th><td class="num">${eff}</td><td class="num">${shop ? `${nf(shop)}${tr('메소', '')}${per ? `<small>${per}</small>` : ''}` : '—'}</td><td class="num">${price(id) ? meso(price(id)) : '—'}</td></tr>`).join('');
+
+  // 2. Quests by level (client data)
+  const quest = (lv, title, href, need, reward, ids, extra = '') => `<li class="nb-q"><span class="nb-lv">Lv ${lv}</span><div><h3>${href ? `<a href="${link(href)}">${title}</a>` : title}</h3><p class="nb-need">${need}</p><p class="nb-rew">${ids.map((id) => icon(id, 28)).join('')}<span>${reward}</span></p>${extra}</div></li>`;
+  const quests = [
+    quest(16, tr('피아와 파란 버섯', 'Pia and the Blue Mushroom'), '/quests/pia/',
+      tr('헤네시스 공원 피아에게 초록버섯의 갓 20개, 파란 버섯의 갓 20개를 가져가요.', 'Bring Pia in the Henesys park 20 Green Mushroom Caps and 20 Blue Mushroom Caps.'),
+      tr(`모자 명중 주문서 하·중·상급 중 1장, 경험치 813, 메소 497. 중급이 나오면 시세 ${price(2040001) ? meso(price(2040001)) : '—'}이에요.`, `One Hat Accuracy scroll (lesser, intermediate or greater), 813 EXP, 497 mesos. An intermediate sells for ${price(2040001) ? meso(price(2040001)) : '—'}.`), [2040001]),
+    quest(18, tr('알렉스의 부탁', "Alex's Request"), null,
+      tr('커닝시티 알렉스에게 말을 걸면 바로 끝나요.', 'Talk to Alex in Kerning City; it completes on the spot.'),
+      tr('짐승의 고기 5개, 경험치 819, 메소 409. 뒤로 이어지는 퀘스트가 있어요.', '5 Meat, 819 EXP, 409 mesos, and it opens a quest line.'), [2010003]),
+    quest(20, tr('제인과 버섯', 'Jane and the Mushroom'), null,
+      tr('리스항구 제인. 파란 버섯과 뿔버섯을 30마리씩 잡고, 파란 버섯의 갓·뿔버섯의 갓을 15개씩 가져가요.', 'Jane in Lith Harbor: defeat 30 Blue Mushrooms and 30 Horny Mushrooms and bring 15 caps of each.'),
+      tr(`무기 공격력 주문서(중급) 14종 중 1장, 경험치 1,610, 메소 658. 단검 주문서가 나오면 ${price(2043301) ? meso(price(2043301)) : '—'}에 팔려요. 내 무기용이 아니면 팔아서 물약값으로 써요.`, `One of 14 intermediate weapon attack scrolls, 1,610 EXP, 658 mesos. A dagger one sells for ${price(2043301) ? meso(price(2043301)) : '—'}; if it is not for your weapon, sell it for potions.`), [2043301],
+      `<p class="nb-tip">${tr('파란 버섯의 갓은 피아에 20개, 제인에 15개, 모두 35개가 들어가요. 파란 버섯을 잡을 때 한 번에 모아 두면 같은 사냥터를 두 번 안 가도 돼요.', 'Pia takes 20 Blue Mushroom Caps and Jane 15: collect all 35 in one trip.')}</p>`),
+    quest(21, tr('동료의 증명 (커닝 파티퀘스트)', 'Proof of Companionship (Kerning PQ)'), '/quests/kpq-companionship/',
+      tr('커닝시티 라케리스에게 받고, 커닝 파티퀘스트를 끝까지 깨요.', 'Take it from Lakelis in Kerning City, then clear the Kerning party quest.'),
+      tr(`귀고리 힘·민첩·지력·행운 주문서 중 1장. 귀고리 행운 중급 시세 ${price(2040313) ? meso(price(2040313)) : '—'}.`, `One earring STR, DEX, INT or LUK scroll. Earring LUK intermediate sells for ${price(2040313) ? meso(price(2040313)) : '—'}.`), [2040313]),
+    quest(35, tr('슈미의 잃어버린 돈', "Shumi's Lost Money"), '/quests/shumi-jump/',
+      tr('커닝시티 지하철 입구의 슈미. 공사장 B1·B2·B3에서 점프만 하면 돼요.', 'Shumi by the Kerning subway: jump through Construction Site B1, B2 and B3.'),
+      tr('세 번 합쳐 경험치 20,160, 마지막에 메소 1만과 마나 엘릭서 30개.', '20,160 EXP in total, then 10,000 mesos and 30 Mana Elixirs.'), [2000006]),
+    quest(36, tr('저주받은 인형 모으기 (장공 퀘스트)', 'Cursed Dolls (glove attack quest)'), '/quests/glove-attack/',
+      tr('엘리니아 요정 로웬. 좀비 루팡의 저주받은 인형을 50 · 70 · 100 · 150개 가져가요. 먼저 슬리피우드 사우나 가운 퀘스트를 끝내야 열려요.', 'Rowen the Fairy in Ellinia wants 50, 70, 100 and 150 Cursed Dolls from Zombie Lupins; the Sleepywood sauna robe quest opens it.'),
+      tr(`마지막 보상은 장갑 공격력(중급) 또는 장갑 마력(중급). 장갑 공격력 중급 시세 ${price(2040801) ? meso(price(2040801)) : '—'}.`, `The last reward is Gloves Attack or Gloves Magic Attack (intermediate). Gloves Attack sells for ${price(2040801) ? meso(price(2040801)) : '—'}.`), [2040801, 2040805])
+  ].join('');
+
+  // 3. Where to hunt, by level (monster stats from the game data)
+  const band = (lv, title, cards, note) => `<section class="nb-band"><h3><span class="nb-lv">${lv}</span>${title}</h3><ul class="nb-mobs">${cards}</ul>${note ? `<p class="nb-tip">${note}</p>` : ''}</section>`;
+  const hunt = [
+    band('1–10', tr('메이플 아일랜드', 'Maple Island'), [2, 4, 5].map((id) => mobCard(id)).join(''), tr('퀘스트를 따라가며 8~10레벨에 빅토리아 아일랜드로 넘어가요.', 'Follow the island quests and cross to Victoria Island at about Lv 8–10.')),
+    band('10–15', tr('헤네시스 동쪽 풀숲 · 커닝시티 공사장', 'East of Henesys, Kerning construction site'), [mobCard(8, tr('한 대에 20 정도, 1마리 약 12메소', 'hits for about 20, drops about 12 mesos')), mobCard(6), mobCard(9)].join(''), tr('사람이 많으면 커닝시티 공사장 위층이나 북쪽 공사장으로 옮겨요.', 'If it is crowded, move to the upper floors or the north construction site in Kerning.')),
+    band('15–21', tr('엘리니아 원숭이 숲 꼭대기 · 숲 나무 던전', 'Top of the Ellinia monkey forest, tree dungeons'), [mobCard(13, tr('5분에 약 2,500 경험치 (표도 기준)', 'about 2,500 EXP per 5 min (claw thief)')), mobCard(7), mobCard(16)].join(''), tr('남쪽 숲 나무 던전에는 파란 버섯·뿔버섯도 나와서 피아·제인 재료를 한 번에 모아요.', 'The south tree dungeon also has Blue and Horny Mushrooms for the Pia and Jane quests.')),
+    band('20–25', tr('커닝시티 지하철', 'Kerning City subway'), [mobCard(17, tr('5분에 약 3,500 경험치', 'about 3,500 EXP per 5 min')), mobCard(14)].join(''), tr('버블링은 근접 직업에게 맞고, 원거리 직업은 스티지가 나아요.', 'Bubblings suit melee jobs; ranged jobs do better on Stirges.')),
+    band('21–30', tr('커닝 파티퀘스트', 'Kerning party quest'), '', tr('3~12채널에서만 열리고, 이 서버는 레벨 상한이 없어서 30대 중반까지 도는 사람도 많아요. "러시"는 보너스 맵 없이 바로 다시 도는 파티, "보너스"는 남은 시간에 보너스 맵에서 사냥하고 나오는 파티예요.', 'Runs only on channels 3–12 and has no level cap here, so many keep running it into their mid-30s. "Rush" parties skip the bonus map; "bonus" parties hunt there with the time left.')),
+    band('25–30', tr('슬리피우드 개미굴', 'Sleepywood Ant Tunnel'), [mobCard(19), mobCard(21, tr('1마리 40~50메소', '40–50 mesos each'))].join(''), tr('뿔버섯이 두 방에 잡히면 와도 돼요. 좀비버섯은 아대 공격력 주문서도 떨어뜨려요.', 'Come when Horny Mushrooms die in two hits. Zombie Mushrooms also drop claw attack scrolls.'))
+  ].join('');
+
+  // 4. Gear and money
+  const loot = [[1092002, tr('초록버섯이 떨어뜨려요', 'from Green Mushrooms')], [2070009, tr('다크 엑스텀프(Lv 23)가 떨어뜨려요', 'from Dark Axe Stumps (Lv 23)')]]
+    .filter(([id]) => price(id)).map(([id, from]) => `<li>${icon(id, 32)}<span><strong>${esc(name(id))}</strong><small>${from}</small></span><b>${meso(price(id))}</b></li>`).join('');
+
+  return `<section class="nb-road">
+<div class="nb-key">
+<div><b>${tr('맞는 만큼 돈', 'Every hit costs')}</b><span>${tr('짐승의 고기 80메소 = HP 160. 100 맞으면 50메소가 나가요.', 'Meat: 80 mesos for 160 HP. Taking 100 damage costs 50 mesos.')}</span></div>
+<div><b>${tr('MP도 돈', 'MP costs too')}</b><span>${tr('레몬 150메소 = MP 150. MP 16짜리 스킬 한 번이 16메소예요.', 'Lemon: 150 mesos for 150 MP, so a 16 MP skill costs 16 mesos.')}</span></div>
+<div><b>${tr('한두 방에 잡히는 몬스터', 'One or two hits')}</b><span>${tr('세 방 넘게 걸리는 몬스터는 물약값이 더 들어요.', 'Anything that takes three hits or more costs more in potions than it pays.')}</span></div>
+</div>
+
+<h2 id="mesos">${tr('1. 물약값: 어디에 돈이 새나', '1. Potions: where the mesos go')}</h2>
+<p>${tr('초록버섯에게 맨몸으로 맞으면 한 대에 60 넘게 들어오는데, 한 마리 잡으면 주는 돈은 30메소 안팎이에요. 한 대 맞으면 한 마리 잡은 돈이 그대로 날아가요. 그래서 발판 위에서 치고, 몬스터가 다가오기 전에 줄에 올라가 피하는 습관이 가장 큰 절약이에요.', 'With no armour a Green Mushroom hits for over 60, while one pays about 30 mesos, so one hit wipes out a kill. Fighting from a ledge and climbing a rope before monsters reach you saves more than anything else.')}</p>
+<div class="table-wrap"><table class="data nb-heal"><thead><tr><th scope="col">${tr('회복 아이템', 'Item')}</th><th scope="col">${tr('회복량', 'Restores')}</th><th scope="col">${tr('NPC 상점가', 'NPC shop')}</th><th scope="col">${tr('자유시장 시세', 'Free Market')}</th></tr></thead><tbody>${healRows}</tbody></table></div>
+<p class="nb-note">${tr(`회복량은 게임 데이터 그대로예요. 빨간 포션은 HP 50이 아니라 100을 채워요. 자유시장 시세는 ${day} 기준이에요.`, `Recovery is the game's own data: a Red Potion restores 100 HP, not 50. Free Market prices as of ${day}.`)}</p>
+
+<h2 id="quests">${tr('2. 레벨별로 꼭 챙길 퀘스트', '2. Quests worth doing at each level')}</h2>
+<p>${tr('무자본이면 퀘스트 보상이 첫 자본이에요. 요구 개수와 보상은 게임 데이터 그대로, 주문서 값은 지금 자유시장 시세예요.', 'With no funds, quest rewards are your first capital. Counts and rewards are the game data; scroll values are current Free Market prices.')}</p>
+<ol class="nb-quests">${quests}</ol>
+
+<h2 id="hunting">${tr('3. 레벨별 사냥터', '3. Where to train by level')}</h2>
+<p>${tr('카드의 레벨·HP·경험치는 게임 데이터예요. 내 레벨과 직업에 맞는 곳은', 'Level, HP and EXP on each card are the game data. For your own level and job, use the')} <a href="${link('/tools/training/')}">${tr('사냥터 추천', 'training finder')}</a>${tr('에서 바로 볼 수 있어요.', '.')}</p>
+${hunt}
+
+<h2 id="gear">${tr('4. 장비와 돈', '4. Gear and money')}</h2>
+<ul class="nb-rules">
+<li>${tr('<b>무기부터 바꿔요.</b> 방어구까지 다 사다가 물약값이 바닥나는 경우가 많아요. 장갑·귀고리·망토·신발은 퀘스트로 거의 받아요.', '<b>Upgrade the weapon first.</b> Buying full armour is how most people run out of potion money; gloves, earrings, cape and shoes mostly come from quests.')}</li>
+<li>${tr('<b>무기는 NPC 상점보다 자유시장을 먼저 봐요.</b> 30레벨을 넘긴 사람들이 쓰던 무기가 상점보다 싸게 나와 있어요.', '<b>Check the Free Market before the NPC shop.</b> Weapons people outgrew are often cheaper than the shop.')}</li>
+<li>${tr('<b>떨어진 장비는 그냥 넘기지 마세요.</b> 같은 장비라도 공격력이나 능력치가 높게 붙은 건 훨씬 비싸요.', '<b>Do not walk past equipment drops.</b> A piece with higher attack or stats sells for much more.')}</li>
+<li>${tr('<b>메소를 현금으로 사지 마세요.</b> 걸리면 메소를 회수당하고 거래가 막혀요.', '<b>Never buy mesos with real money.</b> Caught buyers lose the mesos and get trade restrictions.')}</li>
+</ul>
+${loot ? `<p>${tr('초반 사냥터에서 나오는 비싼 장비예요.', 'Valuable drops from early training spots:')}</p><ul class="nb-loot">${loot}</ul>` : ''}
+
+<h2 id="words">${tr('5. 처음에 꼭 아는 말', '5. Words you will see on day one')}</h2>
+<ul class="nb-words">
+<li><b>JPT</b><span>${tr('파티에 넣어 달라는 말', 'join party, please')}</span></li>
+<li><b>LPT · LFP</b><span>${tr('파티를 찾고 있어요', 'looking for a party')}</span></li>
+<li><b>RPT</b><span>${tr('파티원을 모집해요', 'recruiting party members')}</span></li>
+<li><b>S> · B></b><span>${tr('팝니다 · 삽니다', 'selling · buying')}</span></li>
+<li><b>100k · 1.5m</b><span>${tr('10만 · 150만 메소', '100,000 · 1,500,000 mesos')}</span></li>
+</ul>
+<p>${tr('나머지 줄임말은', 'Everything else is in the')} <a href="${link('/guides/newbie/glossary/')}">${tr('용어 사전', 'glossary')}</a>${tr('에 60여 개 모아 뒀어요.', '.')}</p>
+</section>`;
 }

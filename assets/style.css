@@ -3489,3 +3489,43 @@ body.exp-running .exp-stop { display: inline-flex; }
 .gn-list summary .gn-title { order: 5; }
 .gn-list summary::after { order: 7; }
 :root:not(:lang(ko)) .gn-cat { width: 84px; min-width: 84px; }
+/* Newbie roadmap (2026-11-18): key numbers, recovery table, quest timeline with reward icons, monster cards by level. */
+.nb-road { margin-top: 18px; }
+.nb-key { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 18px 0 8px; }
+.nb-key > div { padding: 14px 16px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
+.nb-key b { display: block; font-size: 1.02rem; color: var(--accent-2); margin-bottom: 4px; }
+.nb-key span { font-size: 0.9rem; line-height: 1.55; }
+.nb-ico { width: 28px; height: 28px; object-fit: contain; image-rendering: pixelated; flex: none; }
+.nb-heal th[scope='row'] { display: flex; align-items: center; gap: 8px; background: none; color: var(--text); font-weight: 700; white-space: nowrap; }
+.nb-heal td small { display: block; color: var(--muted); font-size: 0.75rem; }
+.nb-note { color: var(--muted); font-size: 0.85rem; }
+.nb-quests { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 10px; }
+.nb-q { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+.nb-q h3 { margin: 0 0 4px; font-size: 1.02rem; }
+.nb-q p { margin: 4px 0; line-height: 1.6; }
+.nb-need { color: var(--text-2); }
+.nb-rew { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-weight: 600; }
+.nb-rew span { flex: 1 1 220px; }
+.nb-lv { display: inline-grid; place-items: center; align-self: start; min-width: 56px; padding: 4px 8px; border-radius: 10px; background: var(--accent-soft); color: var(--accent-2); font-weight: 800; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.nb-tip { margin: 8px 0 0; padding: 9px 12px; border-radius: 10px; background: color-mix(in srgb, var(--accent-fill) 8%, transparent); font-size: 0.9rem; line-height: 1.6; }
+.nb-band { margin: 18px 0; }
+.nb-band h3 { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font-size: 1.05rem; }
+.nb-mobs { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
+.nb-mobs a { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--text); text-decoration: none; height: 100%; box-sizing: border-box; }
+.nb-mobs a:hover { border-color: var(--accent-fill); }
+.nb-mobs a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.nb-mob { width: 56px; height: 56px; object-fit: contain; image-rendering: pixelated; flex: none; }
+.nb-mobs span { display: grid; gap: 2px; min-width: 0; }
+.nb-mobs small { color: var(--muted); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+.nb-mobs em { font-style: normal; font-size: 0.8rem; color: var(--accent-2); font-weight: 700; }
+.nb-rules li { margin: 6px 0; line-height: 1.6; }
+.nb-loot { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
+.nb-loot li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.nb-loot span { display: grid; flex: 1; min-width: 0; }
+.nb-loot small { color: var(--muted); font-size: 0.78rem; }
+.nb-loot b { color: var(--accent-2); font-variant-numeric: tabular-nums; }
+.nb-words { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.nb-words li { display: grid; gap: 2px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.nb-words b { font-size: 1rem; }
+.nb-words span { font-size: 0.86rem; color: var(--text-2); }
+@media (max-width: 640px) { .nb-key { grid-template-columns: minmax(0, 1fr); } .nb-q { grid-template-columns: minmax(0, 1fr); gap: 6px; } .nb-lv { justify-self: start; } }

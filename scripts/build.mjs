@@ -7,7 +7,7 @@ import { spriteSvg, heroScene, spritePng, spriteDataPng } from './sprites.mjs';
 import { monsterIndex, monsterDetail, monsterPath, monsterName, mapPath, bossIndex } from './monster-pages.mjs';
 import { buildWorkbooks } from './workbooks.mjs';
 import { collectMaps, mapDetail, mapIndex, mapName } from './map-pages.mjs';
-import { NEWBIE_HUB, NEWBIE_PAGES, newbiePath, newbieHubBody, newbiePageBody, newbieTermsLd } from './newbie-pages.mjs';
+import { NEWBIE_HUB, NEWBIE_PAGES, newbiePath, newbieHubBody, newbiePageBody, newbieTermsLd, newbieRoadmap } from './newbie-pages.mjs';
 import { collectQuests, questIndex, questBestBody, questMoneyBody, questPath, questName, setQuestGuides, areaName as questArea } from './quest-pages.mjs';
 import { questGuideData, questGuideBody } from './quest-guide.mjs';
 import { fhBody } from './forgotten-hollow.mjs';
@@ -3379,7 +3379,8 @@ for (const lang of LANGS) {
     const link = (p) => href(langPath(lang, p));
     write(path.join(lang, 'guides', 'newbie', 'index.html'), page({
       lang, pageKey: 'guides', pagePath: '/guides/newbie/', title: hub.title, desc: hub.desc,
-      body: newbieHubBody({ lang, link, guides: publishedGuides, guideHref: (g) => href(langPath(lang, guidePath(g))) }),
+      body: newbieHubBody({ lang, link, guides: publishedGuides, guideHref: (g) => href(langPath(lang, guidePath(g))),
+        roadmap: newbieRoadmap({ lang, link, asset: href, items: new Map(itemsData.items.map((i) => [i.id, i])), mobs: MOB_BY_ID, prices: itemPrices.prices, pricesAt: itemPrices.updated }) }),
       ld: [crumbs([hub.nav, '/guides/newbie/']), { '@context': 'https://schema.org', '@type': 'ItemList', name: hub.h1,
         itemListElement: NEWBIE_PAGES.map((p, i) => ({ '@type': 'ListItem', position: i + 1, name: p[lang].h1, url: absUrl(langPath(lang, newbiePath(p))) })) }]
     }));
