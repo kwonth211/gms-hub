@@ -157,7 +157,7 @@ function render() {
   const p0 = sum(d.hourly.day, 1), p1 = upto(d.hourly.yesterday, 1);
   const kr = d.countries.find((c) => c.country === 'KR')?.visits || 0, abroad = d.countries.reduce((a, c) => a + c.visits, 0) - kr;
   const cutNote = d.isToday ? `오늘 ${d.cutHour}시 ${d.cutMinute}분까지 · 어제·지난주도 같은 시각까지 잘라 비교` : '하루 전체';
-  const live = d.live ? `<div class="td-card"><span>지금 열린 페이지</span><b>${nf(d.live.now)}</b><small>지금 이 순간 사이트를 열어 둔 탭 수</small></div><div class="td-card"><span>최대 동시 접속</span><b>${nf(d.live.peak)}</b><small>${esc(new Date(d.live.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }))} · 기록은 11/15 밤 9시 25분부터</small></div>` : '';
+  const live = d.live ? `<div class="td-card"><span>지금 열린 페이지</span><b id="td-live-now">${nf(d.live.now)}</b><small>지금 이 순간 사이트를 열어 둔 탭 수</small></div><div class="td-card"><span>최대 동시 접속</span><b>${nf(d.live.peak)}</b><small>${esc(new Date(d.live.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }))} · 기록은 11/15 밤 9시 25분부터</small></div>` : '';
   // Pages open at this moment, from the live presence room (tabs, all languages together).
   const nowPages = d.live?.pages?.length ? `<section class="panel"><h2>지금 보고 있는 페이지 <small class="muted">열려 있는 탭 ${nf(d.live.now)}개 · 언어 합산</small></h2><ul class="td-botlist">${d.live.pages.map(([pg, n]) => `<li><span>${esc(pageName(pg))} <code>${esc(pg)}</code></span><b>${nf(n)}</b></li>`).join('')}</ul><p class="muted small">탭을 열어 둔 채 다른 창을 보고 있는 경우도 포함돼요.</p></section>` : '';
   const dailyMax = Math.max(1, ...d.daily.map((x) => x.visits));
@@ -171,6 +171,7 @@ function render() {
 ${live}
 
 </div>
+<div id="td-who">${whoHtml(d.live)}</div>
 ${nowPages}
 <section class="panel"><h2>시간대별 방문</h2>${hourChart(d)}</section>
 <section class="panel"><h2>한국과 해외, 시간대별</h2>${koreaChart(d)}</section>
@@ -215,6 +216,40 @@ async function load() {
   } catch (e) { state.error = '불러오지 못했어요.'; }
   state.loading = false; render();
 }
+
+// Who holds how many tabs right now (owner, 2026-11-18): one row per holder from the live room, refreshed every 15 seconds.
+// A holder is one address + browser; "응답 중" are tabs whose page pinged within 150 seconds.
+function whoHtml(live) {
+  if (!live?.who?.length) return '';
+  const rows = live.who.map((g) => ({ ...g, alive: (g.quietSec || []).filter((q) => q <= 150).length }));
+  const known = rows.filter((g) => g.who !== 'before-log');
+  const people = known.length, tabs = rows.reduce((a, g) => a + g.tabs, 0), aliveTabs = rows.reduce((a, g) => a + g.alive, 0);
+  const many = known.filter((g) => g.tabs >= 3);
+  const tr = (g) => {
+    const pages = Object.entries(g.pages || {}).sort((a, b) => b[1] - a[1]).map(([pg, n]) => `${esc(pageName(pg))}${n > 1 ? ` ×${n}` : ''}`).join(', ');
+    const whoLabel = g.who === 'before-log' ? '기록 없는 연결 (서버 배포 전부터 열려 있던 탭)' : `${esc(COUNTRY[g.country] || g.country || '?')} · ${esc(g.org || '?')}`;
+    return `<tr${g.tabs >= 5 ? ' class="td-who-many"' : ''}><td class="num"><b>${nf(g.tabs)}</b></td><td class="num">${nf(g.alive)}</td><td>${whoLabel}</td><td>${esc(g.ua || '')}</td><td>${pages}</td><td class="num">${g.oldestMin != null ? `${nf(g.oldestMin)}분` : ''}</td></tr>`;
+  };
+  return `<section class="panel td-who"><h2>지금 누가 탭을 몇 개 열어 뒀나 <small class="muted">15초마다 새로 읽어요</small></h2>
+<p class="td-who-sum">열린 탭 <b>${nf(live.now)}</b>개 · 사람 <b>${nf(people)}</b>명${people ? ` · 한 사람당 평균 <b>${(known.reduce((a, g) => a + g.tabs, 0) / people).toFixed(1)}</b>개` : ''} · 지금 응답 중인 탭 <b>${nf(aliveTabs)}</b>개 · 응답 없는 연결 ${nf(live.silent || 0)}개${many.length ? ` · 3개 이상 연 사람 ${nf(many.length)}명 (합 ${nf(many.reduce((a, g) => a + g.tabs, 0))}개)` : ''}</p>
+<div class="table-wrap"><table class="data td-who-table"><thead><tr><th scope="col">탭</th><th scope="col">응답 중</th><th scope="col">어디서</th><th scope="col">브라우저</th><th scope="col">열어 둔 페이지</th><th scope="col">열린 지</th></tr></thead><tbody>${rows.map(tr).join('')}</tbody></table></div>
+<p class="muted small">같은 주소·같은 브라우저를 한 사람으로 묶었어요. 주소는 저장하지 않고 연결돼 있는 동안만 구분값으로 써요. 많이 연 순서로 40명까지 보여요.</p></section>`;
+}
+async function loadLive() {
+  if (!store.get() || state.day || !state.data || document.visibilityState !== 'visible') return;
+  try {
+    const r = await fetch(`${cfg.api}/internal/traffic`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: store.get(), live: true }) });
+    if (!r.ok) return;
+    const j = await r.json();
+    if (!j.live) return;
+    state.data.live = j.live;
+    const box = root.querySelector('#td-who');
+    if (box) box.innerHTML = whoHtml(j.live);
+    const n = root.querySelector('#td-live-now');
+    if (n) n.textContent = nf(j.live.now);
+  } catch (e) {}
+}
+setInterval(loadLive, 15000);
 
 // One floating box for every [data-tip] (chart columns, day rows); follows the pointer, stays inside the window.
 const tip = document.createElement('div');

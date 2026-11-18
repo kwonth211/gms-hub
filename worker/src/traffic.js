@@ -173,10 +173,13 @@ export async function handleTraffic(req, env, ctx, allowedOrigins) {
   // where ad and analytics scripts also run, so a leak can only show traffic numbers.
   if (!env.DASH_TOKEN || typeof body.token !== 'string' || body.token.length > 256 || !(await same(body.token, env.DASH_TOKEN))) return reply({ error: 'forbidden' }, 403);
   if (!env.CF_ANALYTICS_TOKEN || !env.CF_ACCOUNT_ID) return reply({ error: 'analytics token not set' }, 503);
+  // The live room is always read fresh (who holds how many tabs changes by the second); { live: true } asks for it alone.
+  const liveNow = () => (env.PRESENCE ? env.PRESENCE.get(env.PRESENCE.idFromName('site')).fetch('https://presence/peak').then((r) => r.json()).catch(() => null) : null);
+  if (body.live === true) return reply({ live: await liveNow() });
   const key = new Request(`https://cache.gms-hub.internal/traffic/${body.day || 'today'}`);
   const cache = globalThis.caches?.default;
   const hit = cache && (await cache.match(key));
-  if (hit) return reply(await hit.json());
+  if (hit) { const data = await hit.json(); const live = await liveNow(); return reply(live ? { ...data, live } : data); }
   try {
     const data = await trafficReport(env, body.day);
     if (cache && !data.coarse) ctx?.waitUntil?.(cache.put(key, new Response(JSON.stringify(data), { headers: { 'Cache-Control': 'max-age=120' } })));
