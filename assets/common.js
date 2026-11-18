@@ -392,3 +392,51 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
   const register = () => navigator.serviceWorker.register('/sw.js').catch(() => {});
   if (document.readyState === 'complete') register(); else addEventListener('load', register);
 }
+
+// Header star (owner 2026-11-18). A page cannot open the browser's own bookmark dialog, so where the browser offers to
+// install the site (Chrome, Edge, Android), the star opens that native "Install" prompt: one press puts GMS Hub on the
+// desktop or home screen. Elsewhere (Safari, or already installed) it shows how to bookmark on this device.
+let installPrompt = null;
+addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installPrompt = e; });
+addEventListener('appinstalled', () => { installPrompt = null; window.track?.('app_installed', {}); });
+(() => {
+  const btn = document.querySelector('[data-bookmark]');
+  if (!btn) return;
+  const ko = document.documentElement.lang === 'ko';
+  const ua = navigator.userAgent;
+  const platform = /iPhone|iPad|iPod/.test(ua) ? 'ios' : /Android/.test(ua) ? 'android' : /Mac/.test(navigator.platform || ua) ? 'mac' : 'pc';
+  const text = {
+    ios: ko ? 'Safari 아래쪽 공유 버튼(□↑)을 누르고 "홈 화면에 추가"나 "책갈피 추가"를 고르세요.' : 'Tap Share (□↑) at the bottom of Safari, then "Add to Home Screen" or "Add Bookmark".',
+    android: ko ? '크롬 오른쪽 위 ⋮ 메뉴에서 ☆을 누르거나 "홈 화면에 추가"를 고르세요.' : 'In Chrome, open the ⋮ menu at the top right and tap ☆ or "Add to Home screen".',
+    mac: ko ? '⌘ + D 를 누르면 즐겨찾기에 추가돼요.' : 'Press ⌘ + D to bookmark this site.',
+    pc: ko ? 'Ctrl + D 를 누르면 즐겨찾기에 추가돼요.' : 'Press Ctrl + D to bookmark this site.'
+  }[platform];
+  let tip = null, timer = 0;
+  const close = () => { tip?.remove(); tip = null; btn.setAttribute('aria-expanded', 'false'); };
+  btn.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    if (installPrompt) {
+      const p = installPrompt;
+      installPrompt = null;
+      window.track?.('bookmark_click', { platform, mode: 'install' });
+      try { p.prompt(); const r = await p.userChoice; window.track?.('install_choice', { outcome: r?.outcome || 'unknown' }); } catch (x) {}
+      return;
+    }
+    if (tip) return close();
+    tip = document.createElement('div');
+    tip.className = 'bookmark-tip';
+    tip.setAttribute('role', 'status');
+    tip.textContent = text;
+    document.body.append(tip);
+    const r = btn.getBoundingClientRect();
+    tip.style.top = `${Math.round(r.bottom + 8)}px`;
+    tip.style.left = `${Math.round(Math.min(Math.max(12, r.left + r.width / 2 - 140), innerWidth - 292))}px`;
+    btn.setAttribute('aria-expanded', 'true');
+    clearTimeout(timer);
+    timer = setTimeout(close, 7000);
+    window.track?.('bookmark_click', { platform, mode: 'howto' });
+  });
+  document.addEventListener('click', (e) => { if (tip && !tip.contains(e.target)) close(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  addEventListener('scroll', close, { passive: true });
+})();
