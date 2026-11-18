@@ -241,7 +241,16 @@ ${elTags(m) ? `<p class="fh-els">${elTags(m)}</p>` : ''}
 
   const november = `<section class="fh-sec wrap" id="november">
 <h2>${tr('11월 업데이트로 바뀌는 것', 'What else the November update changes')}</h2>
-<ul class="fh-facts">${fh.changes.map((x) => `<li>${esc(L(x))} ${tag(x.state || 'official')}</li>`).join('')}</ul>
+<div class="fh-changes">${fh.changes.map((c) => `<article class="fh-card fh-change${c.wide ? ' is-wide' : ''}">
+${c.img ? `<img class="fh-change-img" src="${img(c.img)}" alt="${esc(L(c.title))}" width="${c.w}" height="${c.h}" loading="lazy">` : ''}
+<h3>${esc(L(c.title))} ${tag(c.state || 'official')}</h3>
+${c.modes ? `<ol class="fh-modes">${c.modes.map((m) => `<li><b>${esc(L(m.name))}</b><span>${esc(L(m.text))}</span></li>`).join('')}</ol>` : ''}
+${c.skins ? `<ul class="fh-skins">${c.skins.map(([f, name]) => `<li><img src="${img(f)}" alt="" width="39" height="64" loading="lazy"><span>${esc(L(name))}</span></li>`).join('')}</ul>` : ''}
+${c.mobs ? `<div class="fh-map-mobs fh-change-mobs">${c.mobs.map((id) => { const m = mobs.get(id); return m ? `<a href="${mobHref(m)}"><img src="${mobSprite(m)}" alt="" width="34" height="34" loading="lazy"><span translate="no">${esc(mobName(m))}</span></a>` : ''; }).join('')}</div>` : ''}
+${c.chips ? `<p class="fh-chips" translate="no">${c.chips.map((x) => `<span class="fh-chip">${esc(withRate(x))}</span>`).join('')}</p>` : ''}
+${c.groups ? c.groups.map(([place, names]) => `<p class="fh-chips"><b class="fh-chip-head">${esc(L(place))}</b><span translate="no" class="fh-chips">${names.map((x) => `<span class="fh-chip">${esc(x)}</span>`).join('')}</span></p>`).join('') : ''}
+<p>${esc(L(c.text))}</p>
+</article>`).join('')}</div>
 <div class="fh-pending"><h3>${tr('아직 준비 중인 정보', 'Still to come')} ${tag('pending')}</h3><ul>${fh.pending.map((p) => `<li>${esc(L(p))}</li>`).join('')}</ul>
 <p class="fh-note">${tr(`오픈하면 확인되는 대로 이 페이지를 고쳐요. 마지막 정리: ${fh.updated}`, `We update this page as things are confirmed after launch. Last updated ${fh.updated}.`)}</p></div>
 </section>`;

@@ -1165,41 +1165,244 @@
  ],
  "changes": [
   {
-   "ko": "새 월드 제니스가 열려요. 채널은 10개이고 커닝시티 파티퀘스트는 3~6채널에서 해요.",
-   "en": "A new world, Zenith, opens with 10 channels; the Kerning City Party Quest runs on channels 3 to 6."
+   "title": {
+    "ko": "새 월드 제니스",
+    "en": "New world: Zenith"
+   },
+   "img": "change-zenith.jpg",
+   "w": 760,
+   "h": 548,
+   "text": {
+    "ko": "채널 10개로 열려요. 커닝시티 파티퀘스트는 3~6채널에서 하고, 보상도 전보다 좋아져요.",
+    "en": "Opens with 10 channels. The Kerning City Party Quest runs on channels 3 to 6, and its rewards are improved."
+   }
   },
   {
-   "ko": "파티 줍기 규칙이 생겨요. 기본값은 '기여도'로, 우선권이 있는 사람이 1분 동안 먼저 줍고 그 뒤에는 파티원 누구나 주워요. 보스 드롭은 바로 누구나 주울 수 있어요. '전체'로 바꾸면 메소가 같은 맵 파티원에게 자동으로 나뉘고, '파티장'은 파티장만 주워요. 파티원이 전투 중이면 바꿀 수 없어요.",
-   "en": "Party Pick-Up Rights: the default, Contribution, gives the member with priority one minute before anyone in the party can pick up; boss drops are open to all at once. All shares mesos automatically with members on the map; Party Leader lets only the leader loot. It cannot be changed while a member is in combat."
+   "title": {
+    "ko": "파티 줍기 규칙",
+    "en": "Party Pick-Up Rights"
+   },
+   "modes": [
+    {
+     "name": {
+      "ko": "기여도 (기본)",
+      "en": "Contribution (default)"
+     },
+     "text": {
+      "ko": "우선권이 있는 사람이 1분 동안 먼저 줍고, 그 뒤에는 파티원 누구나 주워요. 보스 드롭은 바로 누구나 주울 수 있어요.",
+      "en": "The member with priority has one minute, then anyone in the party can pick up. Boss drops are open to everyone at once."
+     }
+    },
+    {
+     "name": {
+      "ko": "전체",
+      "en": "All"
+     },
+     "text": {
+      "ko": "파티원 누구나 바로 주워요. 주운 메소는 같은 맵에 있는 파티원에게 자동으로 나뉘어요.",
+      "en": "Anyone in the party picks up right away. Mesos are shared automatically with members on the same map."
+     }
+    },
+    {
+     "name": {
+      "ko": "파티장",
+      "en": "Party Leader"
+     },
+     "text": {
+      "ko": "파티장만 주울 수 있어요.",
+      "en": "Only the party leader can pick up."
+     }
+    }
+   ],
+   "text": {
+    "ko": "파티 창의 줍기 권한 버튼을 누를 때마다 기여도, 전체, 파티장 순서로 바뀌어요. 같은 맵의 파티원이 전투 중이면 바꿀 수 없어요.",
+    "en": "The Pick-Up Rights button cycles Contribution, All and Party Leader. It cannot be changed while a party member on the map is in combat."
+   }
   },
   {
-   "ko": "채팅창에 '전체'와 '소셜' 탭이 생겨요. 소셜 탭은 확성기와 상자 획득 알림을 숨겨요.",
-   "en": "The chat box gets All and Social tabs; Social hides megaphones and loot-box notices."
+   "title": {
+    "ko": "채팅창 탭",
+    "en": "Chat box tabs"
+   },
+   "img": "change-chat-tabs.jpg",
+   "w": 795,
+   "h": 161,
+   "text": {
+    "ko": "'전체(All)'와 '소셜(Social)' 탭이 생겨요. 소셜 탭은 확성기와 상자 획득 알림을 숨겨 줘요. 시스템 메시지는 두 탭 모두에 나오고, 소셜 탭에서 확성기를 쓰면 전체 탭으로 넘어가요.",
+    "en": "All and Social tabs. Social hides megaphones and loot-box notices; system messages show in both, and using a megaphone on Social switches you to All."
+   }
   },
   {
-   "ko": "시민권 상점의 엘릭서와 하급 주문서 10종(장갑 공격력, 장갑 마력, 귀고리 크리티컬 데미지 등)을 계정 안에서 옮길 수 있게 돼요.",
-   "en": "Citizenship Shop Elixirs and ten Lesser scrolls (Gloves Attack, Gloves Magic Attack, Earring Crit. Damage and more) become tradable within the account."
+   "title": {
+    "ko": "캐시 효과 끄기",
+    "en": "Cash effect toggle"
+   },
+   "img": "change-effects-settings.png",
+   "w": 320,
+   "h": 359,
+   "text": {
+    "ko": "장비창 꾸미기(Deco.) 탭의 '효과 설정'에서 무기(기본·점프·특수 효과), 모자, 망토 효과를 켜고 끌 수 있어요.",
+    "en": "Effects Settings in the Deco. tab of the equipment window turns weapon (default, jump, special), hat and cape effects on or off."
+   }
   },
   {
-   "ko": "기존 몬스터 18종의 물리·마법 방어가 조정돼요: 빨간 달팽이, 슬라임, 옥토퍼스, 초록버섯, 파란버섯, 스티지, 주니어 네키, 좀비버섯, 와일드보어, 커즈아이, 루팡, 로랑, 콜드아이, 좀비 루팡, 클랑, 말라디, 스톤골렘, 다크 스톤골렘. 바뀐 수치는 공개되지 않았어요.",
-   "en": "Physical and magic defense change for 18 existing monsters: Red Snail, Slime, Octopus, Green Mushroom, Blue Mushroom, Stirge, Jr. Necki, Zombie Mushroom, Wild Boar, Curse Eye, Lupin, Lorang, Cold Eye, Zombie Lupin, Clang, Malady, Stone Golem and Dark Stone Golem. The new values are not published."
+   "title": {
+    "ko": "집 이름 표시",
+    "en": "House name"
+   },
+   "img": "change-house-name.jpg",
+   "w": 480,
+   "h": 296,
+   "text": {
+    "ko": "집을 사면 캐릭터 정보 창에 집 이름이 나와요. 단축키 창에 캐릭터 정보 버튼도 생겨요.",
+    "en": "After you buy a house its name shows in the Character Info window, which also gets a button in the Shortcut UI."
+   }
   },
   {
-   "ko": "커닝시티 파티퀘스트 보상이 좋아져요.",
-   "en": "Kerning City Party Quest rewards are improved."
+   "title": {
+    "ko": "새 피부색 3종",
+    "en": "Three new skin colors"
+   },
+   "skins": [
+    [
+     "alabasterskin.webp",
+     {
+      "ko": "앨러배스터 (캐릭터 생성)",
+      "en": "Alabaster (character creation)"
+     }
+    ],
+    [
+     "clayskin.webp",
+     {
+      "ko": "클레이 (캐릭터 생성)",
+      "en": "Clay (character creation)"
+     }
+    ],
+    [
+     "greenskin.webp",
+     {
+      "ko": "그린 (피부색 쿠폰)",
+      "en": "Green (skin color coupon)"
+     }
+    ]
+   ],
+   "text": {
+    "ko": "헤어·성형을 뷰티 앨범에 저장하지 않은 채 바꾸려 하면 확인 창이 뜨게 됐어요.",
+    "en": "Changing a hair or face style that is not saved in the Beauty Album now asks for confirmation."
+   }
   },
   {
-   "ko": "페리온, 슬리피우드, 개미굴에 새 퀘스트가 생겨요. 페리온: Planting Trees, Shawn the Excavator's Request, Notice from the Excavation Team, The Smell Below, The Settlers' Road, Where the Hero Fell. 슬리피우드: The Mushmom Who Woke, Sleepless in Sleepywood, The Cold Spring. 개미굴: Bad for Business, Missing Explorers.",
-   "en": "New quests in Perion (Planting Trees, Shawn the Excavator's Request, Notice from the Excavation Team, The Smell Below, The Settlers' Road, Where the Hero Fell), Sleepywood (The Mushmom Who Woke, Sleepless in Sleepywood, The Cold Spring) and the Ant Tunnel (Bad for Business, Missing Explorers)."
+   "title": {
+    "ko": "방어력이 조정된 몬스터 18종",
+    "en": "Eighteen monsters with adjusted defense"
+   },
+   "wide": true,
+   "mobs": [
+    5,
+    7,
+    12,
+    13,
+    16,
+    17,
+    18,
+    21,
+    22,
+    31,
+    35,
+    36,
+    37,
+    38,
+    44,
+    47,
+    48,
+    49
+   ],
+   "text": {
+    "ko": "물리 방어와 마법 방어가 바뀌어요. 바뀐 수치는 공개되지 않았어요.",
+    "en": "Physical and magic defense change. The new values are not published."
+   }
   },
   {
-   "ko": "장비창 꾸미기 탭의 '효과 설정'에서 캐시 무기·모자·망토 효과를 끌 수 있어요. 새 피부색 3종도 추가돼요.",
-   "en": "Cash weapon, hat and cape effects can be turned off under Effects Settings in the Deco. tab; three new skin colors are added."
+   "title": {
+    "ko": "시민권 상점",
+    "en": "Citizenship Shop"
+   },
+   "chips": [
+    "Elixir",
+    "Gloves Attack Scroll: Lesser",
+    "Gloves Magic Attack Scroll: Lesser",
+    "Earring Crit. Damage Scroll: Lesser",
+    "Earring Evasion Scroll: Lesser",
+    "Topwear Weapon DEF Scroll: Lesser",
+    "Bottomwear DEF Scroll: Lesser",
+    "Overall Armor STR Scroll: Lesser",
+    "Overall Armor DEX Scroll: Lesser",
+    "Overall Armor INT Scroll: Lesser",
+    "Overall Armor LUK Scroll: Lesser"
+   ],
+   "text": {
+    "ko": "이 11가지를 계정 안의 다른 캐릭터로 옮길 수 있게 돼요.",
+    "en": "These eleven items become tradable within the account."
+   }
   },
   {
-   "ko": "12월 9일 예정: 길드, 포가튼 할로우 파티퀘스트(41레벨부터), 크리스마스 마을 해피빌. 니로스의 망토 명중 퀘스트도 이날 열려요.",
-   "en": "Planned for December 9: guilds, the Forgotten Hollow party quest (Lv 41+), Happyville, and Nyroth's cape accuracy quest line.",
-   "state": "video"
+   "title": {
+    "ko": "페리온·슬리피우드·개미굴 새 퀘스트",
+    "en": "New quests in Perion, Sleepywood and the Ant Tunnel"
+   },
+   "wide": true,
+   "groups": [
+    [
+     {
+      "ko": "페리온",
+      "en": "Perion"
+     },
+     [
+      "Planting Trees",
+      "Shawn the Excavator's Request",
+      "Notice from the Excavation Team",
+      "The Smell Below",
+      "The Settlers' Road",
+      "Where the Hero Fell"
+     ]
+    ],
+    [
+     {
+      "ko": "슬리피우드",
+      "en": "Sleepywood"
+     },
+     [
+      "The Mushmom Who Woke",
+      "Sleepless in Sleepywood",
+      "The Cold Spring"
+     ]
+    ],
+    [
+     {
+      "ko": "개미굴",
+      "en": "Ant Tunnel"
+     },
+     [
+      "Bad for Business",
+      "Missing Explorers"
+     ]
+    ]
+   ],
+   "text": {
+    "ko": "모두 11개예요.",
+    "en": "Eleven in all."
+   }
+  },
+  {
+   "title": {
+    "ko": "12월 9일 예정",
+    "en": "Planned for December 9"
+   },
+   "state": "video",
+   "text": {
+    "ko": "길드, 포가튼 할로우 파티퀘스트(41레벨부터), 크리스마스 마을 해피빌. 니로스의 망토 명중 퀘스트도 이날 열려요.",
+    "en": "Guilds, the Forgotten Hollow party quest (Lv 41+), Happyville, and Nyroth's cape accuracy quest line."
+   }
   }
  ],
  "areas": [

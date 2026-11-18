@@ -277,3 +277,22 @@
 .fh-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px 4px 6px; border: 1px solid var(--fh-line); border-radius: 999px; font-size: 0.82rem; color: var(--fh-text); background: color-mix(in srgb, var(--fh-panel) 70%, transparent); }
 .fh-event-icons { margin: 0 0 12px; }
 @media (max-width: 720px) { .fh-areas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* What the update changes: one card per change, with its screenshot where there is one. */
+.fh-changes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0 0 18px; align-items: start; }
+.fh-change.is-wide { grid-column: 1 / -1; }
+.fh-change h3 { margin: 0 0 8px; }
+.fh-change p { margin: 8px 0 0; color: var(--fh-muted); line-height: 1.6; }
+.fh-change-img { display: block; max-width: 100%; height: auto; max-height: 260px; width: auto; margin: 0 auto 12px; border-radius: 10px; border: 1px solid var(--fh-line); }
+.fh-modes { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; counter-reset: mode; }
+.fh-modes li { display: grid; gap: 2px; padding: 8px 10px; border-left: 3px solid var(--fh-spore); background: color-mix(in srgb, var(--fh-panel) 60%, transparent); border-radius: 0 8px 8px 0; }
+.fh-modes span { color: var(--fh-muted); font-size: 0.9rem; line-height: 1.5; }
+.fh-skins { list-style: none; margin: 0; padding: 0; display: flex; gap: 14px; flex-wrap: wrap; }
+.fh-skins li { display: grid; justify-items: center; gap: 4px; font-size: 0.82rem; color: var(--fh-muted); text-align: center; }
+.fh-skins img { image-rendering: pixelated; height: 64px; width: auto; }
+.fh-change-mobs { margin: 4px 0; }
+.fh-chip-head { margin-right: 4px; align-self: center; }
+@media (max-width: 720px) { .fh-changes { grid-template-columns: minmax(0, 1fr); } }
+
+/* Side ad rails sit above the full-width hero on this page; the hero used to paint over their top half. */
+body:has(.fh-hero) .ad-rails { z-index: 5; }
