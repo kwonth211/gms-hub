@@ -494,6 +494,13 @@ function marketCells(r) {
   return `<td class="num" title="${esc(i18n.marketTip)}">${nf.format(median)}</td><td><span class="diff diff-${cls}" title="${esc(tip)}">${p > 0 ? '+' : ''}${p}%</span></td>`;
 }
 
+// When each line was last read on screen: "방금" or "N분 전", refreshed every 15 seconds (owner 2026-11-18).
+const readAgo = (at) => {
+  if (!at) return '';
+  const m = Math.floor((Date.now() - at) / 60000);
+  return i18n.lang === 'ko' ? (m < 1 ? '방금 인식' : m < 60 ? `${m}분 전 인식` : `${Math.floor(m / 60)}시간 전 인식`) : (m < 1 ? 'read just now' : m < 60 ? `read ${m} min ago` : `read ${Math.floor(m / 60)} h ago`);
+};
+setInterval(() => document.querySelectorAll('.scan-ago[data-at]').forEach((el) => { el.textContent = readAgo(Number(el.dataset.at)); }), 15000);
 function render(r, tr) {
   wantMedian(r.item?.id);
   const title = r.item ? (i18n.lang === 'ko' ? r.item.ko || r.item.en : r.item.en) : r.name || i18n.unreadable;
@@ -506,7 +513,7 @@ ${marketCells(r)}
 <td class="seller">${esc(r.owner.replace(/\?/g, '·')) || '—'}</td>
 <td>${where(r.channel, r.room).map((w) => `<span class="where">${w}</span>`).join(' ') || '—'}</td>
 <td>${r.sold ? i18n.sold : i18n.selling}</td>
-<td><span class="badge ${r.sure ? 'ok' : 'check'}">${r.edited || r.fixed ? i18n.edited : r.sure ? i18n.ok : i18n.check}</span></td>
+<td><span class="badge ${r.sure ? 'ok' : 'check'}">${r.edited || r.fixed ? i18n.edited : r.sure ? i18n.ok : i18n.check}</span><small class="scan-ago" data-at="${r.at || ''}">${readAgo(r.at)}</small></td>
 <td class="row-actions"><button type="button" class="edit-btn" aria-label="${esc(i18n.edit)}" title="${esc(i18n.edit)}">✎</button><button type="button" class="del-btn" aria-label="${esc(i18n.remove)}" title="${esc(i18n.remove)}">✕</button></td>`;
   if (r.alternatives && !r.sure) {
     const pick = document.createElement('select');
@@ -642,7 +649,14 @@ function show(found) {
       entry = { tr: document.createElement('tr') };
       listings.set(key, entry);
     }
-    if (entry.r?.edited || entry.tr.classList.contains('editing')) continue;
+    if (entry.r?.edited || entry.tr.classList.contains('editing')) {
+      // A corrected row is not redrawn, but it was just seen again.
+      entry.r.at = Date.now();
+      const ago = entry.tr.querySelector('.scan-ago');
+      if (ago) { ago.dataset.at = entry.r.at; ago.textContent = readAgo(entry.r.at); }
+      continue;
+    }
+    r.at = Date.now();
     r.confirmations = entry.r?.sure && r.sure && fingerprint(entry.r) === fingerprint(r) ? (entry.r.confirmations || 1) + 1 : 1;
     entry.r = r;
     entry.tr.classList.add('fresh');
@@ -758,6 +772,13 @@ async function start() {
   track('scan_start', { width: video.videoWidth, height: video.videoHeight });
 }
 
+// Reloading or closing the page loses the read list and stops the screen share, so the browser asks first
+// (owner 2026-11-18: an accidental refresh).
+globalThis.addEventListener?.('beforeunload', (e) => {
+  if (!stream && !listings.size) return;
+  e.preventDefault();
+  e.returnValue = '';
+});
 function stop() {
   clearInterval(timer);
   timer = null;

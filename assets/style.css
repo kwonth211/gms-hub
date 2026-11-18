@@ -521,6 +521,7 @@ a.band-link:hover { border-color: var(--accent); }
 .scan-table .price .bundle { display: block; font-weight: 400; color: var(--muted); font-size: 0.72rem; }
 .scan-table .badge { font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); white-space: nowrap; }
 .scan-table .badge.ok { color: var(--ok); border-color: var(--ok); }
+.scan-table .scan-ago { display: block; margin-top: 3px; font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
 .scan-table .badge.check { color: var(--accent-2); border-color: var(--accent); }
 .scan-table .where { display: inline-block; font-size: 0.72rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; background: var(--panel-2); border: 1px solid var(--line); white-space: nowrap; }
 .scan-table .seller { font-weight: 700; }
