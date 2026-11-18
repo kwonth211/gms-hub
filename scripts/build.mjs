@@ -1399,6 +1399,7 @@ ${heroNew(lang)}
 </section>
 ${adfitRails()}
 ${AD_TOP}
+${'' /* Forgotten Hollow card near the top of home while the patch is new (owner, 2026-11-19); ends with FH_PROMO_UNTIL. Below the top ad so ad placement stays as reviewed. */}${fhPromo(lang) ? `<div class="wrap home-fh">${fhPromo(lang)}</div>` : ''}
 ${jsonScript('home-routes', training.routes.map((r) => ({ id: r.id, title: r.title[lang], monsters: r.monsters[lang], min: r.level.min, max: r.level.max,
   level: r.level, jobs: r.jobs, party: r.party, costTier: r.costTier, advanced: r.advanced,
   mobs: r.mobs.flatMap((m) => [m.ko, m.en]), href: href(langPath(lang, `/tools/training/?lv=${r.level.min}#route-${r.id}`)) })))}
