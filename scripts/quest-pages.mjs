@@ -199,6 +199,7 @@ export function questMoneyBody({ lang, quests, link, price, itemName, updated })
   const day = (updated || '').slice(0, 10);
   return `<section class="page-head wrap"><h1>${ko ? '돈 버는 퀘스트 순위' : 'Quests that make the most mesos'}</h1>
 <p class="lead">${ko ? `보상으로 받는 아이템을 지금 자유시장 시세로 바꿔서, 재료값을 빼고 메소가 가장 많이 남는 퀘스트부터 줄 세웠어요. 시세는 ${esc(day)} 기준이고 매일 다시 계산해요.` : `Quest rewards priced at today's Free Market value, minus what the materials would sell for, ranked by what is left. Prices are from ${esc(day)} and recalculated every day.`}</p>
+${ko ? `<div class="yt-lite" data-yt-lite="PL1-KdtyMLY"><button type="button" aria-label="영상 재생: 글클메 돈 버는 퀘스트 TOP 10"><img src="https://i.ytimg.com/vi/PL1-KdtyMLY/hqdefault.jpg" alt="" width="480" height="360" loading="lazy" decoding="async"><span class="yt-play" aria-hidden="true"></span></button><p class="yt-cap"><b>영상으로 보기</b> 돈 버는 퀘스트 TOP 10 · 4분 30초 <a href="https://youtu.be/PL1-KdtyMLY" target="_blank" rel="noopener" data-yt-open="PL1-KdtyMLY">유튜브에서 보기</a></p></div>` : ''}
 ${rankTabs(ko, link, 'meso')}
 <nav class="band-nav" aria-label="${ko ? '레벨' : 'Level'}"><div><a class="band-link" href="#top">TOP 10</a>${QUEST_BANDS.map(([a, b]) => `<a class="band-link" href="#lv-${a}">${b >= 200 ? `${a}+` : `${a}–${b}`}</a>`).join('')}</div></nav></section>
 <div class="wrap quest-page"><section class="panel" id="top"><h2>${ko ? '전체 TOP 10' : 'Top 10 overall'}</h2>${table(top)}</section>

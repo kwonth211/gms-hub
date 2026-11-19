@@ -389,6 +389,15 @@ document.addEventListener('click', async (e) => {
 });
 document.addEventListener('click', (e) => { const a = e.target.closest('[data-support]'); if (a) track('support_click', { platform: a.dataset.support }); });
 document.addEventListener('click', (e) => { const a = e.target.closest('[data-discord]'); if (a) track('discord_click', { place: a.dataset.discord }); });
+// Lite YouTube embed: the iframe loads only when the visitor presses play, so pages stay fast.
+document.addEventListener('click', (e) => {
+  const o = e.target.closest('[data-yt-open]'); if (o) { track('video_open', { video_id: o.dataset.ytOpen, page_type: document.body.dataset.page || '' }); return; }
+  const b = e.target.closest('[data-yt-lite] > button'); if (!b) return;
+  const id = b.parentElement.dataset.ytLite, f = document.createElement('iframe');
+  f.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`; f.title = b.getAttribute('aria-label') || 'YouTube';
+  f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen'; f.allowFullscreen = true; b.replaceWith(f);
+  track('video_play', { video_id: id, page_type: document.body.dataset.page || '' });
+});
 
 // Repeat visits take the site's files from a service worker cache (assets/sw.js, served at /sw.js). Registered after
 // load so it never competes with the page, and only on the real site (not on a local build).

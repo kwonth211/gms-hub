@@ -40,6 +40,7 @@
 | `home_resume_click` | 메인 "이어서 보기"에서 관심·최근 아이템을 눌렀을 때 | `kind`: `wishlist`·`recent`, `item_id` |
 | `monster_drop_click` | 몬스터 상세에서 드롭 아이템의 "아이템·시세 보기"를 눌렀을 때 | `mob_id`, `item_id` |
 | `monster_calc_click` | 몬스터 상세에서 몇 방 컷 계산기 버튼을 눌렀을 때 | `mob_id` |
+| `video_play` / `video_open` | 페이지에 넣은 유튜브 영상을 재생했을 때 / "유튜브에서 보기"를 눌렀을 때 | `video_id`, `page_type` |
 | `item_market_click` | 아이템 시세 페이지에서 실시간 시세 버튼을 눌렀을 때 | `item_id`, `page_type: item` |
 
 기존 이벤트(변경 없음): `search`(메인 검색어 안정 후, `search_term`, `results`), `home_search_click`(`result_type`, `result_id`), `visit_site`, `live_market_click`, `filter_category`, `switch_language`, `scroll_calc`, `drop_calc`, `damage_read`, `price_search`, `scan_*`, `recommend`, `favorite_add/remove`(사이트 즐겨찾기, `site_id`).
