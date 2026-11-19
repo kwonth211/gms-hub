@@ -60,7 +60,7 @@ async function show(name) {
   const nameOf = (id) => { const t = tips?.items?.[id]; return t ? (ko && t[0] ? t[0] : t[1]) : `#${id}`; };
   const url = `${location.origin}${location.pathname}?n=${encodeURIComponent(name)}`;
   const line = tr(`🛒 ${name} 상점 · ${place(newest.channel, newest.room)} · ${here.length}개 판매 중 → ${url}`, `🛒 ${name}'s shop · ${place(newest.channel, newest.room)} · ${here.length} items → ${url}`);
-  const cards = rows.map((r) => {
+  const card = (r) => {
     const m = prices?.[r.item]?.median;
     const diff = m ? Math.round(((r.price - m) / m) * 100) : null;
     const tag = diff == null ? '' : diff <= -10 ? `<b class="shop-tag cheap">${tr(`시세보다 ${-diff}% 쌈`, `${-diff}% under market`)}</b>` : diff >= 10 ? `<b class="shop-tag pricey">${tr(`시세보다 ${diff}% 비쌈`, `${diff}% over market`)}</b>` : `<b class="shop-tag fair">${tr('시세 수준', 'At market')}</b>`;
@@ -70,13 +70,16 @@ async function show(name) {
 <img src="https://maplestory.io/api/MCW/1/item/${r.item}/icon" width="36" height="36" alt="" loading="lazy">
 <span class="shop-name"><strong>${esc(nameOf(r.item))}</strong>${opt ? `<em class="${esc(opt.cls)}">${esc(opt.text)}</em>` : ''}<small>${elsewhere ? `${place(r.channel, r.room)} · ` : ''}${ago(r.seen)}${r.goneN ? ` · ${tr('팔렸다는 신고 있음', 'reported sold')}` : ''}</small></span>
 <span class="shop-price"><strong>${won(r.price)}</strong>${r.qty > 1 ? `<small>×${nf.format(r.qty)}</small>` : ''}${m ? `<small>${tr('시세', 'market')} ${won(m)}</small>` : ''}${tag}</span></a></li>`;
-  }).join('');
+  };
+  // The shop as it stands now first; listings seen at an earlier spot (the seller moved) folded away under it.
+  const other = rows.filter((r) => !here.includes(r));
   body.innerHTML = `<header class="shop-head">
-<div><h2>${esc(name)}${tr('의 상점', "'s shop")}</h2><p class="shop-where"><span class="shop-ch">${place(newest.channel, newest.room)}</span> ${tr(`판매 중 ${rows.length}개 · 마지막 확인 ${ago(newest.seen)}`, `${rows.length} for sale · last seen ${ago(newest.seen)}`)}</p></div>
+<div><h2>${esc(name)}${tr('의 상점', "'s shop")}</h2><p class="shop-where"><span class="shop-ch">${place(newest.channel, newest.room)}</span> ${tr(`판매 중 ${here.length}개 · 마지막 확인 ${ago(newest.seen)}`, `${here.length} for sale · last seen ${ago(newest.seen)}`)}</p></div>
 <div class="shop-share"><button type="button" class="btn" data-copy="${esc(url)}" data-what="link">${tr('🔗 링크 복사', '🔗 Copy link')}</button><button type="button" class="btn ghost" data-copy="${esc(line)}" data-what="line">${tr('📋 홍보 문구 복사', '📋 Copy post text')}</button></div>
 </header>
 <p class="shop-preview">${esc(line)}</p>
-<ul class="shop-items">${cards}</ul>
+<ul class="shop-items">${here.map(card).join('')}</ul>
+${other.length ? `<details class="shop-other"><summary>${tr(`예전 위치에서 본 매물 ${other.length}개`, `${other.length} listings seen at earlier spots`)}</summary><ul class="shop-items">${other.map(card).join('')}</ul></details>` : ''}
 <p class="muted small">${tr('최근 24시간 안에 상점 스캔이나 수집기로 확인된 매물이에요. 가격은 판매자가 건 가격이고, 시세는 같은 아이템의 판매 중 중앙값이에요.', 'Listings seen by shop scans or the collector in the last 24 hours. Prices are what the seller asks; market is the median asking price of the same item.')}</p>`;
 }
 

@@ -3590,3 +3590,5 @@ body.exp-running .exp-stop { display: inline-flex; }
 .shop-item.is-gone a { opacity: 0.55; }
 .shop-empty { margin: 18px 0; padding: 18px; border: 1px dashed var(--line-strong); border-radius: 14px; }
 .scan-myshop { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--accent-fill) 8%, transparent); }
+.shop-other { margin: 0 0 14px; }
+.shop-other summary { cursor: var(--cur-hand, pointer); font-weight: 700; color: var(--text-2); margin-bottom: 8px; }
