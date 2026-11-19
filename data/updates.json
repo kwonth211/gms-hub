@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "cash-shop-maint",
+   "version": "0.7.33",
+   "level": "patch",
+   "date": "2026-11-19",
+   "path": "/",
+   "ko": "점검 안내 — 캐시샵 점검은 \"게임은 그대로\"로 따로 표시",
+   "en": "Maintenance banner — Cash Shop maintenance marked as game-still-up",
+   "desc": {
+    "ko": "홈 위쪽 점검 안내에서 캐시샵만 닫는 점검은 \"캐시샵 점검 중\"으로 보여 주고, 게임 접속과 플레이는 그대로 된다고 알려 줘요.",
+    "en": "The maintenance banner on the home page now labels Cash Shop-only maintenance as such and says the game stays playable."
+   }
+  },
+  {
    "id": "best-exp-visual",
    "version": "0.7.32",
    "level": "patch",

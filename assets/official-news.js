@@ -25,8 +25,11 @@ function maintLine(x, ko, tr, now, tz) {
     const day = { weekday: 'short', month: 'short', day: 'numeric' };
     when = `${new Intl.DateTimeFormat('en', { ...o, ...day }).format(new Date(start))} – ${new Intl.DateTimeFormat('en', { ...o, ...(sameDay ? {} : day), timeZoneName: 'short' }).format(new Date(end))}`;
   }
-  const label = now >= start ? tr('점검 중', 'Maintenance now') : tr('점검 예정', 'Maintenance');
-  return `<a class="gn-maint${now >= start ? ' is-live' : ''}" data-until="${esc(x.maint.end)}" data-news="${x.id}" href="${esc(x.url)}" target="_blank" rel="noopener"><b>${label}</b><span translate="no">${when}</span></a>`;
+  // A Cash Shop maintenance leaves the game playable (owner 2026-11-19: the banner said 점검 중 while the game was up).
+  const shop = /cash shop/i.test(x.en || '');
+  const label = shop ? (now >= start ? tr('캐시샵 점검 중', 'Cash Shop maintenance now') : tr('캐시샵 점검 예정', 'Cash Shop maintenance')) : now >= start ? tr('점검 중', 'Maintenance now') : tr('점검 예정', 'Maintenance');
+  const note = shop ? `<small class="gn-maint-note">${tr('게임 접속·플레이는 그대로 돼요. 캐시샵과 결제만 잠시 안 돼요.', 'The game stays up; only the Cash Shop and payments are off.')}</small>` : '';
+  return `<a class="gn-maint${now >= start ? ' is-live' : ''}${shop ? ' is-shop' : ''}" data-until="${esc(x.maint.end)}" data-news="${x.id}" href="${esc(x.url)}" target="_blank" rel="noopener"><b>${label}</b><span translate="no">${when}</span>${note}</a>`;
 }
 
 export function newsInner(data, { ko, tr, now = Date.now(), tz, site } = {}) {

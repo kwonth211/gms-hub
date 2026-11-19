@@ -3626,3 +3626,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 
 /* The EXP ranking scrolls sideways on a phone like the money ranking; its column order differs, so none is hidden. */
 @media (max-width: 639px) { .quest-exp th:nth-child(n), .quest-exp td:nth-child(n) { display: table-cell; } }
+/* Cash Shop-only maintenance: calmer amber, with the note that the game stays up. */
+.gn-maint.is-shop { border-color: color-mix(in srgb, #d9a520 50%, var(--line)); background: color-mix(in srgb, #d9a520 10%, var(--panel)); }
+.gn-maint.is-shop b { color: #a8740a; }
+.gn-maint-note { flex-basis: 100%; color: var(--text-2); font-size: 0.84rem; }
