@@ -81,6 +81,13 @@
 - `market_refresh` (scope listings|detail, item_id): pressed the refresh button on the all-listings tab or an item's listings.
 - `market_gone` (item_id, reports): pressed "팔렸어요" on a listing (the shop no longer had it); reports = that listing's count after this press.
 - `exp_level_read` (level, job): the EXP tracker read the level and job from the status bar and filled them in.
+- `scan_share_cancel` (reason): the screen-share picker was closed or refused on the scan page.
+- `scan_first_rows` (after_s, rows): the first frame where a shop list was found.
+- `scan_issue` (issue, after_s, …): once per scan where it got stuck — no_shop (20 s, no shop list; w, h, scale), no_channel / no_room (3 frames with a shop but no location), unsure_rows (a minute with rows but none sure; rows, named, priced, seller), read_error (ocr, msg), upload_fail (msg), video_play.
+- `scan_stop` now also carries rows, uploaded, minutes and issues.
+- `exp_share_cancel` (reason), `exp_first_read` (after_s): EXP tracker share refused / first good reading.
+- `exp_issue` (issue, after_s, …): no_bar (20 s without the gauges; w, h), read_fail (6 failed reads in a row; text read, h).
+- `exp_stop` now also carries read (0/1) and issues.
 - `shop_page_view` (seller_found 0|1, listings): opened a shop page (/shop/?n=).
 - `shop_link_copy` (what link|line|scan, result): copied the shop page link or the ready-made post text.
 - `shop_page_open` (from scan): opened the shop page from the scan page after an upload.

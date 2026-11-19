@@ -247,6 +247,12 @@ async function keepSample(canvas) {
   }
 }
 
+// Where a scan gets stuck (owner 2026-11-19: 17 started in a week, 5 uploaded). Each problem is sent once per scan as
+// scan_issue { issue, ... } so GA shows where people drop off; the first readable shop is scan_first_rows.
+let scanStartedAt = 0, everRows = 0, firstSureAt = 0, missLoc = 0;
+const issued = new Set();
+const issue = (kind, params = {}) => { if (issued.has(kind)) return; issued.add(kind); track('scan_issue', { issue: kind, after_s: scanStartedAt ? Math.round((Date.now() - scanStartedAt) / 1000) : 0, ...params }); };
+
 async function recognize(canvas) {
   const img = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
   const manualChannel = Number($('scan-channel').value);
@@ -263,8 +269,12 @@ async function recognize(canvas) {
   if (!rows.length) rows = findShopRowsLoose(img);
   if (!rows.length) {
     check('shop', 'warn', i18n.shopNone);
+    if (!everRows && Date.now() - scanStartedAt > 20000) issue('no_shop', { w: img.width, h: img.height, scale: +scale.toFixed(2) });
     return [];
   }
+  if (!everRows++) track('scan_first_rows', { after_s: Math.round((Date.now() - scanStartedAt) / 1000), rows: rows.length });
+  // A shop on screen whose channel or room stays unknown blocks every upload.
+  if (!validLocation(channel) || !validLocation(room)) { if (++missLoc >= 3) issue(!validLocation(channel) ? 'no_channel' : 'no_room'); } else missLoc = 0;
   const loose = rows[0].loose;
   const listTop = Math.min(...rows.map((r) => r.top));
   let owner = readOwner(img, listTop, rows[0].x0, table, loose);
@@ -423,9 +433,10 @@ async function upload() {
     showMyShop(fresh.map((e) => e.body.seller));
     failures = 0;
     succeeded = true;
-  } catch {
+  } catch (e) {
     retryAt = Date.now() + Math.min(30000, 1000 * 2 ** Math.min(++failures, 5));
     check('upload', 'warn', i18n.uploadFail);
+    issue('upload_fail', { msg: String(e?.message || e).slice(0, 80) });
   } finally {
     sending = false;
     $('scan-retry-upload').hidden = ![...listings.values()].some((e) => canUpload(e.r) && sent.get(listingKey(e.r)) !== fingerprint(e.r));
@@ -645,6 +656,9 @@ function updateSummary() {
 
 function show(found) {
   if (!found.length) { currentShop = null; upload(); return; }
+  // Rows on screen but none read for sure for a minute: the lines stay "확인 필요" and nothing can upload.
+  if (found.some((r) => r.sure)) firstSureAt ||= Date.now();
+  else if (!firstSureAt && Date.now() - scanStartedAt > 60000) issue('unsure_rows', { rows: found.length, named: found.filter((r) => r.item).length, priced: found.filter((r) => r.price).length, seller: SELLER.test(found[0]?.owner || '') ? 1 : 0 });
   results.querySelector('.empty')?.remove();
   results.querySelectorAll('tr.fresh').forEach((tr) => tr.classList.remove('fresh'));
   const shop = shopFor(found);
@@ -758,6 +772,7 @@ async function tick() {
     } catch (e) {
       console.error('[scan]', e);
       check('shop', 'warn', ocrWorker ? i18n.ocrFail : i18n.readFail);
+      issue('read_error', { ocr: ocrWorker ? 1 : 0, msg: String(e?.message || e).slice(0, 80) });
     }
     finally { reading = false; lastRead = Date.now(); }
   }
@@ -778,10 +793,12 @@ async function start() {
   } catch (e) {
     say(i18n.denied);
     $('scan-start').disabled = false;
+    track('scan_share_cancel', { reason: e?.name || 'error' });
     return;
   }
+  scanStartedAt = Date.now(); everRows = 0; firstSureAt = 0; missLoc = 0; issued.clear();
   video.srcObject = stream;
-  try { await video.play(); } catch { stop(); say(i18n.readFail); return; }
+  try { await video.play(); } catch { issue('video_play'); stop(); say(i18n.readFail); return; }
   document.body.classList.add('scanning');
   $('scan-stop').disabled = false;
   stream.getVideoTracks()[0].addEventListener('ended', stop);
@@ -817,7 +834,7 @@ function stop() {
   ['share', 'shop'].forEach((k) => check(k, 'wait', i18n.wait));
   locationStatus();
   say(fill(i18n.stopped, { n: frames }));
-  track('scan_stop', { frames });
+  track('scan_stop', { frames, rows: listings.size, uploaded, minutes: scanStartedAt ? Math.round((Date.now() - scanStartedAt) / 60000) : 0, issues: [...issued].join(',') || 'none' });
 }
 
 $('scan-start').addEventListener('click', start);

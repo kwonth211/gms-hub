@@ -105,13 +105,23 @@ async function readLevelJob(img, g) {
 }
 const families2 = { fighter: 'warrior', page: 'warrior', spear: 'warrior', hunter: 'archer', crossbow: 'archer', fire: 'mage', ice: 'mage', cleric: 'mage', assassin: 'thief', bandit: 'thief' };
 
+// Where a measurement gets stuck (owner 2026-11-19): each problem once per run as exp_issue { issue, ... }, the first
+// good reading as exp_first_read. no_bar = the gauges never showed; read_fail = the bar was found but the numbers kept
+// failing (the text read is sent: digits and brackets only, no personal data).
+let runStartedAt = 0, everBar = false, everRead = false, failStreak = 0;
+const issuedExp = new Set();
+const expIssue = (kind, params = {}) => { if (issuedExp.has(kind)) return; issuedExp.add(kind); track('exp_issue', { issue: kind, after_s: runStartedAt ? Math.round((Date.now() - runStartedAt) / 1000) : 0, ...params }); };
+
 async function readOnce(img) {
   const g = findGauges(img);
   check('bar', g ? 'ok' : 'fail', g ? t.barOk : t.barFail);
-  if (!g) return null;
+  if (!g) { if (!everBar && Date.now() - runStartedAt > 20000) expIssue('no_bar', { w: img.width, h: img.height }); return null; }
+  everBar = true;
   readLevelJob(img, g).catch(() => {});
   const text = await readExpText(img, expTextBox(g, img), g, { ocrGlyph: (k) => ocrGlyph(k).catch(() => ''), learned });
   const r = parseExp(text);
+  if (r) { failStreak = 0; if (!everRead) { everRead = true; track('exp_first_read', { after_s: Math.round((Date.now() - runStartedAt) / 1000) }); } }
+  else if (++failStreak >= 6) expIssue('read_fail', { text: String(text).replace(/[^0-9,.\[\]%?]/g, '').slice(0, 30), h: g.barH });
   check('read', r ? 'ok' : 'fail', r ? fill(t.readOk, { exp: nf.format(r.exp), pct: r.pct.toFixed(2) }) : fill(t.readFail, { text }));
   return r;
 }
@@ -181,7 +191,7 @@ async function start() {
   if (demoOn) toggleDemo();
   try {
     stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 5 }, audio: false });
-  } catch { return say(t.denied); }
+  } catch (e) { track('exp_share_cancel', { reason: e?.name || 'error' }); return say(t.denied); }
   video = document.createElement('video');
   video.muted = true; video.srcObject = stream;
   await video.play();
@@ -189,6 +199,7 @@ async function start() {
   check('share', 'ok', t.shareOk);
   document.body.classList.add('exp-running');
   say(t.watching);
+  runStartedAt = Date.now(); everBar = false; everRead = false; failStreak = 0; issuedExp.clear();
   track('exp_start');
   pending = null;
   lastGainAt = Date.now(); stallWarned = false;
@@ -204,7 +215,7 @@ function stop() {
   check('share', 'wait', t.wait);
   say(t.stopped);
   const s = summarize(session.samples, { skipIdle: session.skipIdle });
-  track('exp_stop', { minutes: s ? Math.round(s.active / 60000) : 0, samples: session.samples.length });
+  track('exp_stop', { minutes: s ? Math.round(s.active / 60000) : 0, samples: session.samples.length, read: everRead ? 1 : 0, issues: [...issuedExp].join(',') || 'none' });
   keepInLog();
   document.title = BASE_TITLE;
   render();
