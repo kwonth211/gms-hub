@@ -57,8 +57,12 @@ export class Presence {
         g.quietSec.push(quiet);
         groups.set(k, g);
       }
-      const who = [...groups.values()].sort((x, y) => y.tabs - x.tabs).slice(0, 40);
-      return Response.json({ peak: peak.n, at: peak.at, now, pages, silent, who });
+      // The table shows the top holders; the totals count everyone (the people count used to be the table's length,
+      // which stopped at 40: owner 2026-11-19).
+      const all = [...groups.values()];
+      const people = all.filter((g) => g.who !== 'before-log').length;
+      const who = all.sort((x, y) => y.tabs - x.tabs).slice(0, 60);
+      return Response.json({ peak: peak.n, at: peak.at, now, pages, silent, people, who });
     }
     if (req.headers.get('Upgrade') !== 'websocket') return new Response('expected websocket', { status: 426 });
     if (new URL(req.url).pathname === '/chat') return this.joinChat();
