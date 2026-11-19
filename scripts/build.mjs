@@ -3664,7 +3664,7 @@ for (const lang of LANGS) {
       lang, pageKey: 'questBest', pagePath: '/quests/best-exp/',
       title: lang === 'ko' ? '글클메 경험치 퀘스트 추천: 레벨별 보상 EXP 순위 | GMS Hub' : 'MapleStory Classic World Best EXP Quests by Level | GMS Hub',
       desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드에서 레벨 구간마다 보상 경험치가 가장 큰 퀘스트 10개씩. 시작 레벨, 메소 보상, 할 일까지 정리했어요.' : 'The quests that pay the most EXP at each level in MapleStory Classic World (MSCW): start level, EXP and meso rewards and what each one asks you to do.',
-      body: questBestBody({ lang, quests: QUESTS, link }),
+      body: questBestBody({ lang, quests: QUESTS, link, itemName: (id, l) => { const i = itemsData.items.find((x) => x.id === id); return i ? (l === 'ko' && i.ko ? i.ko : i.en) : `#${id}`; }, mobPic: (id) => (MOB_GIF.has(id) ? href(`/assets/monsters/${id}.gif`) : null), mobName: (id, l) => { const m = MOB_BY_ID.get(id); return m ? (l === 'ko' && m.ko ? m.ko : m.en) : ''; } }),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '경험치 퀘스트' : 'Best EXP quests', '/quests/best-exp/')]
     }));
     const eqCtx = { lang, link, mobHref, mobSprite, questHref: (q) => link(questPath(q)),

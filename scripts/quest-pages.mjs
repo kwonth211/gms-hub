@@ -217,31 +217,59 @@ ${sections}
 <li>${ko ? '반복 퀘스트, 끝난 이벤트, 포가튼 할로우 퀘스트는 뺐어요.' : 'Repeatable quests, ended events and Forgotten Hollow quests are left out.'}</li></ul></section></div>`;
 }
 
-export function questBestBody({ lang, quests, link }) {
+export function questBestBody({ lang, quests, link, itemName = (id) => `#${id}`, mobPic = () => null, mobName = () => '' }) {
+  // Same look as the money ranking (owner 2026-11-19: "이미지가 부족해, 돈 되는 퀘스트 참고해서 꽉꽉"): NPC face, monster
+  // sprites and material icons, reward item icons, medals for the overall top 3. Forgotten Hollow opened on 11/18, so its
+  // quests count now.
   const ko = lang === 'ko';
-  const pool = quests.filter((q) => !q.expired && !q.repeat && q.exp > 0 && q.area !== 'Forgotten Hollow');
+  const ICON = (id, size) => `<img class="qm-icon" src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="${size}" height="${size}" loading="lazy" decoding="async">`;
+  const pool = quests.filter((q) => !q.expired && !q.repeat && q.exp > 0)
+    .sort((x, y) => y.exp - x.exp)
+    // Citizenship donations repeat one name across many variants; keep the best-paying one of each name.
+    .filter((q, i, all) => all.findIndex((x) => x.name === q.name) === i);
   const task = (q) => {
     const parts = [];
     if (q.hunt.length) parts.push(ko ? `몬스터 ${q.hunt.length}종 처치` : `hunt ${q.hunt.length} monster type${q.hunt.length > 1 ? 's' : ''}`);
     if (q.bring.length) parts.push(ko ? `아이템 ${q.bring.length}종 모으기` : `bring ${q.bring.length} item type${q.bring.length > 1 ? 's' : ''}`);
     if (!parts.length) parts.push(ko ? '전달·대화' : 'talk or deliver');
     if (q.prereq.length) parts.push(ko ? '선행 퀘스트 있음' : 'needs an earlier quest');
-    return `<ul class="quest-task">${parts.map((x) => `<li>${x}</li>`).join('')}</ul>`;
+    const mobs = q.hunt.slice(0, 3).map((h) => { const src = mobPic(h.id); return src ? `<img class="qm-mob" src="${src}" alt="${esc(mobName(h.id, lang))}" title="${esc(mobName(h.id, lang))}${h.count ? ` ×${h.count}` : ''}" loading="lazy" decoding="async">` : ''; }).join('');
+    const mats = q.bring.slice(0, 3).map((i) => ICON(i.id, 26)).join('');
+    const pics = mobs || mats ? `<div class="qm-pics">${mobs}${mats}</div>` : '';
+    return `${pics}<ul class="quest-task">${parts.map((x) => `<li>${x}</li>`).join('')}</ul>`;
   };
+  const reward = (q) => {
+    const gets = (q.gets || []).filter((g) => g.count > 0);
+    if (!gets.length) return '—';
+    const onePick = gets.length > 1 && (new Set(gets.map((g) => g.count)).size === 1 || gets.some((g) => g.job != null));
+    const shown = gets.slice(0, 3).map((g) => `<span class="qm-reward">${ICON(g.id, 30)}<span translate="no">${esc(itemName(g.id, lang))}${g.count > 1 ? ` ×${g.count}` : ''}</span></span>`).join('');
+    return `${shown}${gets.length > 3 ? `<small>${ko ? `외 ${gets.length - 3}종` : `+${gets.length - 3} more`}</small>` : ''}${onePick ? `<small>${ko ? `${gets.length}개 중 하나` : `one of ${gets.length}`}</small>` : ''}`;
+  };
+  const row = (q, rank) => {
+    const npc = q.startNpc ? `<img class="qm-npc" src="https://maplestory.io/api/MCW/1/npc/${q.startNpc}/icon" alt="" loading="lazy" decoding="async">` : '';
+    const medal = rank && rank <= 3 ? `<span class="qm-medal m${rank}">${rank}</span>` : '';
+    const jobs = jobsLabel(q.jobs, lang);
+    return `<tr${rank ? ` class="qm-r${rank}"` : ''}><th scope="row"><div class="qm-quest">${medal}${npc}<div>${questName(q, link, ' translate="no"')}<small>${esc(areaName(q.area, lang))}${jobs && jobs !== areaName(q.area, lang) ? ` · ${esc(jobs)}` : ''}</small></div></div></th><td class="num">Lv. ${q.lv || 1}</td><td class="num"><b>${nf(q.exp)}</b></td><td class="num">${q.meso ? nf(q.meso) : '—'}</td><td>${reward(q)}</td><td>${task(q)}</td></tr>`;
+  };
+  const table = (list, ranked) => `<div class="table-wrap"><table class="data quest-best quest-money quest-exp"><thead><tr><th scope="col">${ko ? '퀘스트' : 'Quest'}</th><th scope="col">${ko ? '시작' : 'Starts'}</th><th scope="col">EXP</th><th scope="col">${ko ? '메소' : 'Mesos'}</th><th scope="col">${ko ? '보상 아이템' : 'Reward items'}</th><th scope="col">${ko ? '할 일' : 'What you do'}</th></tr></thead><tbody>${list.map((q, k) => row(q, ranked ? k + 1 : 0)).join('')}</tbody></table></div>`;
   const sections = QUEST_BANDS.map(([a, b]) => {
-    const list = pool.filter((q) => Math.max(q.lv, 1) >= a && Math.max(q.lv, 1) <= b).sort((x, y) => y.exp - x.exp)
-      // Citizenship donations repeat one name across many variants; keep the best-paying one of each name.
-      .filter((q, i, all) => all.findIndex((x) => x.name === q.name) === i).slice(0, 10);
+    const list = pool.filter((q) => Math.max(q.lv, 1) >= a && Math.max(q.lv, 1) <= b).slice(0, 10);
     if (!list.length) return '';
     const label = b >= 200 ? (ko ? `${a}레벨 이상` : `Level ${a}+`) : (ko ? `${a}~${b}레벨` : `Level ${a}–${b}`);
-    return `<section class="panel" id="lv-${a}"><h2>${label}</h2><div class="table-wrap"><table class="data quest-best"><thead><tr><th scope="col">${ko ? '퀘스트' : 'Quest'}</th><th scope="col">${ko ? '시작' : 'Starts'}</th><th scope="col">EXP</th><th scope="col">${ko ? '메소' : 'Mesos'}</th><th scope="col">${ko ? '할 일' : 'What you do'}</th></tr></thead><tbody>${list
-      .map((q) => `<tr><th scope="row">${questName(q, link, ' translate="no"')}<small>${esc(areaName(q.area, lang))}</small>${jobsLabel(q.jobs, lang) && jobsLabel(q.jobs, lang) !== areaName(q.area, lang) ? `<small>${esc(jobsLabel(q.jobs, lang))}</small>` : ''}</th><td class="num">Lv. ${q.lv || 1}</td><td class="num"><b>${nf(q.exp)}</b></td><td class="num">${q.meso ? nf(q.meso) : '—'}</td><td>${task(q)}</td></tr>`)
-      .join('')}</tbody></table></div></section>`;
+    const bandTotal = list.reduce((t, q) => t + q.exp, 0);
+    return `<section class="panel" id="lv-${a}"><h2>${label} <small class="muted">${ko ? `10개 합계 경험치 ${nf(bandTotal)}` : `top 10 together: ${nf(bandTotal)} EXP`}</small></h2>${table(list)}</section>`;
   }).join('');
+  const top = pool.slice(0, 10);
   return `<section class="page-head wrap"><h1>${ko ? '레벨별 경험치 많이 주는 퀘스트' : 'Best EXP quests by level'}</h1>
-<p class="lead">${ko ? '레벨 구간마다 보상 경험치가 큰 퀘스트를 10개씩 골랐어요. 사냥하다 지칠 때 끼워 넣기 좋아요.' : 'The ten biggest EXP rewards in each level band, from the game data. Good to slot in between grinding sessions.'}</p>
+<p class="lead">${ko ? '레벨 구간마다 보상 경험치가 큰 퀘스트를 10개씩 골랐어요. 누구에게 받는지(NPC), 무엇을 잡고 모으는지(몬스터·재료), 경험치와 함께 주는 아이템까지 한 줄에 보여요. 사냥하다 지칠 때 끼워 넣기 좋아요.' : 'The ten biggest EXP rewards in each level band, from the game data: who gives it, what you hunt or bring, and the items that come with the EXP, on one row. Good to slot in between grinding sessions.'}</p>
 ${rankTabs(ko, link, 'exp')}
-<nav class="band-nav" aria-label="${ko ? '레벨' : 'Level'}"><div>${QUEST_BANDS.map(([a, b]) => `<a class="band-link" href="#lv-${a}">${b >= 200 ? `${a}+` : `${a}–${b}`}</a>`).join('')}</div></nav></section>
-<div class="wrap quest-page">${sections}
-<p class="muted small">${ko ? '보상은 게임 클라이언트 데이터 기준이에요. 반복 퀘스트, 끝난 이벤트, 아직 열리지 않은 포가튼 할로우 퀘스트는 뺐어요.' : 'Rewards are from the game client data. Repeatable quests, ended events and Forgotten Hollow quests (not open yet) are left out.'} <a href="${link('/quests/')}">${ko ? '전체 퀘스트' : 'All quests'}</a></p></div>`;
+<nav class="band-nav" aria-label="${ko ? '레벨' : 'Level'}"><div><a class="band-link" href="#top">TOP 10</a>${QUEST_BANDS.map(([a, b]) => `<a class="band-link" href="#lv-${a}">${b >= 200 ? `${a}+` : `${a}–${b}`}</a>`).join('')}</div></nav></section>
+<div class="wrap quest-page"><section class="panel" id="top"><h2>${ko ? '전체 TOP 10' : 'Top 10 overall'}</h2>${table(top, true)}</section>
+${sections}
+<section class="panel"><h2>${ko ? '이렇게 골랐어요' : 'How these are picked'}</h2><ul>
+<li>${ko ? '경험치와 메소, 보상 아이템은 게임 클라이언트 데이터 그대로예요.' : 'EXP, mesos and reward items are the game client data as is.'}</li>
+<li>${ko ? '같은 이름의 퀘스트(시민권 기부처럼 여러 번 나오는 것)는 경험치가 가장 큰 하나만 남겼어요.' : 'Quests sharing one name (like the citizenship donations) keep only their best-paying one.'}</li>
+<li>${ko ? '보상이 여러 개 중 하나로 나오는 퀘스트는 "N개 중 하나"로 표시했어요.' : 'Quests that give one of several rewards say "one of N".'}</li>
+<li>${ko ? '반복 퀘스트와 끝난 이벤트는 뺐어요. 포가튼 할로우 퀘스트는 11월 18일 오픈 뒤 포함했어요.' : 'Repeatable quests and ended events are left out; Forgotten Hollow quests are in since it opened on Nov 18.'}</li></ul>
+<p>${ko ? '메소가 목적이면' : 'After mesos instead?'} <a href="${link('/quests/best-meso/')}">${ko ? '돈 버는 퀘스트 순위' : 'Quests that make the most mesos'}</a> · <a href="${link('/quests/')}">${ko ? '전체 퀘스트' : 'All quests'}</a></p></section></div>`;
 }

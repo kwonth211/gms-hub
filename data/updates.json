@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "best-exp-visual",
+   "version": "0.7.32",
+   "level": "patch",
+   "date": "2026-11-19",
+   "path": "/quests/best-exp/",
+   "ko": "경험치 퀘스트 순위 — 전체 TOP 10, NPC·몬스터·보상 아이템 그림까지",
+   "en": "Best EXP quests — overall top 10 with NPC, monster and reward item pictures",
+   "desc": {
+    "ko": "경험치 퀘스트 순위에 전체 TOP 10(메달)을 넣고, 줄마다 퀘스트를 주는 NPC 얼굴, 잡을 몬스터·모을 재료 그림, 경험치와 같이 주는 보상 아이템을 보여 줘요. 포가튼 할로우 퀘스트도 들어갔어요.",
+    "en": "The EXP quest ranking now opens with an overall top 10 (medals) and shows on every row the NPC who gives it, the monsters and materials involved and the items that come with the EXP. Forgotten Hollow quests are included."
+   }
+  },
+  {
    "id": "best-meso-video",
    "version": "0.7.31",
    "level": "minor",
