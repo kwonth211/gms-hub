@@ -21,9 +21,9 @@
     return out;
   }
   async function collect(options, progress = async () => {}, cancelled = () => false, pause = localPause) {
-    const maxRows = options.mode === 'test' ? 40 : Math.min(150, Math.max(1, Number(options.maxRows) || 150));
+    const maxRows = options.mode === 'test' ? 40 : Math.min(500, Math.max(1, Number(options.maxRows) || 150));
     const maxShops = options.mode === 'test' ? 40 : Math.min(600, Number(options.maxShops) || 360);
-    const maxItems = options.mode === 'test' ? 2 : Math.min(60, Number(options.maxItems) || 12);
+    const maxItems = options.mode === 'test' ? 2 : Math.min(150, Number(options.maxItems) || 12);
     const perItem = Math.min(50, Number(options.shopsPerItem) || 20);
     const report = { version: '0.6.1', runId: options.runId, world: 'Windia', startedAt: new Date().toISOString(),
       status: 'running', rows: [], shops: 0, rejected: {}, queue: [], skippedItems: [], aiCalls: 0 };
