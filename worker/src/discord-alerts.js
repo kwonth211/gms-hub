@@ -120,6 +120,6 @@ export async function relayFeedback(env, user, text, where) {
   if (lastFeedback.size > 500) lastFeedback.clear();
   const body = String(text).replace(/\s+/g, ' ').trim().slice(0, 1000);
   const r = await call(env, 'POST', `/channels/${env.DISCORD_FEEDBACK_CHANNEL}/messages`, { allowed_mentions: { parse: [] }, flags: 4,
-    content: `📝 **${String(user.global_name || user.username).replace(/[*_`~|>@]/g, '')}** (${user.username}, ${where})\n>>> ${body.replace(/`/g, "'")}` }).catch(() => null);
+    content: `📝 **${String(user.global_name || user.username).replace(/[*_`~|>@]/g, '')}** (${user.username}, ${where}) · uid ${user.id}\n>>> ${body.replace(/`/g, "'")}` }).catch(() => null);
   return r?.ok ? 'ok' : 'fail';
 }

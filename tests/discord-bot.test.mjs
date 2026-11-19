@@ -119,7 +119,7 @@ test('/feedback lands in the feedback channel without mentions, once a minute pe
     const r = await cmd(env, 'feedback', null, [{ name: 'text', value: 'please add @everyone   boss timers' }], { id: '55', username: 'neo', global_name: 'N*eo' });
     assert.match(r.data.content, /전달했어요/);
     assert.equal(calls[0].url, '/channels/900/messages');
-    assert.match(calls[0].body.content, /\*\*Neo\*\* \(neo, DM\)\n>>> please add @everyone boss timers/);
+    assert.match(calls[0].body.content, /\*\*Neo\*\* \(neo, DM\) · uid \d+\n>>> please add @everyone boss timers/);
     assert.deepEqual(calls[0].body.allowed_mentions, { parse: [] });
     assert.match((await cmd(env, 'feedback', null, [{ name: 'text', value: 'again again' }], { id: '55', username: 'neo' })).data.content, /1분 뒤/);
     assert.equal(calls.length, 1);
