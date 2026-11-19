@@ -70,7 +70,7 @@ ${fh.zones.map((z) => `<li class="fh-step"><a href="#zone-${z.id}"><span class="
 <h1 id="fh-title">${tr('포가튼 할로우 공략', 'Forgotten Hollow guide')}</h1>
 <p class="fh-hero-lead">${tr('잊혀진 골짜기의 가는 길, 사냥터, 몬스터, 퀘스트, 보스를 한 페이지에 모았어요.', 'Getting in, where to train, every monster, the quests and the boss, on one page.')}</p>
 <p class="fh-hero-actions"><a class="btn" href="#way-in">${tr('가는 법', 'How to get in')}</a><a class="btn ghost" href="#zone-entry">${tr('레벨별 사냥터', 'Maps by level')}</a></p>
-<p class="fh-dday">${tr('11월 18일 오픈', 'Opens November 18')}, <b>${dday}</b></p>${days >= -1 && fh.openNote ? `<p class="fh-open-note">${esc(L(fh.openNote))}</p>` : ''}
+<p class="fh-dday">${days <= 0 ? tr('11월 19일 새벽 오픈', 'Opened November 18') : tr('11월 18일 오픈', 'Opens November 18')}, <b>${dday}</b></p>${days >= -1 && fh.openNote ? `<p class="fh-open-note">${esc(L(fh.openNote))}</p>` : ''}
 </div>
 ${descent}
 </div>
@@ -188,7 +188,7 @@ ${elTags(m) ? `<p class="fh-els">${elTags(m)}</p>` : ''}
 <p class="fh-note">${tr('재료는 퀘스트 아이템이라 오픈한 뒤에 모을 수 있어요. 정확한 퀘스트 이름과 개수는 오픈 후 채울게요.', 'The materials are quest items, so they only drop after launch. Exact names and counts will follow after launch.')} ${tag('pending')}</p></article>
 <article class="fh-qblock"><h3><span class="fh-zone-lv">Lv 43</span>${tr('동굴 요정 젤리아', 'Zelya the cave fairy')} ${tag('video')}</h3><p>${esc(L(fh.zelya))}</p></article>
 <article class="fh-qblock"><h3><span class="fh-zone-lv">Lv 50</span>${tr('타미아와 다니엘: 귀고리 주문서', 'Tamya and Daniel: the earring scroll')} ${tag('data')}</h3>
-<p>${tr('11월 18일부터 열려요. 앞선 할로우 퀘스트를 끝내야 받을 수 있어요. 마지막에 귀고리 10% 주문서를 직업에 맞게 골라 받는데, 팔 거라면 LUK이 가장 비싸요.', 'Opens November 18, after the earlier Hollow quests. It ends with a 10% earring scroll of your choice; LUK sells best.')}</p>${chain([10621, 10622, 10623])}</article>
+<p>${tr('이번 업데이트로 열렸어요. 앞선 할로우 퀘스트를 끝내야 받을 수 있어요. 마지막에 귀고리 10% 주문서를 직업에 맞게 골라 받는데, 팔 거라면 LUK이 가장 비싸요.', 'Open since the November 18 update, after the earlier Hollow quests. It ends with a 10% earring scroll of your choice; LUK sells best.')}</p>${chain([10621, 10622, 10623])}</article>
 <article class="fh-qblock"><h3><span class="fh-zone-lv">Lv 55</span>${tr('제이미와 무너진 무덤', 'Jaime and the Dilapidated Tomb')} ${tag('data')}</h3>
 <p>${tr('11월 18일부터. 썩은 버섯의 부패한 부적과 스포어우드 60마리. 마지막 보상은 하의 HP 10%, 망토 명중 10%, 엘릭서 20개 중 하나예요.', 'From November 18: Decayed Charms from Rotten Mushrooms and 60 Sporewoods. The last reward is one of Bottomwear HP 10%, Cape Accuracy 10% or 20 Elixirs.')}</p>${chain([10624, 10625, 10626])}</article>
 <article class="fh-qblock"><h3><span class="fh-zone-lv">Lv 45</span>${tr('니로스의 망토 명중 퀘스트', 'Nyroth\'s cape accuracy line')} ${tag('data')}</h3>
@@ -225,17 +225,19 @@ ${elTags(m) ? `<p class="fh-els">${elTags(m)}</p>` : ''}
   const wName = (w) => { const i = w.id ? items.get(w.id) : null; return ko && i?.ko ? `${esc(i.ko)} <small translate="no">${esc(w.en)}</small>` : `<span translate="no">${esc(w.en)}</span>`; };
   const weapons = `<section class="fh-sec wrap" id="weapons">
 <h2>${tr('새 무기 15종', 'Fifteen new weapons')}</h2>
-<p class="fh-lead">${tr('11월 업데이트에 함께 나오는 무기예요. 다섯 종은 새로 열리는 제작 9레벨로 만들어요.', 'The weapons that arrive with the November update. Five are made with the new Crafting Lv 9.')} ${tag('official')}</p>
-<div class="fh-scroll"><table class="fh-classes fh-weapons"><thead><tr><th>${tr('무기', 'Weapon')}</th><th>${tr('종류', 'Type')}</th><th>${tr('레벨', 'Level')}</th><th>${tr('직업', 'Class')}</th><th>${tr('필요 스탯', 'Requires')}</th><th>${tr('성능', 'Stats')}</th><th>${tr('제작', 'Crafted')}</th></tr></thead>
-<tbody>${fh.weapons.map((w) => `<tr><th scope="row"><span class="fh-wname">${art(w.en)}<span>${wName(w)}</span></span></th><td>${esc(L(w.type))}</td><td>${w.lv}</td><td>${esc(L(w.job))}</td><td translate="no">${esc(w.req || '-')}</td><td>${esc(L(w.stat))}</td><td>${w.craft ? esc(L(w.craft)) : '-'}</td></tr>`).join('')}</tbody></table></div>
+<p class="fh-lead">${days <= 0 ? tr('11월 업데이트로 나온 무기예요. 다섯 종은 새로 열린 제작 9레벨로 만들어요. 오픈 한 시간 안에 호검·차·<span translate="no">Blade of Harmony</span>·실버 크로우가 확성기에 올라왔어요.', 'The weapons that came with the November update. Five are made with the new Crafting Lv 9. Lion\'s Fang, Sai, Blade of Harmony and Silver Crow were on megaphones within an hour of the opening.') : tr('11월 업데이트에 함께 나오는 무기예요. 다섯 종은 새로 열리는 제작 9레벨로 만들어요.', 'The weapons that arrive with the November update. Five are made with the new Crafting Lv 9.')} ${tag('official')}</p>
+${days <= 0 ? `<p class="fh-lead small">${tr('<b>지금 시세</b>는 자유시장 매물 가운데값이에요. 페이지를 열 때마다 새로 불러와요. 누르면 매물 목록으로 가요.', '<b>Price now</b> is the median of open Free Market listings, loaded fresh each time the page opens. Tap it for the listings.')}</p>` : ''}
+<div class="fh-scroll"><table class="fh-classes fh-weapons"><thead><tr><th>${tr('무기', 'Weapon')}</th><th>${tr('종류', 'Type')}</th><th>${tr('레벨', 'Level')}</th><th>${tr('직업', 'Class')}</th><th>${tr('필요 스탯', 'Requires')}</th><th>${tr('성능', 'Stats')}</th><th>${tr('제작', 'Crafted')}</th>${days <= 0 ? `<th>${tr('지금 시세', 'Price now')}</th>` : ''}</tr></thead>
+<tbody>${fh.weapons.map((w) => `<tr><th scope="row"><span class="fh-wname">${art(w.en)}<span>${wName(w)}</span></span></th><td>${esc(L(w.type))}</td><td>${w.lv}</td><td>${esc(L(w.job))}</td><td translate="no">${esc(w.req || '-')}</td><td>${esc(L(w.stat))}</td><td>${w.craft ? esc(L(w.craft)) : '-'}</td>${days <= 0 ? (w.id ? `<td class="fh-price" data-fh-price="${w.id}"><a href="${link(`/tools/market/?item=${w.id}`)}">${tr('불러오는 중', 'Loading')}</a></td>` : `<td class="fh-price muted">${tr('집계 전', 'Not tracked yet')}</td>`) : ''}</tr>`).join('')}</tbody></table></div>
+${days <= 0 ? '<script src="__FH_JS__" defer></script>' : ''}
 <h3 class="fh-sub">${tr('제작 9레벨로 만드는 것', 'What Crafting Lv 9 makes')} ${tag('official')}</h3>
 <ul class="fh-town">${fh.craft9.map((c) => `<li><b>${esc(L(c.prof))}</b><span class="fh-chips" translate="no">${c.items.map((x) => `<span class="fh-chip">${art(x)}${esc(withRate(x))}</span>`).join('')}</span></li>`).join('')}</ul>
 </section>`;
 
   // ---------- events with Korea-time end dates ----------
   const events = `<section class="fh-sec wrap" id="events">
-<h2>${tr('함께 열리는 이벤트', 'Events that open with it')}</h2>
-<p class="fh-lead">${tr('모두 11월 18일 점검이 끝나면 시작해요. 끝나는 시간은 한국 시간으로 바꿔 적었어요.', 'All four start when the November 18 maintenance ends.')} ${tag('official')}</p>
+<h2>${tr(days <= 0 ? '함께 열린 이벤트' : '함께 열리는 이벤트', days <= 0 ? 'Events that opened with it' : 'Events that open with it')}</h2>
+<p class="fh-lead">${(days <= 0 ? tr('모두 11월 18일 점검이 끝난 뒤 시작했어요. 끝나는 시간은 한국 시간으로 바꿔 적었어요.', 'All four started when the November 18 maintenance ended.') : tr('모두 11월 18일 점검이 끝나면 시작해요. 끝나는 시간은 한국 시간으로 바꿔 적었어요.', 'All four start when the November 18 maintenance ends.'))} ${tag('official')}</p>
 <div class="fh-two">${fh.events.map((e) => `<article class="fh-card" id="event-${e.id}"><h3>${esc(L(e.name))}</h3><p class="fh-event-until">${esc(L(e.until))}</p><p class="fh-chips fh-event-icons" translate="no">${(e.icons || []).map((x) => `<span class="fh-chip">${art(x)}${esc(x)}</span>`).join('')}</p><ul class="fh-facts">${L(e.points).map((x) => `<li>${esc(x)}</li>`).join('')}</ul></article>`).join('')}</div>
 </section>`;
 

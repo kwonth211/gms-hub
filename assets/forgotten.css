@@ -258,6 +258,8 @@
 .fh-weapons td, .fh-weapons th { min-width: 0; white-space: nowrap; font-size: 0.9rem; }
 .fh-weapons th[scope='row'] { white-space: normal; min-width: 150px; text-align: left; }
 .fh-weapons th small { display: block; color: var(--fh-muted); font-weight: 600; font-size: 0.75rem; }
+.fh-price b { color: var(--fh-text, inherit); }
+.fh-price small { color: var(--fh-muted); font-size: 0.75rem; }
 .fh-event-until { margin: 0 0 10px; color: var(--fh-spore); font-weight: 700; font-size: 0.9rem; }
 
 /* Official art: area shots, NPC portraits, furniture, item icons. */

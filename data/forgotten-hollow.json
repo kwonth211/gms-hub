@@ -1,6 +1,6 @@
 {
  "_note": "Editorial layer of /forgotten-hollow/. Monster stats, spawn counts, EXP per clear and drops come from data/monsters.json; quest steps 10617-10626 from data/quests-raw.json (client data). Everything here was cross-checked between Nexon's 2026-11-13 preview notice, the second closed beta data and several Korean and English preview videos (2026-11-02..13). 'state' tags: official = Nexon notice, data = client / beta data, video = player reports from the beta, pending = not known yet. Re-check everything after the 11-18 patch and remove 'upcoming' from data/mob-overrides.json.",
- "updated": "2026-11-18",
+ "updated": "2026-11-19",
  "open": "2026-11-18",
  "mapNames": {
   "10006060": {
@@ -611,8 +611,8 @@
   }
  ],
  "openNote": {
-  "ko": "11월 18일 밤 10시부터 점검하고, 점검이 끝나는 11월 19일 새벽 3시쯤(한국 시간) 열려요.",
-  "en": "Opens when the November 18 maintenance ends: 5:00 AM to about 10:00 AM PST (1:00 PM to 6:00 PM UTC)."
+  "ko": "점검이 조금 늘어나 11월 19일 새벽 3시 40분쯤(한국 시간) 열렸어요. 점검 동안 못 쓴 캐시 아이템 기간은 6시간 늘려 줬어요.",
+  "en": "The maintenance ran a little long; the game opened at about 10:40 AM PST on November 18 (18:40 UTC). Cash items in inventories got 6 extra hours for the downtime."
  },
  "questChains": [
   [

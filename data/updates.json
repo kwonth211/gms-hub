@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "fh-weapon-prices",
+   "version": "0.7.23",
+   "level": "minor",
+   "date": "2026-11-19",
+   "path": "/forgotten-hollow/#weapons",
+   "ko": "포가튼 할로우 새 무기 지금 시세 — 호검·차·실버 크로우 값을 공략 페이지에서 바로",
+   "en": "Forgotten Hollow new weapons with live prices — Lion's Fang, Sai and Silver Crow on the guide",
+   "desc": {
+    "ko": "포가튼 할로우 공략의 새 무기 15종 표에 '지금 시세' 칸이 생겼어요. 자유시장 매물 가운데값과 매물 수가 페이지를 열 때마다 새로 나오고, 누르면 그 무기의 매물 목록으로 가요. 오픈 시간(11월 19일 새벽 3시 40분쯤)과 캐시 아이템 6시간 연장도 반영했어요.",
+    "en": "The fifteen-weapon table on the Forgotten Hollow guide now has a 'Price now' column: the median of open Free Market listings and how many there are, loaded fresh each visit; tap it for the listings. The real opening time and the 6-hour cash item extension are in too."
+   }
+  },
+  {
    "id": "listing-gone",
    "version": "0.7.22",
    "level": "minor",
