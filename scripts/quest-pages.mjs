@@ -167,7 +167,8 @@ export function questMoney(q, price) {
   const cost = mats.reduce((a, i) => a + (i.p || 0) * i.count, 0);
   return { reward, cost, net: q.meso + reward - cost, onePick, priced, mats, best: priced.slice().sort((a, b) => b.p * b.count - a.p * a.count)[0] || null };
 }
-export function questMoneyBody({ lang, quests, link, price, itemName, updated }) {
+export function questMoneyBody({ lang, quests, link, price, itemName, updated, mobPic = () => null, mobName = () => '' }) {
+  const ICON = (id, size) => `<img class="qm-icon" src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="${size}" height="${size}" loading="lazy" decoding="async">`;
   const ko = lang === 'ko';
   const kmoney = (n) => (ko ? (Math.abs(n) >= 1e8 ? `${+(n / 1e8).toFixed(2)}억` : Math.abs(n) >= 1e4 ? `${+(n / 1e4).toFixed(Math.abs(n) >= 1e6 ? 0 : 1)}만` : nf(n)) : Math.abs(n) >= 1e6 ? `${+(n / 1e6).toFixed(2)}m` : Math.abs(n) >= 1e3 ? `${+(n / 1e3).toFixed(1)}k` : nf(n));
   const pool = quests.filter((q) => !q.expired && !q.repeat && q.area !== 'Forgotten Hollow')
@@ -179,16 +180,21 @@ export function questMoneyBody({ lang, quests, link, price, itemName, updated })
     if (q.bring.length) parts.push(ko ? `아이템 ${q.bring.length}종 모으기` : `bring ${q.bring.length} item type${q.bring.length > 1 ? 's' : ''}`);
     if (!parts.length) parts.push(ko ? '전달·대화' : 'talk or deliver');
     if (q.prereq.length) parts.push(ko ? '선행 퀘스트 있음' : 'needs an earlier quest');
-    return `<ul class="quest-task">${parts.map((x) => `<li>${x}</li>`).join('')}</ul>`;
+    const mobs = q.hunt.slice(0, 3).map((h) => { const src = mobPic(h.id); return src ? `<img class="qm-mob" src="${src}" alt="${esc(mobName(h.id, lang))}" title="${esc(mobName(h.id, lang))}${h.count ? ` ×${h.count}` : ''}" loading="lazy" decoding="async">` : ''; }).join('');
+    const mats = q.bring.slice(0, 3).map((i) => ICON(i.id, 26)).join('');
+    const pics = mobs || mats ? `<div class="qm-pics">${mobs}${mats}</div>` : '';
+    return `${pics}<ul class="quest-task">${parts.map((x) => `<li>${x}</li>`).join('')}</ul>`;
   };
-  const row = ({ q, m }) => {
+  const row = ({ q, m }, rank) => {
     const b = m.best, name = b ? itemName(b.id, lang) : '';
-    const rewardCell = `${b ? `<span translate="no">${esc(name)}${b.count > 1 ? ` ×${b.count}` : ''}</span>` : ''}${m.onePick && m.priced.length > 1 ? `<small>${ko ? `${m.priced.length}개 중 하나 · 평균` : `one of ${m.priced.length} · average`}</small>` : m.priced.length > 1 ? `<small>${ko ? `외 ${m.priced.length - 1}종` : `+${m.priced.length - 1} more`}</small>` : ''}`;
+    const rewardCell = `${b ? `<span class="qm-reward">${ICON(b.id, 36)}<span translate="no">${esc(name)}${b.count > 1 ? ` ×${b.count}` : ''}</span></span>` : ''}${m.onePick && m.priced.length > 1 ? `<small>${ko ? `${m.priced.length}개 중 하나 · 평균` : `one of ${m.priced.length} · average`}</small>` : m.priced.length > 1 ? `<small>${ko ? `외 ${m.priced.length - 1}종` : `+${m.priced.length - 1} more`}</small>` : ''}`;
     const unpriced = m.mats.filter((i) => i.p == null);
     const costCell = m.cost ? `−${kmoney(m.cost)}` : unpriced.length ? (ko ? '직접 모음' : 'farmed') : '0';
-    return `<tr><th scope="row">${questName(q, link, ' translate="no"')}<small>${esc(areaName(q.area, lang))}</small></th><td class="num">Lv. ${q.lv || 1}</td><td>${rewardCell}</td><td class="num">${kmoney(q.meso + m.reward)}</td><td class="num">${costCell}</td><td class="num"><b>${kmoney(m.net)}</b></td><td>${task(q)}</td></tr>`;
+    const npc = q.startNpc ? `<img class="qm-npc" src="https://maplestory.io/api/MCW/1/npc/${q.startNpc}/icon" alt="" loading="lazy" decoding="async">` : '';
+    const medal = rank && rank <= 3 ? `<span class="qm-medal m${rank}">${rank}</span>` : '';
+    return `<tr${rank ? ` class="qm-r${rank}"` : ''}><th scope="row"><div class="qm-quest">${medal}${npc}<div>${questName(q, link, ' translate="no"')}<small>${esc(areaName(q.area, lang))}</small></div></div></th><td class="num">Lv. ${q.lv || 1}</td><td>${rewardCell}</td><td class="num">${kmoney(q.meso + m.reward)}</td><td class="num">${costCell}</td><td class="num"><b>${kmoney(m.net)}</b></td><td>${task(q)}</td></tr>`;
   };
-  const table = (list) => `<div class="table-wrap"><table class="data quest-best quest-money"><thead><tr><th scope="col">${ko ? '퀘스트' : 'Quest'}</th><th scope="col">${ko ? '시작' : 'Starts'}</th><th scope="col">${ko ? '주요 보상' : 'Main reward'}</th><th scope="col">${ko ? '보상 값' : 'Reward value'}</th><th scope="col">${ko ? '재료값' : 'Materials'}</th><th scope="col">${ko ? '남는 메소' : 'Profit'}</th><th scope="col">${ko ? '할 일' : 'What you do'}</th></tr></thead><tbody>${list.map(row).join('')}</tbody></table></div>`;
+  const table = (list, ranked) => `<div class="table-wrap"><table class="data quest-best quest-money"><thead><tr><th scope="col">${ko ? '퀘스트' : 'Quest'}</th><th scope="col">${ko ? '시작' : 'Starts'}</th><th scope="col">${ko ? '주요 보상' : 'Main reward'}</th><th scope="col">${ko ? '보상 값' : 'Reward value'}</th><th scope="col">${ko ? '재료값' : 'Materials'}</th><th scope="col">${ko ? '남는 메소' : 'Profit'}</th><th scope="col">${ko ? '할 일' : 'What you do'}</th></tr></thead><tbody>${list.map((x, k) => row(x, ranked ? k + 1 : 0)).join('')}</tbody></table></div>`;
   const top = pool.slice(0, 10);
   const sections = QUEST_BANDS.map(([a, b]) => {
     const list = pool.filter(({ q }) => Math.max(q.lv, 1) >= a && Math.max(q.lv, 1) <= b).slice(0, 10);
@@ -202,7 +208,7 @@ export function questMoneyBody({ lang, quests, link, price, itemName, updated })
 ${ko ? `<div class="yt-lite" data-yt-lite="PL1-KdtyMLY"><button type="button" aria-label="영상 재생: 글클메 돈 버는 퀘스트 TOP 10"><img src="https://i.ytimg.com/vi/PL1-KdtyMLY/hqdefault.jpg" alt="" width="480" height="360" loading="lazy" decoding="async"><span class="yt-play" aria-hidden="true"></span></button><p class="yt-cap"><b>영상으로 보기</b> 돈 버는 퀘스트 TOP 10 · 4분 30초 <a href="https://youtu.be/PL1-KdtyMLY" target="_blank" rel="noopener" data-yt-open="PL1-KdtyMLY">유튜브에서 보기</a></p></div>` : ''}
 ${rankTabs(ko, link, 'meso')}
 <nav class="band-nav" aria-label="${ko ? '레벨' : 'Level'}"><div><a class="band-link" href="#top">TOP 10</a>${QUEST_BANDS.map(([a, b]) => `<a class="band-link" href="#lv-${a}">${b >= 200 ? `${a}+` : `${a}–${b}`}</a>`).join('')}</div></nav></section>
-<div class="wrap quest-page"><section class="panel" id="top"><h2>${ko ? '전체 TOP 10' : 'Top 10 overall'}</h2>${table(top)}</section>
+<div class="wrap quest-page"><section class="panel" id="top"><h2>${ko ? '전체 TOP 10' : 'Top 10 overall'}</h2>${table(top, true)}</section>
 ${sections}
 <section class="panel"><h2>${ko ? '이렇게 계산했어요' : 'How it is worked out'}</h2><ul>
 <li>${ko ? '남는 메소 = 보상 메소 + 보상 아이템 시세 − 재료 시세예요. 재료를 직접 사냥해서 모으면 재료값만큼 더 남아요.' : 'Profit = meso reward + reward items at market price − materials at market price. Farm the materials yourself and you keep that cost too.'}</li>

@@ -542,6 +542,7 @@ const PAGES = [
 
 // Shared reviewed snapshot keeps home search, calculator and detail pages consistent.
 const MONSTERS = readJson('data/monsters.json');
+const MOB_GIF = new Set(fs.readdirSync('assets/monsters').filter((f) => f.endsWith('.gif')).map((f) => Number(f.slice(0, -4))));
 const SKILLS = readJson('data/skills.json');
 const SKILL_BUILDS = readJson('data/skill-builds.json');
 const MOBS = MONSTERS.monsters.map(m => ({ ...m, status: m.status === 'active' ? undefined : m.status }));
@@ -3655,7 +3656,7 @@ for (const lang of LANGS) {
         lang, pageKey: 'questBest', pagePath: '/quests/best-meso/',
         title: lang === 'ko' ? '글클메 돈 버는 퀘스트 순위: 메소 많이 남는 퀘스트로 쌀먹 하는 법 | GMS Hub' : 'MapleStory Classic World Quests That Make the Most Mesos | GMS Hub',
         desc: lang === 'ko' ? '글클메(글로벌 메이플스토리 클래식 월드) 쌀먹 방법 중 퀘스트로 메소 버는 법. 보상 아이템을 오늘 자유시장 시세로 계산하고 재료값을 빼서, 메소가 많이 남는 퀘스트 순위를 레벨별로 정리했어요.' : 'MapleStory Classic World quests ranked by profit: reward items priced at today\'s Free Market value minus material costs, by level band.',
-        body: questMoneyBody({ lang, quests: QUESTS, link, price, itemName, updated: itemPrices.updated }),
+        body: questMoneyBody({ lang, quests: QUESTS, link, price, itemName, updated: itemPrices.updated, mobPic: (id) => (MOB_GIF.has(id) ? href(`/assets/monsters/${id}.gif`) : null), mobName: (id, l) => { const m = MOB_BY_ID.get(id); return m ? (l === 'ko' && m.ko ? m.ko : m.en) : ''; } }),
         ld: [breadcrumbLd(lang, lang === 'ko' ? '돈 버는 퀘스트' : 'Best meso quests', '/quests/best-meso/')]
       }));
     }

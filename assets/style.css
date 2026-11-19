@@ -3605,3 +3605,16 @@ body.exp-running .exp-stop { display: inline-flex; }
 .yt-cap { margin-top: 8px; color: var(--muted); font-size: .92rem; }
 .yt-cap b { color: var(--text); margin-right: 6px; }
 .yt-cap a { margin-left: 6px; }
+
+/* Money-quest table pictures: NPC face, reward icon, monsters and materials, top-3 medals */
+.quest-money .qm-quest { display: flex; align-items: center; gap: 10px; }
+.quest-money .qm-npc { width: auto; max-width: 46px; max-height: 52px; image-rendering: pixelated; flex: none; }
+.quest-money .qm-reward { display: inline-flex; align-items: center; gap: 8px; }
+.quest-money .qm-icon { image-rendering: pixelated; flex: none; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 2px; }
+.quest-money .qm-pics { display: flex; align-items: flex-end; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+.quest-money .qm-mob { height: 40px; width: auto; max-width: 64px; object-fit: contain; image-rendering: pixelated; }
+.quest-money .qm-medal { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; font-weight: 900; font-size: .9rem; color: #3b2600; box-shadow: 0 2px 0 rgba(0,0,0,.18); }
+.quest-money .qm-medal.m1 { background: radial-gradient(circle at 35% 30%, #ffe27a, #f2b705); }
+.quest-money .qm-medal.m2 { background: radial-gradient(circle at 35% 30%, #f1f3f6, #b7bec9); }
+.quest-money .qm-medal.m3 { background: radial-gradient(circle at 35% 30%, #f3c79a, #c47a3c); color: #3b1a00; }
+.quest-money tr.qm-r1 { background: color-mix(in srgb, #f2b705 9%, transparent); }
