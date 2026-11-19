@@ -3618,3 +3618,8 @@ body.exp-running .exp-stop { display: inline-flex; }
 .quest-money .qm-medal.m2 { background: radial-gradient(circle at 35% 30%, #f1f3f6, #b7bec9); }
 .quest-money .qm-medal.m3 { background: radial-gradient(circle at 35% 30%, #f3c79a, #c47a3c); color: #3b1a00; }
 .quest-money tr.qm-r1 { background: color-mix(in srgb, #f2b705 9%, transparent); }
+/* keep the money-quest table readable on phones: it scrolls sideways inside .table-wrap instead of squeezing */
+.quest-money { min-width: 860px; }
+.quest-money .qm-quest > div { min-width: 170px; }
+.quest-money .qm-reward > span { min-width: 120px; }
+.quest-money td:last-child { min-width: 170px; }
