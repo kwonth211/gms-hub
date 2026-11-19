@@ -661,7 +661,7 @@ const api = {
       if (!valid) return json({ error: 'item index unavailable' }, cors, 503);
       const okTo =
         valid.has(to.item) && Number.isInteger(to.price) && to.price >= 1 && to.price <= 10_000_000_000 &&
-        Number.isInteger(to.qty) && to.qty >= 1 && to.qty <= 10000 && typeof to.seller === 'string' && /^[A-Za-z0-9]{2,13}$/.test(to.seller) &&
+        Number.isInteger(to.qty) && to.qty >= 1 && to.qty <= 10000 && typeof to.seller === 'string' && /^[A-Za-z0-9]{4,13}$/.test(to.seller) &&
         typeof to.sold === 'boolean' && Number.isInteger(to.channel) && to.channel >= 1 && to.channel <= 40 &&
         validRoom(to.room);
       if (!okTo || !Number.isInteger(from.item) || !Number.isInteger(from.price) ||
@@ -745,7 +745,7 @@ const api = {
           Number.isInteger(r.price) && r.price >= 1 && r.price <= 10_000_000_000 &&
           typeof r.sold === 'boolean' &&
           (r.qty === undefined || (Number.isInteger(r.qty) && r.qty >= 1 && r.qty <= 10000)) &&
-          typeof r.seller === 'string' && /^[A-Za-z0-9]{2,13}$/.test(r.seller) &&
+          typeof r.seller === 'string' && /^[A-Za-z0-9]{4,13}$/.test(r.seller) &&
           Number.isInteger(r.channel) && r.channel >= 1 && r.channel <= 40 &&
           validRoom(r.room)
       );

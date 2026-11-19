@@ -19,7 +19,7 @@ export function validScan(body, known, now = Date.now()) {
   for (const r of body.rows) {
     if (!r || !known.has(r.item) || !Number.isSafeInteger(r.price) || r.price < 1 || r.price > 1e10 ||
         !Number.isInteger(r.qty) || r.qty < 1 || r.qty > 10000 || typeof r.sold !== 'boolean' ||
-        typeof r.seller !== 'string' || !/^[A-Za-z0-9]{2,13}$/.test(r.seller)) return false;
+        typeof r.seller !== 'string' || !/^[A-Za-z0-9]{4,13}$/.test(r.seller)) return false;
     const key = JSON.stringify([r.item, r.price, r.seller]);
     if (keys.has(key)) return false;
     keys.add(key);

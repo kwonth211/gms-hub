@@ -46,7 +46,7 @@ export function validBatch(body, known, now = Date.now()) {
   for (const r of body.rows) {
     const seen = typeof r.seen === 'string' && /^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d$/.test(r.seen) ? Date.parse(r.seen.replace(' ', 'T') + 'Z') : NaN;
     if (!known.has(r.item) || !Number.isSafeInteger(r.price) || r.price < 1 || r.price > 1e10 || r.qty !== 1 || r.sold !== false ||
-        !/^[A-Za-z0-9]{2,13}$/.test(r.seller || '') || !Number.isInteger(r.channel) || r.channel < 1 || r.channel > 40 ||
+        !/^[A-Za-z0-9]{4,13}$/.test(r.seller || '') || !Number.isInteger(r.channel) || r.channel < 1 || r.channel > 40 ||
         !Number.isInteger(r.room) || r.room < 1 || r.room > 40 || !Number.isFinite(seen) || seen > finished || started - seen > 3 * 3600000 ||
         new Date(seen).toISOString().slice(0, 19).replace('T', ' ') !== r.seen) return false;
     const key = JSON.stringify([r.item, r.price, r.seller, r.channel, r.room]);

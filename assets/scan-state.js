@@ -1,5 +1,7 @@
 // Small, shared rules for the scanner's upload boundary. No DOM or network access.
-export const SELLER = /^[A-Za-z0-9]{2,13}$/;
+// Character names are 4 to 13 letters or digits: 330k collected listings hold no shorter seller, while two-letter reads
+// ("PA", "IE", "as") were a misread owner line that duplicated a whole shop under a fake seller (owner 2026-11-19).
+export const SELLER = /^[A-Za-z0-9]{4,13}$/;
 import { validRoom } from './place.js';
 export const validLocation = (n) => Number.isInteger(n) && n >= 1 && n <= 40;
 export const listingKey = (r) => `${r.shop.id}|${r.item?.id || r.name}|${r.price ?? '?'}|${r.qty}`;

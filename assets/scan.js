@@ -39,7 +39,7 @@ const ME_KEY = 'gmshub_scan_me';
 const meInput = document.getElementById('scan-me');
 try { if (meInput) meInput.value = localStorage.getItem(ME_KEY) || ''; } catch {}
 meInput?.addEventListener('change', () => { try { localStorage.setItem(ME_KEY, meInput.value.trim()); } catch {} track('scan_me_set'); });
-const me = () => { const v = (meInput?.value || '').trim(); return /^[A-Za-z0-9]{2,13}$/.test(v) ? v : ''; };
+const me = () => { const v = (meInput?.value || '').trim(); return /^[A-Za-z0-9]{4,13}$/.test(v) ? v : ''; };
 const LOC_KEY = 'gmshub_scan_loc';
 let { channel = null, room = null } = (() => {
   try {
