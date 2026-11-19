@@ -263,7 +263,7 @@ export async function handleInteraction(i, { prices, get, discord, fetcher, env 
   if (name === 'feedback') {
     const where = i.guild_id ? `server ${i.guild_id}` : 'DM';
     const r = env ? await relayFeedback(env, user, opt.text?.value || '', where) : 'off';
-    return hidden(r === 'ok' ? tr(`고마워요, 개발자에게 바로 전달했어요. 확인하면 이 봇이 DM으로 답해 드려요. 급한 오류면 GMS Hub 디스코드 #건의-제보에도 남겨 주세요: ${discord || ''}`, `Thanks, it went straight to the developer. The answer comes back by DM from this bot. For urgent bugs you can also post in the GMS Hub Discord: ${discord || ''}`)
+    return hidden(r === 'ok' ? tr(`고마워요, 개발자에게 바로 전달했어요. 답은 GMS Hub 디스코드 #건의-제보 채널에 멘션과 함께 올라와요: ${discord || ''}`, `Thanks, it went straight to the developer. The answer is posted in the GMS Hub Discord #feedback channel with a mention: ${discord || ''}`)
       : r === 'slow' ? tr('방금 보내셨어요. 1분 뒤에 다시 보내 주세요.', 'You just sent one. Try again in a minute.')
       : tr(`지금은 전달하지 못했어요. GMS Hub 디스코드에 직접 남겨 주세요: ${discord || ''}`, `Could not pass it on right now. Please post it in the GMS Hub Discord: ${discord || ''}`));
   }
