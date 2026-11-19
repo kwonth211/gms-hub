@@ -9022,7 +9022,7 @@
           "count": 8,
           "total": 26,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -9032,7 +9032,7 @@
           "count": 7,
           "total": 18,
           "types": 2,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -9042,7 +9042,7 @@
           "count": 5,
           "total": 27,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -9052,7 +9052,7 @@
           "count": 4,
           "total": 32,
           "types": 4,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -9062,7 +9062,7 @@
           "count": 2,
           "total": 8,
           "types": 4,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         }
       ],
@@ -9814,7 +9814,7 @@
           "count": 9,
           "total": 20,
           "types": 2,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         }
       ],
@@ -10374,7 +10374,7 @@
           "count": 3,
           "total": 20,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         }
       ],
@@ -10484,7 +10484,7 @@
           "count": 1,
           "total": 8,
           "types": 4,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         }
       ],
@@ -10635,7 +10635,7 @@
           "count": 3,
           "total": 19,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         }
       ],
@@ -11562,7 +11562,7 @@
           "count": 11,
           "total": 44,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -11572,7 +11572,7 @@
           "count": 4,
           "total": 28,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         }
       ],
@@ -12833,7 +12833,7 @@
           "count": 8,
           "total": 35,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         }
       ],
@@ -13316,7 +13316,7 @@
       "el": "",
       "undead": false,
       "boss": false,
-      "status": "upcoming",
+      "status": "active",
       "locations": [
         {
           "id": 10006060,
@@ -13325,7 +13325,7 @@
           "count": 19,
           "total": 44,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -13335,7 +13335,7 @@
           "count": 13,
           "total": 35,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -13345,7 +13345,7 @@
           "count": 12,
           "total": 28,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -13355,7 +13355,7 @@
           "count": 11,
           "total": 33,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -13365,7 +13365,7 @@
           "count": 10,
           "total": 25,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -13375,7 +13375,7 @@
           "count": 5,
           "total": 20,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         }
       ],
@@ -13464,7 +13464,7 @@
       "el": "I2F3",
       "undead": false,
       "boss": false,
-      "status": "upcoming",
+      "status": "active",
       "locations": [
         {
           "id": 10006050,
@@ -13473,7 +13473,7 @@
           "count": 14,
           "total": 35,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -13483,7 +13483,7 @@
           "count": 14,
           "total": 44,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -13493,7 +13493,7 @@
           "count": 12,
           "total": 23,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -13503,7 +13503,7 @@
           "count": 12,
           "total": 28,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -13513,7 +13513,7 @@
           "count": 8,
           "total": 25,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -13523,7 +13523,7 @@
           "count": 5,
           "total": 11,
           "types": 2,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         }
       ],
@@ -14272,7 +14272,7 @@
           "count": 8,
           "total": 26,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -14282,7 +14282,7 @@
           "count": 7,
           "total": 22,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -14292,7 +14292,7 @@
           "count": 5,
           "total": 27,
           "types": 4,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         }
       ],
@@ -14518,7 +14518,7 @@
       "el": "",
       "undead": false,
       "boss": false,
-      "status": "upcoming",
+      "status": "active",
       "locations": [
         {
           "id": 10006130,
@@ -14527,7 +14527,7 @@
           "count": 4,
           "total": 22,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -14537,7 +14537,7 @@
           "count": 3,
           "total": 32,
           "types": 4,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -14547,7 +14547,7 @@
           "count": 3,
           "total": 20,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -14557,7 +14557,7 @@
           "count": 2,
           "total": 19,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -14567,7 +14567,7 @@
           "count": 2,
           "total": 23,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -14577,7 +14577,7 @@
           "count": 2,
           "total": 15,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         }
       ],
@@ -14649,7 +14649,7 @@
       "el": "I2L3",
       "undead": false,
       "boss": false,
-      "status": "upcoming",
+      "status": "active",
       "locations": [
         {
           "id": 10006022,
@@ -14658,7 +14658,7 @@
           "count": 15,
           "total": 33,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -14668,7 +14668,7 @@
           "count": 9,
           "total": 20,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -14678,7 +14678,7 @@
           "count": 9,
           "total": 23,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -14688,7 +14688,7 @@
           "count": 9,
           "total": 27,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -14698,7 +14698,7 @@
           "count": 8,
           "total": 19,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -14708,7 +14708,7 @@
           "count": 6,
           "total": 11,
           "types": 2,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         }
       ],
@@ -15016,7 +15016,7 @@
       "el": "L3",
       "undead": false,
       "boss": false,
-      "status": "upcoming",
+      "status": "active",
       "locations": [
         {
           "id": 10006090,
@@ -15025,7 +15025,7 @@
           "count": 11,
           "total": 18,
           "types": 2,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -15035,7 +15035,7 @@
           "count": 11,
           "total": 27,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -15045,7 +15045,7 @@
           "count": 9,
           "total": 19,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -15055,7 +15055,7 @@
           "count": 7,
           "total": 25,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -15065,7 +15065,7 @@
           "count": 7,
           "total": 19,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -15075,7 +15075,7 @@
           "count": 6,
           "total": 20,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -15085,7 +15085,7 @@
           "count": 5,
           "total": 14,
           "types": 2,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         }
       ],
@@ -15611,7 +15611,7 @@
       "el": "S2I2F3",
       "undead": false,
       "boss": false,
-      "status": "upcoming",
+      "status": "active",
       "locations": [
         {
           "id": 10006080,
@@ -15620,7 +15620,7 @@
           "count": 13,
           "total": 32,
           "types": 4,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -15630,7 +15630,7 @@
           "count": 11,
           "total": 27,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -15640,7 +15640,7 @@
           "count": 11,
           "total": 22,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -15650,7 +15650,7 @@
           "count": 10,
           "total": 26,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -15660,7 +15660,7 @@
           "count": 7,
           "total": 33,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -15670,7 +15670,7 @@
           "count": 7,
           "total": 15,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         }
       ],
@@ -16537,7 +16537,7 @@
       "el": "I3S2",
       "undead": false,
       "boss": false,
-      "status": "upcoming",
+      "status": "active",
       "locations": [
         {
           "id": 10006160,
@@ -16546,7 +16546,7 @@
           "count": 14,
           "total": 27,
           "types": 4,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -16556,7 +16556,7 @@
           "count": 12,
           "total": 32,
           "types": 4,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -16566,7 +16566,7 @@
           "count": 11,
           "total": 27,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -16576,7 +16576,7 @@
           "count": 11,
           "total": 20,
           "types": 2,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -16586,7 +16586,7 @@
           "count": 9,
           "total": 14,
           "types": 2,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -16596,7 +16596,7 @@
           "count": 7,
           "total": 27,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         }
       ],
@@ -17090,7 +17090,7 @@
       "el": "F3L2",
       "undead": false,
       "boss": false,
-      "status": "upcoming",
+      "status": "active",
       "locations": [
         {
           "id": 10006150,
@@ -17099,7 +17099,7 @@
           "count": 9,
           "total": 19,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -17109,7 +17109,7 @@
           "count": 6,
           "total": 15,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         }
       ],
@@ -17585,7 +17585,7 @@
       "el": "S2H3",
       "undead": true,
       "boss": false,
-      "status": "upcoming",
+      "status": "active",
       "locations": [
         {
           "id": 10006161,
@@ -17594,7 +17594,7 @@
           "count": 14,
           "total": 20,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -17604,7 +17604,7 @@
           "count": 10,
           "total": 20,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -17614,7 +17614,7 @@
           "count": 6,
           "total": 27,
           "types": 4,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -17624,7 +17624,7 @@
           "count": 4,
           "total": 8,
           "types": 4,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         }
       ],
@@ -18375,7 +18375,7 @@
       "el": "F3H3S2",
       "undead": true,
       "boss": false,
-      "status": "upcoming",
+      "status": "active",
       "locations": [
         {
           "id": 10006162,
@@ -18384,7 +18384,7 @@
           "count": 7,
           "total": 20,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         },
         {
@@ -18394,7 +18394,7 @@
           "count": 3,
           "total": 20,
           "types": 3,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         }
       ],
@@ -18639,7 +18639,7 @@
       "el": "S2F3H3",
       "undead": true,
       "boss": true,
-      "status": "upcoming",
+      "status": "active",
       "locations": [
         {
           "id": 10006121,
@@ -18648,7 +18648,7 @@
           "count": 1,
           "total": 8,
           "types": 4,
-          "availability": "upcoming",
+          "availability": "open",
           "opensOn": "2026-11-18"
         }
       ],

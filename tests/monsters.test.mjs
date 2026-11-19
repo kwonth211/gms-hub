@@ -23,13 +23,13 @@ test('every existing monster has a unique reviewed detail record and sprite',()=
 test('Curse Eye uses Classic World stats, current reports and accessible map counts',()=>{
   const m=data.monsters.find(m=>m.id===31);
   assert.deepEqual([m.lv,m.hp,m.exp,m.wdef,m.mdef,m.eva,m.el],[33,1001,63,30,0,22,'S2']);
-  assert.equal(m.locations.length,15);assert.equal(m.locations.filter(l=>l.availability==='open').length,13);
+  assert.equal(m.locations.length,15);assert.equal(m.locations.filter(l=>l.availability==='open').length,15);
   const north=m.locations.find(l=>l.id===10002083);assert.deepEqual([north.count,north.total],[20,20]);
   assert.ok(m.drops.some(d=>d.itemId===2000001),'Orange Potion is reported');
   assert.ok(!m.drops.some(d=>d.itemId===2000002),'Do not import White Potion from historic v83 table');
   assert.ok(!m.drops.some(d=>d.en==='Titan'),'Net-negative report excluded');
   const quest=m.drops.find(d=>d.itemId===4001006);assert.equal(quest.cat,'Quest');
-  const html=render(m);assert.match(html,/독 저항/);assert.doesNotMatch(html,/확인되지 않|확인된 적이 없/);assert.match(html,/입장 가능 13 \/ 전체 15맵/);
+  const html=render(m);assert.match(html,/독 저항/);assert.doesNotMatch(html,/확인되지 않|확인된 적이 없/);assert.match(html,/입장 가능 15 \/ 전체 15맵/);
   assert.ok(!html.includes('?item=4001006'),'Quest drops do not link to trading');
 });
 test('drop labels are traceable observations, never invented probabilities or voter counts',()=>{
@@ -49,7 +49,8 @@ test('unmapped and unreleased monsters are not described as currently huntable',
   const faust=data.monsters.find(m=>m.id===700008);assert.equal(faust.status,'unplaced');
   assert.match(render(faust),/아직 들어온 드롭 제보가 없어요/);
   assert.match(render(faust),/출현 맵 없음/);
-  const glow=data.monsters.find(m=>m.id===54);assert.equal(glow.status,'upcoming');assert.match(render(glow),/11\/18 개방 예정/);
+  // Forgotten Hollow opened with the 11/18 patch: its monsters are huntable now and carry no 'opens Nov 18' label.
+  const glow=data.monsters.find(m=>m.id===54);assert.equal(glow.status,'active');assert.doesNotMatch(render(glow),/11\/18 개방 예정/);
 });
 test('renderers escape source strings and expose filters without backend scripts',()=>{
   const m=structuredClone(data.monsters[0]);m.ko='<img src=x onerror=alert(1)>';
