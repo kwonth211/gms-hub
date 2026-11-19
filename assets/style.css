@@ -3623,3 +3623,6 @@ body.exp-running .exp-stop { display: inline-flex; }
 .quest-money .qm-quest > div { min-width: 170px; }
 .quest-money .qm-reward > span { min-width: 120px; }
 .quest-money td:last-child { min-width: 170px; }
+
+/* The EXP ranking scrolls sideways on a phone like the money ranking; its column order differs, so none is hidden. */
+@media (max-width: 639px) { .quest-exp th:nth-child(n), .quest-exp td:nth-child(n) { display: table-cell; } }

@@ -264,7 +264,7 @@ test('equipment finder lists obtainable gear per class with stats and where to g
 });
 test('best EXP quests rank quest rewards per level band without repeatables or replacement characters',()=>{
   const html=read('dist/en/quests/best-exp/index.html');
-  assert.match(html,/<h2>Level 11–20<\/h2>/);
+  assert.match(html,/<h2>Level 11–20( <small[^>]*>[^<]*<\/small>)?<\/h2>/);
   assert.ok(!html.includes('�'));
   assert.match(read('dist/en/quests/index.html'),/href="\/en\/quests\/best-exp\/"/);
 });
