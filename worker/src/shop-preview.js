@@ -11,7 +11,8 @@ const place = (ch, room, ko) => `CH ${ch} · ${room === 101 ? (ko ? '커닝 공�
 export function shopPreviewHtml({ name, rows, ko, url, image, nameOf }) {
   const newest = rows[0];
   const here = newest ? rows.filter((r) => r.channel === newest.channel && r.room === newest.room) : [];
-  const top = [...here].sort((a, b) => b.price - a.price).slice(0, 8);
+  // The same item at the same price twice (two stacks) is named once.
+  const top = [...new Map([...here].sort((a, b) => b.price - a.price).map((r) => [`${r.item}|${r.price}`, r])).values()].slice(0, 8);
   const title = newest
     ? (ko ? `🛒 ${name}의 상점 · ${place(newest.channel, newest.room, ko)} · ${here.length}개 판매 중` : `🛒 ${name}'s shop · ${place(newest.channel, newest.room, ko)} · ${here.length} for sale`)
     : (ko ? `🛒 ${name}의 상점` : `🛒 ${name}'s shop`);
