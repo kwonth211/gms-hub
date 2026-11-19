@@ -754,6 +754,9 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
     priceData = data;
     renderDaily();
     panelPart("history", id);
+    // The alert form is open on every item (owner 2026-11-19: alerts were hidden behind a small button and barely used),
+    // pre-filled with a price a quarter of today's listings beat. A message back from Discord keeps the box instead.
+    if ((D.alerts || document.body.dataset.discordUrl) && !(discordReturn && discordReturn.item === id)) openAlert(id);
     if ((data.profile || []).some((r) => r.opts)) loadTips().then(() => { if (priceData === data) fillOptMenu(id); });
     // Consumables and cash items that no shop scan covers take their asking price from megaphones (/prices basis "mega").
     if (!(data.profile || []).length) get(`/prices?ids=${id}`).then((p) => { if (priceData === data && p?.[id]?.mega) { data.megaAsk = p[id].mega; renderDaily(); } }).catch(() => null);
@@ -1382,7 +1385,7 @@ async function openAlert(id) {
   // Discord DM alerts: "Log in with Discord" on the worker saves the alert, joins the GMS Hub server and DMs a confirmation,
   // then comes back here with ?dalert= (see discordResult). Works on every phone, no browser permission.
   const invite = document.body.dataset.discordUrl;
-  const viaDiscord = invite ? `<form class="mb-alert-form" data-discord-alert="${id}"><label>${tr("이 가격 이하로 올라오면 <b>디스코드 DM</b>으로 알려 주기", "<b>DM me on Discord</b> when it is listed at or under")} <input name="price" value="${suggest ? kmoney(suggest) : ""}" placeholder="${tr("예: 300만", "e.g. 3m")}" required></label><button class="btn small-btn" type="submit">${tr("디스코드로 알림 받기", "Get it on Discord")}</button><small class="muted">${tr("디스코드 승인을 한 번 누르면 끝나요. 상점 매물과 확성기를 보고, 더 싼 매물이 나오면 다시 알려 드려요.", "One tap to approve on Discord. Shop listings and megaphones are watched; a cheaper one alerts you again.")}</small><span class="share-status" role="status"></span></form>` : "";
+  const viaDiscord = invite ? `<form class="mb-alert-form" data-discord-alert="${id}"><label><span class="mb-alert-bell" aria-hidden="true">🔔</span>${tr("<b>원하는 가격에 나오면 알려 드릴게요</b> · 이 가격 이하 매물이 뜨면 디스코드 DM", "<b>Get told when it is cheap</b> · a Discord DM when it is listed at or under")} <input name="price" value="${suggest ? kmoney(suggest) : ""}" placeholder="${tr("예: 300만", "e.g. 3m")}" required></label><button class="btn small-btn" type="submit">${tr("디스코드로 알림 받기", "Get it on Discord")}</button><small class="muted">${tr("디스코드 승인을 한 번 누르면 끝나요. 상점 매물과 확성기를 보고, 더 싼 매물이 나오면 다시 알려 드려요.", "One tap to approve on Discord. Shop listings and megaphones are watched; a cheaper one alerts you again.")}</small><span class="share-status" role="status"></span></form>` : "";
   const supported = D.alerts && "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
   if (!supported) {
     box.innerHTML = viaDiscord || `<p class="muted note">${tr("이 브라우저는 알림을 지원하지 않아요. 아이폰은 사이트를 홈 화면에 추가한 뒤 그 앱에서 켤 수 있어요.", "This browser cannot show alerts. On iPhone, add the site to your home screen and turn alerts on from there.")}</p>`;
@@ -1393,7 +1396,7 @@ async function openAlert(id) {
     const sub = await pushSubscription(false);
     if (sub) current = ((await (await fetch(`${D.api}/alerts?endpoint=${encodeURIComponent(sub.endpoint)}`)).json()).alerts || []).find((a) => a.item === id) || null;
   } catch {}
-  box.innerHTML = `<form class="mb-alert-form" data-alert-item="${id}"><label>${tr("이 가격 이하로 올라오면 알려 주기", "Tell me when it is listed at or under")} <input name="price" inputmode="numeric" value="${current?.price || suggest}" required></label><button class="btn small-btn" type="submit">${current ? tr("알림 가격 바꾸기", "Update alert") : tr("알림 켜기", "Turn on alert")}</button>${current ? `<button type="button" class="btn ghost small-btn" data-alert-off="${id}">${tr("알림 끄기", "Turn off")}</button>` : ""}<small class="muted">${tr("새 매물은 15분마다 확인해요. 한 번 울리면 6시간 동안은 다시 울리지 않아요.", "New listings are checked every 15 minutes; after an alert it rests for 6 hours.")}</small><span class="share-status" role="status"></span></form>${viaDiscord}`;
+  box.innerHTML = `<form class="mb-alert-form" data-alert-item="${id}"><label><span class="mb-alert-bell" aria-hidden="true">🔔</span>${tr("<b>원하는 가격에 나오면 알려 드릴게요</b> · 이 가격 이하", "<b>Get told when it is cheap</b> · at or under")} <input name="price" inputmode="numeric" value="${current?.price || suggest}" required></label><button class="btn small-btn" type="submit">${current ? tr("알림 가격 바꾸기", "Update alert") : tr("알림 켜기", "Turn on alert")}</button>${current ? `<button type="button" class="btn ghost small-btn" data-alert-off="${id}">${tr("알림 끄기", "Turn off")}</button>` : ""}<small class="muted">${tr("새 매물은 15분마다 확인해요. 한 번 울리면 6시간 동안은 다시 울리지 않아요.", "New listings are checked every 15 minutes; after an alert it rests for 6 hours.")}</small><span class="share-status" role="status"></span></form>${viaDiscord}`;
 }
 document.addEventListener("click", async (e) => {
   const openBtn = e.target.closest("[data-alert-open]");
