@@ -655,8 +655,10 @@ export function scrollTier(img, row) {
   if (hi - lo < 4) return null;
   // Blue-green tint: Lesser.
   if (g > r && b > r) return 'Lesser';
+  // Chaos is a nearly grey brown (134,120,116): a screen's colour profile can lift its blue above its green, so any
+  // weakly tinted icon that is not Lesser's blue-green is Chaos (owner 2026-11-19: chaos scrolls were left unresolved).
+  if (sat < (row.sold ? 0.09 : 0.2) && r >= g - 2 && r >= b - 2) return 'Chaos';
   if (r > g && g >= b) {
-    if (sat < (row.sold ? 0.09 : 0.2)) return 'Chaos';
     // Yellow keeps much more green than brown does.
     return (g - lo) / (r - lo) > 0.5 ? 'Greater' : 'Intermediate';
   }

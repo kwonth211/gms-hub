@@ -86,3 +86,19 @@ test('DEF and DEX scrolls stay a choice: the tier tint never picks between two d
   assert.equal(narrowByTier(cut, 'Greater').item.en, 'Gloves Attack Scroll: Greater');
   assert.equal(matchItem('Overall Armor DEX Scroll: Intermediate', items).item.en, 'Overall Armor DEX Scroll: Intermediate');
 });
+
+test('scroll tier tint: Chaos is found even when the screen lifts its blue above its green', async () => {
+  const { scrollTier } = await import('../assets/shop-reader.js');
+  const icon = ([r, g, b]) => {
+    const width = 40, height = 40, data = new Uint8ClampedArray(width * height * 4);
+    for (let i = 0; i < width * height; i++) data.set([r, g, b, 255], i * 4);
+    return { width, height, data };
+  };
+  const row = { top: 0, x0: 0, sold: false };
+  assert.equal(scrollTier(icon([128, 153, 151]), row), 'Lesser');
+  assert.equal(scrollTier(icon([191, 114, 72]), row), 'Intermediate');
+  assert.equal(scrollTier(icon([208, 161, 66]), row), 'Greater');
+  assert.equal(scrollTier(icon([134, 120, 116]), row), 'Chaos');
+  assert.equal(scrollTier(icon([132, 118, 124]), row), 'Chaos'); // blue lifted over green
+  assert.equal(scrollTier(icon([130, 121, 126]), row), 'Chaos');
+});
