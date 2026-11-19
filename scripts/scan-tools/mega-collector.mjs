@@ -27,6 +27,9 @@ if (!fs.existsSync(helper) || fs.statSync(helper).mtimeMs < fs.statSync(source).
 // The capture helper runs for as long as the game window is there; it ends by itself when this process does (its
 // stdin closes). After it stops (game closed, window resized) it is started again, at most once a minute.
 let cam = null, tried = 0, seen = 0, fresh = 0;
+// The OCR worker slowly grows (~1.9GB after two days). Past 1.2GB this process quits; mega.sh's loop starts a fresh one,
+// which keeps the Terminal's screen-recording permission (a launchd job would not have it).
+setInterval(() => { const rss = process.memoryUsage().rss; if (rss > 1.2e9) { console.log(new Date().toISOString(), `restart: memory ${(rss / 1e9).toFixed(2)}GB`); process.exit(0); } }, 60000);
 function camera() {
   tried = fresh = Date.now();
   fs.rmSync(shot, { force: true });

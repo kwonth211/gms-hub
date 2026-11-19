@@ -10,10 +10,11 @@ running() { [[ -f $PID ]] && kill -0 $(cat $PID) 2>/dev/null; }
 case $1 in
   start)
     if running; then echo "이미 수집 중 (pid $(cat $PID))"; exit 0; fi
-    cd $DIR && nohup caffeinate -i node mega-collector.mjs >> $LOG 2>&1 &
+    # loop: the collector quits by itself when its memory grows too big and is started again here
+    cd $DIR && nohup caffeinate -i zsh -c 'while true; do node mega-collector.mjs; sleep 3; done' >> $LOG 2>&1 &
     echo $! > $PID; echo "수집 시작 (pid $!) · 기록: $LOG" ;;
   stop)
-    if running; then pkill -P $(cat $PID) 2>/dev/null; kill $(cat $PID) 2>/dev/null; rm -f $PID; echo "수집 중지"; else echo "수집 중이 아님"; fi ;;
+    if running; then for c in $(pgrep -P $(cat $PID)); do pkill -P $c 2>/dev/null; kill $c 2>/dev/null; done; kill $(cat $PID) 2>/dev/null; rm -f $PID; echo "수집 중지"; else echo "수집 중이 아님"; fi ;;
   status)
     if running; then echo "수집 중 (pid $(cat $PID))"; else echo "멈춤"; fi
     echo "최근 확성기:"; grep -E '^[0-9]{2}:[0-9]{2}:[0-9]{2} ' $LOG | tail -5 ;;
