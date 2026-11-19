@@ -3559,3 +3559,34 @@ body.exp-running .exp-stop { display: inline-flex; }
 
 /* Home: Forgotten Hollow card under the hero while the patch is new. */
 .home-fh .fh-promo { margin: 14px 0 4px; }
+/* Shop page (/shop/?n=, 2026-11-19): header with location and share buttons, a paste-ready line, item cards with the
+   asking price next to the market price. */
+.shop-page .lead { color: var(--text-2); }
+.shop-ask { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin: 16px 0; }
+.shop-ask label { display: grid; gap: 4px; font-weight: 700; }
+.shop-ask input { padding: 9px 12px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--panel); color: var(--text); font: inherit; min-width: 220px; }
+.shop-msg { width: 100%; color: var(--danger); margin: 0; }
+.shop-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 18px 0 8px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); }
+.shop-head h2 { margin: 0 0 4px; font-size: 1.4rem; }
+.shop-where { margin: 0; color: var(--text-2); }
+.shop-ch { display: inline-block; padding: 2px 8px; margin-right: 6px; border-radius: 8px; background: var(--accent-soft); color: var(--accent-2); font-weight: 800; font-variant-numeric: tabular-nums; }
+.shop-share { display: flex; gap: 8px; flex-wrap: wrap; }
+.shop-preview { margin: 0 0 14px; padding: 9px 12px; border-radius: 10px; background: color-mix(in srgb, var(--accent-fill) 7%, transparent); font-size: 0.86rem; color: var(--text-2); overflow-wrap: anywhere; }
+.shop-items { list-style: none; padding: 0; margin: 0 0 14px; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 8px; }
+.shop-item a { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--text); text-decoration: none; height: 100%; box-sizing: border-box; }
+.shop-item a:hover { border-color: var(--accent-fill); }
+.shop-item a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.shop-item img { width: 36px; height: 36px; object-fit: contain; image-rendering: pixelated; }
+.shop-name { display: grid; gap: 2px; min-width: 0; }
+.shop-name strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shop-name small, .shop-price small { color: var(--muted); font-size: 0.76rem; }
+.shop-name em { font-style: normal; font-size: 0.74rem; font-weight: 800; }
+.shop-price { display: grid; justify-items: end; gap: 2px; text-align: right; }
+.shop-price strong { font-size: 1.02rem; font-variant-numeric: tabular-nums; }
+.shop-tag { font-size: 0.72rem; padding: 1px 7px; border-radius: 999px; white-space: nowrap; }
+.shop-tag.cheap { background: color-mix(in srgb, var(--ok) 15%, transparent); color: var(--ok); }
+.shop-tag.pricey { background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); }
+.shop-tag.fair { background: var(--panel-2); color: var(--text-2); }
+.shop-item.is-gone a { opacity: 0.55; }
+.shop-empty { margin: 18px 0; padding: 18px; border: 1px dashed var(--line-strong); border-radius: 14px; }
+.scan-myshop { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--accent-fill) 8%, transparent); }

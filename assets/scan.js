@@ -420,6 +420,7 @@ async function upload() {
     }
     check('upload', 'ok', fill(i18n.uploadOk, { n: uploaded }));
     track('scan_upload', { items: fresh.length });
+    showMyShop(fresh.map((e) => e.body.seller));
     failures = 0;
     succeeded = true;
   } catch {
@@ -614,6 +615,26 @@ function applyEdit(r, tr, change) {
   retryAt = 0;
   track('scan_edit', { item_id: r.item?.id });
   upload();
+}
+
+// After an upload, the seller's own shop page (assets/shop-page.js) is one click away: "my character name" first, else the
+// seller of what was just sent (owner 2026-11-19: 내 상점 페이지).
+function showMyShop(sellers) {
+  const box = document.getElementById('scan-myshop');
+  const name = me() || sellers.find((s) => SELLER.test(s || ''));
+  if (!box || !name || box.dataset.name === name) return;
+  box.dataset.name = name;
+  const ko = i18n.lang === 'ko';
+  const url = new URL(`../../shop/?n=${encodeURIComponent(name)}`, location.href).href;
+  box.innerHTML = `🛒 ${ko ? `<b>${esc(name)}</b>의 상점 페이지가 생겼어요. 링크를 디스코드나 커뮤니티에 붙여 보세요.` : `<b>${esc(name)}</b>'s shop page is ready. Paste the link in Discord or forums.`} <a class="btn small-btn" href="${esc(url)}" target="_blank" rel="noopener" data-myshop="open">${ko ? '상점 페이지 열기' : 'Open shop page'}</a><button type="button" class="btn ghost small-btn" data-myshop="copy">${ko ? '링크 복사' : 'Copy link'}</button>`;
+  box.hidden = false;
+  box.querySelector('[data-myshop="copy"]').addEventListener('click', async (e) => {
+    let ok = false;
+    try { await navigator.clipboard.writeText(url); ok = true; } catch (x) {}
+    e.target.textContent = ok ? (ko ? '✓ 복사했어요' : '✓ Copied') : (ko ? '복사 실패' : 'Copy failed');
+    track('shop_link_copy', { what: 'scan', result: ok ? 'ok' : 'fail' });
+  });
+  box.querySelector('[data-myshop="open"]').addEventListener('click', () => track('shop_page_open', { from: 'scan' }));
 }
 
 function updateSummary() {

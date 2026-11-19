@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "shop-page",
+   "version": "0.7.24",
+   "level": "minor",
+   "date": "2026-11-19",
+   "path": "/tools/scan/",
+   "ko": "내 상점 페이지 — 스캔한 상점을 링크 하나로 홍보",
+   "en": "Shop page — share your scanned shop with one link",
+   "desc": {
+    "ko": "상점 스캔으로 올리면 내 상점 페이지 링크가 생겨요. 위치(채널·방), 판매 중인 물건, 시세보다 싼지 비싼지가 한 페이지에 나오고, 링크와 홍보 문구를 바로 복사해 디스코드나 커뮤니티에 붙일 수 있어요.",
+    "en": "Upload your shop with Shop Scan and you get a shop page link: location, what you sell and how each price compares with the market on one page, with the link and a ready-made post to copy into Discord or forums."
+   }
+  },
+  {
    "id": "fh-weapon-prices",
    "version": "0.7.23",
    "level": "minor",

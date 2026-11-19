@@ -897,7 +897,7 @@ async function showShop(seller, channel, room, shopPage = 1) {
   shopContext = { seller, channel, room, page: shopPage };
   const dialog = $("mb-shop");
   $("mb-shop-body").innerHTML =
-    `<header class="mk-head"><div><h2 id="mb-shop-title">${esc(seller)}</h2><p>CH ${channel} · ${placeLabel(Number(room), ko)}</p></div><button class="btn ghost small-btn" data-close-shop aria-label="${tr("상점 닫기", "Close shop")}">×</button></header><p class="muted note">${tr("이 위치의 상점에서 확인한 판매 매물이에요.", "Asking listings recorded for this shop and location.")}</p><p id="mb-shop-count"></p><div id="mb-shop-rows">${T.loading}</div><div id="mb-shop-pages" class="mb-pagination"></div>`;
+    `<header class="mk-head"><div><h2 id="mb-shop-title">${esc(seller)}</h2><p>CH ${channel} · ${placeLabel(Number(room), ko)} · <a href="../../shop/?n=${encodeURIComponent(seller)}" data-shop-page>${tr("상점 페이지", "Shop page")} ↗</a></p></div><button class="btn ghost small-btn" data-close-shop aria-label="${tr("상점 닫기", "Close shop")}">×</button></header><p class="muted note">${tr("이 위치의 상점에서 확인한 판매 매물이에요.", "Asking listings recorded for this shop and location.")}</p><p id="mb-shop-count"></p><div id="mb-shop-rows">${T.loading}</div><div id="mb-shop-pages" class="mb-pagination"></div>`;
   dialog.setAttribute("aria-labelledby", "mb-shop-title");
   if (!dialog.open) dialog.showModal();
   try {

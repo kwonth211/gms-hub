@@ -2027,6 +2027,7 @@ function scanBody(lang) {
 <tbody id="scan-results"><tr class="empty"><td colspan="9">${esc(t.resultsEmpty)}</td></tr></tbody>
 </table></div>
 <p id="scan-summary" class="muted"></p>
+<p id="scan-myshop" class="scan-myshop" hidden></p>
 <p class="muted">${esc(t.privacy)}</p>
 </div>
 </div>
@@ -3395,6 +3396,21 @@ for (const lang of LANGS) {
   for (const p of PAGES) {
     const def = p.band ? bandDef(p.band) : p.cls ? classDef(p.cls) : defs[p.key];
     write(path.join(lang, p.path, 'index.html'), page({ lang, pageKey: p.key, pagePath: p.path, ...def }));
+  }
+  // 내 상점 페이지 (assets/shop-page.js, owner 2026-11-19): /shop/?n=<seller>, one shareable page per seller. Content comes
+  // from the API, so the page itself is kept out of search.
+  {
+    const ko = lang === 'ko';
+    write(path.join(lang, 'shop', 'index.html'), page({ lang, pageKey: 'shop', pagePath: '/shop/', noindex: true,
+      title: ko ? '내 상점 페이지: 자유시장 상점 매물을 링크 하나로 | GMS Hub' : 'Shop page: share your Free Market shop with one link | GMS Hub',
+      desc: ko ? '상점 스캔으로 올린 내 자유시장 상점을 링크 하나로 보여 줘요. 위치, 판매 중인 물건, 시세 대비 가격까지.' : 'Your Free Market shop on one shareable page: where it is, what it sells and how each price compares with the market.',
+      body: `<section class="wrap shop-page" id="shop-page">
+<p class="crumbs"><a href="${href(langPath(lang, '/tools/market/'))}">${ko ? '실시간 시세' : 'Live market'}</a></p>
+<h1>${ko ? '상점 페이지' : 'Shop page'}</h1>
+<p class="lead">${ko ? '상점 스캔으로 올린 상점을 링크 하나로 보여 줘요. 확성기, 디스코드, 커뮤니티에 링크를 붙이면 사려는 사람이 위치와 물건, 가격을 한눈에 봐요.' : 'A shop uploaded with Shop Scan, on one link. Paste it in megaphones, Discord or forums and buyers see where you are, what you sell and the prices at a glance.'}</p>
+<div data-shop-body></div>
+</section>`,
+      modules: ['shop-page.js'] }));
   }
 
   const langGuides = guides.filter((g) => g.lang === lang);
