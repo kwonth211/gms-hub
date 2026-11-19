@@ -7,11 +7,11 @@
    "level": "minor",
    "date": "2026-11-19",
    "path": "/quests/best-meso/",
-   "ko": "돈 버는 퀘스트 순위를 영상으로 — 10위부터 1위까지 4분 30초 정리",
-   "en": "The money-quest ranking as a video (Korean narration)",
+   "ko": "돈 버는 퀘스트 순위, 영상과 그림으로 — NPC·보상·몬스터가 한눈에",
+   "en": "Money-quest ranking with pictures — NPC, reward and monsters on every row (plus a Korean video)",
    "desc": {
-    "ko": "돈 버는 퀘스트 순위 페이지 위에 영상을 붙였어요. 장공 퀘스트가 왜 1위인지, 퀘스트마다 어디서 무엇을 모으는지 4분 30초로 볼 수 있어요. 재생 버튼을 누를 때만 영상이 불러와져서 페이지는 그대로 빨라요.",
-    "en": "A Korean video of the money-quest ranking now sits at the top of the Korean page."
+    "ko": "돈 버는 퀘스트 순위 표의 줄마다 퀘스트를 주는 NPC 얼굴, 보상 아이템 아이콘, 잡아야 할 몬스터와 모아야 할 재료 그림을 넣었어요. 1~3위에는 메달이 붙어요. 페이지 위에는 10위부터 1위까지 4분 30초로 정리한 영상도 있어요(재생 버튼을 누를 때만 불러와요).",
+    "en": "Every row of the money-quest ranking now shows the quest NPC, the reward icon, and the monsters and materials involved; the top three get medals. The Korean page also has a 4.5-minute video of the ranking."
    }
   },
   {
