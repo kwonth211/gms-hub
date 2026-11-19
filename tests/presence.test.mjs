@@ -41,3 +41,13 @@ test('presence keeps one record of pages open at once and rewrites it only when 
   // A woken object (fresh instance) reads the record back.
   assert.deepEqual(await new Presence(state).loadPeak(), { n: 7, at: '2026-11-15T13:00:00.000Z' });
 });
+
+test('the owner view counts every holder, not only the rows of its table', async () => {
+  const socks = Array.from({ length: 70 }, (_, i) => ({ readyState: 1, page: '/', a: { t: Date.now(), who: `w${i}` } }));
+  socks.forEach((s) => { s.deserializeAttachment = () => s.a; });
+  const state = { getWebSockets: () => socks, getTags: (ws) => [ws.page], setWebSocketAutoResponse() {}, storage: { get: async () => null, put: async () => {} } };
+  const d = await (await new Presence(state).fetch(new Request('https://presence/peak'))).json();
+  assert.equal(d.now, 70);
+  assert.equal(d.people, 70); // was the table length, capped at 40
+  assert.equal(d.who.length, 60);
+});
