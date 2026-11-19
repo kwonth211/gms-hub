@@ -2,6 +2,58 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "shop-link-preview",
+   "version": "0.7.30",
+   "level": "minor",
+   "date": "2026-11-19",
+   "path": "/tools/scan/",
+   "ko": "상점 링크 미리보기 — gms-hub.com/s/캐릭터이름 하나로 매물이 보여요",
+   "en": "Shop link previews — gms-hub.com/s/<name> shows your items in chat",
+   "desc": {
+    "ko": "내 상점 링크를 디스코드나 카톡에 붙이면 상점 위치, 판매 중 개수, 물건과 가격이 미리보기로 바로 떠요. 누르면 상점 페이지로 넘어가요.",
+    "en": "Paste your shop link in Discord or KakaoTalk and the preview shows where the shop is, how many items and what they cost. Clicking opens the shop page."
+   }
+  },
+  {
+   "id": "scan-recognition",
+   "version": "0.7.29",
+   "level": "patch",
+   "date": "2026-11-19",
+   "path": "/tools/scan/",
+   "ko": "상점 스캔 인식 개선 — DEF/DEX 주문서, 혼돈 주문서, 판매자 이름",
+   "en": "Shop Scan reads better — DEF/DEX scrolls, Chaos scrolls, seller names",
+   "desc": {
+    "ko": "전신 갑옷 DEX 주문서가 DEF로 잘못 잡히던 문제, 혼돈 주문서 등급을 못 정하던 문제, 판매자 이름을 두 글자로 잘못 읽어 상점이 중복되던 문제를 고쳤어요. 헷갈리는 줄은 다시 읽고, 그래도 모르면 직접 고르게 해 줘요.",
+    "en": "Overall Armor DEX scrolls no longer turn into DEF, Chaos scrolls get their tier, and two-letter seller misreads no longer duplicate a shop. Unclear lines are read again, and if still unclear you pick."
+   }
+  },
+  {
+   "id": "fh-open",
+   "version": "0.7.28",
+   "level": "minor",
+   "date": "2026-11-19",
+   "path": "/forgotten-hollow/",
+   "ko": "포가튼 할로우 오픈 반영 — 몬스터 11종·사냥 위치 67곳이 실제 정보로",
+   "en": "Forgotten Hollow is open — its 11 monsters and 67 spawn spots updated",
+   "desc": {
+    "ko": "패치로 열린 포가튼 할로우의 몬스터 11종과 출현 위치 67곳이 \"11월 18일 오픈 예정\"이 아니라 실제 정보로 바뀌었어요. 몬스터 도감, 지도, 계산기에서 바로 쓸 수 있어요.",
+    "en": "The 11 Forgotten Hollow monsters and 67 spawn spots now show live information instead of \"opens Nov 18\" across the monster database, maps and calculators."
+   }
+  },
+  {
+   "id": "ticker-fresh",
+   "version": "0.7.27",
+   "level": "patch",
+   "date": "2026-11-19",
+   "path": "/megaphone/",
+   "ko": "맨 위 고확 띠 — 오래 켜 둬도 방금 쏜 고확이 흘러요",
+   "en": "Megaphone strip — stays current even when left open",
+   "desc": {
+    "ko": "확성기가 많은 시간에 띠가 밀려서 20분 전 고확이 흐르던 문제를 고쳤어요. 새로고침하지 않아도 늘 가장 최근 고확부터 보여요.",
+    "en": "At busy hours the strip fell behind and rolled megaphones from twenty minutes ago; fixed. It now always shows the newest ones without a reload."
+   }
+  },
+  {
    "id": "exp-tracker-fix",
    "version": "0.7.26",
    "level": "minor",
