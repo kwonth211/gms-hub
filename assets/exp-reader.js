@@ -92,8 +92,10 @@ export function textImage(img, box, { ink = 150 } = {}) {
 // "EXP. 83,631 [68.13%]" (OCR may drop the brackets or read O for 0) → { exp, pct } or null. The pair must agree:
 // exp / pct gives the level's total, which is between 15 and 5 billion in this game, and the percent has two decimals.
 export function parseExp(text) {
-  const t = String(text || '').replace(/[Oo]/g, '0').replace(/[Il|]/g, '1').replace(/\s+/g, '');
-  const m = /(\d[\d,]*)[\[(]?(\d{1,3}\.\d{1,2})%/.exec(t);
+  const t = String(text || '').replace(/[Oo]/g, '0').replace(/[Il|]/g, '1').replace(/\s+/g, '').replace(/^EXP\.?/i, '');
+  // The whole line must be the number: an unread glyph ('?') in front of it used to leave only its tail ("?,099" read
+  // as 99, owner 2026-11-19), and thousands separators must make whole groups.
+  const m = /^(\d{1,3}(?:,\d{3})*|\d+)[\[(]?(\d{1,3}\.\d{1,2})%[\])]?$/.exec(t);
   if (!m) return null;
   const exp = Number(m[1].replace(/,/g, ''));
   const pct = Number(m[2]);
@@ -170,6 +172,7 @@ export const EXP_GLYPHS = {
   [G(['.###.', '#...#', '....#', '..##.', '.#...', '#....', '#####'])]: '2', // (?)
   [G(['...#.', '..##.', '.#.#.', '#..#.', '#####', '...#.', '...#.'])]: '4', // (?)
   [G(['#####', '#....', '####.', '....#', '....#', '#...#', '.###.'])]: '5', // (?)
+  [G(['#####', '....#', '....#', '....#', '...#.', '..#..', '..#..'])]: '7', // seen 2026-11-19 (EXP 7,099)
   [G(['#####', '....#', '...#.', '..#..', '..#..', '..#..', '..#..'])]: '7', // (?)
   [G(['.###.', '#...#', '#...#', '.####', '....#', '#...#', '.###.'])]: '9', // (?)
   [G(['.#', '#.'])]: ',',
@@ -288,3 +291,48 @@ export async function readExpText(img, box, g, { ocrGlyph = null, learned = new 
   }
   return text.replace(/\s+/g, '');
 }
+
+// ---------- level and job, next to the gauges ----------
+// The level is drawn as white digits on orange tiles left of the HP gauge; the job name is the white line beside them
+// (owner 2026-11-19: read the level too). Both are found from the gauges' position and size, at any screen scale.
+const isOrange = (d, i) => d[i] > 200 && d[i + 1] > 80 && d[i + 1] < 200 && d[i + 2] < 90;
+export function levelBox(img, g) {
+  const s = g.barH / 6, { width: W, data: d } = img;
+  const xa = Math.max(0, Math.round(g.hpX0 - 230 * s)), xb = Math.max(0, Math.round(g.hpX0 - 10 * s));
+  let best = null;
+  for (let y = Math.max(0, Math.round(g.top - 16 * s)); y <= Math.min(img.height - 1, Math.round(g.top + 6 * s)); y++) {
+    let x0 = -1, x1 = -1, n = 0;
+    for (let x = xa; x < xb; x++) { if (isOrange(d, (y * W + x) * 4)) { n++; if (x0 < 0) x0 = x; x1 = x; } }
+    if (n >= 8 * s && (!best || n > best.n)) best = { n, x0, x1 };
+  }
+  if (!best) return null;
+  let y0 = null, y1 = null;
+  for (let y = Math.max(0, Math.round(g.top - 20 * s)); y <= Math.min(img.height - 1, Math.round(g.top + 8 * s)); y++) {
+    let n = 0;
+    for (let x = best.x0; x <= best.x1; x++) if (isOrange(d, (y * W + x) * 4)) n++;
+    if (n >= (best.x1 - best.x0 + 1) * 0.3) { if (y0 == null) y0 = y; y1 = y; }
+  }
+  return y0 == null ? null : { x0: best.x0, x1: best.x1 + 1, y0, y1: y1 + 1, s };
+}
+// The job line: from just right of the level tiles to well before the HP gauge, on the upper half of the tiles' height.
+export function jobBox(img, g, lv) {
+  if (!lv) return null;
+  const s = lv.s;
+  return { x0: Math.round(lv.x1 + 8 * s), x1: Math.round(Math.min(g.hpX0 - 8 * s, lv.x1 + 120 * s)), y0: Math.max(0, Math.round(lv.y0 - 8 * s)), y1: Math.round(lv.y0 + (lv.y1 - lv.y0) * 0.45 + 2 * s) };
+}
+// Bright, unsaturated pixels (the white letters) as black on white, enlarged k times with a margin, for OCR.
+export function inkImage(img, box, k = 6) {
+  const pad = 12, W = (box.x1 - box.x0) * k + pad * 2, H = (box.y1 - box.y0) * k + pad * 2;
+  const data = new Uint8ClampedArray(W * H * 4).fill(255);
+  for (let y = box.y0; y < box.y1; y++) for (let x = box.x0; x < box.x1; x++) {
+    const i = (y * img.width + x) * 4, r = img.data[i], gg = img.data[i + 1], b = img.data[i + 2];
+    if (!(r + gg + b > 540 && Math.max(r, gg, b) - Math.min(r, gg, b) < 60)) continue;
+    for (let dy = 0; dy < k; dy++) for (let dx = 0; dx < k; dx++) { const o = (((y - box.y0) * k + dy + pad) * W + (x - box.x0) * k + dx + pad) * 4; data[o] = data[o + 1] = data[o + 2] = 0; }
+  }
+  return { width: W, height: H, data };
+}
+// Game job names (first and second job) to the site's job keys.
+const JOBS = [[/fighter/i, 'fighter'], [/page/i, 'page'], [/spear/i, 'spear'], [/crossbow/i, 'crossbow'], [/hunter/i, 'hunter'], [/(fire|poison)/i, 'fire'], [/(ice|light)/i, 'ice'], [/cleric/i, 'cleric'], [/assassin/i, 'assassin'], [/bandit/i, 'bandit'],
+  [/warrior/i, 'warrior'], [/(bowman|archer)/i, 'archer'], [/(magician|wizard|mage)/i, 'mage'], [/(rogue|thief)/i, 'thief']];
+export const jobKey = (text) => (JOBS.find(([re]) => re.test(String(text || ''))) || [])[1] || null;
+export const parseLevel = (text) => { const m = /^\s*(\d{1,3})\s*$/.exec(String(text || '').replace(/[Oo]/g, '0').replace(/[Il|]/g, '1')); const n = m ? Number(m[1]) : NaN; return n >= 1 && n <= 200 ? n : null; };

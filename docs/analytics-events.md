@@ -79,6 +79,7 @@
 - `lab_open` (lab): opened an unlisted lab page (quest-run, meso-farm, market-pulse). `lab_quest_check` (quest_id, done): checked a quest on the lab quest checklist.
 - `market_refresh` (scope listings|detail, item_id): pressed the refresh button on the all-listings tab or an item's listings.
 - `market_gone` (item_id, reports): pressed "팔렸어요" on a listing (the shop no longer had it); reports = that listing's count after this press.
+- `exp_level_read` (level, job): the EXP tracker read the level and job from the status bar and filled them in.
 - `shop_page_view` (seller_found 0|1, listings): opened a shop page (/shop/?n=).
 - `shop_link_copy` (what link|line|scan, result): copied the shop page link or the ready-made post text.
 - `shop_page_open` (from scan): opened the shop page from the scan page after an upload.

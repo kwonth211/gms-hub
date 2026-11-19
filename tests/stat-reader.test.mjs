@@ -55,3 +55,22 @@ test('value text parsing and voting', () => {
   assert.equal(parseJob('MAGICIAN\nWIZARD-ICE/LIGHTNING')[1], 'il');
   assert.equal(parseJob('WARRIOR\nSPEARMAN')[1], 'spearman');
 });
+
+test('EXP bar capture (2026-11-19): reads 7,099 [64.30%], level 17 tiles and the job line', async (t) => {
+  if (!PNG) return t.skip('pngjs missing');
+  const { findGauges, expTextBox, readExpText, parseExp, levelBox, jobBox, jobKey, parseLevel } = await import('../assets/exp-reader.js');
+  const png = PNG.sync.read(readFileSync(new URL('./fixtures/exp-bar-7099.png', import.meta.url)));
+  const img = { width: png.width, height: png.height, data: png.data };
+  const g = findGauges(img);
+  const text = await readExpText(img, expTextBox(g, img), g);
+  assert.deepEqual(parseExp(text), { exp: 7099, pct: 64.3 });
+  const lv = levelBox(img, g);
+  assert.ok(lv && lv.x1 - lv.x0 > 15 && lv.y1 - lv.y0 > 8);
+  assert.ok(jobBox(img, g, lv).x0 > lv.x1);
+  // The tail of a number after an unread glyph is no reading at all (it used to become 99).
+  assert.equal(parseExp('?,099[64.30%]'), null);
+  assert.equal(parseExp('7,O99[64.30%]').exp, 7099);
+  assert.equal(parseLevel('17'), 17);
+  assert.equal(jobKey('Rogue'), 'thief');
+  assert.equal(jobKey('Assassin'), 'assassin');
+});

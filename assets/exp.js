@@ -2,7 +2,7 @@
 // every few seconds (assets/exp-reader.js), then shows EXP per hour, percent per hour, time to the next level and the
 // session's gain. Nothing leaves this computer: frames are read in the page and only the numbers are kept, in this
 // browser (localStorage), so a reload keeps the session. Without screen sharing the two numbers can be typed by hand.
-import { findGauges, expTextBox, readExpText, parseExp, sameReading, summarize, levelTotal } from './exp-reader.js';
+import { findGauges, expTextBox, readExpText, parseExp, sameReading, summarize, levelTotal, levelBox, jobBox, inkImage, jobKey, parseLevel } from './exp-reader.js';
 import { xlsx } from './xlsx.js';
 import { jobNames } from './training-evidence.js';
 import { loadChar, saveChar } from './my-char.js';
@@ -30,7 +30,9 @@ let stream = null, video = null, timer = null, reading = false, pending = null, 
 let mobs = null;
 let demoOn = false, realSession = null, pipWin = null, lastGainAt = 0, stallWarned = false;
 let log = loadLog();
-const learned = new Map(Object.entries(session.learned || {}));
+// Glyphs learned by OCR before 2026-11-19 could be wrong guesses (the 7 was misread), so they start over once.
+const learned = new Map(session.learnedV === 2 ? Object.entries(session.learned || {}) : []);
+session.learnedV = 2;
 
 function fresh() { return { samples: [], startedAt: null, mob: null, learned: {}, skipIdle: true }; }
 function load() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && Array.isArray(s.samples) ? s : null; } catch { return null; } }
@@ -70,10 +72,44 @@ function frame() {
   return g.getImageData(0, 0, c.width, c.height);
 }
 
+// Level and job from the status bar (owner 2026-11-19: read the level too). A line OCR worker reads the white text next
+// to the gauges every 30 seconds; two reads in a row must agree before the level and job fields are filled in.
+let lineWorker = null, lastLineAt = 0, lineVote = null;
+async function readLine(im, digits) {
+  if (!lineWorker) lineWorker = (async () => {
+    if (!window.Tesseract) await new Promise((ok, fail) => { const el = document.createElement('script'); el.src = TESSERACT_URL; el.onload = ok; el.onerror = fail; document.head.appendChild(el); });
+    return window.Tesseract.createWorker('eng');
+  })().catch((e) => { lineWorker = null; throw e; });
+  const w = await lineWorker;
+  await w.setParameters({ tessedit_pageseg_mode: '7', tessedit_char_whitelist: digits ? '0123456789' : 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz/() ' });
+  const c = document.createElement('canvas'); c.width = im.width; c.height = im.height;
+  c.getContext('2d').putImageData(new ImageData(im.data, im.width, im.height), 0, 0);
+  return (await w.recognize(c)).data.text.trim();
+}
+async function readLevelJob(img, g) {
+  if (Date.now() - lastLineAt < 30000) return;
+  lastLineAt = Date.now();
+  const lv = levelBox(img, g);
+  if (!lv) return;
+  const level = parseLevel(await readLine(inkImage(img, lv), true).catch(() => ''));
+  const jb = jobBox(img, g, lv);
+  const job = jb ? jobKey(await readLine(inkImage(img, jb), false).catch(() => '')) : null;
+  if (!level) return;
+  const vote = `${level}|${job || ''}`;
+  if (lineVote !== vote) { lineVote = vote; return; }
+  let changed = false;
+  if (Number($('exp-lv').value) !== level) { $('exp-lv').value = level; changed = true; }
+  // A first-job name (Rogue) only fills an empty field or replaces another family; a chosen second job stays.
+  if (job && $('exp-job').value !== job && (!$('exp-job').value || !families2[$('exp-job').value] || families2[$('exp-job').value] !== job)) { $('exp-job').value = job; changed = true; }
+  if (changed) { $('exp-lv').dispatchEvent(new Event('change')); check('lv', 'ok', fill(t.lvOk, { lv: level, job: job ? (ko ? jobNames.ko[job] : jobNames.en[job]) : '—' })); track('exp_level_read', { level, job: job || '' }); }
+}
+const families2 = { fighter: 'warrior', page: 'warrior', spear: 'warrior', hunter: 'archer', crossbow: 'archer', fire: 'mage', ice: 'mage', cleric: 'mage', assassin: 'thief', bandit: 'thief' };
+
 async function readOnce(img) {
   const g = findGauges(img);
   check('bar', g ? 'ok' : 'fail', g ? t.barOk : t.barFail);
   if (!g) return null;
+  readLevelJob(img, g).catch(() => {});
   const text = await readExpText(img, expTextBox(g, img), g, { ocrGlyph: (k) => ocrGlyph(k).catch(() => ''), learned });
   const r = parseExp(text);
   check('read', r ? 'ok' : 'fail', r ? fill(t.readOk, { exp: nf.format(r.exp), pct: r.pct.toFixed(2) }) : fill(t.readFail, { text }));

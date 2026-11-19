@@ -1775,7 +1775,7 @@ const EXP = {
     cardDesc: '메이플 창을 공유하면 EXP를 자동으로 읽어 시간당 경험치와 레벨업까지 남은 시간을 보여 줘요. PC 크롬 전용.',
     lead: '메이플 창을 공유하고 시작을 누르면 EXP를 자동으로 읽어요. 시간당 경험치, 다음 레벨까지 남은 시간, 잡은 마릿수가 사냥하는 동안 바로 보여요.',
     start: '메이플 창 공유하고 시작', stop: '정지', reset: '새로 측정',
-    checks: { share: '화면 공유', bar: '상태바 인식', read: 'EXP 읽기' },
+    checks: { share: '화면 공유', bar: '상태바 인식', read: 'EXP 읽기', lv: '레벨·직업' },
     stats: { now: '지금 EXP', rate: '시간당 경험치', recent: '최근 5분 속도', pct: '시간당 %', next: '다음 레벨까지', gained: '이번 측정 획득', time: '측정 시간', best: '내 최고 기록 대비' },
     demo: '예시로 먼저 보기', demoOff: '예시 끄기', demoNote: '예시 화면이에요. 40분 동안 사냥한 기록을 넣어 봤어요. 실제로 재려면 위의 시작 버튼을 누르세요.',
     pip: '미니 창 띄우기', spotLabel: '사냥터 메모', spotPh: '예: 개미굴 2, 파티 3명', alertLabel: 'EXP가 3분 넘게 안 오르면 소리로 알리기',
@@ -1795,7 +1795,7 @@ const EXP = {
       unsupported: '이 브라우저는 화면 공유가 안 돼요. PC 크롬이나 엣지에서 열어 주세요. 아래에서 직접 입력은 돼요.', denied: '공유가 취소됐어요. 다시 시작을 누르면 돼요.',
       watching: '읽는 중이에요. 사냥하세요!', stopped: '정지했어요. 기록은 그대로 있어요.', wait: '대기',
       shareOk: '메이플 창 공유 중', barOk: '상태바를 찾았어요', barFail: '상태바를 못 찾았어요. 메이플 창을 골랐는지, 아래 HP·MP·EXP 막대가 가려지지 않았는지 보세요.',
-      readOk: 'EXP {exp} ({pct}%)', readFail: '숫자를 못 읽었어요. 잠시 뒤 다시 읽어요. {text}',
+      readOk: 'EXP {exp} ({pct}%)', readFail: '숫자를 못 읽었어요. 잠시 뒤 다시 읽어요. {text}', lvOk: 'Lv {lv} · {job}',
       idle: '쉬는 시간 {m}분은 뺐어요', levelsUp: '레벨업 {n}번 포함',
       kills: '{mob} 약 {n}마리', killsPerHour: '시간당 약 {n}마리',
       resetAsk: '지금 기록을 지우고 새로 측정할까요?', manualOk: '기록했어요.', manualFirstOk: '시작값을 기록했어요. 사냥이 끝나면 그때 EXP를 넣고 다시 눌러 주세요.', manualFirst: '시작값 기록', manualNext: '지금 값 기록', manualBad: 'EXP와 퍼센트(소수점 두 자리)를 확인해 주세요.',
@@ -1810,7 +1810,7 @@ const EXP = {
     cardDesc: 'Share your game window and it reads EXP on its own: EXP per hour and time to level up. Chrome on a computer.',
     lead: 'Share your MapleStory window, press start, and the page reads your EXP by itself. EXP per hour, time to the next level and kills show while you train.',
     start: 'Share the game window and start', stop: 'Stop', reset: 'New session',
-    checks: { share: 'Screen share', bar: 'Status bar', read: 'EXP reading' },
+    checks: { share: 'Screen share', bar: 'Status bar', read: 'EXP reading', lv: 'Level and job' },
     stats: { now: 'EXP now', rate: 'EXP per hour', recent: 'Last 5 minutes', pct: 'Percent per hour', next: 'Next level in', gained: 'Gained this session', time: 'Time tracked', best: 'Against your best' },
     demo: 'See an example first', demoOff: 'Close the example', demoNote: 'This is an example: 40 minutes of training. To measure your own, press start above.',
     pip: 'Pop-out mini window', spotLabel: 'Spot note', spotPh: 'e.g. Ant Tunnel 2, party of 3', alertLabel: 'Beep when EXP stops for 3 minutes',
@@ -1830,7 +1830,7 @@ const EXP = {
       unsupported: 'This browser cannot share a screen. Use Chrome or Edge on a computer; typing EXP in below still works.', denied: 'Sharing was cancelled. Press start again.',
       watching: 'Reading. Go train!', stopped: 'Stopped. The session is kept.', wait: 'Waiting',
       shareOk: 'Sharing the game window', barOk: 'Status bar found', barFail: 'Status bar not found. Check that the game window is shared and the HP/MP/EXP gauges are not covered.',
-      readOk: 'EXP {exp} ({pct}%)', readFail: 'Could not read the numbers; trying again shortly. {text}',
+      readOk: 'EXP {exp} ({pct}%)', readFail: 'Could not read the numbers; trying again shortly. {text}', lvOk: 'Lv {lv} · {job}',
       idle: '{m} idle minutes left out', levelsUp: 'includes {n} level-up(s)',
       kills: 'about {n} {mob}', killsPerHour: 'about {n} an hour',
       resetAsk: 'Clear this session and start a new one?', manualOk: 'Saved.', manualFirstOk: 'Starting value saved. When you finish training, enter the EXP again and press once more.', manualFirst: 'Save starting value', manualNext: 'Save current value', manualBad: 'Check the EXP and the percent (two decimals).',
@@ -1849,7 +1849,7 @@ function expBody(lang) {
 <p id="exp-demo-note" class="exp-demo-note" hidden>${esc(t.demoNote)}</p>
 <p id="exp-status" class="exp-status" role="status" aria-live="polite"></p>
 <form id="exp-manual" class="exp-manual-form"><strong>${esc(t.manualHeading)}</strong><label>${esc(t.manualExp)} <input id="exp-m-exp" inputmode="numeric" placeholder="83,631" required></label><label>${esc(t.manualPct)} <input id="exp-m-pct" inputmode="decimal" placeholder="68.13" required></label><button class="btn ghost small-btn" type="submit" id="exp-m-save">${esc(t.manualSave)}</button><small class="muted">${esc(t.manualHelp)}</small></form>
-<ol class="scan-checks exp-checks" aria-live="polite">${['share', 'bar', 'read'].map((k) => `<li id="exp-check-${k}" data-state="wait"><span class="dot" aria-hidden="true"></span><strong>${esc(t.checks[k])}</strong><small>${esc(t.i.wait)}</small></li>`).join('')}</ol>
+<ol class="scan-checks exp-checks" aria-live="polite">${['share', 'bar', 'read', 'lv'].map((k) => `<li id="exp-check-${k}" data-state="wait"><span class="dot" aria-hidden="true"></span><strong>${esc(t.checks[k])}</strong><small>${esc(t.i.wait)}</small></li>`).join('')}</ol>
 </section>
 <section class="panel exp-board">
 <dl class="exp-stats">${stat('rate', 'exp-rate')}${stat('recent', 'exp-recent')}${stat('next', 'exp-next')}${stat('pct', 'exp-pct')}${stat('gained', 'exp-gained')}${stat('time', 'exp-time')}${stat('now', 'exp-now')}${stat('best', 'exp-best')}</dl>
