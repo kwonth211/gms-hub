@@ -11,7 +11,9 @@
       const a = c.querySelector('a'), p = prices[c.dataset.fhPrice];
       if (!a) continue;
       if (!p?.median) { a.textContent = ko ? '매물 없음' : 'No listings'; c.classList.add('muted'); continue; }
-      a.innerHTML = `<b>${mesos(p.median)}</b> <small>${ko ? `매물 ${p.n}개` : `${p.n} listed`}</small>`;
+      // With one or two listings a median is just one seller's ask, so show the cheapest instead.
+      const few = p.n < 3 && p.low;
+      a.innerHTML = `<b>${few ? (ko ? '최저 ' : 'from ') : ''}${mesos(few ? p.low : p.median)}</b> <small>${ko ? `매물 ${p.n}개` : `${p.n} listed`}</small>`;
     }
   });
 })();
