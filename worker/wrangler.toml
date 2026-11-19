@@ -17,14 +17,13 @@ DISCORD_NOTICE_CHANNEL = "1570460197812572280"
 DISCORD_TRADE_CHANNEL = "1571870717958430834"
 # Small hourly batches; existing daily usage is retained across a policy change. D1 free allows 100,000 rows written a
 # day and every index entry counts, so a listing costs about four: 9,000 listings a day leaves room for megaphones.
-# Boost (owner 2026-11-19, "300개씩"): 300 shops and rows a run, 120 items, 40,000 rows a day (was 150/150/60/20,000).
 MARKET_BATCH_PAUSED = "false"
-MARKET_BATCH_DAILY_ROWS = "40000"
+MARKET_BATCH_DAILY_ROWS = "20000"
 MARKET_BATCH_MIN_INTERVAL_SECONDS = "600"
-MARKET_BATCH_MAX_ROWS = "300"
-MARKET_BATCH_MAX_ITEMS = "120"
+MARKET_BATCH_MAX_ROWS = "150"
+MARKET_BATCH_MAX_ITEMS = "60"
 MARKET_BATCH_SHOPS_PER_ITEM = "5"
-MARKET_BATCH_MAX_SHOPS = "300"
+MARKET_BATCH_MAX_SHOPS = "150"
 # Web Push (price alerts): public half of the VAPID key; the private half is the VAPID_PRIVATE_JWK secret.
 VAPID_PUBLIC = "BJqUwAMBL2kL0VOHin8sIsDgRP-g7I34ddinSHW3JJlCKoU8tSXPSjTZbQo4I71kSWSvbSg8XAg8w_e29WOWaog"
 VAPID_SUBJECT = "mailto:contact@gms-hub.com"

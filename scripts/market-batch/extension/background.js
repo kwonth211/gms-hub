@@ -106,9 +106,9 @@ async function launch(mode, trigger) {
       if (s.enabled) await chrome.alarms.create(COLLECT_RETRY, { when: s.retryAt });
       return { waiting: true, nextAt: s.retryAt };
     }
-    maxRows = Math.min(500, Number(policy.maxRows));
+    maxRows = Math.min(150, Number(policy.maxRows));
     // Scope of one run comes from the server so it can change without reloading the extension; hard caps stay here.
-    scope = { maxItems: Math.min(150, Number(policy.policy.maxItems) || 12), shopsPerItem: Math.min(50, Number(policy.policy.shopsPerItem) || 20),
+    scope = { maxItems: Math.min(60, Number(policy.policy.maxItems) || 12), shopsPerItem: Math.min(50, Number(policy.policy.shopsPerItem) || 20),
       maxShops: Math.min(600, Number(policy.policy.maxShops) || 360) };
     if (!Number.isInteger(maxRows) || maxRows < 1) { await stop('수집 허용 건수를 확인할 수 없습니다.'); return { waiting: true }; }
     s.lastAttemptAt = Date.now();
