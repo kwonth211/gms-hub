@@ -625,7 +625,7 @@ function showMyShop(sellers) {
   if (!box || !name || box.dataset.name === name) return;
   box.dataset.name = name;
   const ko = i18n.lang === 'ko';
-  const url = new URL(`../../shop/?n=${encodeURIComponent(name)}`, location.href).href;
+  const url = `${location.origin}/s/${encodeURIComponent(name)}${ko ? '' : '?lang=en'}`;
   box.innerHTML = `🛒 ${ko ? `<b>${esc(name)}</b>의 상점 페이지가 생겼어요. 링크를 디스코드나 커뮤니티에 붙여 보세요.` : `<b>${esc(name)}</b>'s shop page is ready. Paste the link in Discord or forums.`} <a class="btn small-btn" href="${esc(url)}" target="_blank" rel="noopener" data-myshop="open">${ko ? '상점 페이지 열기' : 'Open shop page'}</a><button type="button" class="btn ghost small-btn" data-myshop="copy">${ko ? '링크 복사' : 'Copy link'}</button>`;
   box.hidden = false;
   box.querySelector('[data-myshop="copy"]').addEventListener('click', async (e) => {

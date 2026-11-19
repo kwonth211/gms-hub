@@ -33,6 +33,7 @@ import { Presence, handlePresence, handlePresencePeak } from './presence.js';
 import { handleTraffic } from './traffic.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
 import { validRoom } from '../../assets/place.js';
+import { handleShopLink } from './shop-preview.js';
 import { trendsToDiscord, marketToDiscord, newsToDiscord, freeMegaToDiscord, freeMegaGoneFromDiscord } from './discord.js';
 import { discordInteractions } from './discord-bot.js';
 import { notifyMegaphones, notifyListings } from './discord-alerts.js';
@@ -367,6 +368,8 @@ const api = {
   },
 
   async fetch(req, env, ctx) {
+    // gms-hub.com/s/<name>: short shop link with a link preview (src/shop-preview.js, worker route on the site's zone).
+    if (new URL(req.url).pathname.startsWith('/s/')) return handleShopLink(req, env, ctx, await itemLabel());
     const url = new URL(req.url);
     const origin = req.headers.get('Origin') || '';
     const cors = corsHeaders(origin);

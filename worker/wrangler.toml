@@ -2,6 +2,11 @@ name = "gms-hub-votes"
 main = "src/index.js"
 compatibility_date = "2026-10-01"
 
+# Short shop links with link previews: gms-hub.com/s/<name> (src/shop-preview.js). The rest of the site stays on Pages.
+routes = [{ pattern = "gms-hub.com/s/*", zone_name = "gms-hub.com" }]
+# The API itself stays on workers.dev (pages call gms-hub-votes.kwonth211.workers.dev).
+workers_dev = true
+
 [vars]
 # Cloudflare account that holds the gms-hub.com Web Analytics site (read by src/traffic.js with the CF_ANALYTICS_TOKEN secret).
 CF_ACCOUNT_ID = "2d797e9348660f2d5a228739b19cd956"

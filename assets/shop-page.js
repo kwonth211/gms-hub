@@ -58,7 +58,8 @@ async function show(name) {
   let prices = {};
   try { prices = await fetch(`${api}/prices?ids=${ids.slice(0, 100).join(',')}`).then((r) => (r.ok ? r.json() : {})); } catch (e) {}
   const nameOf = (id) => { const t = tips?.items?.[id]; return t ? (ko && t[0] ? t[0] : t[1]) : `#${id}`; };
-  const url = `${location.origin}${location.pathname}?n=${encodeURIComponent(name)}`;
+  // The short link gives chat apps a preview of what is on sale (worker src/shop-preview.js).
+  const url = `${location.origin}/s/${encodeURIComponent(name)}${ko ? '' : '?lang=en'}`;
   const line = tr(`🛒 ${name} 상점 · ${place(newest.channel, newest.room)} · ${here.length}개 판매 중 → ${url}`, `🛒 ${name}'s shop · ${place(newest.channel, newest.room)} · ${here.length} items → ${url}`);
   const card = (r) => {
     const m = prices?.[r.item]?.median;
