@@ -275,6 +275,18 @@ export function matchItem(text, items) {
   return { item: best.item, confidence, alternatives: distinct.length > 1 ? distinct : null };
 }
 
+// Two items whose names differ in more than the scroll tier (Overall Armor DEF vs DEX: the bitmap table has no X or F, so
+// both letters read as unknown) are a real either-or, which the scroll tint cannot settle (owner 2026-11-19).
+const TIER = /: (Lesser|Intermediate|Greater|Chaos)$/;
+export const ambiguousName = (match) => !!match?.alternatives && new Set(match.alternatives.map((it) => it.en.replace(TIER, ''))).size > 1;
+// The tint picks the tier among the alternatives; whatever is still more than one item stays a choice for the player.
+export function narrowByTier(match, tier) {
+  if (!match?.alternatives || !tier) return match;
+  const left = match.alternatives.filter((it) => it.en.endsWith(`: ${tier}`));
+  if (!left.length) return match;
+  return left.length === 1 ? { ...match, item: left[0], alternatives: null } : { ...match, item: left[0], alternatives: left };
+}
+
 // "25 for 80 mesos" -> { qty: 25, price: 80 }. OCR sometimes reads the commas as dots or drops them, both are fine.
 export function parsePriceLine(text) {
   // Anchor both ends: an unread leading digit must never turn 9,000 into 900.

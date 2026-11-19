@@ -1,7 +1,7 @@
 // Shop scanner. Players share the game window in Chrome; the page watches it and reports what it recognized. The game screen
 // itself is never shown back to the player. In local development (scripts/scan-dev.mjs) changed frames are also posted to the
 // dev server, which keeps them as samples for building the shop reader.
-import { detectScale, findChannel, findRoom, findShopRows, findShopRowsLoose, matchItem, parsePriceLine, priceFromLine, readLine, readOwner, scrollTier } from './shop-reader.js';
+import { detectScale, findChannel, findRoom, findShopRows, findShopRowsLoose, matchItem, parsePriceLine, priceFromLine, readLine, readOwner, scrollTier, ambiguousName, narrowByTier } from './shop-reader.js';
 
 import { KERNING, placeLabel } from './place.js';
 import { SELLER, validLocation, listingKey, payload, fingerprint, validListing, canUpload, sameShop, verifiedPrice } from './scan-state.js';
@@ -280,22 +280,20 @@ async function recognize(canvas) {
     let match = matchItem(name, items);
     const needsPriceCheck = scale !== 1 || !!row.loose;
     // Uncertain lines use OCR at any display scale; failure must not discard the other readable rows.
-    if (needsPriceCheck || !match || match.confidence < 0.85 || !p) {
+    // A name that fits two different items (DEF/DEX) is read again with OCR, which knows every letter.
+    const unsure = !match || match.confidence < 0.85 || ambiguousName(match);
+    if (needsPriceCheck || unsure || !p) {
       try {
-        const ocr = await rowByOcr(row, !match || match.confidence < 0.85);
-        if (!match || match.confidence < 0.85) {
-          name = ocr.name;
-          match = matchItem(name, items);
+        const ocr = await rowByOcr(row, unsure);
+        if (unsure) {
+          const again = ocr.name ? matchItem(ocr.name, items) : null;
+          if (!match || match.confidence < 0.85 || (again && again.confidence >= 0.85 && !ambiguousName(again))) { name = ocr.name || name; match = again || match; }
         }
         p = verifiedPrice(p, ocr.price, needsPriceCheck);
       } catch { if (needsPriceCheck) p = null; }
     }
     // A scroll name cut before its tier fits every tier; the icon's tint says which one it is.
-    if (match?.alternatives) {
-      const tier = scrollTier(img, row);
-      const byTier = tier && match.alternatives.find((it) => it.en.endsWith(`: ${tier}`));
-      if (byTier) match = { ...match, item: byTier, alternatives: null };
-    }
+    if (match?.alternatives) match = narrowByTier(match, scrollTier(img, row));
     // A line that matches no item and holds no word (a cut-off row, a cursor or tooltip over it) is shown as unreadable
     // rather than as the stray marks OCR made of it.
     if (!match && !/[A-Za-z가-힣]{2}/.test(name)) name = '';

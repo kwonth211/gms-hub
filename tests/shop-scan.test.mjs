@@ -72,3 +72,17 @@ test('equipment options ride along: cleaned by the shared gate, a bad one never 
   assert.equal((await post(e, later)).data.listingsChanged, 2);
   assert.deepEqual(read()[0].stats, { PAD: 49, Speed: 15 });
 });
+
+test('DEF and DEX scrolls stay a choice: the tier tint never picks between two different stats', async () => {
+  const { matchItem, ambiguousName, narrowByTier } = await import('../assets/shop-reader.js');
+  const items = ['Overall Armor DEF Scroll: Intermediate', 'Overall Armor DEX Scroll: Intermediate', 'Overall Armor DEF Scroll: Greater', 'Overall Armor DEX Scroll: Greater', 'Gloves Attack Scroll: Intermediate', 'Gloves Attack Scroll: Greater']
+    .map((en, i) => ({ id: i + 1, en }));
+  const m = matchItem('Overall Armor DE? Scroll: Intermediate', items);
+  assert.equal(ambiguousName(m), true);
+  const n = narrowByTier(m, 'Intermediate');
+  assert.equal(n.alternatives.length, 2); // still DEF or DEX, never a silent DEF
+  const cut = matchItem('Gloves Attack Scr...', items);
+  assert.equal(ambiguousName(cut), false); // only tiers differ
+  assert.equal(narrowByTier(cut, 'Greater').item.en, 'Gloves Attack Scroll: Greater');
+  assert.equal(matchItem('Overall Armor DEX Scroll: Intermediate', items).item.en, 'Overall Armor DEX Scroll: Intermediate');
+});
