@@ -354,7 +354,7 @@ const api = {
     // Four times a day (00, 06, 12, 18 UTC) the same snapshot also goes to the Discord trends channel.
     if (now.getUTCMinutes() < 15) ctx.waitUntil(itemNames().catch(() => null).then((names) => megaphoneStats(env, Date.now(), names)).then(async (d) => {
       await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('mega-stats',?,datetime('now'))").bind(JSON.stringify(d)).run();
-      if (now.getUTCHours() % 6 === 0) await trendsToDiscord(env, d, await itemLabel());
+      if (now.getUTCHours() % 6 === 0) await trendsToDiscord(env, d, await itemLabel(), (await freshSnapshot(env, 'market-catalog', 60).catch(() => null)) || (await marketCatalog(env).catch(() => null)));
     }).catch(() => null));
     // Daily market summary in #시세-거래-market at 21:00 KST (12:00 UTC run), once a day (snapshot key per KST day).
     if (now.getUTCHours() === 12 && now.getUTCMinutes() < 15) ctx.waitUntil((async () => {

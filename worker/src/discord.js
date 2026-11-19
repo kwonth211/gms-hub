@@ -59,15 +59,17 @@ export function trendMessage(stats, nameOf) {
   return e ? [`**${e.title}**`, e.description, ...e.fields.flatMap((f) => ['', `**${f.name}**`, f.value])].join('\n').slice(0, 1990) : null;
 }
 
-export async function trendsToDiscord(env, stats, nameOf) {
+// The trends channel gets the megaphone card and, under it, a price card (owner 2026-11-19: "시세 관련된 것도").
+export async function trendsToDiscord(env, stats, nameOf, cat = null) {
   if (!env.DISCORD_TRENDS_WEBHOOK) return;
-  const embed = trendEmbed(stats, nameOf);
-  if (embed) await fetch(env.DISCORD_TRENDS_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ embeds: [embed], allowed_mentions: { parse: [] }, flags: 4096 }) }).catch(() => null);
+  const kst = new Date(Date.now() + 9 * 3600000);
+  const embeds = [trendEmbed(stats, nameOf), cat ? marketEmbed(cat, nameOf, `📊 시세 흐름 · ${kst.getUTCMonth() + 1}월 ${kst.getUTCDate()}일 ${kst.getUTCHours()}시`) : null].filter(Boolean);
+  if (embeds.length) await fetch(env.DISCORD_TRENDS_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ embeds, allowed_mentions: { parse: [] }, flags: 4096 }) }).catch(() => null);
 }
 
 // Daily market summary for #시세-거래-market (owner 2026-11-18), from the market catalog: most listed, biggest moves
 // against a day ago (8+ open listings, swings over 300% left out, as on the site), most sold in 24 hours.
-export function marketEmbed(cat, nameOf) {
+export function marketEmbed(cat, nameOf, title = null) {
   const name = (id) => nameOf(id, 'ko') || nameOf(id) || `#${id}`;
   const items = (cat?.items || []).filter((r) => nameOf(r.item));
   if (!items.length) return null;
@@ -80,7 +82,7 @@ export function marketEmbed(cat, nameOf) {
   const day = new Date(Date.now() + 9 * 3600000);
   const st = cat.stats || {};
   return {
-    title: `📊 오늘의 시세 · ${day.getUTCMonth() + 1}월 ${day.getUTCDate()}일`,
+    title: title || `📊 오늘의 시세 · ${day.getUTCMonth() + 1}월 ${day.getUTCDate()}일`,
     url: 'https://gms-hub.com/ko/tools/market/today/?utm_source=discord&utm_medium=daily',
     color: 0xff8a1f,
     description: [st.listings && `판매 중 매물 **${nf(st.listings)}**건`, st.items && `아이템 **${nf(st.items)}**종`, st.shops && `상점 **${nf(st.shops)}**곳`].filter(Boolean).join(' · ') || "Today's Free Market at a glance",
