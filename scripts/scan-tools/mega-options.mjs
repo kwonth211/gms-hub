@@ -152,8 +152,11 @@ export class OptionReader {
             if(numericBox.w>5&&numericBox.w<=150&&numericBox.h>5&&numericBox.h<=26) {
               const pixels=foreground?cropImage(foreground,{x:x-body.x,y:y-body.y,w:numericBox.w,h:numericBox.h},false,3):cropImage(image,numericBox,true,3);
               const primary=await this.recognize(pixels,item.en,'number.png'),secondary=await this.recognizeFallback(pixels,'7');
+              // Vision's substring bounds occasionally include the label. Treat
+              // that as a normal labelled row, rather than losing a clear value.
+              readings.push(parseTooltipLines([panel.title,...primary.filter(r=>tooltipField(r.text)===key)],item));
               let expression=agreeTooltipNumber(primary,secondary)||agreeLabeledNumber(field,secondary,primary);
-              if(!expression){const original=cropImage(image,numericBox,false,3),a=await this.recognize(original,item.en,'number-original.png'),b=await this.recognizeFallback(original,'7');expression=agreeTooltipNumber(a,b)||agreeLabeledNumber(field,b,a);(this.lastReading.numericChecks||=[]).push({key,box:numericBox,primary:a,secondary:b,expression,original:true});}
+              if(!expression){const original=cropImage(image,numericBox,false,3),a=await this.recognize(original,item.en,'number-original.png'),b=await this.recognizeFallback(original,'7');readings.push(parseTooltipLines([panel.title,...a.filter(r=>tooltipField(r.text)===key)],item));expression=agreeTooltipNumber(a,b)||agreeLabeledNumber(field,b,a);(this.lastReading.numericChecks||=[]).push({key,box:numericBox,primary:a,secondary:b,expression,original:true});}
               (this.lastReading.numericChecks||=[]).push({key,box:numericBox,primary,secondary,expression});
               if(expression)readings.push(parseTooltipLines([panel.title,`${field.text.split(':')[0]}: ${expression}`],item));
             }
