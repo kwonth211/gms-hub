@@ -101,6 +101,12 @@ export const COMMANDS = [
     options: [
       { type: 1, name: 'sell', name_localizations: { ko: '팝니다' }, description: 'Sell an item', description_localizations: { ko: '아이템 팔기' }, options: TRADE_OPTS },
       { type: 1, name: 'buy', name_localizations: { ko: '삽니다' }, description: 'Buy an item', description_localizations: { ko: '아이템 사기' }, options: TRADE_OPTS }] },
+  // /무료고확 (owner 2026-11-20): just a message, like the site's 한마디 free megaphone.
+  { name: 'shout', name_localizations: { ko: '무료고확' }, description: 'Send a free megaphone message (shows on GMS Hub too)', description_localizations: { ko: '무료 고확으로 한마디 쏘기 (사이트 확성기에도 같이 떠요)' },
+    options: [
+      { type: 3, name: 'message', name_localizations: { ko: '메시지' }, description: 'Your message (up to 80 characters)', description_localizations: { ko: '할 말 (80자까지)' }, required: true, max_length: 80 },
+      { type: 3, name: 'nick', name_localizations: { ko: '닉네임' }, description: 'Your in-game name', description_localizations: { ko: '게임 캐릭터 이름' }, required: true, max_length: 13 },
+      { type: 4, name: 'channel', name_localizations: { ko: '채널' }, description: 'Game channel', description_localizations: { ko: '게임 채널' }, min_value: 1, max_value: 40 }] },
   { name: 'feedback', name_localizations: { ko: '건의' }, description: 'Send feedback or a bug report to GMS Hub', description_localizations: { ko: 'GMS Hub에 건의나 오류 제보 보내기' },
     options: [{ type: 3, name: 'text', name_localizations: { ko: '내용' }, description: 'What should we fix or add?', description_localizations: { ko: '고치거나 추가했으면 하는 것' }, required: true, min_length: 5, max_length: 1000 }] },
   { name: 'gmshub', description: 'About GMS Hub and its Discord', description_localizations: { ko: 'GMS Hub 사이트와 디스코드 안내' } },
@@ -273,23 +279,25 @@ export async function handleInteraction(i, { prices, get, discord, fetcher, env 
     return hidden(ok ? tr(`${label(item)}${cond ? ` ${cond}` : ''} 알림을 켰어요. DM으로 알려 드릴게요.${nowLine}`, `Watching ${label(item)}${cond ? ` at ${cond}` : ''}. Notices arrive by DM.${nowLine}`)
       : tr(`${label(item)} 알림을 저장했지만 DM을 보낼 수 없어요. GMS Hub 디스코드에 들어오면 받을 수 있어요: ${discord || ''}\n들어온 뒤 \`/알림 추가\`를 한 번 더 해 주세요.`, `Saved, but I cannot DM you. Join the GMS Hub Discord to receive notices: ${discord || ''}\nThen run \`/alert add\` once more.`));
   }
-  if (name === 'trade') {
-    if (!env?.DB || !user.id) return hidden(tr('지금은 거래 글을 올릴 수 없어요.', 'Trade posts are not available right now.'));
-    const item = pick(d, 'price', opt.item?.value);
-    if (!item) return hidden(tr('그 이름의 아이템을 찾지 못했어요. 입력할 때 뜨는 목록에서 골라 주세요.', 'No item by that name. Pick one from the suggestions while typing.'));
-    const price = parseAmount(String(opt.price?.value ?? ''));
-    if (price == null) return hidden(tr('가격을 알아보지 못했어요. 300만, 3m, 500k 처럼 적어 주세요.', 'Could not read that price. Write it like 3m, 500k or 1,200,000.'));
-    const intent = sub?.name === 'buy' ? 'buy' : 'sell';
-    const [out] = await postFreeMega(env, { nick: String(opt.nick?.value || '').trim(), intent, item: item.id, price, text: opt.note?.value || '', channel: opt.channel?.value ?? null }, `discord:${user.id}`, null);
+  if (name === 'trade' || name === 'shout') {
+    if (!env?.DB || !user.id) return hidden(tr('지금은 무료 고확을 올릴 수 없어요.', 'Free megaphones are not available right now.'));
+    const shout = name === 'shout';
+    const item = shout ? null : pick(d, 'price', opt.item?.value);
+    if (!shout && !item) return hidden(tr('그 이름의 아이템을 찾지 못했어요. 입력할 때 뜨는 목록에서 골라 주세요.', 'No item by that name. Pick one from the suggestions while typing.'));
+    const price = shout ? null : parseAmount(String(opt.price?.value ?? ''));
+    if (!shout && price == null) return hidden(tr('가격을 알아보지 못했어요. 300만, 3m, 500k 처럼 적어 주세요.', 'Could not read that price. Write it like 3m, 500k or 1,200,000.'));
+    const intent = shout ? 'talk' : sub?.name === 'buy' ? 'buy' : 'sell';
+    const [out] = await postFreeMega(env, { nick: String(opt.nick?.value || '').trim(), intent, item: item?.id ?? null, price, text: (shout ? opt.message?.value : opt.note?.value) || '', channel: opt.channel?.value ?? null }, `discord:${user.id}`, null);
     if (out.error) {
       const ERR = { nick: tr('닉네임은 영문·숫자 2~13자로 적어 주세요.', 'Use your in-game name: 2 to 13 letters or digits.'), slow: tr('조금 전에 올리셨어요. 2분 뒤에 다시 올려 주세요.', 'You just posted one. Try again in two minutes.'),
-        daily: tr('오늘 올릴 수 있는 만큼 올리셨어요. 내일 다시 올려 주세요.', 'That is today\'s limit. Try again tomorrow.'), rmt: tr('현금 거래 글은 올릴 수 없어요.', 'Real-money trades are not allowed.'), link: tr('메모에 링크나 연락처는 넣을 수 없어요.', 'No links or contact handles in the note.'), length: tr('메모는 80자까지예요.', 'The note can be up to 80 characters.') };
+        daily: tr('오늘 올릴 수 있는 만큼 올리셨어요. 내일 다시 올려 주세요.', 'That is today\'s limit. Try again tomorrow.'), rmt: tr('현금 거래 글은 올릴 수 없어요.', 'Real-money trades are not allowed.'), empty: tr('할 말을 두 글자 이상 적어 주세요.', 'Write at least two characters.'), link: tr('메모에 링크나 연락처는 넣을 수 없어요.', 'No links or contact handles in the note.'), length: tr('메모는 80자까지예요.', 'The note can be up to 80 characters.') };
       return hidden(ERR[out.error] || tr('올리지 못했어요. 입력한 내용을 확인해 주세요.', 'Could not post that. Check what you entered.'));
     }
-    const row = { ...out.row, en: item.en, ko: item.ko || null };
+    const row = item ? { ...out.row, en: item.en, ko: item.ko || null } : out.row;
     const live = env.PRESENCE?.get(env.PRESENCE.idFromName('site')).fetch('https://presence/push', { method: 'POST', body: JSON.stringify({ type: 'free', rows: [row] }) }).catch(() => null);
     await Promise.all([live, freeMegaToDiscord(env, row).catch(() => null)]);
     const where = `${SITE}/${lang}/megaphone/?f=${row.id}&utm_source=discord&utm_medium=trade`;
+    if (shout) return hidden(tr(`무료 고확을 쐈어요. 사이트 실시간 확성기와 #한국어-거래에 같이 떠요. ${where}`, `Sent. It shows on the site's live megaphones and in #한국어-거래. ${where}`));
     return hidden(tr(`${intent === 'sell' ? '팝니다' : '삽니다'} 글을 올렸어요: ${label(item)} ${money(price)}. 사이트 실시간 확성기와 #한국어-거래에 같이 떠요. ${where}`, `Posted: ${intent === 'sell' ? 'selling' : 'buying'} ${label(item)} for ${money(price)}. It shows on the site's live megaphones and in #한국어-거래. ${where}`));
   }
   if (name === 'feedback') {

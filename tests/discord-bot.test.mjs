@@ -190,3 +190,20 @@ test('/거래 팝니다 stores a free megaphone from Discord and posts its card 
     assert.match(again.data.content, /가격을 알아보지 못했어요/);
   });
 });
+
+test('/무료고확 sends a plain message as a free megaphone', async () => {
+  const sqlite = new DatabaseSync(':memory:');
+  for (const f of ['0020_free_megaphones.sql', '0023_free_mega_discord.sql']) sqlite.exec(fs.readFileSync(new URL(`../worker/migrations/${f}`, import.meta.url), 'utf8'));
+  const DB = { prepare(sql, args = []) {
+    return { bind: (...v) => DB.prepare(sql, v), first: async () => sqlite.prepare(sql).get(...args) ?? null, all: async () => ({ results: sqlite.prepare(sql).all(...args) }),
+      run: async () => ({ meta: { changes: Number(sqlite.prepare(sql).run(...args).changes) } }) };
+  } };
+  const env = { DB, DISCORD_BOT_TOKEN: 't', DISCORD_TRADE_CHANNEL: '777' };
+  await withDiscord(async (calls) => {
+    const res = await cmd(env, 'shout', null, [{ name: 'message', value: '파퀘 구해요 21렙' }, { name: 'nick', value: 'Hookstk' }, { name: 'channel', value: 5 }]);
+    assert.match(res.data.content, /무료 고확을 쐈어요/);
+    const row = sqlite.prepare('SELECT nick, intent, item, price, text, channel FROM free_megaphones').get();
+    assert.deepEqual({ ...row }, { nick: 'Hookstk', intent: 'talk', item: null, price: null, text: '파퀘 구해요 21렙', channel: 5 });
+    assert.ok(calls.some((c) => c.url === '/channels/777/messages' && /한마디/.test(c.body.embeds?.[0]?.title || '')));
+  });
+});

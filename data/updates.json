@@ -7,10 +7,10 @@
    "level": "minor",
    "date": "2026-11-20",
    "path": "/megaphone/",
-   "ko": "디스코드 /거래 — 디스코드에서 올린 팝니다·삽니다가 무료 고확으로 사이트에도",
-   "en": "Discord /trade — sell and buy posts from Discord become free megaphones on the site",
+   "ko": "디스코드 /거래·/무료고확 — 디스코드에서 올린 거래글과 한마디가 무료 고확으로 사이트에도",
+   "en": "Discord /trade and /shout — trades and messages from Discord become free megaphones on the site",
    "desc": {
-    "ko": "GMS Hub 디스코드에서 /거래 팝니다(또는 삽니다)로 아이템·가격·닉네임을 넣으면 사이트 실시간 확성기와 맨 위 띠에 무료 고확으로 바로 떠요. 사이트에서 쏜 무료 고확도 디스코드 #한국어-거래에 같이 올라가요.",
+    "ko": "GMS Hub 디스코드에서 /거래 팝니다(또는 삽니다)로 아이템·가격·닉네임을 넣거나 /무료고확으로 한마디를 쓰면 사이트 실시간 확성기와 맨 위 띠에 무료 고확으로 바로 떠요. 사이트에서 쏜 무료 고확도 디스코드 #한국어-거래에 같이 올라가요.",
     "en": "In the GMS Hub Discord, /trade sell (or buy) with an item, price and your in-game name posts a free megaphone on the site's live feed and top strip. Free megaphones sent on the site appear in the Discord trade channel too."
    }
   },
