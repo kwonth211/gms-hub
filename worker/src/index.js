@@ -755,17 +755,33 @@ const api = {
       if (ok.length !== rows.length) return json({ error: 'invalid listing', stored: 0 }, cors, 400);
       const ip = req.headers.get('CF-Connecting-IP') || '';
       const reporter = await visitorHash(ip, 'scan', env.VOTE_SALT);
-      // Seeing the same listing again only moves its last-seen time, and a slot once seen sold stays sold.
+      // An identical observation of someone else's listing needs no write. Conflicting observations must not
+      // change their quantity, sold state or timestamp; /listings/fix uses the same reporter boundary.
+      const conflict = () => env.DB.prepare(`SELECT 1 FROM json_each(?) AS incoming JOIN listings AS existing
+        ON existing.seller = json_extract(incoming.value, '$.seller')
+        AND existing.item = json_extract(incoming.value, '$.item')
+        AND existing.price = json_extract(incoming.value, '$.price')
+        AND existing.channel = json_extract(incoming.value, '$.channel')
+        AND existing.room = json_extract(incoming.value, '$.room')
+        WHERE existing.reporter != ? AND (existing.qty != COALESCE(json_extract(incoming.value, '$.qty'), 1)
+          OR existing.sold != json_extract(incoming.value, '$.sold')) LIMIT 1`).bind(JSON.stringify(ok), reporter).first();
+      if (await conflict()) return json({ error: 'listing belongs to another reporter' }, cors, 409);
+      // Enforce ownership in the write too, including when another writer inserts between the check and this batch.
       const stmt = env.DB.prepare(
         `INSERT INTO listings (item, price, qty, sold, seller, channel, room, reporter) SELECT ?, ?, ?, ?, ?, ?, ?, ?
          WHERE NOT EXISTS (SELECT 1 FROM listings WHERE seller=? AND item=? AND price=? AND channel=? AND room=?
-           AND qty=? AND sold>=? AND last_seen>=datetime('now','-15 minutes'))
-         ON CONFLICT (seller, item, price, channel, room) DO UPDATE SET last_seen = datetime('now'), qty = excluded.qty, sold = MAX(sold, excluded.sold)`
+           AND (reporter != ? OR (qty=? AND sold>=? AND last_seen>=datetime('now','-15 minutes'))))
+         ON CONFLICT (seller, item, price, channel, room) DO UPDATE SET last_seen = datetime('now'), qty = excluded.qty, sold = MAX(sold, excluded.sold)
+         WHERE listings.reporter = excluded.reporter`
       );
-      await env.DB.batch(ok.map((r) => stmt.bind(r.item, r.price, r.qty || 1, r.sold ? 1 : 0, r.seller, r.channel, r.room, reporter,
-        r.seller,r.item,r.price,r.channel,r.room,r.qty || 1,r.sold ? 1 : 0)));
-      await refreshItemMarket(env, ok.map((r) => r.item)).catch(() => null);
-      if (ctx?.waitUntil) ctx.waitUntil(itemLabel().then((nameOf) => notifyListings(env, ok, nameOf)).catch(() => null));
+      const results = await env.DB.batch(ok.map((r) => stmt.bind(r.item, r.price, r.qty || 1, r.sold ? 1 : 0, r.seller, r.channel, r.room, reporter,
+        r.seller,r.item,r.price,r.channel,r.room,reporter,r.qty || 1,r.sold ? 1 : 0)));
+      const changed = ok.filter((_, i) => results[i].meta.changes > 0);
+      if (changed.length) {
+        await refreshItemMarket(env, changed.map((r) => r.item)).catch(() => null);
+        if (ctx?.waitUntil) ctx.waitUntil(itemLabel().then((nameOf) => notifyListings(env, changed, nameOf)).catch(() => null));
+      }
+      if (changed.length < ok.length && await conflict()) return json({ error: 'listing belongs to another reporter' }, cors, 409);
       return json({ stored: ok.length }, cors);
     }
 
@@ -828,7 +844,7 @@ const paused = () => new Response(JSON.stringify({ error: 'paused: monthly budge
 export default {
   scheduled: (event, env, ctx) => {
     count('q');
-    ctx?.waitUntil?.(flushUsage(env.DB).catch(() => null));
+    ctx?.waitUntil?.(flushUsage(env.DB, Date.now(), false, env.USAGE_BASELINE).catch(() => null));
     return api.scheduled(event, metered(env), ctx);
   },
   email: (message, env, ctx) => handleEmail(message, metered(env), ctx),
@@ -860,7 +876,7 @@ export default {
     count('q');
     if (live) count('d');
     // Without an execution context (tests) there is nothing to flush into.
-    ctx?.waitUntil?.(flushUsage(env.DB).catch(() => null));
+    ctx?.waitUntil?.(flushUsage(env.DB, Date.now(), false, env.USAGE_BASELINE).catch(() => null));
     if (isOver('q') || (live && isOver('d'))) return paused();
     if (path === '/usage') return usageAnswer(req, env);
     const e = metered(env);

@@ -7,20 +7,10 @@
 // - Past 98% of D1 writes, every write statement throws (reads keep working, the site stays readable); past 98% of reads,
 //   every statement throws; past 98% of requests, the API answers 503; past 98% of Durable Object requests, the live
 //   viewer count is switched off. Collectors and forms then fail and retry later, which costs nothing.
-// Days before the meter existed come from Cloudflare's analytics (SEED, through 2026-11-15 06:00 UTC); they age out of
-// the 31-day window by mid-December.
+// Historical usage is supplied by the private USAGE_BASELINE Worker secret, separate from ongoing D1 counters.
 const DAY = 86400000;
 export const LIMITS = { w: 50_000_000, r: 25_000_000_000, q: 10_000_000, d: 1_000_000 };
 export const SHARE = 0.98;
-// [rows written, rows read, worker requests, Durable Object requests] per UTC day.
-const SEED = {
-  '2026-10-28': [78, 830, 30, 0], '2026-10-29': [15, 7725, 150, 0], '2026-10-30': [2, 5408, 170, 0], '2026-10-31': [0, 6221, 170, 0],
-  '2026-11-01': [3, 6404, 230, 0], '2026-11-02': [9508, 475402, 880, 0], '2026-11-03': [2584, 1568657, 2600, 0],
-  '2026-11-04': [877, 227589, 2290, 0], '2026-11-05': [579, 73444, 1880, 0], '2026-11-06': [576, 40532, 1370, 0],
-  '2026-11-07': [635, 117018, 1730, 0], '2026-11-08': [576, 150692, 1900, 0], '2026-11-09': [82740, 3816944, 2830, 0],
-  '2026-11-10': [6654, 2563204, 2230, 0], '2026-11-11': [44550, 2567245, 11040, 3210], '2026-11-12': [127410, 12687888, 20880, 4870],
-  '2026-11-13': [84286, 11429290, 27860, 8350], '2026-11-14': [229573, 9719706, 40320, 13650], '2026-11-15': [154490, 6333012, 13280, 4460],
-};
 const KEYS = ['w', 'r', 'q', 'd'];
 const dayOf = (ms) => new Date(ms).toISOString().slice(0, 10);
 
@@ -32,8 +22,23 @@ export const count = (k, n = 1) => { pending[k] += n; };
 export const usageState = () => state;
 export const isOver = (k) => !!state.over[k];
 
+// JSON object: UTC date -> [rows written, rows read, Worker requests, Durable Object requests].
+// New installations explicitly use {}; existing installations retain their original baseline.
+export function parseUsageBaseline(raw) {
+  if (typeof raw !== 'string' || !raw || raw.length > 100000) throw new Error('USAGE_BASELINE must be configured');
+  const seed = JSON.parse(raw);
+  if (!seed || typeof seed !== 'object' || Array.isArray(seed)) throw new Error('Invalid USAGE_BASELINE');
+  for (const [day, values] of Object.entries(seed)) {
+    const time = Date.parse(day);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day) || !Number.isFinite(time) || dayOf(time) !== day ||
+        !Array.isArray(values) || values.length !== 4 || values.some(n => !Number.isSafeInteger(n) || n < 0))
+      throw new Error('Invalid USAGE_BASELINE');
+  }
+  return seed;
+}
+
 // Sum of the last 31 UTC days (today included): metered rows plus the seed for days before the meter.
-export function rollingTotals(rows, now = Date.now(), seed = SEED) {
+export function rollingTotals(rows, now = Date.now(), seed = {}) {
   const from = dayOf(now - 30 * DAY), to = dayOf(now);
   const t = { w: 0, r: 0, q: 0, d: 0 };
   for (const [day, v] of Object.entries(seed)) if (day >= from && day <= to) KEYS.forEach((k, i) => { t[k] += v[i]; });
@@ -86,7 +91,14 @@ export function meterDb(db) {
 
 // Adds the tally to today's row and re-reads the 31-day totals. Runs at most once a minute per isolate (sooner when a lot
 // was written), always on the raw binding so the fuse can never block its own bookkeeping.
-export async function flushUsage(db, now = Date.now(), force = false) {
+export async function flushUsage(db, now = Date.now(), force = false, baseline) {
+  let seed;
+  try { seed = parseUsageBaseline(baseline); }
+  catch (error) {
+    // A missing deployment setting must not silently reset historic usage to zero.
+    state = { ...state, over: Object.fromEntries(KEYS.map(k => [k, true])) };
+    throw error;
+  }
   if (!force && now - lastFlush < 60000 && pending.w < 5000) return state;
   lastFlush = now;
   const p = { ...pending };
@@ -99,7 +111,7 @@ export async function flushUsage(db, now = Date.now(), force = false) {
       .bind(`usage:${dayOf(now)}`, p.w, p.r, p.q, p.d).run();
     const { results } = await db.prepare('SELECT key, json FROM snapshots WHERE key >= ? AND key <= ?')
       .bind(`usage:${dayOf(now - 30 * DAY)}`, `usage:${dayOf(now)}`).all();
-    const totals = rollingTotals(results, now);
+    const totals = rollingTotals(results, now, seed);
     state = { over: overFlags(totals), totals, checked: now };
   } catch {
     for (const k of KEYS) pending[k] += p[k];

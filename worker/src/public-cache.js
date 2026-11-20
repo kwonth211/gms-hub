@@ -1,9 +1,24 @@
 // Public, anonymous GETs only. Mutations and collector credentials never enter this cache.
-const paths = new Set(['/votes','/prices','/prices/all','/prices/recent','/listings/recent','/market/top','/market/item',
-  '/market/catalog','/market/listings','/market/reports','/market/history','/market/status','/rank','/rank/lookup','/megaphones','/megaphones/stats','/free-megas','/report/raw','/news']);
+// Keep every parameter used by the handler, and discard unrelated cache-busting parameters.
+// Handlers use URLSearchParams.get(), so only the first value of a repeated key affects the response.
+const parameters = new Map([
+  ['/votes', []], ['/prices', ['ids']], ['/prices/all', []], ['/prices/recent', []],
+  ['/listings/recent', ['limit']], ['/market/top', []], ['/market/item', ['id']],
+  ['/market/catalog', []],
+  ['/market/listings', ['days', 'limit', 'page', 'state', 'sort', 'since', 'channel', 'room', 'item', 'ids', 'seller', 'exact', 'min', 'max', 'stat', 'val']],
+  ['/market/reports', ['limit', 'page', 'days', 'item', 'kind', 'ids']],
+  ['/market/history', ['id']], ['/market/status', []], ['/rank', []], ['/rank/lookup', ['name']],
+  ['/megaphones', ['after', 'limit', 'item']], ['/megaphones/stats', []],
+  ['/free-megas', ['after', 'limit']], ['/report/raw', []], ['/news', []]
+]);
 export async function cachedPublicResponse(req, load, ctx) {
   const url = new URL(req.url);
-  if (req.method !== 'GET' || req.headers.has('Authorization') || !paths.has(url.pathname) || !globalThis.caches?.default) return load();
+  if (req.method !== 'GET' || req.headers.has('Authorization') || !parameters.has(url.pathname) || !globalThis.caches?.default) return load();
+  const query = new URLSearchParams(url.search);
+  url.search = '';
+  for (const name of parameters.get(url.pathname)) {
+    if (query.has(name)) url.searchParams.set(name, query.get(name));
+  }
   // Isolate the small allowlist of CORS origins without trusting arbitrary Origin values.
   const origin = req.headers.get('Origin') || '';
   const origins = ['https://gms-hub.com','https://www.gms-hub.com','http://localhost:8790','http://127.0.0.1:8790'];

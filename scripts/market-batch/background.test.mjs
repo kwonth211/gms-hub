@@ -4,18 +4,19 @@ import vm from 'node:vm';
 import fs from 'node:fs';
 const source=fs.readFileSync(new URL('./extension/background.js',import.meta.url),'utf8');
 function harness(shared={state:undefined,alarms:new Map(),tabs:new Map(),windows:new Map(),updates:[],fetches:[],status:200,now:Date.now()}) {
+ shared.heartbeats ||= [];
  const handlers={}; const event=name=>({addListener:fn=>handlers[name]=fn});
  const chrome={runtime:{id:'unit-extension',onMessage:event('message'),onStartup:event('startup'),onInstalled:event('installed')},
   storage:{local:{get:async()=>({state:structuredClone(shared.state)}),set:async({state})=>{shared.state=structuredClone(state);}}},
   alarms:{get:async name=>shared.alarms.get(name),create:async(name,info)=>shared.alarms.set(name,{...info,scheduledTime:info.when || shared.now+(info.delayInMinutes||info.periodInMinutes)*60000}),clear:async name=>shared.alarms.delete(name),onAlarm:event('alarm')},
-  windows:{get:async id=>{if(!shared.windows.has(id))throw Error('no window');return shared.windows.get(id);},create:async info=>{const id=shared.windows.size+1,t={id:shared.tabs.size+1,url:info.url,windowId:id,active:true};shared.tabs.set(t.id,t);const win={...info,id,state:'normal',tabs:[t]};shared.windows.set(id,win);return win;}},
+  windows:{remove:async id=>{shared.windows.delete(id);for(const [tabId,tab] of shared.tabs)if(tab.windowId===id)shared.tabs.delete(tabId);},get:async id=>{if(!shared.windows.has(id))throw Error('no window');return shared.windows.get(id);},create:async info=>{const id=shared.windows.size+1,t={id:shared.tabs.size+1,url:info.url,windowId:id,active:true};shared.tabs.set(t.id,t);const win={...info,id,state:'normal',tabs:[t]};shared.windows.set(id,win);return win;}},
   tabs:{get:async id=>{if(!shared.tabs.has(id))throw Error('no tab');return shared.tabs.get(id);},update:async(id,info)=>{shared.updates.push({id,...info});Object.assign(shared.tabs.get(id),info);},reload:async()=>{},sendMessage:async()=>{}}};
- const context=vm.createContext({chrome,GMS_BATCH_CONFIG:{token:'unit-token-never-exposed'},importScripts:()=>{},crypto,Response,AbortSignal,
-  setTimeout:fn=>setTimeout(fn,1),Date:class extends Date{constructor(...args){super(...(args.length?args:[shared.now]));}static now(){return shared.now;}},fetch:async(url,options)=>{if(!options.method){shared.preflights=(shared.preflights||0)+1;return Response.json(shared.preflight||{ready:true,reason:'ready',maxRows:50,policy:{maxBatchRows:50,dailyRows:1200,intervalSeconds:3600}},{status:shared.preflightStatus||200});}shared.fetches.push({url,options});return Response.json(shared.status===200?{ok:true,accepted:JSON.parse(options.body).rows.length,observationsAdded:1,listingsChanged:1}:{error:'test'}, {status:shared.status});}});
+ const context=vm.createContext({chrome,GMS_BATCH_CONFIG:{token:'unit-token-never-exposed'},importScripts:()=>{},crypto,Response,AbortSignal,URL,
+  setTimeout:fn=>setTimeout(fn,1),Date:class extends Date{constructor(...args){super(...(args.length?args:[shared.now]));}static now(){return shared.now;}},fetch:async(url,options)=>{if(new URL(url).searchParams.has('heartbeat')){shared.heartbeats.push({url,options});return Response.json({ok:true});}if(!options.method){shared.preflights=(shared.preflights||0)+1;return Response.json(shared.preflight||{ready:true,reason:'ready',maxRows:50,policy:{maxBatchRows:50,dailyRows:1200,intervalSeconds:3600}},{status:shared.preflightStatus||200});}shared.fetches.push({url,options});return Response.json(shared.status===200?{ok:true,accepted:JSON.parse(options.body).rows.length,observationsAdded:1,listingsChanged:1}:{error:'test'}, {status:shared.status});}});
  vm.runInContext(source,context);
  const drain=async()=>{await vm.runInContext('serial',context);};
  const send=async(m,tabId=99)=>new Promise(resolve=>handlers.message(m,{id:'unit-extension',tab:{id:tabId,url:'https://meso.watch/?gms-batch=1'}},resolve));
- const alarm=async name=>{handlers.alarm({name});await drain();};
+ const alarm=async name=>{await handlers.alarm({name});await drain();};
  return {shared,send,alarm,drain};
 }
 const report=run=>({runId:run.runId,world:'Windia',status:'completed',startedAt:new Date().toISOString(),finishedAt:new Date().toISOString(),shops:40,rows:[{item:2040801,price:1,qty:1,sold:false,seller:'Test',channel:1,room:1,seen:'2026-11-09 14:00:00'}],nextCursor:2});
@@ -30,11 +31,13 @@ test('three runs finish independently; overlap is blocked and test mode never up
   await h.send({type:'finish',report:report(run)},run.tabId);
  }
  assert.equal(h.shared.state.run,null);assert.equal(h.shared.state.history.length,3);assert.equal(h.shared.fetches.length,0);
+ assert.ok(h.shared.heartbeats.length > 0);
+ assert.ok(h.shared.heartbeats.every(({options}) => !JSON.stringify(JSON.parse(options.body)).includes('unit-token-never-exposed')));
  assert.equal(new Set(h.shared.state.history.map(x=>x.runId)).size,3);
  assert.equal(h.shared.windows.size,1);assert.equal([...h.shared.windows.values()][0].focused,false);
  assert.ok(h.shared.updates.every(x=>x.id===h.shared.state.workerTabId&&x.autoDiscardable===false));
 });
-test('hourly alarm, durable outbox and retry survive a service-worker restart',async()=>{
+test('15-minute alarm, durable outbox and retry survive a service-worker restart',async()=>{
  let h=harness();await h.drain();await h.send({type:'enable'});
  assert.equal(h.shared.alarms.get('gms-market-hourly').periodInMinutes,15);
  await h.alarm('gms-market-hourly');const run=h.shared.state.run;
@@ -60,11 +63,14 @@ test('missing collector tab times out, and restored schedule is recreated withou
  await h.alarm('gms-market-hourly');const id=h.shared.state.run.runId;await h.alarm('gms-market-hourly');assert.equal(h.shared.state.run.runId,id);
  h.shared.now+=15*60000;await h.alarm('gms-market-watchdog');assert.equal(h.shared.state.run,null);assert.equal(h.shared.state.enabled,true);assert.ok(h.shared.state.retryAt>h.shared.now);
 });
-test('a minimized collector window pauses scheduling rather than taking over another window',async()=>{
+test('a minimized collector window stops scheduling and closes only its own window',async()=>{
  const h=harness();await h.drain();await h.send({type:'run'});const run=h.shared.state.run;
  await h.send({type:'ready'},run.tabId);await h.send({type:'finish',report:report(run)},run.tabId);
+ h.shared.windows.set(99,{id:99,type:'normal',state:'normal'});
+ h.shared.tabs.set(99,{id:99,windowId:99,url:'https://example.com/'});
  h.shared.windows.get(h.shared.state.workerWindowId).state='minimized';h.shared.now+=3600000;await h.send({type:'enable'});await h.alarm('gms-market-hourly');
  assert.equal(h.shared.state.enabled,false);assert.equal(h.shared.state.run,null);assert.equal(h.shared.windows.size,1);
+ assert.ok(h.shared.windows.has(99));assert.ok(h.shared.tabs.has(99));
 });
 
 test('collection timeout preserves schedule, backs off across worker restart and resets after a stored run',async()=>{

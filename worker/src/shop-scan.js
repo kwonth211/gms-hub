@@ -42,7 +42,7 @@ export async function handleShopScan(req, env, knownItems, onListings) {
   // dropped, never the row, and a later snapshot without them keeps the stored ones.
   const stmt = env.DB.prepare(`INSERT INTO listings (item,price,qty,sold,seller,channel,room,reporter,first_seen,last_seen,opts)
     VALUES (?,?,?,?,?,?,?,'collector:shop',?,?,?)
-    ON CONFLICT (seller,item,price,channel,room) DO UPDATE SET last_seen=excluded.last_seen, qty=excluded.qty, sold=excluded.sold,
+    ON CONFLICT (seller,item,price,channel,room) DO UPDATE SET last_seen=excluded.last_seen, qty=excluded.qty, sold=excluded.sold, reporter=excluded.reporter,
     opts=COALESCE(excluded.opts, listings.opts)
     WHERE excluded.last_seen > listings.last_seen`);
   try {

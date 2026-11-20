@@ -5,7 +5,11 @@ import { sameSecret } from './secure.js';
 const MAX_RAW = 256 * 1024;
 
 export async function handleEmail(message, env) {
-  const forwardTo = env.FORWARD_TO || 'kwonth211@gmail.com';
+  const forwardTo = env.FORWARD_TO?.trim();
+  if (!forwardTo) {
+    message.setReject('Email forwarding is not configured');
+    return;
+  }
   let raw = '';
   try {
     raw = await new Response(message.raw).text();

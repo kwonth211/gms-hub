@@ -162,7 +162,7 @@ export async function handleMarketBatch(req, env, knownItems, onListings) {
     WHERE EXISTS (SELECT 1 FROM market_batch_runs WHERE run_id=? AND payload_hash=?)
     AND NOT EXISTS (SELECT 1 FROM listings WHERE item=? AND price=? AND seller=? AND channel=? AND room=? AND last_seen>=?)
     ON CONFLICT (seller,item,price,channel,room) DO UPDATE SET
-    last_seen=excluded.last_seen, qty=CASE WHEN listings.sold=0 THEN excluded.qty ELSE listings.qty END,
+    last_seen=excluded.last_seen, qty=CASE WHEN listings.sold=0 THEN excluded.qty ELSE listings.qty END, reporter=excluded.reporter,
     opts=COALESCE(excluded.opts, listings.opts)
     WHERE excluded.last_seen > listings.last_seen`);
   try {

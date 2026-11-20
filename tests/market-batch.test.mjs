@@ -17,6 +17,13 @@ const known = async()=>new Set([2040801]);
 const batch = (count=1) => { const now=Date.now()-1000; return {runId:crypto.randomUUID(),world:'Windia',startedAt:iso(now-60000),finishedAt:iso(now),shops:count,rows:Array.from({length:count},(_,i)=>({item:2040801,price:1000+i,qty:1,sold:false,seller:'Seller',channel:1,room:1,seen:seen(now-120000)}))}; };
 async function post(env,body,token='test-token') { const r=await handleMarketBatch(new Request('https://test/internal/market-batch',{method:'POST',headers:{Authorization:'Bearer '+token},body:JSON.stringify(body)}),env,known); return {status:r.status,data:await r.json()}; }
 const count = (e,t)=>e.sqlite.prepare(`SELECT COUNT(*) AS n FROM ${t}`).get().n;
+test('an authenticated batch takes ownership of a public observation when it refreshes it', async () => {
+ const e=environment(), b=batch(), r=b.rows[0];
+ e.sqlite.prepare("INSERT INTO listings(item,price,seller,channel,room,reporter,last_seen) VALUES(?,?,?,?,?,'public-test',datetime('now','-1 hour'))")
+   .run(r.item,r.price,r.seller,r.channel,r.room);
+ assert.equal((await post(e,b)).status,200);
+ assert.equal(e.sqlite.prepare('SELECT reporter FROM listings').get().reporter,'batch:market');
+});
 test('500-row transaction, exact replay and later run do not inflate listings or observations',async()=>{
  const e=environment(), b=batch(500);
  assert.equal((await post(e,b,'bad')).status,401); assert.equal(count(e,'listings'),0);

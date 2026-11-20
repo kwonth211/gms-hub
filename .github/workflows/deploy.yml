@@ -3,6 +3,8 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
   # Daily rebuild so the item pages carry the latest scanned prices (00:10 KST).
   schedule:
@@ -14,11 +16,26 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify API permissions, cache and private settings
+        run: node --test tests/security.test.mjs tests/public-cache.test.mjs tests/worker.test.mjs tests/usage-guard.test.mjs tests/inbox.test.mjs tests/shop-scan.test.mjs tests/market-batch.test.mjs
+      - run: npm ci --ignore-scripts
+        working-directory: scripts/market-batch
+      - run: npm test
+        working-directory: scripts/market-batch
+
   build:
+    needs: verify
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -48,6 +65,7 @@ jobs:
           path: dist
 
   deploy:
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     environment:

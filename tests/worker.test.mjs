@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
 import worker from '../worker/src/index.js';
+import { handleShopScan } from '../worker/src/shop-scan.js';
 
 // Real SQLite executes the production SQL through a minimal D1 adapter.
 function environment() {
@@ -59,6 +60,50 @@ test('correction changes location, retries idempotently, and is limited to the o
   const result = env.sqlite.prepare('SELECT price, channel, room FROM listings').get();
   assert.equal(result.price, 120); assert.equal(result.channel, 21); assert.equal(result.room, 4);
   assert.equal(env.sqlite.prepare('SELECT COUNT(*) AS n FROM listings').get().n, 1);
+});
+
+test('a public upload cannot change another reporter or collector listing, even in a mixed batch', async () => {
+  for (const owner of ['other-visitor', 'collector:shop', 'batch:market']) {
+    const env = environment();
+    await send(env, '/listings', { items: [row] });
+    env.sqlite.prepare("UPDATE listings SET reporter = ?, last_seen = datetime('now', '-1 hour')").run(owner);
+    const before = { ...env.sqlite.prepare('SELECT * FROM listings').get() };
+    for (const change of [{ sold: true }, { qty: 9999 }]) {
+      const r = await send(env, '/listings', { items: [{ ...row, seller: 'NewSeller' }, { ...row, ...change }] }, 'attacker');
+      assert.equal(r.status, 409);
+      assert.deepEqual({ ...env.sqlite.prepare('SELECT * FROM listings').get() }, before);
+      assert.equal(env.sqlite.prepare('SELECT COUNT(*) AS n FROM listings').get().n, 1);
+    }
+    // Repeating identical public data is acknowledged without refreshing someone else's timestamp or ownership.
+    const sequence = env.sqlite.prepare("SELECT seq FROM sqlite_sequence WHERE name = 'listings'").get().seq;
+    assert.deepEqual((await send(env, '/listings', { items: [row] }, 'attacker')).data, { stored: 1 });
+    assert.deepEqual({ ...env.sqlite.prepare('SELECT * FROM listings').get() }, before);
+    assert.equal(env.sqlite.prepare("SELECT seq FROM sqlite_sequence WHERE name = 'listings'").get().seq, sequence);
+  }
+});
+
+test('a collector insert racing with a public upload is not overwritten or acknowledged as stored', async () => {
+  const env = environment(), batch = env.DB.batch;
+  env.DB.batch = async statements => {
+    env.sqlite.prepare('INSERT INTO listings(item,price,qty,sold,seller,channel,room,reporter) VALUES(?,?,1,0,?,?,?,?)')
+      .run(row.item, row.price, row.seller, row.channel, row.room, 'collector:shop');
+    return batch(statements);
+  };
+  assert.equal((await send(env, '/listings', { items: [{ ...row, qty: 9999, sold: true }] }, 'attacker')).status, 409);
+  assert.deepEqual({ ...env.sqlite.prepare('SELECT qty,sold,reporter FROM listings').get() }, { qty: 1, sold: 0, reporter: 'collector:shop' });
+});
+
+test('a collector refresh takes ownership so the original public reporter cannot alter or remove it', async () => {
+  const env = environment();
+  await send(env, '/listings', { items: [row] });
+  env.sqlite.exec("UPDATE listings SET last_seen = datetime('now', '-1 hour')");
+  const request = new Request('https://test.invalid/internal/shop-scan', { method: 'POST', headers: { Authorization: 'Bearer local-scan-test' },
+    body: JSON.stringify({ channel: row.channel, room: row.room, seen: new Date(Date.now() - 1000).toISOString().slice(0, 19).replace('T', ' '), rows: [row] }) });
+  assert.equal((await handleShopScan(request, { ...env, SHOP_SCAN_TOKEN: 'local-scan-test' }, async () => new Set([row.item]))).status, 200);
+  assert.equal(env.sqlite.prepare('SELECT reporter FROM listings').get().reporter, 'collector:shop');
+  assert.equal((await send(env, '/listings', { items: [{ ...row, sold: true }] })).status, 409);
+  assert.equal((await send(env, '/listings/fix', { from: row, to: { ...row, qty: 2 } })).status, 404);
+  assert.deepEqual((await send(env, '/listings/remove', { listing: row })).data, { removed: 0 });
 });
 
 test('a correction conflict or database failure never deletes the original listing', async () => {
