@@ -16,7 +16,7 @@ const sell = { nick: 'Hookstk', intent: 'sell', item: 2040801, price: '300만', 
 test('a trade post needs a game-style name, an item or a few words, and keeps links, cash talk and slurs out', () => {
   assert.deepEqual(validFreeMega(sell, known).row, { nick: 'Hookstk', intent: 'sell', item: 2040801, price: 3000000, text: '1개 급처', channel: 3 });
   assert.equal(validFreeMega({ ...sell, text: '' }, known).row.item, 2040801);
-  for (const [change, code] of [[{ nick: '한글닉' }, 'nick'], [{ nick: 'a' }, 'nick'], [{ intent: 'trade' }, 'intent'], [{ item: 999 }, 'item'],
+  for (const [change, code] of [[{ nick: '@everyone' }, 'nick'], [{ nick: 'a' }, 'nick'], [{ nick: 'x'.repeat(21) }, 'nick'], [{ intent: 'trade' }, 'intent'], [{ item: 999 }, 'item'],
     [{ price: 'lots' }, 'price'], [{ text: 'x'.repeat(81) }, 'length'], [{ text: 'discord.gg/abc' }, 'link'], [{ text: '현금 거래 가능' }, 'rmt'],
     [{ text: '5000원에 팜' }, 'rmt'], [{ text: '$20 paypal' }, 'rmt'], [{ channel: 41 }, 'channel'], [{ item: null, text: '' }, 'empty']])
     assert.equal(validFreeMega({ ...sell, ...change }, known).error, code, JSON.stringify(change));
@@ -61,4 +61,9 @@ test('only the key deletes a post; three different reporters hide it; old posts 
   e.sqlite.exec(`UPDATE free_megaphones SET at = datetime('now', '-3 days') WHERE id = ${old.id}`);
   await pruneFreeMegas(e);
   assert.equal(e.sqlite.prepare('SELECT COUNT(*) n FROM free_megaphones').get().n, 1);
+});
+
+test('free megaphone names may hold spaces and any letters (GMS Manager)', () => {
+  assert.equal(validFreeMega({ ...sell, nick: '  GMS   Manager ' }, known).row.nick, 'GMS Manager');
+  assert.equal(validFreeMega({ ...sell, nick: '한글닉' }, known).row.nick, '한글닉');
 });

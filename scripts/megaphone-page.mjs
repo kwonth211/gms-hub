@@ -55,7 +55,7 @@ function freeComposer(ko) {
   return `<form class="fm-form" id="fm-form" autocomplete="off" aria-label="${t('무료 고확 쏘기', 'Send a free megaphone')}">
 <div class="fm-bar">
 <span class="fm-badge">${t('무료 고확', 'Free mega')}</span>
-<input id="fm-nick" class="fm-nick" maxlength="13" placeholder="${t('내 닉네임', 'My game name')}" aria-label="${t('내 게임 닉네임 (귓말 받을 이름)', 'Your game name (for whispers)')}" title="${t('귓말 받을 게임 닉네임', 'Your game name, for whispers')}" spellcheck="false" autocapitalize="off">
+<input id="fm-nick" class="fm-nick" maxlength="20" placeholder="${t('내 닉네임', 'My game name')}" aria-label="${t('내 게임 닉네임 (귓말 받을 이름)', 'Your game name (for whispers)')}" title="${t('귓말 받을 게임 닉네임', 'Your game name, for whispers')}" spellcheck="false" autocapitalize="off">
 <div class="fm-types" role="group" aria-label="${t('종류', 'Kind')}"><button type="button" data-intent="sell" aria-pressed="true">${t('팝니다', 'Selling')}</button><button type="button" data-intent="buy" aria-pressed="false">${t('삽니다', 'Buying')}</button><button type="button" data-intent="talk" aria-pressed="false">${t('한마디', 'Chat')}</button></div>
 <div class="fm-line"><input id="fm-text" class="fm-text" maxlength="100" placeholder="${t('예: 장공 180만 급처', 'e.g. gloves att 1.8m')}" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="fm-suggest" aria-label="${t('아이템, 가격, 한마디', 'Item, price and note')}"><ul id="fm-suggest" class="fm-suggest" role="listbox" hidden></ul></div>
 <select id="fm-ch" class="fm-ch" aria-label="${t('채널 (선택)', 'Channel (optional)')}"><option value="">${t('채널', 'CH')}</option>${Array.from({ length: 40 }, (_, i) => `<option value="${i + 1}">CH ${i + 1}</option>`).join('')}</select>

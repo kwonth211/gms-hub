@@ -65,7 +65,7 @@ function rollWord(o, base, key, ko) {
 
 const TRADE_OPTS = [{ type: 3, name: 'item', name_localizations: { ko: '아이템' }, description: 'Item name (Korean, English or short names like 장공)', description_localizations: { ko: '아이템 이름 (한글, 영문, 장공 같은 줄임말)' }, required: true, autocomplete: true },
         { type: 3, name: 'price', name_localizations: { ko: '가격' }, description: 'Price, e.g. 3m, 500k, 300만', description_localizations: { ko: '가격 (300만, 3m, 500k)' }, required: true },
-        { type: 3, name: 'nick', name_localizations: { ko: '닉네임' }, description: 'Your in-game name, so buyers can whisper you', description_localizations: { ko: '게임 캐릭터 이름 (귓말 받을 이름)' }, required: true, max_length: 13 },
+        { type: 3, name: 'nick', name_localizations: { ko: '닉네임' }, description: 'Your in-game name, so buyers can whisper you', description_localizations: { ko: '게임 캐릭터 이름 (귓말 받을 이름)' }, required: true, max_length: 20 },
         { type: 4, name: 'channel', name_localizations: { ko: '채널' }, description: 'Game channel', description_localizations: { ko: '게임 채널' }, min_value: 1, max_value: 40 },
         { type: 3, name: 'note', name_localizations: { ko: '메모' }, description: 'Short note (up to 80 characters)', description_localizations: { ko: '짧은 메모 (80자까지)' }, max_length: 80 }];
 export const COMMANDS = [
@@ -105,7 +105,7 @@ export const COMMANDS = [
   { name: 'shout', name_localizations: { ko: '무료고확' }, description: 'Send a free megaphone message (shows on GMS Hub too)', description_localizations: { ko: '무료 고확으로 한마디 쏘기 (사이트 확성기에도 같이 떠요)' },
     options: [
       { type: 3, name: 'message', name_localizations: { ko: '메시지' }, description: 'Your message (up to 80 characters)', description_localizations: { ko: '할 말 (80자까지)' }, required: true, max_length: 80 },
-      { type: 3, name: 'nick', name_localizations: { ko: '닉네임' }, description: 'Your in-game name', description_localizations: { ko: '게임 캐릭터 이름' }, required: true, max_length: 13 },
+      { type: 3, name: 'nick', name_localizations: { ko: '닉네임' }, description: 'Your in-game name', description_localizations: { ko: '게임 캐릭터 이름' }, required: true, max_length: 20 },
       { type: 4, name: 'channel', name_localizations: { ko: '채널' }, description: 'Game channel', description_localizations: { ko: '게임 채널' }, min_value: 1, max_value: 40 }] },
   { name: 'feedback', name_localizations: { ko: '건의' }, description: 'Send feedback or a bug report to GMS Hub', description_localizations: { ko: 'GMS Hub에 건의나 오류 제보 보내기' },
     options: [{ type: 3, name: 'text', name_localizations: { ko: '내용' }, description: 'What should we fix or add?', description_localizations: { ko: '고치거나 추가했으면 하는 것' }, required: true, min_length: 5, max_length: 1000 }] },
@@ -289,7 +289,7 @@ export async function handleInteraction(i, { prices, get, discord, fetcher, env 
     const intent = shout ? 'talk' : sub?.name === 'buy' ? 'buy' : 'sell';
     const [out] = await postFreeMega(env, { nick: String(opt.nick?.value || '').trim(), intent, item: item?.id ?? null, price, text: (shout ? opt.message?.value : opt.note?.value) || '', channel: opt.channel?.value ?? null }, `discord:${user.id}`, null);
     if (out.error) {
-      const ERR = { nick: tr('닉네임은 영문·숫자 2~13자로 적어 주세요.', 'Use your in-game name: 2 to 13 letters or digits.'), slow: tr('조금 전에 올리셨어요. 2분 뒤에 다시 올려 주세요.', 'You just posted one. Try again in two minutes.'),
+      const ERR = { nick: tr('닉네임은 2~20자로 적어 주세요. 링크와 @는 넣을 수 없어요.', 'Use 2 to 20 characters for the name, without links or @.'), slow: tr('조금 전에 올리셨어요. 2분 뒤에 다시 올려 주세요.', 'You just posted one. Try again in two minutes.'),
         daily: tr('오늘 올릴 수 있는 만큼 올리셨어요. 내일 다시 올려 주세요.', 'That is today\'s limit. Try again tomorrow.'), rmt: tr('현금 거래 글은 올릴 수 없어요.', 'Real-money trades are not allowed.'), empty: tr('할 말을 두 글자 이상 적어 주세요.', 'Write at least two characters.'), link: tr('메모에 링크나 연락처는 넣을 수 없어요.', 'No links or contact handles in the note.'), length: tr('메모는 80자까지예요.', 'The note can be up to 80 characters.') };
       return hidden(ERR[out.error] || tr('올리지 못했어요. 입력한 내용을 확인해 주세요.', 'Could not post that. Check what you entered.'));
     }

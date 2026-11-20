@@ -19,10 +19,12 @@ const BAD_WORDS = ['씨발', '시발', 'ㅅㅂ', '병신', 'ㅂㅅ', '좆', '개
 
 // Returns { row } ready to insert, or { error } (a short code the page turns into a sentence).
 export function validFreeMega(body, known) {
-  const nick = String(body?.nick ?? '').trim();
+  // Any name up to 20 characters, spaces included ("GMS Manager", owner 2026-11-20); control characters and runs of
+  // spaces are cleaned, links and mentions are kept out.
+  const nick = String(body?.nick ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim();
   const intent = String(body?.intent ?? '');
   const text = String(body?.text ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim();
-  if (!/^[A-Za-z0-9]{2,13}$/.test(nick)) return { error: 'nick' };
+  if (nick.length < 2 || nick.length > 20 || LINK.test(nick) || /[@<>`]/.test(nick)) return { error: 'nick' };
   if (!INTENTS.has(intent)) return { error: 'intent' };
   if (text.length > 80) return { error: 'length' };
   if (LINK.test(text)) return { error: 'link' };

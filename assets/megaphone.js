@@ -388,7 +388,7 @@ document.querySelectorAll('[data-mg-view]').forEach((group) => group.addEventLis
   f.text.addEventListener('blur', () => setTimeout(close, 120));
 
   const ERR = {
-    nick: () => tr('내 닉네임에 게임 닉네임을 영문·숫자 2~13자로 넣어 주세요. 귓말 받을 이름이에요.', 'Enter your game name (2-13 letters or digits) so people can whisper you.'),
+    nick: () => tr('내 닉네임에 귓말 받을 이름을 2~20자로 넣어 주세요. @와 링크는 안 돼요.', 'Enter the name to whisper (2 to 20 characters, no @ or links).'),
     item: () => tr('아이템을 목록에서 다시 골라 주세요.', 'Pick the item from the list again.'),
     price: () => tr('가격은 180만, 1.5억, 3m처럼 써 주세요.', 'Write the price like 3m, 500k or 1.5b.'),
     length: () => tr('80자까지 쓸 수 있어요.', 'Keep it to 80 characters.'),
@@ -403,7 +403,7 @@ document.querySelectorAll('[data-mg-view]').forEach((group) => group.addEventLis
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     close();
-    if (!/^[A-Za-z0-9]{2,13}$/.test(f.nick.value.trim())) { f.status.textContent = ERR.nick(); f.nick.focus(); return; }
+    { const n = f.nick.value.replace(/\s+/g, ' ').trim(); if (n.length < 2 || n.length > 20 || /[@<>`]/.test(n)) { f.status.textContent = ERR.nick(); f.nick.focus(); return; } }
     // Split the line: the picked [item], the first price, and the rest as the note.
     let line = f.text.value.trim(), item = null, price = null;
     if (intent !== 'talk') {
