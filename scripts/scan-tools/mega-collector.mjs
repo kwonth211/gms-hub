@@ -10,7 +10,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { PNG } from 'pngjs';
 import Tesseract from 'tesseract.js';
-import { findChatBox, findLines, readLine, assemble, repeatFilter, itemFixer, glyphReader, slotAnchor, windowTop, lineFingerprint } from '../../assets/mega-reader.js';
+import { findChatBox, stableChatBox, findLines, isLineVisible, readLine, assemble, repeatFilter, itemFixer, glyphReader, slotAnchor, windowTop, lineFingerprint } from '../../assets/mega-reader.js';
 import { OptionReader, nameKey } from './mega-options.mjs';
 
 const API = 'https://gms-hub-votes.kwonth211.workers.dev/internal/megaphone';
@@ -141,14 +141,14 @@ async function tick() {
   if (at === seen) { if (Date.now() - fresh > 60000) cam.kill(); return; }
   seen = at; fresh = Date.now();
   const img = PNG.sync.read(fs.readFileSync(shot));
-  if (!box || ticks++ % 40 === 0 || empty > 20) { const found = findChatBox(img); if (found) { box = found; empty = 0; } }
+  if (!box || ticks++ % 40 === 0 || empty > 20) { const found = findChatBox(img); if (found) { box = stableChatBox(box,found,img); empty = 0; } }
   if (!box) return;
   const part = crop(img, box);
   const lines = findLines(part);
   empty = lines.length ? 0 : empty + 1;
   const read = [];
   const anchor = readGlyphs ? slotAnchor(part, lines) : null;
-  for (const l of lines) read.push(await readLine(part, l, ocr, anchor ? { read: readGlyphs, wTop: windowTop(l, anchor) } : null));
+  for (const l of lines) read.push(isLineVisible(part,l)?{...await readLine(part, l, ocr, anchor ? { read: readGlyphs, wTop: windowTop(l, anchor) } : null),top:l.top}:{top:l.top,obscured:true});
   const now = Date.now();
   const all = assemble(read);
   if (ticks % 240 === 1 && lines.length) {
@@ -184,6 +184,8 @@ async function tick() {
     if(!job.active&&(now-job.lastVisible>10000||now-job.created>120000)) {
       const item=jobItem(job);
       if(item&&!item.cash&&(item.cat==='Equip'||/ Scroll: /i.test(item.en)))console.log(`options unfinished ${job.row.nick} [${item.en}]: ${job.lastReason||'row disappeared before capture'}; attempts=${job.attempts}; seen=${job.row.seen}`);
+      const recorded=observations.find(r=>r.seen===job.row.seen&&r.channel===job.row.channel&&r.nick===job.row.nick&&r.text===job.row.text);
+      if(recorded){recorded.capture=recorded.opts?'partial':'failed';recorded.reason=job.lastReason||'row disappeared before capture';}
       optionJobs.delete(key);
     }
   }
@@ -196,7 +198,7 @@ async function tick() {
     if(job.active||now-job.lastAttempt<1000)continue;
     const item=jobItem(job);
     if(!item || (item.cash&&item.sub!=='Pet Equipment'&&!Number.isInteger(item.slots)) || (item.cat!=='Equip' && !/ Scroll: /i.test(item.en))){optionJobs.delete(key);continue;}
-    const matches=fingerprints.flatMap((f,i)=>f===job.fingerprint?[i]:[]);
+    const matches=fingerprints.flatMap((f,i)=>f===job.fingerprint&&!read[i].obscured?[i]:[]);
     if(matches.length!==1)continue;
     const i=matches[0];
     job.lastAttempt=now;

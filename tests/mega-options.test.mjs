@@ -2,11 +2,40 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {gunzipSync} from 'node:zlib';
-import { tooltipTitle, emptyUpgradeSuffix, findTooltipPanel, tooltipBody, tooltipStatRows, subtractTooltipBackground, missingTooltipFields, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog } from '../assets/mega-tooltip.js';
+import { tooltipTitle, agreeArithmetic, agreeTooltipNumber, colorTooltipBoxes, selectTooltipBox, emptyUpgradeSuffix, findTooltipPanel, tooltipBody, tooltipStatRows, subtractTooltipBackground, missingTooltipFields, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog } from '../assets/mega-tooltip.js';
 import { optionParts, optionSummary } from '../assets/mega-option-text.js';
 const bow={en:'Vaulter 2000',cat:'Equip',slots:7};
 const dagger={en:'Bazlud',cat:'Equip',slots:7};
 const scroll={en:'Claw Attack Scroll: Intermediate',cat:'Use'};
+test('tooltip colour separates the linked item from equipped comparison and ignores unchanged panels',()=>{
+ const width=900,height=450,before={width,height,data:new Uint8Array(width*height*4)},after={width,height,data:new Uint8Array(width*height*4)};
+ for(let i=0;i<before.data.length;i+=4){before.data.set([180,160,130,255],i);after.data.set([180,160,130,255],i);}
+ for(const [x0,y0,w,h] of [[310,80,232,300],[548,80,232,200]])for(let y=y0;y<y0+h;y++)for(let x=x0;x<x0+w;x++)after.data.set([56,57,87,255],(y*width+x)*4);
+ // A white text row divides the interior but does not join adjacent panels.
+ for(let x=325;x<515;x++)after.data.set([255,255,255,255],(125*width+x)*4);
+ const boxes=colorTooltipBoxes(after,before,{x:298,y:385});
+ assert.deepEqual(boxes.map(({x,y,w,h})=>({x,y,w,h})),[{x:308,y:78,w:236,h:304},{x:546,y:78,w:236,h:204}]);
+ assert.equal(selectTooltipBox(boxes,{x:298,y:385},width),boxes[0]);
+ assert.equal(selectTooltipBox([boxes[1]],{x:298,y:385},width),null); // Never fall back to equipped gear.
+ assert.deepEqual(colorTooltipBoxes(after,after,{x:298,y:385}),[]);
+ assert.deepEqual(colorTooltipBoxes(after,{...before,width:899},{x:298,y:385}),[]);
+});
+test('numeric recovery needs independent agreement and a valid complete sum',()=>{
+ const a=[{text:'+6 (5 +1)',confidence:.3}],b=[{text:'+6 (5 +1)',confidence:.65}];
+ assert.equal(agreeArithmetic(a,b),'6(5+1)');
+ assert.equal(agreeArithmetic(a,[{text:'+5 (5 +1)',confidence:1}]),null);
+ assert.equal(agreeArithmetic(a,[{text:'+6',confidence:1}]),null);
+ assert.equal(agreeArithmetic(a,[{...b[0],confidence:.4}]),null);
+ assert.equal(agreeArithmetic([{text:'+06 (5 +1)',confidence:1}],b),null);
+});
+test('isolated plain numbers require both engines and stronger confidence than checked sums',()=>{
+ assert.equal(agreeTooltipNumber([{text:'+10',confidence:.5}],[{text:'+10',confidence:.8}]),'10');
+ assert.equal(agreeTooltipNumber([{text:'+10',confidence:.3}],[{text:'+10',confidence:.8}]),null);
+ assert.equal(agreeTooltipNumber([{text:'+10',confidence:1}],[{text:'+19',confidence:1}]),null);
+ assert.equal(agreeTooltipNumber([{text:'02',confidence:1}],[{text:'02',confidence:1}]),null);
+ const item={en:'Blue Arten',cat:'Equip',slots:5};
+ assert.equal(parseTooltipLines([item.en,'Wagic Attack: +22 (0 +22)'],item).stats.MAD,22);
+});
 test('scroll metadata rejects OCR digit contamination without filling unread stats',()=>{
  const item={en:'One-Handed Axe Attack Scroll: Greater',cat:'Use',inc:{PAD:4}};
  const read=text=>parseTooltipLines([item.en,'Success rate: 10%',text],item);
@@ -69,6 +98,9 @@ test('a clear isolated slot count accepts the OCR period separator but rejects a
  assert.equal(parseTooltipLines(['Vaulter 2000 (+2)','Remaining Enhancements. 0'],bow).slots,0);
  assert.equal(parseTooltipLines(['Vaulter 2000 (+2)','Remaining Enhancements: 04821'],bow),null);
  assert.equal(parseTooltipLines(['Vaulter 2000 (+2)','Remaining Enhancements: 0*32.'],bow),null);
+ assert.equal(parseTooltipLines(['Vaulter 2000 (+2)','Remaining Enhancements: 02'],bow),null);
+ assert.equal(parseTooltipLines(['Vaulter 2000 (+2)','Weapon Attack: 069'],bow),null);
+ assert.equal(parseTooltipLines(['Claw Attack Scroll: Intermediate','Success rate: 60%','Weapon Attack +02'],scroll),null);
 });
 test('whisper recovery identifies only the specific dialog cancel button',()=>{
  const prompt={text:'Please enter the person you want to',confidence:1,x:568,y:365};
@@ -119,6 +151,14 @@ test('select the linked tooltip and stop before the equipped comparison panel',(
  const rows=[{x:434,y:580,w:126,h:12,confidence:1,text:'• Vaulter 2000 (+2)'},{x:672,y:558,w:92,h:12,confidence:1,text:'• Steel Titans'}];
  const panel=findTooltipPanel(rows,bow,[bow,{en:'Steel Titans',cat:'Equip'}],{width:1366,height:796});
  assert.equal(panel.x,426);assert.equal(panel.x+panel.w,662);assert.equal(panel.title.text,rows[0].text);
+});
+test('a scroll in the shop behind a robe cannot cut off its remaining enhancements',()=>{
+ const item={en:'Blue Sauna Robe',cat:'Equip',slots:10};
+ const rows=[{text:'•Blue Sauna Robe (M) (+8)',x:528,y:468,w:178,h:14,confidence:.5},{text:'Claw Attack Scroll: Greater',x:664,y:440,w:180,h:12,confidence:1},{text:'¿Type: Outfit',x:526,y:596,w:78,h:12,confidence:1},{text:'Remaining Enhancements: 0',x:530,y:724,w:168,h:12,confidence:.5}];
+ const panel=findTooltipPanel(rows,item,[item,{en:'Claw Attack Scroll: Greater',cat:'Use'}],{width:1366,height:796});
+ assert.equal(panel.w,270);
+ const body=tooltipBody(panel,rows,item);
+ assert.ok(body.x+body.w>698);assert.equal(body.y,593);assert.equal(body.h,147);
 });
 test('option summaries show actual stats and zero slots on desktop and mobile',()=>{
  assert.deepEqual(optionParts({stats:{PAD:68,UNKNOWN:999},slots:0,attackSpeed:'average'},true),['공격력 68','남은 강화 0','공속 보통']);

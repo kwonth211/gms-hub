@@ -8,7 +8,7 @@ import { PNG } from 'pngjs';
 import Tesseract from 'tesseract.js';
 import { findBadge, lineBitmap, lineFingerprint, locateFingerprint, glyphs, itemGlyphBounds } from '../../assets/mega-reader.js';
 const exec = promisify(execFile);
-import { findTooltipPanel, tooltipBody, tooltipField, tooltipStatRows, missingTooltipFields, subtractTooltipBackground, emptyUpgradeSuffix, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog, nameKey, tooltipTitle } from '../../assets/mega-tooltip.js';
+import { colorTooltipBoxes, selectTooltipBox, agreeTooltipNumber, tooltipBody, tooltipField, tooltipStatRows, missingTooltipFields, subtractTooltipBackground, emptyUpgradeSuffix, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog, nameKey, tooltipTitle } from '../../assets/mega-tooltip.js';
 export { nameKey } from '../../assets/mega-tooltip.js';
 export function cropImage(img, b, mask = false, scale = 1) {
   const out = new PNG({ width:b.w*scale, height:b.h*scale });
@@ -46,9 +46,10 @@ export function itemLink(img,line,glyph=null) {
 export class OptionReader {
   constructor({shot,input,ocr,catalog,readFrame}) {Object.assign(this,{shot,input,ocr,catalog,readFrame});this.last=0;this.dir=fs.mkdtempSync(path.join(os.tmpdir(),'gms-mega-options-'));}
   async recognize(img,name,file='ocr.png',scale=1) {const p=path.join(this.dir,file);fs.writeFileSync(p,PNG.sync.write(img));const {stdout}=await exec(this.ocr,[p,name,String(scale)],{timeout:4000,maxBuffer:2e6});return JSON.parse(stdout);}
-  async recognizeFallback(img) {
+  async recognizeFallback(img,psm='6') {
     this.fallback ||= Tesseract.createWorker('eng').then(async w=>{await w.setParameters({tessedit_pageseg_mode:'6'});return w;});
-    const {data}=await (await this.fallback).recognize(PNG.sync.write(img));
+    const worker=await this.fallback;await worker.setParameters({tessedit_pageseg_mode:psm});
+    const {data}=await worker.recognize(PNG.sync.write(img));
     return data.lines.map(l=>({text:l.text.trim(),confidence:l.confidence/100,x:l.bbox.x0,y:l.bbox.y0,w:l.bbox.x1-l.bbox.x0,h:l.bbox.y1-l.bbox.y0}));
   }
   async linkFromOCR(img,line,item) {
@@ -65,50 +66,27 @@ export class OptionReader {
     }
     return null;
   }
-  async recoverTitle(image, rows, item, point, background=null) {
-    // Vision can merge a translucent tooltip title with text behind it. A second engine reads a bounded crop;
-    // approximate words only choose where to look. findTooltipPanel still requires the exact catalogue title.
-    const words=item.en.toLowerCase().split(/\W+/).filter(w=>w.length>2);
-    const minX=Math.min(point.x-30,image.width-(item.cat==='Equip'?540:450));
-    const candidates=rows.map(r=>r.itemBounds?{...r,...r.itemBounds}:r).filter(r=>!r.itemInBrackets&&(r.itemBounds||!/[\[\]]/.test(r.text))&&r.x>=minX&&r.x<point.x+120&&r.y<point.y+70&&
-      words.filter(w=>nameKey(r.text).includes(w)).length>=Math.max(1,words.length-1)).slice(0,2);
-    if(background) {
-      // Locate the translucent panel even when OCR misses the entire title. This
-      // geometry only chooses a crop; its title must still read exactly as the item.
-      const x=Math.max(0,Math.min(point.x+28,image.width-190));
-      for(let y=28;y<Math.min(image.height-24,point.y+60);y+=16) {
-        const probe=subtractTooltipBackground(image,background,{x,y,w:180,h:24});
-        if(probe) {
-          let top=y;
-          for(;top<Math.min(image.height-30,y+40);top++) {
-            let matched=0,total=0;
-            for(let dx=0;dx<180;dx+=4){const i=(top*image.width+x+dx)*4;let error=0;for(let c=0;c<3;c++)error+=Math.abs(image.data[i+c]-probe.models[c].alpha*background.data[i+c]-probe.models[c].offset);total++;if(error<30)matched++;}
-            if(matched/total>.65)break;
-          }
-          candidates.push({x,y:top+8,h:28});break;
-        }
-      }
+  async readColorPanel(image,before,item,point,boxes=colorTooltipBoxes(image,before,point)) {
+    // The clicked link's panel starts beside the pointer. The equipped panel to
+    // its right must never be tried just because it has the same item name.
+    const box=selectTooltipBox(boxes,point,image.width);
+    this.lastBoxes=boxes;
+    if(!box)return null;
+    const imageBox={x:box.x,y:box.y,w:box.w,h:box.h};
+    const cropped=cropImage(image,imageBox);
+    fs.writeFileSync(path.join(this.dir,'tooltip-only.png'),PNG.sync.write(cropped));
+    const place=(r,scale)=>({...r,x:box.x+r.x/scale,y:box.y+r.y/scale,w:r.w/scale,h:r.h/scale,
+      ...(r.valueBounds?{valueBounds:{x:box.x+r.valueBounds.x/scale,y:box.y+r.valueBounds.y/scale,w:r.valueBounds.w/scale,h:r.valueBounds.h/scale}}:{})});
+    let rows=(await this.recognize(cropped,item.en,'tooltip-only.png',2)).map(r=>place(r,2));
+    const title=()=>rows.find(r=>r.confidence>=.5&&r.y<box.y+65&&tooltipTitle(r.text,item.en));
+    if(!title()) {
+      const header={...imageBox,h:Math.min(72,box.h)},foreground=subtractTooltipBackground(image,before,header);
+      const pixels=foreground?cropImage(foreground,{x:0,y:0,w:header.w,h:header.h},false,3):cropImage(image,header,false,3);
+      rows.push(...(await this.recognize(pixels,item.en,'header.png')).map(r=>place(r,3)));
+      if(!title())rows.push(...(await this.recognizeFallback(pixels)).map(r=>place(r,3)));
     }
-    if(!candidates.length)return null;
-    for(const r of candidates){
-      const x=Math.max(0,Math.floor(r.x-10)),y=Math.max(28,Math.floor(r.y-8));
-      const b={x,y,w:Math.min(image.width-x,item.cat==='Equip'?240:420),h:Math.min(image.height-y,600)};
-      const header={...b,h:Math.min(b.h,Math.ceil(r.h+24))};
-      const foreground=subtractTooltipBackground(image,background,header);
-      if(foreground) {
-        const isolated=(await this.recognize(cropImage(foreground,{x:0,y:0,w:header.w,h:header.h},false,3),item.en,'recover-clean-title.png')).map(l=>({...l,x:x+l.x/3,y:y+l.y/3,w:l.w/3,h:l.h/3}));
-        const exact=findTooltipPanel([...rows,...isolated],item,this.catalog,image,point);
-        if(exact)return {...exact,recovered:isolated};
-      }
-      const isolated=(await this.recognize(cropImage(image,header),item.en,'recover-title.png',2)).map(l=>({...l,x:x+l.x/2,y:y+l.y/2,w:l.w/2,h:l.h/2}));
-      const exact=findTooltipPanel([...rows,...isolated],item,this.catalog,image,point);
-      if(exact)return {...exact,recovered:isolated};
-      const extra=(await this.recognizeFallback(cropImage(image,b,false,3))).map(l=>({...l,x:x+l.x/3,y:y+l.y/3,w:l.w/3,h:l.h/3}));
-      if(!extra.some(r=>r.confidence>=0.5&&tooltipTitle(r.text,item.en)))continue;
-      const panel=findTooltipPanel([...rows,...extra],item,this.catalog,image,point);
-      if(panel)return {...panel,recovered:extra};
-    }
-    return null;
+    const found=title();
+    return found?{panel:{...imageBox,title:found},rows}:null;
   }
   async readPanel(image,rows,panel,item,background=null) {
     const raw=rows.filter(r=>r.x>=panel.x&&r.x+r.w<=panel.x+panel.w+3&&r.y>=panel.y&&r.y+r.h<image.height-2);
@@ -127,7 +105,8 @@ export class OptionReader {
     let opts=agreeOptions(...readings);
     this.lastReading={body,raw,enlarged,masked,separated,backgroundModel:foreground?.models,readings};
     const observed=[...raw,...enlarged,...masked,...separated];
-    const placed=[...raw,...enlarged.map(r=>({...r,x:body.x+r.x/2,y:body.y+r.y/2})),...[...masked,...separated].map(r=>({...r,x:body.x+r.x/3,y:body.y+r.y/3}))].filter(r=>r.x>=body.x-4&&r.x<body.x+35);
+    const place=(r,scale)=>({...r,x:body.x+r.x/scale,y:body.y+r.y/scale,w:r.w/scale,h:r.h/scale,...(r.valueBounds?{valueBounds:{x:body.x+r.valueBounds.x/scale,y:body.y+r.valueBounds.y/scale,w:r.valueBounds.w/scale,h:r.valueBounds.h/scale}}:{})});
+    const placed=[...raw,...enlarged.map(r=>place(r,2)),...[...masked,...separated].map(r=>place(r,3))].filter(r=>r.x>=body.x-4&&r.x<body.x+35);
     const statRows=item.cat==='Equip'?tooltipStatRows(placed):[];
     const statCount=value=>Object.keys(value?.stats||{}).length+Number(value?.attackSpeed!==undefined)+Number(value?.knockback!==undefined);
     // A completely missed OCR line never enters missingTooltipFields. Count the
@@ -145,7 +124,7 @@ export class OptionReader {
     if(item.cat==='Equip'&&missing.length) {
       // Retry only unread lines, on the saved image, rather than clicking the game again for every OCR pass.
       for(const key of missing.slice(0,6)) {
-        const candidate=raw.find(r=>tooltipField(r.text)===key)||enlarged.filter(r=>tooltipField(r.text)===key).map(r=>({...r,x:body.x+r.x/2,y:body.y+r.y/2,w:r.w/2,h:r.h/2}))[0];
+        const candidate=placed.find(r=>tooltipField(r.text)===key);
         if(!candidate)continue;
         // Extra pixels above a bottom-aligned line pull in the preceding stat and
         // translucent HUD digits. Keep the observed text row and a small bottom margin.
@@ -162,6 +141,23 @@ export class OptionReader {
           const tight={x:body.x,y:tightY,w:Math.min(body.w,Math.max(75,Math.ceil(candidate.x+candidate.w-body.x+12))),h:Math.min(image.height-tightY,Math.ceil(candidate.h+10))};
           const contrast=await this.recognize(cropImage(image,tight,170,3),item.en,'line-contrast.png');
           readings.push(parseTooltipLines([panel.title,...contrast],item));
+        }
+        if(missingTooltipFields([candidate],agreeOptions(...readings),{cat:item.cat}).includes(key)) {
+          const local=isolated.find(r=>tooltipField(r.text)===key&&r.valueBounds);
+          const field=local||placed.find(r=>tooltipField(r.text)===key&&r.valueBounds);
+          if(field) {
+            const q=field.valueBounds,scale=local?3:1,origin=local?lineBox:{x:0,y:0};
+            const x=Math.max(body.x,Math.floor(origin.x+q.x/scale)-2),y=Math.max(body.y,Math.floor(origin.y+q.y/scale)-2);
+            const numericBox={x,y,w:Math.min(Math.ceil(q.w/scale)+4,body.x+body.w-x),h:Math.min(Math.ceil(q.h/scale)+4,body.y+body.h-y)};
+            if(numericBox.w>5&&numericBox.w<=150&&numericBox.h>5&&numericBox.h<=26) {
+              const pixels=foreground?cropImage(foreground,{x:x-body.x,y:y-body.y,w:numericBox.w,h:numericBox.h},false,3):cropImage(image,numericBox,true,3);
+              const primary=await this.recognize(pixels,item.en,'number.png'),secondary=await this.recognizeFallback(pixels,'7');
+              let expression=agreeTooltipNumber(primary,secondary);
+              if(!expression){const original=cropImage(image,numericBox,false,3),a=await this.recognize(original,item.en,'number-original.png'),b=await this.recognizeFallback(original,'7');expression=agreeTooltipNumber(a,b);(this.lastReading.numericChecks||=[]).push({key,box:numericBox,primary:a,secondary:b,expression,original:true});}
+              (this.lastReading.numericChecks||=[]).push({key,box:numericBox,primary,secondary,expression});
+              if(expression)readings.push(parseTooltipLines([panel.title,`${field.text.split(':')[0]}: ${expression}`],item));
+            }
+          }
         }
       }
       opts=agreeOptions(...readings);
@@ -194,8 +190,9 @@ export class OptionReader {
     const signature=(im,edge)=>lineBitmap(cropImage(im,box),line,{x0:0,x1:edge}).sig;
     const fingerprint=lineFingerprint(part,line);
     const park=[Math.min(image.width-40,box.x+box.w+35),35];
-    const input=async(action,x,y,capture=false)=>{
-      if(paused())throw Error('option input paused');
+    const inputAudit=[];
+    const input=async(action,x,y,capture=false,cleanup=false)=>{
+      if(paused()&&!cleanup)throw Error('option input paused');
       const run=exec(this.input,[action,String(x),String(y),String(image.width),String(image.height)],{timeout:2000,maxBuffer:16000});
       let snapshot=null,output='';
       if(capture)run.child.stdout.on('data',chunk=>{
@@ -204,7 +201,9 @@ export class OptionReader {
         // just after mouse-up may still contain the frame captured before the click.
         while((end=output.indexOf('\n'))>=0){const line=output.slice(0,end);output=output.slice(end+1);try{const event=JSON.parse(line);if(event.phase==='clicked'&&!snapshot)snapshot=this.readFrame(event.at+125,1400).catch(()=>null);}catch{}}
       });
-      await run; // A captured image never overrides a native focus/cursor safety failure.
+      const result=await run.catch(e=>{fs.writeFileSync(path.join(this.dir,'input-failure.json'),JSON.stringify({message,action,x,y,code:e.code,events:e.stdout}));throw e;}); // A capture never overrides a focus/cursor failure.
+      const events=result.stdout.trim().split('\n').flatMap(s=>{try{return [JSON.parse(s)];}catch{return [];}});
+      inputAudit.push({action,before:events.find(e=>e.phase==='before')?.state,after:events.filter(e=>e.phase==='after').map(e=>e.state)});
       return capture?await(snapshot||this.readFrame(Date.now(),1400)):null;
     };
     let moved=false;
@@ -224,8 +223,13 @@ export class OptionReader {
       }
       line=relocated;link.y=Math.floor((line.top+line.bottom)/2);
       moved=true;const after=await input('click',box.x+link.x,box.y+link.y,true);if(!after)return skip('no fresh tooltip frame');
-      const rows=await this.recognize(after,item.en),dialog=whisperDialog(rows);
-      if(dialog){await input('click',Math.round(dialog.x+dialog.w/2),Math.round(dialog.y+dialog.h/2));return skip('chat moved; closed newly opened whisper dialog');}
+      const point={x:box.x+link.x,y:box.y+link.y};
+      const boxes=colorTooltipBoxes(after,ready,point);
+      if(!boxes.length) {
+        const dialog=whisperDialog(await this.recognize(after,item.en));
+        if(dialog){await input('click',Math.round(dialog.x+dialog.w/2),Math.round(dialog.y+dialog.h/2));return skip('chat moved; closed newly opened whisper dialog');}
+        return skip('tooltip colour box not found');
+      }
       // Nick + channel must still belong to the clicked row; reject chat scroll races.
       if(signature(after,link.badge.message-4)!==signature(ready,link.badge.message-4)) {
         fs.writeFileSync(path.join(this.dir,'race-ready.png'),PNG.sync.write(ready));
@@ -237,13 +241,11 @@ export class OptionReader {
       // slower option OCR runs on this image. Previously the entire collector waited until OCR ended.
       await input('move',...park);moved=false;
       await this.readFrame(Date.now(),1100);this.interacting=false;
-      const point={x:box.x+link.x,y:box.y+link.y};
-      let panel=findTooltipPanel(rows,item,this.catalog,after,point);
-      if(!panel) panel=await this.recoverTitle(after,rows,item,point,ready);
+      const isolated=await this.readColorPanel(after,ready,item,point,boxes),panel=isolated?.panel,rows=isolated?.rows||[];
       if(!panel||panel.w<120||panel.title.x>box.x+link.x+100){
         fs.writeFileSync(path.join(this.dir,'panel-failure.png'),PNG.sync.write(after));
         fs.writeFileSync(path.join(this.dir,'panel-before.png'),PNG.sync.write(ready));
-        fs.writeFileSync(path.join(this.dir,'panel-failure.json'),JSON.stringify({message,item:item.en,box,line,link,rows}));
+        fs.writeFileSync(path.join(this.dir,'panel-failure.json'),JSON.stringify({message,item:item.en,box,line,link,boxes,rows}));
         return skip('target tooltip title missing');
       }
       let opts=await this.readPanel(after,rows,panel,item,ready);
@@ -266,22 +268,23 @@ export class OptionReader {
           }
         }
         if(counts.length===1&&counts[0]<=20&&(opts.used===undefined||counts[0]<=opts.used))opts={...opts,ups:counts[0]};
-        if(opts.used>0&&opts.ups===undefined)this.lastMissing.push('ups');
+        if(opts.ups===undefined)this.lastMissing.push('ups');
       }
       const sample=`sample-${Date.now()}`;
       fs.writeFileSync(path.join(this.dir,`${sample}.png`),PNG.sync.write(after));
       fs.writeFileSync(path.join(this.dir,`${sample}-before.png`),PNG.sync.write(ready));
-      fs.writeFileSync(path.join(this.dir,`${sample}.json`),JSON.stringify({message,item,opts,panel,reading:this.lastReading}));
+      fs.copyFileSync(path.join(this.dir,'tooltip-only.png'),path.join(this.dir,`${sample}-tooltip.png`));
+      fs.writeFileSync(path.join(this.dir,`${sample}.json`),JSON.stringify({message,item,opts,panel,reading:this.lastReading,inputAudit,frame:{width:image.width,height:image.height,box}}));
       for(const old of fs.readdirSync(this.dir).filter(f=>/^sample-.*\.json$/.test(f)).sort().slice(0,-24)) {
-        fs.rmSync(path.join(this.dir,old),{force:true});fs.rmSync(path.join(this.dir,old.replace(/\.json$/,'.png')),{force:true});fs.rmSync(path.join(this.dir,old.replace(/\.json$/,'-before.png')),{force:true});
+        fs.rmSync(path.join(this.dir,old),{force:true});fs.rmSync(path.join(this.dir,old.replace(/\.json$/,'.png')),{force:true});fs.rmSync(path.join(this.dir,old.replace(/\.json$/,'-before.png')),{force:true});fs.rmSync(path.join(this.dir,old.replace(/\.json$/,'-tooltip.png')),{force:true});
       }
       if(!opts||(!opts.stats&&!opts.scroll&&opts.slots===undefined))return skip('no trusted numeric options');
       // Keep a bounded local diagnostic sample; no screenshots leave this Mac.
       fs.writeFileSync(path.join(this.dir,'last.json'),JSON.stringify({message,item:item.en,opts}));
-      fs.copyFileSync(path.join(this.dir,'ocr.png'),path.join(this.dir,'last-success.png'));
+      fs.copyFileSync(path.join(this.dir,'tooltip-only.png'),path.join(this.dir,'last-success.png'));
       return opts;
     } catch(e) {if(e.code===6)fs.writeFileSync(path.join(os.homedir(),'.config','gms-hub','mega-options-paused'),'cursor visibility changed\n');if(![4,5].includes(e.code)) console.error('options skipped:',e.message.split('\n')[0]);return skip(`input/OCR: ${e.code||e.message}`);}
-    finally {if(moved){await input('move',...park).catch(()=>{});await this.readFrame(Date.now(),1100).catch(()=>null);}this.interacting=false;}
+    finally {if(moved){await input('move',...park,false,true).catch(()=>{});await this.readFrame(Date.now(),1100).catch(()=>null);}this.interacting=false;}
   }
   close(){this.fallback?.then(w=>w.terminate()).catch(()=>{});fs.rmSync(this.dir,{recursive:true,force:true});}
 }

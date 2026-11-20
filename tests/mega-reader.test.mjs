@@ -2,7 +2,27 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {gunzipSync} from 'node:zlib';
-import { cleanText, assemble, repeatFilter, bandClass, findChatBox, findLines, findBadge, readChannel, slotAnchor, windowTop, glyphs, glyphReader, itemGlyphBounds, lineFingerprint, locateFingerprint } from '../assets/mega-reader.js';
+import { cleanText, assemble, repeatFilter, bandClass, findChatBox, stableChatBox, findLines, isLineVisible, findBadge, readChannel, slotAnchor, windowTop, glyphs, glyphReader, itemGlyphBounds, lineFingerprint, locateFingerprint } from '../assets/mega-reader.js';
+
+test('occluded chat preserves its known width and rejects the partial row',()=>{
+ const previous={x:278,y:358,w:576,h:414},found={x:278,y:550,w:268,h:222};
+ assert.equal(stableChatBox(previous,found,{width:1366}).w,576);
+ assert.equal(stableChatBox(previous,{...found,x:0},{width:1366}).w,268);
+ const img={width:576,height:32,data:new Uint8Array(576*32*4)};
+ for(let i=0;i<img.data.length;i+=4)img.data.set([216,168,40,255],i);
+ const line={top:2,bottom:15,color:'Y',right:551,bg:[216,168,40]};
+ assert.equal(isLineVisible(img,line),true);
+ for(let y=2;y<=15;y++)for(let x=240;x<460;x++)img.data.set([40,40,80,255],(y*576+x)*4);
+ assert.equal(isLineVisible(img,line),false);
+ assert.equal(isLineVisible(img,{...line,right:330}),false);
+});
+
+test('a continuation cannot jump across a notice or an unread head row',()=>{
+ const head={color:'Y',nick:'Seller',channel:1,text:'[Work Gloves] S> 8 ATT',top:10};
+ assert.equal(assemble([head,{color:'Y',cont:true,text:'unrelated',top:42}])[0].text,head.text);
+ assert.equal(assemble([head,{top:26,obscured:true},{color:'Y',cont:true,text:'unrelated',top:42}])[0].text,head.text);
+ assert.equal(assemble([head,{color:'Y',cont:true,text:'5m',top:26}])[0].text,head.text+' 5m');
+});
 
 test('real Olympus row survives a scroll, highlight pixel changes, and a one-pixel height change',()=>{
  const load=name=>({width:576,height:200,data:gunzipSync(fs.readFileSync(new URL(`fixtures/${name}.rgba.gz`,import.meta.url)))});

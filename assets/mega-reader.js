@@ -51,6 +51,13 @@ export function findChatBox(img) {
   return { x: Math.max(0, x0 - 12), y: y0, w: Math.min(w, x1 + 24) - Math.max(0, x0 - 12), h: y1 - y0 };
 }
 
+export function stableChatBox(previous,found,image) {
+  if(previous&&Math.abs(previous.x-found.x)<=16&&found.w<previous.w-32&&previous.x+previous.w<=image.width) {
+    return {...found,x:previous.x,w:previous.w};
+  }
+  return found;
+}
+
 // Each row's most common colour (5-bit buckets), skipping the scrollbar at the right edge.
 function rowBackground(img, y, right) {
   const { width: w, data } = img;
@@ -147,6 +154,24 @@ export function findLines(img, { scrollbar = 20 } = {}) {
     y = end;
   }
   return lines;
+}
+
+// Glyphs leave background pixels in each font column. A wide gap through the
+// whole band is an overlaid game window/tooltip, not a trustworthy partial line.
+export function isLineVisible(img,line) {
+  const left=textLeft(img,line),right=Math.min(img.width-24,line.right);
+  if(line.right<img.width-44)return false;
+  let gap=0;
+  for(let x=left;x<right;x++) {
+    let background=0;
+    for(let y=line.top;y<=line.bottom;y++) {
+      const i=(y*img.width+x)*4;
+      if(bandClass(img.data[i],img.data[i+1],img.data[i+2])===line.color)background++;
+    }
+    gap=background>=2?0:gap+1;
+    if(gap>=24)return false;
+  }
+  return true;
 }
 
 // The channel badge ("CHxx" in red inside a thin white frame, then the ear icon) is found by its red digits: the
@@ -317,9 +342,13 @@ export function cleanText(t) {
 // megaphones wrap onto an indented second line) when both are on the same band colour.
 export function assemble(lines) {
   const out = [];
+  let previous=null,canJoin=false;
   for (const l of lines) {
-    if (!l.cont && /^[A-Za-z0-9]{2,13}$/.test(l.nick || '') && l.text) out.push({ nick: l.nick, channel: l.channel, color: l.color, text: l.text });
-    else if (l.cont && out.length && out.at(-1).color === l.color && l.text) out.at(-1).text += ` ${l.text}`;
+    const adjacent=l.top===undefined||previous?.top===undefined||l.top-previous.top<=18;
+    if (!l.cont && /^[A-Za-z0-9]{2,13}$/.test(l.nick || '') && l.text) {out.push({ nick: l.nick, channel: l.channel, color: l.color, text: l.text });canJoin=true;}
+    else if (l.cont && canJoin && adjacent && out.length && out.at(-1).color === l.color && l.text) out.at(-1).text += ` ${l.text}`;
+    else canJoin=false;
+    previous=l;
   }
   return out;
 }

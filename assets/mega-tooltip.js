@@ -1,6 +1,81 @@
 // Pure tooltip parsing; only validated fields are returned.
 const LABELS = { 'weapon attack': 'PAD', 'magic attack': 'MAD', str: 'STR', dex: 'DEX', int: 'INT', luk: 'LUK', accuracy: 'ACC', avoidability: 'EVA', evasion: 'EVA', 'max hp': 'MHP', 'max mp': 'MMP', 'weapon defense': 'PDD', 'magic defense': 'MDD', speed: 'Speed', jump: 'Jump', 'critical rate': 'CRT', 'critical damage': 'CRD' };
 export const nameKey = (s) => String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
+// A rare stat label can lower Vision's confidence for an otherwise clear sum.
+// Recover only an isolated numeric expression independently agreed by both OCR
+// engines, with a valid total = base +/- roll; never complete digits by guessing.
+export function agreeArithmetic(primary,secondary) {
+  const value=r=>{
+    const text=r.text.replace(/\s+/g,'').replace(/^\+/,'');
+    const m=/^(-?(?:0|[1-9]\d{0,3}))\((0|[1-9]\d{0,3})([+-])(0|[1-9]\d{0,3})\)$/.exec(text);
+    return m&&Number(m[1])===Number(m[2])+(m[3]==='-'?-1:1)*Number(m[4])?text:null;
+  };
+  const a=primary.filter(r=>r.confidence>=.3).map(value).filter(Boolean),b=secondary.filter(r=>r.confidence>=.6).map(value).filter(Boolean);
+  return a.length===1&&b.length===1&&a[0]===b[0]?a[0]:null;
+}
+export function agreeTooltipNumber(primary,secondary) {
+  const arithmetic=agreeArithmetic(primary,secondary);if(arithmetic)return arithmetic;
+  const value=r=>/^[+-]?(?:0|[1-9]\d{0,3})$/.test(r.text.trim())?String(Number(r.text.trim())):null;
+  const a=primary.filter(r=>r.confidence>=.5).map(value).filter(v=>v!==null),b=secondary.filter(r=>r.confidence>=.6).map(value).filter(v=>v!==null);
+  return a.length===1&&b.length===1&&a[0]===b[0]?a[0]:null;
+}
+// Tooltip blue is translucent: subtract the pre-click background contribution
+// before thresholding its colour. Connected boxes keep the equipped comparison
+// panel separate instead of treating every nearby item name as another panel.
+export function colorTooltipBoxes(image,before,point,relaxed=false) {
+  if(!before||image.width!==before.width||image.height!==before.height)return [];
+  const {width,height}=image,left=Math.max(0,Math.floor(Math.min(point.x-40,width-600))),right=Math.min(width,Math.ceil(point.x+550)),top=28;
+  const mask=new Uint8Array(width*height),changed=new Uint8Array(width*height);
+  for(let y=top;y<height;y++)for(let x=left;x<right;x++) {
+    const i=(y*width+x)*4,r=image.data[i]-.25*before.data[i],g=image.data[i+1]-.25*before.data[i+1],b=image.data[i+2]-.25*before.data[i+2];
+    const change=Math.abs(image.data[i]-before.data[i])+Math.abs(image.data[i+1]-before.data[i+1])+Math.abs(image.data[i+2]-before.data[i+2]);
+    const residual=r>-12&&r<45&&g>-12&&g<48&&b>28&&b<95&&b-r>20&&b-g>18;
+    const blue=image.data[i]<150&&image.data[i+1]<150&&image.data[i+2]<180&&image.data[i+2]-image.data[i]>20&&image.data[i+2]-image.data[i+1]>18;
+    if(relaxed?(residual||blue):(residual&&change>20)){mask[y*width+x]=1;changed[y*width+x]=Number(change>20);}
+  }
+  const boxes=[],queue=new Int32Array(width*height);
+  for(let y=top;y<height;y++)for(let x=left;x<right;x++) {
+    const start=y*width+x;if(!mask[start])continue;
+    let head=0,tail=1,minX=x,maxX=x,minY=y,maxY=y,changeCount=0;queue[0]=start;mask[start]=0;
+    while(head<tail) {
+      const p=queue[head++],px=p%width,py=Math.floor(p/width);
+      changeCount+=changed[p];
+      minX=Math.min(minX,px);maxX=Math.max(maxX,px);minY=Math.min(minY,py);maxY=Math.max(maxY,py);
+      for(const n of [px>left?p-1:-1,px+1<right?p+1:-1,py>top?p-width:-1,py+1<height?p+width:-1])if(n>=0&&mask[n]){mask[n]=0;queue[tail++]=n;}
+    }
+    let w=maxX-minX+1,h=maxY-minY+1,count=tail;
+    // When the previous tooltip was still visible, its unchanged overlap also
+    // carries the blue colour. Remove thin HUD protrusions from that component.
+    if(relaxed&&h>=90&&w>170) {
+      const columns=new Uint16Array(width);
+      for(let k=0;k<tail;k++)columns[queue[k]%width]++;
+      const groups=[];let start=-1;
+      for(let px=minX;px<=maxX+1;px++) {
+        if(px<=maxX&&columns[px]>=h*.4){if(start<0)start=px;}
+        else if(start>=0){if(px-start>=170&&px-start<=480)groups.push([start,px-1]);start=-1;}
+      }
+      if(!groups.length)continue;
+      const group=groups.sort((a,b)=>Math.abs(a[0]-point.x-12)-Math.abs(b[0]-point.x-12))[0];
+      minX=group[0];maxX=group[1];w=maxX-minX+1;
+      const rows=new Uint16Array(height);
+      for(let k=0;k<tail;k++){const px=queue[k]%width;if(px>=minX&&px<=maxX)rows[Math.floor(queue[k]/width)]++;}
+      while(minY<maxY&&rows[minY]<w*.4)minY++;
+      while(maxY>minY&&rows[maxY]<w*.4)maxY--;
+      h=maxY-minY+1;
+      count=0;changeCount=0;
+      for(let k=0;k<tail;k++){const p=queue[k],px=p%width,py=Math.floor(p/width);if(px>=minX&&px<=maxX&&py>=minY&&py<=maxY){count++;changeCount+=changed[p];}}
+    }
+    if(w>=170&&w<=480&&h>=90&&count/(w*h)>.35&&changeCount/count>.1) {
+      const bx=Math.max(0,minX-2),by=Math.max(top,minY-2);
+      boxes.push({x:bx,y:by,w:Math.min(width-bx,w+4),h:Math.min(height-by,h+4),coverage:count/(w*h)});
+    }
+  }
+  return boxes.length||relaxed?boxes.sort((a,b)=>a.x-b.x):colorTooltipBoxes(image,before,point,true);
+}
+export function selectTooltipBox(boxes,point,width) {
+  return boxes.filter(b=>b.x>=Math.min(point.x-40,width-480)&&b.x<=point.x+80&&b.y<point.y+60)
+    .sort((a,b)=>Math.abs(a.x-point.x-12)-Math.abs(b.x-point.x-12))[0]||null;
+}
 // Bounds come from this row's highlighted link, after its channel/whisper badge.
 // A fixed 180px nickname fence excluded short links such as Sai and Work Gloves.
 export function safeItemClickX(left,right,messageLeft) {
@@ -11,7 +86,7 @@ export function whisperDialog(rows) {
   const prompt=rows.find((r)=>r.confidence>=0.5&&/Please enter the person you want to/i.test(r.text));
   return prompt&&rows.find((r)=>r.confidence>=0.5&&/^CANCEL$/i.test(r.text.trim())&&r.y>prompt.y&&r.y<prompt.y+160&&Math.abs(r.x-prompt.x)<350);
 }
-const clean = (s) => s.replace(/^[|«•·*\s]+/, '').replace(/^[+-](?!\s*\d)\s*/, '').replace(/\b(?:aftack|altack|atack|ahack|attacke)\b/gi, 'Attack').replace(/\bCrit\.\s*(Rate|Damage)\b/gi,'Critical $1').replace(/^(?:LUI|LUE)\s*:/i,'LUK:').replace(/^(Remaining Enhancements)\.\s*(?=\d)/i,'$1: ').trim();
+const clean = (s) => s.replace(/^[|«•·*\s]+/, '').replace(/^[+-](?!\s*\d)\s*/, '').replace(/^[^a-z0-9]*([TIl]ype\s*:)/i,'$1').replace(/\b(?:aftack|altack|atack|ahack|attacke)\b/gi, 'Attack').replace(/\b(?:Wagic|Manic)\s+(Attack|Def(?:ense|[.])?)/gi,'Magic $1').replace(/Tуpe/g,'Type').replace(/\bCrit\.\s*(Rate|Damage)\b/gi,'Critical $1').replace(/^(?:LUI|LUE|LUIK)\s*:/i,'LUK:').replace(/^(Remaining Enhancements)\.\s*(?=\d)/i,'$1: ').trim();
 export function tooltipField(text) {
   const label=/^([A-Za-z .]+):/.exec(clean(text))?.[1]?.trim().toLowerCase().replace(/\./g,'');
   return label==='remaining enhancements'?'slots':LABELS[label]||{'weapon def':'PDD','magic def':'MDD','weapon det':'PDD','magic det':'MDD',maxhp:'MHP',maxmp:'MMP'}[label]||null;
@@ -52,7 +127,9 @@ export function findTooltipPanel(observations, item, catalog, image, point=null)
   const first = titles[0];
   const title = first && (titles.find(o=>Math.abs(o.x-first.x)<20&&Math.abs(o.y-first.y)<20&&tooltipTitle(o.text,item.en).ups!==undefined)||first);
   if (!title) return null;
-  const other = observations.filter((o) => o.x > title.x+120 && Math.abs(o.y-title.y)<60 && catalog.some((i) => tooltipTitle(o.text, i.en))).sort((a,b)=>a.x-b.x)[0];
+  // A shop's item list can show through the translucent tooltip. Only a second
+  // equipment panel aligned with this title can truncate its right edge.
+  const other = item.cat==='Equip'&&observations.filter((o) => o.x >= title.x+200 && Math.abs(o.y-title.y)<32 && catalog.some((i) => i.cat==='Equip'&&tooltipTitle(o.text, i.en))).sort((a,b)=>a.x-b.x)[0];
   const x = Math.max(0, Math.floor(title.x-8)), y = Math.max(0, Math.floor(title.y-4));
   const right = Math.min(image.width, x+(item.cat==='Equip' ? 270 : 420), other ? other.x-10 : image.width);
   return { x, y, w: Math.floor(right-x), h: Math.min(image.height-y, 600), title };
@@ -114,7 +191,7 @@ export function parseTooltipLines(lines, item) {
     const knock=/^Knockback Chance:\s*(\d{1,3})%$/.exec(s);
     if(knock && Number(knock[1])<=100) knockback=Number(knock[1]);
     const m=/^([A-Za-z .]+):\s*\+?(-?\d{1,4})(?:\s*\(\s*(\d+)\s*([+-])\s*(\d+)\s*\))?\s*%?$/.exec(s);
-    if(m) {
+    if(m&&!/^-?0\d/.test(m[2])) {
       const label=m[1].trim().toLowerCase().replace(/\./g,'');
       const key=LABELS[label] || {maxhp:'MHP',maxmp:'MMP','weapon def':'PDD','magic def':'MDD','weapon det':'PDD','magic det':'MDD',weapondef:'PDD',magicdef:'MDD'}[label];const v=Number(m[2]);
       if(key && (m[3]===undefined || Number(m[3])+(m[4]==='-'?-1:1)*Number(m[5])===v) && v>=-99 && v<=(['MHP','MMP'].includes(key)?5000:['PDD','MDD'].includes(key)?999:255)) put(key,v);
@@ -129,7 +206,7 @@ export function parseTooltipLines(lines, item) {
     chance=Number(rate[1]);const gains={};
     for(const [label,key] of Object.entries(LABELS)) {
       const match=new RegExp(`(?:^|[^a-z])${label.replace(/ /g,'\\s+')}\\s*\\+\\s*(\\d{1,3})(?!\\d)`,'i').exec(desc);
-      if(match && Number(match[1])<=255) gains[key]=Number(match[1]);
+      if(match && !/^0\d/.test(match[1]) && Number(match[1])<=255) gains[key]=Number(match[1]);
     }
     // Scroll gains are fixed, unlike rolled equipment stats. Catalogue values
     // only reject a corrupt OCR reading; they must never supply unread values.

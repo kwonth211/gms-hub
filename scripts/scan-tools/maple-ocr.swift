@@ -28,6 +28,13 @@ do {
   guard let candidate=row.topCandidates(1).first else {return nil}
   let b=row.boundingBox
   var result:[String:Any] = ["text":candidate.string,"confidence":candidate.confidence,"x":b.minX*Double(image.width),"y":(1-b.maxY)*Double(image.height),"w":b.width*Double(image.width),"h":b.height*Double(image.height)]
+  if let colon=candidate.string.firstIndex(of:":") {
+    let start=candidate.string.index(after:colon)
+    if start<candidate.string.endIndex,let observation=try? candidate.boundingBox(for:start..<candidate.string.endIndex) {
+      let q=observation.boundingBox
+      result["valueBounds"]=["x":q.minX*Double(image.width),"y":(1-q.maxY)*Double(image.height),"w":q.width*Double(image.width),"h":q.height*Double(image.height)]
+    }
+  }
   // A translucent tooltip title can be merged with chat behind it. Locate the
   // requested substring so the caller can re-read its own crop, not the chat's left edge.
   if args.count>2,let range=candidate.string.range(of:args[2],options:.caseInsensitive),
