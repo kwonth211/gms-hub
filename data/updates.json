@@ -2,6 +2,20 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "megaphone-badge-scroll-recognition",
+   "version": "0.7.45",
+   "level": "patch",
+   "date": "2026-11-21",
+   "path": "/megaphone/",
+   "ko": "고확 옵션 누락 수정 — 채널 아이콘·주문서 판독",
+   "en": "Megaphone option fixes: channel badges and scroll tooltips",
+   "desc": {
+    "ko": "채널 옆 아이콘의 움직임 때문에 화면에 남아 있는 고확을 놓치던 문제를 수정했어요. 주문서는 성공률과 옵션 부분을 분리해 읽고, 배경 숫자가 겹치면 다시 판독해요. 확인한 옵션은 기존 고확과 홈 띠에 반영돼요.",
+    "en": "Fixed visible megaphones being missed when the icon beside the channel animates. Scroll success rates and bonuses are read in a separate crop, with another OCR pass when background numbers overlap. Verified options update the original megaphone and home ticker."
+   },
+   "highlight": true
+  },
+  {
    "id": "megaphone-tooltip-color-crop",
    "version": "0.7.44",
    "level": "patch",

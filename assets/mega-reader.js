@@ -203,20 +203,30 @@ export function findBadge(img, line, { scrollbar = 20 } = {}) {
 export function lineFingerprint(img, line) {
   const anchor=slotAnchor(img,[line]);
   if(anchor) {
-    // Hover/scroll changes the highlighted item's gold pixels and findLines' bottom by 1px.
-    // The fixed font slot and dark nickname/channel/message stay stable. Positions are included;
-    // identical-looking rows are deliberately rejected as ambiguous by locateFingerprint.
-    const left=textLeft(img,line);
-    const gs=glyphs(img,line,left,line.right,windowTop(line,anchor)).filter(g=>g.key.startsWith('D:'));
+    // The badge's ear icon changes while the same message remains visible.
+    // Compare nickname/message font pixels and the exact channel digits, never
+    // that graphic. Duplicate matching rows still fail closed in locateFingerprint.
+    const left=textLeft(img,line),badge=findBadge(img,line),channel=badge&&readChannel(img,line,badge);
+    const gs=glyphs(img,line,left,line.right,windowTop(line,anchor)).filter(g=>g.key.startsWith('D:')&&
+      (!badge||g.x+g.w<=badge.left||g.x>=badge.message));
     let hash=2166136261;
     for(const g of gs)for(const ch of `${g.x-left}:${g.key};`)hash=Math.imul(hash^ch.charCodeAt(0),16777619)>>>0;
-    return `slot:${line.color}:${line.right-left}:${hash}`;
+    return `slot2:${line.color}:${channel??'?'}:${line.right-left}:${hash}`;
   }
   return `${line.bottom-line.top}:${line.right}:${lineBitmap(img,line,{x0:0,scale:1,pad:0}).sig}`;
 }
 export function locateFingerprint(img, fingerprint) {
   const matches=findLines(img).filter(line=>lineFingerprint(img,line)===fingerprint);
   return matches.length===1 ? matches[0] : null;
+}
+export function senderFingerprint(img,line) {
+  const badge=findBadge(img,line),anchor=slotAnchor(img,[line]);
+  if(!badge||!anchor)return null;
+  const channel=readChannel(img,line,badge),left=textLeft(img,line);
+  if(!channel)return null;
+  const letters=glyphs(img,line,left,badge.left-1,windowTop(line,anchor)).filter(g=>g.key.startsWith('D:'));
+  if(letters.length<2)return null;
+  return `${line.color}:${channel}:${letters.map(g=>`${g.x-left}:${g.key}`).join(';')}`;
 }
 export function lineBitmap(img, line, { x0 = LEFT, x1, scale = 3, scrollbar = 20, pad = 2, mode = 'ink' } = {}) {
   const right = Math.min(x1 ?? Infinity, line.right ?? Infinity, Math.max(10, img.width - scrollbar));

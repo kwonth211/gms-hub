@@ -6,7 +6,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { PNG } from 'pngjs';
 import Tesseract from 'tesseract.js';
-import { findBadge, lineBitmap, lineFingerprint, locateFingerprint, glyphs, itemGlyphBounds } from '../../assets/mega-reader.js';
+import { findBadge, senderFingerprint, lineFingerprint, locateFingerprint, glyphs, itemGlyphBounds } from '../../assets/mega-reader.js';
 const exec = promisify(execFile);
 import { colorTooltipBoxes, selectTooltipBox, agreeTooltipNumber, agreeLabeledNumber, tooltipBody, tooltipField, tooltipStatRows, missingTooltipFields, subtractTooltipBackground, emptyUpgradeSuffix, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog, nameKey, tooltipTitle } from '../../assets/mega-tooltip.js';
 export { nameKey } from '../../assets/mega-tooltip.js';
@@ -88,9 +88,9 @@ export class OptionReader {
     const found=title();
     return found?{panel:{...imageBox,title:found},rows}:null;
   }
-  async readPanel(image,rows,panel,item,background=null) {
+  async readPanel(image,rows,panel,item,background=null,wholeScroll=false) {
     const raw=rows.filter(r=>r.x>=panel.x&&r.x+r.w<=panel.x+panel.w+3&&r.y>=panel.y&&r.y+r.h<image.height-2);
-    const body=tooltipBody(panel,[...rows,...(panel.recovered||[])],item);
+    const body=wholeScroll?panel:tooltipBody(panel,[...rows,...(panel.recovered||[])],item);
     const enlarged=await this.recognize(cropImage(image,body),item.en,'body.png',2);
     const bodyImage=cropImage(image,body,true,3);
     const masked=await this.recognize(bodyImage,item.en,'mask.png');
@@ -168,10 +168,18 @@ export class OptionReader {
     }
     // The shop reader retries only when the primary read is incomplete. Do not run a slower
     // fallback over a complete, consistent crop and let its weaker digit guess discard that read.
-    if(item.cat==='Equip'&&(!opts?.stats||missing.length)) {
+    if((item.cat==='Equip'&&(!opts?.stats||missing.length))||(item.cat==='Use'&&!opts?.scroll)) {
       const fallback=await this.recognizeFallback(foreground?cropImage(foreground,{x:0,y:0,w:body.w,h:body.h},false,3):bodyImage);
       this.lastReading.fallback=fallback;
       opts=agreeOptions(...readings,parseTooltipLines([panel.title,...fallback.filter(r=>r.y+r.h<body.h*3-5)],item));
+    }
+    if(item.cat==='Use'&&!opts?.scroll&&!wholeScroll&&body!==panel) {
+      // Some glyphs need their original surrounding pixels for OCR. Retry the
+      // same isolated item panel; never another panel or catalogue-filled stats.
+      const tightReading=this.lastReading;
+      const recovered=await this.readPanel(image,rows,panel,item,background,true);
+      this.lastReading.tightReading=tightReading;
+      return recovered;
     }
     this.lastMissing=missingTooltipFields(observed,opts,item);
     this.lastStatCount=statRows.length;
@@ -190,7 +198,7 @@ export class OptionReader {
       fs.writeFileSync(path.join(this.dir,'link-failure.json'),JSON.stringify({box,line,message,item:item.en,wTop:glyph?.wTop}));
       return skip('no safe item-link point');
     }
-    const signature=(im,edge)=>lineBitmap(cropImage(im,box),line,{x0:0,x1:edge}).sig;
+    const signature=im=>senderFingerprint(cropImage(im,box),line);
     const fingerprint=lineFingerprint(part,line);
     const park=[Math.min(image.width-40,box.x+box.w+35),35];
     const inputAudit=[];
@@ -234,7 +242,7 @@ export class OptionReader {
         return skip('tooltip colour box not found');
       }
       // Nick + channel must still belong to the clicked row; reject chat scroll races.
-      if(signature(after,link.badge.message-4)!==signature(ready,link.badge.message-4)) {
+      if(!signature(ready)||signature(after)!==signature(ready)) {
         fs.writeFileSync(path.join(this.dir,'race-ready.png'),PNG.sync.write(ready));
         fs.writeFileSync(path.join(this.dir,'race-after.png'),PNG.sync.write(after));
         fs.writeFileSync(path.join(this.dir,'race.json'),JSON.stringify({message,item:item.en,box,line,link}));

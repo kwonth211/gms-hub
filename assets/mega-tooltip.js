@@ -148,7 +148,15 @@ export function findTooltipPanel(observations, item, catalog, image, point=null)
   return { x, y, w: Math.floor(right-x), h: Math.min(image.height-y, 600), title };
 }
 export function tooltipBody(panel,rows,item) {
-  if(item.cat!=='Equip')return panel;
+  if(item.cat!=='Equip') {
+    // Scroll icons and the bottom HUD contaminate full-panel OCR. Start at the
+    // observed success-rate line, retaining every wrapped gain below it.
+    const rate=rows.find(r=>r.confidence>=.5&&/Success rate:\s*(?:100|60|10)\s*%/i.test(r.text)&&
+      r.x>=panel.x+40&&r.x<panel.x+panel.w&&r.y>panel.y&&r.y+r.h<panel.y+panel.h);
+    if(!rate)return panel;
+    const x=Math.max(panel.x,Math.floor(rate.x)-4),y=Math.max(panel.y,Math.floor(rate.y)-3);
+    return {x,y,w:panel.x+panel.w-x-3,h:panel.y+panel.h-y-3};
+  }
   const inside=r=>r.x>=panel.x&&r.x<panel.x+35&&r.y>panel.y&&r.y<panel.y+panel.h;
   const type=rows.find(r=>inside(r)&&/^[TIl]ype\s*:/i.test(clean(r.text)));
   if(!type)return panel;

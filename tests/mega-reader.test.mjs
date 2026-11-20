@@ -2,7 +2,23 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {gunzipSync} from 'node:zlib';
-import { cleanText, assemble, repeatFilter, continuousMessage, bandClass, findChatBox, stableChatBox, findLines, isLineVisible, findBadge, readChannel, slotAnchor, windowTop, glyphs, glyphReader, itemGlyphBounds, lineFingerprint, locateFingerprint } from '../assets/mega-reader.js';
+import { cleanText, assemble, repeatFilter, continuousMessage, bandClass, findChatBox, stableChatBox, findLines, isLineVisible, findBadge, readChannel, slotAnchor, windowTop, glyphs, glyphReader, itemGlyphBounds, lineFingerprint, locateFingerprint, senderFingerprint } from '../assets/mega-reader.js';
+
+test('a real moving Nobi row remains identifiable when the badge icon changes',()=>{
+ const load=name=>({width:576,height:180,data:gunzipSync(fs.readFileSync(new URL(`fixtures/mega-badge-animation-${name}.rgba.gz`,import.meta.url)))});
+ const before=load('before'),ready=load('ready'),old=findLines(before).find(l=>l.top===104),moved=findLines(ready).find(l=>l.top===88);
+ const fingerprint=lineFingerprint(before,old);
+ assert.equal(readChannel(before,old,findBadge(before,old)),13);
+ assert.equal(lineFingerprint(ready,moved),fingerprint);
+ assert.equal(locateFingerprint(ready,fingerprint)?.top,88);
+ assert.equal(senderFingerprint(before,old),senderFingerprint(ready,moved));
+ assert.notEqual(senderFingerprint(ready,moved),senderFingerprint(ready,findLines(ready).find(l=>l.top===72)));
+ // Altering actual nickname text must still break identity.
+ const changed={...ready,data:Buffer.from(ready.data)};
+ for(let y=moved.top;y<=moved.bottom;y++)for(let x=14;x<21;x++)changed.data.set([...moved.bg,255],(y*changed.width+x)*4);
+ assert.notEqual(lineFingerprint(changed,moved),fingerprint);
+ assert.notEqual(senderFingerprint(changed,moved),senderFingerprint(ready,moved));
+});
 
 test('continuous visibility preserves the original upload timestamp despite pixel fingerprint drift',()=>{
  const row={seen:'2026-11-20T15:42:31.689Z',nick:'sAsHiMe',channel:19,color:'Y',text:'[Work Gloves] PM offers',fingerprint:'old'};

@@ -151,6 +151,15 @@ test('tooltip body excludes requirements, neighbouring chat and bottom HUD',()=>
  assert.deepEqual(tooltipBody(panel,[{text:'lype: Shield',x:518,y:670,h:12},{text:'Remaining Enhancements: 7',x:520,y:734,h:12}],{cat:'Equip'}),body);
  assert.equal(tooltipBody(panel,[],{cat:'Equip'}),panel);
 });
+test('scroll body retains wrapped gains while excluding its icon and title',()=>{
+ const panel={x:611,y:681,w:288,h:114},item={cat:'Use'};
+ const rate={text:'Success rate: 60%, Weapon',confidence:1,x:700,y:750,h:13};
+ const body=tooltipBody(panel,[rate,{text:'Attack +2',x:700,y:766,h:12}],item);
+ assert.deepEqual(body,{x:696,y:747,w:200,h:45});
+ assert.ok(body.y+body.h>=778);
+ assert.equal(tooltipBody(panel,[{...rate,confidence:.3}],item),panel);
+ assert.equal(tooltipBody(panel,[{...rate,x:1000}],item),panel);
+});
 test('a lost enhancement suffix never becomes zero successful upgrades',()=>{
  const item={en:'Emerald Earrings',cat:'Equip',slots:5};
  assert.deepEqual(parseTooltipLines(['Emerald Earrings','STR: +3','Remaining Enhancements: 0'],item),{stats:{STR:3},slots:0,used:5,clean:false});
