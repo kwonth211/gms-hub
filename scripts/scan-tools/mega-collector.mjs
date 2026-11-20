@@ -1,5 +1,5 @@
 // Megaphone collector for the admin's Mac (macOS only): maple-stream.swift keeps one capture stream open on the
-// MapleStory window (works even when other windows cover it) and saves its newest frame; every 1.5 s this reads that
+// MapleStory window (works even when other windows cover it) and saves its newest frame; every 0.5 s this reads that
 // frame, finds the chat box by its megaphone bands, reads new megaphones with assets/mega-reader.js and posts them
 // to the worker with the admin key in ~/.config/gms-hub/megaphone-token. Only recognised text/options leave the Mac.
 // Run (from scripts/scan-tools after npm install):  node mega-collector.mjs          # read and post
@@ -16,10 +16,10 @@ import { OptionReader, nameKey } from './mega-options.mjs';
 const API = 'https://gms-hub-votes.kwonth211.workers.dev/internal/megaphone';
 const DRY = process.argv.includes('--dry');
 const OPTIONS = !fs.existsSync(path.join(os.homedir(), '.config', 'gms-hub', 'mega-options-paused')) && !process.argv.includes('--no-options') && (!DRY || process.argv.includes('--options'));
-const TICK_MS = 1500;
+const TICK_MS = 500;
 const KINDS = { P: 'super', Y: 'item', C: 'double' };
 const shot = path.join(os.tmpdir(), DRY ? `gms-mega-dry-${process.pid}.png` : 'gms-mega-shot.png');
-// Every 80 ticks (about 2 minutes) the chat crop and what was read from it are kept for `./mega.sh check`.
+// Every 240 ticks the chat crop and what was read from it are kept for `./mega.sh check`.
 const LIVE = path.join(os.homedir(), 'gms-hub-samples', 'mega-live');
 fs.mkdirSync(LIVE, { recursive: true });
 const here = path.dirname(new URL(import.meta.url).pathname);
@@ -50,6 +50,7 @@ async function readFrame(after=0, timeout=1400) {
   return null;
 }
 let optionReader=null;
+const optionReaders=[];
 if(OPTIONS) {
   try {
     const catalogPath=path.join(here,'../../assets/items-catalog.json');
@@ -64,7 +65,8 @@ if(OPTIONS) {
       binaries[name]=bin;
     }
     optionReader=new OptionReader({shot,input:binaries['maple-input'],ocr:binaries['maple-ocr'],catalog,readFrame});
-    process.on('exit',()=>optionReader.close());
+    optionReaders.push(optionReader,new OptionReader({shot,input:binaries['maple-input'],ocr:binaries['maple-ocr'],catalog,readFrame}));
+    process.on('exit',()=>optionReaders.forEach(r=>r.close()));
   }catch(e){console.error('option reader unavailable; collecting text:',e.message);}
 }
 
@@ -103,6 +105,7 @@ function crop(img, b) {
 
 const isRepeat = repeatFilter();
 const optionJobs = new Map();
+const optionTasks=new Set();
 const messageKey = m => JSON.stringify([m.channel,m.nick,m.text]);
 let box = null, ticks = 0, empty = 0, queue = [], sent = 0;
 async function flush() {
@@ -117,6 +120,7 @@ async function flush() {
 
 async function tick() {
   if (!cam) { if (Date.now() - tried > 60000) camera(); return; }
+  if(optionReaders.some(r=>r.interacting))return; // Do not OCR chat through an open tooltip.
   let at = 0;
   try { at = fs.statSync(shot).mtimeMs; } catch { /* no frame yet */ }
   // No new frame: nothing on the window changed. A minute without one means the stream is stuck, so start it over.
@@ -133,7 +137,7 @@ async function tick() {
   for (const l of lines) read.push(await readLine(part, l, ocr, anchor ? { read: readGlyphs, wTop: windowTop(l, anchor) } : null));
   const now = Date.now();
   const all = assemble(read);
-  if (ticks % 80 === 1 && lines.length) {
+  if (ticks % 240 === 1 && lines.length) {
     const name = `${new Date(now).toISOString().replace(/[:.]/g, '-')}.png`;
     const png = new PNG({ width: part.width, height: part.height });
     png.data = Buffer.from(part.data.buffer);
@@ -157,28 +161,45 @@ async function tick() {
   }
   // Publish text before slow option OCR. Later success enriches this exact row.
   queue.push(...pending.map(({row})=>row));
+  const jobItem=job=>{const links=[...job.row.text.matchAll(/\[([^\]]+)\]/g)];return links.length===1?optionReader.catalog.find(i=>nameKey(i.en)===nameKey(links[0][1])):null;};
   for(const [key,job] of optionJobs) {
     if(fingerprints.includes(job.fingerprint))job.lastVisible=now;
-    if(now-job.lastVisible>10000||now-job.created>120000||job.attempts>=4) optionJobs.delete(key);
+    if(!job.active&&(now-job.lastVisible>10000||now-job.created>120000||job.attempts>=4)) {
+      const item=jobItem(job);
+      if(item&&!item.cash&&(item.cat==='Equip'||/ Scroll: /i.test(item.en)))console.log(`options unfinished ${job.row.nick} [${item.en}]: ${job.lastReason||'row disappeared before capture'}; attempts=${job.attempts}; seen=${job.row.seen}`);
+      optionJobs.delete(key);
+    }
   }
-  const jobItem=job=>{const links=[...job.row.text.matchAll(/\[([^\]]+)\]/g)];return links.length===1?optionReader.catalog.find(i=>nameKey(i.en)===nameKey(links[0][1])):null;};
   // Known scrollable equipment/scrolls first. Entries without equipment details can still be read,
   // but must not consume four retries while stat-bearing equipment scrolls off the chat.
   const priority=job=>{const item=jobItem(job);return item&&(Number.isInteger(item.slots)||/ Scroll: /i.test(item.en))?0:1;};
-  if(optionReader) for(const [key,job] of [...optionJobs].sort((a,b)=>a[1].attempts-b[1].attempts||priority(a[1])-priority(b[1])||a[1].lastAttempt-b[1].lastAttempt)) {
+  const reader=optionReaders.find(r=>!r.busy);
+  if(reader) for(const [key,job] of [...optionJobs].sort((a,b)=>a[1].attempts-b[1].attempts||priority(a[1])-priority(b[1])||a[1].lastAttempt-b[1].lastAttempt)) {
     const {row,m}=job;
-    if(now-job.lastAttempt<3000)continue;
+    if(job.active||now-job.lastAttempt<1000)continue;
     const item=jobItem(job);
-    if(!item || (item.cat!=='Equip' && !/ Scroll: /i.test(item.en))){optionJobs.delete(key);continue;}
+    if(!item || (item.cash&&item.sub!=='Pet Equipment'&&!Number.isInteger(item.slots)) || (item.cat!=='Equip' && !/ Scroll: /i.test(item.en))){optionJobs.delete(key);continue;}
     const matches=fingerprints.flatMap((f,i)=>f===job.fingerprint?[i]:[]);
     if(matches.length!==1)continue;
     const i=matches[0];
     job.lastAttempt=now;
-    const opts=await optionReader.collect({image:img,box,line:lines[i],message:row,item,glyph:anchor?{read:readGlyphs,wTop:windowTop(lines[i],anchor),expected:item.en}:null});
-    if(opts){row.opts=opts;optionJobs.delete(key);if(!queue.includes(row))queue.push({...row});console.log(`options ${row.nick} [${item.en}] ${JSON.stringify(opts)} (${Date.now()-now}ms)`);}
-    else console.log(`options skipped ${row.nick} [${item.en}]: ${optionReader.lastSkip} (${Date.now()-now}ms)`);
-    if(!/input\/OCR: [45]$|cooldown|paused/.test(optionReader.lastSkip))job.attempts++;
-    if(priority(job)>0&&optionReader.lastSkip==='no trusted numeric options')optionJobs.delete(key);
+    job.active=true;reader.busy=true;
+    const task=(async()=>{
+    const opts=await reader.collect({image:img,box:{...box},line:lines[i],message:row,item,glyph:anchor?{read:readGlyphs,wTop:windowTop(lines[i],anchor),expected:item.en}:null});
+    if(opts){
+      // Preserve earlier verified values; a retry only adds previously missing fields.
+      row.opts={...opts,...row.opts,stats:{...opts.stats,...row.opts?.stats}};
+      if(!Object.keys(row.opts.stats).length)delete row.opts.stats;
+      if(!reader.lastMissing?.length)optionJobs.delete(key);
+      if(!queue.includes(row))queue.push({...row});
+      console.log(`options${reader.lastMissing?.length?' partial':''} ${row.nick} [${item.en}] ${JSON.stringify(row.opts)}${reader.lastMissing?.length?' missing='+reader.lastMissing.join(','):''} (${Date.now()-now}ms)`);
+    }
+    else console.log(`options skipped ${row.nick} [${item.en}]: ${reader.lastSkip} (${Date.now()-now}ms)`);
+    job.lastReason=reader.lastSkip||(reader.lastMissing?.length?'missing '+reader.lastMissing.join(','):'');
+    if(!/input\/OCR: [45]$|cooldown|paused/.test(reader.lastSkip))job.attempts++;
+    if(priority(job)>0&&reader.lastSkip==='no trusted numeric options')optionJobs.delete(key);
+    })().catch(e=>console.error('option task failed:',e.message)).finally(()=>{job.active=false;reader.busy=false;optionTasks.delete(task);});
+    optionTasks.add(task);
     break; // One attempt per tick, rotating fairly; text uploads are never held for OCR.
   }
 }
@@ -194,5 +215,6 @@ while (!stopping) {
   try { await tick(); } catch (e) { console.error(new Date().toISOString(), e.message); }
   await new Promise((r) => setTimeout(r, Math.max(200, TICK_MS - (Date.now() - t0))));
 }
+await Promise.allSettled(optionTasks);
 await flush();
 process.exit(0);

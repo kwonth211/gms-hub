@@ -55,3 +55,26 @@ export const parseOptions = (text) => {
   if (!text) return null;
   try { return JSON.parse(text); } catch { return null; }
 };
+
+// A later read of the exact same observation may fill missing fields, never replace evidence.
+export function enrichOptions(previous, incoming) {
+  const old=normalizeOptions(parseOptions(previous)),next=normalizeOptions(incoming);
+  if(!old)return next;
+  if(!next)return old;
+  let conflict=false;
+  const merge=(a,b)=>{
+    const out={...a};
+    for(const [k,v] of Object.entries(b)) {
+      if(!(k in out))out[k]=v;
+      else if(v&&typeof v==='object'&&out[k]&&typeof out[k]==='object')out[k]=merge(out[k],v);
+      else if(out[k]!==v)conflict=true;
+    }
+    return out;
+  };
+  const combined=merge(JSON.parse(old),JSON.parse(next));
+  if(conflict)return old;
+  const clean=normalizeOptions(combined);
+  // Cross-field validation must not remove previously verified values (e.g. clean vs used).
+  const contains=(a,b)=>Object.entries(b).every(([k,v])=>v&&typeof v==='object'?a?.[k]&&contains(a[k],v):a?.[k]===v);
+  return contains(JSON.parse(clean||'{}'),combined)?clean:old;
+}

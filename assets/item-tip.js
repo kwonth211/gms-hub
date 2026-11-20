@@ -110,7 +110,7 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
   function renderItem(id, opts, source) {
     const t = data?.items?.[id];
     if (!t) return false;
-    const [nameKo, nameEn, cat, sub, lv, job, req, inc, slots, sell, scroll, drops, dropN, questN] = t;
+    const [nameKo, nameEn, cat, sub, lv, job, req, inc, slots, sell, scroll, drops, dropN, questN, cash] = t;
     // "+N" before the name: scrolls that passed, as players write it.
     const name = (opts?.ups > 0 ? `+${opts.ups} ` : '') + (ko && nameKo ? nameKo : nameEn);
     const lines = [];
@@ -125,7 +125,8 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
       const REQ = { str: tr('힘', 'STR'), dex: tr('덱', 'DEX'), int: tr('인', 'INT'), luk: tr('럭', 'LUK') };
       const reqs = Object.entries(req || {}).filter(([k]) => REQ[k]).map(([k, v]) => `${REQ[k]} ${v}`).join(' · ');
       lines.push(`<p class="tip-req">${lv ? `Lv. ${lv} · ` : ''}${esc(jobs)}${reqs ? `<br><span class="tip-muted">${reqs}</span>` : ''}</p>`);
-      if (source === 'megaphone') lines.push(`<p class="tip-muted">${opts ? tr('이 고확에서 확인한 옵션', 'Options captured from this megaphone') : tr('옵션 미확인 · 이 고확의 실제 능력치를 수집하지 못했어요.', 'Options not captured · Actual stats are unavailable for this megaphone.')}</p>`);
+      const cosmetic=cash&&sub!=='Pet Equipment'&&!slots&&!Object.keys(inc||{}).length;
+      if (source === 'megaphone') lines.push(`<p class="tip-muted">${opts ? tr('이 고확에서 확인한 옵션', 'Options captured from this megaphone') : cosmetic ? tr('캐시 외형 아이템', 'Cash cosmetic item') : tr('옵션 미확인 · 이 고확의 실제 능력치를 수집하지 못했어요.', 'Options not captured · Actual stats are unavailable for this megaphone.')}</p>`);
       if (opts) lines.push(optionLines(opts, inc || {}, slots, sub));
       else if (source !== 'megaphone') {
         const stats = Object.entries(inc || {}).map(([k, v]) => `<li>${INC[k] || k} <b>+${v}</b></li>`).join('');

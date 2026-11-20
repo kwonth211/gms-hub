@@ -1,4 +1,4 @@
-import { normalizeOptions, parseOptions } from './item-options.js';
+import { normalizeOptions, parseOptions, enrichOptions } from './item-options.js';
 // In-game megaphones. The admin collector posts what it reads from a shared game window; the public page polls the
 // newest rows. color is the background band the line was drawn on (Y gold, P pink, C cyan, N none). Writes need MEGAPHONE_TOKEN; rows older than 2 days are dropped by the schedule (prices outlive them in listings and snapshots).
 // At ingest the text is parsed once: the item it names, whether it sells or buys, and the asking price (see parseMegaphone).
@@ -209,8 +209,13 @@ export async function postMegaphones(req, env, itemNames, onNew) {
   for (let i = 0; i < parsed.length; i++) {
     const row = parsed[i];
     if (results[i].meta.changes || !row.opts) continue;
-    const result = await env.DB.prepare('UPDATE megaphones SET opts = ? WHERE hash = ? AND seen_at = ? AND channel IS ? AND nick = ? AND text = ? AND opts IS NULL')
-      .bind(normalizeOptions(row.opts), hashes[i], stamp(row.seen), row.channel ?? null, row.nick, row.text).run();
+    const previous=await env.DB.prepare('SELECT opts FROM megaphones WHERE hash = ? AND seen_at = ? AND channel IS ? AND nick = ? AND text = ?')
+      .bind(hashes[i],stamp(row.seen),row.channel??null,row.nick,row.text).first();
+    if(!previous)continue;
+    const merged=enrichOptions(previous.opts,row.opts);
+    if(!merged||merged===previous.opts)continue;
+    const result = await env.DB.prepare('UPDATE megaphones SET opts = ? WHERE hash = ? AND seen_at = ? AND channel IS ? AND nick = ? AND text = ? AND opts IS ?')
+      .bind(merged, hashes[i], stamp(row.seen), row.channel ?? null, row.nick, row.text,previous.opts).run();
     if (!result.meta.changes) continue;
     const saved = await env.DB.prepare('SELECT id, seen_at AS seen, kind, color, channel, nick, text, item, intent, price, opts FROM megaphones WHERE hash = ?').bind(hashes[i]).first();
     if (saved) enriched.push({ ...saved, opts: parseOptions(saved.opts) });

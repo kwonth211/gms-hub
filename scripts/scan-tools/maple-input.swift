@@ -16,9 +16,6 @@ func snapshot() -> [String:Any] {
     let front=NSWorkspace.shared.frontmostApplication
     return ["cursor":[Double(p.x),Double(p.y)],"frontPid":Int(front?.processIdentifier ?? -1),"frontName":front?.localizedName ?? "", "cursorVisible":cursorProbe?() ?? 2]
 }
-func unchanged(_ a:[String:Any],_ b:[String:Any])->Bool {
-    (a["cursor"] as? [Double]) == (b["cursor"] as? [Double]) && (a["frontPid"] as? Int) == (b["frontPid"] as? Int)
-}
 let args=CommandLine.arguments
 guard (args.count==4 || args.count==6),["move","click","release"].contains(args[1]),let x=Double(args[2]),let y=Double(args[3]),AXIsProcessTrusted() else {
     emit(["error":"Usage: background-item-input move|click windowX windowY; accessibility permission required"]);exit(2)
@@ -66,25 +63,28 @@ func releasePointer() {
 // A window-associated drag event routes directly; no button is held or pressed.
 if args[1] != "release" { post(.leftMouseDragged) }
 usleep(50000)
-guard unchanged(before,snapshot()) else {releasePointer();emit(["error":"User input or foreground changed after move","state":snapshot()]);exit(5)}
+// postToPid never warps the system pointer. Ordinary pointer movement or switching between
+// other apps is not a capture failure. Stop only if the user starts interacting with the game.
+guard NSWorkspace.shared.frontmostApplication?.processIdentifier != pid else {releasePointer();emit(["error":"Game became foreground after move","state":snapshot()]);exit(5)}
 if args[1]=="click" {
     // Command-modified native click prevents the background window being raised.
     // This sets only event flags; no Command keydown/keyup is sent.
     post(.leftMouseDown,[.command]);usleep(80000)
     post(.leftMouseUp,[.command]) // Always release the synthetic button pair.
+    emit(["phase":"clicked","at":Date().timeIntervalSince1970*1000])
 }
 for delay in [UInt32(10000),90000,200000] {
     usleep(delay)
     releasePointer();usleep(20000)
     let now=snapshot();emit(["phase":"after","state":now])
-    guard unchanged(before,now) else {releasePointer();emit(["error":"User input or foreground changed"]);exit(5)}
+    guard NSWorkspace.shared.frontmostApplication?.processIdentifier != pid else {releasePointer();emit(["error":"Game became foreground"]);exit(5)}
     if (before["cursorVisible"] as? UInt32)==1 && (now["cursorVisible"] as? UInt32)==0 {
         // Editors intentionally hide the cursor when the user types. That is user activity,
         // not a collector failure, and must not permanently disable option capture.
         if CGEventSource.secondsSinceLastEventType(.combinedSessionState,eventType:.keyDown)<1 {
-            releasePointer();emit(["error":"User keyboard input changed cursor visibility"]);exit(5)
+            releasePointer();emit(["phase":"user_typing","state":now]);continue
         }
         releasePointer();emit(["error":"Cursor became hidden","state":snapshot()]);exit(6)
     }
 }
-emit(["result":"events_posted_state_unchanged","note":"Confirm the intended UI result in a fresh game-window capture"])
+emit(["result":"events_posted_game_stayed_background","note":"Confirm the intended UI result in a fresh game-window capture"])

@@ -319,4 +319,8 @@ test('late options enrich only the exact original megaphone and push its existin
   assert.equal((await post({...row,opts:{stats:{PAD:99}}})).updated,undefined);
   assert.equal(pushes.length,count);
   assert.deepEqual(JSON.parse(env.sqlite.prepare('SELECT opts FROM megaphones WHERE id=?').get(id).opts),opts);
+  assert.equal((await post({...row,opts:{stats:{PAD:11,CRT:2},slots:0,ups:5}})).updated,1);
+  assert.deepEqual(pushes.at(-1).rows[0].opts,{...opts,stats:{PAD:11,CRT:2}});
+  assert.equal((await post({...row,opts:{stats:{PAD:99,LUK:7}}})).updated,undefined);
+  assert.deepEqual(JSON.parse(env.sqlite.prepare('SELECT opts FROM megaphones WHERE id=?').get(id).opts),{...opts,stats:{PAD:11,CRT:2}});
 });

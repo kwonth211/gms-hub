@@ -8,7 +8,7 @@ import { PNG } from 'pngjs';
 import Tesseract from 'tesseract.js';
 import { findBadge, lineBitmap, lineFingerprint, locateFingerprint, glyphs } from '../../assets/mega-reader.js';
 const exec = promisify(execFile);
-import { findTooltipPanel, tooltipBody, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog, nameKey, tooltipTitle } from '../../assets/mega-tooltip.js';
+import { findTooltipPanel, tooltipBody, tooltipField, missingTooltipFields, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog, nameKey, tooltipTitle } from '../../assets/mega-tooltip.js';
 export { nameKey } from '../../assets/mega-tooltip.js';
 export function cropImage(img, b, mask = false, scale = 1) {
   const out = new PNG({ width:b.w*scale, height:b.h*scale });
@@ -79,25 +79,53 @@ export class OptionReader {
       parseTooltipLines([panel.title,...masked.filter(r=>r.y+r.h<body.h*3-5)],item)
     ];
     let opts=agreeOptions(...readings);
+    this.lastReading={body,raw,enlarged,masked,readings};
+    let missing=missingTooltipFields([...raw,...enlarged,...masked],opts,item);
+    if(item.cat==='Equip'&&missing.length) {
+      // Retry only unread lines, on the saved image, rather than clicking the game again for every OCR pass.
+      for(const key of missing.slice(0,6)) {
+        const candidate=raw.find(r=>tooltipField(r.text)===key)||enlarged.filter(r=>tooltipField(r.text)===key).map(r=>({...r,x:body.x+r.x/2,y:body.y+r.y/2,w:r.w/2,h:r.h/2}))[0];
+        if(!candidate)continue;
+        const y=Math.max(body.y,Math.floor(candidate.y-3));
+        const lineBox={x:body.x,y,w:body.w,h:Math.min(image.height-y,Math.ceil(candidate.h+8))};
+        const isolated=await this.recognize(cropImage(image,lineBox),item.en,'line.png',3);
+        readings.push(parseTooltipLines([panel.title,...isolated],item));
+      }
+      opts=agreeOptions(...readings);
+      missing=missingTooltipFields([...raw,...enlarged,...masked],opts,item);
+    }
     // The shop reader retries only when the primary read is incomplete. Do not run a slower
     // fallback over a complete, consistent crop and let its weaker digit guess discard that read.
-    if(item.cat==='Equip'&&(!opts?.stats||(Number.isInteger(item.slots)&&opts.slots===undefined))) {
+    if(item.cat==='Equip'&&(!opts?.stats||missing.length)) {
       const fallback=await this.recognizeFallback(bodyImage);
+      this.lastReading.fallback=fallback;
       opts=agreeOptions(...readings,parseTooltipLines([panel.title,...fallback.filter(r=>r.y+r.h<body.h*3-5)],item));
     }
+    this.lastMissing=missingTooltipFields([...raw,...enlarged,...masked],opts,item);
     return opts;
   }
   async collect({image,box,line,message,item,glyph}) {
     const skip=(reason)=>{this.lastSkip=reason;return null;};this.lastSkip='';
     const paused=()=>fs.existsSync(path.join(os.homedir(),'.config','gms-hub','mega-options-paused'));
     if(paused())return skip('option input paused');
-    if(Date.now()-this.last<2500)return skip('cooldown');this.last=Date.now();
+    if(Date.now()-this.last<500)return skip('cooldown');this.last=Date.now();
     const part=cropImage(image,box),link=itemLink(part,line,glyph);if(!link)return skip('no safe item-link point');
     const signature=(im,edge)=>lineBitmap(cropImage(im,box),line,{x0:0,x1:edge}).sig;
     const fingerprint=lineFingerprint(part,line);
     const park=[Math.min(image.width-40,box.x+box.w+35),35];
-    const input=async(action,x,y)=>{if(paused())throw Error('option input paused');return exec(this.input,[action,String(x),String(y),String(image.width),String(image.height)],{timeout:2000,maxBuffer:16000});};
+    const input=async(action,x,y,capture=false)=>{
+      if(paused())throw Error('option input paused');
+      const run=exec(this.input,[action,String(x),String(y),String(image.width),String(image.height)],{timeout:2000,maxBuffer:16000});
+      let snapshot=null,output='';
+      if(capture)run.child.stdout.on('data',chunk=>{
+        output+=chunk;let end;
+        while((end=output.indexOf('\n'))>=0){const line=output.slice(0,end);output=output.slice(end+1);try{const event=JSON.parse(line);if(event.phase==='clicked'&&!snapshot)snapshot=this.readFrame(event.at,1400).catch(()=>null);}catch{}}
+      });
+      await run; // A captured image never overrides a native focus/cursor safety failure.
+      return capture?await(snapshot||this.readFrame(Date.now(),1400)):null;
+    };
     let moved=false;
+    this.interacting=true;
     try {
       const before=await this.readFrame(Date.now(),1400);if(!before||before.width!==image.width||before.height!==image.height)return skip('window changed before click');
       if(whisperDialog(await this.recognize(before,item.en,'before.png')))return skip('existing whisper dialog');
@@ -107,23 +135,46 @@ export class OptionReader {
       const relocated=locateFingerprint(cropImage(ready,box),fingerprint);
       if(!relocated)return skip('target row no longer visible or ambiguous');
       line=relocated;link.y=Math.floor((line.top+line.bottom)/2);
-      moved=true;await input('click',box.x+link.x,box.y+link.y);
-      const after=await this.readFrame(Date.now(),1400);if(!after)return skip('no fresh tooltip frame');
+      moved=true;const after=await input('click',box.x+link.x,box.y+link.y,true);if(!after)return skip('no fresh tooltip frame');
       const rows=await this.recognize(after,item.en),dialog=whisperDialog(rows);
       if(dialog){await input('click',Math.round(dialog.x+dialog.w/2),Math.round(dialog.y+dialog.h/2));return skip('chat moved; closed newly opened whisper dialog');}
       // Nick + channel must still belong to the clicked row; reject chat scroll races.
-      if(signature(after,link.badge.message-4)!==signature(ready,link.badge.message-4))return skip('nick/channel moved after click');
+      if(signature(after,link.badge.message-4)!==signature(ready,link.badge.message-4)) {
+        fs.writeFileSync(path.join(this.dir,'race-ready.png'),PNG.sync.write(ready));
+        fs.writeFileSync(path.join(this.dir,'race-after.png'),PNG.sync.write(after));
+        fs.writeFileSync(path.join(this.dir,'race.json'),JSON.stringify({message,item:item.en,box,line,link}));
+        return skip('nick/channel moved after click');
+      }
+      // The screenshot is immutable. Close the live tooltip now so new text can be collected while
+      // slower option OCR runs on this image. Previously the entire collector waited until OCR ended.
+      await input('move',...park);moved=false;
+      await this.readFrame(Date.now(),1100);this.interacting=false;
       let panel=findTooltipPanel(rows,item,this.catalog,after);
-      if(!panel||tooltipTitle(panel.title.text,item.en)?.ups===undefined) panel=await this.recoverTitle(after,rows,item,{x:box.x+link.x,y:box.y+link.y})||panel;
+      if(!panel) panel=await this.recoverTitle(after,rows,item,{x:box.x+link.x,y:box.y+link.y});
       if(!panel||panel.w<120||panel.title.x>box.x+link.x+100)return skip('target tooltip title missing');
-      const opts=await this.readPanel(after,rows,panel,item);
+      let opts=await this.readPanel(after,rows,panel,item);
+      if(item.cat==='Equip'&&opts&&opts.ups===undefined&&opts.used!==0) {
+        // Clean items have no (+N) suffix. Only retry an unread suffix after checking the slots.
+        const header={x:panel.x,y:panel.y,w:panel.w,h:Math.min(panel.h,Math.ceil(panel.title.h+12))};
+        const titles=await this.recognize(cropImage(after,header),item.en,'title.png',2);
+        let counts=[...new Set(titles.filter(r=>r.confidence>=0.5).map(r=>tooltipTitle(r.text,item.en)?.ups).filter(Number.isInteger))];
+        if(!counts.length){const extra=await this.recognizeFallback(cropImage(after,header,false,3));counts=[...new Set(extra.filter(r=>r.confidence>=0.5).map(r=>tooltipTitle(r.text,item.en)?.ups).filter(Number.isInteger))];}
+        if(counts.length===1&&counts[0]<=20&&(opts.used===undefined||counts[0]<=opts.used))opts={...opts,ups:counts[0]};
+        if(opts.used>0&&opts.ups===undefined)this.lastMissing.push('ups');
+      }
+      const sample=`sample-${Date.now()}`;
+      fs.writeFileSync(path.join(this.dir,`${sample}.png`),PNG.sync.write(after));
+      fs.writeFileSync(path.join(this.dir,`${sample}.json`),JSON.stringify({message,item,opts,panel,reading:this.lastReading}));
+      for(const old of fs.readdirSync(this.dir).filter(f=>/^sample-.*\.json$/.test(f)).sort().slice(0,-24)) {
+        fs.rmSync(path.join(this.dir,old),{force:true});fs.rmSync(path.join(this.dir,old.replace(/\.json$/,'.png')),{force:true});
+      }
       if(!opts||(!opts.stats&&!opts.scroll&&opts.slots===undefined))return skip('no trusted numeric options');
       // Keep a bounded local diagnostic sample; no screenshots leave this Mac.
       fs.writeFileSync(path.join(this.dir,'last.json'),JSON.stringify({message,item:item.en,opts}));
       fs.copyFileSync(path.join(this.dir,'ocr.png'),path.join(this.dir,'last-success.png'));
       return opts;
     } catch(e) {if(e.code===6)fs.writeFileSync(path.join(os.homedir(),'.config','gms-hub','mega-options-paused'),'cursor visibility changed\n');if(![4,5].includes(e.code)) console.error('options skipped:',e.message.split('\n')[0]);return skip(`input/OCR: ${e.code||e.message}`);}
-    finally {if(moved){await input('move',...park).catch(()=>{});await this.readFrame(Date.now(),1100).catch(()=>null);}}
+    finally {if(moved){await input('move',...park).catch(()=>{});await this.readFrame(Date.now(),1100).catch(()=>null);}this.interacting=false;}
   }
   close(){this.fallback?.then(w=>w.terminate()).catch(()=>{});fs.rmSync(this.dir,{recursive:true,force:true});}
 }

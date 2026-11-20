@@ -12,6 +12,15 @@ export function whisperDialog(rows) {
   return prompt&&rows.find((r)=>r.confidence>=0.5&&/^CANCEL$/i.test(r.text.trim())&&r.y>prompt.y&&r.y<prompt.y+160&&Math.abs(r.x-prompt.x)<350);
 }
 const clean = (s) => s.replace(/^[|«•·*+\s-]+/, '').replace(/\b(?:aftack|altack|atack|ahack|attacke)\b/gi, 'Attack').trim();
+export function tooltipField(text) {
+  const label=/^([A-Za-z .]+):/.exec(clean(text))?.[1]?.trim().toLowerCase().replace(/\./g,'');
+  return label==='remaining enhancements'?'slots':LABELS[label]||{'weapon def':'PDD','magic def':'MDD','weapon det':'PDD','magic det':'MDD',maxhp:'MHP',maxmp:'MMP'}[label]||null;
+}
+export function missingTooltipFields(rows,opts,item) {
+  const expected=new Set(rows.map(r=>tooltipField(typeof r==='string'?r:r.text)).filter(Boolean));
+  if(item.cat==='Equip'&&Number.isInteger(item.slots))expected.add('slots');
+  return [...expected].filter(key=>key==='slots'?opts?.slots===undefined:opts?.stats?.[key]===undefined);
+}
 export function tooltipTitle(text, expected) {
   const s = clean(text).replace(/\s*\((?:M|F|Male|Female)\)\s*/gi, ' ');
   if (s.startsWith('[')) return null; // A chat link is not a tooltip title.

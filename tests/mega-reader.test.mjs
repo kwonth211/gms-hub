@@ -1,6 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {gunzipSync} from 'node:zlib';
 import { cleanText, assemble, bandClass, findLines, lineFingerprint, locateFingerprint } from '../assets/mega-reader.js';
+
+test('real Olympus row survives a scroll, highlight pixel changes, and a one-pixel height change',()=>{
+ const load=name=>({width:576,height:200,data:gunzipSync(fs.readFileSync(new URL(`fixtures/${name}.rgba.gz`,import.meta.url)))});
+ const before=load('mega-before-scroll'),after=load('mega-after-scroll');
+ const old=findLines(before).find(l=>l.top===130),moved=findLines(after).find(l=>l.top===114);
+ assert.equal(old.bottom-old.top,13);assert.equal(moved.bottom-moved.top,14);
+ const fingerprint=lineFingerprint(before,old);
+ assert.equal(lineFingerprint(after,moved),fingerprint);
+ assert.equal(locateFingerprint(after,fingerprint).top,114);
+ assert.notEqual(lineFingerprint(after,findLines(after).find(l=>l.top===130)),fingerprint);
+});
 
 test('option target follows the same complete row when chat scrolls; ambiguity is rejected', () => {
   const frame=rows=>{

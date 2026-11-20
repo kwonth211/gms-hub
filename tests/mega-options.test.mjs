@@ -1,10 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tooltipTitle, findTooltipPanel, tooltipBody, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog } from '../assets/mega-tooltip.js';
+import { tooltipTitle, findTooltipPanel, tooltipBody, missingTooltipFields, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog } from '../assets/mega-tooltip.js';
 import { optionParts, optionSummary } from '../assets/mega-option-text.js';
 const bow={en:'Vaulter 2000',cat:'Equip',slots:7};
 const dagger={en:'Bazlud',cat:'Equip',slots:7};
 const scroll={en:'Claw Attack Scroll: Intermediate',cat:'Use'};
+test('an unread stat line marks a partial capture even when other stats were read',()=>{
+ assert.deepEqual(missingTooltipFields([{text:'Weapon Attack: +8',confidence:0.3},{text:'Critical Rate: +2',confidence:1},{text:'REQ STR: 40',confidence:1}],{stats:{CRT:2},slots:0},bow),['PAD']);
+ assert.deepEqual(missingTooltipFields(['Weapon Attack: +8'],{stats:{PAD:8}},bow),['slots']);
+ assert.deepEqual(missingTooltipFields(['Weapon Attack: +8'],{stats:{PAD:8},slots:0},bow),[]);
+});
 test('short item links remain clickable while nickname, badge and clipped links are excluded',()=>{
  assert.equal(safeItemClickX(110,150,108),145);
  assert.equal(safeItemClickX(110,240,108),235);

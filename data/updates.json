@@ -2,6 +2,20 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "megaphone-option-capture-fixes",
+   "version": "0.7.41",
+   "level": "patch",
+   "date": "2026-11-20",
+   "path": "/megaphone/",
+   "ko": "고확 옵션 누락 보완 · 캐시 외형 아이템 구분",
+   "en": "Megaphone option capture fixes and cosmetic item labels",
+   "desc": {
+    "ko": "채팅이 밀리거나 아이템 강조색이 바뀔 때 옵션 재시도가 끊기던 문제를 수정했어요. 나중에 읽은 빠진 능력치는 같은 고확과 상단 띠에 보충돼요. 캐시 외형 아이템은 따로 표시하며, 일반 장비에서 확인하지 못한 수치를 기본 능력치로 채우지 않아요.",
+    "en": "Fixed retries being lost when chat scrolls or item highlighting changes. Additional verified stats now enrich the same megaphone and ticker. Cash cosmetics are labelled separately; missing equipment stats are never replaced with catalogue values."
+   },
+   "highlight": true
+  },
+  {
    "id": "megaphone-option-retry",
    "version": "0.7.40",
    "level": "patch",

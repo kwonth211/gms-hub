@@ -21,6 +21,7 @@ const items = raw
       ...(translated ? { ko: x.names.ko } : {}),
       cat: x.typeInfo.overallCategory,
       sub: x.typeInfo.subCategory,
+      ...(x.isCash ? { cash: true } : {}),
       ...(x.requiredLevel ? { lv: x.requiredLevel } : {})
     };
   })

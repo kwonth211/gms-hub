@@ -1,5 +1,5 @@
-// Keeps ONE screen-capture stream open on the largest MapleStory window and writes its newest frame (PNG, at most one a
-// second) to the path given as the first argument. Starting `screencapture` every tick opened and closed a capture
+// Keeps ONE screen-capture stream open on the largest MapleStory window and writes its newest frame (PNG, at most eight
+// per second) to the path given as the first argument. Starting `screencapture` every tick opened and closed a capture
 // session each time, which kept macOS's systemstatusd (the screen-recording indicator) at a full CPU core; one stream
 // that stays open does not. The window may be covered by other windows. Built once by mega-collector.mjs with swiftc.
 // Exits when: stdin closes (the collector went away), the window is gone (3), the stream stops (1) or the window was
@@ -29,7 +29,7 @@ final class Camera: NSObject, SCStreamOutput, SCStreamDelegate {
     height = Int(window.frame.height.rounded())
     config.width = width
     config.height = height
-    config.minimumFrameInterval = CMTime(value: 1, timescale: 3)
+    config.minimumFrameInterval = CMTime(value: 1, timescale: 8)
     config.pixelFormat = kCVPixelFormatType_32BGRA
     config.showsCursor = false
     config.ignoreShadowsSingleWindow = true

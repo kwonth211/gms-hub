@@ -10,18 +10,28 @@ const captured = { stats: { INT: 21, PDD: 57 }, slots: 0, ups: 6, used: 10 };
 const catalogue = { items: { [id]: ['블루 문라이트', 'Blue Moonlight', 'Equip', 'Overall', 40, 2, {}, { INT: 8, PDD: 58, MDD: 65 }, 10] }, mobs: {} };
 
 // Run the shipped pointer handlers and renderer against a small DOM adapter.
-function fixture() {
+function fixture(source=catalogue) {
   const handlers = new Map(), timers = [];
   const card = { style: {}, setAttribute() {}, offsetWidth: 280, offsetHeight: 300 };
   const body = { dataset: { tips: '/tips.json' }, append() {} };
   vm.runInNewContext(code, {
     document: { body, documentElement: { lang: 'ko' }, createElement: () => card, addEventListener: (name, fn) => handlers.set(name, fn) },
-    matchMedia: () => ({ matches: true }), fetch: async () => ({ json: async () => catalogue }),
+    matchMedia: () => ({ matches: true }), fetch: async () => ({ json: async () => source }),
     window: {}, innerWidth: 1200, innerHeight: 800,
     setTimeout: fn => timers.push(fn), clearTimeout() {}, addEventListener() {},
   });
   return { card, async hover(target) { handlers.get('pointerover')({ target }); while (timers.length) await timers.shift()(); return card.innerHTML; } };
 }
+test('verified cash metadata distinguishes cosmetic megaphones without inventing stats',async()=>{
+ const t=['타니아 소드','Tania Sword','Equip','Cash',0,0,{}, {},0,0,0,[],0,0,1];
+ const html=await fixture({items:{[id]:t},mobs:{}}).hover(link(megaphoneItemAttrs(id)));
+ assert.match(html,/캐시 외형 아이템/);
+ assert.doesNotMatch(html,/옵션 미확인|tip-stats/);
+ t[3]='Pet Equipment';t[8]=5;
+ const pet=await fixture({items:{[id]:t},mobs:{}}).hover(link(megaphoneItemAttrs(id)));
+ assert.match(pet,/옵션 미확인/);
+ assert.doesNotMatch(pet,/캐시 외형 아이템/);
+});
 function link(attrs = '', href = `/ko/tools/market/?item=${id}`) {
   const decode = s => s.replace(/&(quot|amp|lt|gt|#39);/g, (_, k) => ({ quot: '"', amp: '&', lt: '<', gt: '>', '#39': "'" })[k]);
   const dataset = Object.fromEntries([...attrs.matchAll(/data-([a-z-]+)="([^"]*)"/g)].map(([, k, v]) => [k.replace(/-([a-z])/g, (_, c) => c.toUpperCase()), decode(v)]));

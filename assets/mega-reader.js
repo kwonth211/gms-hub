@@ -142,6 +142,16 @@ export function findBadge(img, line, { scrollbar = 20 } = {}) {
 // Part of a line drawn black-on-white, `scale` times larger with a margin. 'ink' is anything far from the band
 // colour (dark message text, bright yellow item names) but not the white badge fill; 'red' is the badge's channel digits.
 export function lineFingerprint(img, line) {
+  const anchor=slotAnchor(img,[line]);
+  if(anchor) {
+    // Hover/scroll changes the highlighted item's gold pixels and findLines' bottom by 1px.
+    // The fixed font slot and dark nickname/channel/message stay stable. Positions are included;
+    // identical-looking rows are deliberately rejected as ambiguous by locateFingerprint.
+    const gs=glyphs(img,line,textLeft(img,line),line.right,windowTop(line,anchor)).filter(g=>g.key.startsWith('D:'));
+    let hash=2166136261;
+    for(const g of gs)for(const ch of `${g.x}:${g.key};`)hash=Math.imul(hash^ch.charCodeAt(0),16777619)>>>0;
+    return `slot:${line.color}:${line.right}:${hash}`;
+  }
   return `${line.bottom-line.top}:${line.right}:${lineBitmap(img,line,{x0:0,scale:1,pad:0}).sig}`;
 }
 export function locateFingerprint(img, fingerprint) {
