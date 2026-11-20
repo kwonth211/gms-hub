@@ -10,7 +10,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { PNG } from 'pngjs';
 import Tesseract from 'tesseract.js';
-import { findChatBox, stableChatBox, findLines, isLineVisible, readLine, assemble, repeatFilter, itemFixer, glyphReader, slotAnchor, windowTop, lineFingerprint } from '../../assets/mega-reader.js';
+import { findChatBox, stableChatBox, findLines, isLineVisible, readLine, assemble, repeatFilter, continuousMessage, itemFixer, glyphReader, slotAnchor, windowTop, lineFingerprint } from '../../assets/mega-reader.js';
 import { OptionReader, nameKey } from './mega-options.mjs';
 
 const API = 'https://gms-hub-votes.kwonth211.workers.dev/internal/megaphone';
@@ -112,6 +112,7 @@ for(const row of observations)isRepeat(row,Date.parse(row.seen));
 const optionJobs = new Map((saved.jobs||[]).filter(([,job])=>Date.now()-job.created<120000).map(([key,job])=>[key,{...job,active:false,lastAttempt:0}]));
 const optionTasks=new Set();
 const messageKey = m => JSON.stringify([m.channel,m.nick,m.text]);
+let visibleMessages=new Map([...optionJobs].map(([key,job])=>[key,{row:job.row,lastVisible:job.lastVisible}]));
 let box = null, ticks = 0, empty = 0, queue = (saved.queue||[]).filter(r=>Date.now()-Date.parse(r.seen)<3600000), posting=[], sent = 0;
 function saveState() {
   if(DRY)return;
@@ -163,17 +164,28 @@ async function tick() {
   for (const m of all) m.text = fixItems(m.text,['Y','C'].includes(m.color));
   const fingerprints=lines.map(l=>lineFingerprint(part,l));
   const pending=[];
+  const nextVisible=new Map(),counts=new Map();
+  for(const m of all){const key=messageKey(m);counts.set(key,(counts.get(key)||0)+1);}
   for (const m of all) {
     const i=read.findIndex(r=>!r.cont&&r.nick===m.nick&&r.channel===m.channel&&m.text.startsWith(fixItems(r.text,true)));
     if(i>=0)m.fingerprint=fingerprints[i];
+    const key=messageKey(m),original=counts.get(key)===1&&i>=0?continuousMessage(visibleMessages.get(key),m,now):null;
+    if(original) {
+      nextVisible.set(key,{row:original,lastVisible:now});
+      const job=optionJobs.get(key);
+      if(job&&job.row.seen===original.seen){job.fingerprint=fingerprints[i];job.lastVisible=now;}
+      continue;
+    }
     if (!m.channel || isRepeat(m, now)) continue;
     const row = { seen: new Date(now).toISOString(), kind: KINDS[m.color] || 'super', color: m.color, channel: m.channel, nick: m.nick, text: m.text };
     pending.push({row,m});
+    if(counts.get(key)===1&&i>=0)nextVisible.set(key,{row,lastVisible:now});
     if(optionReader && ['Y','C'].includes(row.color)) {
       if(i>=0)optionJobs.set(messageKey(m),{row,m,fingerprint:fingerprints[i],attempts:0,lastAttempt:0,created:now,lastVisible:now});
     }
     console.log(`${new Date(now).toTimeString().slice(0, 8)} ${row.kind.padEnd(6)} CH${String(row.channel).padStart(2)} ${row.nick}: ${row.text}`);
   }
+  visibleMessages=nextVisible;
   // Publish text before slow option OCR. Later success enriches this exact row.
   queue.push(...pending.map(({row})=>row));
   observations.push(...pending.map(({row,m})=>({...row,fingerprint:m.fingerprint})));

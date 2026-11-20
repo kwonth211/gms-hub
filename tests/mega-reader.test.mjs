@@ -2,7 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {gunzipSync} from 'node:zlib';
-import { cleanText, assemble, repeatFilter, bandClass, findChatBox, stableChatBox, findLines, isLineVisible, findBadge, readChannel, slotAnchor, windowTop, glyphs, glyphReader, itemGlyphBounds, lineFingerprint, locateFingerprint } from '../assets/mega-reader.js';
+import { cleanText, assemble, repeatFilter, continuousMessage, bandClass, findChatBox, stableChatBox, findLines, isLineVisible, findBadge, readChannel, slotAnchor, windowTop, glyphs, glyphReader, itemGlyphBounds, lineFingerprint, locateFingerprint } from '../assets/mega-reader.js';
+
+test('continuous visibility preserves the original upload timestamp despite pixel fingerprint drift',()=>{
+ const row={seen:'2026-11-20T15:42:31.689Z',nick:'sAsHiMe',channel:19,color:'Y',text:'[Work Gloves] PM offers',fingerprint:'old'};
+ const previous={row,lastVisible:1000},current={...row,fingerprint:'new'};
+ assert.equal(continuousMessage(previous,current,3500),row);
+ for(const change of [{nick:'SomeoneElse'},{channel:20},{color:'C'},{text:'[Work Gloves] NEW offer'}])assert.equal(continuousMessage(previous,{...current,...change},3500),null);
+ assert.equal(continuousMessage(undefined,current,3500),null); // A disappeared/reposted row has no continuity.
+ assert.equal(continuousMessage(previous,current,12000),null);
+});
 
 test('occluded chat preserves its known width and rejects the partial row',()=>{
  const previous={x:278,y:358,w:576,h:414},found={x:278,y:550,w:268,h:222};

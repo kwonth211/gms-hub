@@ -357,6 +357,13 @@ export function assemble(lines) {
 // font signature, nickname, channel and linked item; different sellers on one channel
 // and two different items from one blue megaphone must never suppress each other.
 export const shape = (t) => t.toLowerCase().replace(/[^a-z0-9]/g, '');
+// Preserve the first observation only while the exact, unique message remains
+// visible in consecutive frames. Similar text or a later repost is not enough.
+export function continuousMessage(previous,message,now) {
+  const row=previous?.row;
+  return row&&now-previous.lastVisible<=10000&&now>=previous.lastVisible&&
+    ['nick','channel','color','text'].every(k=>row[k]===message[k])?row:null;
+}
 export function similar(a, b) {
   if (a === b) return true;
   const grams = (t) => new Set(Array.from({ length: Math.max(0, t.length - 2) }, (_, i) => t.slice(i, i + 3)));

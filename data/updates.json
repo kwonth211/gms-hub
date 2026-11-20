@@ -10,8 +10,8 @@
    "ko": "고확 옵션 판독 개선 — 아이템 박스 분리",
    "en": "Megaphone options: isolated item tooltip capture",
    "desc": {
-    "ko": "툴팁 배경색으로 아이템 박스만 분리해 옵션을 읽고, 오른쪽에 함께 뜨는 착용 장비는 제외해요. 숫자가 겹쳐 읽히는 경우 해당 영역을 따로 대조하며, 확인된 옵션은 기존 고확과 홈 띠에 반영돼요. 게임·채팅 창 크기와 배치를 바꾸지 않아요.",
-    "en": "Reads only the linked item’s tooltip, isolated by its background colour, and excludes equipped-item comparisons on the right. Overlapping numbers receive a separate OCR check; verified options update the original megaphone and home ticker. Game and chat window layouts are preserved."
+    "ko": "툴팁 배경색으로 아이템 박스만 분리해 옵션을 읽고, 오른쪽에 함께 뜨는 착용 장비는 제외해요. 숫자가 겹쳐 읽히는 경우 해당 영역을 따로 대조하며, 확인된 옵션은 기존 고확과 홈 띠에 반영돼요. 게임·채팅 창 크기와 배치를 바꾸지 않아요. 같은 고확이 화면에 남아 있을 때 수집 시간이 바뀌어 옵션 보충이 누락되는 문제도 수정했어요.",
+    "en": "Reads only the linked item’s tooltip, isolated by its background colour, and excludes equipped-item comparisons on the right. Overlapping numbers receive a separate OCR check; verified options update the original megaphone and home ticker. Game and chat window layouts are preserved. Also preserves the original timestamp while the same message remains visible so option updates reach that message."
    },
    "highlight": true
   },
