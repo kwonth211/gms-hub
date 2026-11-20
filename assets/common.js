@@ -299,7 +299,7 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
       const body = itemHref && bracket
         ? (bracket.index ? messageLink(esc(message.slice(0, bracket.index))) : '') + `<a class="mg-tk-item-link" href="${esc(itemHref)}" tabindex="-1"${itemAttrs}>${esc(bracket[0])}</a>` + (message.slice(bracket.index + bracket[0].length) ? messageLink(esc(message.slice(bracket.index + bracket[0].length))) : '')
         : messageLink(esc(message));
-      return `<span class="mg-tk-item mg-tk-${esc(r.color || 'Y')}${fresh ? ' mg-tk-new' : ''}"${summary || texts[i][1] !== texts[i][0] ? ` title="${esc(title)}"` : ''}>${messageLink(`${icon()}${r.free ? `<em class="mg-tk-free">${ko ? '무료 고확' : 'Free mega'}</em>` : ''}${Number(r.channel) ? `<b>CH${Number(r.channel)}</b>` : ''}<time>${clock(r.seen)}</time><strong>${esc(r.nick)}</strong>`)}${body}${summary ? `<a class="mg-tk-opts" href="${esc(itemHref || detail)}"${itemHref ? itemAttrs : ` data-mega-id="${keyOf(r)}"`} tabindex="-1">${esc(summary)}</a>` : ''}</span>`;
+      return `<span data-mega-key="${keyOf(r)}" class="mg-tk-item mg-tk-${esc(r.color || 'Y')}${fresh ? ' mg-tk-new' : ''}"${summary || texts[i][1] !== texts[i][0] ? ` title="${esc(title)}"` : ''}>${messageLink(`${icon()}${r.free ? `<em class="mg-tk-free">${ko ? '무료 고확' : 'Free mega'}</em>` : ''}${Number(r.channel) ? `<b>CH${Number(r.channel)}</b>` : ''}<time>${clock(r.seen)}</time><strong>${esc(r.nick)}</strong>`)}${body}${summary ? `<a class="mg-tk-opts" href="${esc(itemHref || detail)}"${itemHref ? itemAttrs : ` data-mega-id="${keyOf(r)}"`} tabindex="-1">${esc(summary)}</a>` : ''}</span>`;
     }).join('');
   }
   // Sizes are read only when the strip's content or the window changes (measure), never on every frame: a layout read
@@ -350,6 +350,18 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   const go = () => { if (!calm && !frame) frame = requestAnimationFrame(step); };
   const settle = () => { x = calm ? 0 : stopAt(); run.style.transform = `translateX(${x}px)`; };
   async function add(rows, fresh) {
+    // Retry results enrich an existing id; update its hover data, filter link, and cached replays too.
+    for (const r of rows.filter(r => r.opts && seenKeys.has(keyOf(r)))) {
+      const old = kept.find(x => keyOf(x) === keyOf(r));
+      if (old && JSON.stringify(old.opts) === JSON.stringify(r.opts)) continue;
+      if (old) Object.assign(old, r);
+      const html = await itemsHtml([r]);
+      for (const el of set.querySelectorAll(`[data-mega-key="${keyOf(r)}"]`)) {
+        el.outerHTML = el.classList.contains('mg-tk-re') ? html.replace('class="mg-tk-item ', 'class="mg-tk-item mg-tk-re ') : html;
+      }
+      stale = true;
+    }
+    try { localStorage.setItem(TK_KEY, JSON.stringify(kept)); } catch (e) {}
     const next = rows.filter((r) => live(r) && !seenKeys.has(keyOf(r))).sort((a, b) => atOf(a) - atOf(b) || a.id - b.id);
     if (!next.length) return;
     for (const r of next) seenKeys.add(keyOf(r));

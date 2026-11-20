@@ -2,6 +2,20 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "megaphone-option-retry",
+   "version": "0.7.40",
+   "level": "patch",
+   "date": "2026-11-20",
+   "path": "/megaphone/",
+   "ko": "고확 옵션 수집 보완 — 재시도 결과를 띠에도 반영",
+   "en": "Megaphone capture improvements — retry results reach the ticker",
+   "desc": {
+    "ko": "처음 읽지 못한 아이템 옵션은 고확이 화면에 남아 있는 동안 다시 확인해요. 나중에 확인된 옵션도 기존 고확과 상단 띠의 툴팁·매물 필터에 반영돼요. 짧은 아이템 링크를 놓치던 문제와 성공 횟수를 읽지 못했을 때 0으로 표시하던 문제도 수정했어요.",
+    "en": "Item options are retried while the same megaphone remains visible. Later readings update the original message, ticker tooltip, and listing filters. Short item links are no longer skipped, and an unreadable upgrade count is no longer treated as zero."
+   },
+   "highlight": true
+  },
+  {
    "id": "megaphone-option-tooltip-fix",
    "version": "0.7.39",
    "level": "patch",

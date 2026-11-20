@@ -223,6 +223,12 @@ async function loadPrices(newRows) {
 
 // New megaphones pushed over the presence socket (assets/common.js) appear at once; polling stays as the fallback.
 addEventListener('gms-megaphones', async (e) => {
+  let enriched = false;
+  for (const r of e.detail) {
+    const old = rows.find(x => !x.fid && x.id === r.id);
+    if (old && r.opts && JSON.stringify(old.opts) !== JSON.stringify(r.opts)) { old.opts = r.opts; enriched = true; }
+  }
+  if (enriched) render();
   const fresh = e.detail.filter((r) => r.id > lastId).map((r) => ({ ...r, intent: intentOf(r.text) })).sort((a, b) => b.id - a.id);
   if (!fresh.length) return;
   lastId = Math.max(lastId, ...fresh.map((r) => r.id));
@@ -246,14 +252,20 @@ addEventListener('gms-megaphones', async (e) => {
 async function poll() {
   if (document.hidden) return;
   try {
-    const data = await fetch(`${api}/megaphones${lastId ? `?after=${lastId}` : ''}`).then((r) => r.json());
-    const fresh = (data.rows || []).map((r) => ({ ...r, intent: intentOf(r.text) }));
+    // Include a small overlap so late option reads also recover after a disconnected socket.
+    const data = await fetch(`${api}/megaphones${lastId ? `?after=${Math.max(0,lastId-100)}&limit=200` : ''}`).then((r) => r.json());
+    let enriched = false;
+    for (const r of data.rows || []) {
+      const old = rows.find(x => !x.fid && x.id === r.id);
+      if (old && r.opts && JSON.stringify(old.opts) !== JSON.stringify(r.opts)) { old.opts = r.opts; enriched = true; }
+    }
+    const fresh = (data.rows || []).filter(r=>r.id>lastId).map((r) => ({ ...r, intent: intentOf(r.text) }));
     if (fresh.length) {
       lastId = Math.max(lastId, ...fresh.map((r) => r.id));
       rows = fresh.concat(rows).sort(bySeen).slice(0, 400);
       await loadPrices(fresh);
       render();
-    } else if (!rows.length) render();
+    } else if (enriched || !rows.length) render();
   } catch (e) {}
   await pollFree();
 }

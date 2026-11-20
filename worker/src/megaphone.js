@@ -191,18 +191,32 @@ export async function postMegaphones(req, env, itemNames, onNew) {
   // The same line stays on screen for a while and scrolls through several frames: one row per nick+text per 10 minutes.
   const names = itemNames ? await itemNames().catch(() => null) : null;
   const insert = env.DB.prepare('INSERT OR IGNORE INTO megaphones (seen_at, kind, color, channel, nick, text, hash, item, intent, price, opts) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-  const parsed = [];
+  const parsed = [], hashes = [];
   const stmts = await Promise.all(rows.map(async (r, i) => {
     const text = r.text.trim(), p = parseMegaphone(text, names);
     const opts = normalizeOptions(r.opts);
     parsed[i] = { ...r, text, ...p, opts: parseOptions(opts) };
-    return insert.bind(stamp(r.seen), r.kind, r.color ?? null, r.channel ?? null, r.nick, text, await digest(`${r.nick}|${text.toLowerCase()}|${Math.floor(Date.parse(r.seen) / 600000)}`), p.item, p.intent, p.price, opts);
+    hashes[i] = await digest(`${r.nick}|${text.toLowerCase()}|${Math.floor(Date.parse(r.seen) / 600000)}`);
+    return insert.bind(stamp(r.seen), r.kind, r.color ?? null, r.channel ?? null, r.nick, text, hashes[i], p.item, p.intent, p.price, opts);
   }));
   const results = await env.DB.batch(stmts);
   // New rows carry their id and the stored time stamp, shaped like GET /megaphones rows, so they can be pushed to pages.
   const fresh = parsed.map((row, i) => ({ ...row, id: results[i].meta.last_row_id, seen: stamp(row.seen) })).filter((_, i) => results[i].meta.changes > 0);
   if (fresh.length && onNew) onNew(fresh);
-  return reply({ ok: true, accepted: fresh.length });
+  // A retry may identify options after the text was uploaded. Enrich only that exact observation;
+  // never overwrite existing evidence or attach a later repeated advertisement's item to it.
+  const enriched = [];
+  for (let i = 0; i < parsed.length; i++) {
+    const row = parsed[i];
+    if (results[i].meta.changes || !row.opts) continue;
+    const result = await env.DB.prepare('UPDATE megaphones SET opts = ? WHERE hash = ? AND seen_at = ? AND channel IS ? AND nick = ? AND text = ? AND opts IS NULL')
+      .bind(normalizeOptions(row.opts), hashes[i], stamp(row.seen), row.channel ?? null, row.nick, row.text).run();
+    if (!result.meta.changes) continue;
+    const saved = await env.DB.prepare('SELECT id, seen_at AS seen, kind, color, channel, nick, text, item, intent, price, opts FROM megaphones WHERE hash = ?').bind(hashes[i]).first();
+    if (saved) enriched.push({ ...saved, opts: parseOptions(saved.opts) });
+  }
+  if (enriched.length && onNew) onNew(enriched, true);
+  return reply({ ok: true, accepted: fresh.length, ...(enriched.length ? { updated: enriched.length } : {}) });
 }
 
 export async function listMegaphones(env, params) {

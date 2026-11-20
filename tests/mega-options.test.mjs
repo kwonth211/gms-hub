@@ -5,10 +5,12 @@ import { optionParts, optionSummary } from '../assets/mega-option-text.js';
 const bow={en:'Vaulter 2000',cat:'Equip',slots:7};
 const dagger={en:'Bazlud',cat:'Equip',slots:7};
 const scroll={en:'Claw Attack Scroll: Intermediate',cat:'Use'};
-test('item clicks stay beyond any nickname; short unsafe links are skipped',()=>{
- assert.equal(safeItemClickX(110,150,13),null);
- assert.equal(safeItemClickX(110,240,13),193);
- assert.equal(safeItemClickX(210,300,13),255);
+test('short item links remain clickable while nickname, badge and clipped links are excluded',()=>{
+ assert.equal(safeItemClickX(110,150,108),145);
+ assert.equal(safeItemClickX(110,240,108),235);
+ assert.equal(safeItemClickX(210,300,195),295);
+ assert.equal(safeItemClickX(110,150,152),null);
+ assert.equal(safeItemClickX(110,116,108),null);
 });
 test('whisper recovery identifies only the specific dialog cancel button',()=>{
  const prompt={text:'Please enter the person you want to',confidence:1,x:568,y:365};
@@ -30,6 +32,14 @@ test('never turn requirements, clipped digits or inconsistent sums into stats',(
 });
 test('raw/masked OCR disagreement omits the field instead of choosing a number',()=>{
  assert.deepEqual(agreeOptions({stats:{PAD:68,LUK:2},slots:0},{stats:{PAD:88},slots:0}),{stats:{LUK:2},slots:0});
+});
+test('a lost enhancement suffix never becomes zero successful upgrades',()=>{
+ const item={en:'Emerald Earrings',cat:'Equip',slots:5};
+ assert.deepEqual(parseTooltipLines(['Emerald Earrings','STR: +3','Remaining Enhancements: 0'],item),{stats:{STR:3},slots:0,used:5,clean:false});
+ assert.equal(parseTooltipLines(['Emerald Earrings','Emerald Earrings (+2)','STR: +3','Remaining Enhancements: 0'],item).ups,2);
+ assert.equal(parseTooltipLines(['Emerald Earrings (+2)','Emerald Earrings (+3)','STR: +3'],item).ups,undefined);
+ const panel=findTooltipPanel([{x:510,y:540,w:120,h:14,confidence:1,text:'Emerald Earrings'},{x:938,y:544,w:120,h:14,confidence:1,text:'Bazlud'}],item,[item,dagger],{width:1366,height:796});
+ assert.equal(panel.w,270);
 });
 test('scroll gains are separate from equipment totals and support wrapped OCR',()=>{
  assert.deepEqual(parseTooltipLines(['Claw Attack Scroll: Intermediate','Improves Weapon Attack on','claws.','Success rate: 60%, Weapon','AHack +2'],scroll),{scroll:{chance:60,stats:{PAD:2}}});

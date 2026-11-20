@@ -1,9 +1,11 @@
 // Verified with MapleStory Classic World on macOS, 2026-11-20.
-// Usage: background-item-input move|click <window-image-x> <window-image-y>
+// Usage: background-item-input move|click|release <window-image-x> <window-image-y>
 // Coordinates include the title bar, as in a shadow-free window capture.
 // Never activates an app, posts globally, warps the pointer, or injects code.
 import AppKit
 import ApplicationServices
+import Darwin
+let cursorProbe = dlsym(UnsafeMutableRawPointer(bitPattern:-2), "CGCursorIsVisible").map { unsafeBitCast($0, to: (@convention(c) () -> UInt32).self) }
 
 func emit(_ data: [String:Any]) {
     print(String(data:try! JSONSerialization.data(withJSONObject:data,options:.sortedKeys),encoding:.utf8)!)
@@ -12,13 +14,13 @@ func emit(_ data: [String:Any]) {
 func snapshot() -> [String:Any] {
     let p=CGEvent(source:nil)!.location
     let front=NSWorkspace.shared.frontmostApplication
-    return ["cursor":[Double(p.x),Double(p.y)],"frontPid":Int(front?.processIdentifier ?? -1),"frontName":front?.localizedName ?? ""]
+    return ["cursor":[Double(p.x),Double(p.y)],"frontPid":Int(front?.processIdentifier ?? -1),"frontName":front?.localizedName ?? "", "cursorVisible":cursorProbe?() ?? 2]
 }
 func unchanged(_ a:[String:Any],_ b:[String:Any])->Bool {
     (a["cursor"] as? [Double]) == (b["cursor"] as? [Double]) && (a["frontPid"] as? Int) == (b["frontPid"] as? Int)
 }
 let args=CommandLine.arguments
-guard (args.count==4 || args.count==6),["move","click"].contains(args[1]),let x=Double(args[2]),let y=Double(args[3]),AXIsProcessTrusted() else {
+guard (args.count==4 || args.count==6),["move","click","release"].contains(args[1]),let x=Double(args[2]),let y=Double(args[3]),AXIsProcessTrusted() else {
     emit(["error":"Usage: background-item-input move|click windowX windowY; accessibility permission required"]);exit(2)
 }
 let windows=CGWindowListCopyWindowInfo(.optionAll,kCGNullWindowID) as? [[String:Any]] ?? []
@@ -46,11 +48,25 @@ func post(_ type:NSEvent.EventType,_ flags:NSEvent.ModifierFlags=[]) {
     event.setIntegerValueField(.mouseEventWindowUnderMousePointerThatCanHandleThisEvent,value:Int64(wid))
     event.postToPid(pid)
 }
+// Release Wine's mouse ownership using the real pointer position. A synthetic drag otherwise leaves
+// lastTargetWindow set to the game, allowing Wine to hide the macOS cursor over another app.
+func releasePointer() {
+    if NSWorkspace.shared.frontmostApplication?.processIdentifier == pid { return }
+    let point=CGEvent(source:nil)!.location
+    // Associate the event with the game so AppKit actually delivers it in the background.
+    // Wine routes mouseMoved using the topmost window at point instead of the associated window.
+    // A windowless CGEvent (or windowless drag) is discarded and does not release cursor ownership.
+    guard let native=NSEvent.mouseEvent(with:.mouseMoved,location:NSPoint(x:point.x-ox,y:height-(point.y-oy)),modifierFlags:[],timestamp:ProcessInfo.processInfo.systemUptime,windowNumber:wid,context:nil,eventNumber:0,clickCount:0,pressure:0),let event=native.cgEvent else { return }
+    event.location=point
+    event.setIntegerValueField(.mouseEventWindowUnderMousePointer,value:0)
+    event.setIntegerValueField(.mouseEventWindowUnderMousePointerThatCanHandleThisEvent,value:0)
+    event.postToPid(pid)
+}
 // Wine routes ordinary mouseMoved by the topmost window at the screen point.
 // A window-associated drag event routes directly; no button is held or pressed.
-post(.leftMouseDragged)
+if args[1] != "release" { post(.leftMouseDragged) }
 usleep(50000)
-guard unchanged(before,snapshot()) else {emit(["error":"User input or foreground changed after move","state":snapshot()]);exit(5)}
+guard unchanged(before,snapshot()) else {releasePointer();emit(["error":"User input or foreground changed after move","state":snapshot()]);exit(5)}
 if args[1]=="click" {
     // Command-modified native click prevents the background window being raised.
     // This sets only event flags; no Command keydown/keyup is sent.
@@ -59,7 +75,11 @@ if args[1]=="click" {
 }
 for delay in [UInt32(10000),90000,200000] {
     usleep(delay)
+    releasePointer();usleep(20000)
     let now=snapshot();emit(["phase":"after","state":now])
-    guard unchanged(before,now) else {emit(["error":"User input or foreground changed"]);exit(5)}
+    guard unchanged(before,now) else {releasePointer();emit(["error":"User input or foreground changed"]);exit(5)}
+    if (before["cursorVisible"] as? UInt32)==1 && (now["cursorVisible"] as? UInt32)==0 {
+        releasePointer();emit(["error":"Cursor became hidden","state":snapshot()]);exit(6)
+    }
 }
 emit(["result":"events_posted_state_unchanged","note":"Confirm the intended UI result in a fresh game-window capture"])

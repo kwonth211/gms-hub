@@ -302,3 +302,21 @@ test('live megaphone pushes preserve the same validated options as public reads'
   }
   assert.equal(Object.hasOwn(live.find(r => r.nick === 'ChatOnly'), 'opts'), false);
 });
+
+test('late options enrich only the exact original megaphone and push its existing id', async () => {
+  const pushes=[], pending=[];
+  const env={...environment(),USAGE_BASELINE:'{}',MEGAPHONE_TOKEN:'mega-test',PRESENCE:{idFromName:()=> 'site',get:()=>({fetch:async(_url,init)=>{pushes.push(JSON.parse(init.body));return new Response('ok');}})}};
+  const row={nick:'RetrySeller',text:'[Work Gloves] S> offer',seen:new Date().toISOString(),kind:'item',color:'Y',channel:11};
+  const post=async r=>{const response=await worker.fetch(new Request('https://test.invalid/internal/megaphone',{method:'POST',headers:{Authorization:'Bearer mega-test'},body:JSON.stringify({rows:[r]})}),env,{waitUntil:p=>pending.push(p)});await Promise.all(pending);return response.json();};
+  assert.equal((await post(row)).accepted,1);
+  const id=pushes[0].rows[0].id,opts={stats:{PAD:11},slots:0,ups:5};
+  assert.equal((await post({...row,channel:12,opts})).updated,undefined);
+  assert.equal((await post({...row,seen:new Date(Date.parse(row.seen)+1000).toISOString(),opts})).updated,undefined);
+  const result=await post({...row,opts});
+  assert.equal(result.accepted,0);assert.equal(result.updated,1);
+  assert.equal(pushes.at(-1).rows[0].id,id);assert.deepEqual(pushes.at(-1).rows[0].opts,opts);
+  const count=pushes.length;
+  assert.equal((await post({...row,opts:{stats:{PAD:99}}})).updated,undefined);
+  assert.equal(pushes.length,count);
+  assert.deepEqual(JSON.parse(env.sqlite.prepare('SELECT opts FROM megaphones WHERE id=?').get(id).opts),opts);
+});

@@ -15,7 +15,7 @@ import { OptionReader, nameKey } from './mega-options.mjs';
 
 const API = 'https://gms-hub-votes.kwonth211.workers.dev/internal/megaphone';
 const DRY = process.argv.includes('--dry');
-const OPTIONS = !process.argv.includes('--no-options') && (!DRY || process.argv.includes('--options'));
+const OPTIONS = !fs.existsSync(path.join(os.homedir(), '.config', 'gms-hub', 'mega-options-paused')) && !process.argv.includes('--no-options') && (!DRY || process.argv.includes('--options'));
 const TICK_MS = 1500;
 const KINDS = { P: 'super', Y: 'item', C: 'double' };
 const shot = path.join(os.tmpdir(), DRY ? `gms-mega-dry-${process.pid}.png` : 'gms-mega-shot.png');
@@ -102,6 +102,8 @@ function crop(img, b) {
 }
 
 const isRepeat = repeatFilter();
+const optionJobs = new Map();
+const messageKey = m => JSON.stringify([m.channel,m.nick,m.text]);
 let box = null, ticks = 0, empty = 0, queue = [], sent = 0;
 async function flush() {
   if (DRY || !queue.length) return;
@@ -146,23 +148,30 @@ async function tick() {
     if (!m.channel || isRepeat(m, now)) continue;
     const row = { seen: new Date(now).toISOString(), kind: KINDS[m.color] || 'super', color: m.color, channel: m.channel, nick: m.nick, text: m.text };
     pending.push({row,m});
+    if(optionReader && ['Y','C'].includes(row.color)) optionJobs.set(messageKey(m),{row,m,attempts:0,lastAttempt:0,created:now});
     console.log(`${new Date(now).toTimeString().slice(0, 8)} ${row.kind.padEnd(6)} CH${String(row.channel).padStart(2)} ${row.nick}: ${row.text}`);
   }
-  if(optionReader) for(const {row,m} of [...pending].reverse()) {
-    const links=[...row.text.matchAll(/\[([^\]]+)\]/g)];if(links.length!==1)continue;
+  const visible = new Set(all.map(messageKey));
+  for(const [key,job] of optionJobs) if(!visible.has(key)||now-job.created>120000||job.attempts>=4) optionJobs.delete(key);
+  if(optionReader) for(const [key,job] of [...optionJobs].sort((a,b)=>a[1].lastAttempt-b[1].lastAttempt)) {
+    const {row,m}=job;
+    if(now-job.lastAttempt<3000)continue;
+    const links=[...row.text.matchAll(/\[([^\]]+)\]/g)];if(links.length!==1){optionJobs.delete(key);continue;}
     const item=optionReader.catalog.find((i)=>nameKey(i.en)===nameKey(links[0][1]));
-    if(!item || (item.cat!=='Equip' && !/ Scroll: /i.test(item.en)))continue;
+    if(!item || (item.cat!=='Equip' && !/ Scroll: /i.test(item.en))){optionJobs.delete(key);continue;}
     const i=read.findIndex((r)=>!r.cont&&r.nick===m.nick&&r.channel===m.channel&&fixItems(r.text)===row.text.slice(0,fixItems(r.text).length));
     if(i<0)continue;
+    job.lastAttempt=now;
     const opts=await optionReader.collect({image:img,box,line:lines[i],message:row,item,glyph:anchor?{read:readGlyphs,wTop:windowTop(lines[i],anchor),expected:item.en}:null});
-    if(opts){row.opts=opts;console.log(`options ${row.nick} [${item.en}] ${JSON.stringify(opts)}`);}
+    if(opts){row.opts=opts;optionJobs.delete(key);if(!pending.some(p=>p.row===row))queue.push({...row});console.log(`options ${row.nick} [${item.en}] ${JSON.stringify(opts)}`);}
     else console.log(`options skipped ${row.nick} [${item.en}]: ${optionReader.lastSkip}`);
-    break; // Bounded work; all other megaphones still leave as text immediately.
+    if(!/input\/OCR: [45]$|cooldown|paused/.test(optionReader.lastSkip))job.attempts++;
+    break; // One attempt per tick, rotating fairly; text uploads are never held for OCR.
   }
   queue.push(...pending.map(({row})=>row));
 }
 
-console.log(DRY ? `dry run: no uploads${OPTIONS ? ', background option clicks enabled' : ', reading only'}` : 'collecting and posting');
+console.log(DRY ? `dry run: no uploads${OPTIONS ? ', background option clicks enabled' : ', reading only'}` : `collecting and posting${OPTIONS ? '' : ' (text only; option input disabled)'}`);
 if(DRY){const duration=Number(process.argv.find((a)=>a.startsWith('--duration='))?.split('=')[1]);if(duration>0)setTimeout(()=>{stopping=true;},duration*1000);}
 // Finish any click's finally block before exiting so a tooltip cannot obscure the next collector's chat detection.
 for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{stopping=true;});

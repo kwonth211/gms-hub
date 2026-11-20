@@ -1,36 +1,41 @@
 // Pure tooltip parsing; only validated fields are returned.
 const LABELS = { 'weapon attack': 'PAD', 'magic attack': 'MAD', str: 'STR', dex: 'DEX', int: 'INT', luk: 'LUK', accuracy: 'ACC', avoidability: 'EVA', evasion: 'EVA', 'max hp': 'MHP', 'max mp': 'MMP', 'weapon defense': 'PDD', 'magic defense': 'MDD', speed: 'Speed', jump: 'Jump', 'critical rate': 'CRT', 'critical damage': 'CRD' };
 export const nameKey = (s) => String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
-// Leave room for the longest nickname, channel badge and whisper icon even during a chat scroll race.
-export function safeItemClickX(left,right,chatLeft) {
-  const x=Math.max(chatLeft+180,Math.floor((left+right)/2));
-  return x<right-2 ? x : null;
+// Bounds come from this row's highlighted link, after its channel/whisper badge.
+// A fixed 180px nickname fence excluded short links such as Sai and Work Gloves.
+export function safeItemClickX(left,right,messageLeft) {
+  if(![left,right,messageLeft].every(Number.isFinite)||left<messageLeft||right-left<10)return null;
+  return Math.floor(right-5);
 }
 export function whisperDialog(rows) {
   const prompt=rows.find((r)=>r.confidence>=0.5&&/Please enter the person you want to/i.test(r.text));
   return prompt&&rows.find((r)=>r.confidence>=0.5&&/^CANCEL$/i.test(r.text.trim())&&r.y>prompt.y&&r.y<prompt.y+160&&Math.abs(r.x-prompt.x)<350);
 }
-const clean = (s) => s.replace(/^[•·*+\s-]+/, '').replace(/\b(?:aftack|altack|atack|ahack|attacke)\b/gi, 'Attack').trim();
+const clean = (s) => s.replace(/^[|«•·*+\s-]+/, '').replace(/\b(?:aftack|altack|atack|ahack|attacke)\b/gi, 'Attack').trim();
 export function tooltipTitle(text, expected) {
   const s = clean(text).replace(/\s*\((?:M|F|Male|Female)\)\s*/gi, ' ');
   if (s.startsWith('[')) return null; // A chat link is not a tooltip title.
   const match = /\s*[({i]?\s*\+\s*(\d{1,2})\s*[^a-z0-9]*$/i.exec(s);
   const title = match ? s.slice(0, match.index) : s;
   if (nameKey(title) !== nameKey(expected)) return null;
-  return { ups: match ? Number(match[1]) : 0 };
+  return { ups: match ? Number(match[1]) : undefined };
 }
 export function findTooltipPanel(observations, item, catalog, image) {
-  const title = observations.filter((o) => o.confidence >= 0.5 && tooltipTitle(o.text, item.en)).sort((a,b) => a.x-b.x)[0];
+  const titles = observations.filter((o) => o.confidence >= 0.5 && tooltipTitle(o.text, item.en)).sort((a,b) => a.x-b.x);
+  const first = titles[0];
+  const title = first && (titles.find(o=>Math.abs(o.x-first.x)<20&&Math.abs(o.y-first.y)<20&&tooltipTitle(o.text,item.en).ups!==undefined)||first);
   if (!title) return null;
   const other = observations.filter((o) => o.x > title.x+120 && Math.abs(o.y-title.y)<60 && catalog.some((i) => tooltipTitle(o.text, i.en))).sort((a,b)=>a.x-b.x)[0];
   const x = Math.max(0, Math.floor(title.x-8)), y = Math.max(0, Math.floor(title.y-4));
-  const right = Math.min(image.width, other ? other.x-10 : x+(item.cat==='Equip' ? 270 : 420));
+  const right = Math.min(image.width, x+(item.cat==='Equip' ? 270 : 420), other ? other.x-10 : image.width);
   return { x, y, w: Math.floor(right-x), h: Math.min(image.height-y, 600), title };
 }
 export function parseTooltipLines(lines, item) {
   const texts=lines.filter((r)=>typeof r==='string'||r.confidence>=0.5).map((r)=>clean(typeof r==='string'?r:r.text));
-  const title=texts.map((s)=>tooltipTitle(s,item.en)).find(Boolean);
-  if(!title) return null;
+  const titles=texts.map((s)=>tooltipTitle(s,item.en)).filter(Boolean);
+  if(!titles.length) return null;
+  const upgrades=[...new Set(titles.map(t=>t.ups).filter(Number.isInteger))];
+  const ups=upgrades.length===1?upgrades[0]:undefined;
   const stats={}, seen=new Map(); let slots, chance, attackSpeed, knockback;
   const put=(key,value)=>{if(seen.has(key)&&seen.get(key)!==value) seen.set(key,null);else if(!seen.has(key)) seen.set(key,value);};
   for(const s of texts) {
@@ -65,9 +70,12 @@ export function parseTooltipLines(lines, item) {
   if(slots!==undefined) out.slots=slots;
   if(attackSpeed) out.attackSpeed=attackSpeed;
   if(knockback!==undefined) out.knockback=knockback;
-  if(title.ups<=20) out.ups=title.ups;
-  if(Number.isInteger(item.slots)&&slots!==undefined&&item.slots>=slots&&title.ups<=item.slots-slots) {out.used=item.slots-slots;out.clean=out.used===0;}
-  else if(title.ups>0) out.clean=false;
+  if(ups!==undefined&&ups<=20) out.ups=ups;
+  if(Number.isInteger(item.slots)&&slots!==undefined&&item.slots>=slots&&(ups===undefined||ups<=item.slots-slots)) {
+    out.used=item.slots-slots;out.clean=out.used===0;
+    // A missing OCR suffix is not evidence of zero successes. Only all original slots prove zero.
+    if(out.used===0&&upgrades.length===0)out.ups=0;
+  } else if(ups>0) out.clean=false;
   return out;
 }
 export function agreeOptions(a,b) {
