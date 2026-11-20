@@ -206,7 +206,7 @@ export class OptionReader {
       });
       const result=await run.catch(e=>{fs.writeFileSync(path.join(this.dir,'input-failure.json'),JSON.stringify({message,action,x,y,code:e.code,events:e.stdout}));throw e;}); // A capture never overrides a focus/cursor failure.
       const events=result.stdout.trim().split('\n').flatMap(s=>{try{return [JSON.parse(s)];}catch{return [];}});
-      inputAudit.push({action,before:events.find(e=>e.phase==='before')?.state,after:events.filter(e=>e.phase==='after').map(e=>e.state)});
+      inputAudit.push({action,point:{x,y},before:events.find(e=>e.phase==='before')?.state,after:events.filter(e=>e.phase==='after').map(e=>e.state),restores:events.filter(e=>e.phase==='restore').map(e=>e.state)});
       return capture?await(snapshot||this.readFrame(Date.now(),1400)):null;
     };
     let moved=false;

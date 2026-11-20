@@ -84,6 +84,17 @@ for delay in [UInt32(10000),90000,200000] {
         if CGEventSource.secondsSinceLastEventType(.combinedSessionState,eventType:.keyDown)<1 {
             releasePointer();emit(["phase":"user_typing","state":now]);continue
         }
+        // Wine processes cursor ownership asynchronously. A single 20ms probe
+        // can precede its release event. Verify recovery before accepting the
+        // operation; a cursor that stays hidden still stops option collection.
+        var restored=false
+        for _ in 0..<5 {
+            releasePointer();usleep(50000)
+            let state=snapshot();emit(["phase":"restore","state":state])
+            guard NSWorkspace.shared.frontmostApplication?.processIdentifier != pid else {emit(["error":"Game became foreground during release"]);exit(5)}
+            if (state["cursorVisible"] as? UInt32)==1 {restored=true;break}
+        }
+        if restored {continue}
         releasePointer();emit(["error":"Cursor became hidden","state":snapshot()]);exit(6)
     }
 }
