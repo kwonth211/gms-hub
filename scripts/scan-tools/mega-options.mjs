@@ -44,7 +44,7 @@ export function itemLink(img,line,glyph=null) {
 
 export class OptionReader {
   constructor({shot,input,ocr,catalog,readFrame}) {Object.assign(this,{shot,input,ocr,catalog,readFrame});this.last=0;this.dir=fs.mkdtempSync(path.join(os.tmpdir(),'gms-mega-options-'));}
-  async recognize(img,name,file='ocr.png') {const p=path.join(this.dir,file);fs.writeFileSync(p,PNG.sync.write(img));const {stdout}=await exec(this.ocr,[p,name],{timeout:4000,maxBuffer:2e6});return JSON.parse(stdout);}
+  async recognize(img,name,file='ocr.png',scale=1) {const p=path.join(this.dir,file);fs.writeFileSync(p,PNG.sync.write(img));const {stdout}=await exec(this.ocr,[p,name,String(scale)],{timeout:4000,maxBuffer:2e6});return JSON.parse(stdout);}
   async recognizeFallback(img) {
     this.fallback ||= Tesseract.createWorker('eng').then(async w=>{await w.setParameters({tessedit_pageseg_mode:'6'});return w;});
     const {data}=await (await this.fallback).recognize(PNG.sync.write(img));
@@ -66,6 +66,26 @@ export class OptionReader {
       if(panel)return {...panel,recovered:extra};
     }
     return null;
+  }
+  async readPanel(image,rows,panel,item) {
+    const raw=rows.filter(r=>r.x>=panel.x&&r.x+r.w<=panel.x+panel.w+3&&r.y>=panel.y&&r.y+r.h<image.height-2);
+    const body=tooltipBody(panel,[...rows,...(panel.recovered||[])],item);
+    const enlarged=await this.recognize(cropImage(image,body),item.en,'body.png',2);
+    const bodyImage=cropImage(image,body,true,3);
+    const masked=await this.recognize(bodyImage,item.en,'mask.png');
+    const readings=[
+      parseTooltipLines([panel.title,...raw],item),
+      parseTooltipLines([panel.title,...enlarged.filter(r=>r.y+r.h<body.h*2-3)],item),
+      parseTooltipLines([panel.title,...masked.filter(r=>r.y+r.h<body.h*3-5)],item)
+    ];
+    let opts=agreeOptions(...readings);
+    // The shop reader retries only when the primary read is incomplete. Do not run a slower
+    // fallback over a complete, consistent crop and let its weaker digit guess discard that read.
+    if(item.cat==='Equip'&&(!opts?.stats||(Number.isInteger(item.slots)&&opts.slots===undefined))) {
+      const fallback=await this.recognizeFallback(bodyImage);
+      opts=agreeOptions(...readings,parseTooltipLines([panel.title,...fallback.filter(r=>r.y+r.h<body.h*3-5)],item));
+    }
+    return opts;
   }
   async collect({image,box,line,message,item,glyph}) {
     const skip=(reason)=>{this.lastSkip=reason;return null;};this.lastSkip='';
@@ -96,15 +116,7 @@ export class OptionReader {
       let panel=findTooltipPanel(rows,item,this.catalog,after);
       if(!panel||tooltipTitle(panel.title.text,item.en)?.ups===undefined) panel=await this.recoverTitle(after,rows,item,{x:box.x+link.x,y:box.y+link.y})||panel;
       if(!panel||panel.w<120||panel.title.x>box.x+link.x+100)return skip('target tooltip title missing');
-      const raw=rows.filter((r)=>r.x>=panel.x&&r.x+r.w<=panel.x+panel.w+3&&r.y>=panel.y&&r.y+r.h<after.height-2);
-      const body=tooltipBody(panel,[...rows,...(panel.recovered||[])],item);
-      const bodyImage=cropImage(after,body,true,3);
-      const masked=await this.recognize(bodyImage,item.en,'mask.png');
-      const fallback=item.cat==='Equip'?await this.recognizeFallback(bodyImage):[];
-      // The full-frame title already proves this crop's identity; masking can erase the colored title itself.
-      const opts=agreeOptions(
-        parseTooltipLines([panel.title,...raw],item),parseTooltipLines([panel.title,...masked.filter((r)=>r.y+r.h<body.h*3-5)],item),
-        parseTooltipLines([panel.title,...fallback.filter(r=>r.y+r.h<body.h*3-5)],item));
+      const opts=await this.readPanel(after,rows,panel,item);
       if(!opts||(!opts.stats&&!opts.scroll&&opts.slots===undefined))return skip('no trusted numeric options');
       // Keep a bounded local diagnostic sample; no screenshots leave this Mac.
       fs.writeFileSync(path.join(this.dir,'last.json'),JSON.stringify({message,item:item.en,opts}));

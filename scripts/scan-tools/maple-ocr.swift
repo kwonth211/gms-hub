@@ -4,7 +4,19 @@ import Vision
 import ImageIO
 let args=CommandLine.arguments
 if args.count<2 {exit(2)}
-guard let source=CGImageSourceCreateWithURL(URL(fileURLWithPath:args[1]) as CFURL,nil),let image=CGImageSourceCreateImageAtIndex(source,0,nil) else {exit(3)}
+guard let source=CGImageSourceCreateWithURL(URL(fileURLWithPath:args[1]) as CFURL,nil),let original=CGImageSourceCreateImageAtIndex(source,0,nil) else {exit(3)}
+var image=original
+// Same high-quality 2x crop enlargement used by gms-hub-shop/vis.swift.
+// Keep original colours: thresholding can erase thin strokes in tooltip digits.
+let scale=args.count>3 ? Double(args[3]) ?? 1 : 1
+if scale>1 && scale<=3 {
+ let width=Int(Double(image.width)*scale),height=Int(Double(image.height)*scale)
+ guard let context=CGContext(data:nil,width:width,height:height,bitsPerComponent:8,bytesPerRow:0,space:CGColorSpaceCreateDeviceRGB(),bitmapInfo:CGImageAlphaInfo.premultipliedLast.rawValue) else {exit(3)}
+ context.interpolationQuality = .high
+ context.draw(image,in:CGRect(x:0,y:0,width:width,height:height))
+ guard let resized=context.makeImage() else {exit(3)}
+ image=resized
+}
 let request=VNRecognizeTextRequest()
 request.recognitionLevel = .accurate
 request.recognitionLanguages=["en-US"]
