@@ -27,7 +27,17 @@ do {
  let rows=(request.results ?? []).compactMap { row -> [String:Any]? in
   guard let candidate=row.topCandidates(1).first else {return nil}
   let b=row.boundingBox
-  return ["text":candidate.string,"confidence":candidate.confidence,"x":b.minX*Double(image.width),"y":(1-b.maxY)*Double(image.height),"w":b.width*Double(image.width),"h":b.height*Double(image.height)]
+  var result:[String:Any] = ["text":candidate.string,"confidence":candidate.confidence,"x":b.minX*Double(image.width),"y":(1-b.maxY)*Double(image.height),"w":b.width*Double(image.width),"h":b.height*Double(image.height)]
+  // A translucent tooltip title can be merged with chat behind it. Locate the
+  // requested substring so the caller can re-read its own crop, not the chat's left edge.
+  if args.count>2,let range=candidate.string.range(of:args[2],options:.caseInsensitive),
+     candidate.string[..<range.lowerBound].trimmingCharacters(in:.whitespaces).last != "[",
+     candidate.string[range.upperBound...].trimmingCharacters(in:.whitespaces).first != "]",
+     let observation=try? candidate.boundingBox(for:range) {
+    let q=observation.boundingBox
+    result["itemBounds"]=["x":q.minX*Double(image.width),"y":(1-q.maxY)*Double(image.height),"w":q.width*Double(image.width),"h":q.height*Double(image.height)]
+  }
+  return result
  }
  print(String(data:try JSONSerialization.data(withJSONObject:rows),encoding:.utf8)!)
 } catch {fputs("maple-ocr: recognition failed\n",stderr);exit(4)}

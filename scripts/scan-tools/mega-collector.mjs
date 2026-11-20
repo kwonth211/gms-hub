@@ -104,18 +104,32 @@ function crop(img, b) {
 }
 
 const isRepeat = repeatFilter();
-const optionJobs = new Map();
+const stateFile=path.join(os.homedir(),'.config/gms-hub/mega-state.json');
+let saved={};
+if(!DRY)try{const value=JSON.parse(fs.readFileSync(stateFile,'utf8'));if(value.version===1)saved=value;}catch{}
+const observations=(saved.observations||[]).filter(r=>Date.now()-Date.parse(r.seen)<15*60000).slice(-1000);
+for(const row of observations)isRepeat(row,Date.parse(row.seen));
+const optionJobs = new Map((saved.jobs||[]).filter(([,job])=>Date.now()-job.created<120000).map(([key,job])=>[key,{...job,active:false,lastAttempt:0}]));
 const optionTasks=new Set();
 const messageKey = m => JSON.stringify([m.channel,m.nick,m.text]);
-let box = null, ticks = 0, empty = 0, queue = [], sent = 0;
+let box = null, ticks = 0, empty = 0, queue = (saved.queue||[]).filter(r=>Date.now()-Date.parse(r.seen)<3600000), posting=[], sent = 0;
+function saveState() {
+  if(DRY)return;
+  while(observations.length&&Date.now()-Date.parse(observations[0].seen)>15*60000)observations.shift();
+  const tmp=stateFile+'.tmp';
+  fs.writeFileSync(tmp,JSON.stringify({version:1,observations:observations.slice(-1000),jobs:[...optionJobs].map(([key,job])=>[key,{...job,active:false}]),queue:[...posting,...queue]}));
+  fs.renameSync(tmp,stateFile);
+}
 async function flush() {
   if (DRY || !queue.length) return;
   const rows = queue.splice(0, 50);
+  posting.push(...rows);saveState();
   try {
     const r = await fetch(API, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ rows }) });
     if (!r.ok) throw new Error(String(r.status));
     sent += (await r.json()).accepted || 0;
   } catch (e) { queue.unshift(...rows); console.error(new Date().toISOString(), 'post failed', e.message); }
+  finally {posting=posting.filter(r=>!rows.includes(r));saveState();}
 }
 
 async function tick() {
@@ -150,21 +164,24 @@ async function tick() {
   const fingerprints=lines.map(l=>lineFingerprint(part,l));
   const pending=[];
   for (const m of all) {
+    const i=read.findIndex(r=>!r.cont&&r.nick===m.nick&&r.channel===m.channel&&m.text.startsWith(fixItems(r.text,true)));
+    if(i>=0)m.fingerprint=fingerprints[i];
     if (!m.channel || isRepeat(m, now)) continue;
     const row = { seen: new Date(now).toISOString(), kind: KINDS[m.color] || 'super', color: m.color, channel: m.channel, nick: m.nick, text: m.text };
     pending.push({row,m});
     if(optionReader && ['Y','C'].includes(row.color)) {
-      const i=read.findIndex(r=>!r.cont&&r.nick===m.nick&&r.channel===m.channel&&row.text.startsWith(fixItems(r.text,true)));
       if(i>=0)optionJobs.set(messageKey(m),{row,m,fingerprint:fingerprints[i],attempts:0,lastAttempt:0,created:now,lastVisible:now});
     }
     console.log(`${new Date(now).toTimeString().slice(0, 8)} ${row.kind.padEnd(6)} CH${String(row.channel).padStart(2)} ${row.nick}: ${row.text}`);
   }
   // Publish text before slow option OCR. Later success enriches this exact row.
   queue.push(...pending.map(({row})=>row));
-  const jobItem=job=>{const links=[...job.row.text.matchAll(/\[([^\]]+)\]/g)];return links.length===1?optionReader.catalog.find(i=>nameKey(i.en)===nameKey(links[0][1])):null;};
+  observations.push(...pending.map(({row,m})=>({...row,fingerprint:m.fingerprint})));
+  if(pending.length)saveState();
+  const jobItem=job=>{const links=[...job.row.text.matchAll(/\[([^\]]+)\]/g)];return links.length===1?optionReader?.catalog.find(i=>nameKey(i.en)===nameKey(links[0][1])):null;};
   for(const [key,job] of optionJobs) {
     if(fingerprints.includes(job.fingerprint))job.lastVisible=now;
-    if(!job.active&&(now-job.lastVisible>10000||now-job.created>120000||job.attempts>=4)) {
+    if(!job.active&&(now-job.lastVisible>10000||now-job.created>120000)) {
       const item=jobItem(job);
       if(item&&!item.cash&&(item.cat==='Equip'||/ Scroll: /i.test(item.en)))console.log(`options unfinished ${job.row.nick} [${item.en}]: ${job.lastReason||'row disappeared before capture'}; attempts=${job.attempts}; seen=${job.row.seen}`);
       optionJobs.delete(key);
@@ -190,6 +207,7 @@ async function tick() {
       // Preserve earlier verified values; a retry only adds previously missing fields.
       row.opts={...opts,...row.opts,stats:{...opts.stats,...row.opts?.stats}};
       if(!Object.keys(row.opts.stats).length)delete row.opts.stats;
+      reader.lastMissing=(reader.lastMissing||[]).filter(k=>['slots','ups'].includes(k)?row.opts[k]===undefined:row.opts.stats?.[k]===undefined);
       if(!reader.lastMissing?.length)optionJobs.delete(key);
       if(!queue.includes(row))queue.push({...row});
       console.log(`options${reader.lastMissing?.length?' partial':''} ${row.nick} [${item.en}] ${JSON.stringify(row.opts)}${reader.lastMissing?.length?' missing='+reader.lastMissing.join(','):''} (${Date.now()-now}ms)`);
@@ -198,7 +216,7 @@ async function tick() {
     job.lastReason=reader.lastSkip||(reader.lastMissing?.length?'missing '+reader.lastMissing.join(','):'');
     if(!/input\/OCR: [45]$|cooldown|paused/.test(reader.lastSkip))job.attempts++;
     if(priority(job)>0&&reader.lastSkip==='no trusted numeric options')optionJobs.delete(key);
-    })().catch(e=>console.error('option task failed:',e.message)).finally(()=>{job.active=false;reader.busy=false;optionTasks.delete(task);});
+    })().catch(e=>console.error('option task failed:',e.message)).finally(()=>{job.active=false;reader.busy=false;optionTasks.delete(task);saveState();});
     optionTasks.add(task);
     break; // One attempt per tick, rotating fairly; text uploads are never held for OCR.
   }
@@ -217,4 +235,5 @@ while (!stopping) {
 }
 await Promise.allSettled(optionTasks);
 await flush();
+saveState();
 process.exit(0);

@@ -11,7 +11,7 @@ export function whisperDialog(rows) {
   const prompt=rows.find((r)=>r.confidence>=0.5&&/Please enter the person you want to/i.test(r.text));
   return prompt&&rows.find((r)=>r.confidence>=0.5&&/^CANCEL$/i.test(r.text.trim())&&r.y>prompt.y&&r.y<prompt.y+160&&Math.abs(r.x-prompt.x)<350);
 }
-const clean = (s) => s.replace(/^[|«•·*\s]+/, '').replace(/^[+-](?!\s*\d)\s*/, '').replace(/\b(?:aftack|altack|atack|ahack|attacke)\b/gi, 'Attack').replace(/^(Remaining Enhancements)\.\s*(?=\d)/i,'$1: ').trim();
+const clean = (s) => s.replace(/^[|«•·*\s]+/, '').replace(/^[+-](?!\s*\d)\s*/, '').replace(/\b(?:aftack|altack|atack|ahack|attacke)\b/gi, 'Attack').replace(/\bCrit\.\s*(Rate|Damage)\b/gi,'Critical $1').replace(/^(Remaining Enhancements)\.\s*(?=\d)/i,'$1: ').trim();
 export function tooltipField(text) {
   const label=/^([A-Za-z .]+):/.exec(clean(text))?.[1]?.trim().toLowerCase().replace(/\./g,'');
   return label==='remaining enhancements'?'slots':LABELS[label]||{'weapon def':'PDD','magic def':'MDD','weapon det':'PDD','magic det':'MDD',maxhp:'MHP',maxmp:'MMP'}[label]||null;
@@ -21,16 +21,34 @@ export function missingTooltipFields(rows,opts,item) {
   if(item.cat==='Equip'&&Number.isInteger(item.slots))expected.add('slots');
   return [...expected].filter(key=>key==='slots'?opts?.slots===undefined:opts?.stats?.[key]===undefined);
 }
+export function tooltipStatRows(rows) {
+  const type=rows.find(r=>/^[TIl]ype\s*:/i.test(clean(r.text)));
+  const end=type&&rows.find(r=>r.y>type.y&&/^Remaining Enhancements\b/i.test(clean(r.text)));
+  if(!end)return [];
+  const pitch=16,count=Math.round((end.y-type.y)/pitch)-1;
+  return count>0&&count<=16?Array.from({length:count},(_,i)=>Math.round(type.y)+(i+1)*pitch):[];
+}
 export function tooltipTitle(text, expected) {
   const s = clean(text).replace(/\s*\((?:M|F|Male|Female)\)\s*/gi, ' ');
-  if (s.startsWith('[')) return null; // A chat link is not a tooltip title.
+  if (s.includes('[')||s.includes(']')||s.endsWith(':')) return null; // A chat link is not a tooltip title.
   const match = /\s*[({i]?\s*\+\s*(\d{1,2})\s*[^a-z0-9]*$/i.exec(s);
   const title = match ? s.slice(0, match.index) : s;
-  if (nameKey(title) !== nameKey(expected)) return null;
+  if (nameKey(title) !== nameKey(clean(expected))) return null;
   return { ups: match ? Number(match[1]) : undefined };
 }
-export function findTooltipPanel(observations, item, catalog, image) {
-  const titles = observations.filter((o) => o.confidence >= 0.5 && tooltipTitle(o.text, item.en)).sort((a,b) => a.x-b.x);
+export function emptyUpgradeSuffix(image,title) {
+  const left=Math.ceil(title.x+title.w+4),right=image.width-18;
+  if(right-left<24)return false;
+  let ink=0;
+  for(let y=Math.max(0,Math.floor(title.y)-2);y<Math.min(image.height,Math.ceil(title.y+title.h)+2);y++)for(let x=left;x<right;x++) {
+    const i=(y*image.width+x)*4;
+    if(Math.min(image.data[i],image.data[i+1],image.data[i+2])<100&&++ink>=9)return false;
+  }
+  return true;
+}
+export function findTooltipPanel(observations, item, catalog, image, point=null) {
+  const minX=point?Math.min(point.x-30,image.width-(item.cat==='Equip'?540:450)):-Infinity;
+  const titles = observations.filter((o) => o.confidence >= 0.5 && o.x>=minX && (!point||o.x<point.x+120) && tooltipTitle(o.text, item.en)).sort((a,b) => a.x-b.x);
   const first = titles[0];
   const title = first && (titles.find(o=>Math.abs(o.x-first.x)<20&&Math.abs(o.y-first.y)<20&&tooltipTitle(o.text,item.en).ups!==undefined)||first);
   if (!title) return null;
@@ -49,6 +67,37 @@ export function tooltipBody(panel,rows,item) {
   const bottom=end?Math.min(panel.y+panel.h,Math.ceil(end.y+end.h+4)):panel.y+panel.h;
   // Equipment panels are 235px wide; do not include neighbouring chat to the right.
   return {x:panel.x+6,y,w:Math.min(panel.w-6,226),h:bottom-y};
+}
+// Remove the translucent panel's underlying chat using its pre-click frame.
+// Fit only dark background pixels, robustly; reject a poor fit rather than inventing text.
+export function subtractTooltipBackground(image,before,box) {
+  if(!before||image.width!==before.width||image.height!==before.height||box.x<0||box.y<0||box.x+box.w>image.width||box.y+box.h>image.height)return null;
+  const median=values=>{values.sort((a,b)=>a-b);return values[values.length>>1];};
+  const models=[];
+  for(let c=0;c<3;c++) {
+    const pairs=[];
+    for(let y=2;y<box.h-2;y+=3)for(let x=2;x<box.w-2;x+=4) {
+      const i=((box.y+y)*image.width+box.x+x)*4;
+      if(Math.max(image.data[i],image.data[i+1],image.data[i+2])<170)pairs.push([before.data[i+c],image.data[i+c]]);
+    }
+    if(pairs.length<30)return null;
+    let best=null;
+    for(let step=4;step<=24;step++) {
+      const alpha=step*.025,residual=pairs.map(([b,a])=>a-alpha*b),offset=median([...residual]);
+      const errors=residual.map(v=>Math.abs(v-offset)).sort((a,b)=>a-b),error=errors[errors.length>>1],p80=errors[Math.floor(errors.length*.8)];
+      if(!best||error<best.error)best={alpha,offset,error,p80};
+    }
+    if(best.error>4||best.p80>12||best.alpha===.1||best.alpha===.6)return null;
+    models.push(best);
+  }
+  const data=new Uint8ClampedArray(box.w*box.h*4);
+  for(let y=0;y<box.h;y++)for(let x=0;x<box.w;x++) {
+    const i=((box.y+y)*image.width+box.x+x)*4,j=(y*box.w+x)*4;
+    const residual=Math.max(...models.map((m,c)=>image.data[i+c]-m.alpha*before.data[i+c]-m.offset));
+    const v=255-Math.max(0,Math.min(255,residual*1.5));
+    data[j]=data[j+1]=data[j+2]=v;data[j+3]=255;
+  }
+  return {width:box.w,height:box.h,data,models};
 }
 export function parseTooltipLines(lines, item) {
   const texts=lines.filter((r)=>typeof r==='string'||r.confidence>=0.5).map((r)=>clean(typeof r==='string'?r:r.text));

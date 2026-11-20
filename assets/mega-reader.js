@@ -43,7 +43,11 @@ export function findChatBox(img) {
   // a name tag) can stretch a few rows sideways.
   const lasts = kept.map((r) => r.last).sort((a, b) => a - b), firsts = kept.map((r) => r.first).sort((a, b) => a - b);
   const x0 = firsts[firsts.length >> 1], x1 = lasts[lasts.length >> 1];
-  const y0 = Math.max(0, kept[0].y - 48), y1 = Math.min(h, kept.at(-1).y + 48);
+  // Notices and ordinary chat split coloured bands into separate vertical clusters.
+  // Keep every cluster with the same chat edges, otherwise visible older megaphones
+  // disappear from the crop as soon as a two-line notice arrives in the middle.
+  const aligned=near.filter(r=>Math.abs(r.first-x0)<=16&&Math.abs(r.last-x1)<=16);
+  const y0 = Math.max(0, aligned[0].y - 48), y1 = Math.min(h, aligned.at(-1).y + 48);
   return { x: Math.max(0, x0 - 12), y: y0, w: Math.min(w, x1 + 24) - Math.max(0, x0 - 12), h: y1 - y0 };
 }
 
@@ -153,7 +157,7 @@ const isRed = (r, g, b) => r > 140 && g < 120 && b < 120 && r - g > 60;
 export function findBadge(img, line, { scrollbar = 20 } = {}) {
   const right = Math.max(10, img.width - scrollbar);
   let first = -1, last = -1;
-  for (let x = LEFT; x < right; x++) {
+  for (let x = Math.max(LEFT,textLeft(img,line)); x < right; x++) {
     let red = 0;
     for (let y = line.top; y <= line.bottom; y++) { const i = (y * img.width + x) * 4; if (isRed(img.data[i], img.data[i + 1], img.data[i + 2])) red++; }
     if (red) { if (first < 0) first = x; else if (x - last > 4) break; last = x; }
@@ -177,10 +181,11 @@ export function lineFingerprint(img, line) {
     // Hover/scroll changes the highlighted item's gold pixels and findLines' bottom by 1px.
     // The fixed font slot and dark nickname/channel/message stay stable. Positions are included;
     // identical-looking rows are deliberately rejected as ambiguous by locateFingerprint.
-    const gs=glyphs(img,line,textLeft(img,line),line.right,windowTop(line,anchor)).filter(g=>g.key.startsWith('D:'));
+    const left=textLeft(img,line);
+    const gs=glyphs(img,line,left,line.right,windowTop(line,anchor)).filter(g=>g.key.startsWith('D:'));
     let hash=2166136261;
-    for(const g of gs)for(const ch of `${g.x}:${g.key};`)hash=Math.imul(hash^ch.charCodeAt(0),16777619)>>>0;
-    return `slot:${line.color}:${line.right}:${hash}`;
+    for(const g of gs)for(const ch of `${g.x-left}:${g.key};`)hash=Math.imul(hash^ch.charCodeAt(0),16777619)>>>0;
+    return `slot:${line.color}:${line.right-left}:${hash}`;
   }
   return `${line.bottom-line.top}:${line.right}:${lineBitmap(img,line,{x0:0,scale:1,pad:0}).sig}`;
 }
@@ -215,11 +220,14 @@ export function lineBitmap(img, line, { x0 = LEFT, x1, scale = 3, scrollbar = 20
 // columns before the first column that is mostly band colour.
 export function textLeft(img, line) {
   const h = line.bottom - line.top + 1;
-  let start = 0;
+  let start = 0, bandRun=0;
   for (let x = 0; x < img.width >> 1; x++) {
     let n = 0;
     for (let y = line.top; y <= line.bottom; y++) { const i = (y * img.width + x) * 4; if (bandClass(img.data[i], img.data[i + 1], img.data[i + 2]) === line.color) n++; }
-    if (n >= h * 0.5) { start = Math.max(0, x - 6); break; }
+    bandRun=n>=h*0.5?bandRun+1:0;
+    // A single gold scenery column outside the chat is not its left padding.
+    // Three consecutive band columns identify the real edge before the nickname.
+    if(bandRun>=3)return Math.max(LEFT,x-1);
   }
   for (let x = start; x < start + 40; x++) {
     let n = 0;
@@ -316,9 +324,9 @@ export function assemble(lines) {
   return out;
 }
 
-// The chat box is semi-transparent, so the same megaphone reads slightly differently from frame to frame. Letters and
-// digits only, compared by shared 3-letter pieces: a near match from the same nick (or the same channel) within 15
-// minutes is a repeat.
+// The same on-screen row can OCR slightly differently across frames. Prefer its stable
+// font signature, nickname, channel and linked item; different sellers on one channel
+// and two different items from one blue megaphone must never suppress each other.
 export const shape = (t) => t.toLowerCase().replace(/[^a-z0-9]/g, '');
 export function similar(a, b) {
   if (a === b) return true;
@@ -334,9 +342,11 @@ export function repeatFilter(windowMs = 15 * 60000) {
   return (m, now = Date.now()) => {
     while (recent.length && now - recent[0].at > windowMs) recent.shift();
     const key = shape(m.text);
-    // A nick read differently (Kuramei/Kuromei) is still the same megaphone when the channel matches too.
-    if (recent.some((r) => (r.nick.toLowerCase() === m.nick.toLowerCase() || r.channel === m.channel) && similar(r.key, key))) return true;
-    recent.push({ nick: m.nick, channel: m.channel, key, at: now });
+    const item=shape(/\[([^\]]+)\]/.exec(m.text)?.[1]||'');
+    const nick=s=>s.toLowerCase().replace(/l/g,'i');
+    if (recent.some((r) => r.channel===m.channel&&nick(r.nick)===nick(m.nick)&&r.item===item&&
+      (r.fingerprint&&m.fingerprint?r.fingerprint===m.fingerprint:similar(r.key,key)))) return true;
+    recent.push({ nick: m.nick, channel: m.channel, key, item, fingerprint:m.fingerprint, at: now });
     return false;
   };
 }
@@ -435,6 +445,21 @@ export function glyphs(img, line, x0, x1, wTop) {
   }
   if (cur) out.push(cur);
   return out.map((g, i) => ({ x: g.x, w: g.cols.length, key: `${g.kind}:${g.cols.join('/')}`, gap: i > 0 ? g.gap : 0, space: i > 0 && g.gap >= (g.kind === 'Y' ? SPACE_Y : SPACE_D) }));
+}
+export function itemGlyphBounds(gs,read,expected='') {
+  const start=gs.findIndex(g=>(read.charOf(g.key)||'').includes('['));
+  const end=gs.findIndex((g,i)=>i>=start&&(read.charOf(g.key)||'').includes(']'));
+  if(start>=0&&end>=start)return {left:gs[start].x,right:gs[end].x+gs[end].w};
+  // A touching "[W" run can be learned as "W". Require the complete expected
+  // item name after the badge AND a visible closing bracket before using its bounds.
+  if(start<0&&end>0&&expected) {
+    const text=read(gs.slice(0,end)),key=s=>s.toLowerCase().replace(/[^a-z0-9]/g,'');
+    if(text&&key(text)===key(expected)) {
+      const first=gs.findIndex(g=>/[a-z0-9]/i.test(read.charOf(g.key)||''));
+      if(first>=0&&first<end)return {left:gs[first].x,right:gs[end].x+gs[end].w};
+    }
+  }
+  return null;
 }
 // Glyphs → text with a learned table (glyph key → one or more characters). Letters that touch with no empty column
 // between them come out as one run; such a run is split into known single letters when their columns line up

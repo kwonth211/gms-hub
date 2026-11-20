@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {gunzipSync} from 'node:zlib';
-import { cleanText, assemble, bandClass, findLines, findBadge, readChannel, slotAnchor, windowTop, glyphs, glyphReader, lineFingerprint, locateFingerprint } from '../assets/mega-reader.js';
+import { cleanText, assemble, repeatFilter, bandClass, findChatBox, findLines, findBadge, readChannel, slotAnchor, windowTop, glyphs, glyphReader, itemGlyphBounds, lineFingerprint, locateFingerprint } from '../assets/mega-reader.js';
 
 test('real Olympus row survives a scroll, highlight pixel changes, and a one-pixel height change',()=>{
  const load=name=>({width:576,height:200,data:gunzipSync(fs.readFileSync(new URL(`fixtures/${name}.rgba.gz`,import.meta.url)))});
@@ -29,6 +29,18 @@ test('real cyan bands remain separate despite ink across row gaps, with item bra
  assert.equal(locateFingerprint(img,lineFingerprint(img,line)).top,66);
 });
 
+test('a real blue Work Gloves link with a touching opening bracket requires the complete name',()=>{
+ const img={width:576,height:200,data:gunzipSync(fs.readFileSync(new URL('fixtures/mega-touching-bracket.rgba.gz',import.meta.url)))};
+ const lines=findLines(img),line=lines.find(l=>l.top===114),badge=findBadge(img,line);
+ const read=glyphReader(JSON.parse(fs.readFileSync(new URL('../assets/mega-glyphs.json',import.meta.url))));
+ const gs=glyphs(img,line,badge.message,img.width,windowTop(line,slotAnchor(img,lines)));
+ assert.equal(gs.some(g=>(read.charOf(g.key)||'').includes('[')),false);
+ assert.deepEqual(itemGlyphBounds(gs,read,'Work Gloves'),{left:108,right:196});
+ assert.equal(itemGlyphBounds(gs,read,'Red Sauna Robe'),null);
+ assert.equal(itemGlyphBounds(gs,read),null);
+ assert.equal(itemGlyphBounds(gs.filter(g=>read.charOf(g.key)!==']'),read,'Work Gloves'),null);
+});
+
 test('option target follows the same complete row when chat scrolls; ambiguity is rejected', () => {
   const frame=rows=>{
     const img={width:160,height:90,data:new Uint8Array(160*90*4)};
@@ -41,6 +53,25 @@ test('option target follows the same complete row when chat scrolls; ambiguity i
   assert.equal(locateFingerprint(frame([[10,40],[50,41]]),fingerprint)?.top,10);
   assert.equal(locateFingerprint(frame([[10,41]]),fingerprint),null);
   assert.equal(locateFingerprint(frame([[10,40],[50,40]]),fingerprint),null);
+});
+test('notices splitting the chat do not discard visible megaphones above or below them',()=>{
+ const img={width:576,height:420,data:gunzipSync(fs.readFileSync(new URL('fixtures/mega-separated-bands.rgba.gz',import.meta.url)))};
+ const box=findChatBox(img);
+ assert.ok(box.y<58);assert.ok(box.y+box.h>362);
+});
+test('gold scenery outside the chat never becomes nickname ink or breaks row tracking',()=>{
+ const load=n=>({width:576,height:414,data:gunzipSync(fs.readFileSync(new URL(`fixtures/mega-scenery-${n}.rgba.gz`,import.meta.url)))});
+ const before=load('before'),ready=load('ready'),line=findLines(before).find(l=>l.top===274);
+ const fingerprint=lineFingerprint(before,line);
+ assert.equal(locateFingerprint(ready,fingerprint)?.top,226);
+});
+test('repeat detection preserves separate sellers and separate items while ignoring OCR drift in one row',()=>{
+ const seen=repeatFilter(),row={nick:'Tanin',channel:1,text:'[Olympus] S> Olympus -1',fingerprint:'row-a'};
+ assert.equal(seen(row,100),false);
+ assert.equal(seen({...row,text:'[Olympus] S> 0lympus -1'},101),true);
+ assert.equal(seen({...row,text:'[Olympus] S> Olympus clean',fingerprint:'row-b'},102),false);
+ assert.equal(seen({...row,nick:'OtherSeller'},103),false);
+ assert.equal(seen({...row,text:'[Meba] S> PMO'},104),false);
 });
 
 test('band colours: gold, dithered pink and teal are megaphones; the dark chat background is not', () => {

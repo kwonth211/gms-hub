@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tooltipTitle, findTooltipPanel, tooltipBody, missingTooltipFields, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog } from '../assets/mega-tooltip.js';
+import { tooltipTitle, emptyUpgradeSuffix, findTooltipPanel, tooltipBody, tooltipStatRows, subtractTooltipBackground, missingTooltipFields, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog } from '../assets/mega-tooltip.js';
 import { optionParts, optionSummary } from '../assets/mega-option-text.js';
 const bow={en:'Vaulter 2000',cat:'Equip',slots:7};
 const dagger={en:'Bazlud',cat:'Equip',slots:7};
@@ -20,6 +20,32 @@ test('short item links remain clickable while nickname, badge and clipped links 
 test('scroll gains wrapped onto their own line retain the numeric plus sign',()=>{
  const item={en:'Shield Accuracy Scroll: Chaos',cat:'Use'};
  assert.deepEqual(parseTooltipLines(['Shield Accuracy Scroll: Chaos','Improves Accuracy on shields.','Success rate: 10%, Accuracy','+4','Upon failure, the item has a','50% chance to be destroyed.'],item),{scroll:{chance:10,stats:{ACC:4}}});
+ assert.deepEqual(parseTooltipLines(['Gloves Crit. Rate Scroll: Chaos','Success rate: 10%, Crit. Rate','+4'],{en:'Gloves Crit. Rate Scroll: Chaos',cat:'Use'}),{scroll:{chance:10,stats:{CRT:4}}});
+});
+test('tooltip selection excludes a chat link misread as a title left of the clicked item',()=>{
+ const observations=[{text:scroll.en,confidence:1,x:380,y:670,w:220,h:12},{text:scroll.en,confidence:1,x:610,y:684,w:220,h:12}];
+ assert.equal(findTooltipPanel(observations,scroll,[],{width:1366,height:796},{x:598,y:672}).title.x,610);
+ assert.equal(tooltipTitle(scroll.en+':',scroll.en),null);
+ assert.equal(tooltipTitle(scroll.en+']',scroll.en),null);
+});
+test('background subtraction removes translucent scenery while preserving bright glyph pixels',()=>{
+ const width=100,height=60,before={width,height,data:new Uint8Array(width*height*4)},after={width,height,data:new Uint8Array(width*height*4)};
+ for(let y=0;y<height;y++)for(let x=0;x<width;x++){const i=(y*width+x)*4;for(let c=0;c<3;c++){before.data[i+c]=(x*17+y*29+c*61)%256;after.data[i+c]=Math.round(before.data[i+c]*.25+[15,17,53][c]);}before.data[i+3]=after.data[i+3]=255;}
+ for(let y=20;y<30;y++)for(let x=30;x<35;x++){const i=(y*width+x)*4;after.data[i]=after.data[i+1]=after.data[i+2]=255;}
+ const out=subtractTooltipBackground(after,before,{x:0,y:0,w:width,h:height});
+ assert.ok(out);assert.ok(out.data[(22*width+32)*4]<60);assert.ok(out.data[(12*width+12)*4]>250);
+ assert.equal(subtractTooltipBackground(after,{...before,width:99},{x:0,y:0,w:width,h:height}),null);
+});
+test('physical stat rows expose options whose labels were completely missed by OCR',()=>{
+ assert.deepEqual(tooltipStatRows([{text:'Type: Gloves',y:600},{text:'INT: +4',y:616},{text:'Remaining Enhancements: 0',y:696}]),[616,632,648,664,680]);
+ assert.deepEqual(tooltipStatRows([{text:'Type: Gloves',y:600}]),[]);
+});
+test('zero upgrades require empty visible space after the title, not just an unread suffix',()=>{
+ const im={width:300,height:50,data:new Uint8Array(300*50*4).fill(255)},title={x:10,y:10,w:100,h:15};
+ assert.equal(emptyUpgradeSuffix(im,title),true);
+ for(let y=12;y<17;y++)for(let x=130;x<134;x++)im.data[(y*im.width+x)*4]=0;
+ assert.equal(emptyUpgradeSuffix(im,title),false);
+ assert.equal(emptyUpgradeSuffix(im,{...title,w:260}),false);
 });
 test('a clear isolated slot count accepts the OCR period separator but rejects attached HUD digits',()=>{
  assert.equal(parseTooltipLines(['Vaulter 2000 (+2)','Remaining Enhancements. 0'],bow).slots,0);

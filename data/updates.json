@@ -2,6 +2,20 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "megaphone-background-read-recovery",
+   "version": "0.7.43",
+   "level": "patch",
+   "date": "2026-11-20",
+   "path": "/megaphone/",
+   "ko": "고확 옵션 인식 보완 — 겹친 글자·누락 행·재시작 복구",
+   "en": "Megaphone option recovery for overlapping text and collector restarts",
+   "desc": {
+    "ko": "툴팁 뒤에 비치는 채팅을 제거해 숫자를 더 정확히 읽고, 옵션 줄을 통째로 놓친 경우도 다시 확인해요. 파란 고확의 붙은 괄호, 중간 공지로 잘리는 수집 영역, 재시작 뒤 옵션 보충이 끊기는 문제를 수정했어요. 게임 플레이 중에는 자동 클릭하지 않아요.",
+    "en": "Reads tooltip numbers with the underlying chat removed and checks for entirely missed stat rows. Fixes touching brackets in blue megaphones, notices splitting the capture region, and option updates lost across collector restarts. Automatic clicks remain disabled while playing."
+   },
+   "highlight": true
+  },
+  {
    "id": "megaphone-blue-band-and-roll-fix",
    "version": "0.7.42",
    "level": "patch",
