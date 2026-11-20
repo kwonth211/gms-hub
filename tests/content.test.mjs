@@ -231,8 +231,9 @@ test('map pages turn monster spawns around: monsters, spawn counts, full-clear E
 
 test('bare quest pages are gone: old URLs forward to the guide or the quest list, and only guides are linked',()=>{
   const guided=read('dist/en/quests/10104/index.html'), bare=read('dist/en/quests/1001/index.html');
-  assert.match(guided,/noindex/); assert.match(guided,/location\.replace\("\/en\/quests\/pia\/"\)/);
-  assert.match(bare,/location\.replace\("\/en\/quests\/"\)/);
+  // a forward to a guide passes its search ranking on (no noindex); a forward to the plain list stays noindex
+  assert.doesNotMatch(guided,/noindex/); assert.match(guided,/rel="canonical" href="https:\/\/gms-hub\.com\/en\/quests\/pia\/"/); assert.match(guided,/location\.replace\("\/en\/quests\/pia\/"\)/);
+  assert.match(bare,/noindex/); assert.match(bare,/location\.replace\("\/en\/quests\/"\)/);
   const sm=read('dist/sitemap.xml');
   assert.ok(!/\/quests\/\d+\//.test(sm),'no per-quest URLs in the sitemap');
   const idx=read('dist/en/quests/index.html');

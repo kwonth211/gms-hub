@@ -404,9 +404,9 @@ const T = {
     colLadder: 'Type',
     colExpected: 'Expected gain per scroll',
 
-    dropTitle: 'MapleStory Classic World Drops: Which Monster Drops It, Box Rates & Odds | GMS Hub',
-    dropDesc: 'How many kills or opens does a 1% drop take in MapleStory Classic World? Odds calculator, Nexon\'s official box rates, and which monsters drop each item.',
-    dropH1: 'Odds Calculator',
+    dropTitle: 'MapleStory Classic Drop Rates: Drop Chance Calculator & Box Odds | GMS Hub',
+    dropDesc: 'MapleStory Classic World drop rates: how many kills or box opens a 1% drop really takes, Nexon\'s official box rates, and which monsters drop each item.',
+    dropH1: 'Drop Rate & Odds Calculator',
     dropLead: '"It\'s 1% — will 100 tries do it?" Works for box opens and monster kills alike.',
     rateInput: 'Drop rate (%)',
     rateHint: 'e.g. 1 in 500 is 0.2',
@@ -3686,10 +3686,13 @@ for (const lang of LANGS) {
         ld: [breadcrumbLd(lang, lang === 'ko' ? `${name} 장비` : `${name} equipment`, equipPath(c))]
       }));
     }
-    // The old per-quest URLs (/quests/<id>/) forward to the quest's guide, or to the quest list (noindex, no ads).
+    // The old per-quest URLs (/quests/<id>/) forward to the quest's guide, or to the quest list (no ads).
+    // Forwards to a guide carry no noindex (2026-11-20): Google kept showing the old URLs for quest-name searches
+    // ("I Need to Find My Daughter 1", 245 impressions, 0.4% CTR) and a noindexed forward does not hand that ranking
+    // to the guide; canonical + instant refresh read as a permanent redirect. Forwards to the plain list stay noindex.
     for (const q of QUESTS) {
-      const to = langPath(lang, questPath(q) || '/quests/'), url = absUrl(to);
-      write(path.join(lang, 'quests', String(q.id), 'index.html'), `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><title>GMS Hub</title><meta name="robots" content="noindex"><link rel="canonical" href="${url}"><meta http-equiv="refresh" content="0; url=${url}"></head><body><a href="${url}">${url}</a><script>location.replace(${JSON.stringify(to)})</script></body></html>`);
+      const guide = questPath(q), to = langPath(lang, guide || '/quests/'), url = absUrl(to);
+      write(path.join(lang, 'quests', String(q.id), 'index.html'), `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><title>GMS Hub</title>${guide ? '' : '<meta name="robots" content="noindex">'}<link rel="canonical" href="${url}"><meta http-equiv="refresh" content="0; url=${url}"></head><body><a href="${url}">${url}</a><script>location.replace(${JSON.stringify(to)})</script></body></html>`);
     }
   }
 
