@@ -2,17 +2,31 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {gunzipSync} from 'node:zlib';
-import { cleanText, assemble, bandClass, findLines, lineFingerprint, locateFingerprint } from '../assets/mega-reader.js';
+import { cleanText, assemble, bandClass, findLines, findBadge, readChannel, slotAnchor, windowTop, glyphs, glyphReader, lineFingerprint, locateFingerprint } from '../assets/mega-reader.js';
 
 test('real Olympus row survives a scroll, highlight pixel changes, and a one-pixel height change',()=>{
  const load=name=>({width:576,height:200,data:gunzipSync(fs.readFileSync(new URL(`fixtures/${name}.rgba.gz`,import.meta.url)))});
  const before=load('mega-before-scroll'),after=load('mega-after-scroll');
  const old=findLines(before).find(l=>l.top===130),moved=findLines(after).find(l=>l.top===114);
- assert.equal(old.bottom-old.top,13);assert.equal(moved.bottom-moved.top,14);
+ assert.equal(old.bottom-old.top,13);assert.equal(moved.bottom-moved.top,13);
  const fingerprint=lineFingerprint(before,old);
  assert.equal(lineFingerprint(after,moved),fingerprint);
  assert.equal(locateFingerprint(after,fingerprint).top,114);
  assert.notEqual(lineFingerprint(after,findLines(after).find(l=>l.top===130)),fingerprint);
+});
+
+test('real cyan bands remain separate despite ink across row gaps, with item brackets in the right slot',()=>{
+ const img={width:576,height:200,data:gunzipSync(fs.readFileSync(new URL('fixtures/mega-blue-bands.rgba.gz',import.meta.url)))};
+ const lines=findLines(img),anchor=slotAnchor(img,lines);
+ const channels=lines.map(l=>{const badge=findBadge(img,l);return badge&&readChannel(img,l,badge);});
+ assert.deepEqual(channels,[null,3,null,19,13,null]);
+ assert.deepEqual(lines.map(l=>[l.top,l.bottom]),[[50,63],[66,79],[82,95],[98,111],[114,127],[130,143]]);
+ const line=lines[1],badge=findBadge(img,line);
+ const read=glyphReader(JSON.parse(fs.readFileSync(new URL('../assets/mega-glyphs.json',import.meta.url))));
+ const letters=glyphs(img,line,badge.message,img.width,windowTop(line,anchor));
+ const brackets=letters.filter(g=>/^[\[\]]$/.test(read.charOf(g.key)||''));
+ assert.deepEqual(brackets.map(g=>[g.x,read.charOf(g.key)]),[[113,'['],[251,']']]);
+ assert.equal(locateFingerprint(img,lineFingerprint(img,line)).top,66);
 });
 
 test('option target follows the same complete row when chat scrolls; ambiguity is rejected', () => {

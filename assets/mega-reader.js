@@ -81,6 +81,36 @@ export function findLines(img, { scrollbar = 20 } = {}) {
     }
     rows.push({ cls, bg: bg.rgb, text });
   }
+  // Dither, scenery and descenders can fill the apparent gap between adjacent bands.
+  // Use the verified CH digit baseline to split the actual 16px font slots first.
+  const phases=new Map();
+  for(let y=0;y+16<=rows.length;y+=2) {
+    const row=rows[y+7];if(!row.cls)continue;
+    const line={top:y,bottom:y+15,color:row.cls,bg:row.bg,right};
+    const badge=findBadge(img,line);
+    if(!badge||!readChannel(img,line,badge))continue;
+    const anchor=slotAnchor(img,[line]);
+    if(anchor)phases.set(anchor.phase,(phases.get(anchor.phase)||0)+1);
+  }
+  const [best]=[...phases].sort((a,b)=>b[1]-a[1]);
+  if(best&&best[1]>=2&&best[1]>[...phases.values()].reduce((a,b)=>a+b,0)*0.6) {
+    const lines=[];
+    for(let top=best[0]+1;top+14<rows.length;top+=16) {
+      const slot=rows.slice(top,top+14),counts=new Map();
+      for(const r of slot)if(r.cls)counts.set(r.cls,(counts.get(r.cls)||0)+1);
+      const [dominant]=[...counts].sort((a,b)=>b[1]-a[1]);
+      if(!dominant||dominant[1]<8||slot.filter(r=>r.cls===dominant[0]&&r.text>=3).length<4)continue;
+      const color=dominant[0],bg=slot.find(r=>r.cls===color).bg;
+      let edge=right,run=0;
+      for(let x=right-1;x>=10;x--) {
+        const i=((top+6)*img.width+x)*4;
+        run=bandClass(img.data[i],img.data[i+1],img.data[i+2])===color?run+1:0;
+        if(run>=8){edge=x+8;break;}
+      }
+      lines.push({top,bottom:top+13,color,bg,right:Math.max(10,edge-2)});
+    }
+    return lines;
+  }
   // The gap between two lines on the same colour still has a few stray ink pixels (descenders, the badge edge), so a
   // row counts as text only above a share of a typical text row. A change of band colour always ends a line.
   const inked = rows.map((r) => r.text).filter((n) => n > 0).sort((a, b) => a - b);

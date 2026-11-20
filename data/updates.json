@@ -2,6 +2,20 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "megaphone-blue-band-and-roll-fix",
+   "version": "0.7.42",
+   "level": "patch",
+   "date": "2026-11-20",
+   "path": "/megaphone/",
+   "ko": "고확 옵션 인식 보완 — 파란 띠와 하옵 수치",
+   "en": "Megaphone capture fixes for blue bands and below-base stats",
+   "desc": {
+    "ko": "파란 고확의 줄이 합쳐져 아이템 클릭 위치를 놓치던 문제, 빨간색 하옵 수치와 줄바꿈된 주문서 옵션이 빠지던 문제를 수정했어요. 뒤쪽 게임 UI와 겹친 강화 횟수도 따로 판독해요. 확인된 옵션은 같은 고확과 홈 띠에 보충되며, 아이템을 누르면 해당 옵션으로 매물을 필터링해요.",
+    "en": "Fixed merged blue megaphone rows losing their click target, red below-base deltas, and wrapped scroll gains. Enhancement counts overlapping the game HUD are read separately. Verified options update the original megaphone and home ticker and filter listings when clicked."
+   },
+   "highlight": true
+  },
+  {
    "id": "megaphone-option-capture-fixes",
    "version": "0.7.41",
    "level": "patch",

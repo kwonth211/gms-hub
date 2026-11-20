@@ -17,6 +17,15 @@ test('short item links remain clickable while nickname, badge and clipped links 
  assert.equal(safeItemClickX(110,150,152),null);
  assert.equal(safeItemClickX(110,116,108),null);
 });
+test('scroll gains wrapped onto their own line retain the numeric plus sign',()=>{
+ const item={en:'Shield Accuracy Scroll: Chaos',cat:'Use'};
+ assert.deepEqual(parseTooltipLines(['Shield Accuracy Scroll: Chaos','Improves Accuracy on shields.','Success rate: 10%, Accuracy','+4','Upon failure, the item has a','50% chance to be destroyed.'],item),{scroll:{chance:10,stats:{ACC:4}}});
+});
+test('a clear isolated slot count accepts the OCR period separator but rejects attached HUD digits',()=>{
+ assert.equal(parseTooltipLines(['Vaulter 2000 (+2)','Remaining Enhancements. 0'],bow).slots,0);
+ assert.equal(parseTooltipLines(['Vaulter 2000 (+2)','Remaining Enhancements: 04821'],bow),null);
+ assert.equal(parseTooltipLines(['Vaulter 2000 (+2)','Remaining Enhancements: 0*32.'],bow),null);
+});
 test('whisper recovery identifies only the specific dialog cancel button',()=>{
  const prompt={text:'Please enter the person you want to',confidence:1,x:568,y:365};
  const cancel={text:'CANCEL',confidence:1,x:764,y:453,w:39,h:12};
@@ -43,6 +52,7 @@ test('tooltip body excludes requirements, neighbouring chat and bottom HUD',()=>
  const panel={x:510,y:540,w:270,h:256};
  const body=tooltipBody(panel,[{text:'Type: Earrings',x:518,y:670,h:12},{text:'Remaining Enhancements: 0',x:520,y:734,h:12}],{cat:'Equip'});
  assert.deepEqual(body,{x:516,y:667,w:226,h:83});
+ assert.deepEqual(tooltipBody(panel,[{text:'lype: Shield',x:518,y:670,h:12},{text:'Remaining Enhancements: 7',x:520,y:734,h:12}],{cat:'Equip'}),body);
  assert.equal(tooltipBody(panel,[],{cat:'Equip'}),panel);
 });
 test('a lost enhancement suffix never becomes zero successful upgrades',()=>{

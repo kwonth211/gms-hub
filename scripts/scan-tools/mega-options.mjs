@@ -15,7 +15,9 @@ export function cropImage(img, b, mask = false, scale = 1) {
   for(let y=0;y<b.h;y++) for(let x=0;x<b.w;x++) {
     const i=((b.y+y)*img.width+b.x+x)*4;
     let rgb=[img.data[i],img.data[i+1],img.data[i+2]];
-    if(mask) rgb=(Math.min(...rgb)>130 || (rgb[0]>230 && rgb[1]>140 && rgb[2]<120)) ? [0,0,0] : [255,255,255];
+    // Below-base rolls have a red negative delta. Dropping it turns (42 -1) into
+    // an invalid expression and discards an otherwise readable total of 41.
+    if(mask) rgb=(Math.min(...rgb)>130 || (rgb[0]>230 && rgb[1]>140 && rgb[2]<120) || (rgb[0]>180&&rgb[0]>rgb[1]*1.7&&rgb[0]>rgb[2]*1.7)) ? [0,0,0] : [255,255,255];
     for(let dy=0;dy<scale;dy++) for(let dx=0;dx<scale;dx++) {const j=((y*scale+dy)*out.width+x*scale+dx)*4;out.data[j]=rgb[0];out.data[j+1]=rgb[1];out.data[j+2]=rgb[2];out.data[j+3]=255;}
   }
   return out;
@@ -86,10 +88,16 @@ export class OptionReader {
       for(const key of missing.slice(0,6)) {
         const candidate=raw.find(r=>tooltipField(r.text)===key)||enlarged.filter(r=>tooltipField(r.text)===key).map(r=>({...r,x:body.x+r.x/2,y:body.y+r.y/2,w:r.w/2,h:r.h/2}))[0];
         if(!candidate)continue;
-        const y=Math.max(body.y,Math.floor(candidate.y-3));
-        const lineBox={x:body.x,y,w:body.w,h:Math.min(image.height-y,Math.ceil(candidate.h+8))};
+        // Extra pixels above a bottom-aligned line pull in the preceding stat and
+        // translucent HUD digits. Keep the observed text row and a small bottom margin.
+        const y=Math.max(body.y,Math.floor(candidate.y));
+        const lineBox={x:body.x,y,w:body.w,h:Math.min(image.height-y,Math.ceil(candidate.h+4))};
         const isolated=await this.recognize(cropImage(image,lineBox),item.en,'line.png',3);
         readings.push(parseTooltipLines([panel.title,...isolated],item));
+        if(missingTooltipFields([candidate],agreeOptions(...readings),{cat:item.cat}).includes(key)) {
+          const pixels=await this.recognize(cropImage(image,lineBox,false,3),item.en,'line-pixels.png');
+          readings.push(parseTooltipLines([panel.title,...pixels],item));
+        }
       }
       opts=agreeOptions(...readings);
       missing=missingTooltipFields([...raw,...enlarged,...masked],opts,item);
@@ -109,7 +117,12 @@ export class OptionReader {
     const paused=()=>fs.existsSync(path.join(os.homedir(),'.config','gms-hub','mega-options-paused'));
     if(paused())return skip('option input paused');
     if(Date.now()-this.last<500)return skip('cooldown');this.last=Date.now();
-    const part=cropImage(image,box),link=itemLink(part,line,glyph);if(!link)return skip('no safe item-link point');
+    const part=cropImage(image,box),link=itemLink(part,line,glyph);
+    if(!link){
+      fs.writeFileSync(path.join(this.dir,'link-failure.png'),PNG.sync.write(image));
+      fs.writeFileSync(path.join(this.dir,'link-failure.json'),JSON.stringify({box,line,message,item:item.en,wTop:glyph?.wTop}));
+      return skip('no safe item-link point');
+    }
     const signature=(im,edge)=>lineBitmap(cropImage(im,box),line,{x0:0,x1:edge}).sig;
     const fingerprint=lineFingerprint(part,line);
     const park=[Math.min(image.width-40,box.x+box.w+35),35];
@@ -119,7 +132,9 @@ export class OptionReader {
       let snapshot=null,output='';
       if(capture)run.child.stdout.on('data',chunk=>{
         output+=chunk;let end;
-        while((end=output.indexOf('\n'))>=0){const line=output.slice(0,end);output=output.slice(end+1);try{const event=JSON.parse(line);if(event.phase==='clicked'&&!snapshot)snapshot=this.readFrame(event.at,1400).catch(()=>null);}catch{}}
+        // Give the game one 8fps frame to draw the panel. A PNG whose write finishes
+        // just after mouse-up may still contain the frame captured before the click.
+        while((end=output.indexOf('\n'))>=0){const line=output.slice(0,end);output=output.slice(end+1);try{const event=JSON.parse(line);if(event.phase==='clicked'&&!snapshot)snapshot=this.readFrame(event.at+125,1400).catch(()=>null);}catch{}}
       });
       await run; // A captured image never overrides a native focus/cursor safety failure.
       return capture?await(snapshot||this.readFrame(Date.now(),1400)):null;
@@ -151,7 +166,11 @@ export class OptionReader {
       await this.readFrame(Date.now(),1100);this.interacting=false;
       let panel=findTooltipPanel(rows,item,this.catalog,after);
       if(!panel) panel=await this.recoverTitle(after,rows,item,{x:box.x+link.x,y:box.y+link.y});
-      if(!panel||panel.w<120||panel.title.x>box.x+link.x+100)return skip('target tooltip title missing');
+      if(!panel||panel.w<120||panel.title.x>box.x+link.x+100){
+        fs.writeFileSync(path.join(this.dir,'panel-failure.png'),PNG.sync.write(after));
+        fs.writeFileSync(path.join(this.dir,'panel-failure.json'),JSON.stringify({message,item:item.en,box,line,link,rows}));
+        return skip('target tooltip title missing');
+      }
       let opts=await this.readPanel(after,rows,panel,item);
       if(item.cat==='Equip'&&opts&&opts.ups===undefined&&opts.used!==0) {
         // Clean items have no (+N) suffix. Only retry an unread suffix after checking the slots.

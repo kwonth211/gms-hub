@@ -11,7 +11,7 @@ export function whisperDialog(rows) {
   const prompt=rows.find((r)=>r.confidence>=0.5&&/Please enter the person you want to/i.test(r.text));
   return prompt&&rows.find((r)=>r.confidence>=0.5&&/^CANCEL$/i.test(r.text.trim())&&r.y>prompt.y&&r.y<prompt.y+160&&Math.abs(r.x-prompt.x)<350);
 }
-const clean = (s) => s.replace(/^[|«•·*+\s-]+/, '').replace(/\b(?:aftack|altack|atack|ahack|attacke)\b/gi, 'Attack').trim();
+const clean = (s) => s.replace(/^[|«•·*\s]+/, '').replace(/^[+-](?!\s*\d)\s*/, '').replace(/\b(?:aftack|altack|atack|ahack|attacke)\b/gi, 'Attack').replace(/^(Remaining Enhancements)\.\s*(?=\d)/i,'$1: ').trim();
 export function tooltipField(text) {
   const label=/^([A-Za-z .]+):/.exec(clean(text))?.[1]?.trim().toLowerCase().replace(/\./g,'');
   return label==='remaining enhancements'?'slots':LABELS[label]||{'weapon def':'PDD','magic def':'MDD','weapon det':'PDD','magic det':'MDD',maxhp:'MHP',maxmp:'MMP'}[label]||null;
@@ -42,7 +42,7 @@ export function findTooltipPanel(observations, item, catalog, image) {
 export function tooltipBody(panel,rows,item) {
   if(item.cat!=='Equip')return panel;
   const inside=r=>r.x>=panel.x&&r.x<panel.x+35&&r.y>panel.y&&r.y<panel.y+panel.h;
-  const type=rows.find(r=>inside(r)&&/^Type\s*:/i.test(clean(r.text)));
+  const type=rows.find(r=>inside(r)&&/^[TIl]ype\s*:/i.test(clean(r.text)));
   if(!type)return panel;
   const end=rows.find(r=>inside(r)&&r.y>type.y&&/^Remaining Enhancements/i.test(clean(r.text)));
   const y=Math.max(panel.y,Math.floor(type.y-3));
