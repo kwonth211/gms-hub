@@ -164,3 +164,10 @@ test('a buy alert with a price waits for a buyer offering at least that much', a
     assert.equal(await notifyMegaphones(env, [{ ...mega, price: 5500000 }], () => 'Steely'), 1);
   });
 });
+
+test('/거래 posts a free megaphone (site feed + #한국어-거래 card) and checks the price and name', async () => {
+  const { COMMANDS } = await import('../worker/src/discord-bot.js');
+  const trade = COMMANDS.find((c) => c.name === 'trade');
+  assert.deepEqual(trade.options.map((o) => o.name), ['sell', 'buy']);
+  assert.deepEqual(trade.options[0].options.filter((o) => o.required).map((o) => o.name), ['item', 'price', 'nick']);
+});
