@@ -79,6 +79,11 @@ for delay in [UInt32(10000),90000,200000] {
     let now=snapshot();emit(["phase":"after","state":now])
     guard unchanged(before,now) else {releasePointer();emit(["error":"User input or foreground changed"]);exit(5)}
     if (before["cursorVisible"] as? UInt32)==1 && (now["cursorVisible"] as? UInt32)==0 {
+        // Editors intentionally hide the cursor when the user types. That is user activity,
+        // not a collector failure, and must not permanently disable option capture.
+        if CGEventSource.secondsSinceLastEventType(.combinedSessionState,eventType:.keyDown)<1 {
+            releasePointer();emit(["error":"User keyboard input changed cursor visibility"]);exit(5)
+        }
         releasePointer();emit(["error":"Cursor became hidden","state":snapshot()]);exit(6)
     }
 }
