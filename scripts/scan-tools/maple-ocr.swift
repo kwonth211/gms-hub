@@ -31,11 +31,10 @@ do {
   // A translucent tooltip title can be merged with chat behind it. Locate the
   // requested substring so the caller can re-read its own crop, not the chat's left edge.
   if args.count>2,let range=candidate.string.range(of:args[2],options:.caseInsensitive),
-     candidate.string[..<range.lowerBound].trimmingCharacters(in:.whitespaces).last != "[",
-     candidate.string[range.upperBound...].trimmingCharacters(in:.whitespaces).first != "]",
      let observation=try? candidate.boundingBox(for:range) {
     let q=observation.boundingBox
     result["itemBounds"]=["x":q.minX*Double(image.width),"y":(1-q.maxY)*Double(image.height),"w":q.width*Double(image.width),"h":q.height*Double(image.height)]
+    result["itemInBrackets"] = candidate.string[..<range.lowerBound].trimmingCharacters(in:.whitespaces).last == "[" || candidate.string[range.upperBound...].trimmingCharacters(in:.whitespaces).first == "]"
   }
   return result
  }

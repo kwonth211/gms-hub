@@ -50,7 +50,7 @@ PY
     cp $REPO/scripts/scan-tools/{mega-collector.mjs,mega-options.mjs,mega-check.mjs,mega-learn.mjs,maple-stream.swift,maple-input.swift,maple-ocr.swift,mega.sh,package.json} $DEST/scripts/scan-tools/
     cp $REPO/assets/{mega-reader.js,mega-tooltip.js,mega-glyphs.json} $DEST/assets/
     node -e "const d=require('$REPO/data/items.json');console.log(JSON.stringify([...new Set(d.items.map(i=>i.en))]))" > $DEST/assets/items-names.json
-    node -e "const d=require('$REPO/data/items.json'),t=require('$REPO/data/item-details.json');console.log(JSON.stringify(d.items.map(i=>({id:i.id,en:i.en,cat:i.cat,sub:i.sub,cash:i.cash||undefined,slots:t.items[i.id]?.slots}))))" > $DEST/assets/items-catalog.json
+    node -e "const d=require('$REPO/data/items.json'),t=require('$REPO/data/item-details.json');console.log(JSON.stringify(d.items.map(i=>({id:i.id,en:i.en,cat:i.cat,sub:i.sub,cash:i.cash||undefined,slots:t.items[i.id]?.slots,inc:i.cat==='Use'?t.items[i.id]?.inc:undefined}))))" > $DEST/assets/items-catalog.json
     [[ -e $DEST/scripts/scan-tools/node_modules ]] || ln -s ~/gms-hub/scripts/scan-tools/node_modules $DEST/scripts/scan-tools/node_modules
     rm -f ${TMPDIR:-/tmp}/gms-maple-window ${TMPDIR:-/tmp}/gms-maple-stream
     $DEST/scripts/scan-tools/mega.sh stop && $DEST/scripts/scan-tools/mega.sh start ;;

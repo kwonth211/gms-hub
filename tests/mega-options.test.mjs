@@ -1,10 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {gunzipSync} from 'node:zlib';
 import { tooltipTitle, emptyUpgradeSuffix, findTooltipPanel, tooltipBody, tooltipStatRows, subtractTooltipBackground, missingTooltipFields, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog } from '../assets/mega-tooltip.js';
 import { optionParts, optionSummary } from '../assets/mega-option-text.js';
 const bow={en:'Vaulter 2000',cat:'Equip',slots:7};
 const dagger={en:'Bazlud',cat:'Equip',slots:7};
 const scroll={en:'Claw Attack Scroll: Intermediate',cat:'Use'};
+test('scroll metadata rejects OCR digit contamination without filling unread stats',()=>{
+ const item={en:'One-Handed Axe Attack Scroll: Greater',cat:'Use',inc:{PAD:4}};
+ const read=text=>parseTooltipLines([item.en,'Success rate: 10%',text],item);
+ assert.equal(read('Weapon Attack +40'),null);
+ assert.equal(read('No legible gains'),null);
+ assert.deepEqual(read('Weapon Attack +4'),{scroll:{chance:10,stats:{PAD:4}}});
+ assert.equal(parseTooltipLines([item.en,'Success rate: 10%','Weapon Attack +4'],{...item,inc:{PAD:4,STR:1}}),null);
+});
 test('an unread stat line marks a partial capture even when other stats were read',()=>{
  assert.deepEqual(missingTooltipFields([{text:'Weapon Attack: +8',confidence:0.3},{text:'Critical Rate: +2',confidence:1},{text:'REQ STR: 40',confidence:1}],{stats:{CRT:2},slots:0},bow),['PAD']);
  assert.deepEqual(missingTooltipFields(['Weapon Attack: +8'],{stats:{PAD:8}},bow),['slots']);
@@ -35,6 +45,14 @@ test('background subtraction removes translucent scenery while preserving bright
  const out=subtractTooltipBackground(after,before,{x:0,y:0,w:width,h:height});
  assert.ok(out);assert.ok(out.data[(22*width+32)*4]<60);assert.ok(out.data[(12*width+12)*4]>250);
  assert.equal(subtractTooltipBackground(after,{...before,width:99},{x:0,y:0,w:width,h:height}),null);
+});
+test('real cape tooltip accepts the fit that meets both error checks',()=>{
+ const load=s=>({width:226,height:103,data:gunzipSync(fs.readFileSync(new URL(`fixtures/mega-tooltip-cape${s}.rgba.gz`,import.meta.url)))});
+ const out=subtractTooltipBackground(load(''),load('-before'),{x:0,y:0,w:226,h:103});
+ assert.ok(out);assert.ok(out.models.every(m=>m.error<=4&&m.p80<=12));
+ const item={en:'Black Justice Cape',cat:'Equip',slots:5};
+ assert.equal(parseTooltipLines([item.en,{text:'| «LUI: +1',confidence:.71}],item).stats.LUK,1);
+ assert.equal(parseTooltipLines([item.en,{text:'| «LUI: +1',confidence:.3}],item),null);
 });
 test('physical stat rows expose options whose labels were completely missed by OCR',()=>{
  assert.deepEqual(tooltipStatRows([{text:'Type: Gloves',y:600},{text:'INT: +4',y:616},{text:'Remaining Enhancements: 0',y:696}]),[616,632,648,664,680]);

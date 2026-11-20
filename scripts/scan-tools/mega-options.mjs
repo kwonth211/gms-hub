@@ -51,12 +51,26 @@ export class OptionReader {
     const {data}=await (await this.fallback).recognize(PNG.sync.write(img));
     return data.lines.map(l=>({text:l.text.trim(),confidence:l.confidence/100,x:l.bbox.x0,y:l.bbox.y0,w:l.bbox.x1-l.bbox.x0,h:l.bbox.y1-l.bbox.y0}));
   }
+  async linkFromOCR(img,line,item) {
+    const badge=findBadge(img,line);if(!badge)return null;
+    const box={x:badge.message,y:Math.max(0,line.top-1),w:Math.min(line.right-badge.message,item.en.length*12+40),h:16};
+    if(box.w<10||box.y+box.h>img.height)return null;
+    for(const scale of [2,3]) {
+      const rows=await this.recognize(cropImage(img,box),item.en,'link.png',scale).catch(()=>[]);
+      const matches=rows.filter(r=>r.confidence>=.5&&r.itemInBrackets&&r.itemBounds);
+      if(matches.length!==1)continue;
+      const bounds=matches[0].itemBounds,left=box.x+bounds.x/scale,right=left+bounds.w/scale;
+      const x=safeItemClickX(left,right,badge.message);
+      if(x!==null&&right<line.right)return {x,y:Math.floor((line.top+line.bottom)/2),badge};
+    }
+    return null;
+  }
   async recoverTitle(image, rows, item, point, background=null) {
     // Vision can merge a translucent tooltip title with text behind it. A second engine reads a bounded crop;
     // approximate words only choose where to look. findTooltipPanel still requires the exact catalogue title.
     const words=item.en.toLowerCase().split(/\W+/).filter(w=>w.length>2);
     const minX=Math.min(point.x-30,image.width-(item.cat==='Equip'?540:450));
-    const candidates=rows.map(r=>r.itemBounds?{...r,...r.itemBounds}:r).filter(r=>(r.itemBounds||!/[\[\]]/.test(r.text))&&r.x>=minX&&r.x<point.x+120&&r.y<point.y+70&&
+    const candidates=rows.map(r=>r.itemBounds?{...r,...r.itemBounds}:r).filter(r=>!r.itemInBrackets&&(r.itemBounds||!/[\[\]]/.test(r.text))&&r.x>=minX&&r.x<point.x+120&&r.y<point.y+70&&
       words.filter(w=>nameKey(r.text).includes(w)).length>=Math.max(1,words.length-1)).slice(0,2);
     if(background) {
       // Locate the translucent panel even when OCR misses the entire title. This
@@ -156,11 +170,12 @@ export class OptionReader {
     // The shop reader retries only when the primary read is incomplete. Do not run a slower
     // fallback over a complete, consistent crop and let its weaker digit guess discard that read.
     if(item.cat==='Equip'&&(!opts?.stats||missing.length)) {
-      const fallback=await this.recognizeFallback(bodyImage);
+      const fallback=await this.recognizeFallback(foreground?cropImage(foreground,{x:0,y:0,w:body.w,h:body.h},false,3):bodyImage);
       this.lastReading.fallback=fallback;
       opts=agreeOptions(...readings,parseTooltipLines([panel.title,...fallback.filter(r=>r.y+r.h<body.h*3-5)],item));
     }
     this.lastMissing=missingTooltipFields(observed,opts,item);
+    this.lastStatCount=statRows.length;
     if(statRows.length>statCount(opts))this.lastMissing.push('unread_rows');
     return opts;
   }
@@ -169,7 +184,8 @@ export class OptionReader {
     const paused=()=>fs.existsSync(path.join(os.homedir(),'.config','gms-hub','mega-options-paused'));
     if(paused())return skip('option input paused');
     if(Date.now()-this.last<500)return skip('cooldown');this.last=Date.now();
-    const part=cropImage(image,box),link=itemLink(part,line,glyph);
+    const part=cropImage(image,box);let link=itemLink(part,line,glyph);
+    if(!link){this.interacting=true;try{link=await this.linkFromOCR(part,line,item);}finally{this.interacting=false;}}
     if(!link){
       fs.writeFileSync(path.join(this.dir,'link-failure.png'),PNG.sync.write(image));
       fs.writeFileSync(path.join(this.dir,'link-failure.json'),JSON.stringify({box,line,message,item:item.en,wTop:glyph?.wTop}));

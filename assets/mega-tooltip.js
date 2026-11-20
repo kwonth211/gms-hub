@@ -11,7 +11,7 @@ export function whisperDialog(rows) {
   const prompt=rows.find((r)=>r.confidence>=0.5&&/Please enter the person you want to/i.test(r.text));
   return prompt&&rows.find((r)=>r.confidence>=0.5&&/^CANCEL$/i.test(r.text.trim())&&r.y>prompt.y&&r.y<prompt.y+160&&Math.abs(r.x-prompt.x)<350);
 }
-const clean = (s) => s.replace(/^[|«•·*\s]+/, '').replace(/^[+-](?!\s*\d)\s*/, '').replace(/\b(?:aftack|altack|atack|ahack|attacke)\b/gi, 'Attack').replace(/\bCrit\.\s*(Rate|Damage)\b/gi,'Critical $1').replace(/^(Remaining Enhancements)\.\s*(?=\d)/i,'$1: ').trim();
+const clean = (s) => s.replace(/^[|«•·*\s]+/, '').replace(/^[+-](?!\s*\d)\s*/, '').replace(/\b(?:aftack|altack|atack|ahack|attacke)\b/gi, 'Attack').replace(/\bCrit\.\s*(Rate|Damage)\b/gi,'Critical $1').replace(/^(?:LUI|LUE)\s*:/i,'LUK:').replace(/^(Remaining Enhancements)\.\s*(?=\d)/i,'$1: ').trim();
 export function tooltipField(text) {
   const label=/^([A-Za-z .]+):/.exec(clean(text))?.[1]?.trim().toLowerCase().replace(/\./g,'');
   return label==='remaining enhancements'?'slots':LABELS[label]||{'weapon def':'PDD','magic def':'MDD','weapon det':'PDD','magic det':'MDD',maxhp:'MHP',maxmp:'MMP'}[label]||null;
@@ -85,9 +85,9 @@ export function subtractTooltipBackground(image,before,box) {
     for(let step=4;step<=24;step++) {
       const alpha=step*.025,residual=pairs.map(([b,a])=>a-alpha*b),offset=median([...residual]);
       const errors=residual.map(v=>Math.abs(v-offset)).sort((a,b)=>a-b),error=errors[errors.length>>1],p80=errors[Math.floor(errors.length*.8)];
-      if(!best||error<best.error)best={alpha,offset,error,p80};
+      if(error<=4&&p80<=12&&alpha>.1&&alpha<.6&&(!best||error<best.error))best={alpha,offset,error,p80};
     }
-    if(best.error>4||best.p80>12||best.alpha===.1||best.alpha===.6)return null;
+    if(!best)return null;
     models.push(best);
   }
   const data=new Uint8ClampedArray(box.w*box.h*4);
@@ -131,6 +131,9 @@ export function parseTooltipLines(lines, item) {
       const match=new RegExp(`(?:^|[^a-z])${label.replace(/ /g,'\\s+')}\\s*\\+\\s*(\\d{1,3})(?!\\d)`,'i').exec(desc);
       if(match && Number(match[1])<=255) gains[key]=Number(match[1]);
     }
+    // Scroll gains are fixed, unlike rolled equipment stats. Catalogue values
+    // only reject a corrupt OCR reading; they must never supply unread values.
+    if(item.inc&&Object.entries(item.inc).some(([key,value])=>gains[key]!==value))return null;
     return Object.keys(gains).length?{scroll:{chance,stats:gains}}:null;
   }
   // A title alone is not useful evidence of options.

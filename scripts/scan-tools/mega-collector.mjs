@@ -56,7 +56,7 @@ if(OPTIONS) {
     const catalogPath=path.join(here,'../../assets/items-catalog.json');
     const catalog=fs.existsSync(catalogPath) ? JSON.parse(fs.readFileSync(catalogPath,'utf8')) : (()=>{
       const details=JSON.parse(fs.readFileSync(path.join(here,'../../data/item-details.json'),'utf8')).items;
-      return JSON.parse(fs.readFileSync(path.join(here,'../../data/items.json'),'utf8')).items.map((i)=>({...i,slots:details[i.id]?.slots}));
+      return JSON.parse(fs.readFileSync(path.join(here,'../../data/items.json'),'utf8')).items.map((i)=>({...i,slots:details[i.id]?.slots,inc:i.cat==='Use'?details[i.id]?.inc:undefined}));
     })();
     const binaries={};
     for(const name of ['maple-input','maple-ocr']) {
@@ -207,7 +207,9 @@ async function tick() {
       // Preserve earlier verified values; a retry only adds previously missing fields.
       row.opts={...opts,...row.opts,stats:{...opts.stats,...row.opts?.stats}};
       if(!Object.keys(row.opts.stats).length)delete row.opts.stats;
-      reader.lastMissing=(reader.lastMissing||[]).filter(k=>['slots','ups'].includes(k)?row.opts[k]===undefined:row.opts.stats?.[k]===undefined);
+      reader.lastMissing=(reader.lastMissing||[]).filter(k=>k==='unread_rows'?Object.keys(row.opts.stats||{}).length+Number(row.opts.attackSpeed!==undefined)+Number(row.opts.knockback!==undefined)<reader.lastStatCount:['slots','ups'].includes(k)?row.opts[k]===undefined:row.opts.stats?.[k]===undefined);
+      const recorded=observations.find(r=>r.seen===row.seen&&r.channel===row.channel&&r.nick===row.nick&&r.text===row.text);
+      if(recorded){recorded.opts=row.opts;recorded.capture=reader.lastMissing.length?'partial':'complete';recorded.missing=reader.lastMissing;}
       if(!reader.lastMissing?.length)optionJobs.delete(key);
       if(!queue.includes(row))queue.push({...row});
       console.log(`options${reader.lastMissing?.length?' partial':''} ${row.nick} [${item.en}] ${JSON.stringify(row.opts)}${reader.lastMissing?.length?' missing='+reader.lastMissing.join(','):''} (${Date.now()-now}ms)`);
