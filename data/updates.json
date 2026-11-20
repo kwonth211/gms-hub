@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "quest-guide-mobile",
+   "version": "0.7.35",
+   "level": "patch",
+   "date": "2026-11-20",
+   "path": "/quests/",
+   "ko": "퀘스트 가이드 모바일 화면 정리 — 퀘스트 이름이 한 줄 폭을 다 쓰도록",
+   "en": "Quest guides on phones — quest names get the full width",
+   "desc": {
+    "ko": "휴대폰에서 퀘스트 이름이 '진행 중'·'완료' 표시에 밀려 한 단어씩 세로로 찍히던 문제와, 진행 카드 제목이 버튼 옆에 찌그러지던 문제를 고쳤어요. 이름은 한 줄을 다 쓰고, 표시와 버튼은 아래 줄로 내려가요. 이용자 피드백으로 바로 고쳤어요.",
+    "en": "On phones, quest names were squeezed to one word per line next to the In progress tag and Done box, and the step title was cramped beside the Back / Done buttons. Names now use the full width, with the tag, box and buttons on the line below. Fixed straight from a reader's feedback."
+   }
+  },
+  {
    "id": "discord-trade",
    "version": "0.7.34",
    "level": "minor",
