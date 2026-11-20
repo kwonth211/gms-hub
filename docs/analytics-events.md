@@ -114,11 +114,17 @@
 
 ## Market radar and search recovery (2026-11-20)
 
-- `market_radar_open`: visitor expands the live listing radar (`lang`). No listings requests while closed.
-- `market_radar_result`: a check completes (`results`, `sampled`, `lang`). Automatic checks are **not** active users or tool-use conversions.
-- `market_radar_click`: visitor opens a candidate item (`item_id`, `lang`); subsequent `market_item(interaction_source=radar)` records actual load success.
-- `share_copy(content=market-radar)`: copies an observed-price summary and canonical item link; success is `result=ok`, not proof it was posted. `share_open(content=market-radar)` measures a tagged arrival.
-- `market_search_recover(action=clear_filters)`: clears restrictive filters while retaining the item-name query. A subsequent successful `market_item` is the completion signal.
-- Shared market item links now preserve `opt` and prefer existing item pages. No seller names or listing text are added to analytics.
+- Radar removed on 2026-11-20. Historical `market_radar_*` events are retired. Search recovery and canonical item sharing remain.
 
-Radar compares exact-ID scrolls/stars only, with at least 5 open listings / 2 shops. It displays observations no older than one hour, excludes sold/reported-missing/options-bearing records, and requires at least a 10% discount from the catalog asking median. This is a bounded sample, not a guaranteed cheapest offer or a completed-trade valuation.
+## Live listing clicks (2026-11-20)
+
+`select_item` counts one deliberate item click, including repeated clicks and Ctrl/Cmd/middle-click. Automatic refreshes, seller buttons and saved-item stars do not count. Existing `market_item` still measures a successful detail load; do not add it to click counts.
+
+- `items[0].item_id`, `item_name`: item identity; `quantity=1` regardless of stack size.
+- `item_list_id` / `item_list_name`: `home_recent`, `home_top`, `market_listings`, `shop_listings`, or `market_catalog`.
+- `items[0].item_category`: `cheap`, `expensive`, `typical`, `unrated` (also sent as event `price_band`). Unrated means no reliable comparison, not an ordinary price.
+- No seller names, meso revenue, currency or purchase events are sent.
+
+GA4 Explore: rows **Item ID**, **Item name**; values **Items clicked in list**; break down by **Item list name** and **Item category**. These are built-in dimensions, so custom definitions are unnecessary. Data starts at deployment; it is not backfilled and may take processing time. This measures clicks, not unique users or CTR (no impression event).
+
+Labels use the same item's 24h asking median with 5+ listings across 2+ shops. At least 10% lower = cheap; at least 10% higher = expensive. Sold/reported-missing rows, >24h observations, stale reference snapshots (>25 min), option-bearing listings and equipment are not rated. Equipment options remain visible for manual comparison. Labels do not assert a completed trade price.

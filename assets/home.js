@@ -1,4 +1,6 @@
 import './collection-status.js';
+import { listingPriceBand, priceBadge } from './listing-price.js';
+import { bindListingClicks } from './listing-clicks.js';
 import { indexEntry, searchEntries } from './search-index.js';
 import { gearKeywords, gearTypes } from './item-sub.js';
 import { mountCharPanel } from './my-char.js';
@@ -532,7 +534,7 @@ function renderTop(top, byId) {
 // (and on the first draw the newest few) drop in one at a time at the top, spread over the time until the next refresh,
 // while the oldest row slides out. "12초 전" ticks every second, and a thin bar shows when the next refresh comes.
 const rowKey = (r) => `${r.item}|${r.seller}|${r.price}|${r.seen}`;
-let shownRows = null, pendingRows = [], dripTimer = 0, liveById = null;
+let shownRows = null, pendingRows = [], dripTimer = 0, liveById = null, liveCatalog = null, liveCatalogLoaded = 0;
 const FIRST_DRIP = 4;
 
 // Listing options as one word: "+3", "정옵", "2상", "1하" (opt-grade.js); the hover card shows the full stats.
@@ -541,10 +543,10 @@ function optShort(r) {
   return b ? `<span class="opt ${b.cls}">${escHtml(b.text)}</span>` : '';
 }
 function recentRow(r, it, fresh) {
-  return `<li class="${r.sold ? 'sold' : ''}${fresh ? ' fresh' : ''}" data-key="${escHtml(rowKey(r))}"${r.opts ? ` data-item-id="${it.id}" data-opts="${escHtml(JSON.stringify(r.opts))}"` : ''}><a href="${live.dataset.price}?item=${it.id}&src=home" data-live-item="${it.id}">
+  return `<li class="${r.sold ? 'sold' : ''}${fresh ? ' fresh' : ''}" data-key="${escHtml(rowKey(r))}" data-price-band="${listingPriceBand(r, liveCatalog)}" data-item-list="home_recent"${r.opts ? ` data-item-id="${it.id}" data-opts="${escHtml(JSON.stringify(r.opts))}"` : ''}><a href="${live.dataset.price}?item=${it.id}&src=home" data-live-item="${it.id}">
 <img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="26" height="26" loading="lazy">
 <span class="name">${newMark(r.seen)}<span class="nm">${escHtml(it.name)}</span>${r.sold ? `<span class="tag">${escHtml(liveText.sold)}</span>` : ''}${optShort(r)}</span>
-<span class="price">${mesos(r.price)}${r.qty > 1 ? ` <small>×${r.qty}</small>` : ''}</span>
+<span class="price">${mesos(r.price)}${r.qty > 1 ? ` <small>×${r.qty}</small>` : ''}${priceBadge(listingPriceBand(r, liveCatalog), korean)}</span>
 <span class="meta">${escHtml(r.seller)} · CH ${r.channel} · ${placeLabel(r.room, korean)}</span>
 <span class="ago" data-seen="${escHtml(r.seen)}">${ago(r.seen)}</span></a></li>`;
 }
@@ -587,6 +589,18 @@ function renderRecent(rows, byId) {
     if (pendingRows.length) setTimeout(() => scheduleDrip(6000), 700);
     return all.length;
   }
+  // Refresh price labels in place without replacing focused item links.
+  const latest = new Map(all.map(r => [rowKey(r), r]));
+  shownRows = shownRows.map(r => latest.get(rowKey(r)) || r);
+  const current = new Map(shownRows.map(r => [rowKey(r), r]));
+  list.querySelectorAll('li[data-key]').forEach(el => {
+    const r = current.get(el.dataset.key);
+    if (!r) return;
+    const band = listingPriceBand(r, liveCatalog);
+    el.dataset.priceBand = band;
+    el.querySelector('.listing-price-badge')?.remove();
+    el.querySelector('.price')?.insertAdjacentHTML('beforeend', priceBadge(band, korean));
+  });
   // Later refreshes: only listings not yet on screen or waiting, oldest first at the end of the queue.
   const known = new Set([...shownRows, ...pendingRows].map(rowKey));
   const fresh = all.filter((r) => !known.has(rowKey(r)));
@@ -640,9 +654,10 @@ async function refreshLive() {
   if (!live || !live.dataset.api || document.hidden) return;
   try {
     const get = (path) => fetch(`${live.dataset.api}${path}`).then((r) => (r.ok ? r.json() : null));
-    const [top, recent] = PREVIEW
-      ? [...previewData(), await loadItems()]
-      : await Promise.all([get('/market/top'), get('/listings/recent'), loadItems()]);
+    const [top, recent, reference] = PREVIEW
+      ? [...previewData(), null, await loadItems()]
+      : await Promise.all([get('/market/top'), get('/listings/recent'), liveCatalog && Date.now() - liveCatalogLoaded < 300000 ? liveCatalog : fetch(`${live.dataset.api}/market/catalog`, { signal: AbortSignal.timeout(8000) }).then(r => r.ok ? r.json() : null).then(data => { liveCatalogLoaded = Date.now(); return data; }).catch(() => liveCatalog), loadItems()]);
+    liveCatalog = reference;
     document.getElementById('market-preview').hidden = !PREVIEW;
     const byId = new Map(items.map((it) => [it.id, it]));
     const ranked = top ? renderTop(top, byId) : 0;
@@ -664,6 +679,7 @@ async function refreshLive() {
 // One tooltip for every sparkline: the day and its median, following the pointer.
 const tip = document.getElementById('spark-tip');
 if (live) {
+  bindListingClicks(live, { selector: 'a[data-live-item]', idKey: 'liveItem', name: id => liveById?.get(Number(id))?.name || '', list: 'home_top' });
   live.addEventListener('pointermove', (e) => {
     const rect = e.target.closest('.spark rect');
     if (!rect) {

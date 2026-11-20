@@ -1,6 +1,7 @@
 import './collection-status.js';
-import { mountMarketRadar } from './market-radar.js';
-import { marketSharePath } from './market-radar-data.js';
+import { listingPriceBand, priceBadge } from './listing-price.js';
+import { bindListingClicks } from './listing-clicks.js';
+import { marketSharePath } from './market-share.js';
 import { DAY, parseUtc, newMark } from "./market-data.js";
 import { KERNING, placeLabel } from "./place.js";
 import { makeMarketIndex, catalogRows, matchingIds, refPrice, npcBetter } from "./market-catalog.js";
@@ -300,14 +301,12 @@ function offerCards(rows) {
   lastOffers = rows;
   if (!rows.length)
     return `<p class="market-empty">${tr("조건에 맞는 매물이 없어요. 필터를 바꿔 보세요.", "No listings match. Try other filters.")}</p>`;
-  const open = (priceData?.profile || []).map((r) => r.price).filter((p) => p > 0).sort((a, b) => a - b);
-  const [r25, r75] = open.length >= 4 ? [quant(open, 0.25), quant(open, 0.75)] : [null, null];
   return `${optionSummary(rows)}<ul class="mb-offers">${rows.map((r) => {
     const age = Date.now() - parseUtc(r.seen);
     const fresh = r.sold ? "sold" : age < 3600000 ? "fresh" : age < 6 * 3600000 ? "warm" : "old";
     // One line per listing: the dot colour carries how fresh it is (full wording on hover).
     const status = { sold: tr("판매 완료 표시", "Marked sold"), fresh: tr("1시간 안에 확인", "Seen within the hour"), warm: tr("몇 시간 전 확인", "Seen a few hours ago"), old: tr("팔렸을 수도 있어요", "May have sold") }[fresh];
-    const tag = r.sold ? `<b class="mb-deal pricey">${tr("판매 완료", "Sold")}</b>` : r25 == null ? "" : r.price < r25 ? `<b class="mb-deal cheap">${tr("싼 편", "Cheap")}</b>` : r.price > r75 ? `<b class="mb-deal pricey">${tr("비싼 편", "Pricey")}</b>` : "";
+    const tag = r.sold ? `<b class="mb-deal pricey">${tr("판매 완료", "Sold")}</b>` : priceBadge(listingPriceBand(r, catalog), ko);
     const chips = optionChips(r);
     return `<li class="mb-offer ${fresh}${goneRow(r)}${chips ? " has-opts" : ""}"${chips ? ` data-item-id="${r.item}" data-opts="${esc(JSON.stringify(r.opts))}"` : ""}><span class="mb-offer-price"><strong>${money(r.price)}</strong>${r.qty > 1 ? `<small>×${money(r.qty)}</small>` : ""}</span><span class="mb-offer-tag">${tag}</span><span class="mb-offer-opt">${chips}</span><button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)}</button><span class="mb-fresh" title="${esc(status)}"><i aria-hidden="true"></i>${when(r.seen)}<span class="sr-only"> · ${esc(status)}</span></span><span class="mb-offer-where">${placeChips(r)}</span>${goneCell(r)}</li>`;
   }).join("")}</ul>`;
@@ -315,7 +314,7 @@ function offerCards(rows) {
 function listingTable(rows, { showItem = true, shopButtons = true } = {}) {
   if (!rows.length)
     return `<p class="market-empty">${tr("조건에 맞는 매물이 없어요. 검색어나 필터를 바꿔 보세요.", "No listings match. Try changing the search or filters.")}</p>`;
-  return `<div class="mb-table-wrap"><table class="mb-table mb-listings-table"><thead><tr>${showItem ? `<th>${tr("아이템", "Item")}</th>` : ""}<th>${tr("가격", "Price")}<small>${T.priceUnit}</small></th><th>${tr("수량", "Qty")}</th><th>${T.table.seller}</th><th>${T.table.where}</th><th>${tr("최근 확인", "Last seen")}</th><th class="mb-gone-th">${tr("없었나요?", "Gone?")}</th></tr></thead><tbody>${rows.map((r) => `<tr class="${r.opts ? "has-opts" : ""}${goneRow(r)}"${r.opts ? ` data-item-id="${r.item}" data-opts="${esc(JSON.stringify(r.opts))}"` : ""}>${showItem ? `<td class="mb-cell-item"><div class="mb-item-row">${itemLink(r.item)}${optionChips(r)}</div></td>` : ""}<td class="num mb-cell-price">${money(r.price)}${r.qty > 1 ? `<small>${T.total} ${money(r.price * r.qty)}</small>` : ""}${showItem ? "" : optionChips(r)}</td><td class="mb-cell-qty"><span class="mb-mobile-label">${tr("수량", "Qty")} </span>${money(r.qty)}</td><td class="mb-cell-seller">${shopButtons ? `<button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)} ↗</button>` : esc(r.seller)}</td><td class="mb-cell-location">${placeChips(r)}</td><td class="mb-cell-seen">${newMark(r.seen)}${when(r.seen)}<small class="${r.sold ? "mb-sold" : ""}">${r.sold ? tr("판매 완료 표시", "Marked sold") : Date.now() - parseUtc(r.seen) >= DAY ? tr("24시간 경과", "Over 24h old") : tr("판매 중 관측", "Seen for sale")}</small></td><td class="mb-cell-gone">${goneCell(r)}</td></tr>`).join("")}</tbody></table></div>`;
+  return `<div class="mb-table-wrap"><table class="mb-table mb-listings-table"><thead><tr>${showItem ? `<th>${tr("아이템", "Item")}</th>` : ""}<th>${tr("가격", "Price")}<small>${T.priceUnit}</small></th><th>${tr("수량", "Qty")}</th><th>${T.table.seller}</th><th>${T.table.where}</th><th>${tr("최근 확인", "Last seen")}</th><th class="mb-gone-th">${tr("없었나요?", "Gone?")}</th></tr></thead><tbody>${rows.map((r) => `<tr data-price-band="${listingPriceBand(r, catalog)}" data-item-list="${shopButtons ? "market_listings" : "shop_listings"}" class="${r.opts ? "has-opts" : ""}${goneRow(r)}"${r.opts ? ` data-item-id="${r.item}" data-opts="${esc(JSON.stringify(r.opts))}"` : ""}>${showItem ? `<td class="mb-cell-item"><div class="mb-item-row">${itemLink(r.item)}${optionChips(r)}</div></td>` : ""}<td class="num mb-cell-price">${money(r.price)}${priceBadge(listingPriceBand(r, catalog), ko)}${r.qty > 1 ? `<small>${T.total} ${money(r.price * r.qty)}</small>` : ""}${showItem ? "" : optionChips(r)}</td><td class="mb-cell-qty"><span class="mb-mobile-label">${tr("수량", "Qty")} </span>${money(r.qty)}</td><td class="mb-cell-seller">${shopButtons ? `<button type="button" class="mb-seller" data-shop="${esc(r.seller)}" data-ch="${r.channel}" data-room="${r.room}" title="${tr("이 상점에서 확인한 매물 보기", "View recorded listings from this shop")}">${esc(r.seller)} ↗</button>` : esc(r.seller)}</td><td class="mb-cell-location">${placeChips(r)}</td><td class="mb-cell-seen">${newMark(r.seen)}${when(r.seen)}<small class="${r.sold ? "mb-sold" : ""}">${r.sold ? tr("판매 완료 표시", "Marked sold") : Date.now() - parseUtc(r.seen) >= DAY ? tr("24시간 경과", "Over 24h old") : tr("판매 중 관측", "Seen for sale")}</small></td><td class="mb-cell-gone">${goneCell(r)}</td></tr>`).join("")}</tbody></table></div>`;
 }
 // Every browsing filter lives in the address, so refresh, back and a copied link reopen the same view.
 // Defaults are left out to keep plain visits on the canonical URL.
@@ -603,6 +602,8 @@ async function renderRecords() {
     searched($("mk-q").value.trim(), data.total);
     // Option chips compare against base stats, which live in the tips file.
     if (data.rows?.some((r) => r.opts)) await loadTips();
+    if (seq !== listSeq) return;
+    if (!catalog) catalog = await get("/market/catalog").catch(() => null);
     if (seq !== listSeq) return;
     $("mb-results").innerHTML =
       target === "reports"
@@ -1536,7 +1537,6 @@ function drawMegaphones(id) {
   box.hidden = false;
 }
 
-let radarMounted = false;
 async function initialize() {
   // Drop sources fill the catalog's source column once the hover-card data arrives.
   loadTips().then(() => { if (view === "items" || $("mb-class").value) renderMain(); });
@@ -1545,13 +1545,6 @@ async function initialize() {
     if (!r.ok) throw Error("items");
     items = makeMarketIndex(await r.json(), D.lang);
     byId = new Map(items.map((it) => [it.id, it]));
-    // Hash-linked radar can resolve cached listings before the item index; wait for names before mounting.
-    if (!radarMounted) {
-      radarMounted = true;
-      mountMarketRadar({ box: $("market-radar"), get, getCatalog: () => get("/market/catalog"), name: itemName,
-  url: (id) => D.itemPaths?.[id] || `/${D.lang}/tools/market/?item=${id}`,
-  openItem: (id) => { optWanted = null; loadItem(id, { source: "radar" }); }, lang: D.lang });
-    }
     const p = new URLSearchParams(location.search),
       id = FIXED || Number(p.get("item"));
     if (p.get("q")) $("mk-q").value = p.get("q");
@@ -1621,3 +1614,6 @@ initialize();
   new ResizeObserver(place).observe(panel);
   place();
 })();
+
+// Counts the click itself, including repeat and new-tab clicks, independently of item loading.
+bindListingClicks(document.querySelector(".market-browser"), { selector: "a[data-item]", rowSelector: ".mb-catalog tbody tr, .mb-listings-table tbody tr", idKey: "item", name: id => itemName(Number(id)), list: "market_catalog" });
