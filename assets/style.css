@@ -1961,7 +1961,12 @@ html[data-charm='off'] .charm-leaves { display: none; }
 .mg-copy:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .mg-text { margin: 0; font-size: 0.92rem; line-height: 1.45; overflow-wrap: anywhere; }
 .mg-opts { display: flex; margin: 4px 0 0; }
-.mg-item { font-weight: 700; color: var(--accent-2); }
+.mg-item { padding: 1px 6px; margin: 0 3px; border: 1px solid #82aee8; border-radius: 5px; background: #e6f0ff; color: #174b91; font-weight: 800; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.mg-item:hover { background: #cfe3ff; border-color: #477fcb; color: #103b77; }
+.mg-item:focus-visible { outline: 2px solid #2369bd; outline-offset: 2px; }
+[data-theme='dark'] .mg-item { background: #1b3654; border-color: #5d8fbd; color: #c3e0ff; }
+[data-theme='dark'] .mg-item:hover { background: #294d71; border-color: #93c5fd; color: #fff; }
+[data-theme='dark'] .mg-item:focus-visible { outline-color: #93c5fd; }
 .mg-gloss { margin: 2px 0 0; font-size: 0.84rem; color: var(--text-2); }
 .mg-price { display: inline-block; margin-top: 4px; font-size: 0.76rem; color: var(--muted); text-decoration: none; }
 .mg-price:hover { color: var(--text); text-decoration: underline; }
@@ -3669,7 +3674,8 @@ body.exp-running .exp-stop { display: inline-flex; }
 
 /* Linked megaphone equipment opens the observed-option listing filter. */
 .mg-tk-message { display:inline-flex; align-items:center; gap:6px; color:inherit; text-decoration:none; }
-.mg-tk-item-link { color:var(--tk-hi); text-decoration:underline; text-underline-offset:3px; }
+.mg-tk-item-link { flex:none; padding:1px 6px; border:1px solid #79a9df; border-radius:4px; background:#233f60; color:#d2e8ff; font-weight:800; line-height:1.4; text-decoration:underline; text-underline-offset:3px; }
+.mg-tk-item-link:hover { background:#335b87; border-color:#b7d8ff; color:#fff; }
 .mg-tk-opts { text-decoration:none; }
 .mg-tk-opts:hover { text-decoration:underline; }
 .mb-exact-filter { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px; margin:12px 0; border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); }
