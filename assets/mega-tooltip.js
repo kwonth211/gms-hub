@@ -4,13 +4,13 @@ export const nameKey = (s) => String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
 // A rare stat label can lower Vision's confidence for an otherwise clear sum.
 // Recover only an isolated numeric expression independently agreed by both OCR
 // engines, with a valid total = base +/- roll; never complete digits by guessing.
-export function agreeArithmetic(primary,secondary) {
-  const value=r=>{
+const arithmeticValue=r=>{
     const text=r.text.replace(/\s+/g,'').replace(/^\+/,'');
     const m=/^(-?(?:0|[1-9]\d{0,3}))\((0|[1-9]\d{0,3})([+-])(0|[1-9]\d{0,3})\)$/.exec(text);
     return m&&Number(m[1])===Number(m[2])+(m[3]==='-'?-1:1)*Number(m[4])?text:null;
-  };
-  const a=primary.filter(r=>r.confidence>=.3).map(value).filter(Boolean),b=secondary.filter(r=>r.confidence>=.6).map(value).filter(Boolean);
+};
+export function agreeArithmetic(primary,secondary) {
+  const a=primary.filter(r=>r.confidence>=.3).map(arithmeticValue).filter(Boolean),b=secondary.filter(r=>r.confidence>=.6).map(arithmeticValue).filter(Boolean);
   return a.length===1&&b.length===1&&a[0]===b[0]?a[0]:null;
 }
 export function agreeTooltipNumber(primary,secondary) {
@@ -19,9 +19,13 @@ export function agreeTooltipNumber(primary,secondary) {
   const a=primary.filter(r=>r.confidence>=.5).map(value).filter(v=>v!==null),b=secondary.filter(r=>r.confidence>=.6).map(value).filter(v=>v!==null);
   return a.length===1&&b.length===1&&a[0]===b[0]?a[0]:null;
 }
-export function agreeLabeledNumber(field,secondary) {
+export function agreeLabeledNumber(field,secondary,primary=[]) {
   if(!field||field.confidence<.3||!tooltipField(field.text))return null;
   const value=field.text.split(':').slice(1).join(':').trim();
+  // A valid full sum, read identically in both the labelled row and numeric
+  // crop by Vision and independently by Tesseract, supplies three checks.
+  const verified=arithmeticValue({text:value}),a=primary.filter(r=>r.confidence>=.3).map(arithmeticValue).filter(Boolean),b=secondary.filter(r=>r.confidence>=.4).map(arithmeticValue).filter(Boolean);
+  if(verified&&a.length===1&&b.length===1&&a[0]===verified&&b[0]===verified)return verified;
   if(!/^[+-]?(?:0|[1-9]\d{0,3})$/.test(value))return null;
   // Vision often misses a crop containing just '+5'. Its full labelled row
   // still supplies an independent reading; require a strong numeric-only read.
@@ -210,7 +214,7 @@ export function parseTooltipLines(lines, item) {
   for(const [key,value] of seen) if(value!==null) {if(key==='slots') slots=value;else stats[key]=value;}
   if(item.cat!=='Equip') {
     // Scroll description can wrap between "Weapon" and "Attack +2".
-    const desc=texts.slice(1).join(' '), rate=/Success rate:\s*(100|60|10)\s*%/i.exec(desc);
+    const desc=texts.slice(1).join(' ').replace(/\b(Weapon|Magic)\s+Def\./gi,'$1 Defense'), rate=/Success rate:\s*(100|60|10)\s*%/i.exec(desc);
     if(!rate) return null;
     chance=Number(rate[1]);const gains={};
     for(const [label,key] of Object.entries(LABELS)) {
@@ -242,6 +246,11 @@ export function agreeOptions(...readings) {
   for(const key of ['slots','ups','used','clean','attackSpeed','knockback']) {const values=[...new Set(inputs.map(r=>r[key]).filter(v=>v!==undefined))];if(values.length===1)out[key]=values[0];}
   const stats={};for(const key of new Set(inputs.flatMap(r=>Object.keys(r.stats||{})))) {const values=[...new Set(inputs.map(r=>r.stats?.[key]).filter(v=>v!==undefined))];if(values.length===1)stats[key]=values[0];}
   if(Object.keys(stats).length)out.stats=stats;
-  const scrolls=[...new Set(inputs.filter(r=>r.scroll).map(r=>JSON.stringify(r.scroll)))];if(scrolls.length===1)out.scroll=JSON.parse(scrolls[0]);
+  const scrolls=inputs.flatMap(r=>r.scroll?[r.scroll]:[]),chances=[...new Set(scrolls.map(s=>s.chance))];
+  if(chances.length===1) {
+    const gains={};let conflict=false;
+    for(const scroll of scrolls)for(const [key,value] of Object.entries(scroll.stats)){if(gains[key]!==undefined&&gains[key]!==value)conflict=true;gains[key]=value;}
+    if(!conflict&&Object.keys(gains).length)out.scroll={chance:chances[0],stats:gains};
+  }
   return Object.keys(out).length?out:null;
 }

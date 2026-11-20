@@ -43,6 +43,19 @@ test('one-digit Vision misses need a labelled reading and strong independent num
  assert.equal(agreeLabeledNumber(field,[{text:'+5',confidence:.8}]),null);
  assert.equal(agreeLabeledNumber({...field,text:'REQ INT: +5'},[{text:'+5',confidence:1}]),null);
 });
+test('low-confidence sums need the same valid expression in all three readings',()=>{
+ const field={text:'LUK: +4 (3 +1)',confidence:.3},native=[{text:'+4 (3+1)',confidence:.3}],other=[{text:'+4 (3 +1)',confidence:.45}];
+ assert.equal(agreeLabeledNumber(field,other,native),'4(3+1)');
+ assert.equal(agreeLabeledNumber(field,other,[]),null);
+ assert.equal(agreeLabeledNumber(field,[{text:'+5 (3 +2)',confidence:1}],native),null);
+ assert.equal(agreeLabeledNumber({...field,text:'LUK: +4 (3+2)'},other,native),null);
+});
+test('scroll defense abbreviations preserve both independently read gains',()=>{
+ const item={en:'Topwear DEF Scroll: Chaos',cat:'Use',inc:{PDD:8,MDD:6}};
+ assert.deepEqual(parseTooltipLines([item.en,'Success rate: 10%, Weapon','Def. +8, Magic Def. +6'],item),{scroll:{chance:10,stats:{PDD:8,MDD:6}}});
+ assert.deepEqual(agreeOptions({scroll:{chance:10,stats:{MDD:6}}},{scroll:{chance:10,stats:{PDD:8,MDD:6}}}),{scroll:{chance:10,stats:{MDD:6,PDD:8}}});
+ assert.equal(agreeOptions({scroll:{chance:10,stats:{MDD:5}}},{scroll:{chance:10,stats:{PDD:8,MDD:6}}}),null);
+});
 test('scroll metadata rejects OCR digit contamination without filling unread stats',()=>{
  const item={en:'One-Handed Axe Attack Scroll: Greater',cat:'Use',inc:{PAD:4}};
  const read=text=>parseTooltipLines([item.en,'Success rate: 10%',text],item);

@@ -148,12 +148,12 @@ export class OptionReader {
           if(field) {
             const q=field.valueBounds,scale=local?3:1,origin=local?lineBox:{x:0,y:0};
             const x=Math.max(body.x,Math.floor(origin.x+q.x/scale)-2),y=Math.max(body.y,Math.floor(origin.y+q.y/scale)-2);
-            const numericBox={x,y,w:Math.min(Math.ceil(q.w/scale)+4,body.x+body.w-x),h:Math.min(Math.ceil(q.h/scale)+4,body.y+body.h-y)};
+            const numericBox={x,y,w:Math.min(Math.ceil(q.w/scale)+4,body.x+body.w-x),h:Math.min(Math.ceil(q.h/scale)+4,18,body.y+body.h-y)};
             if(numericBox.w>5&&numericBox.w<=150&&numericBox.h>5&&numericBox.h<=26) {
               const pixels=foreground?cropImage(foreground,{x:x-body.x,y:y-body.y,w:numericBox.w,h:numericBox.h},false,3):cropImage(image,numericBox,true,3);
               const primary=await this.recognize(pixels,item.en,'number.png'),secondary=await this.recognizeFallback(pixels,'7');
-              let expression=agreeTooltipNumber(primary,secondary)||agreeLabeledNumber(field,secondary);
-              if(!expression){const original=cropImage(image,numericBox,false,3),a=await this.recognize(original,item.en,'number-original.png'),b=await this.recognizeFallback(original,'7');expression=agreeTooltipNumber(a,b)||agreeLabeledNumber(field,b);(this.lastReading.numericChecks||=[]).push({key,box:numericBox,primary:a,secondary:b,expression,original:true});}
+              let expression=agreeTooltipNumber(primary,secondary)||agreeLabeledNumber(field,secondary,primary);
+              if(!expression){const original=cropImage(image,numericBox,false,3),a=await this.recognize(original,item.en,'number-original.png'),b=await this.recognizeFallback(original,'7');expression=agreeTooltipNumber(a,b)||agreeLabeledNumber(field,b,a);(this.lastReading.numericChecks||=[]).push({key,box:numericBox,primary:a,secondary:b,expression,original:true});}
               (this.lastReading.numericChecks||=[]).push({key,box:numericBox,primary,secondary,expression});
               if(expression)readings.push(parseTooltipLines([panel.title,`${field.text.split(':')[0]}: ${expression}`],item));
             }
