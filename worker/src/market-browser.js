@@ -410,27 +410,54 @@ export function dailyPoints(rows, now, days, span = DAY) {
 export async function marketHistory(env, p) {
   const item = integer(p, "id", 1000000, 9999999, null);
   if (!item) throw Error("bad item");
+  const conditions = [], values = [];
+  if (p.has('opts')) {
+    const filter = parseOptionFilter(p.get('opts'));
+    if (!filter) throw Error('bad opts');
+    for (const [path, value] of optionFilterEntries(filter)) {
+      conditions.push('json_extract(opts, ?) = ?'); values.push(path, value);
+    }
+  }
+  if (p.has('stat')) {
+    const key = p.get('stat'), value = integer(p, 'val', 0, 999, null);
+    if (!OPT_STATS.has(key) || value === null) throw Error('bad stat');
+    conditions.push('json_extract(opts, ?) = ?'); values.push(`$.stats.${key}`, value);
+  }
+  const filtered = conditions.length > 0, clause = filtered ? ' AND ' + conditions.join(' AND ') : '';
   const since = stamp(Date.now() - 7 * DAY),
     end = stamp(Date.now()),
     limit = 5000;
   const now = Date.now();
   const listed = await all(
     env,
-    "SELECT price,qty,sold,seller,channel,room,first_seen,last_seen AS seen FROM listings WHERE item=? AND last_seen>=? AND first_seen<=?",
-    [item, since, end],
+    "SELECT price,qty,sold,seller,channel,room,first_seen,last_seen AS seen,opts FROM listings WHERE item=? AND last_seen>=? AND first_seen<=?" + clause,
+    [item, filtered ? stamp(now - 30 * DAY) : since, end, ...values],
   );
   const rows = dailyPoints(listed, now, 7)
-    .map(({ first_seen, ...r }) => r)
+    .map(({ first_seen, opts, ...r }) => opts ? {...r, opts:parseOptions(opts)} : r)
     .sort((a, b) => (a.seen < b.seen ? 1 : a.seen > b.seen ? -1 : a.seller < b.seller ? -1 : a.seller > b.seller ? 1 : a.price - b.price));
   const current = await all(
     env,
-    "SELECT price,qty,sold,seller,channel,room,last_seen AS seen,opts FROM listings WHERE item=? AND sold=0 AND last_seen>=? AND last_seen<=? ORDER BY price ASC,id ASC LIMIT 10001",
-    [item, stamp(Date.now() - DAY), end],
+    "SELECT price,qty,sold,seller,channel,room,last_seen AS seen,opts FROM listings WHERE item=? AND sold=0 AND last_seen>=? AND last_seen<=?" + clause + " ORDER BY price ASC,id ASC LIMIT 10001",
+    [item, stamp(now - DAY), end, ...values],
   );
+  // Aggregate only retained, option-bearing listings. Item-wide daily rollups
+  // cannot be separated by options and must never fill a filtered chart.
+  const days = new Map();
+  if (filtered) for (const r of listed) {
+    const first = Math.max(Date.parse(r.first_seen.slice(0,10)+'T00:00:00Z'), Date.parse(stamp(now-30*DAY).slice(0,10)+'T00:00:00Z'));
+    const last = Math.min(Date.parse(r.seen.slice(0,10)+'T00:00:00Z'), now);
+    for (let t=first;t<=last;t+=DAY) {
+      const day=stamp(t).slice(0,10), list=days.get(day)||[];
+      list.push({price:r.price,sold:r.sold&&day===r.seen.slice(0,10)?1:0}); days.set(day,list);
+    }
+  }
   return {
     item,
+    filtered,
+    ...(filtered ? {summary:summarizeItem(item,listed,stamp(now-DAY)), historyDays:30} : {}),
     rows: rows.slice(0, limit),
-    daily: await dailyHistory(env, item),
+    daily: filtered ? [...days].sort(([a],[b])=>a.localeCompare(b)).map(([day,rs])=>({...dayRow(item,day,rs),typical:null})) : await dailyHistory(env, item),
     // Listing options ride along so the depth bars can show the stat range in each price band.
     profile: current.slice(0, 10000).map(({ opts, ...r }) => (opts ? { ...r, opts: parseOptions(opts) } : r)),
     truncated: rows.length > limit,

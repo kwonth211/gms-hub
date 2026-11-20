@@ -533,7 +533,7 @@ const api = {
         // Edge cache: data changes about hourly, so a minute (catalog five) saves repeat reads without visible lag.
         // The catalog itself is recomputed at most every 15 minutes (the collector uploads about that often), since each
         // recomputation reads the whole 7-day listings window.
-        return json(data, cors, 200, ['/market/catalog', '/market/history'].includes(url.pathname) ? 'public, max-age=300' : 'public, max-age=60');
+        return json(data, cors, 200, ['/market/catalog', '/market/history'].includes(url.pathname) && !data.filtered ? 'public, max-age=300' : 'public, max-age=60');
       } catch (e) {
         const invalid = e.message?.startsWith('bad ');
         return json({error: invalid ? e.message : 'market unavailable'}, cors, invalid ? 400 : 503);

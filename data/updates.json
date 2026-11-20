@@ -2,6 +2,20 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "matching-option-market-prices",
+   "version": "0.7.47",
+   "level": "patch",
+   "date": "2026-11-21",
+   "path": "/tools/market/",
+   "ko": "동일 옵션 시세 — 가격·차트·매물을 함께 필터링",
+   "en": "Matching-option prices, charts and listings",
+   "desc": {
+    "ko": "고확에서 선택한 옵션과 같은 매물만으로 중앙값·최저가·가격대·추이를 계산해요. 일치하는 기록이 없으면 다른 옵션의 가격 대신 데이터 없음을 표시해요. 옵션별 추이는 옵션 정보가 남아 있는 최근 30일 기록을 사용해요.",
+    "en": "Median, lowest ask, price ranges and charts now use the same option filter as listings. Missing matches show no data instead of prices from other rolls. Option-specific trends use the last 30 days of retained option records."
+   },
+   "highlight": true
+  },
+  {
    "id": "megaphone-selected-option-detail",
    "version": "0.7.46",
    "level": "patch",

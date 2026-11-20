@@ -1,10 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { optionFilter, parseOptionFilter, encodeOptionFilter } from '../assets/option-filter.js';
+import { optionFilter, parseOptionFilter, encodeOptionFilter, matchesOptionFilter } from '../assets/option-filter.js';
 import { marketSharePath } from '../assets/market-share.js';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import { optionParts } from '../assets/mega-option-text.js';
+
+test('related megaphones also require every selected option, including zero slots', () => {
+  const filter={stats:{LUK:18},slots:0,ups:8};
+  assert.equal(matchesOptionFilter({...filter,stats:{LUK:18,PDD:75}},filter),true);
+  for(const observed of [null,{stats:{LUK:18}},{...filter,slots:1},{...filter,stats:{LUK:1}}]) assert.equal(matchesOptionFilter(observed,filter),false);
+});
+
+test('filtered price rendering never falls back to item-wide megaphone prices', () => {
+  const source=fs.readFileSync(new URL('../assets/market.js',import.meta.url),'utf8');
+  const start=source.indexOf('const kmoney ='),end=source.indexOf('\ndocument.addEventListener("click"',start);
+  const box={removeAttribute(){}};
+  const ctx=vm.createContext({$:()=>box,tr:(a)=>a,nf:new Intl.NumberFormat('ko'),ko:true,selected:1050010,npcLine:()=>'',D:{lang:'ko'},TZ:{timeZone:'Asia/Seoul'},money:String});
+  vm.runInContext(source.slice(start,end),ctx);
+  vm.runInContext('priceData={filtered:true,asOf:new Date().toISOString(),daily:[],rows:[],profile:[],megaAsk:{p25:999999,p75:999999,n:20}};renderDaily()',ctx);
+  assert.match(box.innerHTML,/동일 옵션 가격 데이터가 없어요/);
+  assert.doesNotMatch(box.innerHTML,/고확 호가|100만/);
+  vm.runInContext('priceData.profile=[{price:10000}];renderDaily()',ctx);
+  assert.match(box.innerHTML,/동일 옵션 가격대/);
+  assert.match(box.innerHTML,/<b>1만<\/b>/);
+  assert.match(box.innerHTML,/지금 판매 중 1건 기준/);
+});
 
 test('detail facts use selected options, omit unknown base stats, and restore labelled base facts after clearing', async () => {
   const source = fs.readFileSync(new URL('../assets/market.js', import.meta.url), 'utf8');

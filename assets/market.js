@@ -2,7 +2,7 @@ import './collection-status.js';
 import { listingPriceBand, priceBadge, refreshListingPriceBadges } from './listing-price.js';
 import { bindListingClicks } from './listing-clicks.js';
 import { marketSharePath } from './market-share.js';
-import { parseOptionFilter, encodeOptionFilter } from './option-filter.js';
+import { parseOptionFilter, encodeOptionFilter, matchesOptionFilter } from './option-filter.js';
 import { optionParts } from './mega-option-text.js';
 import { DAY, parseUtc, newMark } from "./market-data.js";
 import { KERNING, placeLabel } from "./place.js";
@@ -472,6 +472,11 @@ let optWanted = null;
 // A linked megaphone carries only values actually observed on that equipment.
 let exactSelection = null;
 const exactFor = (id) => exactSelection?.item === id ? exactSelection : null;
+const hasOptionSelection = (id) => !!exactFor(id) || detailState.opt != null;
+function detailPriceStats(s, filtered = false) {
+  if (!s) return '';
+  return `<dl class="mb-detail-stats"><div><dt>${filtered ? tr("동일 옵션 판매가 중앙값", "Matching-option asking median") : tr("판매가 중앙값", "Asking median")}</dt><dd>${money(s.median)} <small>${T.priceUnit}</small></dd></div><div><dt>${tr("최저 판매가", "Lowest ask")}</dt><dd>${money(s.low)}</dd></div><div><dt>${tr("판매 매물 · 24h", "Asking · 24h")}</dt><dd>${s.open}</dd></div></dl>`;
+}
 function paintExactFilter(id) {
   const box = $("md-exact-filter"), exact = exactFor(id);
   const pageLink = document.querySelector(".mb-item-page");
@@ -481,7 +486,7 @@ function paintExactFilter(id) {
   if (!exact) return;
   const parts = exact.filter ? optionParts(exact.filter, ko) : [];
   if (exact.filter?.ups != null) parts.push(tr(`성공한 강화 ${exact.filter.ups}`, `Successful upgrades ${exact.filter.ups}`));
-  box.innerHTML = `<div><strong>${tr("같은 옵션의 판매 매물", "Listings with matching options")}</strong><p>${esc(exact.filter ? parts.join(" · ") : tr("옵션 조건이 올바르지 않아요. 필터를 해제해 주세요.", "Invalid option filter. Clear it to view listings."))}</p><small>${tr("확인된 옵션값이 모두 같은 매물만 표시해요. 위의 대표 시세와 가격 추이는 전체 옵션 기준이에요.", "Every observed option must match. Summary prices and charts include all options.")}</small></div><button class="btn ghost small-btn" data-clear-exact-options>${tr("옵션 필터 해제", "Clear option filter")}</button>`;
+  box.innerHTML = `<div><strong>${tr("같은 옵션의 판매 매물", "Listings with matching options")}</strong><p>${esc(exact.filter ? parts.join(" · ") : tr("옵션 조건이 올바르지 않아요. 필터를 해제해 주세요.", "Invalid option filter. Clear it to view listings."))}</p><small>${tr("확인된 옵션값이 모두 같은 매물만 표시해요. 가격과 차트도 같은 옵션 기준이에요.", "Every observed option must match. Prices and charts use the same option filter.")}</small></div><button class="btn ghost small-btn" data-clear-exact-options>${tr("옵션 필터 해제", "Clear option filter")}</button>`;
 }
 function searchParts() {
   const q = $("mk-q").value, full = matchingIds(items, q);
@@ -753,10 +758,8 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
   $("mk-detail").hidden = false;
   $("mb-workspace").classList.add("has-selection");
   renderDirectory();
-  const s = catalog?.items.find((x) => x.item === id),
-    stats = s
-      ? `<dl class="mb-detail-stats"><div><dt>${tr("판매가 중앙값", "Asking median")}</dt><dd>${money(s.median)} <small>${T.priceUnit}</small></dd></div><div><dt>${tr("최저 판매가", "Lowest ask")}</dt><dd>${money(s.low)}</dd></div><div><dt>${tr("판매 매물 · 24h", "Asking · 24h")}</dt><dd>${s.open}</dd></div></dl>`
-      : "";
+  const s = hasOptionSelection(id) ? null : catalog?.items.find((x) => x.item === id),
+    stats = detailPriceStats(s);
   // The item's own page (full view: chart, megaphones, listings, drops, quests) sits in the header, beside "copy link".
   const pageLink = !FIXED && D.itemPaths?.[id] ? `<a class="btn ghost small-btn mb-item-page" href="${esc(marketSharePath({ itemPath: D.itemPaths[id], opt: detailState.opt, opts: exactFor(id)?.filter }))}">${esc(D.itemLink)}</a>` : "";
   priceData = null;
@@ -782,7 +785,7 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
     detailState.page = 1;
     syncURL();
     track("market_option_filter", { item_id: selected, value: v || "all", lang: D.lang });
-    loadDetailRows();
+    loadItem(id, { reset: false });
   });
   // Channel and room filters were dropped from the item panel (2026-11-15, owner): each card already shows both.
   for (const key of ["sort", "state"])
@@ -796,9 +799,24 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
       loadDetailRows();
     });
   try {
-    const data = await get(`/market/history?id=${id}`, detailAbort.signal);
+    const hp = new URLSearchParams({ id });
+    const exact = exactFor(id);
+    if (exact) {
+      if (!exact.filter) throw Error('Invalid option filter');
+      hp.set('opts', exact.raw);
+    } else if (detailState.opt != null) {
+      await loadTips();
+      if (seq !== detailSeq) return;
+      const sf = statFilter([id], detailState.opt);
+      if (!sf) throw Error('Invalid option filter');
+      hp.set('stat', sf.key); hp.set('val', sf.value);
+    }
+    const data = await get(`/market/history?${hp}`, detailAbort.signal);
     if (seq !== detailSeq) return;
+    if (hasOptionSelection(id) && !data.filtered) throw Error('Option prices unavailable');
     priceData = data;
+    drawMegaphones(id);
+    if (data.filtered) $("mb-history").insertAdjacentHTML('afterend', detailPriceStats(data.summary, true));
     renderDaily();
     panelPart("history", id);
     // The alert form is open on every item (owner 2026-11-19: alerts were hidden behind a small button and barely used),
@@ -806,7 +824,7 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
     if ((D.alerts || document.body.dataset.discordUrl) && !(discordReturn && discordReturn.item === id)) openAlert(id);
     if ((data.profile || []).some((r) => r.opts)) loadTips().then(() => { if (priceData === data) fillOptMenu(id); });
     // Consumables and cash items that no shop scan covers take their asking price from megaphones (/prices basis "mega").
-    if (!(data.profile || []).length) get(`/prices?ids=${id}`).then((p) => { if (priceData === data && p?.[id]?.mega) { data.megaAsk = p[id].mega; renderDaily(); } }).catch(() => null);
+    if (!data.filtered && !(data.profile || []).length) get(`/prices?ids=${id}`).then((p) => { if (priceData === data && p?.[id]?.mega) { data.megaAsk = p[id].mega; renderDaily(); } }).catch(() => null);
     // The cheap/typical/pricey tags need the typical range, which can arrive after the listing cards.
     if (lastOffers && $("md-rows")?.querySelector(".mb-offers")) $("md-rows").innerHTML = offerCards(lastOffers);
     const normalize = (rs) =>
@@ -1209,8 +1227,7 @@ document.querySelector(".market-browser").addEventListener("click", (e) => {
     detailState.opt = optWanted = null;
     detailState.page = 1;
     syncURL();
-    fillItemInfo(selected);
-    return loadDetailRows();
+    return loadItem(selected, { reset: false });
   }
   if (el.hasAttribute("data-close-item")) return closeItem();
   if (el.dataset.detailTab) {
@@ -1301,7 +1318,7 @@ function npcNote(id, price, basis = "") {
 function npcLine(id, fallback) {
   const sell = npcSell(id);
   if (!sell) return "";
-  const c = catalog?.items.find((r) => r.item === id);
+  const c = priceData?.filtered ? null : catalog?.items.find((r) => r.item === id);
   const price = refPrice(c) ?? fallback;
   const basis = c?.median != null ? tr("판매가 중앙값", "asking median") : c?.typical ? tr("대표 시세", "typical price") : tr("판매가", "asking price");
   if (npcBetter(sell, price)) return `<p class="mb-npc good"><b>${tr("NPC에 파는 게 이득", "Better sold to an NPC")}</b> ${esc(npcNote(id, price, basis))}</p>`;
@@ -1411,14 +1428,16 @@ function renderDaily() {
   const now = Date.parse(priceData.asOf) || Date.now();
   const open = profile.map((r) => r.price).filter((p) => p > 0).sort((a, b) => a - b);
   const lastDay = daily.filter((d) => d.p25 != null).at(-1);
-  const megaAsk = priceData.megaAsk || null;
-  const [r25, r75] = open.length >= 4 ? [quant(open, 0.25), quant(open, 0.75)] : lastDay ? [lastDay.p25, lastDay.p75] : [null, null];
+  const megaAsk = priceData.filtered ? null : priceData.megaAsk || null;
+  const useOpen = priceData.filtered ? open.length > 0 : open.length >= 4;
+  const rangeLabel = priceData.filtered ? tr("동일 옵션 가격대", "Matching-option price range") : tr("보통 가격대", "Typical range");
+  const [r25, r75] = useOpen ? [quant(open, 0.25), quant(open, 0.75)] : lastDay ? [lastDay.p25, lastDay.p75] : [null, null];
   const below = open.filter((p) => p < r25).length, above = open.filter((p) => p > r75).length, inside = open.length - below - above;
   const head = r25 != null
-    ? `<div class="mb-range"><span class="mb-range-label">${tr("보통 가격대", "Typical range")}</span><b>${kmoney(r25)}${r75 !== r25 ? ` – ${kmoney(r75)}` : ""}</b><small>${open.length >= 4 ? tr(`지금 판매 중 ${open.length}건 기준`, `from ${open.length} listings now`) : tr(`${lastDay.day.slice(5).replace("-", "/")} 기록 기준`, `from ${lastDay.day.slice(5).replace("-", "/")} records`)}</small></div>`
+    ? `<div class="mb-range"><span class="mb-range-label">${rangeLabel}</span><b>${kmoney(r25)}${r75 !== r25 ? ` – ${kmoney(r75)}` : ""}</b><small>${useOpen ? tr(`지금 판매 중 ${open.length}건 기준`, `from ${open.length} listings now`) : tr(`${lastDay.day.slice(5).replace("-", "/")} 기록 기준`, `from ${lastDay.day.slice(5).replace("-", "/")} records`)}</small></div>`
     : megaAsk
       ? `<div class="mb-range"><span class="mb-range-label">${tr("고확 호가", "Megaphone asking price")}</span><b>${kmoney(megaAsk.p25)}${megaAsk.p75 !== megaAsk.p25 ? ` – ${kmoney(megaAsk.p75)}` : ""}</b><small>${tr(`최근 7일 고확 ${megaAsk.n}건 기준 · 상점 매물은 아직 없어요`, `from ${megaAsk.n} megaphones in 7 days; no shop listings yet`)}</small></div>`
-      : `<div class="mb-range"><span class="mb-range-label">${tr("보통 가격대", "Typical range")}</span><b>—</b><small>${tr("아직 기록이 부족해요", "Not enough records yet")}</small></div>`;
+      : `<div class="mb-range"><span class="mb-range-label">${rangeLabel}</span><b>—</b><small>${priceData.filtered ? tr("동일 옵션 가격 데이터가 없어요", "No price data for these options") : tr("아직 기록이 부족해요", "Not enough records yet")}</small></div>`;
   // Where today's listings sit: a dot per listing on a price line with the typical range shaded.
   let dist = "";
   if (open.length >= 2) {
@@ -1461,7 +1480,7 @@ ${dayTicks.map((s, i) => `<text class="ax" x="${[L, (L + W - R) / 2, W - R][i]}"
   } else chart = `<p class="muted note">${tr("아직 기록이 적어서 추이를 그리기 어려워요. 매일 쌓이면 여기에 그려져요.", "Too few records for a trend yet; it fills in as days add up.")}</p>`;
   const ranges = [[7, tr("7일", "7d")], [30, tr("30일", "30d")], ["all", tr("전체", "All")]];
   box.removeAttribute("aria-busy");
-  box.innerHTML = `${head}${npcLine(selected, open.length ? quant(open, 0.5) : lastDay?.median ?? megaAsk?.median ?? null)}${dist}<div class="mb-hist-head"><h3>${tr("가격 추이", "Price history")}</h3><div class="mb-hist-range" role="group">${ranges.map(([v, l]) => `<button type="button" data-hist-range="${v}" aria-pressed="${histRange === v}">${l}</button>`).join("")}</div></div>${chart}`;
+  box.innerHTML = `${priceData.filtered ? `<p class="muted note">${tr("동일 옵션의 상점 매물 기준 · 옵션 기록이 남아 있는 최근 30일", "Matching-option shop listings · last 30 days with retained options")}</p>` : ""}${head}${npcLine(selected, open.length ? quant(open, 0.5) : lastDay?.median ?? megaAsk?.median ?? null)}${dist}<div class="mb-hist-head"><h3>${tr("가격 추이", "Price history")}</h3><div class="mb-hist-range" role="group">${ranges.map(([v, l]) => `<button type="button" data-hist-range="${v}" aria-pressed="${histRange === v}">${l}</button>`).join("")}</div></div>${chart}`;
 }
 
 document.addEventListener("click", (e) => {
@@ -1594,7 +1613,9 @@ addEventListener("gms-megaphones", (e) => {
   drawMegaphones(selected);
 });
 function drawMegaphones(id) {
-  const rows = megaRows.rows;
+  const sf = statFilter([id], detailState.opt);
+  const filter = exactFor(id)?.filter || (sf ? {stats:{[sf.key]:sf.value}} : null);
+  const rows = hasOptionSelection(id) ? megaRows.rows.filter(r => matchesOptionFilter(r.opts, filter)) : megaRows.rows;
   // The panel is drawn after the fetch starts, so the box is looked up once the answer is in.
   const box = $("mb-megas");
   if (selected !== id || !box) return;

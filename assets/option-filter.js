@@ -35,3 +35,9 @@ export function optionFilterEntries(filter) {
   return [...Object.entries(filter.stats || {}).map(([k,v]) => [`$.stats.${k}`,v]),
     ...['slots','ups'].filter((k) => filter[k] !== undefined).map((k) => [`$.${k}`,filter[k]])];
 }
+
+export function matchesOptionFilter(observed, filter) {
+  if (!observed || !filter) return false;
+  return Object.entries(filter.stats || {}).every(([k,v]) => observed.stats?.[k] === v) &&
+    ['slots','ups'].every(k => filter[k] === undefined || observed[k] === filter[k]);
+}

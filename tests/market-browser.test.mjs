@@ -80,6 +80,29 @@ function add(
   );
 }
 const p = (o) => new URLSearchParams(o);
+test('option history, daily prices, summary and listings use the same observed options', async () => {
+  const e=env(), item=1050010, opts={stats:{LUK:18},slots:0,ups:8};
+  for (const [price, observed] of [[100,opts],[300,opts],[2,{...opts,stats:{LUK:1}}],[5,{...opts,slots:1}],[7,null]]) {
+    const id=add(e,{item,price,seller:'Seller'+price});
+    e.sqlite.prepare('UPDATE listings SET opts=? WHERE id=?').run(observed?JSON.stringify(observed):null,id);
+  }
+  const q={opts:JSON.stringify(opts)};
+  const h=await marketHistory(e,p({id:item,...q}));
+  const list=await browseListings(e,p({item,...q}));
+  assert.equal(h.filtered,true);
+  assert.deepEqual(h.profile.map(x=>x.price),[100,300]);
+  assert.deepEqual(list.rows.map(x=>x.price).sort((a,b)=>a-b),[100,300]);
+  assert.equal(h.summary.median,200); assert.equal(h.summary.low,100); assert.equal(h.summary.open,2);
+  assert.ok(h.rows.every(r=>r.price===100||r.price===300));
+  assert.equal(h.daily.at(-1).median,200); assert.equal(h.daily.at(-1).n,2);
+  const missing=await marketHistory(e,p({id:item,opts:JSON.stringify({stats:{LUK:99}})}));
+  assert.deepEqual(missing.rows,[]);assert.deepEqual(missing.profile,[]);assert.deepEqual(missing.daily,[]);
+  assert.equal(missing.summary.median,null);assert.equal(missing.summary.open,0);
+  const single=await marketHistory(e,p({id:item,stat:'LUK',val:18}));
+  assert.deepEqual(single.profile.map(r=>r.price),[5,100,300]);
+  for(const bad of ['{}','{','{"stats":{"LUK":"18"}}']) await assert.rejects(marketHistory(e,p({id:item,opts:bad})),/bad opts/);
+  await assert.rejects(marketHistory(e,p({id:item,stat:'unknown',val:18})),/bad stat/);
+});
 test("catalog includes every recorded item and reports, while shop counters count actual recent listings only", async () => {
   const e = env();
   for (let i = 0; i < 125; i++)
