@@ -171,3 +171,22 @@ test('/거래 posts a free megaphone (site feed + #한국어-거래 card) and ch
   assert.deepEqual(trade.options.map((o) => o.name), ['sell', 'buy']);
   assert.deepEqual(trade.options[0].options.filter((o) => o.required).map((o) => o.name), ['item', 'price', 'nick']);
 });
+
+test('/거래 팝니다 stores a free megaphone from Discord and posts its card in the trade channel', async () => {
+  const sqlite = new DatabaseSync(':memory:');
+  for (const f of ['0020_free_megaphones.sql', '0023_free_mega_discord.sql']) sqlite.exec(fs.readFileSync(new URL(`../worker/migrations/${f}`, import.meta.url), 'utf8'));
+  const DB = { prepare(sql, args = []) {
+    return { bind: (...v) => DB.prepare(sql, v), first: async () => sqlite.prepare(sql).get(...args) ?? null, all: async () => ({ results: sqlite.prepare(sql).all(...args) }),
+      run: async () => ({ meta: { changes: Number(sqlite.prepare(sql).run(...args).changes) } }) };
+  } };
+  const env = { DB, DISCORD_BOT_TOKEN: 't', DISCORD_TRADE_CHANNEL: '777' };
+  await withDiscord(async (calls) => {
+    const res = await cmd(env, 'trade', 'sell', [{ name: 'item', value: '2040804' }, { name: 'price', value: '190만' }, { name: 'nick', value: 'Hookstk' }, { name: 'channel', value: 7 }, { name: 'note', value: '급처' }]);
+    assert.match(res.data.content, /팝니다 글을 올렸어요/);
+    const row = sqlite.prepare('SELECT nick, intent, item, price, channel, text, reporter FROM free_megaphones').get();
+    assert.deepEqual({ ...row }, { nick: 'Hookstk', intent: 'sell', item: 2040804, price: 1900000, channel: 7, text: '급처', reporter: 'discord:42' });
+    assert.ok(calls.some((c) => c.url === '/channels/777/messages' && /팝니다/.test(c.body.embeds?.[0]?.title || '')));
+    const again = await cmd(env, 'trade', 'buy', [{ name: 'item', value: '2040804' }, { name: 'price', value: 'abc' }, { name: 'nick', value: 'Hookstk' }]);
+    assert.match(again.data.content, /가격을 알아보지 못했어요/);
+  });
+});
