@@ -1,6 +1,15 @@
 // Pure tooltip parsing; only validated fields are returned.
 const LABELS = { 'weapon attack': 'PAD', 'magic attack': 'MAD', str: 'STR', dex: 'DEX', int: 'INT', luk: 'LUK', accuracy: 'ACC', avoidability: 'EVA', evasion: 'EVA', 'max hp': 'MHP', 'max mp': 'MMP', 'weapon defense': 'PDD', 'magic defense': 'MDD', speed: 'Speed', jump: 'Jump', 'critical rate': 'CRT', 'critical damage': 'CRD' };
 export const nameKey = (s) => String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
+// Leave room for the longest nickname, channel badge and whisper icon even during a chat scroll race.
+export function safeItemClickX(left,right,chatLeft) {
+  const x=Math.max(chatLeft+180,Math.floor((left+right)/2));
+  return x<right-2 ? x : null;
+}
+export function whisperDialog(rows) {
+  const prompt=rows.find((r)=>r.confidence>=0.5&&/Please enter the person you want to/i.test(r.text));
+  return prompt&&rows.find((r)=>r.confidence>=0.5&&/^CANCEL$/i.test(r.text.trim())&&r.y>prompt.y&&r.y<prompt.y+160&&Math.abs(r.x-prompt.x)<350);
+}
 const clean = (s) => s.replace(/^[•·*+\s-]+/, '').replace(/\b(?:aftack|altack|atack|ahack|attacke)\b/gi, 'Attack').trim();
 export function tooltipTitle(text, expected) {
   const s = clean(text).replace(/\s*\((?:M|F|Male|Female)\)\s*/gi, ' ');

@@ -1,10 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tooltipTitle, findTooltipPanel, parseTooltipLines, agreeOptions } from '../assets/mega-tooltip.js';
+import { tooltipTitle, findTooltipPanel, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog } from '../assets/mega-tooltip.js';
 import { optionParts } from '../assets/mega-option-text.js';
 const bow={en:'Vaulter 2000',cat:'Equip',slots:7};
 const dagger={en:'Bazlud',cat:'Equip',slots:7};
 const scroll={en:'Claw Attack Scroll: Intermediate',cat:'Use'};
+test('item clicks stay beyond any nickname; short unsafe links are skipped',()=>{
+ assert.equal(safeItemClickX(110,150,13),null);
+ assert.equal(safeItemClickX(110,240,13),193);
+ assert.equal(safeItemClickX(210,300,13),255);
+});
+test('whisper recovery identifies only the specific dialog cancel button',()=>{
+ const prompt={text:'Please enter the person you want to',confidence:1,x:568,y:365};
+ const cancel={text:'CANCEL',confidence:1,x:764,y:453,w:39,h:12};
+ assert.equal(whisperDialog([prompt,cancel]),cancel);
+ assert.equal(whisperDialog([cancel]),undefined);
+ assert.equal(whisperDialog([prompt,{...cancel,y:700}]),undefined);
+});
 test('real tooltip readings: totals, upgrades and zero remaining slots',()=>{
  assert.deepEqual(parseTooltipLines(['• Vaulter 2000 (+2)','REQ DEX: 85','Type: Bow','• Weapon Aftack: +68 (60 +8)','Attack Speed: Average','Knockback Chance: 20%','+ Remaining Enhancements: 0'],bow),{stats:{PAD:68},slots:0,attackSpeed:'average',knockback:20,ups:2,used:7,clean:false});
  assert.deepEqual(parseTooltipLines(['Bazlud i+7!','Type: Dagger','Weapon Attack: +72 (62+10)','Remaining Enhancements: 0'],dagger),{stats:{PAD:72},slots:0,ups:7,used:7,clean:false});
