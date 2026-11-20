@@ -285,7 +285,7 @@
       "h1": "GMS Hub 시세: 매물과 체결 가격 구분하기",
       "desc": "글클메 자유시장 시세 보는 법. 판매 중 매물과 판매 완료 가격이 어떻게 다른지, 판매자·채널·방과 확인 시각, 시세 그래프 읽는 법을 정리했어요.",
       "published": "2026-11-02",
-      "updated": "2026-11-10",
+      "updated": "2026-11-20",
       "sources": [
         {
           "title": "GMS Hub — market implementation and observation history",
@@ -297,7 +297,7 @@
         "price",
         "scan"
       ],
-      "reviewed": "2026-11-10",
+      "reviewed": "2026-11-20",
       "status": "published",
       "evidenceKind": "site-behavior"
     },
@@ -832,7 +832,7 @@
       "h1": "GMS Hub prices: listings versus transactions",
       "desc": "How to interpret sellers, locations, observation times, asking prices and historical charts.",
       "published": "2026-11-09",
-      "updated": "2026-11-10",
+      "updated": "2026-11-20",
       "sources": [
         {
           "title": "GMS Hub — market implementation and observation history",
@@ -844,7 +844,7 @@
         "price",
         "scan"
       ],
-      "reviewed": "2026-11-10",
+      "reviewed": "2026-11-20",
       "status": "published",
       "evidenceKind": "site-behavior"
     },

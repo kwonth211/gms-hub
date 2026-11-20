@@ -65,6 +65,12 @@ const classData = JSON.parse(document.getElementById('home-classes')?.textConten
 const charPanel = document.getElementById('my-char');
 mountCharPanel(charPanel, { routes: routeData, classes: classData, finder: charPanel?.dataset.finder, korean });
 const staticEntries = [
+  indexEntry({ type: 'tool', id: 'my-character', title: korean ? '내 캐릭터 맞춤 홈' : tx('My character home'), href: '#my-char',
+    description: korean ? '직업·레벨을 저장하고 사냥터·퀘스트·장비·스킬 순서를 한 번에' : tx('Save your class and level for routes, quests, gear and skills.'),
+    keywords: '내 캐릭터 맞춤 저장 직업 레벨 my character profile save class level' }),
+  indexEntry({ type: 'tool', id: 'my-wishlist', title: korean ? '저장한 관심 아이템' : tx('My saved items'), href: `${searchPanel.dataset.market}?fav=1`,
+    description: korean ? '이 브라우저에 별표로 저장한 아이템의 시세 다시 보기' : tx('Check prices for the items starred in this browser.'),
+    keywords: '관심 즐겨찾기 저장 아이템 wishlist favorite saved items' }),
   ...classData.map((c) => indexEntry({
     type: 'tool', id: `class-${c.slug}`, title: c.title, href: c.href,
     description: korean ? `레벨별 사냥 경로 ${c.n}곳` : tx('{n} training routes by level', { n: c.n }),
@@ -302,7 +308,10 @@ searchPanel.addEventListener('click', (e) => {
     focusResult(searchGroups.querySelectorAll(`[data-result-type="${kind}"]`)[previousCount]);
   }
   const result = e.target.closest('[data-result-type]');
-  if (result) track('home_search_click', { result_type: result.dataset.resultType, result_id: result.dataset.resultId });
+  if (result) {
+    track('home_search_click', { result_type: result.dataset.resultType, result_id: result.dataset.resultId });
+    if (result.getAttribute('href') === '#my-char') closeSearch();
+  }
 });
 document.getElementById('home-search').addEventListener('submit', (e) => {
   e.preventDefault();

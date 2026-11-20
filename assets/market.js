@@ -154,7 +154,11 @@ function itemLink(id) {
   return `<a class="mb-item-link" href="?item=${id}" data-item="${id}">${icon(id)}<span>${esc(itemName(id))}</span></a>`;
 }
 function starButton(id, extra = "") {
-  return `<button class="mb-star ${extra}" type="button" data-favorite="${id}" aria-pressed="${favorites.has(id)}" aria-label="${esc(itemName(id))} ${tr("관심 아이템", "wishlist")}" title="${favorites.has(id) ? tr("관심 아이템에서 빼기", "Remove from wishlist") : tr("관심 아이템에 넣기", "Add to wishlist")}">${favorites.has(id) ? "★" : "☆"}</button>`;
+  const detail = extra === "mb-star-detail";
+  return `<button class="mb-star ${extra}" type="button" data-favorite="${id}"${detail ? ` data-discover="wishlist_cta" data-discover-place="item-detail" data-discover-id="${id}"` : ""} aria-pressed="${favorites.has(id)}" aria-label="${esc(itemName(id))} ${tr("관심 아이템", "wishlist")}" title="${favorites.has(id) ? tr("관심 아이템에서 빼기", "Remove from wishlist") : tr("관심 아이템에 넣기", "Add to wishlist")}">${favoriteLabel(id, detail)}</button>`;
+}
+function favoriteLabel(id, detail) {
+  return `${favorites.has(id) ? "★" : "☆"}${detail ? ` ${favorites.has(id) ? tr("관심 저장됨", "Saved") : tr("관심 저장", "Save item")}` : ""}`;
 }
 // Wishlist shortcut and recently opened items, shown under the search box so a returning visitor is one tap from the
 // item they were watching. Both lists live only in this browser.
@@ -383,7 +387,7 @@ function renderDirectory() {
             `<tr class="${r.id === selected ? "selected" : ""}"><td>${starButton(r.id)}</td><td>${itemLink(r.id)}<small>${categories[r.category]}${r.reports ? ` · ${tr("가격 제보", "Reports")} ${r.reports}` : ""}${npcBetter(npcSell(r.id), refPrice(r)) ? ` <span class="mb-npc-tag" title="${esc(npcNote(r.id, refPrice(r)))}">${tr("NPC 이득", "NPC pays more")}</span>` : ""}</small></td><td class="mb-src">${dropIcons(r.id)}</td><td class="num">${r.median == null && r.typical ? `${money(r.typical)}<small>${tr("대표 시세", "Typical")}</small>` : `${money(r.median)}<small>${tr("최저", "Low")} ${money(r.low)}</small>`}</td><td class="mb-move-cell">${moveBadge(r.typicalDay)}</td><td><strong>${r.open}</strong><small>${r.sales ? `${tr("거래", "Traded")} ${money(r.sales)}` : `${tr("기록", "Records")} ${r.records || 0}`}</small></td><td>${r.last ? newMark(r.last) : ""}${when(r.last)}</td></tr>`,
         )
         .join("")}</tbody></table></div>`
-    : categoryMiss() || `<div class="market-empty"><strong>${tr("표시할 아이템이 없어요.", "No matching items.")}</strong><p>${$("mb-favorites").checked ? tr("별표를 눌러 관심 아이템을 저장해 보세요.", "Use the star to save items to your wishlist.") : T.noMatches}</p>${$("mk-q").value.trim() && document.body.dataset.discordUrl ? `<p><a href="${document.body.dataset.discordUrl}" target="_blank" rel="noopener" data-discord="market-empty">${tr("찾는 아이템 시세를 디스코드에서 물어보기", "Ask for this item's price on Discord")}</a></p>` : ""}${$("mk-q").value.trim() ? `<p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="listings">${tr("전체 매물에서 찾기", "Search all listings instead")}</button></p>` : ""}</div>`;
+    : categoryMiss() || `<div class="market-empty"><strong>${tr("표시할 아이템이 없어요.", "No matching items.")}</strong><p>${$("mb-favorites").checked ? favorites.size ? tr("저장한 아이템 중 현재 검색·필터에 맞는 항목이 없어요.", "None of your saved items match these filters.") : tr("아이템의 ‘관심 저장’을 누르면 여기에 모여요. 이 브라우저에서 다음에도 시세를 바로 확인할 수 있어요.", "Choose Save item on an item to keep it here and check its price next time in this browser.") : T.noMatches}</p>${$("mb-favorites").checked ? `<p><a class="btn ghost small-btn" href="/${D.lang}/tools/market/">${tr("아이템 찾아 저장하기", "Find items to save")}</a></p>` : ""}${$("mk-q").value.trim() && document.body.dataset.discordUrl ? `<p><a href="${document.body.dataset.discordUrl}" target="_blank" rel="noopener" data-discord="market-empty">${tr("찾는 아이템 시세를 디스코드에서 물어보기", "Ask for this item's price on Discord")}</a></p>` : ""}${$("mk-q").value.trim() ? `<p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="listings">${tr("전체 매물에서 찾기", "Search all listings instead")}</button></p>` : ""}</div>`;
   if (!rows.length && !$("mb-favorites").checked) noResults($("mk-q").value.trim());
   if (!$("mb-favorites").checked) searched($("mk-q").value.trim(), rows.length);
   $("mb-pagination").innerHTML = pager({ page, pages }, "main");
@@ -1062,12 +1066,15 @@ document.querySelector(".market-browser").addEventListener("click", (e) => {
       return;
     }
     const saved = persist(WISHLIST_KEY, [...favorites]);
-    if (status) status.textContent = saved ? "" : tr("이 브라우저에 저장할 수 없어서 새로고침하면 사라져요.", "This browser cannot store the list; it will be lost on reload.");
+    if (status) status.textContent = !saved ? tr("이 브라우저에 저장할 수 없어서 새로고침하면 사라져요.", "This browser cannot store the list; it will be lost on reload.")
+      : res.added ? tr("관심 아이템에 저장했어요. 홈의 ‘저장한 관심 아이템’에서 다시 볼 수 있어요. 이 브라우저에만 저장돼요.", "Saved. Open My saved items on the home page to check it again. Stored in this browser only.")
+      : tr("관심 아이템에서 뺐어요.", "Removed from saved items.");
     track(res.added ? "wishlist_add" : "wishlist_remove", { item_id: id, page_type: "market", storage: saved ? "ok" : "unavailable" });
     if (view === "items") renderDirectory();
     document.querySelectorAll(`[data-favorite="${id}"]`).forEach((b) => {
       b.setAttribute("aria-pressed", favorites.has(id));
-      b.textContent = favorites.has(id) ? "★" : "☆";
+      b.textContent = favoriteLabel(id, b.classList.contains("mb-star-detail"));
+      b.title = favorites.has(id) ? tr("관심 아이템에서 빼기", "Remove from wishlist") : tr("관심 아이템에 넣기", "Add to wishlist");
     });
     renderMine();
     return;
@@ -1400,7 +1407,7 @@ async function openAlert(id) {
 }
 document.addEventListener("click", async (e) => {
   const openBtn = e.target.closest("[data-alert-open]");
-  if (openBtn) { openAlert(Number(openBtn.dataset.alertOpen)); window.track?.("alert_open"); return; }
+  if (openBtn) { openAlert(Number(openBtn.dataset.alertOpen)); window.track?.("alert_open", { item_id: Number(openBtn.dataset.alertOpen) }); return; }
   const off = e.target.closest("[data-alert-off]");
   if (off) {
     const sub = await pushSubscription(false).catch(() => null);
@@ -1423,6 +1430,7 @@ document.addEventListener("submit", (e) => {
   back.searchParams.set("item", id);
   back.searchParams.delete("dalert");
   window.track?.("discord_click", { place: "price-alert", item_id: id });
+  window.track?.("price_alert_start", { item_id: id, channel: "discord" });
   location.href = `${D.api}/discord/oauth/start?${new URLSearchParams({ item: id, price, intent: "sell", lang: D.lang === "ko" ? "ko" : "en", ret: back.pathname + back.search })}`;
 });
 // Back from Discord: ?dalert=ok|nodm|full|cancel|off|fail and the item, shown once in the item's alert box.
@@ -1437,6 +1445,7 @@ function discordResult(id) {
   if (!discordReturn || discordReturn.item !== id || !$("mb-alert")) return;
   const v = discordReturn.v, invite = document.body.dataset.discordUrl || "";
   discordReturn = null;
+  window.track?.("price_alert_result", { item_id: id, channel: "discord", result: ["ok", "nodm", "full", "cancel", "off"].includes(v) ? v : "fail" });
   const msg = {
     ok: tr("✅ 알림을 켰어요. 디스코드 DM을 확인해 보세요. GMS Hub 디스코드에도 들어와 있어요.", "✅ Alert on. Check your Discord DMs; you are also in the GMS Hub Discord now."),
     nodm: tr("알림은 저장했지만 DM을 보내지 못했어요. 디스코드 설정 > 개인정보 보호에서 서버 멤버의 DM을 허용하면 그때부터 받아요.", "Saved, but the DM did not go through. Allow direct messages from server members in Discord's privacy settings to receive alerts."),

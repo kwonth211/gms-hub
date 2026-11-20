@@ -703,11 +703,11 @@ function head({ lang, title, desc, pagePath, noindex, ld = [], only, bare }) {
     ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${esc(config.gaMeasurementId)}"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());
 // Operator, local and automated visits are tagged internal (GA4 "Internal traffic" filter): localhost, or any browser that once opened ?internal=1.
-var gmsInternal=/^(localhost|127\\.0\\.0\\.1|\\[::1\\])$/.test(location.hostname);try{if(/[?&]internal=1(&|$)/.test(location.search))localStorage.setItem('gmshub_internal','1');gmsInternal=gmsInternal||localStorage.getItem('gmshub_internal')==='1'}catch(e){}
+var gmsInternal=['localhost','127.0.0.1','[::1]'].includes(location.hostname);try{if(/[?&]internal=1(&|$)/.test(location.search))localStorage.setItem('gmshub_internal','1');gmsInternal=gmsInternal||localStorage.getItem('gmshub_internal')==='1'}catch(e){}
 gtag('config','${esc(config.gaMeasurementId)}',gmsInternal?{traffic_type:'internal'}:{});</script>`
     : '';
   const clarity = config.clarityProjectId
-    ? `<script>(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};addEventListener('load',function(){setTimeout(function(){t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)},2500)})})(window,document,"clarity","script","${esc(config.clarityProjectId)}");</script>`
+    ? `<script>(function(c,l,a,r,i,t,y){var internal=c.gmsInternal||['localhost','127.0.0.1','[::1]'].includes(location.hostname)||/[?&]internal=1(&|$)/.test(location.search);try{internal=internal||localStorage.getItem('gmshub_internal')==='1'}catch(e){}if(internal)return;c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};addEventListener('load',function(){setTimeout(function(){t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)},2500)})})(window,document,"clarity","script","${esc(config.clarityProjectId)}");</script>`
     : '';
   const cfBeacon = config.cfAnalyticsToken
     ? `<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "${esc(config.cfAnalyticsToken)}"}'></script>`
@@ -1015,7 +1015,7 @@ ${header(lang, pagePath, only)}
 <main>${ads && pageKey !== 'home' ? adfitRails() : ''}${withMidAd(withTopAd(withDownload(body, lang, pageKey, pagePath), ads), ads)}${ads && !body.includes(AD_MID) ? adfitSlot() : ''}</main>
 ${footer(lang)}
 ${lateScripts([
-  [scriptSrc('analytics.js')], [scriptSrc('common.js')], [href(`/assets/header-search.js?v=${moduleVersion}`), 1],
+  [scriptSrc('analytics.js')], [scriptSrc('common.js')], [href(`/assets/feature-discovery.js?v=${moduleVersion}`), 1], [href(`/assets/header-search.js?v=${moduleVersion}`), 1],
   ...(ads ? [[scriptSrc('adfit.js')]] : []),
   ...scripts.map((s) => [scriptSrc(s)]),
   ...modules.map((s) => [href(`/assets/${s}?v=${moduleVersion}`), 1]),
@@ -1393,6 +1393,11 @@ ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이�
 </section>
 </div>
 <p class="search-help" id="search-help">${lang === 'ko' ? '한글·영문·초성·줄임말로 검색하세요. 예: 귀힘, 미스릴, 좀비 루팡, 사냥터' : 'Search by name or keyword. Try Gloves Attack, Mithril, Zombie Lupin or training.'}</p>
+<nav class="home-shortcuts" aria-label="${lang === 'ko' ? '내가 다시 쓸 도구' : 'Tools to come back to'}">
+<a href="#my-char" data-discover="home_character" data-discover-place="home-search">${lang === 'ko' ? '내 캐릭터 맞춤 홈' : 'My character home'}</a>
+<a href="${href(langPath(lang, '/tools/market/?fav=1'))}" data-discover="home_wishlist" data-discover-place="home-search">${lang === 'ko' ? '저장한 관심 아이템' : 'My saved items'}</a>
+<a href="${href(langPath(lang, '/tools/exp/'))}" data-discover="home_exp" data-discover-place="home-search">${lang === 'ko' ? '내 시간당 경험치 측정' : 'Measure my EXP/hour'}</a>
+</nav>
 ${heroNew(lang)}
 <dl class="hero-stats"><div data-market-stat="listings"><dt>${lang === 'ko' ? '24시간 매물' : 'Listings, 24h'}</dt><dd>–</dd></div><div data-market-stat="shops"><dt>${lang === 'ko' ? '24시간 확인한 상점' : 'Shops checked, 24h'}</dt><dd>–</dd></div>${lang === 'ko'
   ? `<div><dt>몬스터</dt><dd>${MONSTERS.monsters.filter((m) => m.status !== 'unplaced').length}</dd></div><div><dt>퀘스트</dt><dd>${QUESTS.length}</dd></div>`

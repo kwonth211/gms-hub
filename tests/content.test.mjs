@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import vm from 'node:vm';
 import { selectRoutes, routeCards, publicTrainingData, validateTraining } from '../assets/training-evidence.js';
 const root = new URL('../', import.meta.url);
 const read = p => fs.readFileSync(new URL(p,root),'utf8');
@@ -19,6 +20,54 @@ test('versioned product telemetry loads before all feature scripts in every loca
     assert.ok(analytics < html.indexOf('/assets/header-search.js?v='));
   }
   assert.ok(fs.existsSync(new URL('dist/assets/analytics.js', root)));
+});
+
+test('discovery shortcuts preserve locale, usable destinations and existing section order', () => {
+  for (const lang of ['ko', 'en', 'ja', 'zh']) {
+    const html = read(`dist/${lang}/index.html`);
+    assert.ok(html.includes('href="#my-char"'));
+    assert.ok(html.includes(`href="/${lang}/tools/market/?fav=1"`));
+    assert.ok(html.includes(`href="/${lang}/tools/exp/"`));
+    assert.ok(html.includes('/assets/feature-discovery.js?v='));
+    assert.ok(html.indexOf('home-shortcuts') < html.indexOf('id="live-market"'));
+    assert.ok(html.indexOf('id="live-market"') < html.indexOf('id="my-char"'));
+  }
+  for (const lang of ['ko', 'en']) {
+    const fh = read(`dist/${lang}/forgotten-hollow/index.html`);
+    const ids = [...fh.matchAll(/href="[^\"]*\/tools\/market\/\?item=(\d+)"[^>]*data-discover="hollow_drop"/g)].map(m => Number(m[1]));
+    assert.ok(ids.length > 10);
+    const published = new Set(JSON.parse(read('dist/assets/items.json')).map(r => r[0]));
+    assert.ok(ids.every(id => published.has(id)), 'no dead item links');
+    const html = read(`dist/${lang}/tools/training/index.html`);
+    assert.match(html, /<summary>[\s\S]*?class="tr-measure"[^>]*route=[^\"]+&amp;|<summary>[\s\S]*?class="tr-measure"[^>]*route=/);
+    assert.ok(html.includes('data-discover="training_exp"'));
+  }
+});
+
+test('GA and Clarity exclude local/internal browsers without excluding ordinary visitors', () => {
+  const html = read('dist/ko/index.html');
+  const scripts = [...html.matchAll(/<script(?: [^>]*)?>([\s\S]*?)<\/script>/g)].map(m => m[1]);
+  const ga = scripts.find(s => s.includes('var gmsInternal='));
+  const clarity = scripts.find(s => s.includes('https://www.clarity.ms/tag/'));
+  for (const hostname of ['localhost', '127.0.0.1', '[::1]', 'gms-hub.com']) {
+    for (const flag of ['', '1']) {
+      const scheduled = [], events = [];
+      const ctx = { location: { hostname, search: '' }, localStorage: { getItem: () => flag },
+        document: {}, addEventListener: (...args) => scheduled.push(args), window: { dataLayer: { push: x => events.push(Array.from(x)) } } };
+      ctx.dataLayer = ctx.window.dataLayer;
+      vm.runInNewContext(ga, ctx);
+      ctx.window.gmsInternal = ctx.gmsInternal;
+      vm.runInNewContext(clarity, ctx);
+      const internal = hostname !== 'gms-hub.com' || flag === '1';
+      assert.equal(events.at(-1)[2].traffic_type === 'internal', internal);
+      assert.equal(scheduled.length, internal ? 0 : 1);
+    }
+  }
+  // Clarity remains safe if GA is disabled or storage is blocked.
+  const scheduled = [];
+  vm.runInNewContext(clarity, { window: {}, document: {}, location: { hostname: 'gms-hub.com', search: '?internal=1' },
+    localStorage: { getItem() { throw Error('blocked'); } }, addEventListener: (...args) => scheduled.push(args) });
+  assert.equal(scheduled.length, 0);
 });
 
 test('level 20 starter routes do not default to Ant Tunnel; equipped claw route is explicit',()=>{

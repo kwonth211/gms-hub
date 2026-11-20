@@ -136,11 +136,20 @@ ${best ? `<p class="fh-map-why">${esc(L(best))}</p>` : ''}${hidden ? `<p class="
   // ---------- monsters ----------
   const notable = (m) => (m.drops || []).filter((d) => /^(1|204|4130)/.test(String(d.itemId)));
   const etc = (m) => (m.drops || []).filter((d) => /^4000\d{3}$/.test(String(d.itemId))).slice(0, 1);
+  // The weapon table already links to live prices. Make the named drops in the monster cards actionable too,
+  // using only items present in the published index; unknown/quest materials remain plain text.
+  const dropChip = (d) => {
+    const name = withRate(ko ? d.ko : d.en);
+    const body = `<img src="${icon(d.itemId)}" alt="" width="24" height="24" loading="lazy"><span translate="no">${esc(name)}</span>`;
+    return items.has(d.itemId)
+      ? `<a href="${link(`/tools/market/?item=${d.itemId}`)}" title="${esc(`${name} · ${tr('시세·매물 보기', 'View prices and listings')}`)}" data-discover="hollow_drop" data-discover-place="monster-card" data-discover-id="${d.itemId}">${body}</a>`
+      : `<span>${body}</span>`;
+  };
   const mobCard = (m) => `<article class="fh-mob${m.boss ? ' fh-mob-boss' : ''}" id="mob-${m.id}">
 <div class="fh-mob-head"><img src="${mobSprite(m)}" alt="" width="64" height="64" loading="lazy"><div><h3><a href="${mobHref(m)}" translate="no">${esc(mobName(m))}</a></h3><small>Lv ${m.lv}${m.undead ? ` ${tr('언데드', 'undead')}` : ''}</small></div></div>
 <dl class="fh-mob-stats"><div><dt>HP</dt><dd>${n(m.hp, lang)}</dd></div><div><dt>${tr('경험치', 'EXP')}</dt><dd>${n(m.exp, lang)}</dd></div><div><dt>${tr('물리 방어', 'DEF')}</dt><dd>${m.wdef}</dd></div><div><dt>${tr('마법 방어', 'M.DEF')}</dt><dd>${m.mdef}</dd></div><div><dt>${tr('같은 레벨 명중', 'Accuracy, same level')}</dt><dd>${accNeed(m.lv, m)}</dd></div></dl>
 ${elTags(m) ? `<p class="fh-els">${elTags(m)}</p>` : ''}
-<div class="fh-drops">${[...etc(m), ...notable(m)].map((d) => `<span title="${esc(ko ? d.ko : d.en)}"><img src="${icon(d.itemId)}" alt="" width="24" height="24" loading="lazy"><span translate="no">${esc(withRate(ko ? d.ko : d.en))}</span></span>`).join('')}</div>
+<div class="fh-drops">${[...etc(m), ...notable(m)].map(dropChip).join('')}</div>
 <a class="fh-mob-calc" href="${calcHref(m)}">${tr('몇 방 컷 계산', 'Hits to kill')}</a>
 </article>`;
   const monstersSec = `<section class="fh-sec wrap" id="monsters">

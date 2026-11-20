@@ -183,7 +183,11 @@
 .fh-el-weak { background: var(--fh-weak-soft); color: var(--fh-weak); }
 .fh-el-strong { background: var(--fh-strong-soft); color: var(--fh-strong); }
 .fh-drops { display: flex; flex-wrap: wrap; gap: 8px 12px; font-size: 0.9rem; color: var(--fh-muted); }
-.fh-drops > span { display: inline-flex; align-items: center; gap: 4px; }
+.fh-drops > :is(span, a) { display: inline-flex; align-items: center; gap: 4px; min-width:0; }
+.fh-drops > a { color:var(--fh-glow); text-decoration:underline; text-underline-offset:3px; border-radius:4px; }
+.fh-drops > a:hover { color:var(--fh-text); }
+.fh-drops > a:focus-visible { outline:2px solid var(--fh-glow); outline-offset:3px; }
+.fh-drops > a span { overflow-wrap:anywhere; }
 .fh-drops img { width: 24px; height: 24px; object-fit: contain; }
 .fh-drops-big { font-size: 0.98rem; color: var(--fh-text); }
 .fh-drops-big img { width: 28px; height: 28px; }

@@ -1306,7 +1306,9 @@ input.dm-filled { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset
 .mb-recent-chip button:hover,.mb-mine-clear:hover { color:var(--accent); background:var(--panel-2); }
 .mb-mine-clear { font-size:.74rem; padding:0 8px; border-radius:999px; }
 .mb-detail .mk-head > button { margin-left:6px; }
-.mb-detail .mk-head > .mb-star-detail { margin-left:auto; font-size:1.3rem; min-height:34px; }
+.mb-detail .mk-head > .mb-star-detail { margin-left:auto; font:inherit; font-size:.875rem; font-weight:700; min-height:36px; padding:6px 10px; border:1px solid var(--line); border-radius:8px; white-space:nowrap; }
+.mb-detail .mk-head > .mb-star-detail:hover { border-color:var(--accent); background:var(--panel-2); }
+.mb-detail .mk-head > .mb-star-detail:focus-visible { outline:2px solid var(--focus); outline-offset:2px; }
 .share-status { margin:0; min-height:1.2em; font-size:.76rem; color:var(--accent-2); }
 .share-status:empty { display:none; }
 .mb-visit-note { background:var(--panel-2); border-radius:8px; padding:9px 11px; }
@@ -1651,6 +1653,8 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .tr-route-list[style*='--you'] .tr-bar::after { content: ''; position: absolute; top: -3px; bottom: -3px; left: var(--you); width: 2px; background: var(--text); }
 .tr-name { display: grid; gap: 4px; min-width: 0; }
 .tr-name strong { font-size: 1rem; line-height: 1.35; }
+.tr-name .tr-measure { justify-self:start; font-size:.875rem; line-height:1.4; font-weight:600; padding:5px 0; text-underline-offset:3px; }
+.tr-measure small { font-size:.75rem; font-weight:400; color:var(--muted); }
 .tr-who { display: flex; flex-wrap: wrap; gap: 2px 10px; color: var(--muted); font-size: 0.8rem; }
 .tr-row .tr-mobs { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0; }
 .tr-row .tr-mobs a { display: inline; padding: 0; border: 0; background: none; color: var(--text); text-decoration: none; font-size: 0.9rem; }
@@ -1984,6 +1988,11 @@ html[data-charm='off'] .charm-leaves { display: none; }
 
 /* New-feature shortcuts under the home search. */
 .hero-new { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 12px 0 0; font-size: 0.85rem; }
+.home-shortcuts { display:flex; flex-wrap:wrap; gap:6px 10px; margin:12px 0 0; }
+.home-shortcuts a { display:inline-flex; align-items:center; min-height:40px; padding:7px 12px; border:1px solid var(--line); border-radius:8px; background:var(--panel); color:var(--text); font-size:.875rem; font-weight:600; line-height:1.4; text-decoration:none; }
+.home-shortcuts a:hover { border-color:var(--accent); background:var(--accent-soft); }
+.home-shortcuts a:focus-visible { outline:2px solid var(--focus); outline-offset:2px; }
+#my-char { scroll-margin-top:90px; }
 .hero-new-tag { font-size: 0.68rem; font-weight: 800; padding: 1px 6px; border-radius: 4px; background: var(--danger); color: var(--panel); }
 .hero-new a { padding: 3px 10px; border-radius: 999px; border: 1px solid var(--accent-line); background: var(--accent-soft); color: var(--text); text-decoration: none; font-weight: 700; }
 .hero-new a:hover { border-color: var(--accent); }

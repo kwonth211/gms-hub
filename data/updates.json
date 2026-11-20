@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "saved-tools-discovery",
+   "version": "0.7.36",
+   "level": "minor",
+   "date": "2026-11-20",
+   "path": "/",
+   "ko": "자주 쓰는 기능을 더 가까이 — 맞춤 홈·관심 저장·경험치 측정",
+   "en": "Your everyday tools, easier to find — character home, saved items and EXP",
+   "desc": {
+    "ko": "홈 검색 아래에서 맞춤 캐릭터 홈과 저장한 관심 아이템을 바로 열 수 있어요. 아이템 상세의 별표에 관심 저장이라는 이름을 붙이고, 사냥터를 펼치지 않아도 내 경험치 측정으로 갈 수 있게 했어요. 할로우 몬스터 카드의 드롭 이름에서도 시세를 바로 열어요.",
+    "en": "Open your character home or saved items below home search. Item details now label the save star, and training rows open the EXP meter without expanding the route. Hollow monster-card drops also link straight to prices."
+   }
+  },
+  {
    "id": "quest-guide-mobile",
    "version": "0.7.35",
    "level": "patch",
