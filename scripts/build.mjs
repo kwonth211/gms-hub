@@ -822,7 +822,7 @@ function header(lang, pagePath, only) {
   const sitesEntry = ['/sites/', 'star', lang === 'ko' ? '사이트 모음' : 'Other Classic World sites'];
   // English labels that would break mid-word on a phone ("Calcul/ator") get a one-word form there.
   // The newest tab carries a small N so returning visitors notice it.
-  const NEW_TAB = UPDATES.find((u) => [...tabs, ...huntItems, ...questItems, ...toolItems, ...guideItems].some(([p]) => p === u.path.split('#')[0]))?.path.split('#')[0] || '/quests/';
+  const NEW_TAB = UPDATES.find((u) => [...tabs, ...huntItems, ...questItems, ...toolItems, ...guideItems].some(([p]) => p === u.path.split(/[?#]/)[0]))?.path.split(/[?#]/)[0] || '/quests/';
   const SHORT_EN = { '/': 'Home', '/monsters/': 'Mobs', '/tools/training/': 'Spots', '/tools/scroll/': 'Scrolls', '/tools/drop-rate/': 'Odds', '/tools/damage/': 'Hits', '/tools/market/': 'Market', '/megaphone/': 'Megas', '/tools/exp/': 'EXP', '/guides/': 'Guides', '/quests/': 'Quests' };
   const dropMenu = (items, icon, label, shortEn) => {
     const on = items.some(([p]) => p === '/guides/' ? pagePath?.startsWith('/guides/') : pagePath?.startsWith(p));
