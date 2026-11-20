@@ -1,6 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cleanText, assemble, bandClass } from '../assets/mega-reader.js';
+import { cleanText, assemble, bandClass, findLines, lineFingerprint, locateFingerprint } from '../assets/mega-reader.js';
+
+test('option target follows the same complete row when chat scrolls; ambiguity is rejected', () => {
+  const frame=rows=>{
+    const img={width:160,height:90,data:new Uint8Array(160*90*4)};
+    for(let y=0;y<90;y++)for(let x=0;x<160;x++)img.data.set([216,168,40,255],(y*160+x)*4);
+    for(const [top,mark] of rows)for(let y=top;y<top+8;y++)for(let x=5;x<100;x++)if(x%6<3 || x===mark)img.data.set([24,24,8,255],(y*160+x)*4);
+    return img;
+  };
+  const before=frame([[50,40]]),line=findLines(before)[0];
+  const fingerprint=lineFingerprint(before,line);
+  assert.equal(locateFingerprint(frame([[10,40],[50,41]]),fingerprint)?.top,10);
+  assert.equal(locateFingerprint(frame([[10,41]]),fingerprint),null);
+  assert.equal(locateFingerprint(frame([[10,40],[50,40]]),fingerprint),null);
+});
 
 test('band colours: gold, dithered pink and teal are megaphones; the dark chat background is not', () => {
   assert.equal(bandClass(216, 168, 40), 'Y');
@@ -36,6 +50,9 @@ test('misread bracketed item names snap to the catalogue only when clearly the s
   assert.equal(fix('[white Choco Bunry] S> 850k'), '[White Choco Bunny] S> 850k');
   assert.equal(fix('[work gloves] PMO'), '[Work Gloves] PMO');
   assert.equal(fix('[Totally Unknown Thing] hi'), '[Totally Unknown Thing] hi');
+  assert.equal(fix('work Gloves] PMO',true),'[Work Gloves] PMO');
+  assert.equal(fix('work Gloves] PMO'),'work Gloves] PMO');
+  assert.equal(fix('Totally Unknown Thing] hi',true),'Totally Unknown Thing] hi');
 });
 
 test('a partly known line keeps the table words and fills only the unknown letters from OCR', async () => {

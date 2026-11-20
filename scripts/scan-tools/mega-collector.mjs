@@ -10,7 +10,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { PNG } from 'pngjs';
 import Tesseract from 'tesseract.js';
-import { findChatBox, findLines, readLine, assemble, repeatFilter, itemFixer, glyphReader, slotAnchor, windowTop } from '../../assets/mega-reader.js';
+import { findChatBox, findLines, readLine, assemble, repeatFilter, itemFixer, glyphReader, slotAnchor, windowTop, lineFingerprint } from '../../assets/mega-reader.js';
 import { OptionReader, nameKey } from './mega-options.mjs';
 
 const API = 'https://gms-hub-votes.kwonth211.workers.dev/internal/megaphone';
@@ -142,33 +142,45 @@ async function tick() {
     const kept = fs.readdirSync(LIVE).filter((f) => f.endsWith('.png')).sort();
     for (const f of kept.slice(0, Math.max(0, kept.length - 300))) fs.unlinkSync(path.join(LIVE, f));
   }
-  for (const m of all) m.text = fixItems(m.text);
+  for (const m of all) m.text = fixItems(m.text,['Y','C'].includes(m.color));
+  const fingerprints=lines.map(l=>lineFingerprint(part,l));
   const pending=[];
   for (const m of all) {
     if (!m.channel || isRepeat(m, now)) continue;
     const row = { seen: new Date(now).toISOString(), kind: KINDS[m.color] || 'super', color: m.color, channel: m.channel, nick: m.nick, text: m.text };
     pending.push({row,m});
-    if(optionReader && ['Y','C'].includes(row.color)) optionJobs.set(messageKey(m),{row,m,attempts:0,lastAttempt:0,created:now});
+    if(optionReader && ['Y','C'].includes(row.color)) {
+      const i=read.findIndex(r=>!r.cont&&r.nick===m.nick&&r.channel===m.channel&&row.text.startsWith(fixItems(r.text,true)));
+      if(i>=0)optionJobs.set(messageKey(m),{row,m,fingerprint:fingerprints[i],attempts:0,lastAttempt:0,created:now,lastVisible:now});
+    }
     console.log(`${new Date(now).toTimeString().slice(0, 8)} ${row.kind.padEnd(6)} CH${String(row.channel).padStart(2)} ${row.nick}: ${row.text}`);
   }
-  const visible = new Set(all.map(messageKey));
-  for(const [key,job] of optionJobs) if(!visible.has(key)||now-job.created>120000||job.attempts>=4) optionJobs.delete(key);
-  if(optionReader) for(const [key,job] of [...optionJobs].sort((a,b)=>a[1].lastAttempt-b[1].lastAttempt)) {
+  // Publish text before slow option OCR. Later success enriches this exact row.
+  queue.push(...pending.map(({row})=>row));
+  for(const [key,job] of optionJobs) {
+    if(fingerprints.includes(job.fingerprint))job.lastVisible=now;
+    if(now-job.lastVisible>10000||now-job.created>120000||job.attempts>=4) optionJobs.delete(key);
+  }
+  const jobItem=job=>{const links=[...job.row.text.matchAll(/\[([^\]]+)\]/g)];return links.length===1?optionReader.catalog.find(i=>nameKey(i.en)===nameKey(links[0][1])):null;};
+  // Known scrollable equipment/scrolls first. Entries without equipment details can still be read,
+  // but must not consume four retries while stat-bearing equipment scrolls off the chat.
+  const priority=job=>{const item=jobItem(job);return item&&(Number.isInteger(item.slots)||/ Scroll: /i.test(item.en))?0:1;};
+  if(optionReader) for(const [key,job] of [...optionJobs].sort((a,b)=>a[1].attempts-b[1].attempts||priority(a[1])-priority(b[1])||a[1].lastAttempt-b[1].lastAttempt)) {
     const {row,m}=job;
     if(now-job.lastAttempt<3000)continue;
-    const links=[...row.text.matchAll(/\[([^\]]+)\]/g)];if(links.length!==1){optionJobs.delete(key);continue;}
-    const item=optionReader.catalog.find((i)=>nameKey(i.en)===nameKey(links[0][1]));
+    const item=jobItem(job);
     if(!item || (item.cat!=='Equip' && !/ Scroll: /i.test(item.en))){optionJobs.delete(key);continue;}
-    const i=read.findIndex((r)=>!r.cont&&r.nick===m.nick&&r.channel===m.channel&&fixItems(r.text)===row.text.slice(0,fixItems(r.text).length));
-    if(i<0)continue;
+    const matches=fingerprints.flatMap((f,i)=>f===job.fingerprint?[i]:[]);
+    if(matches.length!==1)continue;
+    const i=matches[0];
     job.lastAttempt=now;
     const opts=await optionReader.collect({image:img,box,line:lines[i],message:row,item,glyph:anchor?{read:readGlyphs,wTop:windowTop(lines[i],anchor),expected:item.en}:null});
-    if(opts){row.opts=opts;optionJobs.delete(key);if(!pending.some(p=>p.row===row))queue.push({...row});console.log(`options ${row.nick} [${item.en}] ${JSON.stringify(opts)}`);}
-    else console.log(`options skipped ${row.nick} [${item.en}]: ${optionReader.lastSkip}`);
+    if(opts){row.opts=opts;optionJobs.delete(key);if(!queue.includes(row))queue.push({...row});console.log(`options ${row.nick} [${item.en}] ${JSON.stringify(opts)} (${Date.now()-now}ms)`);}
+    else console.log(`options skipped ${row.nick} [${item.en}]: ${optionReader.lastSkip} (${Date.now()-now}ms)`);
     if(!/input\/OCR: [45]$|cooldown|paused/.test(optionReader.lastSkip))job.attempts++;
+    if(priority(job)>0&&optionReader.lastSkip==='no trusted numeric options')optionJobs.delete(key);
     break; // One attempt per tick, rotating fairly; text uploads are never held for OCR.
   }
-  queue.push(...pending.map(({row})=>row));
 }
 
 console.log(DRY ? `dry run: no uploads${OPTIONS ? ', background option clicks enabled' : ', reading only'}` : `collecting and posting${OPTIONS ? '' : ' (text only; option input disabled)'}`);

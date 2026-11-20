@@ -141,6 +141,13 @@ export function findBadge(img, line, { scrollbar = 20 } = {}) {
 
 // Part of a line drawn black-on-white, `scale` times larger with a margin. 'ink' is anything far from the band
 // colour (dark message text, bright yellow item names) but not the white badge fill; 'red' is the badge's channel digits.
+export function lineFingerprint(img, line) {
+  return `${line.bottom-line.top}:${line.right}:${lineBitmap(img,line,{x0:0,scale:1,pad:0}).sig}`;
+}
+export function locateFingerprint(img, fingerprint) {
+  const matches=findLines(img).filter(line=>lineFingerprint(img,line)===fingerprint);
+  return matches.length===1 ? matches[0] : null;
+}
 export function lineBitmap(img, line, { x0 = LEFT, x1, scale = 3, scrollbar = 20, pad = 2, mode = 'ink' } = {}) {
   const right = Math.min(x1 ?? Infinity, line.right ?? Infinity, Math.max(10, img.width - scrollbar));
   const top = Math.max(0, line.top - pad), bottom = Math.min(img.height - 1, line.bottom + pad);
@@ -301,7 +308,7 @@ export function itemFixer(names) {
   const exact = new Map(names.map((n) => [n.toLowerCase(), n]));
   const grams = (t) => { const g = new Set(); const s = ` ${t} `; for (let i = 0; i < s.length - 2; i++) g.add(s.slice(i, i + 3)); return g; };
   const index = list.map((n) => [n, grams(n)]);
-  return (text) => text.replace(/\[([^\]]{3,60})\]/g, (whole, raw) => {
+  const fix = (text) => text.replace(/\[([^\]]{3,60})\]/g, (whole, raw) => {
     const low = raw.toLowerCase().trim();
     if (exact.has(low)) return `[${exact.get(low)}]`;
     const g = grams(low);
@@ -315,6 +322,15 @@ export function itemFixer(names) {
     }
     return score >= 0.6 ? `[${exact.get(best)}]` : whole;
   });
+  return (text,linked=false) => {
+    // The gold '[' sometimes disappears into the band. Repair only a leading catalogue item
+    // followed by ']', and only on a yellow/cyan item-megaphone row.
+    if(linked&&/^[^\[\]]{3,60}\]/.test(text)) {
+      const candidate=fix(`[${text}`),name=/^\[([^\]]+)\]/.exec(candidate)?.[1];
+      if(name&&exact.has(name.toLowerCase()))return candidate;
+    }
+    return fix(text);
+  };
 }
 
 // ---------- glyph reading ----------

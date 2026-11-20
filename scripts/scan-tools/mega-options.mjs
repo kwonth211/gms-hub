@@ -6,9 +6,9 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { PNG } from 'pngjs';
 import Tesseract from 'tesseract.js';
-import { findBadge, lineBitmap, glyphs } from '../../assets/mega-reader.js';
+import { findBadge, lineBitmap, lineFingerprint, locateFingerprint, glyphs } from '../../assets/mega-reader.js';
 const exec = promisify(execFile);
-import { findTooltipPanel, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog, nameKey, tooltipTitle } from '../../assets/mega-tooltip.js';
+import { findTooltipPanel, tooltipBody, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog, nameKey, tooltipTitle } from '../../assets/mega-tooltip.js';
 export { nameKey } from '../../assets/mega-tooltip.js';
 export function cropImage(img, b, mask = false, scale = 1) {
   const out = new PNG({ width:b.w*scale, height:b.h*scale });
@@ -45,6 +45,11 @@ export function itemLink(img,line,glyph=null) {
 export class OptionReader {
   constructor({shot,input,ocr,catalog,readFrame}) {Object.assign(this,{shot,input,ocr,catalog,readFrame});this.last=0;this.dir=fs.mkdtempSync(path.join(os.tmpdir(),'gms-mega-options-'));}
   async recognize(img,name,file='ocr.png') {const p=path.join(this.dir,file);fs.writeFileSync(p,PNG.sync.write(img));const {stdout}=await exec(this.ocr,[p,name],{timeout:4000,maxBuffer:2e6});return JSON.parse(stdout);}
+  async recognizeFallback(img) {
+    this.fallback ||= Tesseract.createWorker('eng').then(async w=>{await w.setParameters({tessedit_pageseg_mode:'6'});return w;});
+    const {data}=await (await this.fallback).recognize(PNG.sync.write(img));
+    return data.lines.map(l=>({text:l.text.trim(),confidence:l.confidence/100,x:l.bbox.x0,y:l.bbox.y0,w:l.bbox.x1-l.bbox.x0,h:l.bbox.y1-l.bbox.y0}));
+  }
   async recoverTitle(image, rows, item, point) {
     // Vision can merge a translucent tooltip title with text behind it. A second engine reads a bounded crop;
     // approximate words only choose where to look. findTooltipPanel still requires the exact catalogue title.
@@ -52,16 +57,13 @@ export class OptionReader {
     const candidates=rows.filter(r=>!/[\[\]]/.test(r.text)&&r.x>point.x-300&&r.x<point.x+120&&r.y<point.y+70&&
       words.filter(w=>nameKey(r.text).includes(w)).length>=Math.max(1,words.length-1)).slice(0,2);
     if(!candidates.length)return null;
-    this.fallback ||= Tesseract.createWorker('eng').then(async w=>{await w.setParameters({tessedit_pageseg_mode:'6'});return w;});
-    const worker=await this.fallback;
     for(const r of candidates){
       const x=Math.max(0,Math.floor(r.x-10)),y=Math.max(28,Math.floor(r.y-8));
       const b={x,y,w:Math.min(image.width-x,item.cat==='Equip'?240:420),h:Math.min(image.height-y,600)};
-      const {data}=await worker.recognize(PNG.sync.write(cropImage(image,b,false,3)));
-      const extra=data.lines.map(l=>({text:l.text.trim(),confidence:l.confidence/100,x:x+l.bbox.x0/3,y:y+l.bbox.y0/3,w:(l.bbox.x1-l.bbox.x0)/3,h:(l.bbox.y1-l.bbox.y0)/3}));
+      const extra=(await this.recognizeFallback(cropImage(image,b,false,3))).map(l=>({...l,x:x+l.x/3,y:y+l.y/3,w:l.w/3,h:l.h/3}));
       if(!extra.some(r=>r.confidence>=0.5&&tooltipTitle(r.text,item.en)))continue;
       const panel=findTooltipPanel([...rows,...extra],item,this.catalog,image);
-      if(panel)return panel;
+      if(panel)return {...panel,recovered:extra};
     }
     return null;
   }
@@ -72,27 +74,37 @@ export class OptionReader {
     if(Date.now()-this.last<2500)return skip('cooldown');this.last=Date.now();
     const part=cropImage(image,box),link=itemLink(part,line,glyph);if(!link)return skip('no safe item-link point');
     const signature=(im,edge)=>lineBitmap(cropImage(im,box),line,{x0:0,x1:edge}).sig;
-    const original=signature(image,line.right);
+    const fingerprint=lineFingerprint(part,line);
     const park=[Math.min(image.width-40,box.x+box.w+35),35];
     const input=async(action,x,y)=>{if(paused())throw Error('option input paused');return exec(this.input,[action,String(x),String(y),String(image.width),String(image.height)],{timeout:2000,maxBuffer:16000});};
     let moved=false;
     try {
-      const before=await this.readFrame(Date.now(),1400);if(!before||before.width!==image.width||before.height!==image.height||signature(before,line.right)!==original)return skip('line changed before click');
+      const before=await this.readFrame(Date.now(),1400);if(!before||before.width!==image.width||before.height!==image.height)return skip('window changed before click');
       if(whisperDialog(await this.recognize(before,item.en,'before.png')))return skip('existing whisper dialog');
-      const ready=await this.readFrame(Date.now(),1400);if(!ready||ready.width!==image.width||ready.height!==image.height||signature(ready,line.right)!==original)return skip('line changed during preflight');
+      const ready=await this.readFrame(Date.now(),1400);if(!ready||ready.width!==image.width||ready.height!==image.height)return skip('window changed during preflight');
+      // Text OCR and dialog checks take time. Follow the exact same pixels to their new row before clicking.
+      // Never click the stale y-coordinate, or use item name alone to select another seller's item.
+      const relocated=locateFingerprint(cropImage(ready,box),fingerprint);
+      if(!relocated)return skip('target row no longer visible or ambiguous');
+      line=relocated;link.y=Math.floor((line.top+line.bottom)/2);
       moved=true;await input('click',box.x+link.x,box.y+link.y);
       const after=await this.readFrame(Date.now(),1400);if(!after)return skip('no fresh tooltip frame');
       const rows=await this.recognize(after,item.en),dialog=whisperDialog(rows);
       if(dialog){await input('click',Math.round(dialog.x+dialog.w/2),Math.round(dialog.y+dialog.h/2));return skip('chat moved; closed newly opened whisper dialog');}
       // Nick + channel must still belong to the clicked row; reject chat scroll races.
-      if(signature(after,link.badge.message-4)!==signature(before,link.badge.message-4))return skip('nick/channel moved after click');
+      if(signature(after,link.badge.message-4)!==signature(ready,link.badge.message-4))return skip('nick/channel moved after click');
       let panel=findTooltipPanel(rows,item,this.catalog,after);
       if(!panel||tooltipTitle(panel.title.text,item.en)?.ups===undefined) panel=await this.recoverTitle(after,rows,item,{x:box.x+link.x,y:box.y+link.y})||panel;
       if(!panel||panel.w<120||panel.title.x>box.x+link.x+100)return skip('target tooltip title missing');
       const raw=rows.filter((r)=>r.x>=panel.x&&r.x+r.w<=panel.x+panel.w+3&&r.y>=panel.y&&r.y+r.h<after.height-2);
-      const masked=await this.recognize(cropImage(after,panel,true,3),item.en,'mask.png');
+      const body=tooltipBody(panel,[...rows,...(panel.recovered||[])],item);
+      const bodyImage=cropImage(after,body,true,3);
+      const masked=await this.recognize(bodyImage,item.en,'mask.png');
+      const fallback=item.cat==='Equip'?await this.recognizeFallback(bodyImage):[];
       // The full-frame title already proves this crop's identity; masking can erase the colored title itself.
-      const opts=agreeOptions(parseTooltipLines([panel.title,...raw],item),parseTooltipLines([panel.title,...masked.filter((r)=>r.y+r.h<panel.h*3-5)],item));
+      const opts=agreeOptions(
+        parseTooltipLines([panel.title,...raw],item),parseTooltipLines([panel.title,...masked.filter((r)=>r.y+r.h<body.h*3-5)],item),
+        parseTooltipLines([panel.title,...fallback.filter(r=>r.y+r.h<body.h*3-5)],item));
       if(!opts||(!opts.stats&&!opts.scroll&&opts.slots===undefined))return skip('no trusted numeric options');
       // Keep a bounded local diagnostic sample; no screenshots leave this Mac.
       fs.writeFileSync(path.join(this.dir,'last.json'),JSON.stringify({message,item:item.en,opts}));

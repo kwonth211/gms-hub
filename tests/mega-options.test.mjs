@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tooltipTitle, findTooltipPanel, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog } from '../assets/mega-tooltip.js';
+import { tooltipTitle, findTooltipPanel, tooltipBody, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog } from '../assets/mega-tooltip.js';
 import { optionParts, optionSummary } from '../assets/mega-option-text.js';
 const bow={en:'Vaulter 2000',cat:'Equip',slots:7};
 const dagger={en:'Bazlud',cat:'Equip',slots:7};
@@ -32,6 +32,13 @@ test('never turn requirements, clipped digits or inconsistent sums into stats',(
 });
 test('raw/masked OCR disagreement omits the field instead of choosing a number',()=>{
  assert.deepEqual(agreeOptions({stats:{PAD:68,LUK:2},slots:0},{stats:{PAD:88},slots:0}),{stats:{LUK:2},slots:0});
+ assert.deepEqual(agreeOptions({stats:{PAD:68,LUK:2}},{stats:{PAD:88}},{stats:{PAD:88}}),{stats:{LUK:2}});
+});
+test('tooltip body excludes requirements, neighbouring chat and bottom HUD',()=>{
+ const panel={x:510,y:540,w:270,h:256};
+ const body=tooltipBody(panel,[{text:'Type: Earrings',x:518,y:670,h:12},{text:'Remaining Enhancements: 0',x:520,y:734,h:12}],{cat:'Equip'});
+ assert.deepEqual(body,{x:516,y:667,w:226,h:83});
+ assert.equal(tooltipBody(panel,[],{cat:'Equip'}),panel);
 });
 test('a lost enhancement suffix never becomes zero successful upgrades',()=>{
  const item={en:'Emerald Earrings',cat:'Equip',slots:5};

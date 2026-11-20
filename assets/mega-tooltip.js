@@ -30,6 +30,17 @@ export function findTooltipPanel(observations, item, catalog, image) {
   const right = Math.min(image.width, x+(item.cat==='Equip' ? 270 : 420), other ? other.x-10 : image.width);
   return { x, y, w: Math.floor(right-x), h: Math.min(image.height-y, 600), title };
 }
+export function tooltipBody(panel,rows,item) {
+  if(item.cat!=='Equip')return panel;
+  const inside=r=>r.x>=panel.x&&r.x<panel.x+35&&r.y>panel.y&&r.y<panel.y+panel.h;
+  const type=rows.find(r=>inside(r)&&/^Type\s*:/i.test(clean(r.text)));
+  if(!type)return panel;
+  const end=rows.find(r=>inside(r)&&r.y>type.y&&/^Remaining Enhancements/i.test(clean(r.text)));
+  const y=Math.max(panel.y,Math.floor(type.y-3));
+  const bottom=end?Math.min(panel.y+panel.h,Math.ceil(end.y+end.h+4)):panel.y+panel.h;
+  // Equipment panels are 235px wide; do not include neighbouring chat to the right.
+  return {x:panel.x+6,y,w:Math.min(panel.w-6,226),h:bottom-y};
+}
 export function parseTooltipLines(lines, item) {
   const texts=lines.filter((r)=>typeof r==='string'||r.confidence>=0.5).map((r)=>clean(typeof r==='string'?r:r.text));
   const titles=texts.map((s)=>tooltipTitle(s,item.en)).filter(Boolean);
@@ -78,13 +89,12 @@ export function parseTooltipLines(lines, item) {
   } else if(ups>0) out.clean=false;
   return out;
 }
-export function agreeOptions(a,b) {
-  if(!a||!b) return a||b;
+export function agreeOptions(...readings) {
+  const inputs=readings.filter(Boolean);if(!inputs.length)return null;
   const out={};
-  for(const key of ['slots','ups','used','clean','attackSpeed','knockback']) {if(a[key]!==undefined&&b[key]!==undefined&&a[key]!==b[key])continue;if(a[key]!==undefined||b[key]!==undefined)out[key]=a[key]??b[key];}
-  const stats={};for(const key of new Set([...Object.keys(a.stats||{}),...Object.keys(b.stats||{})])) {if(a.stats?.[key]!==undefined&&b.stats?.[key]!==undefined&&a.stats[key]!==b.stats[key])continue;stats[key]=a.stats?.[key]??b.stats?.[key];}
+  for(const key of ['slots','ups','used','clean','attackSpeed','knockback']) {const values=[...new Set(inputs.map(r=>r[key]).filter(v=>v!==undefined))];if(values.length===1)out[key]=values[0];}
+  const stats={};for(const key of new Set(inputs.flatMap(r=>Object.keys(r.stats||{})))) {const values=[...new Set(inputs.map(r=>r.stats?.[key]).filter(v=>v!==undefined))];if(values.length===1)stats[key]=values[0];}
   if(Object.keys(stats).length)out.stats=stats;
-  if(a.scroll&&b.scroll&&JSON.stringify(a.scroll)===JSON.stringify(b.scroll))out.scroll=a.scroll;
-  if(!a.scroll||!b.scroll) {if(a.scroll||b.scroll)out.scroll=a.scroll||b.scroll;}
+  const scrolls=[...new Set(inputs.filter(r=>r.scroll).map(r=>JSON.stringify(r.scroll)))];if(scrolls.length===1)out.scroll=JSON.parse(scrolls[0]);
   return Object.keys(out).length?out:null;
 }
