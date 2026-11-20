@@ -417,7 +417,7 @@ const api = {
       const r = await postMegaphones(req, env, itemNames, (rows) => {
         const p = itemLabel().then((nameOf) => notifyMegaphones(env, rows, nameOf)).catch(() => null);
         // Every open page gets the new megaphones at once over its presence socket (ticker and megaphone page redraw).
-        const push = env.PRESENCE ? env.PRESENCE.get(env.PRESENCE.idFromName('site')).fetch('https://presence/push', { method: 'POST', body: JSON.stringify({ type: 'megaphones', rows: rows.map((x) => ({ id: x.id, seen: x.seen, kind: x.kind, color: x.color ?? null, channel: x.channel ?? null, nick: x.nick, text: x.text, item: x.item ?? null, intent: x.intent ?? null, price: x.price ?? null })) }) }).catch(() => null) : null;
+        const push = env.PRESENCE ? env.PRESENCE.get(env.PRESENCE.idFromName('site')).fetch('https://presence/push', { method: 'POST', body: JSON.stringify({ type: 'megaphones', rows: rows.map((x) => ({ id: x.id, seen: x.seen, kind: x.kind, color: x.color ?? null, channel: x.channel ?? null, nick: x.nick, text: x.text, item: x.item ?? null, intent: x.intent ?? null, price: x.price ?? null, ...(x.opts ? { opts: x.opts } : {}) })) }) }).catch(() => null) : null;
         if (ctx?.waitUntil) { ctx.waitUntil(p); if (push) ctx.waitUntil(push); }
       });
       for (const [k, v] of Object.entries(allow)) r.headers.set(k, v);

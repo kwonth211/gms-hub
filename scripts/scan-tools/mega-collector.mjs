@@ -156,7 +156,7 @@ async function tick() {
     if(i<0)continue;
     const opts=await optionReader.collect({image:img,box,line:lines[i],message:row,item,glyph:anchor?{read:readGlyphs,wTop:windowTop(lines[i],anchor),expected:item.en}:null});
     if(opts){row.opts=opts;console.log(`options ${row.nick} [${item.en}] ${JSON.stringify(opts)}`);}
-    else if(DRY)console.log(`options skipped [${item.en}]: ${optionReader.lastSkip}`);
+    else console.log(`options skipped ${row.nick} [${item.en}]: ${optionReader.lastSkip}`);
     break; // Bounded work; all other megaphones still leave as text immediately.
   }
   queue.push(...pending.map(({row})=>row));

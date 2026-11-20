@@ -263,7 +263,8 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   // little faster so the strip never falls far behind. The last megaphones are kept in this browser, so the next page starts with the newest
   // at the right edge and megaphones that came in since then roll in next. New ones arrive pushed over the presence socket
   // (common.js above) the moment the collector stores them, or from the minute poll.
-  const TK_KEY = 'gms-ticker';
+  // Discard rows cached by the old live push, which omitted opts even when the server had them.
+  const TK_KEY = 'gms-ticker-options-v1';
   const icon = () => box.querySelector('.mg-tk-icon')?.innerHTML || '';
   const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let loaded = false, kept = [], x = 0, last = 0, held = false, frame = 0;

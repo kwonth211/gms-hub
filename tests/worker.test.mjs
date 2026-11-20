@@ -20,7 +20,7 @@ function environment() {
     return { bind(...values) { return DB.prepare(sql, values); }, async first() { return sqlite.prepare(sql).get(...args) || null; },
       async all() { return { results: sqlite.prepare(sql).all(...args) }; }, async run() {
         if (DB.failUpdates && sql.startsWith('UPDATE listings')) throw new Error('unavailable');
-        const r = sqlite.prepare(sql).run(...args); return { meta: { changes: Number(r.changes) } };
+        const r = sqlite.prepare(sql).run(...args); return { meta: { changes: Number(r.changes), last_row_id: Number(r.lastInsertRowid) } };
       } };
   }, async batch(statements) {
     sqlite.exec('BEGIN');
@@ -278,4 +278,27 @@ test('price summaries are cached per item, so overlapping id lists only read the
     await get('4999999,4000001');
     assert.equal(listingReads.length, 2, 'items with nothing to show are cached too');
   } finally { delete globalThis.caches; }
+});
+
+
+test('live megaphone pushes preserve the same validated options as public reads', async () => {
+  const pushes = [], pending = [];
+  const env = { ...environment(), USAGE_BASELINE: '{}', MEGAPHONE_TOKEN: 'mega-test', PRESENCE: {
+    idFromName: () => 'site', get: () => ({ fetch: async (_url, init) => { pushes.push(JSON.parse(init.body)); return new Response('ok'); } })
+  } };
+  const rows = [
+    { nick: 'GearSeller', text: '[Work Gloves] S> offer', opts: { stats: { PAD: 11, CRD: 2 }, slots: 0, ups: 5 } },
+    { nick: 'ScrollSeller', text: '[Claw Attack Scroll: Intermediate] S> 400k', opts: { scroll: { chance: 60, stats: { PAD: 2 } } } },
+    { nick: 'ChatOnly', text: 'B> gloves' }
+  ].map(r => ({ ...r, seen: new Date().toISOString(), kind: 'item', color: 'Y', channel: 11 }));
+  const res = await worker.fetch(new Request('https://test.invalid/internal/megaphone', { method: 'POST', headers: { Authorization: 'Bearer mega-test' }, body: JSON.stringify({ rows }) }), env, { waitUntil: p => pending.push(p) });
+  assert.equal(res.status, 200);
+  await Promise.all(pending);
+  const live = pushes.find(p => p.type === 'megaphones').rows;
+  const saved = (await (await worker.fetch(new Request('https://test.invalid/megaphones'), env)).json()).rows;
+  for (const row of live) {
+    assert.deepEqual(row.opts, rows.find(r => r.nick === row.nick).opts);
+    assert.deepEqual(row.opts, saved.find(r => r.id === row.id).opts);
+  }
+  assert.equal(Object.hasOwn(live.find(r => r.nick === 'ChatOnly'), 'opts'), false);
 });
