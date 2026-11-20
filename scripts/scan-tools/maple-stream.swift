@@ -19,15 +19,17 @@ final class Camera: NSObject, SCStreamOutput, SCStreamDelegate {
 
   func start() async {
     guard let content = try? await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false) else { fail("no screen recording permission", 1) }
-    let games = content.windows.filter { ($0.owningApplication?.applicationName ?? "").contains("MapleStory") }
+    let games = content.windows.filter { ($0.owningApplication?.applicationName ?? "").contains("MapleStory") && $0.title == "MapleStory" }
     guard let window = games.max(by: { $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height }), window.frame.width > 200 else { fail("MapleStory window not found", 3) }
     let filter = SCContentFilter(desktopIndependentWindow: window)
     let config = SCStreamConfiguration()
-    width = Int((filter.contentRect.width * CGFloat(filter.pointPixelScale)).rounded())
-    height = Int((filter.contentRect.height * CGFloat(filter.pointPixelScale)).rounded())
+    // Keep image coordinates identical to window points, including its title bar.
+    // Old streams could retain a previous fullscreen canvas after resizing.
+    width = Int(window.frame.width.rounded())
+    height = Int(window.frame.height.rounded())
     config.width = width
     config.height = height
-    config.minimumFrameInterval = CMTime(value: 1, timescale: 1)
+    config.minimumFrameInterval = CMTime(value: 1, timescale: 3)
     config.pixelFormat = kCVPixelFormatType_32BGRA
     config.showsCursor = false
     config.ignoreShadowsSingleWindow = true
@@ -39,6 +41,14 @@ final class Camera: NSObject, SCStreamOutput, SCStreamDelegate {
       try await s.startCapture()
     } catch { fail("could not start: \(error.localizedDescription)", 1) }
     stream = s
+    Task {
+      while true {
+        try? await Task.sleep(nanoseconds: 1_000_000_000)
+        let windows = CGWindowListCopyWindowInfo(.optionIncludingWindow, window.windowID) as? [[String:Any]] ?? []
+        guard let bounds = windows.first?[kCGWindowBounds as String] as? [String:Double] else { fail("window gone", 3) }
+        if Int(bounds["Width"] ?? 0) != width || Int(bounds["Height"] ?? 0) != height { fail("window resized", 2) }
+      }
+    }
   }
 
   func stream(_ stream: SCStream, didOutputSampleBuffer sample: CMSampleBuffer, of type: SCStreamOutputType) {

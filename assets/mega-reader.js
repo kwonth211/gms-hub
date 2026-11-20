@@ -368,7 +368,7 @@ export function glyphs(img, line, x0, x1, wTop) {
       if (k) kinds += k;
     }
     if (kinds) {
-      if (!cur) { cur = { cols: [], kind: kinds[0], gap }; }
+      if (!cur) { cur = { x, cols: [], kind: kinds[0], gap }; }
       cur.cols.push(col);
       if (kinds.includes('Y')) cur.kind = 'Y';
       gap = 0;
@@ -378,7 +378,7 @@ export function glyphs(img, line, x0, x1, wTop) {
     }
   }
   if (cur) out.push(cur);
-  return out.map((g, i) => ({ key: `${g.kind}:${g.cols.join('/')}`, gap: i > 0 ? g.gap : 0, space: i > 0 && g.gap >= (g.kind === 'Y' ? SPACE_Y : SPACE_D) }));
+  return out.map((g, i) => ({ x: g.x, w: g.cols.length, key: `${g.kind}:${g.cols.join('/')}`, gap: i > 0 ? g.gap : 0, space: i > 0 && g.gap >= (g.kind === 'Y' ? SPACE_Y : SPACE_D) }));
 }
 // Glyphs → text with a learned table (glyph key → one or more characters). Letters that touch with no empty column
 // between them come out as one run; such a run is split into known single letters when their columns line up

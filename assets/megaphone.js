@@ -3,6 +3,7 @@
 // reading of the trade shorthand.
 import { koMesos, GLOSS, plain, intentOf, priceOf } from './mega-text.js';
 import { optBadge, loadTips as loadOptTips } from './opt-grade.js';
+import { optionParts } from './mega-option-text.js';
 import { indexEntry, searchEntries } from './search-index.js';
 export { intentOf, priceOf };
 
@@ -29,10 +30,11 @@ const view = { src: 'all', intent: 'all' };
 
 // ---------- reading a megaphone ----------
 // "[Shoes Speed Scroll: Intermediate]" is an exact item megaphone; otherwise the longest catalogue name in the text.
-// Equipment options a reader sent with the megaphone, as one word under the text: "+3", "정옵", "2상" (opt-grade.js).
+// Show the linked piece's actual stats, remaining enhancements and upgrade grade under its message.
 function optLine(r, it) {
-  const b = it && optBadge(it.id, r.opts);
-  return b ? `<p class="mb-opts mg-opts"><span class="mb-opt grade ${b.cls}">${esc(b.text)}</span></p>` : '';
+  const b = it && (r.opts?.ups > 0 || r.opts?.clean === true || r.opts?.used === 0) && optBadge(it.id, r.opts);
+  const parts = optionParts(r.opts, ko);
+  return b || parts.length ? `<p class="mb-opts mg-opts">${b ? `<span class="mb-opt grade ${b.cls}">${esc(b.text)}</span>` : ''}${parts.map((t) => `<span class="mb-opt">${esc(t)}</span>`).join('')}</p>` : '';
 }
 function itemsOf(text) {
   const found = [];
@@ -136,7 +138,7 @@ function card(r) {
   // Far-off differences usually mean a scrolled or bundled item, not a cheap or pricey one, so they are not shown.
   const raw = price && market?.median ? Math.round(((price - market.median) / market.median) * 100) : null;
   const diff = raw != null && Math.abs(raw) <= 300 ? raw : null;
-  const text = esc(r.text).replace(/\[([^\]]+)\]/, (m, n) => (it ? `<a class="mg-item" href="${root.dataset.market}?item=${it.id}">[${esc(ko && it.ko ? it.ko : n)}]</a>` : m));
+  const text = esc(r.text).replace(/\[([^\]]+)\]/, (m, n) => (it ? `<a class="mg-item" href="${root.dataset.market}?item=${it.id}"${r.opts ? ` data-item-id="${it.id}" data-opts="${esc(JSON.stringify(r.opts))}"` : ''}>[${esc(ko && it.ko ? it.ko : n)}]</a>` : m));
   const g = ko ? gloss(r.text, items) : '';
   const tag = r.intent ? `<span class="mg-intent ${r.intent}">${r.intent === 'sell' ? tr('팝니다', 'Selling') : tr('삽니다', 'Buying')}</span>` : '';
   const cmp = it && market?.median ? `<a class="mg-price" href="${root.dataset.market}?item=${it.id}">${tr('시세', 'Market')} ${mesos(market.median)}${diff != null ? ` · <b class="${diff > 0 ? 'up' : diff < 0 ? 'down' : ''}">${diff > 0 ? '+' : ''}${diff}%</b>` : ''}</a>` : '';

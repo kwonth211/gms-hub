@@ -1,7 +1,7 @@
 // Megaphone collector for the admin's Mac (macOS only): maple-stream.swift keeps one capture stream open on the
 // MapleStory window (works even when other windows cover it) and saves its newest frame; every 1.5 s this reads that
 // frame, finds the chat box by its megaphone bands, reads new megaphones with assets/mega-reader.js and posts them
-// to the worker with the admin key in ~/.config/gms-hub/megaphone-token. Only the recognised text leaves the Mac.
+// to the worker with the admin key in ~/.config/gms-hub/megaphone-token. Only recognised text/options leave the Mac.
 // Run (from scripts/scan-tools after npm install):  node mega-collector.mjs          # read and post
 //                                                     node mega-collector.mjs --dry  # read and print only
 import { execFileSync, spawn } from 'node:child_process';
@@ -11,12 +11,14 @@ import path from 'node:path';
 import { PNG } from 'pngjs';
 import Tesseract from 'tesseract.js';
 import { findChatBox, findLines, readLine, assemble, repeatFilter, itemFixer, glyphReader, slotAnchor, windowTop } from '../../assets/mega-reader.js';
+import { OptionReader, nameKey } from './mega-options.mjs';
 
 const API = 'https://gms-hub-votes.kwonth211.workers.dev/internal/megaphone';
 const DRY = process.argv.includes('--dry');
+const OPTIONS = !process.argv.includes('--no-options') && (!DRY || process.argv.includes('--options'));
 const TICK_MS = 1500;
 const KINDS = { P: 'super', Y: 'item', C: 'double' };
-const shot = path.join(os.tmpdir(), 'gms-mega-shot.png');
+const shot = path.join(os.tmpdir(), DRY ? `gms-mega-dry-${process.pid}.png` : 'gms-mega-shot.png');
 // Every 80 ticks (about 2 minutes) the chat crop and what was read from it are kept for `./mega.sh check`.
 const LIVE = path.join(os.homedir(), 'gms-hub-samples', 'mega-live');
 fs.mkdirSync(LIVE, { recursive: true });
@@ -25,7 +27,7 @@ const helper = path.join(os.tmpdir(), 'gms-maple-stream');
 const source = path.join(here, 'maple-stream.swift');
 if (!fs.existsSync(helper) || fs.statSync(helper).mtimeMs < fs.statSync(source).mtimeMs) execFileSync('swiftc', ['-O', source, '-o', helper]);
 // The capture helper runs for as long as the game window is there; it ends by itself when this process does (its
-// stdin closes). After it stops (game closed, window resized) it is started again, at most once a minute.
+// stdin closes). A resize restarts immediately; other stops retry after five seconds.
 let cam = null, tried = 0, seen = 0, fresh = 0;
 // The OCR worker slowly grows (~1.9GB after two days). Past 1.2GB this process quits; mega.sh's loop starts a fresh one,
 // which keeps the Terminal's screen-recording permission (a launchd job would not have it).
@@ -36,9 +38,35 @@ function camera() {
   seen = 0;
   cam = spawn(helper, [shot], { stdio: ['pipe', 'ignore', 'pipe'] });
   cam.stderr.on('data', (d) => console.error(new Date().toISOString(), String(d).trim()));
-  cam.on('exit', () => { cam = null; });
+  cam.on('exit', (code) => { cam = null; tried=code===2 ? 0 : Date.now()-55000; });
 }
 const token = DRY ? '' : fs.readFileSync(path.join(os.homedir(), '.config', 'gms-hub', 'megaphone-token'), 'utf8').trim();
+async function readFrame(after=0, timeout=1400) {
+  const deadline=Date.now()+timeout;
+  do {
+    try {if(fs.statSync(shot).mtimeMs>=after)return PNG.sync.read(fs.readFileSync(shot));}catch{}
+    await new Promise((r)=>setTimeout(r,80));
+  }while(Date.now()<deadline);
+  return null;
+}
+let optionReader=null;
+if(OPTIONS) {
+  try {
+    const catalogPath=path.join(here,'../../assets/items-catalog.json');
+    const catalog=fs.existsSync(catalogPath) ? JSON.parse(fs.readFileSync(catalogPath,'utf8')) : (()=>{
+      const details=JSON.parse(fs.readFileSync(path.join(here,'../../data/item-details.json'),'utf8')).items;
+      return JSON.parse(fs.readFileSync(path.join(here,'../../data/items.json'),'utf8')).items.map((i)=>({...i,slots:details[i.id]?.slots}));
+    })();
+    const binaries={};
+    for(const name of ['maple-input','maple-ocr']) {
+      const src=path.join(here,`${name}.swift`),bin=path.join(os.tmpdir(),`gms-${name}`);
+      if(!fs.existsSync(bin)||fs.statSync(bin).mtimeMs<fs.statSync(src).mtimeMs)execFileSync('swiftc',['-O',src,'-o',bin]);
+      binaries[name]=bin;
+    }
+    optionReader=new OptionReader({shot,input:binaries['maple-input'],ocr:binaries['maple-ocr'],catalog,readFrame});
+    process.on('exit',()=>optionReader.close());
+  }catch(e){console.error('option reader unavailable; collecting text:',e.message);}
+}
 
 const text = await Tesseract.createWorker('eng');
 // Symbols the game's chat font never draws are ruled out, so Tesseract picks the real letter instead ("£ard" → "Zard").
@@ -113,18 +141,38 @@ async function tick() {
     for (const f of kept.slice(0, Math.max(0, kept.length - 300))) fs.unlinkSync(path.join(LIVE, f));
   }
   for (const m of all) m.text = fixItems(m.text);
+  const pending=[];
   for (const m of all) {
     if (!m.channel || isRepeat(m, now)) continue;
     const row = { seen: new Date(now).toISOString(), kind: KINDS[m.color] || 'super', color: m.color, channel: m.channel, nick: m.nick, text: m.text };
-    queue.push(row);
+    pending.push({row,m});
     console.log(`${new Date(now).toTimeString().slice(0, 8)} ${row.kind.padEnd(6)} CH${String(row.channel).padStart(2)} ${row.nick}: ${row.text}`);
   }
+  if(optionReader) for(const {row,m} of [...pending].reverse()) {
+    const links=[...row.text.matchAll(/\[([^\]]+)\]/g)];if(links.length!==1)continue;
+    const item=optionReader.catalog.find((i)=>nameKey(i.en)===nameKey(links[0][1]));
+    if(!item || (item.cat!=='Equip' && !/ Scroll: /i.test(item.en)))continue;
+    const i=read.findIndex((r)=>!r.cont&&r.nick===m.nick&&r.channel===m.channel&&fixItems(r.text)===row.text.slice(0,fixItems(r.text).length));
+    if(i<0)continue;
+    const opts=await optionReader.collect({image:img,box,line:lines[i],message:row,item,glyph:anchor?{read:readGlyphs,wTop:windowTop(lines[i],anchor),expected:item.en}:null});
+    if(opts){row.opts=opts;console.log(`options ${row.nick} [${item.en}] ${JSON.stringify(opts)}`);}
+    else if(DRY)console.log(`options skipped [${item.en}]: ${optionReader.lastSkip}`);
+    break; // Bounded work; all other megaphones still leave as text immediately.
+  }
+  queue.push(...pending.map(({row})=>row));
 }
 
-console.log(DRY ? 'dry run: reading only' : 'collecting and posting');
+console.log(DRY ? `dry run: no uploads${OPTIONS ? ', background option clicks enabled' : ', reading only'}` : 'collecting and posting');
+let stopping=false;
+if(DRY){const duration=Number(process.argv.find((a)=>a.startsWith('--duration='))?.split('=')[1]);if(duration>0)setTimeout(()=>{stopping=true;},duration*1000);}
+// Finish any click's finally block before exiting so a tooltip cannot obscure the next collector's chat detection.
+for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{stopping=true;});
+process.on('exit',()=>{if(cam)cam.kill();if(DRY)fs.rmSync(shot,{force:true});});
 setInterval(flush, 5000);
-for (;;) {
+while (!stopping) {
   const t0 = Date.now();
   try { await tick(); } catch (e) { console.error(new Date().toISOString(), e.message); }
   await new Promise((r) => setTimeout(r, Math.max(200, TICK_MS - (Date.now() - t0))));
 }
+await flush();
+process.exit(0);

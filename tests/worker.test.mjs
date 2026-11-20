@@ -242,6 +242,17 @@ test('megaphones need the token, dedupe repeats within ten minutes and list newe
   assert.equal(list.rows.length, 2); assert.equal(list.rows[0].nick, 'suinosora'); assert.equal(list.rows[1].color, 'Y');
 });
 
+test('megaphone tooltip options survive authenticated ingest and public reads without a schema change', async () => {
+  const env = { ...environment(), MEGAPHONE_TOKEN: 'mega-test' };
+  const opts = { stats: { PAD: 68 }, slots: 0, used: 7, ups: 2, attackSpeed: 'average', knockback: 20 };
+  const rows = [{ seen: new Date().toISOString(), kind: 'item', color: 'Y', nick: 'Seller', channel: 11, text: '[Vaulter 2000] S> offer', opts }, { seen: new Date().toISOString(), kind: 'item', nick: 'ScrollSeller', text: '[Claw Attack Scroll: Intermediate] S> 400k', opts: { scroll: { chance: 60, stats: { PAD: 2 } } } }];
+  const response = await worker.fetch(new Request('https://test.invalid/internal/megaphone', { method: 'POST', headers: { Authorization: 'Bearer mega-test' }, body: JSON.stringify({ rows }) }), env);
+  assert.equal((await response.json()).accepted, 2);
+  const list = await (await worker.fetch(new Request('https://test.invalid/megaphones'), env)).json();
+  assert.deepEqual(list.rows.find((r) => r.nick === 'Seller').opts, opts);
+  assert.deepEqual(list.rows.find((r) => r.nick === 'ScrollSeller').opts, { scroll: { chance: 60, stats: { PAD: 2 } } });
+});
+
 test('price summaries are cached per item, so overlapping id lists only read the items not seen yet', async () => {
   const env = environment();
   for (const item of [4000000, 4000001]) for (const price of [100, 110, 120])

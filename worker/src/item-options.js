@@ -36,6 +36,18 @@ export function normalizeOptions(raw) {
   if (raw.clean === true || raw.clean === false) out.clean = raw.clean;
   // "Clean" with upgrades used contradicts itself; keep the numbers, drop the claim.
   if (out.clean === true && (out.used > 0 || out.ups > 0)) delete out.clean;
+  if (['very fast', 'fast', 'average', 'normal', 'slow', 'very slow'].includes(raw.attackSpeed)) out.attackSpeed = raw.attackSpeed;
+  const knockback = int(raw.knockback, 0, 100);
+  if (knockback !== null) out.knockback = knockback;
+  // Scroll descriptions carry gains, not the total stats of an equipment piece.
+  if (raw.scroll && typeof raw.scroll === 'object' && !Array.isArray(raw.scroll) && [10, 60, 100].includes(raw.scroll.chance)) {
+    const stats = {};
+    for (const k of OPTION_STATS) {
+      const v = int(raw.scroll.stats?.[k], 1, MAX[k] ?? 255);
+      if (v !== null) stats[k] = v;
+    }
+    if (Object.keys(stats).length) out.scroll = { chance: raw.scroll.chance, stats };
+  }
   return Object.keys(out).length ? JSON.stringify(out) : null;
 }
 

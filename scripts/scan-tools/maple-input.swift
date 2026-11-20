@@ -1,0 +1,65 @@
+// Verified with MapleStory Classic World on macOS, 2026-11-20.
+// Usage: background-item-input move|click <window-image-x> <window-image-y>
+// Coordinates include the title bar, as in a shadow-free window capture.
+// Never activates an app, posts globally, warps the pointer, or injects code.
+import AppKit
+import ApplicationServices
+
+func emit(_ data: [String:Any]) {
+    print(String(data:try! JSONSerialization.data(withJSONObject:data,options:.sortedKeys),encoding:.utf8)!)
+    fflush(stdout)
+}
+func snapshot() -> [String:Any] {
+    let p=CGEvent(source:nil)!.location
+    let front=NSWorkspace.shared.frontmostApplication
+    return ["cursor":[Double(p.x),Double(p.y)],"frontPid":Int(front?.processIdentifier ?? -1),"frontName":front?.localizedName ?? ""]
+}
+func unchanged(_ a:[String:Any],_ b:[String:Any])->Bool {
+    (a["cursor"] as? [Double]) == (b["cursor"] as? [Double]) && (a["frontPid"] as? Int) == (b["frontPid"] as? Int)
+}
+let args=CommandLine.arguments
+guard (args.count==4 || args.count==6),["move","click"].contains(args[1]),let x=Double(args[2]),let y=Double(args[3]),AXIsProcessTrusted() else {
+    emit(["error":"Usage: background-item-input move|click windowX windowY; accessibility permission required"]);exit(2)
+}
+let windows=CGWindowListCopyWindowInfo(.optionAll,kCGNullWindowID) as? [[String:Any]] ?? []
+guard let w=windows.first(where:{ ($0[kCGWindowName as String] as? String)=="MapleStory" && ($0[kCGWindowOwnerName as String] as? String ?? "").contains("MapleStory") }),
+      let bounds=w[kCGWindowBounds as String] as? [String:Double],let pid=w[kCGWindowOwnerPID as String] as? Int32,
+      let wid=w[kCGWindowNumber as String] as? Int,let width=bounds["Width"],let height=bounds["Height"],let ox=bounds["X"],let oy=bounds["Y"],
+      x>=0,x<width,y>=28,y<height else {emit(["error":"Game window missing or point outside client area"]);exit(3)}
+let before=snapshot()
+if args.count==6 && (Double(args[4]) != width || Double(args[5]) != height) {
+    emit(["error":"Window resized since capture"]);exit(3)
+}
+guard (before["frontPid"] as? Int) != Int(pid),
+      !CGEventSource.buttonState(.combinedSessionState,button:.left),
+      !CGEventSource.buttonState(.combinedSessionState,button:.right) else {
+    emit(["error":"Requires background game and no held mouse buttons"]);exit(4)
+}
+emit(["phase":"before","state":before,"pid":pid,"windowId":wid,"windowPoint":[x,y],"screenPoint":[ox+x,oy+y]])
+func post(_ type:NSEvent.EventType,_ flags:NSEvent.ModifierFlags=[]) {
+    let native=NSEvent.mouseEvent(with:type,location:NSPoint(x:x,y:height-y),modifierFlags:flags,
+        timestamp:ProcessInfo.processInfo.systemUptime,windowNumber:wid,context:nil,eventNumber:0,
+        clickCount:type == .leftMouseDragged ? 0 : 1,pressure:type == .leftMouseDown ? 1 : 0)!
+    let event=native.cgEvent!
+    event.location=CGPoint(x:ox+x,y:oy+y)
+    event.setIntegerValueField(.mouseEventWindowUnderMousePointer,value:Int64(wid))
+    event.setIntegerValueField(.mouseEventWindowUnderMousePointerThatCanHandleThisEvent,value:Int64(wid))
+    event.postToPid(pid)
+}
+// Wine routes ordinary mouseMoved by the topmost window at the screen point.
+// A window-associated drag event routes directly; no button is held or pressed.
+post(.leftMouseDragged)
+usleep(50000)
+guard unchanged(before,snapshot()) else {emit(["error":"User input or foreground changed after move","state":snapshot()]);exit(5)}
+if args[1]=="click" {
+    // Command-modified native click prevents the background window being raised.
+    // This sets only event flags; no Command keydown/keyup is sent.
+    post(.leftMouseDown,[.command]);usleep(80000)
+    post(.leftMouseUp,[.command]) // Always release the synthetic button pair.
+}
+for delay in [UInt32(10000),90000,200000] {
+    usleep(delay)
+    let now=snapshot();emit(["phase":"after","state":now])
+    guard unchanged(before,now) else {emit(["error":"User input or foreground changed"]);exit(5)}
+}
+emit(["result":"events_posted_state_unchanged","note":"Confirm the intended UI result in a fresh game-window capture"])

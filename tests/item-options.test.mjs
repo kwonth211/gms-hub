@@ -17,3 +17,8 @@ test('item options keep known stats, slots and clean; drop junk', () => {
   assert.deepEqual(parseOptions(normalizeOptions({ clean: true, ups: 1 })), { ups: 1 });
   assert.ok(normalizeOptions({ stats: Object.fromEntries(['PAD', 'MAD', 'STR', 'DEX', 'INT', 'LUK', 'ACC', 'EVA', 'MHP', 'MMP', 'PDD', 'MDD', 'Speed', 'Jump', 'CRT', 'CRD'].map((k) => [k, 99])), slots: 7, used: 3 }).length < 300);
 });
+
+test('tooltip speed, knockback and scroll gains are bounded and separate from equipment stats', () => {
+  assert.deepEqual(parseOptions(normalizeOptions({ attackSpeed: 'average', knockback: 20, scroll: { chance: 60, stats: { PAD: 2, UNKNOWN: 5 } } })), { attackSpeed: 'average', knockback: 20, scroll: { chance: 60, stats: { PAD: 2 } } });
+  assert.equal(normalizeOptions({ attackSpeed: '<script>', knockback: 101, scroll: { chance: 99, stats: { PAD: 9999 } } }), null);
+});
