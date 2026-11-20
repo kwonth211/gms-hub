@@ -1,5 +1,5 @@
 import './collection-status.js';
-import { listingPriceBand, priceBadge } from './listing-price.js';
+import { listingPriceBand, priceBadge, refreshListingPriceBadges } from './listing-price.js';
 import { bindListingClicks } from './listing-clicks.js';
 import { marketSharePath } from './market-share.js';
 import { DAY, parseUtc, newMark } from "./market-data.js";
@@ -235,7 +235,7 @@ const moveBadge = (v) => (v == null ? "" : `<span class="mb-move ${v > 0 ? "up" 
 const placeChips = (r) => `<span class="mb-ch" style="--h:${(Number(r.channel) * 47) % 360}">CH ${r.channel}</span><span class="mb-room">${placeLabel(r.room, ko)}</span>`;
 // The item panel's "where to buy" list: one card per listing, price first, then how fresh it is, who and where.
 // Freshness follows MesoWatch's wording: seen within an hour is probably still up, older ones may have sold.
-let lastOffers = null;
+let lastOffers = null, lastRecords = null, lastShopRows = null;
 // Equipment options sent with a listing (worker/src/item-options.js), shown as one word: "+3", "정옵", "2상", "1하"
 // (assets/opt-grade.js). The hover card shows the full stats.
 function optionChips(r) {
@@ -605,6 +605,7 @@ async function renderRecords() {
     if (seq !== listSeq) return;
     if (!catalog) catalog = await get("/market/catalog").catch(() => null);
     if (seq !== listSeq) return;
+    lastRecords = target === "listings" ? data.rows : null;
     $("mb-results").innerHTML =
       target === "reports"
         ? data.rows.length
@@ -943,6 +944,8 @@ async function showShop(seller, channel, room, shopPage = 1) {
       `${data.total} asking listings`,
     );
     if (data.rows?.some((r) => r.opts)) await loadTips();
+    if (seq !== shopSeq || !dialog.open) return;
+    lastShopRows = data.rows;
     $("mb-shop-rows").innerHTML = listingTable(data.rows, {
       shopButtons: false,
     });
@@ -988,6 +991,7 @@ async function refresh() {
       : tx("Directory as of {at} · checks every 5 min", { at: clock(Date.parse(catalog.asOf)) });
     if (view === "items") renderDirectory();
     else renderSummary();
+    refreshVisiblePriceBadges();
   } catch {
     $("mk-status").textContent = catalog ? T.staleData : T.failed;
     if (!catalog) {
@@ -997,6 +1001,14 @@ async function refresh() {
   } finally {
     refreshing = false;
   }
+}
+
+function refreshVisiblePriceBadges() {
+  refreshListingPriceBadges($("mb-results"), lastRecords, catalog, ko);
+  refreshListingPriceBadges($("mb-shop-rows"), lastShopRows, catalog, ko);
+  refreshListingPriceBadges($("md-rows"), lastOffers, catalog, ko, {
+    rowSelector: '.mb-offers > .mb-offer', priceSelector: '.mb-offer-tag',
+  });
 }
 function changedSearch() {
   page = 1;

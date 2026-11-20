@@ -15,8 +15,25 @@ export function listingPriceBand(row, catalog, now = Date.now()) {
 export function priceBadge(band, ko = true) {
   if (!['cheap', 'expensive'].includes(band)) return '';
   const cheap = band === 'cheap';
-  const label = ko ? cheap ? '싼 매물' : '비싼 매물' : cheap ? 'Low price' : 'High price';
+  const label = ko ? cheap ? '낮음' : '높음' : cheap ? 'Low price' : 'High price';
   const hint = ko ? '같은 아이템의 24시간 판매가 중앙값보다 10% 이상 ' + (cheap ? '낮아요' : '높아요') + ' · 5건·2상점 이상 · 체결가 아님'
     : 'At least 10% ' + (cheap ? 'below' : 'above') + ' the same item’s 24h asking median · 5+ listings, 2+ shops · not sale prices';
   return `<span class="mb-deal listing-price-badge ${cheap ? 'cheap' : 'pricey'}" title="${hint}">${label}</span>`;
+}
+
+// Recalculate after a fresh catalog arrives without replacing links, focus, or ad frames.
+export function refreshListingPriceBadges(root, rows, catalog, ko = true, {
+  rowSelector = '.mb-listings-table tbody tr[data-price-band]',
+  priceSelector = '.mb-cell-price',
+} = {}) {
+  if (!root || !rows) return;
+  root.querySelectorAll(rowSelector).forEach((el, i) => {
+    const row = rows[i], slot = el.querySelector(priceSelector);
+    if (!row || !slot) return;
+    const band = listingPriceBand(row, catalog);
+    el.dataset.priceBand = band;
+    slot.querySelector('.listing-price-badge')?.remove();
+    const badge = priceBadge(band, ko);
+    if (badge) slot.insertAdjacentHTML('beforeend', badge);
+  });
 }

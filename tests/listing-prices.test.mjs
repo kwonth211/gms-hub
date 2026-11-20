@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { listingPriceBand, priceBadge } from '../assets/listing-price.js';
+import { listingPriceBand, priceBadge, refreshListingPriceBadges } from '../assets/listing-price.js';
 import { bindListingClicks } from '../assets/listing-clicks.js';
 const now = Date.parse('2026-11-20T05:00:00Z');
 const row = { item: 2040801, price: 900, seen: '2026-11-20 04:50:00' };
@@ -8,7 +8,32 @@ const ref = { asOf: '2026-11-20T04:40:00Z', items: [{ item: 2040801, median: 100
 test('price labels use inclusive 10% boundaries and omit normal prices', () => {
   for (const [price, band] of [[899,'cheap'],[900,'cheap'],[901,'typical'],[1099,'typical'],[1100,'expensive']]) assert.equal(listingPriceBand({...row,price},ref,now),band);
   assert.equal(priceBadge('typical'), ''); assert.equal(priceBadge('unrated'), '');
-  assert.match(priceBadge('cheap'), /싼 매물/); assert.match(priceBadge('expensive',false), /High price/);
+  assert.match(priceBadge('cheap'), /낮음/); assert.match(priceBadge('expensive'), /높음/);
+  assert.match(priceBadge('expensive',false), /High price/);
+});
+test('fresh references update existing listing badges and tracking without replacing row contents', () => {
+  const seen = new Date().toISOString().slice(0, 19).replace('T', ' ');
+  const rows = [{...row, seen}, {...row, seen, price: 1100}, {...row, seen, item:1472001}];
+  const fresh = {...ref, asOf: new Date().toISOString()};
+  const elements = rows.map(() => {
+    let html = '';
+    const slot = {
+      querySelector: () => html ? {remove: () => { html = ''; }} : null,
+      insertAdjacentHTML: (where, badge) => { assert.equal(where, 'beforeend'); html += badge; },
+    };
+    return {dataset:{}, querySelector: () => slot, html: () => html};
+  });
+  const root = {querySelectorAll: () => elements};
+  refreshListingPriceBadges(root, rows, null);
+  assert.deepEqual(elements.map(e => e.html()), ['', '', '']);
+  refreshListingPriceBadges(root, rows, fresh);
+  assert.deepEqual(elements.map(e => e.dataset.priceBand), ['cheap', 'expensive', 'unrated']);
+  assert.match(elements[0].html(), /낮음/); assert.match(elements[1].html(), /높음/);
+  assert.equal(elements[2].html(), '', 'never add a placeholder for excluded gear');
+  refreshListingPriceBadges(root, rows, fresh);
+  assert.equal((elements[0].html().match(/<span/g) || []).length, 1);
+  refreshListingPriceBadges(root, rows, {...fresh, asOf:'2000-01-01T00:00:00Z'});
+  assert.deepEqual(elements.map(e => e.html()), ['', '', ''], 'expired comparisons disappear');
 });
 test('unsafe comparisons are unrated instead of misleading bargains', () => {
   for (const change of [{sold:1},{goneN:1},{opts:{}},{item:1472001},{price:0},{price:NaN},{seen:'invalid'},{seen:'2026-11-19 04:59:59'},{seen:'2026-11-20 05:01:00'}]) assert.equal(listingPriceBand({...row,...change},ref,now),'unrated');
