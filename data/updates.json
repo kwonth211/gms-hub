@@ -2,6 +2,20 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "megaphone-option-tooltip-fix",
+   "version": "0.7.39",
+   "level": "patch",
+   "date": "2026-11-20",
+   "path": "/megaphone/",
+   "ko": "고확 옵션 표시 수정 — 기본 능력치로 대체하지 않아요",
+   "en": "Megaphone option fix — no base-stat fallback",
+   "desc": {
+    "ko": "옵션을 수집하지 못한 장비 고확은 옵션 미확인으로 표시해요. 기본 능력치와 기본 강화 횟수가 실제 옵션처럼 나오던 문제를 수정했어요. 상단 띠의 옵션 숫자에 마우스를 올려도 해당 고확에서 확인한 실제 옵션을 보여 줘요.",
+    "en": "Equipment megaphones without captured options now say “Options not captured” instead of showing catalogue stats and upgrade slots. Hovering the option numbers in the top ticker now shows the same captured options as hovering the item name."
+   },
+   "highlight": true
+  },
+  {
    "id": "megaphone-item-options",
    "version": "0.7.38",
    "level": "minor",

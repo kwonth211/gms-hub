@@ -3,7 +3,7 @@
 // reading of the trade shorthand.
 import { koMesos, GLOSS, plain, intentOf, priceOf } from './mega-text.js';
 import { optBadge, loadTips as loadOptTips } from './opt-grade.js';
-import { optionParts } from './mega-option-text.js';
+import { optionParts, megaphoneItemAttrs } from './mega-option-text.js';
 import { marketSharePath } from './market-share.js';
 import { indexEntry, searchEntries } from './search-index.js';
 export { intentOf, priceOf };
@@ -33,6 +33,7 @@ const view = { src: 'all', intent: 'all' };
 // "[Shoes Speed Scroll: Intermediate]" is an exact item megaphone; otherwise the longest catalogue name in the text.
 // Show the linked piece's actual stats, remaining enhancements and upgrade grade under its message.
 function optLine(r, it) {
+  if (it?.cat === 'Equip' && /\[[^\]]+\]/.test(r.text) && !r.opts) return `<p class="mg-opts muted note">${tr('옵션 미확인', 'Options not captured')}</p>`;
   const b = it && (r.opts?.ups > 0 || r.opts?.clean === true || r.opts?.used === 0) && optBadge(it.id, r.opts);
   const parts = optionParts(r.opts, ko);
   return b || parts.length ? `<p class="mb-opts mg-opts">${b ? `<span class="mb-opt grade ${b.cls}">${esc(b.text)}</span>` : ''}${parts.map((t) => `<span class="mb-opt">${esc(t)}</span>`).join('')}</p>` : '';
@@ -140,10 +141,11 @@ function card(r) {
   const raw = price && market?.median ? Math.round(((price - market.median) / market.median) * 100) : null;
   const diff = raw != null && Math.abs(raw) <= 300 ? raw : null;
   const itemHref = it && marketSharePath({marketPath:root.dataset.market,id:it.id,opts:r.opts});
-  const text = esc(r.text).replace(/\[([^\]]+)\]/, (m, n) => (it ? `<a class="mg-item" href="${esc(itemHref)}"${r.opts ? ` data-item-id="${it.id}" data-opts="${esc(JSON.stringify(r.opts))}"` : ''}>[${esc(ko && it.ko ? it.ko : n)}]</a>` : m));
+  const itemAttrs = it ? megaphoneItemAttrs(it.id, r.opts) : '';
+  const text = esc(r.text).replace(/\[([^\]]+)\]/, (m, n) => (it ? `<a class="mg-item" href="${esc(itemHref)}"${itemAttrs}>[${esc(ko && it.ko ? it.ko : n)}]</a>` : m));
   const g = ko ? gloss(r.text, items) : '';
   const tag = r.intent ? `<span class="mg-intent ${r.intent}">${r.intent === 'sell' ? tr('팝니다', 'Selling') : tr('삽니다', 'Buying')}</span>` : '';
-  const cmp = it && market?.median ? `<a class="mg-price" href="${esc(itemHref)}">${tr('시세', 'Market')} ${mesos(market.median)}${diff != null ? ` · <b class="${diff > 0 ? 'up' : diff < 0 ? 'down' : ''}">${diff > 0 ? '+' : ''}${diff}%</b>` : ''}</a>` : '';
+  const cmp = it && market?.median ? `<a class="mg-price" href="${esc(itemHref)}"${itemAttrs}>${tr('시세', 'Market')} ${mesos(market.median)}${diff != null ? ` · <b class="${diff > 0 ? 'up' : diff < 0 ? 'down' : ''}">${diff > 0 ? '+' : ''}${diff}%</b>` : ''}</a>` : '';
   // One compact row: who and where on the left, the message and its reading in the middle, the whisper copy on the right.
   return `<li class="mg-msg mg-${esc(r.color || 'Y')} mg-k-${esc(r.kind)}${r.id === focusId ? ` mg-focus${focused ? '' : ' mg-pulse'}` : ''}" id="m-${esc(r.id)}">
 <div class="mg-who"><strong class="mg-nick"${r.id === focusId ? ` data-pick="${esc(tr('선택한 고확', 'Selected'))}"` : ''}>${esc(r.nick)}</strong><span class="mg-meta">${Number(r.channel) ? `<span class="mg-ch">CH${String(Number(r.channel)).padStart(2, '0')}</span>` : ''}<time datetime="${new Date(seenAt(r.seen)).toISOString()}" title="${ago(r.seen)}">${clock(r.seen)}</time></span><span class="mg-kind">${KIND[r.kind]?.() || ''}</span></div>
@@ -204,9 +206,9 @@ function render() {
 async function loadItems() {
   try {
     const list = await fetch(root.dataset.items).then((r) => r.json());
-    for (const [id, koName, en] of list) {
-      if (en) byId.set(id, { id, ko: koName, en });
-      if (en && en.length >= 5) byName.set(en.toLowerCase(), { id, ko: koName, en });
+    for (const [id, koName, en, cat] of list) {
+      if (en) byId.set(id, { id, ko: koName, en, cat });
+      if (en && en.length >= 5) byName.set(en.toLowerCase(), { id, ko: koName, en, cat });
     }
     names = [...byName.keys()].sort((a, b) => b.length - a.length);
   } catch (e) {}

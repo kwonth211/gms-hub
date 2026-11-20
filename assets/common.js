@@ -283,7 +283,7 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   run.innerHTML = '<div class="mg-tk-set"></div>';
   const set = run.firstChild;
   async function itemsHtml(rows, fresh = false) {
-    const [read, opt, link] = await Promise.all([getReader(), rows.some((r) => r.opts) ? getOptions() : null, rows.some((r) => r.text.includes('[')) ? getLinks() : null]);
+    const [read, opt, link] = await Promise.all([getReader(), getOptions(), rows.some((r) => r.text.includes('[')) ? getLinks() : null]);
     const texts = await Promise.all(rows.map(async (r) => { const original = noChannel(r.text, r.channel); return [original, read && !r.free ? await read(original).catch(() => original) : original]; }));
     return rows.map((r, i) => {
       const summary = opt?.optionSummary?.(r.opts, ko) || '';
@@ -293,12 +293,13 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
       const linkedName = /\[([^\]]+)\]/.exec(r.text)?.[1];
       const item = r.free ? Number(r.item) : link?.names.get(linkedName?.trim().toLowerCase());
       const itemHref = item && link ? link.marketSharePath({ marketPath: box.dataset.market, id: item, opts: r.opts }) : '';
+      const itemAttrs = itemHref ? opt?.megaphoneItemAttrs?.(item, r.opts) || ` data-item-id="${item}" data-option-source="megaphone"` : '';
       const messageLink = (html) => `<a class="mg-tk-message" data-mega-id="${keyOf(r)}" href="${esc(detail)}" tabindex="-1">${html}</a>`;
       const message = short(texts[i][1]), bracket = /\[[^\]]+\]/.exec(message);
       const body = itemHref && bracket
-        ? (bracket.index ? messageLink(esc(message.slice(0, bracket.index))) : '') + `<a class="mg-tk-item-link" href="${esc(itemHref)}" tabindex="-1" data-item-id="${item}"${r.opts ? ` data-opts="${esc(JSON.stringify(r.opts))}"` : ''}>${esc(bracket[0])}</a>` + (message.slice(bracket.index + bracket[0].length) ? messageLink(esc(message.slice(bracket.index + bracket[0].length))) : '')
+        ? (bracket.index ? messageLink(esc(message.slice(0, bracket.index))) : '') + `<a class="mg-tk-item-link" href="${esc(itemHref)}" tabindex="-1"${itemAttrs}>${esc(bracket[0])}</a>` + (message.slice(bracket.index + bracket[0].length) ? messageLink(esc(message.slice(bracket.index + bracket[0].length))) : '')
         : messageLink(esc(message));
-      return `<span class="mg-tk-item mg-tk-${esc(r.color || 'Y')}${fresh ? ' mg-tk-new' : ''}"${summary || texts[i][1] !== texts[i][0] ? ` title="${esc(title)}"` : ''}>${messageLink(`${icon()}${r.free ? `<em class="mg-tk-free">${ko ? '무료 고확' : 'Free mega'}</em>` : ''}${Number(r.channel) ? `<b>CH${Number(r.channel)}</b>` : ''}<time>${clock(r.seen)}</time><strong>${esc(r.nick)}</strong>`)}${body}${summary ? `<a class="mg-tk-opts" href="${esc(itemHref || detail)}"${itemHref ? '' : ` data-mega-id="${keyOf(r)}"`} tabindex="-1">${esc(summary)}</a>` : ''}</span>`;
+      return `<span class="mg-tk-item mg-tk-${esc(r.color || 'Y')}${fresh ? ' mg-tk-new' : ''}"${summary || texts[i][1] !== texts[i][0] ? ` title="${esc(title)}"` : ''}>${messageLink(`${icon()}${r.free ? `<em class="mg-tk-free">${ko ? '무료 고확' : 'Free mega'}</em>` : ''}${Number(r.channel) ? `<b>CH${Number(r.channel)}</b>` : ''}<time>${clock(r.seen)}</time><strong>${esc(r.nick)}</strong>`)}${body}${summary ? `<a class="mg-tk-opts" href="${esc(itemHref || detail)}"${itemHref ? itemAttrs : ` data-mega-id="${keyOf(r)}"`} tabindex="-1">${esc(summary)}</a>` : ''}</span>`;
     }).join('');
   }
   // Sizes are read only when the strip's content or the window changes (measure), never on every frame: a layout read

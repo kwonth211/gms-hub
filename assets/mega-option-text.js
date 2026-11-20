@@ -18,3 +18,11 @@ export function optionSummary(opts,ko=false){
   if(Number.isInteger(opts?.ups)&&opts.ups>0&&opts.ups<=20)parts.unshift(`+${opts.ups}`);
   return parts.join(' · ');
 }
+
+// Keep the source even when collection failed: a megaphone must never fall back to catalogue rolls.
+// Used by both the item name and the option summary, so hovering either shows the same piece.
+export function megaphoneItemAttrs(id,opts){
+  if(!Number.isInteger(id)||id<=0)return '';
+  const esc=(s)=>s.replace(/[&<>"']/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  return ` data-item-id="${id}" data-option-source="megaphone"${opts ? ` data-opts="${esc(JSON.stringify(opts))}"` : ''}`;
+}

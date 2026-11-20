@@ -43,7 +43,7 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches && body.dataset.tip
       // A shop listing with options (market.js): the card shows that piece's actual stats instead of the base ones.
       let opts = null;
       try { opts = tagged.dataset.opts ? JSON.parse(tagged.dataset.opts) : null; } catch (e) {}
-      return { kind: 'item', id: Number(tagged.dataset.itemId || tagged.dataset.item), opts, optKey: tagged.dataset.opts || '' };
+      return { kind: 'item', id: Number(tagged.dataset.itemId || tagged.dataset.item), opts, source: tagged.dataset.optionSource, optKey: tagged.dataset.opts || '' };
     }
     const m = href.match(/\/items\/(\d{7})-/) || href.match(/[?&](?:item|scroll)=(\d{7})/);
     if (m) return { kind: 'item', id: Number(m[1]) };
@@ -52,7 +52,7 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches && body.dataset.tip
     const i = icon.match(/\/item\/(\d{7})\/icon/);
     return i ? { kind: 'item', id: Number(i[1]) } : null;
   }
-  const keyOf = (t) => (t ? `${t.kind}:${t.id}:${t.optKey || ''}` : null);
+  const keyOf = (t) => (t ? `${t.kind}:${t.id}:${t.source || ''}:${t.optKey || ''}` : null);
   const sprite = (id, size) => `<img class="tip-sprite" src="${body.dataset.sprites}${id}.gif" width="${size}" height="${size}" alt="" loading="lazy">`;
   const mobName = (id) => { const m = data.mobs[id]; return m ? (ko ? m[0] : m[1]) : ''; };
   const itemName = (id) => { const t = data.items[id]; return t ? (ko && t[0] ? t[0] : t[1]) : ''; };
@@ -107,7 +107,7 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
     return out.join('');
   }
 
-  function renderItem(id, opts) {
+  function renderItem(id, opts, source) {
     const t = data?.items?.[id];
     if (!t) return false;
     const [nameKo, nameEn, cat, sub, lv, job, req, inc, slots, sell, scroll, drops, dropN, questN] = t;
@@ -125,8 +125,9 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
       const REQ = { str: tr('힘', 'STR'), dex: tr('덱', 'DEX'), int: tr('인', 'INT'), luk: tr('럭', 'LUK') };
       const reqs = Object.entries(req || {}).filter(([k]) => REQ[k]).map(([k, v]) => `${REQ[k]} ${v}`).join(' · ');
       lines.push(`<p class="tip-req">${lv ? `Lv. ${lv} · ` : ''}${esc(jobs)}${reqs ? `<br><span class="tip-muted">${reqs}</span>` : ''}</p>`);
+      if (source === 'megaphone') lines.push(`<p class="tip-muted">${opts ? tr('이 고확에서 확인한 옵션', 'Options captured from this megaphone') : tr('옵션 미확인 · 이 고확의 실제 능력치를 수집하지 못했어요.', 'Options not captured · Actual stats are unavailable for this megaphone.')}</p>`);
       if (opts) lines.push(optionLines(opts, inc || {}, slots, sub));
-      else {
+      else if (source !== 'megaphone') {
         const stats = Object.entries(inc || {}).map(([k, v]) => `<li>${INC[k] || k} <b>+${v}</b></li>`).join('');
         if (stats) lines.push(`<ul class="tip-stats">${stats}</ul>`);
         if (slots) lines.push(`<p class="tip-muted">${tr('업그레이드 가능 횟수', 'Upgrade slots')} ${slots}</p>`);
@@ -145,7 +146,7 @@ ${lines.join('')}
 ${priceBlock(id)}
 ${dropList ? `<section><h4>${tr('드롭하는 몬스터', 'Dropped by')}</h4>${dropList}</section>` : ''}
 ${sell || from.length ? `<section class="tip-npc">${sell ? `<p>${tr('상점에 팔 때', 'Sells to NPC for')} <b>${nf.format(sell)}</b> ${tr('메소', 'mesos')}</p>` : ''}${from.map((f) => `<p>${f}</p>`).join('')}</section>` : ''}
-<footer>${tr('시세: GMS Hub 수집 · 능력치: 게임 데이터 · 드롭: 플레이어 제보', 'Prices: GMS Hub scans · stats: game data · drops: player reports')}</footer>`;
+<footer>${source === 'megaphone' ? tr('시세: 전체 옵션 기준 · 드롭: 플레이어 제보', 'Prices: all options · drops: player reports') : tr('시세: GMS Hub 수집 · 능력치: 게임 데이터 · 드롭: 플레이어 제보', 'Prices: GMS Hub scans · stats: game data · drops: player reports')}</footer>`;
     return true;
   }
 
@@ -172,7 +173,7 @@ ${dropList ? `<section><h4>${tr('주요 드롭', 'Notable drops')}</h4><ul class
 <footer>${tr('필요 명중은 같은 레벨 기준 · 드롭: 플레이어 제보', 'Accuracy at its own level · drops: player reports')}</footer>`;
     return true;
   }
-  const render = (t) => (t.kind === 'mob' ? renderMob(t.id) : renderItem(t.id, t.opts));
+  const render = (t) => (t.kind === 'mob' ? renderMob(t.id) : renderItem(t.id, t.opts, t.source));
 
   let current = null;
   let timer = 0;
