@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { tooltipTitle, findTooltipPanel, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog } from '../assets/mega-tooltip.js';
-import { optionParts } from '../assets/mega-option-text.js';
+import { optionParts, optionSummary } from '../assets/mega-option-text.js';
 const bow={en:'Vaulter 2000',cat:'Equip',slots:7};
 const dagger={en:'Bazlud',cat:'Equip',slots:7};
 const scroll={en:'Claw Attack Scroll: Intermediate',cat:'Use'};
@@ -48,4 +48,10 @@ test('option summaries show actual stats and zero slots on desktop and mobile',(
  assert.deepEqual(optionParts({stats:{PAD:68,UNKNOWN:999},slots:0,attackSpeed:'average'},true),['공격력 68','남은 강화 0','공속 보통']);
  assert.deepEqual(optionParts({scroll:{chance:60,stats:{PAD:2}}},false),['Success 60%','ATT +2']);
  assert.deepEqual(optionParts({stats:{PAD:'<script>'},slots:-1}),[]);
+});
+test('ticker summaries include upgrades and zero slots without inventing missing options',()=>{
+ assert.equal(optionSummary({stats:{INT:21,PDD:57},slots:0,ups:6},true),'+6 · 인 21 · 물방 57 · 남은 강화 0');
+ assert.equal(optionSummary({scroll:{chance:60,stats:{PAD:2}}}),'Success 60% · ATT +2');
+ assert.equal(optionSummary(undefined),'');
+ assert.equal(optionSummary({ups:0,stats:{PAD:'<script>'}}),'');
 });

@@ -213,6 +213,10 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   if (!box || !api) return;
   const lang = box.dataset.lang;
   const textModule = new URL('mega-text.js', document.currentScript.src).href;
+  const optionModule = new URL('mega-option-text.js', document.currentScript.src);
+  optionModule.search = new URL(document.currentScript.src).search;
+  let options = null;
+  const getOptions = () => (options ||= import(optionModule.href).catch(() => null));
   const run = box.querySelector('.mg-tk-run');
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const clock = (seen) => new Date(Date.parse(`${seen.replace(' ', 'T')}Z`)).toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -269,9 +273,13 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   run.innerHTML = '<div class="mg-tk-set"></div>';
   const set = run.firstChild;
   async function itemsHtml(rows, fresh = false) {
-    const read = await getReader();
+    const [read, opt] = await Promise.all([getReader(), rows.some((r) => r.opts) ? getOptions() : null]);
     const texts = await Promise.all(rows.map(async (r) => { const original = noChannel(r.text, r.channel); return [original, read && !r.free ? await read(original).catch(() => original) : original]; }));
-    return rows.map((r, i) => `<a class="mg-tk-item mg-tk-${esc(r.color || 'Y')}${fresh ? ' mg-tk-new' : ''}" href="${box.dataset.href}?${r.free ? 'f' : 'm'}=${Number(r.id)}" tabindex="-1"${texts[i][1] !== texts[i][0] ? ` title="${esc(texts[i][0])}"` : ''}>${icon()}${r.free ? `<em class="mg-tk-free">${ko ? '무료 고확' : 'Free mega'}</em>` : ''}${Number(r.channel) ? `<b>CH${Number(r.channel)}</b>` : ''}<time>${clock(r.seen)}</time><strong>${esc(r.nick)}</strong><span>${esc(short(texts[i][1]))}</span></a>`).join('');
+    return rows.map((r, i) => {
+      const summary = opt?.optionSummary?.(r.opts, ko) || '';
+      const title = [texts[i][0], summary].filter(Boolean).join(' · ');
+      return `<a class="mg-tk-item mg-tk-${esc(r.color || 'Y')}${fresh ? ' mg-tk-new' : ''}" href="${box.dataset.href}?${r.free ? 'f' : 'm'}=${Number(r.id)}" tabindex="-1"${summary || texts[i][1] !== texts[i][0] ? ` title="${esc(title)}"` : ''}>${icon()}${r.free ? `<em class="mg-tk-free">${ko ? '무료 고확' : 'Free mega'}</em>` : ''}${Number(r.channel) ? `<b>CH${Number(r.channel)}</b>` : ''}<time>${clock(r.seen)}</time><strong>${esc(r.nick)}</strong><span>${esc(short(texts[i][1]))}</span>${summary ? `<span class="mg-tk-opts">${esc(summary)}</span>` : ''}</a>`;
+    }).join('');
   }
   // Sizes are read only when the strip's content or the window changes (measure), never on every frame: a layout read
   // right after moving the strip made the browser lay the whole page out again 60 times a second.

@@ -10,8 +10,8 @@
    "ko": "고확 아이템 옵션 — 능력치·강화 횟수를 바로 확인",
    "en": "Item options in megaphones — stats and upgrades at a glance",
    "desc": {
-    "ko": "실시간 고확에 링크된 아이템의 실제 옵션을 함께 보여 줘요. 옵션이 확인된 고확에는 장비 능력치·남은 강화 횟수·작 성공 횟수, 주문서 성공률과 증가량이 표시돼요. 읽기가 불확실한 값은 표시하지 않아요.",
-    "en": "See the actual options of items linked in live megaphones. When captured, equipment stats, remaining upgrades, successful upgrades, and scroll success rates and gains appear beneath the message. Uncertain readings are left out."
+    "ko": "상단 고확 띠와 실시간 고확 목록에서 링크된 아이템의 실제 옵션을 함께 보여 줘요. 옵션이 확인된 고확에는 장비 능력치·남은 강화 횟수·작 성공 횟수, 주문서 성공률과 증가량이 표시돼요. 읽기가 불확실한 값은 표시하지 않아요.",
+    "en": "See actual item options in both the top megaphone ticker and the live feed. When captured, equipment stats, remaining upgrades, successful upgrades, and scroll success rates and gains appear alongside the message. Uncertain readings are left out."
    },
    "highlight": true
   },

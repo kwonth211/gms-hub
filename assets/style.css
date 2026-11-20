@@ -2089,6 +2089,7 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mg-tk-item time { color: var(--tk-dim); font-variant-numeric: tabular-nums; }
 .mg-tk-item b { font-size: 0.7rem; color: var(--band); }
 .mg-tk-item strong { color: var(--tk-hi); }
+.mg-tk-opts { flex: none; padding: 1px 6px; border: 1px solid color-mix(in srgb, var(--band, var(--tk-Y)) 45%, transparent); border-radius: 4px; background: color-mix(in srgb, var(--band, var(--tk-Y)) 12%, transparent); color: var(--tk-hi); font-size: 0.74rem; font-weight: 650; font-variant-numeric: tabular-nums; }
 @media (prefers-reduced-motion: reduce) { .mg-tk-track { overflow-x: auto; } }
 @media (max-width: 480px) { .mg-ticker { font-size: 0.76rem; } .mg-tk-label { padding: 0 9px; } }
 .mg-tk-label .sprite { flex: none; }

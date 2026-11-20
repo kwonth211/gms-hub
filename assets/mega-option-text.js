@@ -12,3 +12,9 @@ export function optionParts(opts,ko=false){
   if(Number.isInteger(opts.knockback)&&opts.knockback>=0&&opts.knockback<=100)parts.push(`${ko?'넉백':'Knockback'} ${opts.knockback}%`);
   return parts;
 }
+
+export function optionSummary(opts,ko=false){
+  const parts=optionParts(opts,ko);
+  if(Number.isInteger(opts?.ups)&&opts.ups>0&&opts.ups<=20)parts.unshift(`+${opts.ups}`);
+  return parts.join(' · ');
+}
