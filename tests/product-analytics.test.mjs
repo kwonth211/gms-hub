@@ -4,6 +4,51 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const read = file => fs.readFileSync(new URL(`../${file}`, import.meta.url), 'utf8');
+
+test('a recovered or changed market query never emits an obsolete empty result', () => {
+  const events = [], timers = new Map(); let tick = 0;
+  const input = { value: 'missing' };
+  const context = { view: 'items', category: 'all', D: { lang: 'ko' }, $: () => input,
+    track: (name, params) => events.push({ name, ...params }),
+    setTimeout: fn => { timers.set(++tick, fn); return tick; }, clearTimeout: id => timers.delete(id) };
+  vm.createContext(context);
+  const source = read('assets/market.js');
+  vm.runInContext('let noResultTimer, lastNoResult="";\n' + source.slice(source.indexOf('let searchTimer ='), source.indexOf('function pager(')), context);
+  const flush = () => { const pending = [...timers.values()]; timers.clear(); pending.forEach(fn => fn()); };
+  context.noResults('missing'); input.value = 'Meba'; context.searched('Meba', 2); flush();
+  assert.deepEqual(events.map(e => e.name), ['market_search']);
+  assert.equal(events[0].results, 2);
+  input.value = 'missing'; context.noResults('missing'); context.category = 'scroll'; flush();
+  assert.equal(events.length, 1);
+  context.noResults('missing'); input.value = ''; flush();
+  assert.equal(events.length, 1);
+  input.value = 'missing'; context.noResults('missing'); flush();
+  assert.equal(events.at(-1).name, 'market_no_results');
+  input.value = 'Sai'; context.searched('Sai', 3); context.view = 'listings'; flush();
+  assert.equal(events.length, 2);
+});
+
+test('generic search telemetry ignores price and free-text fields with placeholders', () => {
+  const handlers = {}, events = [], timers = new Map(); let tick = 0;
+  const window = { gtag: (...args) => events.push(args) };
+  vm.runInNewContext(read('assets/analytics.js'), {
+    window, document: { body: { dataset: { page: 'market' } }, addEventListener: (name, fn) => handlers[name] = fn },
+    setTimeout: fn => { timers.set(++tick, fn); return tick; }, clearTimeout: id => timers.delete(id),
+  });
+  const field = (type, id, value) => ({ type, id, value, tagName: 'INPUT', dataset: {},
+    matches: selector => selector.includes('input[type=search]') ? type === 'search' || selector.includes('input[placeholder]') : false,
+    closest: () => null, getAttribute: name => name === 'aria-label' ? id : null,
+  });
+  handlers.input({ target: field('text', 'price', '300만') });
+  handlers.input({ target: field('text', 'message', 'private free text') });
+  assert.equal(timers.size, 0);
+  handlers.input({ target: field('search', 'mk-q', 'Meba') });
+  for (const fn of timers.values()) fn();
+  assert.equal(events.length, 1);
+  assert.equal(events[0][1], 'ui_search');
+  assert.equal(events[0][2].search_term, 'Meba');
+});
+
 function setup(overrides = {}) {
   const events = [], clarity = [];
   const window = { gtag: (...args) => events.push(JSON.parse(JSON.stringify(args))), clarity: (...args) => clarity.push(args), ...overrides };

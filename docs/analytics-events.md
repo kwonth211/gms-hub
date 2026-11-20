@@ -13,7 +13,7 @@
 
 ## 기능 발견과 재사용 (2026-11-20)
 
-- `home_character`, `home_wishlist`, `home_exp`, `training_exp`, `wishlist_cta`, `hollow_drop`에 각각 `_view`와 `_click` 이벤트를 붙여요.
+- `home_character`, `home_wishlist`, `home_exp`, `training_exp`, `wishlist_cta`, `hollow_drop`, `price_alert`에 각각 `_view`와 `_click` 이벤트를 붙여요.
 - `_view`는 해당 컨트롤의 50% 이상이 화면에 들어온 경우예요. 한 페이지 로드 안에서 기능·배치·대상 조합별 한 번만 세며, 목록 재렌더링은 중복 노출로 세지 않아요. 백그라운드 탭에서는 세지 않아요. 지속해서 읽었다는 의미는 아니에요.
 - `_click`은 실제 클릭이에요. `placement`, `content_id`, `page_type`으로 배치와 아이템/사냥터를 구분해요. URL 쿼리·사용자 입력·개인 계정 식별값은 보내지 않아요.
 - 관심 저장은 `wishlist_cta_view/click` → 기존 `wishlist_add(storage=ok)` → 이후 방문의 `wishlist_open`/`market_item`으로 봐요. 클릭에는 저장 취소도 포함되므로 저장 성공으로 대체하지 않아요.
@@ -22,6 +22,11 @@
 - `price_alert_result`: Discord 복귀 화면을 표시함. `item_id`, `channel=discord`, `result=ok|nodm|full|cancel|off|fail`. `nodm`은 저장됐지만 DM 전달이 안 된 경우예요. URL 복귀 결과를 읽은 클라이언트 이벤트이며 서버 발송 성공 지표는 아니에요. 새로고침으로 반복 기록하지 않도록 복귀 파라미터는 기존처럼 제거해요.
 - 알림 CTA와 설정 폼은 기존 노출을 유지해요. `alert_on`은 브라우저 푸시 경로이므로 Discord 성공과 혼동하지 않아요.
 - 기존 `tool_use`의 정의는 바꾸지 않아요. 새 노출 이벤트를 주요 이벤트로 올려 전환율을 부풀리지 않아요. GA 사용자 정의 매개변수별 분석은 해당 맞춤 측정기준 등록 여부를 확인해야 하며, 이벤트 이름별 집계와 Clarity 확인은 별도로 가능해요.
+
+## 검색 측정 보정 (2026-11-20)
+
+- `market_search`와 `market_no_results`는 입력이 잠시 멈춘 상태의 이벤트이며 검색 확정·포기 건수는 아니에요. 검색어·탭이 바뀌면 이전 예약 이벤트를 버리고, 결과가 발견되면 예약된 무결과 이벤트를 취소해요. 무결과 이벤트는 카테고리가 바뀌어도 버려요.
+- `ui_search`는 검색 의미가 지정된 입력칸만 대상으로 해요. placeholder가 있다는 이유만으로 가격 알림 금액·일반 메모·메시지 입력을 검색어로 집계하지 않아요.
 
 ## 실사용 전환 (2026-11-14부터)
 

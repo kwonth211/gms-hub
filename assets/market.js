@@ -201,8 +201,11 @@ function visitNote(id) {
 let searchTimer = 0, lastSearch = "";
 function searched(term, results) {
   clearTimeout(searchTimer);
+  if (results > 0) clearTimeout(noResultTimer);
   if (!term || term === lastSearch || (/[\uac00-\ud7a3]/.test(term) && /[\u3131-\u318e]$/.test(term))) return;
+  const searchView = view;
   searchTimer = setTimeout(() => {
+    if ($("mk-q").value.trim() !== term || view !== searchView) return;
     lastSearch = term;
     track("market_search", { search_term: term.slice(0, 40), results, view, lang: D.lang });
   }, 1500);
@@ -211,7 +214,9 @@ function noResults(term) {
   clearTimeout(noResultTimer);
   // A Korean word still being typed ends in a bare consonant or vowel ("망ㅌ"); that is not a failed search.
   if (!term || term === lastNoResult || (/[\uac00-\ud7a3]/.test(term) && /[\u3131-\u318e]$/.test(term))) return;
+  const searchView = view, searchCategory = category;
   noResultTimer = setTimeout(() => {
+    if ($("mk-q").value.trim() !== term || view !== searchView || category !== searchCategory) return;
     lastNoResult = term;
     track("market_no_results", { search_term: term.slice(0, 40), view, category, lang: D.lang });
   }, 1200);
@@ -1392,7 +1397,7 @@ async function openAlert(id) {
   // Discord DM alerts: "Log in with Discord" on the worker saves the alert, joins the GMS Hub server and DMs a confirmation,
   // then comes back here with ?dalert= (see discordResult). Works on every phone, no browser permission.
   const invite = document.body.dataset.discordUrl;
-  const viaDiscord = invite ? `<form class="mb-alert-form" data-discord-alert="${id}"><label><span class="mb-alert-bell" aria-hidden="true">🔔</span>${tr("<b>원하는 가격에 나오면 알려 드릴게요</b> · 이 가격 이하 매물이 뜨면 디스코드 DM", "<b>Get told when it is cheap</b> · a Discord DM when it is listed at or under")} <input name="price" value="${suggest ? kmoney(suggest) : ""}" placeholder="${tr("예: 300만", "e.g. 3m")}" required></label><button class="btn small-btn" type="submit">${tr("디스코드로 알림 받기", "Get it on Discord")}</button><small class="muted">${tr("디스코드 승인을 한 번 누르면 끝나요. 상점 매물과 확성기를 보고, 더 싼 매물이 나오면 다시 알려 드려요.", "One tap to approve on Discord. Shop listings and megaphones are watched; a cheaper one alerts you again.")}</small><span class="share-status" role="status"></span></form>` : "";
+  const viaDiscord = invite ? `<form class="mb-alert-form" data-discord-alert="${id}"><label><span class="mb-alert-bell" aria-hidden="true">🔔</span>${tr("<b>원하는 가격에 나오면 알려 드릴게요</b> · 이 가격 이하 매물이 뜨면 디스코드 DM", "<b>Get told when it is cheap</b> · a Discord DM when it is listed at or under")} <input name="price" value="${suggest ? kmoney(suggest) : ""}" placeholder="${tr("예: 300만", "e.g. 3m")}" required></label><button class="btn small-btn" type="submit" data-discover="price_alert" data-discover-place="item-detail" data-discover-id="${id}">${tr("디스코드로 알림 받기", "Get it on Discord")}</button><small class="muted">${tr("디스코드 승인을 한 번 누르면 끝나요. 상점 매물과 확성기를 보고, 더 싼 매물이 나오면 다시 알려 드려요.", "One tap to approve on Discord. Shop listings and megaphones are watched; a cheaper one alerts you again.")}</small><span class="share-status" role="status"></span></form>` : "";
   const supported = D.alerts && "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
   if (!supported) {
     box.innerHTML = viaDiscord || `<p class="muted note">${tr("이 브라우저는 알림을 지원하지 않아요. 아이폰은 사이트를 홈 화면에 추가한 뒤 그 앱에서 켤 수 있어요.", "This browser cannot show alerts. On iPhone, add the site to your home screen and turn alerts on from there.")}</p>`;

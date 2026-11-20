@@ -68,7 +68,7 @@
 
   // Searches: counted once the typing settles (1.5 s), never per keystroke and never a half-typed Korean syllable.
   const timers = new WeakMap(), last = new WeakMap();
-  const isSearch = (el) => el.matches?.('input[type=search],input[role=combobox],input[name=q],input[id$="-q"],input[id*="search"],input[placeholder]') && !el.matches('[type=password],[type=email],[type=tel],[autocomplete*=email],[data-no-track]') && el.type !== 'number';
+  const isSearch = (el) => el.matches?.('input[type=search],input[role=combobox],input[name=q],input[id$="-q"],input[id*="search"]') && !el.matches('[type=password],[type=email],[type=tel],[autocomplete*=email],[data-no-track]') && el.type !== 'number';
   document.addEventListener('input', (e) => {
     const el = e.target;
     if (!isSearch(el)) return;
