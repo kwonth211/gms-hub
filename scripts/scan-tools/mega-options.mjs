@@ -8,7 +8,7 @@ import { PNG } from 'pngjs';
 import Tesseract from 'tesseract.js';
 import { findBadge, lineBitmap, lineFingerprint, locateFingerprint, glyphs, itemGlyphBounds } from '../../assets/mega-reader.js';
 const exec = promisify(execFile);
-import { colorTooltipBoxes, selectTooltipBox, agreeTooltipNumber, tooltipBody, tooltipField, tooltipStatRows, missingTooltipFields, subtractTooltipBackground, emptyUpgradeSuffix, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog, nameKey, tooltipTitle } from '../../assets/mega-tooltip.js';
+import { colorTooltipBoxes, selectTooltipBox, agreeTooltipNumber, agreeLabeledNumber, tooltipBody, tooltipField, tooltipStatRows, missingTooltipFields, subtractTooltipBackground, emptyUpgradeSuffix, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog, nameKey, tooltipTitle } from '../../assets/mega-tooltip.js';
 export { nameKey } from '../../assets/mega-tooltip.js';
 export function cropImage(img, b, mask = false, scale = 1) {
   const out = new PNG({ width:b.w*scale, height:b.h*scale });
@@ -152,8 +152,8 @@ export class OptionReader {
             if(numericBox.w>5&&numericBox.w<=150&&numericBox.h>5&&numericBox.h<=26) {
               const pixels=foreground?cropImage(foreground,{x:x-body.x,y:y-body.y,w:numericBox.w,h:numericBox.h},false,3):cropImage(image,numericBox,true,3);
               const primary=await this.recognize(pixels,item.en,'number.png'),secondary=await this.recognizeFallback(pixels,'7');
-              let expression=agreeTooltipNumber(primary,secondary);
-              if(!expression){const original=cropImage(image,numericBox,false,3),a=await this.recognize(original,item.en,'number-original.png'),b=await this.recognizeFallback(original,'7');expression=agreeTooltipNumber(a,b);(this.lastReading.numericChecks||=[]).push({key,box:numericBox,primary:a,secondary:b,expression,original:true});}
+              let expression=agreeTooltipNumber(primary,secondary)||agreeLabeledNumber(field,secondary);
+              if(!expression){const original=cropImage(image,numericBox,false,3),a=await this.recognize(original,item.en,'number-original.png'),b=await this.recognizeFallback(original,'7');expression=agreeTooltipNumber(a,b)||agreeLabeledNumber(field,b);(this.lastReading.numericChecks||=[]).push({key,box:numericBox,primary:a,secondary:b,expression,original:true});}
               (this.lastReading.numericChecks||=[]).push({key,box:numericBox,primary,secondary,expression});
               if(expression)readings.push(parseTooltipLines([panel.title,`${field.text.split(':')[0]}: ${expression}`],item));
             }

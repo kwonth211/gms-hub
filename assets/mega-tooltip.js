@@ -19,6 +19,15 @@ export function agreeTooltipNumber(primary,secondary) {
   const a=primary.filter(r=>r.confidence>=.5).map(value).filter(v=>v!==null),b=secondary.filter(r=>r.confidence>=.6).map(value).filter(v=>v!==null);
   return a.length===1&&b.length===1&&a[0]===b[0]?a[0]:null;
 }
+export function agreeLabeledNumber(field,secondary) {
+  if(!field||field.confidence<.3||!tooltipField(field.text))return null;
+  const value=field.text.split(':').slice(1).join(':').trim();
+  if(!/^[+-]?(?:0|[1-9]\d{0,3})$/.test(value))return null;
+  // Vision often misses a crop containing just '+5'. Its full labelled row
+  // still supplies an independent reading; require a strong numeric-only read.
+  const matches=secondary.filter(r=>r.confidence>=.9&&/^[+-]?(?:0|[1-9]\d{0,3})$/.test(r.text.trim()));
+  return matches.length===1&&Number(matches[0].text)===Number(value)?String(Number(value)):null;
+}
 // Tooltip blue is translucent: subtract the pre-click background contribution
 // before thresholding its colour. Connected boxes keep the equipped comparison
 // panel separate instead of treating every nearby item name as another panel.
@@ -86,7 +95,7 @@ export function whisperDialog(rows) {
   const prompt=rows.find((r)=>r.confidence>=0.5&&/Please enter the person you want to/i.test(r.text));
   return prompt&&rows.find((r)=>r.confidence>=0.5&&/^CANCEL$/i.test(r.text.trim())&&r.y>prompt.y&&r.y<prompt.y+160&&Math.abs(r.x-prompt.x)<350);
 }
-const clean = (s) => s.replace(/^[|«•·*\s]+/, '').replace(/^[+-](?!\s*\d)\s*/, '').replace(/^[^a-z0-9]*([TIl]ype\s*:)/i,'$1').replace(/\b(?:aftack|altack|atack|ahack|attacke)\b/gi, 'Attack').replace(/\b(?:Wagic|Manic)\s+(Attack|Def(?:ense|[.])?)/gi,'Magic $1').replace(/Tуpe/g,'Type').replace(/\bCrit\.\s*(Rate|Damage)\b/gi,'Critical $1').replace(/^(?:LUI|LUE|LUIK)\s*:/i,'LUK:').replace(/^(Remaining Enhancements)\.\s*(?=\d)/i,'$1: ').trim();
+const clean = (s) => s.replace(/^[|«•·*\s]+/, '').replace(/^[+-](?!\s*\d)\s*/, '').replace(/^[^a-z0-9]*([TIl]ype\s*:)/i,'$1').replace(/\b(?:aftack|altack|atack|ahack|attacke)\b/gi, 'Attack').replace(/\b(?:Wagic|Manic)\s+(Attack|Def(?:ense|[.])?)/gi,'Magic $1').replace(/Tуpe/g,'Type').replace(/\bMax\s*w\s*P\s*:/gi,'MaxMP:').replace(/\bCrit\.\s*(Rate|Damage)\b/gi,'Critical $1').replace(/^(?:LUI|LUE|LUIK)\s*:/i,'LUK:').replace(/^(Remaining Enhancements)\.\s*(?=\d)/i,'$1: ').trim();
 export function tooltipField(text) {
   const label=/^([A-Za-z .]+):/.exec(clean(text))?.[1]?.trim().toLowerCase().replace(/\./g,'');
   return label==='remaining enhancements'?'slots':LABELS[label]||{'weapon def':'PDD','magic def':'MDD','weapon det':'PDD','magic det':'MDD',maxhp:'MHP',maxmp:'MMP'}[label]||null;

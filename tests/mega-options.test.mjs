@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {gunzipSync} from 'node:zlib';
-import { tooltipTitle, agreeArithmetic, agreeTooltipNumber, colorTooltipBoxes, selectTooltipBox, emptyUpgradeSuffix, findTooltipPanel, tooltipBody, tooltipStatRows, subtractTooltipBackground, missingTooltipFields, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog } from '../assets/mega-tooltip.js';
+import { tooltipTitle, agreeArithmetic, agreeTooltipNumber, agreeLabeledNumber, colorTooltipBoxes, selectTooltipBox, emptyUpgradeSuffix, findTooltipPanel, tooltipBody, tooltipStatRows, subtractTooltipBackground, missingTooltipFields, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog } from '../assets/mega-tooltip.js';
 import { optionParts, optionSummary } from '../assets/mega-option-text.js';
 const bow={en:'Vaulter 2000',cat:'Equip',slots:7};
 const dagger={en:'Bazlud',cat:'Equip',slots:7};
@@ -35,6 +35,13 @@ test('isolated plain numbers require both engines and stronger confidence than c
  assert.equal(agreeTooltipNumber([{text:'02',confidence:1}],[{text:'02',confidence:1}]),null);
  const item={en:'Blue Arten',cat:'Equip',slots:5};
  assert.equal(parseTooltipLines([item.en,'Wagic Attack: +22 (0 +22)'],item).stats.MAD,22);
+});
+test('one-digit Vision misses need a labelled reading and strong independent numeric OCR',()=>{
+ const field={text:'MaxMP: +5',confidence:.3};
+ assert.equal(agreeLabeledNumber(field,[{text:'+5',confidence:.95}]),'5');
+ assert.equal(agreeLabeledNumber(field,[{text:'+6',confidence:.95}]),null);
+ assert.equal(agreeLabeledNumber(field,[{text:'+5',confidence:.8}]),null);
+ assert.equal(agreeLabeledNumber({...field,text:'REQ INT: +5'},[{text:'+5',confidence:1}]),null);
 });
 test('scroll metadata rejects OCR digit contamination without filling unread stats',()=>{
  const item={en:'One-Handed Axe Attack Scroll: Greater',cat:'Use',inc:{PAD:4}};
