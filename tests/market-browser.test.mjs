@@ -304,3 +304,33 @@ test('"팔렸어요" reports show on a listing until a later sighting replaces t
   row = (await browseListings(e, p({ item: 2040801 }))).rows.find((r) => r.id === id);
   assert.equal(row.goneN, undefined);
 });
+
+test('observed equipment values filter matching listings and totals before pagination; missing values do not equal zero', async () => {
+  const e = env(), item = 1050006;
+  const wanted = { stats: { INT: 21, PDD: 57 }, slots: 0, ups: 6 };
+  let seller = 0;
+  const insert = (opts, extra = {}) => {
+    const id = add(e, { item, seller: `OptionSeller${++seller}`, ...extra });
+    e.sqlite.prepare('UPDATE listings SET opts=? WHERE id=?').run(opts ? JSON.stringify(opts) : null, id);
+    return id;
+  };
+  const first = insert(wanted, { price: 100 });
+  const second = insert({ ...wanted, stats: { ...wanted.stats, MMP: 20 } }, { price: 200 });
+  insert({ ...wanted, stats: { INT: 20, PDD: 57 } });
+  insert({ ...wanted, stats: { INT: 21, PDD: 58 } });
+  insert({ ...wanted, slots: 1 });
+  insert({ stats: wanted.stats, ups: 6 });
+  insert({ ...wanted, ups: 5 });
+  insert(null);
+  insert(wanted, { item: 1050007 });
+  for (const [page, id] of [[1, first], [2, second]]) {
+    const r = await browseListings(e, p({ item, opts: JSON.stringify(wanted), limit: 1, page, sort: 'price' }));
+    assert.equal(r.total, 2);
+    assert.equal(r.pages, 2);
+    assert.deepEqual(r.rows.map((r) => r.id), [id]);
+  }
+  assert.equal((await browseListings(e, p({ item, opts: '{"stats":{"INT":22}}' }))).total, 0);
+  for (const query of [{ item, opts: '{' }, { item, opts: '{}' }, { item, opts: '{"stats":{"FAKE":1}}' }, { opts: JSON.stringify(wanted) }, { item: 0, opts: JSON.stringify(wanted) }]) {
+    await assert.rejects(() => browseListings(e, p(query)), /bad/);
+  }
+});

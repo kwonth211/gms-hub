@@ -1,4 +1,5 @@
 import { parseOptions } from "./item-options.js";
+import { parseOptionFilter, optionFilterEntries } from '../../assets/option-filter.js';
 // Browsable market data. Asking listings, retained observations and anonymous price reports are distinct datasets.
 const DAY = 86400000;
 const stamp = (n) => new Date(n).toISOString().slice(0, 19).replace("T", " ");
@@ -279,6 +280,15 @@ export async function browseListings(env, p) {
     where.push(`json_extract(opts, '$.stats.${key}') = ?`);
     args.push(val);
   }
+  if (p.has('opts')) {
+    const filter = parseOptionFilter(p.get('opts'));
+    // Exact comparisons are scoped to one item, using its existing index.
+    if (!filter || integer(p, 'item', 1000000, 9999999, null) === null) throw Error('bad opts');
+    for (const [path, value] of optionFilterEntries(filter)) {
+      where.push('json_extract(opts, ?) = ?');
+      args.push(path, value);
+    }
+  }
   const sqlWhere = where.join(" AND "),
     order =
       sort === "price"
@@ -289,7 +299,7 @@ export async function browseListings(env, p) {
   // The total is only for the pager, and counting scans the whole window (5-15k index rows a call: the biggest read on
   // the account once the market page got busy). Counts for plain views (no seller, price or since filter) are kept
   // for ten minutes in the snapshots table; filtered views count live, their windows are small.
-  const plain = !p.has("since") && !p.get("seller") && !p.has("min") && !p.has("max") && !p.has("item") && !p.has("stat");
+  const plain = !p.has("since") && !p.get("seller") && !p.has("min") && !p.has("max") && !p.has("item") && !p.has("stat") && !p.has('opts');
   const countKey = `listings-count:${state}:${days}`;
   let count = null;
   if (plain) {

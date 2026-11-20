@@ -5,7 +5,7 @@ const parameters = new Map([
   ['/votes', []], ['/prices', ['ids']], ['/prices/all', []], ['/prices/recent', []],
   ['/listings/recent', ['limit']], ['/market/top', []], ['/market/item', ['id']],
   ['/market/catalog', []],
-  ['/market/listings', ['days', 'limit', 'page', 'state', 'sort', 'since', 'channel', 'room', 'item', 'ids', 'seller', 'exact', 'min', 'max', 'stat', 'val']],
+  ['/market/listings', ['days', 'limit', 'page', 'state', 'sort', 'since', 'channel', 'room', 'item', 'ids', 'seller', 'exact', 'min', 'max', 'stat', 'val', 'opts']],
   ['/market/reports', ['limit', 'page', 'days', 'item', 'kind', 'ids']],
   ['/market/history', ['id']], ['/market/status', []], ['/rank', []], ['/rank/lookup', ['name']],
   ['/megaphones', ['after', 'limit', 'item']], ['/megaphones/stats', []],

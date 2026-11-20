@@ -215,6 +215,15 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   const textModule = new URL('mega-text.js', document.currentScript.src).href;
   const optionModule = new URL('mega-option-text.js', document.currentScript.src);
   optionModule.search = new URL(document.currentScript.src).search;
+  const linkModule = new URL('market-share.js', document.currentScript.src);
+  linkModule.search = new URL(document.currentScript.src).search;
+  let links = null;
+  const getLinks = () => (links ||= (async () => {
+    const [mod, rows] = await Promise.all([import(linkModule.href), fetch(box.dataset.items).then((r) => { if (!r.ok) throw Error('items'); return r.json(); })]);
+    const names = new Map();
+    for (const [id, koName, en] of rows) for (const name of [koName, en]) if (name) names.set(name.toLowerCase(), id);
+    return { ...mod, names };
+  })().catch(() => { links = null; return null; }));
   let options = null;
   const getOptions = () => (options ||= import(optionModule.href).catch(() => null));
   const run = box.querySelector('.mg-tk-run');
@@ -268,17 +277,27 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   const ko = lang === 'ko';
   const mesos = (n) => (ko ? (n >= 1e8 ? `${+(n / 1e8).toFixed(2)}억` : n >= 1e4 ? `${+(n / 1e4).toFixed(n >= 1e6 ? 0 : 1)}만` : String(n)) : n >= 1e9 ? `${+(n / 1e9).toFixed(2)}b` : n >= 1e6 ? `${+(n / 1e6).toFixed(2)}m` : n >= 1e3 ? `${+(n / 1e3).toFixed(1)}k` : String(n));
   // A site post as one ticker line: "팝니다 [장갑 공격 주문서 60%] 300만 1개 급처".
-  const freeRow = (r) => ({ id: r.id, free: true, seen: r.at, nick: r.nick, channel: r.channel, color: 'F',
+  const freeRow = (r) => ({ id: r.id, item: r.item, free: true, seen: r.at, nick: r.nick, channel: r.channel, color: 'F',
     text: [r.intent === 'sell' ? (ko ? '팝니다' : 'Selling') : r.intent === 'buy' ? (ko ? '삽니다' : 'Buying') : '', r.item ? `[${(ko ? r.ko : r.en) || r.en || `#${r.item}`}]` : '', r.price ? mesos(r.price) : '', r.text].filter(Boolean).join(' ') });
   run.innerHTML = '<div class="mg-tk-set"></div>';
   const set = run.firstChild;
   async function itemsHtml(rows, fresh = false) {
-    const [read, opt] = await Promise.all([getReader(), rows.some((r) => r.opts) ? getOptions() : null]);
+    const [read, opt, link] = await Promise.all([getReader(), rows.some((r) => r.opts) ? getOptions() : null, rows.some((r) => r.text.includes('[')) ? getLinks() : null]);
     const texts = await Promise.all(rows.map(async (r) => { const original = noChannel(r.text, r.channel); return [original, read && !r.free ? await read(original).catch(() => original) : original]; }));
     return rows.map((r, i) => {
       const summary = opt?.optionSummary?.(r.opts, ko) || '';
       const title = [texts[i][0], summary].filter(Boolean).join(' · ');
-      return `<a class="mg-tk-item mg-tk-${esc(r.color || 'Y')}${fresh ? ' mg-tk-new' : ''}" href="${box.dataset.href}?${r.free ? 'f' : 'm'}=${Number(r.id)}" tabindex="-1"${summary || texts[i][1] !== texts[i][0] ? ` title="${esc(title)}"` : ''}>${icon()}${r.free ? `<em class="mg-tk-free">${ko ? '무료 고확' : 'Free mega'}</em>` : ''}${Number(r.channel) ? `<b>CH${Number(r.channel)}</b>` : ''}<time>${clock(r.seen)}</time><strong>${esc(r.nick)}</strong><span>${esc(short(texts[i][1]))}</span>${summary ? `<span class="mg-tk-opts">${esc(summary)}</span>` : ''}</a>`;
+      const detail = `${box.dataset.href}?${r.free ? 'f' : 'm'}=${Number(r.id)}`;
+      // Only the bracketed linked item owns opts; a B> message may ask for a different item.
+      const linkedName = /\[([^\]]+)\]/.exec(r.text)?.[1];
+      const item = r.free ? Number(r.item) : link?.names.get(linkedName?.trim().toLowerCase());
+      const itemHref = item && link ? link.marketSharePath({ marketPath: box.dataset.market, id: item, opts: r.opts }) : '';
+      const messageLink = (html) => `<a class="mg-tk-message" data-mega-id="${keyOf(r)}" href="${esc(detail)}" tabindex="-1">${html}</a>`;
+      const message = short(texts[i][1]), bracket = /\[[^\]]+\]/.exec(message);
+      const body = itemHref && bracket
+        ? (bracket.index ? messageLink(esc(message.slice(0, bracket.index))) : '') + `<a class="mg-tk-item-link" href="${esc(itemHref)}" tabindex="-1" data-item-id="${item}"${r.opts ? ` data-opts="${esc(JSON.stringify(r.opts))}"` : ''}>${esc(bracket[0])}</a>` + (message.slice(bracket.index + bracket[0].length) ? messageLink(esc(message.slice(bracket.index + bracket[0].length))) : '')
+        : messageLink(esc(message));
+      return `<span class="mg-tk-item mg-tk-${esc(r.color || 'Y')}${fresh ? ' mg-tk-new' : ''}"${summary || texts[i][1] !== texts[i][0] ? ` title="${esc(title)}"` : ''}>${messageLink(`${icon()}${r.free ? `<em class="mg-tk-free">${ko ? '무료 고확' : 'Free mega'}</em>` : ''}${Number(r.channel) ? `<b>CH${Number(r.channel)}</b>` : ''}<time>${clock(r.seen)}</time><strong>${esc(r.nick)}</strong>`)}${body}${summary ? `<a class="mg-tk-opts" href="${esc(itemHref || detail)}"${itemHref ? '' : ` data-mega-id="${keyOf(r)}"`} tabindex="-1">${esc(summary)}</a>` : ''}</span>`;
     }).join('');
   }
   // Sizes are read only when the strip's content or the window changes (measure), never on every frame: a layout read
@@ -374,10 +393,10 @@ document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
   // On the megaphone page itself a ticker item is focused in place instead of reloading the page.
   const samePage = location.pathname === new URL(box.dataset.href, location.href).pathname;
   box.addEventListener('click', (e) => {
-    const a = e.target.closest('a.mg-tk-item');
+    const a = e.target.closest('.mg-tk-item a');
     if (!a) return;
     track('mega_ticker_click');
-    if (samePage) {
+    if (samePage && a.dataset.megaId) {
       const q = new URL(a.href).searchParams, f = Number(q.get('f')), id = f ? `f${f}` : Number(q.get('m'));
       if (id && dispatchEvent(new CustomEvent('mega-focus', { detail: { id }, cancelable: true })) === false) { e.preventDefault(); history.replaceState(null, '', f ? `?f=${f}` : `?m=${id}`); }
     }

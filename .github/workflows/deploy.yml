@@ -28,7 +28,7 @@ jobs:
         with:
           node-version: 22
       - name: Verify API permissions, cache and private settings
-        run: node --test tests/security.test.mjs tests/public-cache.test.mjs tests/worker.test.mjs tests/usage-guard.test.mjs tests/inbox.test.mjs tests/shop-scan.test.mjs tests/market-batch.test.mjs tests/item-options.test.mjs tests/mega-options.test.mjs tests/mega-reader.test.mjs
+        run: node --test tests/security.test.mjs tests/public-cache.test.mjs tests/worker.test.mjs tests/usage-guard.test.mjs tests/inbox.test.mjs tests/shop-scan.test.mjs tests/market-batch.test.mjs tests/item-options.test.mjs tests/mega-options.test.mjs tests/mega-reader.test.mjs tests/option-filter.test.mjs tests/market-share.test.mjs tests/market-browser.test.mjs
       - run: npm ci --ignore-scripts
         working-directory: scripts/market-batch
       - run: npm test

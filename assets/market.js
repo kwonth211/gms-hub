@@ -2,6 +2,8 @@ import './collection-status.js';
 import { listingPriceBand, priceBadge, refreshListingPriceBadges } from './listing-price.js';
 import { bindListingClicks } from './listing-clicks.js';
 import { marketSharePath } from './market-share.js';
+import { parseOptionFilter, encodeOptionFilter } from './option-filter.js';
+import { optionParts } from './mega-option-text.js';
 import { DAY, parseUtc, newMark } from "./market-data.js";
 import { KERNING, placeLabel } from "./place.js";
 import { makeMarketIndex, catalogRows, matchingIds, refPrice, npcBetter } from "./market-catalog.js";
@@ -324,10 +326,18 @@ const URL_FIELDS = [
   ["kind", "mb-report-kind", ""], ["isort", "mb-item-sort", "sales"], ["cls", "mb-class", ""],
 ];
 function syncURL() {
-  if (FIXED) return;
   const p = new URLSearchParams(location.search);
-  for (const k of ["item", "view", "q", "cat", "page", "fav", "opt", ...URL_FIELDS.map((f) => f[0])]) p.delete(k);
-  if (optWanted != null && (selected || view === "listings")) p.set("opt", optWanted);
+  const exact = exactFor(selected || FIXED);
+  p.delete("opts");
+  p.delete("opt");
+  if (exact) p.set("opts", exact.raw);
+  else if (optWanted != null && (selected || FIXED || view === "listings")) p.set("opt", optWanted);
+  if (FIXED) {
+    const next = location.pathname + (p.size ? "?" + p : "");
+    if (next !== location.pathname + location.search) history.replaceState(null, "", next);
+    return;
+  }
+  for (const k of ["item", "view", "q", "cat", "page", "fav", ...URL_FIELDS.map((f) => f[0])]) p.delete(k);
   if (selected) p.set("item", selected);
   if (view !== "items" || selected) p.set("view", view);
   const q = $("mk-q").value.trim();
@@ -362,6 +372,7 @@ function closeItem() {
   detailSeq++;
   detailAbort?.abort();
   selected = null;
+  exactSelection = null;
   chart?.destroy();
   chart = null;
   $("mk-detail").hidden = true;
@@ -458,6 +469,20 @@ function classOk(it) {
 // one gear item honours it too. The left search box only matches names: typing "53레드바이퍼" there finds Red Viper and
 // sets the option to 53.
 let optWanted = null;
+// A linked megaphone carries only values actually observed on that equipment.
+let exactSelection = null;
+const exactFor = (id) => exactSelection?.item === id ? exactSelection : null;
+function paintExactFilter(id) {
+  const box = $("md-exact-filter"), exact = exactFor(id);
+  const pageLink = document.querySelector(".mb-item-page");
+  if (pageLink && D.itemPaths?.[id]) pageLink.href = marketSharePath({ itemPath: D.itemPaths[id], opt: detailState.opt, opts: exact?.filter });
+  if (!box) return;
+  box.hidden = !exact;
+  if (!exact) return;
+  const parts = exact.filter ? optionParts(exact.filter, ko) : [];
+  if (exact.filter?.ups != null) parts.push(tr(`성공한 강화 ${exact.filter.ups}`, `Successful upgrades ${exact.filter.ups}`));
+  box.innerHTML = `<div><strong>${tr("같은 옵션의 판매 매물", "Listings with matching options")}</strong><p>${esc(exact.filter ? parts.join(" · ") : tr("옵션 조건이 올바르지 않아요. 필터를 해제해 주세요.", "Invalid option filter. Clear it to view listings."))}</p><small>${tr("확인된 옵션값이 모두 같은 매물만 표시해요. 위의 대표 시세와 가격 추이는 전체 옵션 기준이에요.", "Every observed option must match. Summary prices and charts include all options.")}</small></div><button class="btn ghost small-btn" data-clear-exact-options>${tr("옵션 필터 해제", "Clear option filter")}</button>`;
+}
 function searchParts() {
   const q = $("mk-q").value, full = matchingIds(items, q);
   if (!full || full.length) return { ids: full, value: null };
@@ -699,6 +724,7 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
   if (!it) return;
   const changed = selected !== id;
   selected = id;
+  if (exactSelection && exactSelection.item !== id) exactSelection = null;
   if (changed) {
     pendingOpen = { id, source };
     rememberOpen(id);
@@ -719,7 +745,7 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
       room: "",
       seller: "",
       page: 1,
-      opt: optWanted,
+      opt: exactFor(id) ? null : optWanted,
     };
     detailTab = "listings";
   }
@@ -732,7 +758,7 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
       ? `<dl class="mb-detail-stats"><div><dt>${tr("판매가 중앙값", "Asking median")}</dt><dd>${money(s.median)} <small>${T.priceUnit}</small></dd></div><div><dt>${tr("최저 판매가", "Lowest ask")}</dt><dd>${money(s.low)}</dd></div><div><dt>${tr("판매 매물 · 24h", "Asking · 24h")}</dt><dd>${s.open}</dd></div></dl>`
       : "";
   // The item's own page (full view: chart, megaphones, listings, drops, quests) sits in the header, beside "copy link".
-  const pageLink = !FIXED && D.itemPaths?.[id] ? `<a class="btn ghost small-btn mb-item-page" href="${esc(D.itemPaths[id])}">${esc(D.itemLink)}</a>` : "";
+  const pageLink = !FIXED && D.itemPaths?.[id] ? `<a class="btn ghost small-btn mb-item-page" href="${esc(marketSharePath({ itemPath: D.itemPaths[id], opt: detailState.opt, opts: exactFor(id)?.filter }))}">${esc(D.itemLink)}</a>` : "";
   priceData = null;
   if ($("mb-alert")) $("mb-alert").hidden = true;
   fillItemInfo(id);
@@ -741,7 +767,7 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
   $("mk-detail").innerHTML =
     `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(it.name)}</h2><small>${esc(it.en)}</small></div>${starButton(id, "mb-star-detail")}${D.alerts || document.body.dataset.discordUrl ? `<button type="button" class="btn ghost small-btn" data-alert-open="${id}">🔔 ${tr("가격 알림", "Price alert")}</button>` : ""}${pageLink}<button class="btn ghost small-btn" data-share-item="${id}" title="${tr("이 아이템 링크 복사", "Copy a link to this item")}">${tr("링크 복사", "Copy link")}</button><button class="btn ghost small-btn" data-close-item aria-label="${tr("상세 닫기", "Close details")}">×</button></header><p class="share-status mb-share-status" id="mb-share-status" role="status" aria-live="polite"></p><div class="mb-wait" aria-hidden="true">${SK.history()}${SK.facts()}${SK.offers()}</div><section class="mb-alert" id="mb-alert" hidden></section><section class="mb-history" id="mb-history" aria-label="${tr("가격 한눈에 보기", "Price at a glance")}" aria-busy="true">${SK.history()}</section>${stats}<section class="mb-info mb-facts" id="mb-facts">${SK.facts()}</section>${changed || reset ? visitNote(id) : ""}
  <div class="mb-tabs" role="tablist" aria-label="${tr("아이템 상세", "Item details")}"><button data-detail-tab="listings" role="tab" aria-selected="${detailTab === "listings"}" aria-controls="mb-detail-listings">${tr("판매 매물", "Shop listings")}</button><button data-detail-tab="charts" role="tab" aria-selected="${detailTab === "charts"}" aria-controls="mb-detail-charts">${tr("가격 추이·매물대", "Trends & depth")}</button></div>
- <div id="mb-detail-listings" role="tabpanel" aria-label="${tr("판매 매물", "Shop listings")}"><p class="muted note">${T.whereNote}</p><div class="mb-detail-filters"><label id="md-opt-wrap" hidden>${tr("옵션", "Option")}<select id="md-opt"></select></label><label>${tr("정렬", "Sort")}<select id="md-sort"><option value="price">${T.sortPrice}</option><option value="recent">${T.sortRecent}</option><option value="high">${tr("높은 가격순", "Highest price")}</option></select></label><label>${tr("상태", "Status")}<select id="md-state"><option value="open">${tr("판매 중 · 24h", "Asking · 24h")}</option><option value="all">${tr("전체 기록 · 7일", "All records · 7d")}</option><option value="sold">${tr("판매 완료 표시", "Marked sold")}</option><option value="stale">${tr("24시간 경과", "Over 24h old")}</option></select></label></div><div class="price-band-filter" id="md-price-band" hidden><span></span><button class="btn ghost small-btn" data-clear-band>${tr("가격대 해제", "Clear price band")}</button></div><p id="md-count" class="muted note" role="status"></p><div id="md-rows">${SK.offers()}</div><div id="md-pages" class="mb-pagination"></div></div>
+ <div id="mb-detail-listings" role="tabpanel" aria-label="${tr("판매 매물", "Shop listings")}"><p class="muted note">${T.whereNote}</p><div id="md-exact-filter" class="mb-exact-filter" hidden></div><div class="mb-detail-filters"><label id="md-opt-wrap" hidden>${tr("옵션", "Option")}<select id="md-opt"></select></label><label>${tr("정렬", "Sort")}<select id="md-sort"><option value="price">${T.sortPrice}</option><option value="recent">${T.sortRecent}</option><option value="high">${tr("높은 가격순", "Highest price")}</option></select></label><label>${tr("상태", "Status")}<select id="md-state"><option value="open">${tr("판매 중 · 24h", "Asking · 24h")}</option><option value="all">${tr("전체 기록 · 7일", "All records · 7d")}</option><option value="sold">${tr("판매 완료 표시", "Marked sold")}</option><option value="stale">${tr("24시간 경과", "Over 24h old")}</option></select></label></div><div class="price-band-filter" id="md-price-band" hidden><span></span><button class="btn ghost small-btn" data-clear-band>${tr("가격대 해제", "Clear price band")}</button></div><p id="md-count" class="muted note" role="status"></p><div id="md-rows">${SK.offers()}</div><div id="md-pages" class="mb-pagination"></div></div>
  <div id="mb-detail-charts" role="tabpanel" aria-label="${tr("가격 추이와 매물대", "Trends and depth")}"><div id="mk-charts">${SK.block(260)}</div></div>
  <section class="mb-info" id="mb-info" aria-live="polite">${SK.block(90)}</section><section class="mb-megas" id="mb-megas" hidden></section>`;
   $("md-sort").value = detailState.sort;
@@ -837,6 +863,8 @@ let detailListSeq = 0, lastStatTrack = "";
 function fillOptMenu(id) {
   const sel = $("md-opt"), key = statKeyOf(id);
   if (!sel) return;
+  paintExactFilter(id);
+  if (exactFor(id)) { $("md-opt-wrap").hidden = true; return; }
   const counts = new Map();
   if (key) for (const r of priceData?.profile || []) { const v = r.opts?.stats?.[key]; if (v != null && !r.sold) counts.set(v, (counts.get(v) || 0) + 1); }
   if (detailState.opt != null && key) counts.set(detailState.opt, counts.get(detailState.opt) || 0);
@@ -866,12 +894,22 @@ async function loadDetailRows() {
     p.set("since", new Date(priceBand.fromTime).toISOString());
   }
   p.delete("opt");
-  const sf = statFilter([id], detailState.opt);
+  const exact = exactFor(id);
+  fillOptMenu(id);
+  if (exact && !exact.filter) {
+    $("md-rows").textContent = tr("올바르지 않은 옵션 조건으로 매물을 조회할 수 없어요.", "Cannot load listings with an invalid option filter.");
+    $("md-rows").setAttribute("aria-busy", "false");
+    $("md-count").textContent = "";
+    $("md-pages").innerHTML = "";
+    panelPart("rows", id);
+    return;
+  }
+  if (exact) p.set("opts", exact.raw);
+  const sf = exact ? null : statFilter([id], detailState.opt);
   if (sf) {
     p.set("stat", sf.key);
     p.set("val", sf.value);
   }
-  fillOptMenu(id);
   $("md-rows").setAttribute("aria-busy", "true");
   document.querySelector("[data-refresh-detail]")?.classList.add("is-busy");
   // First load shows placeholder rows; a filter change keeps the old rows (dimmed by aria-busy) until the new ones arrive.
@@ -888,7 +926,9 @@ async function loadDetailRows() {
     }
     detailFetchedAt = Date.now();
     $("md-count").innerHTML = `<span>${tr(`조건에 맞는 매물 ${data.total}건`, `${data.total} matching listings`)}</span><span class="mb-fetched" id="md-at">${fetchedLabel(detailFetchedAt)}</span><button type="button" class="mb-reload" data-refresh-detail>${RELOAD_ICON}${tr("새로고침", "Refresh")}</button>`;
-    $("md-rows").innerHTML = offerCards(data.rows);
+    $("md-rows").innerHTML = exact && !data.rows.length
+      ? `<p class="market-empty">${tr("같은 옵션으로 확인된 매물이 없어요. 다른 옵션도 보려면 위의 옵션 필터를 해제해 주세요.", "No listings with these observed options. Clear the option filter above to see other options.")}</p>`
+      : offerCards(data.rows);
     panelPart("rows", id);
     $("md-pages").innerHTML = pager(data, "detail");
     if (sf && lastStatTrack !== `${id}:${sf.value}`) {
@@ -1124,7 +1164,7 @@ document.querySelector(".market-browser").addEventListener("click", (e) => {
   }
   if (el.dataset.shareItem) {
     const id = Number(el.dataset.shareItem);
-    const url = shareUrl(marketSharePath({ fixed: FIXED, pathname: location.pathname, itemPath: D.itemPaths?.[id], marketPath: `/${D.lang}/tools/market/`, id, opt: detailState.opt }), "market-item");
+    const url = shareUrl(marketSharePath({ fixed: FIXED, pathname: location.pathname, itemPath: D.itemPaths?.[id], marketPath: `/${D.lang}/tools/market/`, id, opt: detailState.opt, opts: exactFor(id)?.filter }), "market-item");
     copyText(url).then((ok) => {
       const status = $("mb-share-status");
       if (status) status.textContent = ok ? tr("링크를 복사했어요. 새 탭이나 다른 기기에서 같은 아이템이 열려요.", "Link copied. It opens the same item on any device.") : `${tr("복사하지 못했어요. 이 주소를 직접 복사해 주세요:", "Could not copy. Copy this address:")} ${url}`;
@@ -1163,6 +1203,13 @@ document.querySelector(".market-browser").addEventListener("click", (e) => {
       );
     renderMain();
     return;
+  }
+  if (el.hasAttribute("data-clear-exact-options")) {
+    exactSelection = null;
+    detailState.opt = optWanted = null;
+    detailState.page = 1;
+    syncURL();
+    return loadDetailRows();
   }
   if (el.hasAttribute("data-close-item")) return closeItem();
   if (el.dataset.detailTab) {
@@ -1562,6 +1609,11 @@ async function initialize() {
     if (p.get("q")) $("mk-q").value = p.get("q");
     if (/^\d{1,3}$/.test(p.get("opt") || "")) optWanted = Number(p.get("opt"));
     else optWanted = searchParts().value;
+    if (byId.has(id) && p.has("opts")) {
+      const filter = parseOptionFilter(p.get("opts"));
+      exactSelection = { item: id, filter, raw: filter ? encodeOptionFilter(filter) : p.get("opts") };
+      optWanted = null;
+    }
     // Items (one row per item, like MesoWatch) is the default view; "all listings" is for finding a seller, channel or
     // room. The anonymous price-report tab was removed (no one used it); old ?view=reports links open the items.
     const initialView = ["items", "listings"].includes(p.get("view"))

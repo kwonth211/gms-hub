@@ -4,6 +4,7 @@
 import { koMesos, GLOSS, plain, intentOf, priceOf } from './mega-text.js';
 import { optBadge, loadTips as loadOptTips } from './opt-grade.js';
 import { optionParts } from './mega-option-text.js';
+import { marketSharePath } from './market-share.js';
 import { indexEntry, searchEntries } from './search-index.js';
 export { intentOf, priceOf };
 
@@ -39,7 +40,7 @@ function optLine(r, it) {
 function itemsOf(text) {
   const found = [];
   const bracket = /\[([^\]]{3,60})\]/.exec(text);
-  if (bracket && byName.has(bracket[1].toLowerCase())) found.push(byName.get(bracket[1].toLowerCase()));
+  if (bracket) return byName.has(bracket[1].toLowerCase()) ? [byName.get(bracket[1].toLowerCase())] : [];
   if (!found.length) {
     const low = text.toLowerCase();
     const hit = names.find((n) => low.includes(n));
@@ -138,10 +139,11 @@ function card(r) {
   // Far-off differences usually mean a scrolled or bundled item, not a cheap or pricey one, so they are not shown.
   const raw = price && market?.median ? Math.round(((price - market.median) / market.median) * 100) : null;
   const diff = raw != null && Math.abs(raw) <= 300 ? raw : null;
-  const text = esc(r.text).replace(/\[([^\]]+)\]/, (m, n) => (it ? `<a class="mg-item" href="${root.dataset.market}?item=${it.id}"${r.opts ? ` data-item-id="${it.id}" data-opts="${esc(JSON.stringify(r.opts))}"` : ''}>[${esc(ko && it.ko ? it.ko : n)}]</a>` : m));
+  const itemHref = it && marketSharePath({marketPath:root.dataset.market,id:it.id,opts:r.opts});
+  const text = esc(r.text).replace(/\[([^\]]+)\]/, (m, n) => (it ? `<a class="mg-item" href="${esc(itemHref)}"${r.opts ? ` data-item-id="${it.id}" data-opts="${esc(JSON.stringify(r.opts))}"` : ''}>[${esc(ko && it.ko ? it.ko : n)}]</a>` : m));
   const g = ko ? gloss(r.text, items) : '';
   const tag = r.intent ? `<span class="mg-intent ${r.intent}">${r.intent === 'sell' ? tr('팝니다', 'Selling') : tr('삽니다', 'Buying')}</span>` : '';
-  const cmp = it && market?.median ? `<a class="mg-price" href="${root.dataset.market}?item=${it.id}">${tr('시세', 'Market')} ${mesos(market.median)}${diff != null ? ` · <b class="${diff > 0 ? 'up' : diff < 0 ? 'down' : ''}">${diff > 0 ? '+' : ''}${diff}%</b>` : ''}</a>` : '';
+  const cmp = it && market?.median ? `<a class="mg-price" href="${esc(itemHref)}">${tr('시세', 'Market')} ${mesos(market.median)}${diff != null ? ` · <b class="${diff > 0 ? 'up' : diff < 0 ? 'down' : ''}">${diff > 0 ? '+' : ''}${diff}%</b>` : ''}</a>` : '';
   // One compact row: who and where on the left, the message and its reading in the middle, the whisper copy on the right.
   return `<li class="mg-msg mg-${esc(r.color || 'Y')} mg-k-${esc(r.kind)}${r.id === focusId ? ` mg-focus${focused ? '' : ' mg-pulse'}` : ''}" id="m-${esc(r.id)}">
 <div class="mg-who"><strong class="mg-nick"${r.id === focusId ? ` data-pick="${esc(tr('선택한 고확', 'Selected'))}"` : ''}>${esc(r.nick)}</strong><span class="mg-meta">${Number(r.channel) ? `<span class="mg-ch">CH${String(Number(r.channel)).padStart(2, '0')}</span>` : ''}<time datetime="${new Date(seenAt(r.seen)).toISOString()}" title="${ago(r.seen)}">${clock(r.seen)}</time></span><span class="mg-kind">${KIND[r.kind]?.() || ''}</span></div>

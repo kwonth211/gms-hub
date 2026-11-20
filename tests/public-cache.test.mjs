@@ -38,6 +38,8 @@ test('listing filters, report kinds and item-specific data never share the wrong
       ['/market/listings?channel=1&room=1', '/market/listings?channel=1&room=2'],
       ['/market/listings?state=open&sort=price', '/market/listings?state=sold&sort=price'],
       ['/market/listings?min=1&max=100', '/market/listings?min=1&max=200'],
+      ['/market/listings?item=1050006', '/market/listings?item=1050006&opts=%7B%22slots%22%3A0%7D'],
+      ['/market/listings?item=1050006&opts=%7B%22slots%22%3A0%7D', '/market/listings?item=1050006&opts=%7B%22slots%22%3A1%7D'],
       ['/market/listings?stat=PAD&val=48', '/market/listings?stat=PAD&val=49'],
       ['/market/listings?days=7&limit=50', '/market/listings?days=30&limit=50'],
       ['/market/listings?since=2026-11-20T00:00:00Z', '/market/listings?since=2026-11-20T01:00:00Z'],
