@@ -111,3 +111,14 @@
 - `shop_page_open` (from scan): opened the shop page from the scan page after an upload.
 - `market_gone_undo` (item_id, reports): took back their own "팔렸어요".
 - `market_still_there` (item_id): pressed "아직 있어요" on a listing others reported gone; the reports were cleared.
+
+## Market radar and search recovery (2026-11-20)
+
+- `market_radar_open`: visitor expands the live listing radar (`lang`). No listings requests while closed.
+- `market_radar_result`: a check completes (`results`, `sampled`, `lang`). Automatic checks are **not** active users or tool-use conversions.
+- `market_radar_click`: visitor opens a candidate item (`item_id`, `lang`); subsequent `market_item(interaction_source=radar)` records actual load success.
+- `share_copy(content=market-radar)`: copies an observed-price summary and canonical item link; success is `result=ok`, not proof it was posted. `share_open(content=market-radar)` measures a tagged arrival.
+- `market_search_recover(action=clear_filters)`: clears restrictive filters while retaining the item-name query. A subsequent successful `market_item` is the completion signal.
+- Shared market item links now preserve `opt` and prefer existing item pages. No seller names or listing text are added to analytics.
+
+Radar compares exact-ID scrolls/stars only, with at least 5 open listings / 2 shops. It displays observations no older than one hour, excludes sold/reported-missing/options-bearing records, and requires at least a 10% discount from the catalog asking median. This is a bounded sample, not a guaranteed cheapest offer or a completed-trade valuation.

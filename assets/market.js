@@ -1,4 +1,6 @@
 import './collection-status.js';
+import { mountMarketRadar } from './market-radar.js';
+import { marketSharePath } from './market-radar-data.js';
 import { DAY, parseUtc, newMark } from "./market-data.js";
 import { KERNING, placeLabel } from "./place.js";
 import { makeMarketIndex, catalogRows, matchingIds, refPrice, npcBetter } from "./market-catalog.js";
@@ -392,7 +394,7 @@ function renderDirectory() {
             `<tr class="${r.id === selected ? "selected" : ""}"><td>${starButton(r.id)}</td><td>${itemLink(r.id)}<small>${categories[r.category]}${r.reports ? ` · ${tr("가격 제보", "Reports")} ${r.reports}` : ""}${npcBetter(npcSell(r.id), refPrice(r)) ? ` <span class="mb-npc-tag" title="${esc(npcNote(r.id, refPrice(r)))}">${tr("NPC 이득", "NPC pays more")}</span>` : ""}</small></td><td class="mb-src">${dropIcons(r.id)}</td><td class="num">${r.median == null && r.typical ? `${money(r.typical)}<small>${tr("대표 시세", "Typical")}</small>` : `${money(r.median)}<small>${tr("최저", "Low")} ${money(r.low)}</small>`}</td><td class="mb-move-cell">${moveBadge(r.typicalDay)}</td><td><strong>${r.open}</strong><small>${r.sales ? `${tr("거래", "Traded")} ${money(r.sales)}` : `${tr("기록", "Records")} ${r.records || 0}`}</small></td><td>${r.last ? newMark(r.last) : ""}${when(r.last)}</td></tr>`,
         )
         .join("")}</tbody></table></div>`
-    : categoryMiss() || `<div class="market-empty"><strong>${tr("표시할 아이템이 없어요.", "No matching items.")}</strong><p>${$("mb-favorites").checked ? favorites.size ? tr("저장한 아이템 중 현재 검색·필터에 맞는 항목이 없어요.", "None of your saved items match these filters.") : tr("아이템의 ‘관심 저장’을 누르면 여기에 모여요. 이 브라우저에서 다음에도 시세를 바로 확인할 수 있어요.", "Choose Save item on an item to keep it here and check its price next time in this browser.") : T.noMatches}</p>${$("mb-favorites").checked ? `<p><a class="btn ghost small-btn" href="/${D.lang}/tools/market/">${tr("아이템 찾아 저장하기", "Find items to save")}</a></p>` : ""}${$("mk-q").value.trim() && document.body.dataset.discordUrl ? `<p><a href="${document.body.dataset.discordUrl}" target="_blank" rel="noopener" data-discord="market-empty">${tr("찾는 아이템 시세를 디스코드에서 물어보기", "Ask for this item's price on Discord")}</a></p>` : ""}${$("mk-q").value.trim() ? `<p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="listings">${tr("전체 매물에서 찾기", "Search all listings instead")}</button></p>` : ""}</div>`;
+    : filterRecovery() || categoryMiss() || `<div class="market-empty"><strong>${tr("표시할 아이템이 없어요.", "No matching items.")}</strong><p>${$("mb-favorites").checked ? favorites.size ? tr("저장한 아이템 중 현재 검색·필터에 맞는 항목이 없어요.", "None of your saved items match these filters.") : tr("아이템의 ‘관심 저장’을 누르면 여기에 모여요. 이 브라우저에서 다음에도 시세를 바로 확인할 수 있어요.", "Choose Save item on an item to keep it here and check its price next time in this browser.") : T.noMatches}</p>${$("mb-favorites").checked ? `<p><a class="btn ghost small-btn" href="/${D.lang}/tools/market/">${tr("아이템 찾아 저장하기", "Find items to save")}</a></p>` : ""}${$("mk-q").value.trim() && document.body.dataset.discordUrl ? `<p><a href="${document.body.dataset.discordUrl}" target="_blank" rel="noopener" data-discord="market-empty">${tr("찾는 아이템 시세를 디스코드에서 물어보기", "Ask for this item's price on Discord")}</a></p>` : ""}${$("mk-q").value.trim() ? `<p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="listings">${tr("전체 매물에서 찾기", "Search all listings instead")}</button></p>` : ""}</div>`;
   if (!rows.length && !$("mb-favorites").checked) noResults($("mk-q").value.trim());
   if (!$("mb-favorites").checked) searched($("mk-q").value.trim(), rows.length);
   $("mb-pagination").innerHTML = pager({ page, pages }, "main");
@@ -411,6 +413,14 @@ function scopeLabel() {
   }[state];
 }
 // When a category hides every match of the search, say so and offer the other categories instead of "no such item".
+// Keep the query when filters hide a known item; offer one action that also clears class/wishlist/location filters.
+function filterRecovery() {
+  const ids = searchParts().ids || [];
+  if (!ids.length) return "";
+  const restricted = category !== "all" || $("mb-class").value || $("mb-favorites").checked || $("mb-seller").value || $("mb-channel").value || $("mb-room").value || optWanted != null || $("mb-state").value !== "open";
+  const names = ids.slice(0, 4).map((id) => itemLink(id)).join(" · ");
+  return `<div class="market-empty"><strong>${restricted ? tr("아이템은 있지만 현재 조건에 맞는 결과가 없어요.", "The item exists, but nothing matches these filters.") : tr("아이템은 찾았지만 현재 조회 범위에 매물이 없어요.", "The item exists, but no listings were found in this time range.")}</strong><p>${names}</p><p>${tr("검색어를 유지하고 분류·직업·관심·매물 필터를 풀어 확인할 수 있어요.", "Keep your search and clear category, class, wishlist and listing filters.")}</p><button type="button" class="btn ghost small-btn" data-reset-market-filters>${tr("필터 해제하고 아이템 보기", "Clear filters and show items")}</button></div>`;
+}
 function categoryMiss() {
   if (category === "all" || !$("mk-q").value.trim()) return "";
   const matches = searchParts().ids || [];
@@ -529,7 +539,7 @@ async function renderRecords() {
       const suggest = known.length
         ? `<p>${tr("지금 올라온 매물은 없지만, 이 아이템들이 있어요:", "No open listings right now, but these items match:")}</p><ul class="mb-suggest">${known.map((id) => `<li>${itemLink(id)}${typical.has(id) ? `<small>${tr("대표 시세", "Typical")} ${money(typical.get(id))}</small>` : `<small>${tr("시세 기록 없음", "No price yet")}</small>`}</li>`).join("")}</ul>`
         : `<p>${tr("한글·영문·초성·약어(장공, 귀힘, 아대)로도 검색돼요.", "Korean, English, initials and common abbreviations all work.")}</p>`;
-      $("mb-results").innerHTML = categoryMiss() || `<div class="market-empty"><strong>${T.noMatches}</strong>${suggest}<p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="items">${tr("아이템 시세 보기", "Browse item prices")}</button></p></div>`;
+      $("mb-results").innerHTML = filterRecovery() || categoryMiss() || `<div class="market-empty"><strong>${T.noMatches}</strong>${suggest}<p><button type="button" class="btn ghost small-btn" data-clear-search>${tr("검색어 지우기", "Clear search")}</button> <button type="button" class="btn ghost small-btn" data-view="items">${tr("아이템 시세 보기", "Browse item prices")}</button></p></div>`;
       noResults($("mk-q").value.trim());
       $("mb-count").textContent = "0";
       $("mb-pagination").innerHTML = "";
@@ -599,7 +609,7 @@ async function renderRecords() {
         ? data.rows.length
           ? `<div class="mb-table-wrap"><table class="mb-table"><thead><tr><th>${tr("아이템", "Item")}</th><th>${T.table.price}</th><th>${tr("제보 종류", "Report type")}</th><th>${tr("제보 시각", "Reported")}</th></tr></thead><tbody>${data.rows.map((r) => `<tr><td>${itemLink(r.item)}</td><td class="num">${money(r.price)}</td><td>${{ selling: tr("판매가", "Asking"), sold: tr("판매 완료", "Sold"), buying: tr("구매 희망", "Buying") }[r.kind]}</td><td>${when(r.seen)}</td></tr>`).join("")}</tbody></table></div>`
           : `<div class="market-empty"><strong>${tr("이 조건의 가격 제보가 없어요.", "No price reports match.")}</strong><p>${tr("가격 제보는 아이템 시세 페이지에서 직접 남긴 기록이에요. 상점에서 확인된 매물은 매물 목록 탭에 있어요.", "Price reports are prices players entered on item pages. Listings seen in shops are in the Listings tab.")} <button type="button" class="btn ghost small-btn" data-view="listings">${tr("매물 목록 보기", "Open listings")}</button></p></div>`
-        : listingTable(data.rows);
+        : data.rows.length ? listingTable(data.rows) : filterRecovery() || listingTable(data.rows);
     $("mb-pagination").innerHTML = pager(data, "main");
     if (p.has("stat")) $("mb-results").insertAdjacentHTML("afterbegin", `<div class="price-band-filter"><span>${esc(tr(`${OPT_LABEL[p.get("stat")]} ${p.get("val")} 옵션 매물만 보는 중`, `Showing ${OPT_LABEL[p.get("stat")]} ${p.get("val")} listings only`))}</span><button type="button" class="btn ghost small-btn" data-clear-opt>${tr("옵션 해제", "Clear option")}</button></div>`);
   } catch (e) {
@@ -1101,12 +1111,23 @@ document.querySelector(".market-browser").addEventListener("click", (e) => {
   }
   if (el.dataset.shareItem) {
     const id = Number(el.dataset.shareItem);
-    const url = shareUrl(FIXED ? location.pathname : `${location.pathname}?item=${id}`, "market-item");
+    const url = shareUrl(marketSharePath({ fixed: FIXED, pathname: location.pathname, itemPath: D.itemPaths?.[id], marketPath: `/${D.lang}/tools/market/`, id, opt: detailState.opt }), "market-item");
     copyText(url).then((ok) => {
       const status = $("mb-share-status");
       if (status) status.textContent = ok ? tr("링크를 복사했어요. 새 탭이나 다른 기기에서 같은 아이템이 열려요.", "Link copied. It opens the same item on any device.") : `${tr("복사하지 못했어요. 이 주소를 직접 복사해 주세요:", "Could not copy. Copy this address:")} ${url}`;
       track("share_copy", { page_type: "market", item_id: id, result: ok ? "ok" : "fail" });
     });
+    return;
+  }
+  if (el.hasAttribute("data-reset-market-filters")) {
+    const name = searchText();
+    for (const [, id, def] of URL_FIELDS) $(id).value = def;
+    $("mk-q").value = name;
+    $("mb-favorites").checked = false;
+    category = "all"; page = 1; optWanted = null;
+    document.querySelectorAll("[data-category]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.category === "all"));
+    closeItem(); setView("items");
+    track("market_search_recover", { action: "clear_filters", search_term: name.slice(0, 40), lang: D.lang });
     return;
   }
   if (el.hasAttribute("data-clear-search")) {
@@ -1515,6 +1536,7 @@ function drawMegaphones(id) {
   box.hidden = false;
 }
 
+let radarMounted = false;
 async function initialize() {
   // Drop sources fill the catalog's source column once the hover-card data arrives.
   loadTips().then(() => { if (view === "items" || $("mb-class").value) renderMain(); });
@@ -1523,6 +1545,13 @@ async function initialize() {
     if (!r.ok) throw Error("items");
     items = makeMarketIndex(await r.json(), D.lang);
     byId = new Map(items.map((it) => [it.id, it]));
+    // Hash-linked radar can resolve cached listings before the item index; wait for names before mounting.
+    if (!radarMounted) {
+      radarMounted = true;
+      mountMarketRadar({ box: $("market-radar"), get, getCatalog: () => get("/market/catalog"), name: itemName,
+  url: (id) => D.itemPaths?.[id] || `/${D.lang}/tools/market/?item=${id}`,
+  openItem: (id) => { optWanted = null; loadItem(id, { source: "radar" }); }, lang: D.lang });
+    }
     const p = new URLSearchParams(location.search),
       id = FIXED || Number(p.get("item"));
     if (p.get("q")) $("mk-q").value = p.get("q");

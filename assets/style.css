@@ -6,6 +6,28 @@
 /* Hallmark · waive 38iii · .cat-head h3 span and .monster-section-heading h2 span are count badges, not accented words */
 /* Hallmark · answered 56 · .mk-where th sticks inside its own scroll box, not under the site header */
 
+/* Market radar keeps the existing market workspace and opens only on demand. */
+.mb-radar { margin: 0 0 16px; }
+.mb-radar summary { cursor: pointer; padding: 4px 0; }
+.mb-radar summary strong { font-size: 1.05rem; }
+.mb-radar summary span { display: block; margin: 6px 0 0 20px; color: var(--muted); font-size: .875rem; }
+.mb-radar-body { padding-top: 12px; }
+.mb-radar-body > p { line-height: 1.6; }
+.mb-radar-toolbar, .mb-radar-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.mb-radar-toolbar { justify-content: space-between; margin: 12px 0; }
+.mb-radar-toolbar p { flex: 1 1 220px; font-size: .875rem; }
+.mb-radar-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.mb-radar-card { padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel-2); min-width: 0; }
+.mb-radar-card > a { display: flex; gap: 8px; align-items: center; overflow-wrap: anywhere; }
+.mb-radar-card img { flex: 0 0 28px; object-fit: contain; }
+.mb-radar-card p { font-size: .875rem; line-height: 1.55; overflow-wrap: anywhere; margin: 12px 0; }
+.mb-radar-card .mb-radar-price { font-weight: 750; font-size: 1.3rem; color: var(--text); }
+.mb-radar-price small { font-size: .875rem; font-weight: 400; }
+.mb-radar-price span { display: block; font-size: .875rem; color: var(--ok); }
+.mb-radar-actions .btn { white-space: normal; text-align: center; }
+@media (max-width: 900px) { .mb-radar-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .mb-radar-grid { grid-template-columns: minmax(0, 1fr); } }
+
 /* ---------- tokens ---------- */
 /* Day (default): cream paper, blue-black ink, one maple orange. Night: the original navy. */
 :root {

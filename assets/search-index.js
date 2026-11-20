@@ -13,6 +13,7 @@ const synonyms = [
   ['인트', 'int'], ['행운', 'luk'], ['럭', 'luk'], ['체력', 'hp'], ['투구', '모자'],
   ['크리티컬데미지', 'critdamage'], ['크리데미지', 'critdamage'], ['크뎀', 'critdamage'], ['크리티컬', 'crit'],
   ['장공', '장갑attack'], ['장마', '장갑magicattack'], ['마공', 'magicattack'], ['귀작', '귀고리'], ['카오스', '혼돈'],
+  ['두손검', '양손검'], ['두손도끼', '양손도끼'], ['두손둔기', '양손둔기'], ['공겨', 'attack'],
   // Everyday names players type for gear types and common misspellings seen in failed market searches.
   ['아대', '클로'], ['공격려', 'attack'], ['방어려', 'def'], ['글로브', '장갑'], ['글러브', '장갑'], ['귀걸이', '귀고리'], ['귀골', '귀고리'], ['전갑', '전신갑옷'], ['전신갑옷', '전신갑옷'], ['너크', '너클'],
 ].sort((a, b) => b[0].length - a[0].length);
@@ -57,7 +58,7 @@ const jamoWords = (s) => String(s).trim().split(/\s+/u).map((w) => jamo(normaliz
 
 // Cash items have English names only, even in the Korean client, so Korean descriptive words also try their English
 // counterparts ("토끼 모자" finds Bunny Hat). These rank below any name match but above a word that only appears in a description.
-const KO_EN = { 토끼: ['bunny', 'rabbit'], 고양이: ['cat'], 강아지: ['puppy', 'dog'], 곰: ['bear'], 악마: ['devil'], 천사: ['angel'],
+const KO_EN = { 타니아: ['tania'], 토끼: ['bunny', 'rabbit'], 고양이: ['cat'], 강아지: ['puppy', 'dog'], 곰: ['bear'], 악마: ['devil'], 천사: ['angel'],
   잠옷: ['pajama'], 날개: ['wing'], 왕관: ['crown'], 하트: ['heart'], 안경: ['glasses'], 고블린: ['goblin'], 펭귄: ['penguin'],
   판다: ['panda'], 여우: ['fox'], 늑대: ['wolf'], 공룡: ['dino'], 마녀: ['witch'], 해적: ['pirate'], 산타: ['santa'], 눈사람: ['snowman'],
   우산: ['umbrella'], 풍선: ['balloon'], 의자: ['chair'], 반지: ['ring'], 귀: ['ears'], 모자: ['hat'], 망토: ['cape'], 신발: ['shoes'],
@@ -168,6 +169,16 @@ export function compose(letters) {
   return out;
 }
 
+// Korean players use percentages too. Only scroll-shaped queries are rewritten: "슬레인60" is an equipment stat,
+// whereas "장공60" and "장갑 공격력 주문서 60%" mean the Intermediate scroll, not ATT 60.
+export function koreanScrollQuery(query) {
+  const m = /^(.+?)\s*(100|60|10)\s*%?\s*$/.exec(String(query).trim());
+  if (!m || !/[가-힣]/.test(m[1])) return null;
+  const name = m[1].trim(), pair = expandPair(name);
+  if (!pair && !/주문서/.test(name)) return null;
+  return `${pair || name} ${{ 100: '하급', 60: '중급', 10: '상급' }[m[2]]}`;
+}
+
 export function searchEntries(entries, query) {
   const base = searchCore(entries, query);
   // Nothing found for Latin letters: maybe Korean typed in English keyboard mode. Rebuild the syllables and try that.
@@ -179,10 +190,13 @@ export function searchEntries(entries, query) {
       if (hits.length) return hits;
     }
   }
-  const en = englishQuery(query);
+  const korean = koreanScrollQuery(query);
+  const en = korean || englishQuery(query);
   if (!en) return base;
   const best = new Map();
   for (const hit of [...base, ...searchCore(entries, en)]) {
+    // An explicit Korean physical-attack scroll query must not pick a magic-attack scroll via a substring match.
+    if (korean && canonical(en).includes('attack') && !canonical(en).includes('magicattack') && hit.aliasNames.some((n) => n.includes('magicattack'))) continue;
     const key = `${hit.type}|${hit.id}`;
     if (!best.has(key) || best.get(key).score < hit.score) best.set(key, hit);
   }

@@ -2,6 +2,20 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "live-market-radar",
+   "version": "0.7.37",
+   "level": "minor",
+   "date": "2026-11-20",
+   "path": "/tools/market/#market-radar",
+   "ko": "실시간 매물 레이더 · 주문서 검색 개선",
+   "en": "Live listing radar & scroll search",
+   "desc": {
+    "ko": "최근 1시간에 확인된 주문서·표창을 판매가 중앙값과 비교하고, 매물의 가격·위치·확인 시점을 함께 공유할 수 있어요. 장공60·타니아 검색과 필터 때문에 결과가 없는 경우도 개선했어요.",
+    "en": "Compare recently seen scrolls and stars with their asking median, and copy price, location and observation time together. Korean scroll-percentage queries and filter recovery now work better."
+   },
+   "highlight": true
+  },
+  {
    "id": "saved-tools-discovery",
    "version": "0.7.36",
    "level": "minor",

@@ -11,6 +11,18 @@ const evidence = JSON.parse(read('data/editorial/korean-guides.json'));
 const guides = JSON.parse(read('data/guides.json')).guides;
 execFileSync(process.execPath,['scripts/build.mjs'],{cwd:root});
 
+test('market discovery links reach item pages and radar preserves the market workspace', () => {
+  for (const lang of ['ko', 'en']) {
+    const market = read(`dist/${lang}/tools/market/index.html`);
+    const today = read(`dist/${lang}/tools/market/today/index.html`);
+    assert.ok(market.includes('id="market-radar"'));
+    assert.match(market.split('class="wrap panel mb-snapshot"')[1], new RegExp(`href="/${lang}/items/`));
+    assert.match(today, new RegExp(`href="/${lang}/items/`));
+    assert.ok(today.includes('/tools/market/#market-radar'));
+    assert.ok(market.includes('id="mb-ad-mid"'));
+  }
+});
+
 test('versioned product telemetry loads before all feature scripts in every locale', () => {
   for (const lang of ['ko', 'en', 'ja', 'zh']) {
     const html = read(`dist/${lang}/index.html`);
