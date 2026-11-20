@@ -2,6 +2,20 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "megaphone-selected-option-detail",
+   "version": "0.7.46",
+   "level": "patch",
+   "date": "2026-11-21",
+   "path": "/megaphone/",
+   "ko": "고확 아이템 상세 — 선택한 옵션을 상단에도 표시",
+   "en": "Megaphone item details now show selected options",
+   "desc": {
+    "ko": "고확의 아이템명이나 옵션을 눌렀을 때 매물 필터는 적용되지만 상세 상단에는 기본 능력치가 나오던 문제를 수정했어요. 선택한 옵션과 강화 횟수를 상단에도 표시하고, 필터를 해제하면 기본 능력치임을 명시해요.",
+    "en": "Fixed item details showing base stats above listings even when a megaphone’s option filter was applied. The top of the detail now shows the selected stats and enhancement counts; clearing the filter restores explicitly labelled base stats."
+   },
+   "highlight": true
+  },
+  {
    "id": "megaphone-badge-scroll-recognition",
    "version": "0.7.45",
    "level": "patch",

@@ -2,6 +2,36 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { optionFilter, parseOptionFilter, encodeOptionFilter } from '../assets/option-filter.js';
 import { marketSharePath } from '../assets/market-share.js';
+import fs from 'node:fs';
+import vm from 'node:vm';
+import { optionParts } from '../assets/mega-option-text.js';
+
+test('detail facts use selected options, omit unknown base stats, and restore labelled base facts after clearing', async () => {
+  const source = fs.readFileSync(new URL('../assets/market.js', import.meta.url), 'utf8');
+  const start = source.indexOf('async function fillItemInfo(id) {');
+  const end = source.indexOf('\n// Price at a glance', start);
+  const boxes = { 'mb-info': { dataset: {} }, 'mb-facts': {} };
+  let exact = { filter: { stats: { LUK: 18 }, slots: 0, ups: 8 } };
+  const context = vm.createContext({
+    loadTips: async () => ({ items: { 1050010: ['', '', 'Equip', 'Overall', 30, 0, {}, { STR: 1, LUK: 1 }, 10] }, mobs: {} }),
+    lastOffers: [], $: id => boxes[id], selected: 1050010, exactFor: () => exact,
+    tr: (ko) => ko, esc: String, TIP_JOBS: [], TIP_INC: { LUK: () => '럭', STR: () => '힘' },
+    optionParts, ko: true, D: { lang: 'ko' }, document: { body: { dataset: {} } }, catalog: null, equipExtras: () => '',
+  });
+  vm.runInContext(source.slice(start, end), context);
+  await context.fillItemInfo(1050010);
+  assert.match(boxes['mb-facts'].innerHTML, /선택한 아이템 옵션/);
+  assert.match(boxes['mb-facts'].innerHTML, /럭 18 · 남은 강화 0 · 성공한 강화 8/);
+  assert.doesNotMatch(boxes['mb-facts'].innerHTML, /럭 \+1|힘 \+1|업그레이드 가능 횟수 10/);
+  exact = { filter: null };
+  await context.fillItemInfo(1050010);
+  assert.match(boxes['mb-facts'].innerHTML, /옵션 조건을 확인할 수 없어요/);
+  assert.doesNotMatch(boxes['mb-facts'].innerHTML, /럭 \+1/);
+  exact = null;
+  await context.fillItemInfo(1050010);
+  assert.match(boxes['mb-facts'].innerHTML, /기본 능력치.*럭 \+1/);
+  assert.match(boxes['mb-facts'].innerHTML, /업그레이드 가능 횟수 10/);
+});
 
 test('equipment links preserve observed stats and zero slots/upgrades across market and item pages', () => {
   const observed = { stats: { INT: 21, PDD: 57, CRD: 0 }, slots: 0, ups: 6, used: 7, clean: false, attackSpeed: 'fast' };

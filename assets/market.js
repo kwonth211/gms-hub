@@ -1209,6 +1209,7 @@ document.querySelector(".market-browser").addEventListener("click", (e) => {
     detailState.opt = optWanted = null;
     detailState.page = 1;
     syncURL();
+    fillItemInfo(selected);
     return loadDetailRows();
   }
   if (el.hasAttribute("data-close-item")) return closeItem();
@@ -1359,6 +1360,7 @@ async function fillItemInfo(id) {
     return;
   }
   const [, , cat, , lv, job, req, inc, slots, sell, scroll, drops, dropN, questN] = t;
+  const exact = exactFor(id);
   const facts = [];
   if (scroll) facts.push(`${tr("성공률", "Success")} ${scroll[1]}%${scroll[2] ? ` · ${tr("실패 시 파괴", "Boom on fail")} ${scroll[2]}%` : ""}`);
   if (cat === "Equip") {
@@ -1367,11 +1369,20 @@ async function fillItemInfo(id) {
     const REQ = { str: tr("힘", "STR"), dex: tr("덱", "DEX"), int: tr("인", "INT"), luk: tr("럭", "LUK") };
     const reqs = Object.entries(req || {}).filter(([k]) => REQ[k]).map(([k, v]) => `${REQ[k]} ${v}`).join(" · ");
     if (reqs) facts.push(reqs);
-    if (slots) facts.push(`${tr("업그레이드 가능 횟수", "Upgrade slots")} ${slots}`);
+    if (slots && !exact) facts.push(`${tr("업그레이드 가능 횟수", "Upgrade slots")} ${slots}`);
   }
   // Stats apply to throwing stars and bullets too, not just equipment.
-  const st = Object.entries(inc || {}).map(([k, v]) => `${TIP_INC[k] ? TIP_INC[k]() : esc(k)} +${v}`).join(" · ");
-  if (st) facts.push(st);
+  if (exact) {
+    facts.push(`<strong>${tr("선택한 아이템 옵션", "Selected item options")}</strong>`);
+    if (exact.filter) {
+      const parts = optionParts(exact.filter, ko);
+      if (exact.filter.ups != null) parts.push(tr(`성공한 강화 ${exact.filter.ups}`, `Successful upgrades ${exact.filter.ups}`));
+      facts.push(esc(parts.join(" · ")));
+    } else facts.push(tr("옵션 조건을 확인할 수 없어요.", "These option values could not be verified."));
+  } else {
+    const st = Object.entries(inc || {}).map(([k, v]) => `${TIP_INC[k] ? TIP_INC[k]() : esc(k)} +${v}`).join(" · ");
+    if (st) facts.push(`${tr("기본 능력치", "Base stats")} · ${st}`);
+  }
   // The NPC price sits under the price headline (npcLine); draw it there now if prices arrived before this data.
   if (sell && priceData && !$("mb-history")?.querySelector(".mb-npc")) renderDaily();
   const mobs = (drops || []).filter((m) => data.mobs[m]);
