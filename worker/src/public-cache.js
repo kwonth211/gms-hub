@@ -7,7 +7,7 @@ const parameters = new Map([
   ['/market/catalog', []],
   ['/market/listings', ['days', 'limit', 'page', 'state', 'sort', 'since', 'channel', 'room', 'item', 'ids', 'seller', 'exact', 'min', 'max', 'stat', 'val', 'opts']],
   ['/market/reports', ['limit', 'page', 'days', 'item', 'kind', 'ids']],
-  ['/market/history', ['id']], ['/market/status', []], ['/rank', []], ['/rank/lookup', ['name']],
+  ['/market/history', ['id', 'opts', 'stat', 'val']], ['/market/status', []], ['/rank', []], ['/rank/lookup', ['name']],
   ['/megaphones', ['after', 'limit', 'item']], ['/megaphones/stats', []],
   ['/free-megas', ['after', 'limit']], ['/report/raw', []], ['/news', []]
 ]);
@@ -19,6 +19,8 @@ export async function cachedPublicResponse(req, load, ctx) {
   for (const name of parameters.get(url.pathname)) {
     if (query.has(name)) url.searchParams.set(name, query.get(name));
   }
+  // Old history keys omitted option filters and may contain another option's prices.
+  if (url.pathname === '/market/history') url.searchParams.set('__gms_history', 'options-v1');
   // Isolate the small allowlist of CORS origins without trusting arbitrary Origin values.
   const origin = req.headers.get('Origin') || '';
   const origins = ['https://gms-hub.com','https://www.gms-hub.com','http://localhost:8790','http://127.0.0.1:8790'];
