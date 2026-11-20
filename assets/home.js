@@ -546,7 +546,7 @@ function recentRow(r, it, fresh) {
   return `<li class="${r.sold ? 'sold' : ''}${fresh ? ' fresh' : ''}" data-key="${escHtml(rowKey(r))}" data-price-band="${listingPriceBand(r, liveCatalog)}" data-item-list="home_recent"${r.opts ? ` data-item-id="${it.id}" data-opts="${escHtml(JSON.stringify(r.opts))}"` : ''}><a href="${live.dataset.price}?item=${it.id}&src=home" data-live-item="${it.id}">
 <img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="26" height="26" loading="lazy">
 <span class="name">${newMark(r.seen)}<span class="nm">${escHtml(it.name)}</span>${r.sold ? `<span class="tag">${escHtml(liveText.sold)}</span>` : ''}${optShort(r)}</span>
-<span class="price">${mesos(r.price)}${r.qty > 1 ? ` <small>×${r.qty}</small>` : ''}${priceBadge(listingPriceBand(r, liveCatalog), korean)}</span>
+<span class="price">${priceBadge(listingPriceBand(r, liveCatalog), korean)}${mesos(r.price)}${r.qty > 1 ? ` <small>×${r.qty}</small>` : ''}</span>
 <span class="meta">${escHtml(r.seller)} · CH ${r.channel} · ${placeLabel(r.room, korean)}</span>
 <span class="ago" data-seen="${escHtml(r.seen)}">${ago(r.seen)}</span></a></li>`;
 }
@@ -599,7 +599,7 @@ function renderRecent(rows, byId) {
     const band = listingPriceBand(r, liveCatalog);
     el.dataset.priceBand = band;
     el.querySelector('.listing-price-badge')?.remove();
-    el.querySelector('.price')?.insertAdjacentHTML('beforeend', priceBadge(band, korean));
+    el.querySelector('.price')?.insertAdjacentHTML('afterbegin', priceBadge(band, korean));
   });
   // Later refreshes: only listings not yet on screen or waiting, oldest first at the end of the queue.
   const known = new Set([...shownRows, ...pendingRows].map(rowKey));

@@ -3663,5 +3663,5 @@ body.exp-running .exp-stop { display: inline-flex; }
 .hero .home-shortcuts + .hero-new { margin-top: 18px; }
 .listing-price-badge { margin-inline-start: 8px; white-space: nowrap; vertical-align: middle; }
 .listing-price-badge.pricey { color: #fff; background: #b04d27; }
-.recent-list .price .listing-price-badge { display: inline-block; margin: 0 0 0 6px; }
+.recent-list .price .listing-price-badge { display: inline-block; margin: 0 6px 0 0; }
 .mb-offer-tag .listing-price-badge { margin: 0; }
