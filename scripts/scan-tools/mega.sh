@@ -22,7 +22,19 @@ print(f'수집 시작 (pid {child.pid}) · 기록: {log_path}')
 PY
     ;;
   stop)
-    if running; then for c in $(pgrep -P $(cat $PID)); do pkill -P $c 2>/dev/null; kill $c 2>/dev/null; done; kill $(cat $PID) 2>/dev/null; rm -f $PID; echo "수집 중지"; else echo "수집 중이 아님"; fi ;;
+    if running; then
+      children=($(pgrep -P $(cat $PID)))
+      for c in $children; do pkill -P $c 2>/dev/null; kill $c 2>/dev/null; done
+      kill $(cat $PID) 2>/dev/null
+      # Wait for tooltip cleanup before a replacement collector can send another click.
+      for attempt in {1..15}; do
+        left=(); for c in $children; do kill -0 $c 2>/dev/null && left+=($c); done
+        (( ${#left} == 0 )) && break
+        sleep 1
+      done
+      if (( ${#left} )); then echo "이전 수집기 종료 대기 중: $left"; exit 1; fi
+      rm -f $PID; echo "수집 중지"
+    else echo "수집 중이 아님"; fi ;;
   status)
     if running; then echo "수집 중 (pid $(cat $PID))"; else echo "멈춤"; fi
     echo "최근 확성기:"; grep -E '^[0-9]{2}:[0-9]{2}:[0-9]{2} ' $LOG | tail -5 ;;
@@ -41,6 +53,6 @@ PY
     node -e "const d=require('$REPO/data/items.json'),t=require('$REPO/data/item-details.json');console.log(JSON.stringify(d.items.map(i=>({id:i.id,en:i.en,cat:i.cat,slots:t.items[i.id]?.slots}))))" > $DEST/assets/items-catalog.json
     [[ -e $DEST/scripts/scan-tools/node_modules ]] || ln -s ~/gms-hub/scripts/scan-tools/node_modules $DEST/scripts/scan-tools/node_modules
     rm -f ${TMPDIR:-/tmp}/gms-maple-window ${TMPDIR:-/tmp}/gms-maple-stream
-    $DEST/scripts/scan-tools/mega.sh stop; $DEST/scripts/scan-tools/mega.sh start ;;
+    $DEST/scripts/scan-tools/mega.sh stop && $DEST/scripts/scan-tools/mega.sh start ;;
   *) echo "사용법: ./mega.sh start | stop | status | log | check | learn | install <repo>"; exit 1 ;;
 esac

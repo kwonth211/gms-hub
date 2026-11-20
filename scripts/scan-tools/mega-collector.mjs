@@ -28,10 +28,10 @@ const source = path.join(here, 'maple-stream.swift');
 if (!fs.existsSync(helper) || fs.statSync(helper).mtimeMs < fs.statSync(source).mtimeMs) execFileSync('swiftc', ['-O', source, '-o', helper]);
 // The capture helper runs for as long as the game window is there; it ends by itself when this process does (its
 // stdin closes). A resize restarts immediately; other stops retry after five seconds.
-let cam = null, tried = 0, seen = 0, fresh = 0;
+let cam = null, tried = 0, seen = 0, fresh = 0, stopping = false;
 // The OCR worker slowly grows (~1.9GB after two days). Past 1.2GB this process quits; mega.sh's loop starts a fresh one,
 // which keeps the Terminal's screen-recording permission (a launchd job would not have it).
-setInterval(() => { const rss = process.memoryUsage().rss; if (rss > 1.2e9) { console.log(new Date().toISOString(), `restart: memory ${(rss / 1e9).toFixed(2)}GB`); process.exit(0); } }, 60000);
+setInterval(() => { const rss = process.memoryUsage().rss; if (rss > 1.2e9) { console.log(new Date().toISOString(), `restart: memory ${(rss / 1e9).toFixed(2)}GB`); stopping=true; } }, 60000);
 function camera() {
   tried = fresh = Date.now();
   fs.rmSync(shot, { force: true });
@@ -163,7 +163,6 @@ async function tick() {
 }
 
 console.log(DRY ? `dry run: no uploads${OPTIONS ? ', background option clicks enabled' : ', reading only'}` : 'collecting and posting');
-let stopping=false;
 if(DRY){const duration=Number(process.argv.find((a)=>a.startsWith('--duration='))?.split('=')[1]);if(duration>0)setTimeout(()=>{stopping=true;},duration*1000);}
 // Finish any click's finally block before exiting so a tooltip cannot obscure the next collector's chat detection.
 for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{stopping=true;});
