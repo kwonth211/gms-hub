@@ -205,16 +205,19 @@ export class OptionReader {
     const input=async(action,x,y,capture=false,cleanup=false)=>{
       if(paused()&&!cleanup)throw Error('option input paused');
       const run=exec(this.input,[action,String(x),String(y),String(image.width),String(image.height)],{timeout:2000,maxBuffer:16000});
-      let snapshot=null,output='';
+      let snapshot=null,pressed=null,output='';
       if(capture)run.child.stdout.on('data',chunk=>{
         output+=chunk;let end;
         // Give the game one 8fps frame to draw the panel. A PNG whose write finishes
         // just after mouse-up may still contain the frame captured before the click.
-        while((end=output.indexOf('\n'))>=0){const line=output.slice(0,end);output=output.slice(end+1);try{const event=JSON.parse(line);if(event.phase==='clicked'&&!snapshot)snapshot=this.readFrame(event.at+125,1400).catch(()=>null);}catch{}}
+        while((end=output.indexOf('\n'))>=0){const line=output.slice(0,end);output=output.slice(end+1);try{const event=JSON.parse(line);if(event.phase==='pressed'&&!pressed)pressed=this.readFrame(event.at,1000).catch(()=>null);if(event.phase==='clicked'&&!snapshot)snapshot=this.readFrame(event.at+125,1400).catch(()=>null);}catch{}}
       });
       const result=await run.catch(e=>{fs.writeFileSync(path.join(this.dir,'input-failure.json'),JSON.stringify({message,action,x,y,code:e.code,events:e.stdout}));throw e;}); // A capture never overrides a focus/cursor failure.
       const events=result.stdout.trim().split('\n').flatMap(s=>{try{return [JSON.parse(s)];}catch{return [];}});
       inputAudit.push({action,point:{x,y},before:events.find(e=>e.phase==='before')?.state,after:events.filter(e=>e.phase==='after').map(e=>e.state),restores:events.filter(e=>e.phase==='restore').map(e=>e.state)});
+      // Foreground clicks report the press moment: the row check uses that frame, because fast megaphones
+      // may scroll the chat during the fade-in wait while the panel itself still belongs to the pressed row.
+      this.pressedFrame=capture&&pressed?await pressed:null;
       return capture?await(snapshot||this.readFrame(Date.now(),1400)):null;
     };
     let moved=false;
@@ -242,7 +245,8 @@ export class OptionReader {
         return skip('tooltip colour box not found');
       }
       // Nick + channel must still belong to the clicked row; reject chat scroll races.
-      if(!signature(ready)||signature(after)!==signature(ready)) {
+      const atPress=this.pressedFrame&&this.pressedFrame.width===ready.width?this.pressedFrame:after;
+      if(!signature(ready)||signature(atPress)!==signature(ready)) {
         fs.writeFileSync(path.join(this.dir,'race-ready.png'),PNG.sync.write(ready));
         fs.writeFileSync(path.join(this.dir,'race-after.png'),PNG.sync.write(after));
         fs.writeFileSync(path.join(this.dir,'race.json'),JSON.stringify({message,item:item.en,box,line,link}));

@@ -95,7 +95,10 @@ if (before["frontPid"] as? Int) == Int(pid) {
     usleep(60000)
     if args[1]=="click" {
         guard !ownerMoved() else { giveBack("Owner moved the mouse") }
-        send(.leftMouseDown,target); usleep(70000)
+        send(.leftMouseDown,target)
+        // the frame at this moment proves which chat row was under the pointer when it was pressed
+        emit(["phase":"pressed","at":Date().timeIntervalSince1970*1000,"mode":"foreground"])
+        usleep(70000)
         send(.leftMouseUp,target)                         // always release the button we pressed
         // In front the panel fades in; report the click a little later so the grabbed frame shows it fully.
         usleep(250000)
