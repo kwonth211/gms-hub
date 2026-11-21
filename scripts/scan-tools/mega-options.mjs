@@ -237,8 +237,15 @@ export class OptionReader {
     let moved=false;
     this.interacting=true;
     try {
+      const t0=Date.now();this.timing={};
       const before=await this.readFrame(Date.now(),1400);if(!before||before.width!==image.width||before.height!==image.height)return skip('window changed before click');
-      if(whisperDialog(await this.recognize(before,item.en,'before.png')))return skip('existing whisper dialog');
+      // A full-frame OCR for an open whisper window costs most of a second per click. Whisper windows are rare
+      // and any we open are closed at once, so a clean check stays valid for a few seconds.
+      if(!(OptionReader.noWhisperUntil>Date.now())) {
+        if(whisperDialog(await this.recognize(before,item.en,'before.png')))return skip('existing whisper dialog');
+        OptionReader.noWhisperUntil=Date.now()+8000;
+      }
+      this.timing.preflight=Date.now()-t0;
       const ready=await this.readFrame(Date.now(),1400);if(!ready||ready.width!==image.width||ready.height!==image.height)return skip('window changed during preflight');
       // Text OCR and dialog checks take time. Follow the exact same pixels to their new row before clicking.
       // Never click the stale y-coordinate, or use item name alone to select another seller's item.
@@ -260,20 +267,20 @@ export class OptionReader {
         fs.writeFileSync(path.join(this.dir,'race.json'),JSON.stringify({message,item:item.en,box,line,link}));
         // the press may have landed on a nickname instead: close a whisper window it opened
         const dialog=whisperDialog(await this.recognize(after,item.en));
-        if(dialog)await input('click',Math.round(dialog.x+dialog.w/2),Math.round(dialog.y+dialog.h/2));
+        if(dialog){OptionReader.noWhisperUntil=0;await input('click',Math.round(dialog.x+dialog.w/2),Math.round(dialog.y+dialog.h/2));}
         return skip('nick/channel moved after click');
       }
       const boxes=colorTooltipBoxes(after,ready,point);
       if(!boxes.length) {
         const dialog=whisperDialog(await this.recognize(after,item.en));
-        if(dialog){await input('click',Math.round(dialog.x+dialog.w/2),Math.round(dialog.y+dialog.h/2));return skip('chat moved; closed newly opened whisper dialog');}
+        if(dialog){OptionReader.noWhisperUntil=0;await input('click',Math.round(dialog.x+dialog.w/2),Math.round(dialog.y+dialog.h/2));return skip('chat moved; closed newly opened whisper dialog');}
         fs.writeFileSync(path.join(this.dir,'nobox-after.png'),PNG.sync.write(after));fs.writeFileSync(path.join(this.dir,'nobox-ready.png'),PNG.sync.write(ready));fs.writeFileSync(path.join(this.dir,'nobox.json'),JSON.stringify({point,mode:this.lastMode,inputAudit}));
         return skip('tooltip colour box not found');
       }
       // The screenshot is immutable. Close the live tooltip now so new text can be collected while
       // slower option OCR runs on this image. Previously the entire collector waited until OCR ended.
       await input('move',...park);moved=false;
-      await this.readFrame(Date.now(),1100);this.interacting=false;
+      await this.readFrame(Date.now(),1100);this.interacting=false;this.timing.interact=Date.now()-t0;
       let isolated=await this.readColorPanel(after,ready,item,point,boxes);
       this.correctedItem=null;
       if(!isolated&&this.lastPanel) {

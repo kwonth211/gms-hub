@@ -10,7 +10,7 @@ const log = fs.readFileSync(path.join(os.homedir(), 'gms-hub-samples', 'mega-col
 const jobs = new Map(); // key -> {state, reasons:Set, mode}
 const key = (nick, item, seen) => `${seen}|${nick}|${item}`;
 for (const line of log) {
-  let m = line.match(/^options (partial )?(\S+) \[([^\]]+)\] \{.*\(\d+ms\) mode=(\S+) seen=(\S+)/);
+  let m = line.match(/^options (partial )?(\S+) \[([^\]]+)\] \{.*\(\d+ms[^)]*\) mode=(\S+) seen=(\S+)/);
   if (m) {
     const [, partial, nick, item, mode, seen] = m;
     if (seen < from || seen > to) continue;
@@ -21,7 +21,7 @@ for (const line of log) {
     jobs.set(key(nick, item, seen), j);
     continue;
   }
-  m = line.match(/^options skipped (\S+) \[([^\]]+)\]: (.*?) \(\d+ms\) mode=(\S+) seen=(\S+)/);
+  m = line.match(/^options skipped (\S+) \[([^\]]+)\]: (.*?) \(\d+ms[^)]*\) mode=(\S+) seen=(\S+)/);
   if (m) {
     const [, nick, item, reason, mode, seen] = m;
     if (seen < from || seen > to) continue;

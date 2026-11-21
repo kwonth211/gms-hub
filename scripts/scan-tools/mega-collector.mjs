@@ -239,7 +239,7 @@ async function tick() {
       const serverFixes=fs.existsSync(path.join(os.homedir(),'.config','gms-hub','mega-fixed-text-server'));
       if(reader.correctedItem&&!serverFixes)console.log(`  (held back: server does not take corrected names yet)`);
       else if(!queue.includes(row))queue.push({...row});
-      console.log(`options${reader.lastMissing?.length?' partial':''} ${row.nick} [${item.en}] ${JSON.stringify(row.opts)}${reader.lastMissing?.length?' missing='+reader.lastMissing.join(','):''} (${Date.now()-now}ms) mode=${reader.lastMode||'?'} seen=${row.seen}`);
+      console.log(`options${reader.lastMissing?.length?' partial':''} ${row.nick} [${item.en}] ${JSON.stringify(row.opts)}${reader.lastMissing?.length?' missing='+reader.lastMissing.join(','):''} (${Date.now()-now}ms ix=${reader.timing?.interact??'?'} pre=${reader.timing?.preflight??'?'}) mode=${reader.lastMode||'?'} seen=${row.seen}`);
     }
     else console.log(`options skipped ${row.nick} [${item.en}]: ${reader.lastSkip} (${Date.now()-now}ms) mode=${reader.lastMode||'?'} seen=${row.seen}`);
     job.lastReason=reader.lastSkip||(reader.lastMissing?.length?'missing '+reader.lastMissing.join(','):'');
