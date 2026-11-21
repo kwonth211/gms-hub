@@ -405,7 +405,19 @@ async function cachedPrices(env, ids, origin, ctx) {
   const miss = [];
   ids.forEach((id, i) => (hits[i] && 'v' in hits[i] ? found.set(id, hits[i].v) : miss.push(id)));
   if (miss.length) {
-    const fresh = await pricesFor(env, miss);
+    // Shared store first: one row per item, recomputed only when its summary is over PRICE_TTL old (any region).
+    const now = Date.now(), fresh = {}, stale = [];
+    const { results: stored } = await env.DB.prepare('SELECT item, json, at FROM price_cache WHERE item IN (SELECT value FROM json_each(?))')
+      .bind(JSON.stringify(miss)).all().catch(() => ({ results: [] }));
+    const byItem = new Map(stored.map((r) => [r.item, r]));
+    for (const id of miss) { const r = byItem.get(id); if (r && now - r.at < PRICE_TTL * 1000) fresh[id] = JSON.parse(r.json); else stale.push(id); }
+    if (stale.length) {
+      const computed = await pricesFor(env, stale);
+      const rows = stale.map((id) => env.DB.prepare('INSERT OR REPLACE INTO price_cache (item, json, at) VALUES (?, ?, ?)').bind(id, JSON.stringify(computed[id] ?? null), now));
+      const write = env.DB.batch(rows).catch(() => null);
+      if (ctx?.waitUntil) ctx.waitUntil(write); else await write;
+      for (const id of stale) fresh[id] = computed[id] ?? null;
+    }
     const puts = miss.map((id) => {
       found.set(id, fresh[id] ?? null);
       return cache.put(key(id), new Response(JSON.stringify({ v: fresh[id] ?? null }),
