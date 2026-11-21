@@ -256,6 +256,7 @@ export class OptionReader {
       if(!boxes.length) {
         const dialog=whisperDialog(await this.recognize(after,item.en));
         if(dialog){await input('click',Math.round(dialog.x+dialog.w/2),Math.round(dialog.y+dialog.h/2));return skip('chat moved; closed newly opened whisper dialog');}
+        fs.writeFileSync(path.join(this.dir,'nobox-after.png'),PNG.sync.write(after));fs.writeFileSync(path.join(this.dir,'nobox-ready.png'),PNG.sync.write(ready));fs.writeFileSync(path.join(this.dir,'nobox.json'),JSON.stringify({point,mode:this.lastMode,inputAudit}));
         return skip('tooltip colour box not found');
       }
       // Nick + channel must still belong to the clicked row; reject chat scroll races.
