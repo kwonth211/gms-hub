@@ -50,46 +50,51 @@ function trendPct(d, ko) {
   const p = Math.round(((b - a) / a) * 100); if (!p) return ko ? ' · 보합' : ' · flat';
   return ` · <tspan fill="${p > 0 ? '#e03b24' : '#2563eb'}">${p > 0 ? '▲' : '▼'}${Math.abs(p)}%</tspan>`;
 }
-// card({ id, ko, name, en, price, priceLabel, daily, counts, req, stat, asOf, icon }) → SVG text
+// card({ ko, name, en, price, priceLabel, daily, counts, req, stat, icon, bg, logo }) → SVG text. Same look as the site's
+// share cards: the autumn landscape (assets/og-item-bg.png), a cream panel with the mushroom logo, the item on the halo.
 export function cardSvg(c) {
   const t = c.ko
-    ? { tag: '자유시장 시세', site: '글클메 실시간 시세', trend: '최근 14일', none: '아직 거래 기록이 적어요' }
-    : { tag: 'Free Market price', site: 'Live MapleStory Classic prices', trend: 'Last 14 days', none: 'Not enough trades yet' };
-  const nameSize = c.name.length > 14 ? 50 : c.name.length > 9 ? 60 : 70;
-  const chips = [c.req ? `Lv.${c.req}` : null, c.stat].filter(Boolean);
-  let cx = 92;
-  const chipSvg = chips.map((s) => { const w = 34 + s.length * (c.ko ? 21 : 16); const g = `<rect x="${cx}" y="470" width="${w}" height="46" rx="23" fill="#fff3dc" stroke="#e7b46a" stroke-width="3"/><text x="${cx + w / 2}" y="502" font-size="24" font-weight="700" fill="#7a4a12" text-anchor="middle">${esc(s)}</text>`; cx += w + 12; return g; }).join('');
+    ? { tag: '자유시장 시세', site: '글로벌 메이플스토리 클래식 월드', trend: '최근 14일', none: '아직 거래 기록이 적어요' }
+    : { tag: 'Free Market price', site: 'Global MapleStory Classic World', trend: 'Last 14 days', none: 'Not enough trades yet' };
+  const hasEn = c.en && c.en !== c.name;
+  const nameSize = c.name.length > 16 ? 44 : c.name.length > 10 ? 54 : 64;
   const priceText = c.price ? `${money(c.price, c.ko)}${c.ko ? ' 메소' : ' mesos'}` : '—';
-  const priceSize = priceText.length > 12 ? 74 : 88;
+  const priceSize = priceText.length > 12 ? 70 : 84;
+  const nameY = 200 + nameSize, enY = nameY + 40, priceY = (hasEn ? enY : nameY) + 18 + priceSize, labelY = priceY + 36;
+  const chips = [c.req ? `Lv.${c.req}` : null, c.stat].filter(Boolean);
+  const chipW = (s) => 30 + s.length * (c.ko ? 20 : 15);
+  let cx = 975 - (chips.reduce((a, s) => a + chipW(s), 0) + (chips.length - 1) * 10) / 2;
+  const chipSvg = chips.map((s) => { const w = chipW(s); const g = `<rect x="${cx}" y="388" width="${w}" height="44" rx="22" fill="#fff7ed" stroke="#e9c48f" stroke-width="3" filter="url(#sh)"/><text x="${cx + w / 2}" y="419" font-size="23" font-weight="700" fill="#7a4a1f" text-anchor="middle">${esc(s)}</text>`; cx += w + 10; return g; }).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
 <defs>
- <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe9bf"/><stop offset="1" stop-color="#ffd38a"/></linearGradient>
- <linearGradient id="area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9a3c" stop-opacity="0.45"/><stop offset="1" stop-color="#ff9a3c" stop-opacity="0.02"/></linearGradient>
+ <linearGradient id="area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9a3c" stop-opacity="0.42"/><stop offset="1" stop-color="#ff9a3c" stop-opacity="0.02"/></linearGradient>
+ <filter id="sh" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#291923" flood-opacity="0.28"/></filter>
+ <filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#2a1608" flood-opacity="0.45"/></filter>
 </defs>
-<rect width="${W}" height="${H}" fill="url(#bg)"/>
-<g fill="#ffffff" opacity="0.35">${[[80, 40, 6], [1110, 70, 9], [1020, 150, 5], [140, 600, 7], [620, 30, 5]].map(([x, y, r]) => `<rect x="${x}" y="${y}" width="${r * 3}" height="${r * 3}" transform="rotate(45 ${x} ${y})"/>`).join('')}</g>
-<rect x="40" y="34" width="${W - 80}" height="${H - 110}" rx="34" fill="#fffaf0" stroke="#e2a24f" stroke-width="6"/>
-<rect x="40" y="34" width="${W - 80}" height="64" rx="30" fill="#f6b04e"/><rect x="40" y="70" width="${W - 80}" height="28" fill="#f6b04e"/>
-<text x="76" y="78" font-size="30" font-weight="900" fill="#4a2a05">GMS Hub</text>
-<text x="${W - 76}" y="78" font-size="26" font-weight="700" fill="#4a2a05" text-anchor="end">${esc(t.site)}</text>
-<rect x="76" y="126" width="330" height="330" rx="28" fill="#ffffff" stroke="#efc98f" stroke-width="5"/>
-${c.icon ? `<image href="${c.icon}" x="121" y="171" width="240" height="240" image-rendering="optimizeSpeed" preserveAspectRatio="xMidYMid meet"/>` : ''}
+${c.bg ? `<image href="${c.bg}" x="0" y="0" width="${W}" height="${H}"/>` : `<rect width="${W}" height="${H}" fill="#5a3f4a"/>`}
+<rect x="48" y="52" width="716" height="526" rx="26" fill="#fff7ed" stroke="#ffe5b6" stroke-width="2" filter="url(#sh)"/>
+${c.logo ? `<image href="${c.logo}" x="82" y="84" width="48" height="48" image-rendering="optimizeSpeed"/>` : ''}
+<text x="${c.logo ? 142 : 84}" y="121" font-size="31" font-weight="900" fill="#302a2b">GMS Hub</text>
+<text x="728" y="119" font-size="17" font-weight="700" fill="#92613f" text-anchor="end">${esc(t.site)}</text>
+<rect x="84" y="150" width="${c.ko ? 150 : 222}" height="38" rx="19" fill="#ffe7c2"/>
+<text x="${84 + (c.ko ? 75 : 111)}" y="176" font-size="21" font-weight="900" fill="#c2410c" text-anchor="middle">${esc(t.tag)}</text>
+<text x="82" y="${nameY}" font-size="${nameSize}" font-weight="900" fill="#302a2b">${esc(c.name)}</text>
+${hasEn ? `<text x="84" y="${enY}" font-size="24" font-weight="700" fill="#92613f">${esc(c.en)}</text>` : ''}
+<text x="80" y="${priceY}" font-size="${priceSize}" font-weight="900" fill="#ff6a00">${esc(priceText)}</text>
+<text x="84" y="${labelY}" font-size="21" font-weight="700" fill="#89603e">${esc(c.priceLabel || '')}</text>
+${c.daily.length >= 2 ? `<text x="728" y="${labelY}" font-size="20" font-weight="700" fill="#89603e" text-anchor="end">${esc(t.trend)}${trendPct(c.daily, c.ko)}</text>${spark(c.daily, 476, labelY + 12, 252, Math.max(40, 506 - labelY - 12))}` : `<text x="728" y="${labelY}" font-size="20" font-weight="700" fill="#b08a5a" text-anchor="end">${esc(t.none)}</text>`}
+<line x1="84" y1="520" x2="728" y2="520" stroke="#dcc7ae" stroke-width="2"/>
+<circle cx="90" cy="547" r="5" fill="#be8545"/>
+<text x="104" y="554" font-size="20" font-weight="700" fill="#89603e">${esc(c.counts)}</text>
+<text x="728" y="554" font-size="22" font-weight="900" fill="#c2410c" text-anchor="end">gms-hub.com</text>
+${c.icon ? `<image href="${c.icon}" x="865" y="132" width="220" height="220" image-rendering="optimizeSpeed" preserveAspectRatio="xMidYMid meet" filter="url(#glow)"/>` : ''}
 ${chipSvg}
-<text x="450" y="160" font-size="28" font-weight="900" fill="#d9540b">${esc(t.tag)}</text>
-<text x="450" y="${160 + nameSize + 8}" font-size="${nameSize}" font-weight="900" fill="#2b1a05">${esc(c.name)}</text>
-${c.en && c.en !== c.name ? `<text x="452" y="${160 + nameSize + 50}" font-size="26" font-weight="700" fill="#9a7445">${esc(c.en)}</text>` : ''}
-<text x="450" y="${c.en && c.en !== c.name ? 372 : 352}" font-size="${priceSize}" font-weight="900" fill="#ff6a00">${esc(priceText)}</text>
-<text x="452" y="${c.en && c.en !== c.name ? 410 : 390}" font-size="24" font-weight="700" fill="#8a6a3a">${esc(c.priceLabel || '')}</text>
-${c.daily.length >= 2 ? `<text x="1122" y="410" font-size="22" font-weight="700" fill="#8a6a3a" text-anchor="end">${esc(t.trend)}${trendPct(c.daily, c.ko)}</text>${spark(c.daily, 700, 422, 422, 92)}` : `<text x="1122" y="470" font-size="24" font-weight="700" fill="#b08a5a" text-anchor="end">${esc(t.none)}</text>`}
-<rect x="0" y="${H - 64}" width="${W}" height="64" fill="#3d2a12"/>
-<text x="56" y="${H - 22}" font-size="25" font-weight="700" fill="#ffe9bf">${esc(c.counts)}</text>
-<text x="${W - 56}" y="${H - 22}" font-size="28" font-weight="900" fill="#ffb347" text-anchor="end">gms-hub.com</text>
 </svg>`;
 }
 
 export async function renderCard(c) {
   await init();
-  if (c.iconUrl) c.icon = await dataUri(c.iconUrl).catch(() => null);
+  [c.icon, c.bg, c.logo] = await Promise.all([c.iconUrl && dataUri(c.iconUrl), dataUri('https://gms-hub.com/assets/og-item-bg.png'), dataUri('https://gms-hub.com/assets/og-mushroom.png')].map((p) => Promise.resolve(p).catch(() => null)));
   const svg = cardSvg(c);
   const text = [...new Set(svg.replace(/<[^>]+>/g, ' ').replace(/data:[^"]+/g, '').replace(/&[a-z]+;/g, ' ') + '0123456789,.+—·-')].join('');
   const [bold, black] = await Promise.all([fontFor(text, 700), fontFor(text, 900)]);
