@@ -908,6 +908,21 @@ function headerSearch(lang, tabs) {
 
 // Pages that are not in the header tabs (the moved tabs, guides, ranking, gear, bosses, databases, shop tools) open from one menu at the end
 // of the header, so none of them is reachable only from the home page or the footer.
+// Contributor leaderboard shell; assets/contributors.js fills it from the worker's /contributors.
+function contributorsBody(lang) {
+  const ko = lang === 'ko';
+  return `<section class="wrap ct-page" data-contributors data-api="${esc(config.voteApi)}" data-lang="${lang}">
+<p class="eyebrow">${ko ? '함께 만드는 시세' : 'Built together'}</p>
+<h1>${ko ? '🏆 기여자 순위' : '🏆 Top contributors'}</h1>
+<p class="lead">${ko ? '상점 스캔을 올리거나 팔린 매물을 알려 주면 모두가 보는 시세가 더 정확해져요. 올린 매물 1건, 판매 확인 1건이 각각 1점이에요. 디스코드로 로그인하고 올리면 여기와 디스코드 시세 채널에 이름이 올라가요.' : 'Uploading shop scans and reporting sold listings keeps everyone\'s prices accurate. Each uploaded listing and each sold report is one point. Log in with Discord and your name shows here and in the Discord market channel.'}</p>
+<div class="ct-actions"><a class="btn" href="${href(langPath(lang, '/tools/scan/'))}">${ko ? '📸 상점 스캔 올리기' : '📸 Upload a shop scan'}</a><a class="btn ghost" href="${href(langPath(lang, '/tools/market/?view=listings'))}">${ko ? '✅ 팔린 매물 알려 주기' : '✅ Report sold listings'}</a></div>
+<div class="ct-me" data-ct-me hidden></div>
+<div class="seg ct-tabs" role="group"><button type="button" data-ct-tab="week" aria-pressed="true">${ko ? '최근 7일' : 'Last 7 days'}</button><button type="button" data-ct-tab="all" aria-pressed="false">${ko ? '전체' : 'All time'}</button></div>
+<ol class="ct-list" data-ct-list><li class="muted">${ko ? '불러오는 중…' : 'Loading…'}</li></ol>
+<p class="muted small" data-ct-anon></p>
+</section>`;
+}
+
 function moreMenu(lang, moved = []) {
   const ko = lang === 'ko';
   const links = [
@@ -916,6 +931,7 @@ function moreMenu(lang, moved = []) {
     ['/sites/', ko ? '다른 사이트 모음' : 'Other Classic World sites'],
     ...moved.map(([p, , label]) => [p, label]),
     ['/rank/', ko ? '캐릭터 랭킹' : 'Character ranking'],
+    ['/contributors/', ko ? '기여자 순위' : 'Top contributors'],
     ['/items/', ko ? '아이템 도감' : 'Item database'],
     ['/maps/', ko ? '맵 도감' : 'Map database'],
     ['/tools/scan/', ko ? '상점 스캔으로 올리기' : 'Upload a shop scan'],
@@ -3610,6 +3626,14 @@ for (const lang of LANGS) {
       desc: lang === 'ko' ? '윈디아(클래식 월드) 레벨 순위 상위 1,000명, 상위권 직업·레벨 분포, 내 캐릭터 순위 찾기. 찾은 캐릭터의 레벨·직업에 맞는 사냥터와 가이드로 바로 이어져요.' : 'Top 1,000 Windia (MapleStory Classic World) characters by level, which classes they play, and a character lookup that links your rank to training spots and the guide for your class.',
       body: rankBody({ lang, link, classes: TR_CLASSES, snapshot: readJson('data/rank-snapshot.json') }),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '캐릭터 랭킹' : 'Character rankings', '/rank/')]
+    }));
+    // Contributor leaderboard (owner, 2026-11-21): shop-scan uploads and sold reports from the site, logged-in visitors by
+    // Discord name (worker/src/contributors.js, assets/contributors.js). Live data only, so kept out of search.
+    write(path.join(lang, 'contributors', 'index.html'), page({
+      lang, pageKey: 'contributors', pagePath: '/contributors/', modules: ['contributors.js'], noindex: true,
+      title: lang === 'ko' ? '기여자 순위: 상점 스캔·판매 확인으로 시세를 채운 사람들 | GMS Hub' : 'Top contributors: who keeps the market prices fresh | GMS Hub',
+      desc: lang === 'ko' ? '사이트에서 상점 스캔을 올리고 팔린 매물을 알려 준 기여자 순위예요. 디스코드로 로그인하면 이름이 올라가요.' : 'The people who upload shop scans and report sold listings on the site. Log in with Discord to get your name on it.',
+      body: contributorsBody(lang)
     }));
     for (const { guide, data } of QUEST_GUIDES) {
       const L = (o) => o[lang === 'ko' ? 'ko' : 'en'];

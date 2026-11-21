@@ -45,6 +45,7 @@ import { count, flushUsage, isOver, meterDb, usageView } from './usage-guard.js'
 import { createAlert, listAlerts, deleteAlert, takeHits, checkAlerts } from './alerts.js';
 import { bodyTooLarge, sameSecret } from './secure.js';
 import { handleAccount, handleAccountAlerts } from './account.js';
+import { recordContribution, handleContributors, priceBoardToDiscord, leaderboardToDiscord } from './contributors.js';
 export { Presence };
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
 
@@ -55,7 +56,7 @@ function corsHeaders(origin) {
   return {
     'Access-Control-Allow-Origin': ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0],
     'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     Vary: 'Origin'
   };
 }
@@ -452,6 +453,12 @@ const api = {
       await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('mega-stats',?,datetime('now'))").bind(JSON.stringify(d)).run();
       if (now.getUTCHours() % 6 === 0) await trendsToDiscord(env, d, await itemLabel(), (await freshSnapshot(env, 'market-catalog', 60).catch(() => null)) || (await marketCatalog(env).catch(() => null)));
     }).catch(() => null));
+    // Live price board (pinned card edited twice an hour) and the contributor leaderboard (hourly) in #시세-거래-market.
+    if (now.getUTCMinutes() % 30 < 15) ctx.waitUntil((async () => {
+      const cat = (await freshSnapshot(env, 'market-catalog', 60)) || (await marketCatalog(env));
+      await priceBoardToDiscord(env, cat, await itemLabel());
+    })().catch((e) => console.log('price board failed', String(e))));
+    if (now.getUTCMinutes() < 15) ctx.waitUntil(leaderboardToDiscord(env).catch((e) => console.log('leaderboard failed', String(e))));
     // Daily market summary in #시세-거래-market at 21:00 KST (12:00 UTC run), once a day (snapshot key per KST day).
     if (now.getUTCHours() === 12 && now.getUTCMinutes() < 15) ctx.waitUntil((async () => {
       const key = `discord-market:${new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10)}`;
@@ -503,6 +510,7 @@ const api = {
     }
     // Site-wide "Log in with Discord": the visitor's own settings, copied between their devices (see account.js).
     if (url.pathname === '/account/data') return handleAccount(req, env, cors);
+    if (url.pathname === '/contributors' && (req.method === 'GET' || req.method === 'OPTIONS')) return handleContributors(req, env, cors);
     if (url.pathname === '/account/alerts') {
       await loadItems().catch(() => null);
       return handleAccountAlerts(req, env, cors, async (id) => (await knownItems().catch(() => null))?.has(id), (id, lang) => (lang === 'ko' ? itemKo : itemLabels)?.get(id));
@@ -824,6 +832,7 @@ const api = {
         return json({ ok: !!row, n: row?.gone_n || 0, again: !!row }, cors, row ? 200 : 404);
       }
       const row = await env.DB.prepare("UPDATE listings SET gone_n = gone_n + 1, gone_at = datetime('now') WHERE id = ? RETURNING gone_n").bind(id).first();
+      if (ctx?.waitUntil) ctx.waitUntil(recordContribution(env, req, 'gone', 1, reporter).catch(() => null));
       return json({ ok: true, n: row?.gone_n || 1 }, cors);
     }
 
@@ -880,6 +889,8 @@ const api = {
       const results = await env.DB.batch(ok.map((r) => stmt.bind(r.item, r.price, r.qty || 1, r.sold ? 1 : 0, r.seller, r.channel, r.room, reporter,
         r.seller,r.item,r.price,r.channel,r.room,reporter,r.qty || 1,r.sold ? 1 : 0)));
       const changed = ok.filter((_, i) => results[i].meta.changes > 0);
+      // Leaderboard points for the uploader (logged-in visitors under their Discord name, see contributors.js).
+      if (changed.length && ctx?.waitUntil) ctx.waitUntil(recordContribution(env, req, 'scan', changed.length, reporter).catch(() => null));
       if (changed.length) {
         await refreshItemMarket(env, changed.map((r) => r.item)).catch(() => null);
         if (ctx?.waitUntil) ctx.waitUntil(itemLabel().then((nameOf) => notifyListings(env, changed, nameOf)).catch(() => null));

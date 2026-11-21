@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "contributors",
+   "version": "0.7.53",
+   "level": "minor",
+   "date": "2026-11-21",
+   "path": "/contributors/",
+   "ko": "기여자 순위 — 상점 스캔·판매 확인으로 시세를 채운 사람들",
+   "en": "Top contributors — who keeps the prices fresh",
+   "desc": {
+    "ko": "상점 스캔을 올리거나 팔린 매물을 알려 주면 점수가 쌓여요. 디스코드로 로그인하고 올리면 사이트 기여자 순위와 디스코드 시세 채널에 이름이 올라가요. 디스코드 시세 채널에는 30분마다 바뀌는 실시간 시세판도 생겼어요.",
+    "en": "Uploading shop scans and reporting sold listings earns points. Log in with Discord and your name shows on the site's leaderboard and in the Discord market channel, which now also has a live price board updated every 30 minutes."
+   }
+  },
+  {
    "id": "price-alert-off",
    "version": "0.7.52",
    "level": "patch",

@@ -6,10 +6,11 @@ import { DatabaseSync } from 'node:sqlite';
 import { signSession, readSession, handleAccount, syncableKey as serverKey } from '../worker/src/account.js';
 import { oauthStart, oauthCallback, readState, signState } from '../worker/src/discord-oauth.js';
 import { plan, batches, fingerprint, syncableKey } from '../assets/account-sync.js';
+import { recordContribution, contributorsData, leaderboardEmbed } from '../worker/src/contributors.js';
 
 function env(extra = {}) {
   const sqlite = new DatabaseSync(':memory:');
-  sqlite.exec(fs.readFileSync(new URL('../worker/migrations/0025_accounts.sql', import.meta.url), 'utf8'));
+  for (const f of ['0025_accounts.sql', '0026_contributions.sql']) sqlite.exec(fs.readFileSync(new URL(`../worker/migrations/${f}`, import.meta.url), 'utf8'));
   const DB = { prepare(sql, args = []) {
     return { bind: (...v) => DB.prepare(sql, v), all: async () => ({ results: sqlite.prepare(sql).all(...args) }),
       first: async () => sqlite.prepare(sql).get(...args) ?? null,
@@ -104,4 +105,20 @@ test('uploads are split under the worker body limit and oversized values are ski
   assert.equal(b.length, 2);
   assert.ok(b.every((x) => JSON.stringify({ set: x }).length < 64 * 1024));
   assert.ok(!b.some((x) => x.a3));
+});
+
+test('contributions: logged-in uploads count under the Discord name, others together as not logged in', async () => {
+  const e = env();
+  const t = await signSession('sec', { id: '123456789', name: '혹스', avatar: 'av' });
+  const withSession = new Request(`${W}/listings`, { method: 'POST', headers: { Authorization: `Bearer ${t}` } });
+  const anon = new Request(`${W}/listings`, { method: 'POST' });
+  await recordContribution(e, withSession, 'scan', 12, 'hashA');
+  await recordContribution(e, withSession, 'gone', 1, 'hashA');
+  await recordContribution(e, anon, 'scan', 5, 'hashB');
+  await recordContribution(e, anon, 'scan', 0, 'hashC');
+  const d = await contributorsData(e, '123456789');
+  assert.deepEqual(d.week.map((r) => [r.name, r.scans, r.gone, r.points]), [['혹스', 12, 1, 13]]);
+  assert.deepEqual([d.anonWeek.points, d.anonWeek.people], [5, 1]);
+  assert.deepEqual(d.me, { week: 13, total: 13 });
+  assert.match(leaderboardEmbed(d).fields[0].value, /혹스.*13점/);
 });

@@ -1121,7 +1121,7 @@ document.querySelector(".market-browser").addEventListener("click", (e) => {
     const id = Number(el.dataset.gone || el.dataset.goneUndo || el.dataset.goneHere), item = Number(el.dataset.goneItem);
     const cell = el.closest(".mb-gone-cell"), row = el.closest(".mb-offer, tr");
     el.disabled = true;
-    fetch(`${D.api}/listings/gone`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, mode: mode === "gone" ? undefined : mode }) })
+    fetch(`${D.api}/listings/gone`, { method: "POST", headers: { "Content-Type": "application/json", ...(globalThis.gmsAuth?.() || {}) }, body: JSON.stringify({ id, mode: mode === "gone" ? undefined : mode }) })
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((res) => {
         if (mode === "gone") goneMine.add(id); else goneMine.delete(id);

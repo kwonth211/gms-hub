@@ -3713,3 +3713,25 @@ body.exp-running .exp-stop { display: inline-flex; }
 .mb-alert-on p { margin: 0 0 8px; }
 .mb-alert-change { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .mb-alert-change input { width: 110px; }
+/* Login prompt after saving something (assets/account.js nudge), at most once every few days. */
+.acct-nudge { position: fixed; left: 50%; bottom: 18px; translate: -50% 0; z-index: 70; display: flex; align-items: center; gap: 10px; width: min(560px, calc(100vw - 32px)); padding: 12px 14px; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 6px 0 var(--line-strong), 0 12px 32px rgb(0 0 0 / 0.16); font-size: 0.88rem; line-height: 1.5; }
+.acct-nudge p { margin: 0; flex: 1; }
+.acct-nudge .acct-go { width: auto; flex: none; padding: 8px 12px; white-space: nowrap; }
+.acct-x { flex: none; border: 0; background: none; color: var(--muted); font-size: 1.2rem; line-height: 1; cursor: pointer; padding: 4px; }
+@media (max-width: 480px) { .acct-nudge { flex-wrap: wrap; } .acct-nudge p { flex-basis: calc(100% - 30px); } }
+/* /contributors/ leaderboard */
+.ct-page { max-width: 760px; padding-block: 28px 48px; }
+.ct-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.ct-me { margin: 10px 0 14px; padding: 10px 12px; border-radius: 12px; background: var(--veil); font-size: 0.9rem; }
+.ct-tabs { margin: 8px 0 10px; }
+.ct-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.ct-row { display: grid; grid-template-columns: 34px 36px 1fr auto; grid-template-areas: "rank av name pts" "rank av detail pts"; align-items: center; column-gap: 10px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.ct-row.top { border-color: #f5b301; }
+.ct-rank { grid-area: rank; font-weight: 800; text-align: center; }
+.ct-av { grid-area: av; width: 36px; height: 36px; border-radius: 50%; }
+.ct-name { grid-area: name; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ct-detail { grid-area: detail; font-size: 0.78rem; color: var(--muted); }
+.ct-pts { grid-area: pts; font-size: 1rem; }
+.ct-tabs { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.ct-tabs button { font: inherit; padding: 8px 14px; background: transparent; color: var(--muted); border: 0; cursor: var(--cur-hand, pointer); }
+.ct-tabs button[aria-pressed='true'] { background: var(--panel-2); color: var(--text); font-weight: 700; }

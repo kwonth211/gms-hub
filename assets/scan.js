@@ -419,7 +419,8 @@ async function upload() {
     }
     const inserts = fresh.filter((e) => sent.get(e.key) !== e.signature);
     if (inserts.length) {
-      const res = await fetch(`${i18n.api}/listings`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      // Logged in with Discord (assets/account.js), the upload counts for the contributor leaderboard under their name.
+      const res = await fetch(`${i18n.api}/listings`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(globalThis.gmsAuth?.() || {}) },
         body: JSON.stringify({ items: inserts.map((e) => e.body) }) });
       const data = await res.json();
       if (!res.ok || data.stored !== inserts.length) throw new Error('Incomplete upload');
@@ -431,6 +432,7 @@ async function upload() {
     check('upload', 'ok', fill(i18n.uploadOk, { n: uploaded }));
     track('scan_upload', { items: fresh.length });
     showMyShop(fresh.map((e) => e.body.seller));
+    globalThis.gmsLoginNudge?.('scan');
     failures = 0;
     succeeded = true;
   } catch (e) {
