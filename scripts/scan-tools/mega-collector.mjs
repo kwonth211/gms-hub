@@ -218,7 +218,7 @@ async function tick() {
     const {row,m}=job;
     if(job.active||now-job.lastAttempt<1000)continue;
     const item=jobItem(job);
-    if(!item || (item.cash&&item.sub!=='Pet Equipment'&&!Number.isInteger(item.slots)) || (item.cat!=='Equip' && !/ Scroll: /i.test(item.en))){optionJobs.delete(key);continue;}
+    if(!item || item.cash || (item.cat!=='Equip' && !/ Scroll: /i.test(item.en))){optionJobs.delete(key);continue;}
     const matches=fingerprints.flatMap((f,i)=>f===job.fingerprint&&!read[i].obscured?[i]:[]);
     if(!matches.length)continue;
     // a repeated identical ad: take the copy nearest to where this job's row was last seen

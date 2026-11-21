@@ -59,14 +59,20 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches && body.dataset.tip
   const itemName = (id) => { const t = data.items[id]; return t ? (ko && t[0] ? t[0] : t[1]) : ''; };
 
   // The one stat that prices a captured piece: attack (magic for wands/staves), else the stat furthest above base.
-  function sameStat(id, opts) {
-    const t = data?.items?.[id], st = opts?.stats;
-    if (!t || t[2] !== 'Equip' || !st || opts.scroll) return null;
-    const sub = t[3], base = t[7] || {};
+  // Same rule as priceStat() in mega-option-text.js (this file is a classic script and cannot import it).
+  function priceStatOf(opts, sub) {
+    const st = opts?.stats;
+    if (!st || opts.scroll) return null;
+    const has = (k) => Number.isInteger(st[k]);
     const order = sub === 'Wand' || sub === 'Staff' ? ['MAD', 'PAD'] : ['PAD', 'MAD'];
-    let k = order.find((x) => Number.isInteger(st[x]));
-    if (!k) k = Object.keys(st).filter((x) => Number.isInteger(st[x])).sort((a, b) => (st[b] - (base[b] || 0)) - (st[a] - (base[a] || 0)))[0];
-    return k ? { stat: k, value: st[k], key: `${id}|${k}|${st[k]}` } : null;
+    const k = order.find(has) || ['STR', 'DEX', 'INT', 'LUK'].filter(has).sort((a, b) => st[b] - st[a])[0] || Object.keys(st).find(has);
+    return k ? { stat: k, value: st[k] } : null;
+  }
+  function sameStat(id, opts) {
+    const t = data?.items?.[id];
+    if (!t || t[2] !== 'Equip' || t[14]) return null;
+    const q = priceStatOf(opts, t[3]);
+    return q ? { ...q, key: `${id}|${q.stat}|${q.value}` } : null;
   }
   function sameBlock(id, opts) {
     const q = sameStat(id, opts);
@@ -153,8 +159,8 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
       const REQ = { str: tr('힘', 'STR'), dex: tr('덱', 'DEX'), int: tr('인', 'INT'), luk: tr('럭', 'LUK') };
       const reqs = Object.entries(req || {}).filter(([k]) => REQ[k]).map(([k, v]) => `${REQ[k]} ${v}`).join(' · ');
       lines.push(`<p class="tip-req">${lv ? `Lv. ${lv} · ` : ''}${esc(jobs)}${reqs ? `<br><span class="tip-muted">${reqs}</span>` : ''}</p>`);
-      const cosmetic=cash&&sub!=='Pet Equipment'&&!slots&&!Object.keys(inc||{}).length;
-      if (source === 'megaphone') lines.push(`<p class="tip-muted">${opts ? tr('이 고확에서 확인한 옵션', 'Options captured from this megaphone') : cosmetic ? tr('캐시 외형 아이템', 'Cash cosmetic item') : tr('옵션 미확인 · 이 고확의 실제 능력치를 수집하지 못했어요.', 'Options not captured · Actual stats are unavailable for this megaphone.')}</p>`);
+      // Cash items are never option-checked, so they never show "not captured" either.
+      if (source === 'megaphone' && (opts || !cash)) lines.push(`<p class="tip-muted">${opts ? tr('이 고확에서 확인한 옵션', 'Options captured from this megaphone') : tr('옵션 미확인 · 이 고확의 실제 능력치를 수집하지 못했어요.', 'Options not captured · Actual stats are unavailable for this megaphone.')}</p>`);
       if (opts) lines.push(optionLines(opts, inc || {}, slots, sub));
       else if (source !== 'megaphone') {
         const stats = Object.entries(inc || {}).map(([k, v]) => `<li>${INC[k] || k} <b>+${v}</b></li>`).join('');

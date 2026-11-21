@@ -26,3 +26,13 @@ export function megaphoneItemAttrs(id,opts){
   const esc=(s)=>s.replace(/[&<>"']/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   return ` data-item-id="${id}" data-option-source="megaphone"${opts ? ` data-opts="${esc(JSON.stringify(opts))}"` : ''}`;
 }
+
+// The one stat a captured piece is priced by: attack (magic for wands and staves), else its highest main stat,
+// else whatever was read. Shared by the hover card and the megaphone list so both quote the same price.
+export function priceStat(opts,sub=''){
+  const st=opts?.stats;if(!st||opts.scroll)return null;
+  const has=k=>Number.isInteger(st[k]);
+  const order=sub==='Wand'||sub==='Staff'?['MAD','PAD']:['PAD','MAD'];
+  let k=order.find(has)||['STR','DEX','INT','LUK'].filter(has).sort((a,b)=>st[b]-st[a])[0]||Object.keys(st).find(has);
+  return k?{stat:k,value:st[k]}:null;
+}

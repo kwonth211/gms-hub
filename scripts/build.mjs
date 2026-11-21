@@ -4063,7 +4063,7 @@ write('assets/mobs.json', JSON.stringify(MOBS.map((m) => [m.id, m.ko || '', m.en
 write('assets/weapons.json', JSON.stringify(readJson('data/weapons.json').weapons.map((w) => [w.id, w.ko || '', w.en, w.type, w.lv, w.watk || 0, w.matk || 0])));
 // The 7th column is the market median at build time (0 when none), so every search shows a price the moment it renders;
 // pages that need live numbers still ask the worker.
-write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko || '', i.en, i.cat, i.sub, i.lv || 0, Math.round(shownMedian(i) || 0)])));
+write('assets/items.json', JSON.stringify(itemsData.items.map((i) => [i.id, i.ko || '', i.en, i.cat, i.sub, i.lv || 0, Math.round(shownMedian(i) || 0), ...(i.cash ? [1] : [])])));
 // Data for the Discord bot (worker/src/discord-bot.js): the item search index built here once, so the worker does not
 // spend its CPU budget indexing 5,000 names, plus the monsters and training routes its commands answer from.
 write('assets/bot.json', JSON.stringify({
