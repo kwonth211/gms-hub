@@ -222,7 +222,7 @@ export function parseTooltipLines(lines, item) {
   for(const [key,value] of seen) if(value!==null) {if(key==='slots') slots=value;else stats[key]=value;}
   if(item.cat!=='Equip') {
     // Scroll description can wrap between "Weapon" and "Attack +2".
-    const desc=texts.slice(1).join(' ').replace(/\b(Weapon|Magic)\s+Def\./gi,'$1 Defense'), rate=/Success rate:\s*(100|60|10)\s*%/i.exec(desc);
+    const desc=texts.slice(1).join(' ').replace(/\b(Weapon|Magic)\s+Def\./gi,'$1 Defense').replace(/\bCrit\.\s*(Rate|Damage)\b/gi,'Critical $1'), rate=/Success rate:\s*(100|60|10)\s*%/i.exec(desc);
     if(!rate) return null;
     chance=Number(rate[1]);const gains={};
     for(const [label,key] of Object.entries(LABELS)) {

@@ -50,6 +50,11 @@ test('low-confidence sums need the same valid expression in all three readings',
  assert.equal(agreeLabeledNumber(field,[{text:'+5 (3 +2)',confidence:1}],native),null);
  assert.equal(agreeLabeledNumber({...field,text:'LUK: +4 (3+2)'},other,native),null);
 });
+test('a Crit. label wrapped across lines still reads as a critical gain',()=>{
+ const item={en:'Earring Crit. Damage Scroll: Intermediate',cat:'Use'};
+ assert.deepEqual(parseTooltipLines(['• '+item.en,'Improves Crit. Damage on','earrings.','Success rate: 60%, Crit.','•Damage +2','CASHISHOP'],item),{scroll:{chance:60,stats:{CRD:2}}});
+ assert.deepEqual(parseTooltipLines([item.en,'Success rate: 60%, Crit. Rate +1'],item),{scroll:{chance:60,stats:{CRT:1}}});
+});
 test('scroll defense abbreviations preserve both independently read gains',()=>{
  const item={en:'Topwear DEF Scroll: Chaos',cat:'Use',inc:{PDD:8,MDD:6}};
  assert.deepEqual(parseTooltipLines([item.en,'Success rate: 10%, Weapon','Def. +8, Magic Def. +6'],item),{scroll:{chance:10,stats:{PDD:8,MDD:6}}});

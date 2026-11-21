@@ -306,6 +306,8 @@ export class OptionReader {
         fs.writeFileSync(path.join(this.dir,'panel-failure.png'),PNG.sync.write(after));
         fs.writeFileSync(path.join(this.dir,'panel-before.png'),PNG.sync.write(ready));
         fs.writeFileSync(path.join(this.dir,'panel-failure.json'),JSON.stringify({message,item:item.en,box,line,link,boxes,rows}));
+        {const tag=`pf-${item.en.replace(/[^a-z0-9]+/gi,'_')}`;fs.copyFileSync(path.join(this.dir,'panel-failure.png'),path.join(this.dir,`${tag}.png`));fs.writeFileSync(path.join(this.dir,`${tag}.json`),JSON.stringify({message,item:item.en,box,line,link,boxes,rows,lastPanel:this.lastPanel?.rows,title:panel?.title}));
+         for(const old of fs.readdirSync(this.dir).filter(f=>/^pf-.*\.json$/.test(f)).map(f=>[f,fs.statSync(path.join(this.dir,f)).mtimeMs]).sort((a,b)=>a[1]-b[1]).slice(0,-30).map(a=>a[0]))for(const e of ['.json','.png'])fs.rmSync(path.join(this.dir,old.replace(/\.json$/,e)),{force:true});}
         return skip('target tooltip title missing');
       }
       let opts=await this.readPanel(after,rows,panel,item,ready);
