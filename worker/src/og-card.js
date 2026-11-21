@@ -82,7 +82,7 @@ ${c.logo ? `<image href="${c.logo}" x="82" y="84" width="48" height="48" image-r
 ${hasEn ? `<text x="84" y="${enY}" font-size="24" font-weight="700" fill="#92613f">${esc(c.en)}</text>` : ''}
 <text x="80" y="${priceY}" font-size="${priceSize}" font-weight="900" fill="#ff6a00">${esc(priceText)}</text>
 <text x="84" y="${labelY}" font-size="21" font-weight="700" fill="#89603e">${esc(c.priceLabel || '')}</text>
-${c.daily.length >= 2 ? `<text x="728" y="${labelY}" font-size="20" font-weight="700" fill="#89603e" text-anchor="end">${esc(t.trend)}${trendPct(c.daily, c.ko)}</text>${spark(c.daily, 476, labelY + 12, 252, Math.max(40, 506 - labelY - 12))}` : `<text x="728" y="${labelY}" font-size="20" font-weight="700" fill="#b08a5a" text-anchor="end">${esc(t.none)}</text>`}
+${c.daily.length >= 3 ? `<text x="728" y="${labelY}" font-size="20" font-weight="700" fill="#89603e" text-anchor="end">${esc(t.trend)}${trendPct(c.daily, c.ko)}</text>${spark(c.daily, 476, labelY + 12, 252, Math.max(40, 506 - labelY - 12))}` : `<text x="728" y="${labelY}" font-size="20" font-weight="700" fill="#b08a5a" text-anchor="end">${esc(t.none)}</text>`}
 <line x1="84" y1="520" x2="728" y2="520" stroke="#dcc7ae" stroke-width="2"/>
 <circle cx="90" cy="547" r="5" fill="#be8545"/>
 <text x="104" y="554" font-size="20" font-weight="700" fill="#89603e">${esc(c.counts)}</text>

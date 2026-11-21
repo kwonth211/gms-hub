@@ -320,7 +320,7 @@ async function itemCard(req, env, ctx) {
   const m = new URL(req.url).pathname.match(/^\/og\/item\/(\d{7})-(ko|en)\.png$/);
   if (!m) return new Response('not found', { status: 404 });
   // The design version is part of the cache key, so a new look is not hidden behind six hours of cached old cards.
-  const key = new Request(`${req.url}${req.url.includes('?') ? '&' : '?'}design=2`), cache = caches.default, hit = await cache.match(key);
+  const key = new Request(`${req.url}${req.url.includes('?') ? '&' : '?'}design=3`), cache = caches.default, hit = await cache.match(key);
   if (hit) return hit;
   const id = Number(m[1]), ko = m[2] === 'ko';
   const nameOf = await itemLabel();
