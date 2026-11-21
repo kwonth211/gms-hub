@@ -1,6 +1,7 @@
 // "내 상점 페이지" (owner 2026-11-19): one shareable page per seller, /<lang>/shop/?n=<name>. It lists what that seller is
 // selling now (open listings from scans and the collector), where the shop is, each price next to the market price,
 // and gives the seller a link and a ready-made line to paste into Discord or a community post. Read-only; no login.
+import { itemAttrs } from './item-attrs.js';
 import { optBadge, loadTips } from './opt-grade.js';
 import { placeLabel } from './place.js';
 
@@ -67,7 +68,7 @@ async function show(name) {
     const tag = diff == null ? '' : diff <= -10 ? `<b class="shop-tag cheap">${tr(`시세보다 ${-diff}% 쌈`, `${-diff}% under market`)}</b>` : diff >= 10 ? `<b class="shop-tag pricey">${tr(`시세보다 ${diff}% 비쌈`, `${diff}% over market`)}</b>` : `<b class="shop-tag fair">${tr('시세 수준', 'At market')}</b>`;
     const opt = r.opts ? optBadge(r.item, r.opts, tips) : null;
     const elsewhere = r.channel !== newest.channel || r.room !== newest.room;
-    return `<li class="shop-item${r.goneN ? ' is-gone' : ''}"><a href="../tools/market/?item=${r.item}" data-item-id="${r.item}"${r.opts ? ` data-opts="${esc(JSON.stringify(r.opts))}"` : ''}>
+    return `<li class="shop-item${r.goneN ? ' is-gone' : ''}"><a href="../tools/market/?item=${r.item}" ${itemAttrs(r.item, r.opts || null, 'listing')}>
 <img src="https://maplestory.io/api/MCW/1/item/${r.item}/icon" width="36" height="36" alt="" loading="lazy">
 <span class="shop-name"><strong>${esc(nameOf(r.item))}</strong>${opt ? `<em class="${esc(opt.cls)}">${esc(opt.text)}</em>` : ''}<small>${elsewhere ? `${place(r.channel, r.room)} · ` : ''}${ago(r.seen)}${r.goneN ? ` · ${tr('팔렸다는 신고 있음', 'reported sold')}` : ''}</small></span>
 <span class="shop-price"><strong>${won(r.price)}</strong>${r.qty > 1 ? `<small>×${nf.format(r.qty)}</small>` : ''}${m ? `<small>${tr('시세', 'market')} ${won(m)}</small>` : ''}${tag}</span></a></li>`;

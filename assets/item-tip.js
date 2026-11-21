@@ -161,6 +161,7 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
       lines.push(`<p class="tip-req">${lv ? `Lv. ${lv} · ` : ''}${esc(jobs)}${reqs ? `<br><span class="tip-muted">${reqs}</span>` : ''}</p>`);
       // Cash items are never option-checked, so they never show "not captured" either.
       if (source === 'megaphone' && (opts || !cash)) lines.push(`<p class="tip-muted">${opts ? tr('이 고확에서 확인한 옵션', 'Options captured from this megaphone') : tr('옵션 미확인 · 이 고확의 실제 능력치를 수집하지 못했어요.', 'Options not captured · Actual stats are unavailable for this megaphone.')}</p>`);
+      if (source === 'set' && opts) lines.push(`<p class="tip-muted">${tr('내 장비 세트에서 설정한 옵션', 'Options set in My gear set')}</p>`);
       if (opts) lines.push(optionLines(opts, inc || {}, slots, sub));
       else if (source !== 'megaphone') {
         const stats = Object.entries(inc || {}).map(([k, v]) => `<li>${INC[k] || k} <b>+${v}</b></li>`).join('');

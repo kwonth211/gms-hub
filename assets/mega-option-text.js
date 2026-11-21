@@ -1,3 +1,4 @@
+import { itemAttrs } from './item-attrs.js';
 // Text only: caller escapes these labels before inserting HTML.
 const LABELS={PAD:['공격력','ATT'],MAD:['마력','M.ATT'],STR:['힘','STR'],DEX:['덱','DEX'],INT:['인','INT'],LUK:['럭','LUK'],ACC:['명중','ACC'],EVA:['회피','AVOID'],MHP:['HP','HP'],MMP:['MP','MP'],PDD:['물방','DEF'],MDD:['마방','M.DEF'],Speed:['이속','SPEED'],Jump:['점프','JUMP'],CRT:['크확','CRIT'],CRD:['크뎀','C.DMG']};
 export function optionParts(opts,ko=false){
@@ -23,8 +24,7 @@ export function optionSummary(opts,ko=false){
 // Used by both the item name and the option summary, so hovering either shows the same piece.
 export function megaphoneItemAttrs(id,opts){
   if(!Number.isInteger(id)||id<=0)return '';
-  const esc=(s)=>s.replace(/[&<>"']/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  return ` data-item-id="${id}" data-option-source="megaphone"${opts ? ` data-opts="${esc(JSON.stringify(opts))}"` : ''}`;
+  return itemAttrs(id, opts || null, 'megaphone');
 }
 
 // The one stat a captured piece is priced by: attack (magic for wands and staves), else its highest main stat,

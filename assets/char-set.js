@@ -2,6 +2,7 @@
 // top or overall, bottom, shoes, gloves, cape, earrings, shield), sees the character wearing them and what each piece and
 // the whole set sell for now. Saved in this browser under gms-char-set (synced with the account copy like gms-char).
 import { optionFilter, encodeOptionFilter } from './option-filter.js';
+import { itemAttrs } from './item-attrs.js';
 
 const KEY = 'gms-char-set';
 // Options per slot (exact values, the same filter as the market's "same options" prices): { slot: { stats: {PAD: 22}, ups: 3 } }.
@@ -113,6 +114,13 @@ export function makeSet({ korean, market, api, track, esc, mesos }) {
     }
     return out;
   };
+  // The piece as the player set it (base stats with the changes on top), for the hover card: common rule, item-attrs.js.
+  const pieceOf = (id, f) => {
+    const b = baseOf(id);
+    if (!b && !f) return null;
+    const stats = { ...(b?.stats || {}), ...(f?.stats || {}) };
+    return { stats, ...(f?.slots ?? b?.slots) !== undefined ? { slots: f?.slots ?? b?.slots } : {}, ups: f?.ups ?? 0 };
+  };
   const cleanOf = (id) => { const b = baseOf(id); return b ? optionFilter({ ...(b.slots !== undefined ? { slots: b.slots } : {}), ups: 0 }) : null; };
   // A slot with options is priced from listings with the same options only, never from the item-wide price.
   const priceIn = (slot, id, opts) => (opts[slot] ? optLive[optKey(id, opts[slot])]?.price || null : priceOf(id));
@@ -170,7 +178,7 @@ ${fields.map((k) => num(`s_${k}`, t.stat[k], f?.stats?.[k] ?? base?.stats?.[k]))
       const sub = f ? (ol === null || ol === undefined ? t.optLoading : ol.kind === 'open' ? t.optOpen(ol.n) : ol.kind === 'recent' ? t.optRecent(ol.n) : t.optNone) : '';
       const href = `${market}?item=${id}${f ? `&opts=${encodeURIComponent(encodeOptionFilter(f))}` : ''}&src=char-set`;
       const main = id
-        ? `<a class="cset-item" href="${esc(href)}" data-char-link="set" data-item="${id}">${icon(id)}<span><strong>${esc(nameOf(id))}</strong><small>${esc(f ? optText(f) : t.slot[slot])}</small></span></a>
+        ? `<a class="cset-item" href="${esc(href)}" data-char-link="set" data-item="${id}"${itemAttrs(id, pieceOf(id, f), 'set')}>${icon(id)}<span><strong>${esc(nameOf(id))}</strong><small>${esc(f ? optText(f) : t.slot[slot])}</small></span></a>
 <b class="cset-price${p ? '' : ' muted'}">${esc(p ? mesos(p) : f ? '—' : t.noPrice)}${sub ? `<small>${esc(sub)}</small>` : ''}</b>
 <span class="cset-acts"><button type="button" class="btn ghost${f ? ' is-on' : ''}" data-cset-edit="${slot}" aria-expanded="${editing === slot}">${esc(t.opt)}</button><button type="button" class="btn ghost" data-cset-open="${slot}">${esc(t.change)}</button><button type="button" class="btn ghost" data-cset-remove="${slot}" aria-label="${esc(`${t.slot[slot]} ${t.remove}`)}">×</button></span>`
         : `<span class="cset-item is-empty"><i aria-hidden="true">${esc(t.slot[slot].slice(0, 1))}</i><span><strong>${esc(t.slot[slot])}</strong><small>${esc(why || '—')}</small></span></span>

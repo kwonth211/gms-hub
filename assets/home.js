@@ -1,3 +1,4 @@
+import { itemAttrs } from './item-attrs.js';
 import './collection-status.js';
 import { listingPriceBand, priceBadge } from './listing-price.js';
 import { bindListingClicks } from './listing-clicks.js';
@@ -543,7 +544,7 @@ function optShort(r) {
   return b ? `<span class="opt ${b.cls}">${escHtml(b.text)}</span>` : '';
 }
 function recentRow(r, it, fresh) {
-  return `<li class="${r.sold ? 'sold' : ''}${fresh ? ' fresh' : ''}" data-key="${escHtml(rowKey(r))}" data-price-band="${listingPriceBand(r, liveCatalog)}" data-item-list="home_recent"${r.opts ? ` data-item-id="${it.id}" data-opts="${escHtml(JSON.stringify(r.opts))}"` : ''}><a href="${live.dataset.price}?item=${it.id}&src=home" data-live-item="${it.id}">
+  return `<li class="${r.sold ? 'sold' : ''}${fresh ? ' fresh' : ''}" data-key="${escHtml(rowKey(r))}" data-price-band="${listingPriceBand(r, liveCatalog)}" data-item-list="home_recent"${r.opts ? itemAttrs(it.id, r.opts, 'listing') : ''}><a href="${live.dataset.price}?item=${it.id}&src=home" data-live-item="${it.id}">
 <img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="26" height="26" loading="lazy">
 <span class="name">${newMark(r.seen)}<span class="nm">${escHtml(it.name)}</span>${r.sold ? `<span class="tag">${escHtml(liveText.sold)}</span>` : ''}${optShort(r)}</span>
 <span class="price">${priceBadge(listingPriceBand(r, liveCatalog), korean)}${mesos(r.price)}${r.qty > 1 ? ` <small>×${r.qty}</small>` : ''}</span>
