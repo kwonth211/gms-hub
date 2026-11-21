@@ -128,6 +128,44 @@ guard (before["frontPid"] as? Int) != Int(pid),
     emit(["error":"Requires background game and no held mouse buttons"]);exit(4)
 }
 emit(["phase":"before","state":before,"pid":pid,"windowId":wid,"windowPoint":[x,y],"screenPoint":[ox+x,oy+y]])
+// If the real pointer rests over a visible part of the game window, Wine follows it and ignores the
+// window-targeted events below (measured 2026-11-21: 0% captures until the pointer left the game window).
+// When the owner is idle, move the pointer just outside the game window first and leave it there.
+func topmostPid(_ p:CGPoint) -> Int32? {
+    let list=CGWindowListCopyWindowInfo([.optionOnScreenOnly,.excludeDesktopElements],kCGNullWindowID) as? [[String:Any]] ?? []
+    for w in list {
+        guard (w[kCGWindowLayer as String] as? Int ?? 1)==0,let b=w[kCGWindowBounds as String] as? [String:Double],
+              let bx=b["X"],let by=b["Y"],let bw=b["Width"],let bh=b["Height"] else { continue }
+        if p.x>=bx && p.x<bx+bw && p.y>=by && p.y<by+bh { return w[kCGWindowOwnerPID as String] as? Int32 }
+    }
+    return nil
+}
+let pointerNow=CGEvent(source:nil)!.location
+if topmostPid(pointerNow)==pid {
+    func since(_ t:CGEventType) -> Double { CGEventSource.secondsSinceLastEventType(.hidSystemState,eventType:t) }
+    let keyIdle=min(since(.keyDown),since(.flagsChanged))
+    let mouseIdle=[CGEventType.mouseMoved,.leftMouseDown,.rightMouseDown,.leftMouseDragged,.scrollWheel].map(since).min() ?? 0
+    guard keyIdle>=2.0, mouseIdle>=2.0 else { emit(["error":"Pointer over the game window and the owner is active","mouseIdle":mouseIdle]);exit(4) }
+    var displays=[CGDirectDisplayID](repeating:0,count:8);var n:UInt32=0
+    CGGetActiveDisplayList(8,&displays,&n)
+    let screens=displays.prefix(Int(n)).map{CGDisplayBounds($0)}
+    let cands=[CGPoint(x:ox-30,y:pointerNow.y),CGPoint(x:ox+width+30,y:pointerNow.y),CGPoint(x:pointerNow.x,y:oy+height+30),CGPoint(x:pointerNow.x,y:oy-30)]
+    guard let spot=cands.first(where:{ c in screens.contains{ $0.contains(c) } && topmostPid(c) != pid }) else {
+        emit(["error":"Pointer over the game window and no spot outside it"]);exit(4)
+    }
+    let src=CGEventSource(stateID:.privateState)
+    var at=pointerNow
+    for i in 1...6 {
+        let f=Double(i)/6, e=f*f*(3-2*f), q=CGPoint(x:pointerNow.x+(spot.x-pointerNow.x)*e,y:pointerNow.y+(spot.y-pointerNow.y)*e)
+        if let ev=CGEvent(mouseEventSource:src,mouseType:.mouseMoved,mouseCursorPosition:q,mouseButton:.left) {
+            ev.setIntegerValueField(.mouseEventDeltaX,value:Int64((q.x-at.x).rounded()));ev.setIntegerValueField(.mouseEventDeltaY,value:Int64((q.y-at.y).rounded()))
+            ev.post(tap:.cghidEventTap)
+        }
+        at=q;usleep(6000)
+    }
+    emit(["phase":"pointer_moved_off_game","from":[pointerNow.x,pointerNow.y],"to":[spot.x,spot.y]])
+    usleep(80000)
+}
 func post(_ type:NSEvent.EventType,_ flags:NSEvent.ModifierFlags=[]) {
     let native=NSEvent.mouseEvent(with:type,location:NSPoint(x:x,y:height-y),modifierFlags:flags,
         timestamp:ProcessInfo.processInfo.systemUptime,windowNumber:wid,context:nil,eventNumber:0,
