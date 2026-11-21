@@ -114,7 +114,7 @@ const T = {
     showAll: '전체 보기',
     filtering: '{name}만 보는 중',
     favHeading: '즐겨찾기',
-    favDesc: '별(☆)을 누른 사이트가 여기 모여요. 이 브라우저에만 저장돼요.',
+    favDesc: '별(☆)을 누른 사이트가 여기 모여요. 이 브라우저에 저장되고, 디스코드로 로그인하면 다른 기기에서도 이어져요.',
     favAdd: '즐겨찾기에 추가',
     favRemove: '즐겨찾기에서 빼기',
     noResults: '검색 결과가 없어요.',
@@ -240,7 +240,7 @@ const T = {
     privacyTitle: '개인정보처리방침 | GMS Hub',
     privacyDesc: 'GMS Hub의 개인정보처리방침과 쿠키 사용 안내.',
     privacyH1: '개인정보처리방침',
-    privacyBody: `<p>GMS Hub는 회원가입이 없고, 이름이나 이메일 같은 개인정보를 직접 수집하지 않아요. 아래는 사이트를 이용할 때 처리되는 정보와 그 목적이에요.</p>
+    privacyBody: `<p>GMS Hub는 회원가입 없이 모든 기능을 쓸 수 있고, 이름이나 이메일 같은 개인정보를 직접 수집하지 않아요. 원하는 사람만 디스코드로 로그인할 수 있어요(아래 '디스코드 로그인'). 아래는 사이트를 이용할 때 처리되는 정보와 그 목적이에요.</p>
 <h2>쿠키와 광고</h2>
 <p>이 사이트는 Google AdSense 광고를 게재할 수 있어요. Google을 비롯한 제3자 광고 업체는 쿠키를 사용해 사용자가 이 사이트나 다른 사이트를 방문한 기록을 바탕으로 광고를 보여줘요. Google은 광고 쿠키로 사용자에게 맞춤 광고를 제공해요.</p>
 <p>맞춤 광고는 <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google 광고 설정</a>에서 끌 수 있고, 다른 광고 업체의 맞춤 광고는 <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener">aboutads.info</a>에서 끌 수 있어요. 맞춤 광고를 꺼도 일반 광고는 보일 수 있어요. 자세한 내용은 <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">Google이 파트너 사이트의 정보를 사용하는 방식</a>을 참고하세요.</p>
@@ -257,7 +257,9 @@ const T = {
 <h2>상점 스캔</h2>
 <p>상점 스캔에서 공유한 게임 화면은 사용자의 브라우저 안에서만 읽고, 화면 이미지는 어디에도 보내지 않아요. 읽어 낸 아이템·가격·판매 여부와 함께 게임 안에 공개적으로 표시되는 상점 주인의 캐릭터 이름, 채널, 자유시장 방 번호를 Cloudflare에 저장하고 시세 통계와 '방금 올라온 매물'로 보여 줘요. 도배를 막기 위해 IP 주소를 되돌릴 수 없는 해시로 바꿔 함께 저장하며, IP 주소 원문은 저장하지 않아요. 자신의 캐릭터 정보 삭제를 원하면 아래 연락처로 알려 주세요.</p>
 <h2>브라우저 저장소</h2>
-<p>언어 선택, 즐겨찾기, 추천한 사이트 목록은 사용자의 브라우저(localStorage)에만 저장되고 서버로 전송되지 않아요. 브라우저의 사이트 데이터를 지우면 함께 지워져요.</p>
+<p>언어 선택, 즐겨찾기, 추천한 사이트 목록은 사용자의 브라우저(localStorage)에만 저장되고 로그인하지 않으면 서버로 전송되지 않아요. 브라우저의 사이트 데이터를 지우면 함께 지워져요.</p>
+<h2>디스코드 로그인</h2>
+<p>로그인은 선택이에요. 디스코드로 로그인하면 디스코드가 알려 주는 사용자 ID, 표시 이름, 프로필 사진 주소를 Cloudflare에 저장하고, 이 브라우저에 저장된 사이트 설정(내 캐릭터와 사진, 계산기 설정, 퀘스트 체크, 관심 아이템, 화면 설정 등)의 사본을 계정에 함께 저장해 다른 기기에서 불러올 수 있게 해요. 로그인할 때 GMS Hub 디스코드 서버에 함께 가입돼요. 이메일이나 디스코드 비밀번호는 받지 않아요. 로그인 창의 '계정에 저장된 내 설정 지우기'로 언제든 계정의 사본을 지울 수 있고, 계정 정보 삭제도 아래 연락처로 요청할 수 있어요.</p>
 <h2>어린이</h2>
 <p>GMS Hub는 만 14세 미만 어린이의 개인정보를 의도적으로 수집하지 않아요.</p>
 <h2>변경</h2>
@@ -337,7 +339,7 @@ const T = {
     showAll: 'Show all',
     filtering: 'Showing {name} only',
     favHeading: 'Favorites',
-    favDesc: 'Sites you star (☆) gather here. Saved in this browser only.',
+    favDesc: 'Sites you star (☆) gather here. Saved in this browser; log in with Discord to keep it on your other devices too.',
     favAdd: 'Add to favorites',
     favRemove: 'Remove from favorites',
     noResults: 'No matching sites.',
@@ -463,7 +465,7 @@ const T = {
     privacyTitle: 'Privacy Policy | GMS Hub',
     privacyDesc: 'Privacy policy and cookie notice for GMS Hub.',
     privacyH1: 'Privacy Policy',
-    privacyBody: `<p>GMS Hub has no accounts and does not directly collect personal information such as names or email addresses. Below is what is processed when you use the site, and why.</p>
+    privacyBody: `<p>Everything on GMS Hub works without an account, and the site does not directly collect personal information such as names or email addresses. Logging in with Discord is optional (see "Discord login" below). Below is what is processed when you use the site, and why.</p>
 <h2>Cookies and advertising</h2>
 <p>This site may show Google AdSense ads. Third-party vendors, including Google, use cookies to serve ads based on your prior visits to this and other websites. Google's use of advertising cookies enables it and its partners to serve ads based on those visits.</p>
 <p>You can opt out of personalized advertising in <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google Ads Settings</a>, and out of other vendors' personalized ads at <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener">aboutads.info</a>. You may still see non-personalized ads. See <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">how Google uses information from sites that use its services</a>.</p>
@@ -480,7 +482,9 @@ const T = {
 <h2>Shop scan</h2>
 <p>The game screen you share in Shop Scan is read only inside your browser and the image is never sent anywhere. What it reads (item, price, sold or not) is stored on Cloudflare together with the shop owner's character name as shown publicly in the game, the channel and the Free Market room, and shown as price statistics and "Just listed". To stop spam we also store a salted, irreversible hash of your IP address; the raw IP is never stored. To have your character's listings removed, email us below.</p>
 <h2>Browser storage</h2>
-<p>Your language choice, favorites and the list of sites you recommended are stored only in your browser (localStorage) and never sent to a server. Clearing site data in your browser removes them.</p>
+<p>Your language choice, favorites and the list of sites you recommended are stored only in your browser (localStorage) and are not sent to a server unless you log in. Clearing site data in your browser removes them.</p>
+<h2>Discord login</h2>
+<p>Logging in is optional. When you log in with Discord, the user ID, display name and avatar address that Discord shares are stored on Cloudflare, together with a copy of the site settings kept in this browser (your character and its picture, calculator settings, quest checklists, wishlist, display settings and so on) so you can load them on another device. Logging in also adds you to the GMS Hub Discord server. We never receive your email or Discord password. You can delete the copy on your account at any time with "Delete my settings from the account" in the login panel, or ask us to delete your account information at the contact below.</p>
 <h2>Children</h2>
 <p>GMS Hub does not knowingly collect personal information from children under 13.</p>
 <h2>Changes</h2>
@@ -875,6 +879,9 @@ function header(lang, pagePath, only) {
 <nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}${guideMenu}${toolMenu}</nav>
 ${presencePill(lang)}
 ${headerSearch(lang, [...tabs, ...huntItems.slice(1), ...questItems.slice(1), ...guideItems, ...toolItems, ...moved, sitesEntry])}
+${'' /* Site-wide "Log in with Discord" (assets/account.js, owner 2026-11-21): optional, the site works the same without it;
+   logging in copies this browser's own settings to the account so they follow the visitor to other devices. Filled by JS. */}
+<div class="acct" data-acct hidden data-icon="${esc(DISCORD_ICON(18))}"><button type="button" class="acct-btn"></button><div class="acct-pop" role="dialog"></div></div>
 ${'' /* Header Discord icon opens the Discord page first (owner, 2026-11-15/16): it offers both adding the bot and joining
    the community. Do not point it straight at the invite (tests/content.test.mjs checks this). */}
 ${config.discord ? `<a class="theme-toggle discord-link" href="${href(langPath(lang, config.discordBotInstall ? '/discord-bot/' : '/contact/'))}" data-discord="header" aria-label="${lang === 'ko' ? '디스코드 커뮤니티' : 'Discord community'}" title="${lang === 'ko' ? '디스코드 커뮤니티' : 'Discord community'}">${DISCORD_ICON(20)}</a>` : ''}
@@ -1050,6 +1057,7 @@ ${lateScripts([
   ...modules.map((s) => [href(`/assets/${s}?v=${moduleVersion}`), 1]),
   ...(String(XL_BY_PAGE[pageKey] || '').startsWith('live:') || pageKey === 'questGuide' || XL_BY_PAGE[pageKey] ? [[href(`/assets/xlsx-live.js?v=${moduleVersion}`), 1]] : []),
   [href(`/assets/item-tip.js?v=${moduleVersion}`), 1],
+  [href(`/assets/account.js?v=${moduleVersion}`), 1],
 ])}
 </body>
 </html>`;
@@ -1816,7 +1824,7 @@ const EXP = {
     stats: { now: '지금 EXP', rate: '시간당 경험치', recent: '최근 5분 속도', pct: '시간당 %', next: '다음 레벨까지', gained: '이번 측정 획득', time: '측정 시간', best: '내 최고 기록 대비' },
     demo: '예시로 먼저 보기', demoOff: '예시 끄기', demoNote: '예시 화면이에요. 40분 동안 사냥한 기록을 넣어 봤어요. 실제로 재려면 위의 시작 버튼을 누르세요.',
     pip: '미니 창 띄우기', spotLabel: '사냥터 메모', spotPh: '예: 개미굴 2, 파티 3명', alertLabel: 'EXP가 3분 넘게 안 오르면 소리로 알리기',
-    log: { heading: '사냥 기록', help: '정지하거나 새로 측정할 때 3분 넘게 잰 기록이 여기에 남아요. 같은 몬스터 기록끼리 최고 기록과 비교해요. 이 브라우저에만 저장돼요.',
+    log: { heading: '사냥 기록', help: '정지하거나 새로 측정할 때 3분 넘게 잰 기록이 여기에 남아요. 같은 몬스터 기록끼리 최고 기록과 비교해요. 이 브라우저에 저장되고, 디스코드로 로그인하면 다른 기기에서도 이어져요.',
       cols: ['날짜', '측정 시간', '시간당 경험치', '시간당 %', '얻은 경험치', '몬스터', '사냥터 메모', ''], empty: '아직 남은 기록이 없어요.', del: '삭제', excel: '엑셀로 받기', clear: '기록 전체 삭제', clearAsk: '사냥 기록을 모두 지울까요?',
       share: '사냥터 순위에 보태기', shared: '보탰어요 ✓', shareNeed: '레벨과 직업을 먼저 넣어 주세요.', shareOk: '보태 주셔서 고마워요! 같은 곳 기록이 3명 넘게 모이면 사냥터 추천에 유저 실측으로 나와요.', shareFail: '지금은 보낼 수 없어요. 잠시 뒤 다시 눌러 주세요.' },
     me: { lv: '내 레벨', job: '직업', party: '파티 인원', solo: '솔로', people: '{n}명', help: '사냥터 순위에 보탤 때 같이 올라가요. 이 브라우저에 기억해요.' },
@@ -1827,7 +1835,7 @@ const EXP = {
     manualExp: 'EXP', manualPct: '퍼센트', manualSave: '기록',
     empty: '아직 기록이 없어요. 위에서 시작을 누르거나 EXP를 직접 넣어 보세요.',
     how: [['창 모드 추천', '창 모드가 가장 잘 돼요. 전체 화면이면 공유 창에서 "전체 화면"을 고르면 되고, 검게 보이면 창 모드로 바꿔 주세요. 해상도·화면 배율은 자동으로 맞춰요.'], ['시작', '위 버튼을 누르고 메이플 창을 고르면 5초마다 EXP를 읽어요. 레벨업도 자동으로 이어서 계산해요.'], ['정지', '자리를 옮기거나 끝나면 정지를 누르세요. 기록은 이 브라우저에 남아서 다시 열어도 이어져요.']],
-    privacy: '공유한 화면은 이 컴퓨터 안에서만 읽어요. 측정 기록은 이 브라우저에만 저장돼요. "사냥터 순위에 보태기"를 누른 기록만 레벨·직업·파티 인원·몬스터·사냥터·측정 시간·시간당 경험치가 이름 없이 올라가요.',
+    privacy: '공유한 화면은 이 컴퓨터 안에서만 읽어요. 측정 기록은 이 브라우저에 저장되고, 디스코드로 로그인하면 다른 기기에서도 이어져요. "사냥터 순위에 보태기"를 누른 기록만 레벨·직업·파티 인원·몬스터·사냥터·측정 시간·시간당 경험치가 이름 없이 올라가요.',
     i: {
       unsupported: '이 브라우저는 화면 공유가 안 돼요. PC 크롬이나 엣지에서 열어 주세요. 아래에서 직접 입력은 돼요.', denied: '공유가 취소됐어요. 다시 시작을 누르면 돼요.',
       watching: '읽는 중이에요. 사냥하세요!', stopped: '정지했어요. 기록은 그대로 있어요.', wait: '대기',
@@ -1851,7 +1859,7 @@ const EXP = {
     stats: { now: 'EXP now', rate: 'EXP per hour', recent: 'Last 5 minutes', pct: 'Percent per hour', next: 'Next level in', gained: 'Gained this session', time: 'Time tracked', best: 'Against your best' },
     demo: 'See an example first', demoOff: 'Close the example', demoNote: 'This is an example: 40 minutes of training. To measure your own, press start above.',
     pip: 'Pop-out mini window', spotLabel: 'Spot note', spotPh: 'e.g. Ant Tunnel 2, party of 3', alertLabel: 'Beep when EXP stops for 3 minutes',
-    log: { heading: 'Training log', help: 'Sessions over 3 minutes are kept here when you stop or start a new one. Runs on the same monster are compared with your best. Saved only in this browser.',
+    log: { heading: 'Training log', help: 'Sessions over 3 minutes are kept here when you stop or start a new one. Runs on the same monster are compared with your best. Saved in this browser; log in with Discord to keep it on your other devices too.',
       cols: ['Date', 'Time', 'EXP per hour', '% per hour', 'EXP gained', 'Monster', 'Spot note', ''], empty: 'No sessions kept yet.', del: 'Delete', excel: 'Download Excel', clear: 'Clear the log', clearAsk: 'Delete the whole training log?',
       share: 'Add to spot rankings', shared: 'Added ✓', shareNeed: 'Enter your level and class first.', shareOk: 'Thanks! Once 3 or more players share the same spot, the training finder shows the measured rate.', shareFail: 'Could not send right now. Try again shortly.' },
     me: { lv: 'Your level', job: 'Class', party: 'Party size', solo: 'Solo', people: '{n} players', help: 'Sent along when you add a run to the rankings. Remembered in this browser.' },

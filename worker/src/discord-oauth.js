@@ -6,6 +6,7 @@
 // the start route sends the visitor back with dalert=off and the page explains the /alert command instead.
 import { addAlert, sendDm, priceLabel } from './discord-alerts.js';
 import { sameSecret } from './secure.js';
+import { rememberAccount } from './account.js';
 
 const API = 'https://discord.com/api/v10';
 const SITE = 'https://gms-hub.com';
@@ -41,7 +42,26 @@ function back(ret, params) {
 }
 const redirectUri = (origin) => `${origin}/discord/oauth`;
 
+const LOGIN_LANGS = new Set(['ko', 'en', 'ja', 'zh']);
+// Site-wide login (worker/src/account.js): same consent screen and callback, the state says it is a login.
+async function loginStart(url, env) {
+  const lang = LOGIN_LANGS.has(url.searchParams.get('lang')) ? url.searchParams.get('lang') : 'en';
+  const ret = safeLoginReturn(url.searchParams.get('ret'), lang);
+  if (!env.DISCORD_CLIENT_SECRET || !env.DISCORD_APP_ID) return back(ret, { login: 'off' });
+  const state = await signState(env.DISCORD_CLIENT_SECRET, { login: 1, lang, ret });
+  const q = new URLSearchParams({ client_id: env.DISCORD_APP_ID, response_type: 'code', redirect_uri: redirectUri(url.origin), scope: 'identify guilds.join', state, prompt: 'none' });
+  return Response.redirect(`https://discord.com/oauth2/authorize?${q}`, 302);
+}
+const safeLoginReturn = (ret, lang) => (/^\/[A-Za-z0-9/_\-.?=&%]*$/.test(ret || '') && !String(ret).startsWith('//') ? ret : `/${lang}/`);
+// The session goes back in the fragment: it never reaches a server log, and the page moves it into its own storage.
+function backWithSession(ret, token) {
+  const u = new URL(ret, SITE);
+  u.hash = `gmslogin=${token}`;
+  return Response.redirect(u.toString(), 302);
+}
+
 export async function oauthStart(url, env, knownItem) {
+  if (url.searchParams.get('intent') === 'login') return loginStart(url, env);
   const lang = url.searchParams.get('lang') === 'ko' ? 'ko' : 'en';
   const ret = safeReturn(url.searchParams.get('ret'), lang);
   const item = Number(url.searchParams.get('item'));
@@ -57,6 +77,7 @@ export async function oauthStart(url, env, knownItem) {
 export async function oauthCallback(url, env, nameOf) {
   const s = env.DISCORD_CLIENT_SECRET ? await readState(env.DISCORD_CLIENT_SECRET, url.searchParams.get('state')) : null;
   if (!s) return back('/en/tools/market/', { dalert: 'expired' });
+  if (s.login) return loginCallback(url, env, s);
   const ret = safeReturn(s.ret, s.lang);
   // The user pressed Cancel on Discord's screen.
   if (!url.searchParams.get('code')) return back(ret, { dalert: 'cancel', item: s.item });
@@ -78,5 +99,24 @@ export async function oauthCallback(url, env, nameOf) {
     return back(ret, { dalert: ok ? 'ok' : 'nodm', item: s.item });
   } catch {
     return back(ret, { dalert: 'fail', item: s.item });
+  }
+}
+
+async function loginCallback(url, env, s) {
+  const ret = safeLoginReturn(s.ret, s.lang);
+  if (!url.searchParams.get('code')) return back(ret, { login: 'cancel' });
+  try {
+    const tok = await fetch(`${API}/oauth2/token`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ client_id: env.DISCORD_APP_ID, client_secret: env.DISCORD_CLIENT_SECRET, grant_type: 'authorization_code', code: url.searchParams.get('code'), redirect_uri: redirectUri(url.origin) }) });
+    if (!tok.ok) throw new Error(`token ${tok.status}`);
+    const { access_token } = await tok.json();
+    const me = await (await fetch(`${API}/users/@me`, { headers: { Authorization: `Bearer ${access_token}` } })).json();
+    if (!me?.id) throw new Error('no user');
+    // Logging in also brings them into the GMS Hub server (the consent screen says so); a failure here does not block the login.
+    if (env.DISCORD_BOT_TOKEN && env.DISCORD_GUILD_ID)
+      await fetch(`${API}/guilds/${env.DISCORD_GUILD_ID}/members/${me.id}`, { method: 'PUT', headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ access_token }) }).catch(() => null);
+    return backWithSession(ret, await rememberAccount(env, me));
+  } catch {
+    return back(ret, { login: 'fail' });
   }
 }

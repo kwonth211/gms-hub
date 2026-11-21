@@ -413,3 +413,13 @@ test('header Discord icon opens the Discord page, not the invite (owner request)
 test('the More menu links the site directory (owner request)', () => {
   for (const lang of ['ko', 'en']) assert.ok(read(`dist/${lang}/index.html`).match(/class="more-menu"[\s\S]*?href="\/[a-z]{2}\/sites\/"/), `${lang} more menu lacks /sites/`);
 });
+
+test('every page has the optional Discord login button and loads the account script (owner, 2026-11-21)', () => {
+  for (const f of ['dist/ko/index.html', 'dist/en/tools/market/index.html', 'dist/ja/index.html', 'dist/zh/index.html', 'dist/ko/quests/pia/index.html']) {
+    const html = read(f);
+    assert.match(html, /<div class="acct" data-acct hidden/, f);
+    assert.match(html, /\/assets\/account\.js\?v=/, f);
+  }
+  const ko = read('dist/ko/privacy/index.html');
+  assert.match(ko, /디스코드 로그인/);
+});

@@ -20,7 +20,8 @@ export function saveChar(c) {
   } catch (e) {}
 }
 
-// A picture of the player's own character, resized in the browser and kept in this browser only (never uploaded anywhere).
+// A picture of the player's own character, resized in the browser and kept in this browser; it is only uploaded as part of
+// the visitor's own settings copy when they log in with Discord (assets/account.js).
 const IMG_KEY = 'gms-char-img';
 export function loadCharImg() {
   try { const v = localStorage.getItem(IMG_KEY); return v && v.startsWith('data:image/') ? v : null; } catch (e) { return null; }
@@ -107,15 +108,15 @@ export function mountCharPanel(el, { routes, classes, finder, korean }) {
   if (!el) return;
   const d = el.dataset;
   const t = korean
-    ? { setH: '내 캐릭터 맞춤 홈', setP: '직업과 레벨을 한 번 저장하면 다음부터 사냥터, 경험치 퀘스트, 낄 장비와 시세, 스킬 순서를 바로 보여 줘요. 이 브라우저에만 저장돼요.', job: '직업', lv: '레벨', save: '저장',
+    ? { setH: '내 캐릭터 맞춤 홈', setP: '직업과 레벨을 한 번 저장하면 다음부터 사냥터, 경험치 퀘스트, 낄 장비와 시세, 스킬 순서를 바로 보여 줘요. 이 브라우저에 저장되고, 디스코드로 로그인하면 다른 기기에서도 이어져요.', job: '직업', lv: '레벨', save: '저장',
       mine: '내 캐릭터', up: '레벨 올리기', down: '레벨 내리기', routesH: '지금 갈 사냥터', questsH: '지금 할 수 있는 퀘스트', gearH: '지금 낄 수 있는 장비', all: '전체 보기', finder: '조건 바꿔 찾기',
       skill: (job) => `${job} 스킬 찍는 순서 보기`, none: '이 레벨에 맞는 경로가 아직 없어요.', noQuest: '공략 퀘스트는 10레벨부터 열려요.', noGear: '이 레벨에 맞는 장비가 아직 없어요.',
-      start: (lv) => `Lv. ${lv}부터`, noPrice: '시세 없음', loading: '불러오는 중…', upload: '내 캐릭터 사진 올리기', firstJob: '1차 (전직 전)', change: '사진 바꾸기', reset: '기본 캐릭터로', photoNote: '사진은 이 브라우저에만 저장돼요.', photoFail: '이 파일은 쓸 수 없어요. 다른 사진을 골라 주세요.', guide: '공략',
+      start: (lv) => `Lv. ${lv}부터`, noPrice: '시세 없음', loading: '불러오는 중…', upload: '내 캐릭터 사진 올리기', firstJob: '1차 (전직 전)', change: '사진 바꾸기', reset: '기본 캐릭터로', photoNote: '사진은 이 브라우저에 저장되고, 디스코드로 로그인하면 다른 기기에서도 이어져요.', photoFail: '이 파일은 쓸 수 없어요. 다른 사진을 골라 주세요.', guide: '공략',
       skillH: (job, n) => `${job} 스킬 찍는 순서 · ${n}차`, skillAll: '스킬트리 전체 보기', skillNow: '지금', skillBefore: '10레벨에 1차 전직하면 이 순서로 찍어요.', skillPick: '30레벨이 넘었어요. 위에서 2차 직업을 고르면 2차 스킬 순서가 나와요.', master: '마스터' }
-    : { setH: tx('Your character home'), setP: tx('Save your class and level once, and the next visit opens on training spots, EXP quests, gear with prices and the skill build for it. Stored in this browser only.'), job: tx('Class'), lv: tx('Level'), save: tx('Save'),
+    : { setH: tx('Your character home'), setP: tx('Save your class and level once, and the next visit opens on training spots, EXP quests, gear with prices and the skill build for it. Saved in this browser; log in with Discord to keep it on your other devices too.'), job: tx('Class'), lv: tx('Level'), save: tx('Save'),
       mine: tx('My character'), up: tx('Level up'), down: tx('Level down'), routesH: tx('Where to train now'), questsH: tx('Quests you can do now'), gearH: tx('Gear you can wear now'), all: tx('See all'), finder: tx('Adjust in the finder'),
       skill: (job) => tx('{job} skill build', { job }), none: tx('No route fits this level yet.'), noQuest: tx('Guided quests open from level 10.'), noGear: tx('No gear fits this level yet.'),
-      start: (lv) => tx('From level {lv}', { lv }), noPrice: tx('No price'), loading: tx('Loading…'), upload: tx('Add a picture of your character'), firstJob: tx('1st job'), change: tx('Change picture'), reset: tx('Use the default character'), photoNote: tx('The picture stays in this browser only.'), photoFail: tx('That file cannot be used. Pick another picture.'), guide: tx('Guide'),
+      start: (lv) => tx('From level {lv}', { lv }), noPrice: tx('No price'), loading: tx('Loading…'), upload: tx('Add a picture of your character'), firstJob: tx('1st job'), change: tx('Change picture'), reset: tx('Use the default character'), photoNote: tx('The picture is saved in this browser; log in with Discord to keep it on your other devices too.'), photoFail: tx('That file cannot be used. Pick another picture.'), guide: tx('Guide'),
       skillH: (job, n) => tx('{job} skill order · job {n}', { job, n }), skillAll: tx('Full skill trees'), skillNow: tx('Now'), skillBefore: tx('Take your 1st job at level 10, then spend SP in this order.'), skillPick: tx('Past level 30: pick your 2nd job above to see its skill order.'), master: tx('max') };
   const names = korean ? jobNames.ko : jobNames.en;
   const classHref = (job) => classes.find((c) => c.job === family(job))?.href;

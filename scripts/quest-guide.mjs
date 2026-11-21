@@ -113,7 +113,7 @@ ${s.videos?.length ? `<p class="gq-videos"><span>${tr('영상으로 보기', 'Wa
     if (!all.some((s) => s.kills.length || s.bring.some((b) => !b.handed))) return '';
     return `<section class="panel gq-mats" id="materials"><div class="gq-mats-head"><h2>${tr('재료·처치 총정리', 'All materials and kills')}</h2><div class="gq-tabs" role="tablist">${tabs.map((t) => `<button type="button" role="tab" class="gq-tab${t.id === first ? ' is-on' : ''}" data-tab="${t.id}" aria-selected="${t.id === first}">${esc(t.label)}</button>`).join('')}</div></div>
 ${tabs.map(table).join('')}
-<p class="muted small">${tr('시세는 이 사이트의 자유시장 매물 중간값이에요. 다 모은 재료는 오른쪽 칸에 체크해 두면 이 브라우저에 남아요.', 'Prices are this site\'s free-market listing medians. Tick what you have collected; it stays in this browser.')}</p></section>`;
+<p class="muted small">${tr('시세는 이 사이트의 자유시장 매물 중간값이에요. 다 모은 재료는 오른쪽 칸에 체크해 두면 이 브라우저에 남고, 디스코드로 로그인하면 다른 기기에서도 이어져요.', 'Prices are this site\'s free-market listing medians. Tick what you have collected; it stays in this browser, and on your other devices too if you log in with Discord.')}</p></section>`;
   })();
 
   const head = pageHead(lang, guide.icon || 'scroll', L(guide.h1), L(guide.lead));

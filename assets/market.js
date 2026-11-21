@@ -1153,7 +1153,7 @@ document.querySelector(".market-browser").addEventListener("click", (e) => {
     }
     const saved = persist(WISHLIST_KEY, [...favorites]);
     if (status) status.textContent = !saved ? tr("이 브라우저에 저장할 수 없어서 새로고침하면 사라져요.", "This browser cannot store the list; it will be lost on reload.")
-      : res.added ? tr("관심 아이템에 저장했어요. 홈의 ‘저장한 관심 아이템’에서 다시 볼 수 있어요. 이 브라우저에만 저장돼요.", "Saved. Open My saved items on the home page to check it again. Stored in this browser only.")
+      : res.added ? tr("관심 아이템에 저장했어요. 홈의 ‘저장한 관심 아이템’에서 다시 볼 수 있어요. 이 브라우저에 저장되고, 디스코드로 로그인하면 다른 기기에서도 이어져요.", "Saved. Open My saved items on the home page to check it again. Saved in this browser; log in with Discord to keep it on your other devices too.")
       : tr("관심 아이템에서 뺐어요.", "Removed from saved items.");
     track(res.added ? "wishlist_add" : "wishlist_remove", { item_id: id, page_type: "market", storage: saved ? "ok" : "unavailable" });
     if (view === "items") renderDirectory();
