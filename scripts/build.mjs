@@ -896,7 +896,7 @@ function headerSearch(lang, tabs) {
     [ko ? '스킬트리 정석 (스킬 찍는 순서)' : 'Skill builds (SP order)', href(langPath(lang, '/skills/'))],
     [ko ? '포가튼 할로우 공략' : 'Forgotten Hollow guide', href(langPath(lang, '/forgotten-hollow/'))], [ko ? '패치노트 (업데이트 기록)' : 'Patch notes', href(langPath(lang, '/updates/'))], [ko ? '잊혀진 골짜기 (포가튼 할로우)' : 'Forgotten Hollow maps, quests and boss', href(langPath(lang, '/forgotten-hollow/'))], [ko ? '썩은 머쉬맘 보스 (포가튼 할로우)' : 'Rotten Mushmom boss (Forgotten Hollow)', href(langPath(lang, '/forgotten-hollow/#boss'))],
     [ko ? '문의·협찬·후원' : 'Contact and support', href(langPath(lang, '/contact/'))]];
-  return `<button type="button" class="hs-open" data-hs data-items="${esc(href(`/assets/items.json?v=${BUILD_DATE}`))}" data-mobs="${esc(href('/assets/mobs.json'))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-monsters="${esc(href(langPath(lang, '/monsters/')))}" data-pages="${esc(JSON.stringify(pages))}" aria-label="${ko ? '검색' : 'Search'}" title="${ko ? '검색 ( / )' : 'Search ( / )'}"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="hs-label">${ko ? '검색' : 'Search'}</span><kbd class="hs-kbd" aria-hidden="true">/</kbd></button>`;
+  return `<button type="button" class="hs-open" data-hs data-items="${esc(href(`/assets/items.json?v=${BUILD_DATE}-c`))}" data-mobs="${esc(href('/assets/mobs.json'))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-monsters="${esc(href(langPath(lang, '/monsters/')))}" data-pages="${esc(JSON.stringify(pages))}" aria-label="${ko ? '검색' : 'Search'}" title="${ko ? '검색 ( / )' : 'Search ( / )'}"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="hs-label">${ko ? '검색' : 'Search'}</span><kbd class="hs-kbd" aria-hidden="true">/</kbd></button>`;
 }
 
 // Pages that are not in the header tabs (the moved tabs, guides, ranking, gear, bosses, databases, shop tools) open from one menu at the end
@@ -931,7 +931,7 @@ const SPECULATION = JSON.stringify({ prefetch: [{ where: { and: [{ href_matches:
 function megaTicker(lang) {
   const ko = lang === 'ko';
   const url = href(langPath(lang, '/megaphone/'));
-  return `<div class="mg-ticker" data-href="${url}" data-lang="${lang}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-items="${esc(href(`/assets/items.json?v=${BUILD_DATE}`))}"><a class="mg-tk-label" href="${url}">${spriteSvg('megaphone', 18)}${ko ? '실시간 고확' : 'Live megaphones'}</a><div class="mg-tk-track" aria-label="${ko ? '최근 게임 확성기' : 'Latest game megaphones'}"><div class="mg-tk-run"></div></div><template class="mg-tk-icon">${spriteSvg('megaphone', 14)}</template></div>`;
+  return `<div class="mg-ticker" data-href="${url}" data-lang="${lang}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-items="${esc(href(`/assets/items.json?v=${BUILD_DATE}-c`))}"><a class="mg-tk-label" href="${url}">${spriteSvg('megaphone', 18)}${ko ? '실시간 고확' : 'Live megaphones'}</a><div class="mg-tk-track" aria-label="${ko ? '최근 게임 확성기' : 'Latest game megaphones'}"><div class="mg-tk-run"></div></div><template class="mg-tk-icon">${spriteSvg('megaphone', 14)}</template></div>`;
 }
 
 // Live viewer count (assets/common.js fills it from the worker's presence room). Hidden until someone else is on the site,
@@ -1198,11 +1198,11 @@ function collectionStatus(lang) {
 function liveMarket(lang) {
   const t = LIVE[lang];
   return `<section class="wrap market" id="live-market" aria-labelledby="live-title"
- data-api="${esc(config.voteApi)}" data-items="${esc(href(`/assets/items.json?v=${BUILD_DATE}`))}" data-price="${esc(href(langPath(lang, '/tools/market/')))}"
+ data-api="${esc(config.voteApi)}" data-items="${esc(href(`/assets/items.json?v=${BUILD_DATE}-c`))}" data-price="${esc(href(langPath(lang, '/tools/market/')))}"
  data-text="${esc(JSON.stringify(t))}">
 <header class="market-head"><span class="live-dot" aria-hidden="true"></span><h2 id="live-title">${t.title}</h2><p>${t.sub}</p><small id="live-updated"></small><small class="live-fresh" id="live-fresh" role="status" hidden></small><a class="btn small-btn market-scan" href="${href(langPath(lang, '/tools/scan/'))}">● ${t.scan}</a><strong class="market-preview" id="market-preview" hidden>${t.preview}</strong></header>
 ${collectionStatus(lang)}
-<section class="panel mega-trends" data-mega-trends="compact" data-items="${esc(href(`/assets/items.json?v=${BUILD_DATE}`))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-megaphone="${esc(href(langPath(lang, '/megaphone/')))}" hidden aria-label="${lang === 'ko' ? '지금 뜨는 아이템' : 'Trending in megaphones'}"></section>
+<section class="panel mega-trends" data-mega-trends="compact" data-items="${esc(href(`/assets/items.json?v=${BUILD_DATE}-c`))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-megaphone="${esc(href(langPath(lang, '/megaphone/')))}" hidden aria-label="${lang === 'ko' ? '지금 뜨는 아이템' : 'Trending in megaphones'}"></section>
 <div id="live-mine" class="live-mine" hidden aria-label="${esc(t.mine)}"></div>
 <div class="market-grid">
 <div class="market-panel market-top" id="market-top">
@@ -1412,7 +1412,7 @@ ${heroScene()}
 <button type="button" id="search-clear" aria-label="${lang === 'ko' ? '검색어 지우기' : 'Clear search'}" hidden>×</button>
 <button type="submit" class="search-submit" aria-controls="search-results" aria-expanded="false">${lang === 'ko' ? '검색' : 'Search'}</button>
 </form>
-<section class="unified-search" id="search-results" aria-label="${lang === 'ko' ? '통합 검색 결과' : 'Search results'}" data-items="${esc(href(`/assets/items.json?v=${BUILD_DATE}`))}" data-mobs="${esc(href('/assets/mobs.json'))}" data-monsters="${esc(href(langPath(lang, '/monsters/')))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" hidden>
+<section class="unified-search" id="search-results" aria-label="${lang === 'ko' ? '통합 검색 결과' : 'Search results'}" data-items="${esc(href(`/assets/items.json?v=${BUILD_DATE}-c`))}" data-mobs="${esc(href('/assets/mobs.json'))}" data-monsters="${esc(href(langPath(lang, '/monsters/')))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" hidden>
 <div class="search-summary"><h2>${lang === 'ko' ? '검색 결과' : 'Search results'}</h2><span id="search-status" role="status" aria-live="polite" aria-atomic="true"></span></div>
 <div class="search-filters" role="group" aria-label="${lang === 'ko' ? '검색 결과 종류' : 'Result type'}">
 ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이템' : 'Items'], ['mob', lang === 'ko' ? '몬스터' : 'Monsters'], ['site', lang === 'ko' ? '사이트' : 'Sites'], ['tool', lang === 'ko' ? '도구·가이드' : 'Tools & guides']].map(([type, label]) => `<button type="button" data-search-type="${type}" aria-pressed="${type === 'all'}">${label} <span data-count="${type}">0</span></button>`).join('')}
@@ -1794,7 +1794,7 @@ function priceBody(lang) {
 ${t.tradingLink && guides.some((g) => g.slug === 'trading-and-mesos') ? `<p>${fill(t.tradingLink, { href: href(langPath('ko', '/guides/trading-and-mesos/')) })}</p>` : ''}
 </section>
 </div>
-${jsonScript('i18n', { lang, ...Object.fromEntries(Object.entries(t).filter(([k]) => ['none', 'more', 'level', 'copy', 'copied', 'paid', 'direct', 'copyNote', 'twin', 'cats', 'subs', 'hubLabel', 'hubNone', 'hubSummary', 'report', 'pricePh', 'submit', 'thanks', 'badPrice', 'failed', 'kinds', 'typical', 'recent', 'recentNone'].includes(k))), sites: PRICE_SITES, itemsUrl: href(`/assets/items.json?v=${BUILD_DATE}`), api: config.priceReports ? config.voteApi : '', reports: false })}`;
+${jsonScript('i18n', { lang, ...Object.fromEntries(Object.entries(t).filter(([k]) => ['none', 'more', 'level', 'copy', 'copied', 'paid', 'direct', 'copyNote', 'twin', 'cats', 'subs', 'hubLabel', 'hubNone', 'hubSummary', 'report', 'pricePh', 'submit', 'thanks', 'badPrice', 'failed', 'kinds', 'typical', 'recent', 'recentNone'].includes(k))), sites: PRICE_SITES, itemsUrl: href(`/assets/items.json?v=${BUILD_DATE}-c`), api: config.priceReports ? config.voteApi : '', reports: false })}`;
 }
 
 // ---------- shop scanner (sample collection) ----------
@@ -2068,7 +2068,7 @@ function scanBody(lang) {
 <p class="muted">${esc(t.privacy)}</p>
 </div>
 </div>
-${jsonScript('i18n', { lang, ...t.i, itemsUrl: href(`/assets/items.json?v=${BUILD_DATE}`), glyphsUrl: href('/assets/shop-glyphs.json'), api: config.voteApi })}`;
+${jsonScript('i18n', { lang, ...t.i, itemsUrl: href(`/assets/items.json?v=${BUILD_DATE}-c`), glyphsUrl: href('/assets/shop-glyphs.json'), api: config.voteApi })}`;
 }
 
 // ---------- hits-to-kill calculator ----------
@@ -2297,7 +2297,7 @@ function marketBrowser(lang, fixed, placeholder) {
 <div class="mk-foot"><div class="mk-bar"><dl class="mk-stats">${stat('open',tr('최근 판매 매물','Recent asking listings'))}${stat('shops',tr('상점','Shops'))}${stat('items',tr('아이템 · 7일','Items · 7d'))}${stat('records',tr('매물 기록 · 7일','Listing records · 7d'))}</dl><a class="btn small-btn" href="${href(langPath(lang, '/tools/scan/'))}">${t.scan}</a></div>
 ${collectionStatus(lang)}</div>
 </div>
-${jsonScript('mk-data', { ...{ lang, api: config.voteApi, itemsUrl: href(`/assets/items.json?v=${BUILD_DATE}`), t, itemBase: href(langPath(lang, '/items/')), itemLink: IT[lang].pageLink, itemPages: PRICED.map((i) => i.id), itemPaths: Object.fromEntries(PRICED.map((i) => [i.id, href(langPath(lang, itemPath(i)))])), alerts: config.alerts && config.vapidPublic ? { key: config.vapidPublic, sw: href('/sw.js') } : null }, ...(fixed ? { fixed, itemPages: [], itemPaths: {} } : {}) })}`;
+${jsonScript('mk-data', { ...{ lang, api: config.voteApi, itemsUrl: href(`/assets/items.json?v=${BUILD_DATE}-c`), t, itemBase: href(langPath(lang, '/items/')), itemLink: IT[lang].pageLink, itemPages: PRICED.map((i) => i.id), itemPaths: Object.fromEntries(PRICED.map((i) => [i.id, href(langPath(lang, itemPath(i)))])), alerts: config.alerts && config.vapidPublic ? { key: config.vapidPublic, sw: href('/sw.js') } : null }, ...(fixed ? { fixed, itemPages: [], itemPaths: {} } : {}) })}`;
 }
 function marketBody(lang) {
   const t = MK[lang], tr = (ko,en) => lang === 'ko' ? ko : en;
@@ -3591,7 +3591,7 @@ for (const lang of LANGS) {
       lang, pageKey: 'megaphone', pagePath: '/megaphone/', modules: ['megaphone.js', 'mega-trends.js'],
       title: lang === 'ko' ? '글클메 실시간 확성기: 고확·팝니다·삽니다 모아 보기 | GMS Hub' : 'MapleStory Classic World Live Megaphones: Super Megaphones, Buying & Selling | GMS Hub',
       desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드 게임 확성기를 실시간으로 모아 보여 줘요. 고확과 일반 확성기 구분, 팝니다·삽니다·채널 필터, 시세 비교, 귓말 복사까지.' : 'Live MapleStory Classic World megaphones: super and regular megaphones apart, buying and selling filters, market price comparison and a one-tap whisper command.',
-      body: megaphoneBody({ lang, itemsUrl: href(`/assets/items.json?v=${BUILD_DATE}`), marketUrl: href(langPath(lang, '/tools/market/')), snapshot: readJson('data/mega-snapshot.json'),
+      body: megaphoneBody({ lang, itemsUrl: href(`/assets/items.json?v=${BUILD_DATE}-c`), marketUrl: href(langPath(lang, '/tools/market/')), snapshot: readJson('data/mega-snapshot.json'),
         itemName: (id) => { const i = ITEMS_BY_ID.get(id); return i ? itemName(lang, i) : `#${id}`; },
         itemHref: (id) => (ITEM_PAGE_IDS.has(id) ? link(itemPath(ITEMS_BY_ID.get(id))) : href(langPath(lang, `/tools/market/?item=${id}`))) }),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '실시간 확성기' : 'Live megaphones', '/megaphone/')]

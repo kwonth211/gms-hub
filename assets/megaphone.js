@@ -124,7 +124,7 @@ function myKeys() { try { return JSON.parse(localStorage.getItem('gms-free-keys'
 function freeCard(r) {
   const it = r.item ? byId.get(r.item) : null, market = it && prices.get(it.id);
   const raw = r.price && market?.median ? Math.round(((r.price - market.median) / market.median) * 100) : null;
-  const diff = raw != null && Math.abs(raw) <= 300 ? raw : null;
+  const diff = raw != null && raw <= 300 && raw >= -75 ? raw : null; // -99% is a misread or bundled price, not a bargain
   const tag = r.intent ? `<span class="mg-intent ${r.intent}">${r.intent === 'sell' ? tr('팝니다', 'Selling') : tr('삽니다', 'Buying')}</span>` : '';
   const name = it ? `<a class="mg-item" href="${root.dataset.market}?item=${it.id}">[${esc(ko && it.ko ? it.ko : it.en)}]</a> ` : '';
   const cost = r.price ? `<b class="fm-price">${esc(mesos(r.price))}</b> ` : '';
@@ -148,7 +148,7 @@ function card(r) {
   const market = same ? (sp ? { median: sp } : null) : it && prices.get(it.id);
   // Far-off differences usually mean a scrolled or bundled item, not a cheap or pricey one, so they are not shown.
   const raw = price && market?.median ? Math.round(((price - market.median) / market.median) * 100) : null;
-  const diff = raw != null && Math.abs(raw) <= 300 ? raw : null;
+  const diff = raw != null && raw <= 300 && raw >= -75 ? raw : null; // -99% is a misread or bundled price, not a bargain
   const itemHref = it && marketSharePath({marketPath:root.dataset.market,id:it.id,opts:r.opts});
   const itemAttrs = it ? megaphoneItemAttrs(it.id, r.opts) : '';
   const text = esc(r.text).replace(/\[([^\]]+)\]/, (m, n) => (it ? `<a class="mg-item" href="${esc(itemHref)}"${itemAttrs}>[${esc(ko && it.ko ? it.ko : n)}]</a>` : m));
