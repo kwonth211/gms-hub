@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "price-alert-off",
+   "version": "0.7.52",
+   "level": "patch",
+   "date": "2026-11-21",
+   "path": "/tools/market/",
+   "ko": "가격 알림 — 켜 둔 알림은 해제·가격 바꾸기까지",
+   "en": "Price alerts — turn off or change an alert in place",
+   "desc": {
+    "ko": "디스코드로 로그인해 두면 아이템 화면에서 가격 알림이 바로 켜지고, 이미 켠 알림은 '알림 중'으로 보이며 가격을 바꾸거나 해제할 수 있어요. 겹쳐 있던 위쪽 '가격 알림' 버튼은 없앴어요.",
+    "en": "Logged in with Discord, a price alert turns on right in the item panel, and an alert you already have shows as on, with Change price and Turn off. The duplicate Price alert button at the top is gone."
+   }
+  },
+  {
    "id": "discord-login",
    "version": "0.7.51",
    "level": "minor",

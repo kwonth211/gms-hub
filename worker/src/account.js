@@ -6,8 +6,10 @@
 //   GET  /account/data      (Authorization: Bearer)     → { user, data: { key: { v, t } } }
 //   POST /account/data      { set: { key: { v, t } } }  → newer values win per key (t = when the browser changed it)
 //   DELETE /account/data                                → removes everything stored for this account
+//   GET/POST/DELETE /account/alerts                     → the same Discord price alerts as /alert, without leaving the page
 // The session is a signed token (no session table): Discord id, name and avatar, valid for 180 days.
 import { sameSecret } from './secure.js';
+import { addAlert, sendDm, priceLabel, listAlerts, removeAlert } from './discord-alerts.js';
 
 const enc = new TextEncoder();
 const SESSION_DAYS = 180;
@@ -97,4 +99,30 @@ export async function handleAccount(req, env, cors) {
     ON CONFLICT(id, k) DO UPDATE SET v = excluded.v, t = excluded.t WHERE excluded.t > account_data.t`);
   for (const [k, v, t] of rows) await up.bind(s.u, k, v, t).run();
   return reply({ ok: true, saved: rows.length }, headers);
+}
+
+// Price alerts for a logged-in visitor: the item panel lists, sets and removes them in place (no Discord round trip).
+export async function handleAccountAlerts(req, env, cors, knownItem, nameOf) {
+  const headers = { ...cors, 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS' };
+  if (req.method === 'OPTIONS') return new Response(null, { headers });
+  const s = await readSession(env.DISCORD_CLIENT_SECRET, (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, ''));
+  if (!s) return reply({ error: 'login' }, headers, 401);
+  if (req.method === 'GET') return reply({ alerts: await listAlerts(env, s.u) }, headers);
+  if (req.method === 'DELETE') {
+    const item = Number(new URL(req.url).searchParams.get('item'));
+    return reply({ ok: Number.isInteger(item) && await removeAlert(env, s.u, item) }, headers);
+  }
+  if (req.method !== 'POST') return reply({ error: 'method' }, headers, 405);
+  let b;
+  try { b = await req.json(); } catch { return reply({ error: 'bad json' }, headers, 400); }
+  const item = Number(b?.item), price = Math.round(Number(b?.price)), intent = b?.intent === 'buy' ? 'buy' : 'sell';
+  const lang = b?.lang === 'ko' ? 'ko' : 'en';
+  if (!Number.isInteger(item) || !(await knownItem(item)) || !(price >= 1 && price <= 1e10)) return reply({ error: 'bad' }, headers, 400);
+  const r = await addAlert(env, s.u, item, intent, lang, price);
+  if (r.full) return reply({ error: 'full' }, headers, 409);
+  const ko = lang === 'ko', name = nameOf(item, lang) || `#${item}`, cond = priceLabel(price, intent, ko);
+  const dm = Boolean(r.channel) && await sendDm(env, r.channel, ko
+    ? `🔔 **${name}** ${cond} 알림을 켰어요. 그 가격 이하 상점 매물이나 확성기가 뜨면 여기로 알려 드려요.\n끄기는 사이트의 아이템 화면이나 \`/알림 삭제\`예요.`
+    : `🔔 Watching **${name}** at ${cond}. When a shop or megaphone sells it at that price, you get a message here.\nStop it from the item on the site or with \`/alert remove\`.`);
+  return reply({ ok: true, dm, alerts: await listAlerts(env, s.u) }, headers);
 }

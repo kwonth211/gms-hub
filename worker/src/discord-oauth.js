@@ -96,7 +96,13 @@ export async function oauthCallback(url, env, nameOf) {
     const ok = r.channel && await sendDm(env, r.channel, ko
       ? `🔔 **${name}** ${cond} 알림을 켰어요. ${s.intent === 'buy' ? '그 가격 이상에 사겠다는 확성기' : '그 가격 이하 상점 매물이나 확성기'}가 뜨면 여기로 알려 드려요.\n알림 목록은 \`/알림 목록\`, 끄기는 \`/알림 삭제\`예요.`
       : `🔔 Watching **${name}** at ${cond}. When ${s.intent === 'buy' ? 'a buyer offers that much' : 'a shop or megaphone sells it at that price'}, you get a message here.\nSee your alerts with \`/alert list\`, stop one with \`/alert remove\`.`);
-    return back(ret, { dalert: ok ? 'ok' : 'nodm', item: s.item });
+    // Setting an alert also logs the visitor in on the site, so the item panel can show and turn off their alerts.
+    const res = back(ret, { dalert: ok ? 'ok' : 'nodm', item: s.item });
+    const token = await rememberAccount(env, me).catch(() => null);
+    if (!token) return res;
+    const u = new URL(res.headers.get('Location'));
+    u.hash = `gmslogin=${token}`;
+    return Response.redirect(u.toString(), 302);
   } catch {
     return back(ret, { dalert: 'fail', item: s.item });
   }

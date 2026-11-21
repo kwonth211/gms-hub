@@ -44,7 +44,7 @@ import { storeDailyRollups, reportRaw } from './report.js';
 import { count, flushUsage, isOver, meterDb, usageView } from './usage-guard.js';
 import { createAlert, listAlerts, deleteAlert, takeHits, checkAlerts } from './alerts.js';
 import { bodyTooLarge, sameSecret } from './secure.js';
-import { handleAccount } from './account.js';
+import { handleAccount, handleAccountAlerts } from './account.js';
 export { Presence };
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
 
@@ -503,6 +503,10 @@ const api = {
     }
     // Site-wide "Log in with Discord": the visitor's own settings, copied between their devices (see account.js).
     if (url.pathname === '/account/data') return handleAccount(req, env, cors);
+    if (url.pathname === '/account/alerts') {
+      await loadItems().catch(() => null);
+      return handleAccountAlerts(req, env, cors, async (id) => (await knownItems().catch(() => null))?.has(id), (id, lang) => (lang === 'ko' ? itemKo : itemLabels)?.get(id));
+    }
     if (url.pathname === '/discord/interactions' && req.method === 'POST') {
       return discordInteractions(req, env, { env, discord: env.DISCORD_INVITE,
         prices: (id) => api.fetch(new Request(`https://internal.invalid/prices?ids=${id}`), env, ctx).then((r) => r.json()),

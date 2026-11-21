@@ -768,7 +768,7 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
   fillMegaphones(id);
   panelWait();
   $("mk-detail").innerHTML =
-    `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(it.name)}</h2><small>${esc(it.en)}</small></div>${starButton(id, "mb-star-detail")}${D.alerts || document.body.dataset.discordUrl ? `<button type="button" class="btn ghost small-btn" data-alert-open="${id}">🔔 ${tr("가격 알림", "Price alert")}</button>` : ""}${pageLink}<button class="btn ghost small-btn" data-share-item="${id}" title="${tr("이 아이템 링크 복사", "Copy a link to this item")}">${tr("링크 복사", "Copy link")}</button><button class="btn ghost small-btn" data-close-item aria-label="${tr("상세 닫기", "Close details")}">×</button></header><p class="share-status mb-share-status" id="mb-share-status" role="status" aria-live="polite"></p><div class="mb-wait" aria-hidden="true">${SK.history()}${SK.facts()}${SK.offers()}</div><section class="mb-alert" id="mb-alert" hidden></section><section class="mb-history" id="mb-history" aria-label="${tr("가격 한눈에 보기", "Price at a glance")}" aria-busy="true">${SK.history()}</section>${stats}<section class="mb-info mb-facts" id="mb-facts">${SK.facts()}</section>${changed || reset ? visitNote(id) : ""}
+    `<header class="mk-head">${icon(id, 36)}<div><h2>${esc(it.name)}</h2><small>${esc(it.en)}</small></div>${starButton(id, "mb-star-detail")}${pageLink}<button class="btn ghost small-btn" data-share-item="${id}" title="${tr("이 아이템 링크 복사", "Copy a link to this item")}">${tr("링크 복사", "Copy link")}</button><button class="btn ghost small-btn" data-close-item aria-label="${tr("상세 닫기", "Close details")}">×</button></header><p class="share-status mb-share-status" id="mb-share-status" role="status" aria-live="polite"></p><div class="mb-wait" aria-hidden="true">${SK.history()}${SK.facts()}${SK.offers()}</div><section class="mb-alert" id="mb-alert" hidden></section><section class="mb-history" id="mb-history" aria-label="${tr("가격 한눈에 보기", "Price at a glance")}" aria-busy="true">${SK.history()}</section>${stats}<section class="mb-info mb-facts" id="mb-facts">${SK.facts()}</section>${changed || reset ? visitNote(id) : ""}
  <div class="mb-tabs" role="tablist" aria-label="${tr("아이템 상세", "Item details")}"><button data-detail-tab="listings" role="tab" aria-selected="${detailTab === "listings"}" aria-controls="mb-detail-listings">${tr("판매 매물", "Shop listings")}</button><button data-detail-tab="charts" role="tab" aria-selected="${detailTab === "charts"}" aria-controls="mb-detail-charts">${tr("가격 추이·매물대", "Trends & depth")}</button></div>
  <div id="mb-detail-listings" role="tabpanel" aria-label="${tr("판매 매물", "Shop listings")}"><p class="muted note">${T.whereNote}</p><div id="md-exact-filter" class="mb-exact-filter" hidden></div><div class="mb-detail-filters"><label id="md-opt-wrap" hidden>${tr("옵션", "Option")}<select id="md-opt"></select></label><label>${tr("정렬", "Sort")}<select id="md-sort"><option value="price">${T.sortPrice}</option><option value="recent">${T.sortRecent}</option><option value="high">${tr("높은 가격순", "Highest price")}</option></select></label><label>${tr("상태", "Status")}<select id="md-state"><option value="open">${tr("판매 중 · 24h", "Asking · 24h")}</option><option value="all">${tr("전체 기록 · 7일", "All records · 7d")}</option><option value="sold">${tr("판매 완료 표시", "Marked sold")}</option><option value="stale">${tr("24시간 경과", "Over 24h old")}</option></select></label></div><div class="price-band-filter" id="md-price-band" hidden><span></span><button class="btn ghost small-btn" data-clear-band>${tr("가격대 해제", "Clear price band")}</button></div><p id="md-count" class="muted note" role="status"></p><div id="md-rows">${SK.offers()}</div><div id="md-pages" class="mb-pagination"></div></div>
  <div id="mb-detail-charts" role="tabpanel" aria-label="${tr("가격 추이와 매물대", "Trends and depth")}"><div id="mk-charts">${SK.block(260)}</div></div>
@@ -1499,16 +1499,33 @@ async function pushSubscription(create) {
   await navigator.serviceWorker.ready;
   return (await reg.pushManager.getSubscription()) || (create ? reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64key(D.alerts.key) }) : null);
 }
-async function openAlert(id) {
+// Logged in with Discord (assets/account.js): alerts are listed, set and turned off right here, no Discord round trip.
+const acctToken = () => { try { return JSON.parse(localStorage.getItem("gms-account") || "null")?.token || ""; } catch { return ""; } };
+let myAlerts = null;
+const loadMyAlerts = (fresh) => {
+  if (!acctToken()) return Promise.resolve(null);
+  if (!myAlerts || fresh) myAlerts = fetch(`${D.api}/account/alerts`, { headers: { Authorization: `Bearer ${acctToken()}` } }).then((r) => (r.ok ? r.json() : null)).then((d) => d?.alerts || null).catch(() => null);
+  return myAlerts;
+};
+function alertOnHtml(id, a, msg) {
+  return `${msg ? `<p class="note">${msg}</p>` : ""}<div class="mb-alert-form mb-alert-on"><p><span class="mb-alert-bell" aria-hidden="true">🔔</span>${tr(`<b>${kmoney(a.price)} 이하</b>로 알림 중이에요 · 그 가격 이하 매물이 뜨면 디스코드 DM`, `<b>Alert on at ${kmoney(a.price)} or less</b> · a Discord DM when it is listed at or under`)}</p>
+<form class="mb-alert-change" data-discord-alert="${id}"><input name="price" value="${kmoney(a.price)}" aria-label="${tr("알림 가격", "Alert price")}" required><button class="btn ghost small-btn" type="submit">${tr("가격 바꾸기", "Change price")}</button><button class="btn ghost small-btn" type="button" data-acct-alert-off="${id}">${tr("알림 해제", "Turn off")}</button><span class="share-status" role="status"></span></form></div>`;
+}
+async function openAlert(id, msg = "") {
   const box = $("mb-alert");
   if (!box) return;
   box.hidden = false;
+  if (acctToken() && document.body.dataset.discordUrl) {
+    const list = await loadMyAlerts();
+    const a = list?.find((x) => x.item === id && x.price);
+    if (a) { box.innerHTML = alertOnHtml(id, a, msg); return; }
+  }
   const open = (priceData?.profile || []).map((r) => r.price).filter((p) => p > 0).sort((a, b) => a - b);
   const suggest = open.length >= 4 ? quant(open, 0.25) : open[0] || "";
   // Discord DM alerts: "Log in with Discord" on the worker saves the alert, joins the GMS Hub server and DMs a confirmation,
   // then comes back here with ?dalert= (see discordResult). Works on every phone, no browser permission.
   const invite = document.body.dataset.discordUrl;
-  const viaDiscord = invite ? `<form class="mb-alert-form" data-discord-alert="${id}"><label><span class="mb-alert-bell" aria-hidden="true">🔔</span>${tr("<b>원하는 가격에 나오면 알려 드릴게요</b> · 이 가격 이하 매물이 뜨면 디스코드 DM", "<b>Get told when it is cheap</b> · a Discord DM when it is listed at or under")} <input name="price" value="${suggest ? kmoney(suggest) : ""}" placeholder="${tr("예: 300만", "e.g. 3m")}" required></label><button class="btn small-btn" type="submit" data-discover="price_alert" data-discover-place="item-detail" data-discover-id="${id}">${tr("디스코드로 알림 받기", "Get it on Discord")}</button><small class="muted">${tr("디스코드 승인을 한 번 누르면 끝나요. 상점 매물과 확성기를 보고, 더 싼 매물이 나오면 다시 알려 드려요.", "One tap to approve on Discord. Shop listings and megaphones are watched; a cheaper one alerts you again.")}</small><span class="share-status" role="status"></span></form>` : "";
+  const viaDiscord = invite ? `${msg ? `<p class="note">${msg}</p>` : ""}<form class="mb-alert-form" data-discord-alert="${id}"><label><span class="mb-alert-bell" aria-hidden="true">🔔</span>${tr("<b>원하는 가격에 나오면 알려 드릴게요</b> · 이 가격 이하 매물이 뜨면 디스코드 DM", "<b>Get told when it is cheap</b> · a Discord DM when it is listed at or under")} <input name="price" value="${suggest ? kmoney(suggest) : ""}" placeholder="${tr("예: 300만", "e.g. 3m")}" required></label><button class="btn small-btn" type="submit" data-discover="price_alert" data-discover-place="item-detail" data-discover-id="${id}">${tr("디스코드로 알림 받기", "Get it on Discord")}</button><small class="muted">${acctToken() ? tr("디스코드로 로그인되어 있어서 바로 켜져요. 상점 매물과 확성기를 보고, 더 싼 매물이 나오면 다시 알려 드려요.", "You are logged in with Discord, so it turns on at once. Shop listings and megaphones are watched; a cheaper one alerts you again.") : tr("디스코드 승인을 한 번 누르면 끝나요. 상점 매물과 확성기를 보고, 더 싼 매물이 나오면 다시 알려 드려요.", "One tap to approve on Discord. Shop listings and megaphones are watched; a cheaper one alerts you again.")}</small><span class="share-status" role="status"></span></form>` : "";
   const supported = D.alerts && "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
   if (!supported) {
     box.innerHTML = viaDiscord || `<p class="muted note">${tr("이 브라우저는 알림을 지원하지 않아요. 아이폰은 사이트를 홈 화면에 추가한 뒤 그 앱에서 켤 수 있어요.", "This browser cannot show alerts. On iPhone, add the site to your home screen and turn alerts on from there.")}</p>`;
@@ -1522,6 +1539,16 @@ async function openAlert(id) {
   box.innerHTML = `<form class="mb-alert-form" data-alert-item="${id}"><label><span class="mb-alert-bell" aria-hidden="true">🔔</span>${tr("<b>원하는 가격에 나오면 알려 드릴게요</b> · 이 가격 이하", "<b>Get told when it is cheap</b> · at or under")} <input name="price" inputmode="numeric" value="${current?.price || suggest}" required></label><button class="btn small-btn" type="submit">${current ? tr("알림 가격 바꾸기", "Update alert") : tr("알림 켜기", "Turn on alert")}</button>${current ? `<button type="button" class="btn ghost small-btn" data-alert-off="${id}">${tr("알림 끄기", "Turn off")}</button>` : ""}<small class="muted">${tr("새 매물은 15분마다 확인해요. 한 번 울리면 6시간 동안은 다시 울리지 않아요.", "New listings are checked every 15 minutes; after an alert it rests for 6 hours.")}</small><span class="share-status" role="status"></span></form>${viaDiscord}`;
 }
 document.addEventListener("click", async (e) => {
+  const offHere = e.target.closest("[data-acct-alert-off]");
+  if (offHere) {
+    const id = Number(offHere.dataset.acctAlertOff);
+    offHere.disabled = true;
+    const r = await fetch(`${D.api}/account/alerts?item=${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${acctToken()}` } }).catch(() => null);
+    window.track?.("price_alert_off", { item_id: id, ok: !!r?.ok });
+    await loadMyAlerts(true);
+    openAlert(id, r?.ok ? tr("알림을 해제했어요.", "Alert turned off.") : tr("해제하지 못했어요. 잠시 뒤 다시 시도해 주세요.", "Could not turn it off. Please try again."));
+    return;
+  }
   const openBtn = e.target.closest("[data-alert-open]");
   if (openBtn) { openAlert(Number(openBtn.dataset.alertOpen)); window.track?.("alert_open", { item_id: Number(openBtn.dataset.alertOpen) }); return; }
   const off = e.target.closest("[data-alert-off]");
@@ -1536,6 +1563,17 @@ const amount = (t) => {
   const m = String(t).toLowerCase().replace(/[,\s]|메소/g, "").match(/^(\d+(?:\.\d+)?)(억|만|천|k|m|b)?$/);
   return m ? Math.round(+m[1] * ({ 억: 1e8, 만: 1e4, 천: 1e3, k: 1e3, m: 1e6, b: 1e9 }[m[2]] || 1)) : NaN;
 };
+async function setAlertHere(form, id, price) {
+  const st = form.querySelector(".share-status");
+  if (st) st.textContent = tr("켜는 중…", "Turning on…");
+  const r = await fetch(`${D.api}/account/alerts`, { method: "POST", headers: { Authorization: `Bearer ${acctToken()}`, "Content-Type": "application/json" }, body: JSON.stringify({ item: id, price, intent: "sell", lang: D.lang === "ko" ? "ko" : "en" }) }).catch(() => null);
+  const d = r ? await r.json().catch(() => ({})) : {};
+  if (r?.status === 401) { location.href = `${D.api}/discord/oauth/start?${new URLSearchParams({ item: id, price, intent: "sell", lang: D.lang === "ko" ? "ko" : "en", ret: location.pathname + location.search })}`; return; }
+  if (!r?.ok) { if (st) st.innerHTML = d.error === "full" ? tr("디스코드 알림은 10개까지예요. 다른 아이템 알림을 하나 해제해 주세요.", "You can have up to 10 alerts. Turn one off first.") : tr("알림을 켜지 못했어요. 잠시 뒤 다시 시도해 주세요.", "Could not turn the alert on. Please try again."); return; }
+  myAlerts = Promise.resolve(d.alerts || null);
+  window.track?.("price_alert_result", { item_id: id, channel: "discord", result: d.dm ? "ok" : "nodm", logged_in: true });
+  openAlert(id, d.dm ? tr("✅ 알림을 켰어요. 디스코드 DM을 확인해 보세요.", "✅ Alert on. Check your Discord DMs.") : tr("알림은 저장했지만 DM을 보내지 못했어요. 디스코드 설정 > 개인정보 보호에서 서버 멤버의 DM을 허용하면 그때부터 받아요.", "Saved, but the DM did not go through. Allow direct messages from server members in Discord's privacy settings."));
+}
 document.addEventListener("submit", (e) => {
   const form = e.target.closest("[data-discord-alert]");
   if (!form) return;
@@ -1545,8 +1583,9 @@ document.addEventListener("submit", (e) => {
   const back = new URL(location.href);
   back.searchParams.set("item", id);
   back.searchParams.delete("dalert");
+  window.track?.("price_alert_start", { item_id: id, channel: "discord", logged_in: !!acctToken() });
+  if (acctToken()) { setAlertHere(form, id, price); return; }
   window.track?.("discord_click", { place: "price-alert", item_id: id });
-  window.track?.("price_alert_start", { item_id: id, channel: "discord" });
   location.href = `${D.api}/discord/oauth/start?${new URLSearchParams({ item: id, price, intent: "sell", lang: D.lang === "ko" ? "ko" : "en", ret: back.pathname + back.search })}`;
 });
 // Back from Discord: ?dalert=ok|nodm|full|cancel|off|fail and the item, shown once in the item's alert box.
@@ -1571,6 +1610,8 @@ function discordResult(id) {
   }[v] || tr("알림을 켜지 못했어요. 잠시 뒤 다시 시도해 주세요.", "Could not turn the alert on. Please try again.");
   const box = $("mb-alert");
   box.hidden = false;
+  // The alert login also logged them in on the site (account.js read the session first), so show the alert with its Turn off.
+  if ((v === "ok" || v === "nodm") && acctToken()) { openAlert(id, msg); return; }
   box.innerHTML = `<p class="note">${msg}${v === "off" && invite ? ` <a href="${esc(invite)}" target="_blank" rel="noopener" data-discord="price-alert">${tr("디스코드 열기", "Open Discord")}</a>` : ""}</p>`;
 }
 document.addEventListener("submit", async (e) => {
