@@ -3738,7 +3738,18 @@ body.exp-running .exp-stop { display: inline-flex; }
 .ct-close { position: absolute; top: -8px; right: -6px; border: 0; background: none; font-size: 1.6rem; line-height: 1; color: var(--muted); cursor: pointer; padding: 6px; }
 .ct-av { object-fit: contain; image-rendering: pixelated; background: var(--veil); padding: 3px; }
 
-.ct-row.top { grid-template-columns: 34px 60px 1fr auto; padding-block: 10px; }
-.ct-row.top .ct-av { width: 60px; height: 60px; }
+.ct-row.top { grid-template-columns: 34px 64px 1fr auto; padding-block: 10px; }
+.ct-row.top .ct-av { width: 64px; height: 64px; }
+.ct-row:nth-child(1) { grid-template-columns: 34px 84px 1fr auto; }
+.ct-row:nth-child(1) .ct-av { width: 84px; height: 84px; }
 .ct-row:nth-child(1) { background: linear-gradient(90deg, rgb(245 179 1 / 0.16), var(--panel) 60%); }
 .ct-row:nth-child(1) .ct-name { font-size: 1.05rem; }
+
+/* Loading bar on every page (assets/common.js) and a generic skeleton for any empty area that is still loading. */
+.gms-loadbar { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 1000; pointer-events: none; opacity: 0; transform-origin: 0 50%; transform: scaleX(0); background: linear-gradient(90deg, var(--accent-fill, #f08a1c), #ffc35a); transition: opacity .2s; }
+.gms-loadbar.on { opacity: 1; animation: gms-load 6s cubic-bezier(.08,.6,.2,1) forwards; }
+.gms-loadbar.nav { animation-duration: 2.5s; }
+.gms-loadbar.done { animation: none; transform: scaleX(1); opacity: 0; transition: transform .2s, opacity .35s .15s; }
+@keyframes gms-load { 0% { transform: scaleX(0); } 30% { transform: scaleX(.45); } 100% { transform: scaleX(.92); } }
+[aria-busy="true"]:empty { display: block; min-height: 160px; border-radius: 12px; background: linear-gradient(90deg, var(--line) 0%, var(--panel-2) 50%, var(--line) 100%); background-size: 200% 100%; animation: skel-shine 1.4s ease-in-out infinite; -webkit-mask: repeating-linear-gradient(to bottom, #000 0 44px, transparent 44px 56px); mask: repeating-linear-gradient(to bottom, #000 0 44px, transparent 44px 56px); list-style: none; }
+@media (prefers-reduced-motion: reduce) { .gms-loadbar.on { animation: none; transform: scaleX(.6); } [aria-busy="true"]:empty { animation: none; } }

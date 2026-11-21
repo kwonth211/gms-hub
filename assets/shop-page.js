@@ -35,7 +35,7 @@ function askName(msg = '') {
 
 async function show(name) {
   const body = root.querySelector('[data-shop-body]');
-  body.innerHTML = `<p class="muted">${tr('상점을 불러오는 중…', 'Loading the shop…')}</p>`;
+  body.innerHTML = `<div aria-busy="true" aria-label="${tr('상점을 불러오는 중…', 'Loading the shop…')}"></div>`;
   let data;
   try {
     const r = await fetch(`${api}/market/listings?${new URLSearchParams({ seller: name, exact: 1, state: 'open', sort: 'price', limit: 100 })}`);

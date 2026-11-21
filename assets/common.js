@@ -480,3 +480,39 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
   const register = () => navigator.serviceWorker.register('/sw.js').catch(() => {});
   if (document.readyState === 'complete') register(); else addEventListener('load', register);
 }
+
+// A thin loading bar at the top of every page (owner, 2026-11-21: "skeletons or a loading bar are a must"). It runs while
+// the page is waiting on data the visitor asked for: requests in the first seconds after the page opens or right after a
+// click, key press or form submit, and when an internal link is opened. Background refreshes (live counts, the megaphone
+// ticker, analytics) never show it, so it does not flicker.
+(() => {
+  const bar = document.createElement('div');
+  bar.className = 'gms-loadbar'; bar.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(bar);
+  const started = performance.now();
+  let userAt = -1e9, pending = 0, timer = 0;
+  for (const ev of ['pointerdown', 'keydown', 'submit', 'change']) addEventListener(ev, () => { userAt = performance.now(); }, true);
+  const QUIET = /presence|\/megaphones(\?|$)|\/megaphones\/stats|google|clarity|cloudflareinsights|doubleclick|adfit|kakao|\/account\/data|\/alerts\/hits/;
+  const show = () => { clearTimeout(timer); bar.classList.remove('done'); timer = setTimeout(() => bar.classList.add('on'), 150); };
+  const hide = () => { clearTimeout(timer); if (!bar.classList.contains('on')) return; bar.classList.add('done'); timer = setTimeout(() => bar.classList.remove('on', 'done'), 400); };
+  const real = window.fetch;
+  window.fetch = function (input, init) {
+    const url = String(typeof input === 'string' ? input : input?.url || '');
+    const now = performance.now();
+    const counts = !QUIET.test(url) && (now - started < 8000 || now - userAt < 1500) && !(init && init.keepalive);
+    if (!counts) return real.apply(this, arguments);
+    if (pending++ === 0) show();
+    const done = () => { if (--pending <= 0) { pending = 0; hide(); } };
+    return real.apply(this, arguments).then((r) => { done(); return r; }, (e) => { done(); throw e; });
+  };
+  // Opening another page of the site: the bar starts at once and the next page takes over.
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest?.('a[href]');
+    if (!a || e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || a.target || a.hasAttribute('download')) return;
+    const u = new URL(a.href, location.href);
+    if (u.origin !== location.origin || (u.pathname === location.pathname && u.search === location.search)) return;
+    bar.classList.remove('done'); bar.classList.add('on', 'nav');
+  });
+  // Coming back with the browser's Back button restores the old page with the bar still on; clear it then only.
+  addEventListener('pageshow', (e) => { if (e.persisted) bar.classList.remove('on', 'nav', 'done'); });
+})();

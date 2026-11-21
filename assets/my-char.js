@@ -138,7 +138,7 @@ export function mountCharPanel(el, { routes, classes, finder, korean }) {
 
   // Titles, one-line summaries and rewards come in Korean and English from the quest guides, like the guide pages.
   const questsBody = (c) => {
-    if (!hub) return `<p class="muted">${esc(t.loading)}</p>`;
+    if (!hub) return `<div class="skel-wrap" aria-busy="true" aria-label="${esc(t.loading)}"><span class="skel" style="width:70%;height:12px" aria-hidden="true"></span><span class="skel" style="width:90%;height:12px" aria-hidden="true"></span><span class="skel" style="width:55%;height:12px" aria-hidden="true"></span></div>`;
     const list = pickQuests(hub.quests, c);
     if (!list.length) return `<p class="muted">${esc(t.noQuest)}</p>`;
     const L = (o) => (korean ? o.ko : o.en);
@@ -146,7 +146,7 @@ export function mountCharPanel(el, { routes, classes, finder, korean }) {
       + `<strong>${esc(L(title))}</strong><small>${esc(t.start(start))} · ${esc(L(reward))}</small><span>${esc(L(cardLine))}</span></a></li>`).join('')}</ul>`;
   };
   const gearBody = (c) => {
-    if (!hub) return `<p class="muted">${esc(t.loading)}</p>`;
+    if (!hub) return `<div class="skel-wrap" aria-busy="true" aria-label="${esc(t.loading)}"><span class="skel" style="width:70%;height:12px" aria-hidden="true"></span><span class="skel" style="width:90%;height:12px" aria-hidden="true"></span><span class="skel" style="width:55%;height:12px" aria-hidden="true"></span></div>`;
     const list = pickGear(hub.gear, c);
     if (!list.length) return `<p class="muted">${esc(t.noGear)}</p>`;
     return `<ul class="char-list char-gear">${list.map(([id, ko, en, sub, need, , , , price]) => `<li><a href="${esc(`${d.market}?item=${id}&src=char`)}" data-char-link="gear" data-item="${id}">`
@@ -157,7 +157,7 @@ export function mountCharPanel(el, { routes, classes, finder, korean }) {
   // The skill order, open by default: past steps dimmed, the step for the current level marked "now".
   const skillBody = (c) => {
     const more = `<p class="char-more-row">${moreLink(`${d.skills}#${SKILL_HASH[c.job]}`, t.skillAll, 'skills')}</p>`;
-    if (!hub) return card('skills', t.skill(names[c.job]), `<p class="muted">${esc(t.loading)}</p>`, more);
+    if (!hub) return card('skills', t.skill(names[c.job]), `<div class="skel-wrap" aria-busy="true" aria-label="${esc(t.loading)}"><span class="skel" style="width:70%;height:12px" aria-hidden="true"></span><span class="skel" style="width:90%;height:12px" aria-hidden="true"></span><span class="skel" style="width:55%;height:12px" aria-hidden="true"></span></div>`, more);
     const plan = skillPlan(hub, c);
     const nm = (id) => hub.skillNames[id] || [String(id), String(id), 0];
     const note = plan.before ? t.skillBefore : plan.needSecond ? t.skillPick : '';

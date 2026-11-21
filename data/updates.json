@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "loading-bar",
+   "version": "0.7.55",
+   "level": "patch",
+   "date": "2026-11-21",
+   "path": "/",
+   "ko": "로딩 표시 — 모든 페이지에 로딩바와 자리 표시",
+   "en": "Loading — a progress bar and placeholders on every page",
+   "desc": {
+    "ko": "데이터를 불러오는 동안 화면 맨 위에 주황색 로딩바가 지나가고, 목록과 시세 자리에는 회색 자리 표시가 먼저 보여요. '불러오는 중…' 글자만 떠 있던 곳이 없어졌어요.",
+    "en": "While data loads, an orange bar runs along the top of the page and lists and prices show grey placeholders first, instead of a plain 'Loading…'."
+   }
+  },
+  {
    "id": "mobile-scroll-jump",
    "version": "0.7.54",
    "level": "patch",

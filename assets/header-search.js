@@ -40,7 +40,7 @@ if (btn) {
   function render() {
     const q = input.value.trim();
     if (!q) { list.innerHTML = ''; hits = []; return; }
-    if (!entries) { list.innerHTML = `<li class="hs-empty">${tr('불러오는 중…', 'Loading…')}</li>`; return; }
+    if (!entries) { list.innerHTML = `<li class="hs-empty skel-wrap" aria-busy="true" aria-label="${tr('불러오는 중…', 'Loading…')}"><span class="skel" style="width:72%;height:12px" aria-hidden="true"></span><span class="skel" style="width:48%;height:12px" aria-hidden="true"></span><span class="skel" style="width:60%;height:12px" aria-hidden="true"></span></li>`; return; }
     // Pages first when they match, then a mix of items and monsters in match order.
     let found = searchEntries(entries, q);
     // "53레드바이퍼" / "slain 48": a number beside a gear name opens the market at that option value (opt=, market.js).

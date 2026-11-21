@@ -66,7 +66,7 @@ export async function contributorsData(env, me = null) {
 
 const medal = (i) => ['🥇', '🥈', '🥉'][i] || `${i + 1}.`;
 export function leaderboardEmbed(d) {
-  const line = (r, i) => `${medal(i)} **${r.game || (r.anon ? '익명 기여자' : r.name || '이름 없음')}** · 아이템 ${r.scans.toLocaleString()}개${r.gone ? ` · 판매 확인 ${r.gone}건` : ''}`;
+  const line = (r, i) => `${medal(i)} **${r.game || (r.anon ? '익명 기여자' : r.name || '이름 없음')}** · ${r.scans ? `아이템 ${r.scans.toLocaleString()}개${r.gone ? ` · 판매 확인 ${r.gone}건` : ''}` : `판매 확인 ${r.gone}건`}`;
   return {
     title: '🏆 기여자 순위 · Top contributors',
     url: 'https://gms-hub.com/ko/contributors/?utm_source=discord&utm_medium=board',

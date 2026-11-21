@@ -919,7 +919,7 @@ ${modal ? '<h2>' : '<h1>'}${ko ? '🏆 기여자 순위' : '🏆 Top contributor
 <div class="ct-actions"><a class="btn" href="${href(langPath(lang, '/tools/scan/'))}">${ko ? '📸 상점 스캔 올리기' : '📸 Upload a shop scan'}</a><a class="btn ghost" href="${href(langPath(lang, '/tools/market/?view=listings'))}">${ko ? '✅ 팔린 매물 알려 주기' : '✅ Report sold listings'}</a></div>
 <div class="ct-me" data-ct-me hidden></div>
 <div class="seg ct-tabs" role="group"><button type="button" data-ct-tab="all" aria-pressed="true">${ko ? '전체 순위' : 'All time'}</button><button type="button" data-ct-tab="week" aria-pressed="false">${ko ? '최근 7일' : 'Last 7 days'}</button></div>
-<ol class="ct-list" data-ct-list><li class="muted">${ko ? '불러오는 중…' : 'Loading…'}</li></ol>
+<ol class="ct-list" data-ct-list aria-busy="true"></ol>
 <p class="muted small" data-ct-anon></p>
 </section>`;
 }
@@ -1123,7 +1123,7 @@ function marketTodayBody(lang) {
   const movers = (R.movers || []).filter((r) => Math.abs(r.change) >= 3 && byId.has(r.item));
   const stats = R.stats || {};
   return `${pageHead(lang, 'coin', `${tr('오늘의 글클메 시세', "Today's MapleStory Classic prices")} <small class="mt-date" translate="no">${esc(dayText)}</small>`, tr('자유시장에서 지금 가장 많이 팔리는 아이템과 최근 고확에 자주 나온 아이템을 매일 정리해요. 모든 숫자는 플레이어 상점 스캔과 게임 확성기에서 모은 실제 기록이에요.', 'Every day: the most listed items in the Free Market and the items named most in recent megaphones. Every number comes from scanned player shops and in-game megaphones.'))}
-<section class="wrap lab lab-embed" data-lab="market-pulse" data-embed="1" data-lang="${lang}" data-h1="${esc(tr('지금 시세 맥박', 'Live market pulse'))}" data-lead="${esc(tr('하루 전보다 많이 오르고 내린 아이템, 최근 24시간에 많이 팔린 아이템, 방금 판매 완료된 매물이에요. 1분마다 새로 불러오고, 매물이 10건 안 되는 아이템은 오르내림에서 빼요.', 'Biggest moves against a day ago, best sellers of the last 24 hours and the listings just marked sold. Refreshed every minute; items with under 10 open listings are left out of the movers.'))}" data-api="${esc(config.voteApi)}" data-market="${market}"><h2>${tr('지금 시세 맥박', 'Live market pulse')}</h2><p class="muted">${tr('불러오는 중…', 'Loading…')}</p></section>
+<section class="wrap lab lab-embed" data-lab="market-pulse" data-embed="1" data-lang="${lang}" data-h1="${esc(tr('지금 시세 맥박', 'Live market pulse'))}" data-lead="${esc(tr('하루 전보다 많이 오르고 내린 아이템, 최근 24시간에 많이 팔린 아이템, 방금 판매 완료된 매물이에요. 1분마다 새로 불러오고, 매물이 10건 안 되는 아이템은 오르내림에서 빼요.', 'Biggest moves against a day ago, best sellers of the last 24 hours and the listings just marked sold. Refreshed every minute; items with under 10 open listings are left out of the movers.'))}" data-api="${esc(config.voteApi)}" data-market="${market}"><h2>${tr('지금 시세 맥박', 'Live market pulse')}</h2><div aria-busy="true" aria-label="${tr('불러오는 중…', 'Loading…')}"></div></section>
 <div class="wrap market-today">
 <dl class="mt-stats">${[[tr('판매 중 매물', 'Open listings'), stats.listings], [tr('아이템 종류', 'Items'), stats.items], [tr('상점', 'Shops'), stats.shops]].filter(([, v]) => v).map(([k, v]) => `<div><dt>${k}</dt><dd>${nf(v)}</dd></div>`).join('')}</dl>
 <section class="panel mt-listed"><h2>${tr('매물이 가장 많은 아이템', 'Most listed items')}</h2>
@@ -2306,7 +2306,7 @@ function marketBrowser(lang, fixed, placeholder) {
   const t = MK[lang], tr = (ko,en) => lang === 'ko' ? ko : en;
   const stat = (key,label) => `<div><dd id="mk-stat-${key}">–</dd><dt>${label}</dt></div>`;
   return `<div class="${fixed ? 'mk market-browser mb-single' : 'wrap mk market-browser'}">
-<div class="mb-status"><p id="mk-status" role="status">${t.loading}</p><button id="mk-retry" class="btn ghost small-btn" type="button">${tr('새로고침','Refresh')}</button></div>
+<div class="mb-status"><p id="mk-status" role="status" aria-label="${esc(t.loading)}"><span class="skel" style="display:inline-block;width:220px;max-width:60vw;height:12px;vertical-align:middle" aria-hidden="true"></span></p><button id="mk-retry" class="btn ghost small-btn" type="button">${tr('새로고침','Refresh')}</button></div>
 <div class="mb-tabs" role="tablist" aria-label="${tr('시장 탐색','Browse market')}"><button id="mb-tab-items" role="tab" aria-selected="true" aria-controls="mb-browser" data-view="items">${tr('아이템 시세','Item prices')}</button><button id="mb-tab-listings" role="tab" aria-selected="false" tabindex="-1" aria-controls="mb-browser" data-view="listings">${tr('전체 매물','All listings')}</button></div>
 <div class="mb-workspace" id="mb-workspace"><section class="panel mb-browser" id="mb-browser" role="tabpanel" aria-labelledby="mb-tab-items">
 <div class="mb-search"><label for="mk-q">${tr('아이템 검색','Search items')}</label><div><input type="search" id="mk-q" placeholder="${esc(t.placeholder)}" autocomplete="off"><button id="mb-clear-search" class="btn ghost small-btn" type="button">${tr('지우기','Clear')}</button></div></div>
@@ -3697,7 +3697,7 @@ for (const lang of LANGS) {
     for (const [p, view, title, desc, h1, lead] of labPages) {
       write(path.join(lang, ...p.split('/').filter(Boolean), 'index.html'), page({
         lang, pageKey: view, pagePath: p, modules: ['lab.js'], title, desc,
-        body: `<section class="wrap lab" data-lab="${view}" data-lang="${lang}" data-h1="${esc(h1)}" data-lead="${esc(lead)}" data-api="${esc(config.voteApi)}" data-data="${esc(href(`/assets/lab-data.json?v=${BUILD_DATE}`))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-mobs="${esc(href(langPath(lang, '/monsters/')))}"><h1>${esc(h1)}</h1><p class="lab-sub">${esc(lead)}</p><p class="muted">${ko ? '불러오는 중…' : 'Loading…'}</p></section>`,
+        body: `<section class="wrap lab" data-lab="${view}" data-lang="${lang}" data-h1="${esc(h1)}" data-lead="${esc(lead)}" data-api="${esc(config.voteApi)}" data-data="${esc(href(`/assets/lab-data.json?v=${BUILD_DATE}`))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-mobs="${esc(href(langPath(lang, '/monsters/')))}"><h1>${esc(h1)}</h1><p class="lab-sub">${esc(lead)}</p><div aria-busy="true" aria-label="${ko ? '불러오는 중…' : 'Loading…'}" class="lab-skel"></div></section>`,
         ld: [breadcrumbLd(lang, h1, p)]
       }));
     }

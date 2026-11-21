@@ -98,7 +98,7 @@ async function pickFamily() {
   if (!tiers[form.tier.value]) form.tier.value = Object.keys(tiers)[0];
   const ids = Object.values(tiers).filter((id) => !(id in live));
   if (ids.length && form.dataset.api) {
-    priceNote.textContent = i18n.lang === 'ko' ? '시세 불러오는 중…' : 'Loading prices…';
+    priceNote.innerHTML = '<span class="skel" style="display:inline-block;width:140px;height:12px;vertical-align:middle" aria-hidden="true"></span>';
     try {
       const r = await fetch(`${form.dataset.api}/prices?ids=${ids.join(',')}`);
       const got = r.ok ? await r.json() : {};

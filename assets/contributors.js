@@ -19,13 +19,16 @@ function board(root) {
   const mobFor = (r, i) => RANK_MOBS[i] || [pick(r.game || r.name || r.id || 'x'), '', ''];
   const avatar = (r, i) => `/assets/contrib/${mobFor(r, i)[0]}.png`; // cropped to the monster, see assets/contrib
   const mobName = (r, i) => mobFor(r, i)[ko ? 1 : 2];
+  // What they did, in plain words: items uploaded, or for someone who only reported sold listings, those reports.
+  const countLabel = (r) => r.scans ? (ko ? `아이템 ${r.scans.toLocaleString()}개` : `${r.scans.toLocaleString()} items`) : (ko ? `판매 확인 ${r.gone.toLocaleString()}건` : `${r.gone.toLocaleString()} sold reports`);
   const medal = (i) => ['🥇', '🥈', '🥉'][i] || `${i + 1}`;
   let data = null, tab = 'all';
   function render() {
     if (!data) return;
     const rows = data[tab] || [];
+    $('[data-ct-list]').setAttribute('aria-busy', 'false');
     $('[data-ct-list]').innerHTML = rows.length
-      ? rows.map((r, i) => `<li class="ct-row${i < 3 ? ' top' : ''}"><span class="ct-rank">${medal(i)}</span><img class="ct-av" src="${avatar(r, i)}" alt="${esc(mobName(r, i))}" title="${esc(mobName(r, i))}" width="44" height="44" loading="lazy"><span class="ct-name">${r.game ? esc(r.game) : r.anon ? `<span class="muted">${ko ? '익명 기여자' : 'Anonymous'}</span>` : esc(r.name || (ko ? '이름 없음' : 'No name'))}</span><span class="ct-detail">${esc(mobName(r, i))}${r.gone ? (ko ? ` · 판매 확인 ${r.gone}건` : ` · ${r.gone} sold reports`) : ''}</span><b class="ct-pts">${ko ? `아이템 ${r.scans.toLocaleString()}개` : `${r.scans.toLocaleString()} items`}</b></li>`).join('')
+      ? rows.map((r, i) => `<li class="ct-row${i < 3 ? ' top' : ''}"><span class="ct-rank">${medal(i)}</span><img class="ct-av" src="${avatar(r, i)}" alt="${esc(mobName(r, i))}" title="${esc(mobName(r, i))}" width="44" height="44" loading="lazy"><span class="ct-name">${r.game ? esc(r.game) : r.anon ? `<span class="muted">${ko ? '익명 기여자' : 'Anonymous'}</span>` : esc(r.name || (ko ? '이름 없음' : 'No name'))}</span><span class="ct-detail">${esc(mobName(r, i))}${r.gone && r.scans ? (ko ? ` · 판매 확인 ${r.gone}건` : ` · ${r.gone} sold reports`) : ''}</span><b class="ct-pts">${countLabel(r)}</b></li>`).join('')
       : `<li class="muted">${ko ? '아직 기여자가 없어요. 첫 번째로 이름을 올려 보세요!' : 'No contributors yet. Be the first!'}</li>`;
     const a = tab === 'week' ? data.anonWeek : data.anonAll;
     $('[data-ct-anon]').textContent = a?.points ? (ko ? `로그인하지 않고 올린 분은 가장 많이 올린 상점의 게임 닉네임으로 보여요.` : `Uploads made without logging in show the in-game name of the shop uploaded most.`) : '';
@@ -44,7 +47,7 @@ function board(root) {
     if (loaded) return; loaded = true;
     fetch(`${root.dataset.api}/contributors`, { headers: { ...(globalThis.gmsAuth?.() || {}) } })
       .then((r) => r.json()).then((d) => { data = d; render(); })
-      .catch(() => { loaded = false; $('[data-ct-list]').innerHTML = `<li class="muted">${ko ? '순위를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.' : 'Could not load the board. Please try again in a moment.'}</li>`; });
+      .catch(() => { loaded = false; $('[data-ct-list]').setAttribute('aria-busy', 'false'); $('[data-ct-list]').innerHTML = `<li class="muted">${ko ? '순위를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.' : 'Could not load the board. Please try again in a moment.'}</li>`; });
   };
   const dialog = root.closest('dialog');
   if (dialog) {

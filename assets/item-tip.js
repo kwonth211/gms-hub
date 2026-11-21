@@ -79,7 +79,7 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches && body.dataset.tip
     if (!q) return '';
     const s = same.get(q.key), label = `${INC[q.stat] || q.stat} ${q.value > 0 ? '+' : ''}${q.value}`;
     const head = `<h4>${tr(`같은 옵션 시세 · ${label}`, `Same option · ${label}`)}</h4>`;
-    if (s === undefined) return `<section class="tip-market">${head}<p class="tip-muted">${tr('불러오는 중…', 'Loading…')}</p></section>`;
+    if (s === undefined) return `<section class="tip-market">${head}<div class="skel-wrap" aria-busy="true"><span class="skel" style="width:80%;height:12px" aria-hidden="true"></span><span class="skel" style="width:55%;height:12px" aria-hidden="true"></span></div></section>`;
     if (!s || !(s.open || s.prices.length)) return `<section class="tip-market">${head}<p class="tip-muted">${tr('최근 30일 같은 옵션 매물이 없어요', 'No listing with this option in 30 days')}</p></section>`;
     const row = (k, v) => (v ? `<div><dt>${k}</dt><dd>${v}</dd></div>` : '');
     const main = s.open ? s.median : s.recent;
@@ -89,7 +89,7 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches && body.dataset.tip
   }
   function priceBlock(id) {
     const p = prices.get(id);
-    if (p === undefined) return `<section class="tip-market"><h4>${tr('자유시장', 'Free Market')}</h4><p class="tip-muted">${tr('시세 불러오는 중…', 'Loading prices…')}</p></section>`;
+    if (p === undefined) return `<section class="tip-market"><h4>${tr('자유시장', 'Free Market')}</h4><div class="skel-wrap" aria-busy="true"><span class="skel" style="width:70%;height:12px" aria-hidden="true"></span><span class="skel" style="width:45%;height:12px" aria-hidden="true"></span></div></section>`;
     if (!p?.median) return `<section class="tip-market"><h4>${tr('자유시장', 'Free Market')}</h4><p class="tip-muted">${tr('최근 14일 시세 기록이 없어요', 'No price seen in the last 14 days')}</p></section>`;
     const change = (v) => (v == null ? '' : `${v > 0 ? '+' : ''}${v}%`);
     // Items nobody has scanned yet carry only the reference price, its changes and the sales count.
