@@ -7,11 +7,11 @@
    "level": "minor",
    "date": "2026-11-21",
    "path": "/items/",
-   "ko": "아이템 링크 공유 카드 — 카톡·디스코드에 아이템 그림과 시세가 바로",
-   "en": "Item share cards — the item, its price and a 14-day line right in the chat",
+   "ko": "링크 공유 카드 — 아이템·몬스터·퀘스트 링크를 카톡·디스코드에 붙이면 그림과 정보가 바로",
+   "en": "Share cards — item, monster and quest links show a picture and the key facts right in the chat",
    "desc": {
-    "ko": "아이템 페이지 링크를 카카오톡이나 디스코드에 붙이면 아이템 그림, 보통 거래가, 최근 14일 시세 그래프와 오르내림, 팝니다·팔림 매물 수가 들어간 카드가 떠요. 카드는 매일 새 시세로 다시 그려져요.",
-    "en": "Paste an item page link in KakaoTalk, Discord or X and the preview shows the item, its typical trade price, a 14-day price line with the change, and how many are selling and sold. The card is redrawn with fresh prices every day."
+    "ko": "아이템 페이지 링크는 아이템 그림, 보통 거래가, 최근 14일 시세 그래프와 오르내림, 팝니다·팔림 매물 수가 들어간 카드로 떠요. 몬스터 링크는 레벨·HP·EXP·나오는 곳·드롭, 퀘스트 공략 링크는 레벨·퀘스트 수·보상을 보여 줘요. 시세 카드는 매일 새 시세로 다시 그려져요.",
+    "en": "Item links show the item, its typical trade price, a 14-day price line with the change, and how many are selling and sold. Monster links show level, HP, EXP, where it lives and its drops; quest guide links show the level range, number of quests and the reward. Price cards are redrawn with fresh prices every day."
    },
    "highlight": true
   },
