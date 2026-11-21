@@ -407,6 +407,9 @@ test('header Discord icon opens the Discord page, not the invite (owner request)
     const html = read(`dist/${lang}/index.html`);
     const a = html.match(/<a class="theme-toggle discord-link" href="([^"]+)"/);
     assert.ok(a && a[1].endsWith(`/${lang}/discord-bot/`), `${lang} header discord link: ${a && a[1]}`);
+    // every other Discord link goes straight to the server invite (owner, 2026-11-22)
+    const foot = html.match(/<a href="([^"]+)"[^>]*data-discord="footer"/);
+    assert.ok(foot && /discord\.gg\//.test(foot[1]), `${lang} footer discord link: ${foot && foot[1]}`);
   }
 });
 
