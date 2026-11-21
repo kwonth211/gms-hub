@@ -2408,11 +2408,8 @@ body.exp-running .exp-stop { display: inline-flex; }
 ::view-transition-new(ticker), ::view-transition-new(header) { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }
 
-/* Long lists are laid out only as they come into view: the home directory's categories, monster cards and megaphones.
-   The size hint keeps the scrollbar honest before a block has been laid out. */
-.cat, .faq { content-visibility: auto; contain-intrinsic-size: auto 700px; }
-.home-tools { content-visibility: auto; contain-intrinsic-size: auto 900px; }
-.monster-card, .mg-msg { content-visibility: auto; contain-intrinsic-size: auto 120px; }
+/* No content-visibility here (removed 2026-11-21): its size guesses (700/900/120px) were far from the real heights on
+   phones (the home directory is ~3,900px, not 900), so the page grew by up to 3,000px mid-scroll and the scroll jumped. */
 
 /* Discord invite links: the logo sits before the label; the header shows it as an icon button beside the theme toggle. */
 .discord-ico { flex: none; vertical-align: -0.18em; margin-right: 0.35em; }
