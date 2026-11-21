@@ -279,7 +279,8 @@ export class OptionReader {
       }
       // The screenshot is immutable. Close the live tooltip now so new text can be collected while
       // slower option OCR runs on this image. Previously the entire collector waited until OCR ended.
-      await input('move',...park);moved=false;
+      if(this.lastMode!=='foreground')await input('move',...park); // a foreground click already parked and returned
+      moved=false;
       // A panel left open hides the chat from the reader. Make sure it is gone; move once more if not.
       for(const spot of [[park[0],60],[Math.round(image.width/2),45]]) {
         const shown=await this.readFrame(Date.now(),1100);

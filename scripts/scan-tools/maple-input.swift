@@ -60,12 +60,14 @@ if (before["frontPid"] as? Int) == Int(pid) {
     }
     let src=CGEventSource(stateID:.privateState)
     let target=CGPoint(x:ox+x,y:oy+y)
-    var at=home
+    var at=home, prev=home
     let started=Date()
-    // The owner took over if the pointer is not where we put it, or they typed since we started.
+    // The owner took over if the pointer is neither where we just put it nor one step back (the reported
+    // location can lag one posted event), or they typed since we started.
     func ownerMoved() -> Bool {
         let p=CGEvent(source:nil)!.location
-        return abs(p.x-at.x)>2 || abs(p.y-at.y)>2 || min(since(.keyDown),since(.flagsChanged)) < Date().timeIntervalSince(started)
+        let near={(q:CGPoint) in abs(p.x-q.x)<=3 && abs(p.y-q.y)<=3}
+        return (!near(at) && !near(prev)) || min(since(.keyDown),since(.flagsChanged)) < Date().timeIntervalSince(started)
     }
     func send(_ type:CGEventType,_ p:CGPoint) {
         guard let e=CGEvent(mouseEventSource:src,mouseType:type,mouseCursorPosition:p,mouseButton:.left) else { return }
@@ -73,7 +75,7 @@ if (before["frontPid"] as? Int) == Int(pid) {
         e.setIntegerValueField(.mouseEventDeltaY,value:Int64((p.y-at.y).rounded()))
         if type == .leftMouseDown || type == .leftMouseUp { e.setIntegerValueField(.mouseEventClickState,value:1) }
         e.post(tap:.cghidEventTap)
-        at=p
+        prev=at; at=p
     }
     // A few small steps with movement deltas: Wine ignores a jump without them.
     func glide(_ to:CGPoint) -> Bool {
@@ -103,7 +105,11 @@ if (before["frontPid"] as? Int) == Int(pid) {
         // In front the panel fades in; report the click a little later so the grabbed frame shows it fully.
         usleep(250000)
         emit(["phase":"clicked","at":Date().timeIntervalSince1970*1000,"mode":"foreground"])
-        usleep(550000)                                    // the collector grabs the tooltip frame meanwhile
+        usleep(450000)                                    // the collector grabs the tooltip frame meanwhile
+        // Close the panel: it only closes while the pointer moves inside the game window (top-right corner).
+        if ownerMoved() { giveBack("Owner moved the mouse") }
+        guard glide(CGPoint(x:ox+width-40,y:oy+40)) else { giveBack("Owner moved the mouse") }
+        usleep(80000)
     } else {
         usleep(120000)                                    // park: the panel closes only while the pointer moves inside the game
     }
