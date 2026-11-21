@@ -252,20 +252,23 @@ export class OptionReader {
       line=relocated;link.y=Math.floor((line.top+line.bottom)/2);
       moved=true;const after=await input('click',box.x+link.x,box.y+link.y,true);if(!after)return skip('no fresh tooltip frame');
       const point={x:box.x+link.x,y:box.y+link.y};
-      const boxes=colorTooltipBoxes(after,ready,point);
-      if(!boxes.length) {
-        const dialog=whisperDialog(await this.recognize(after,item.en));
-        if(dialog){await input('click',Math.round(dialog.x+dialog.w/2),Math.round(dialog.y+dialog.h/2));return skip('chat moved; closed newly opened whisper dialog');}
-        fs.writeFileSync(path.join(this.dir,'nobox-after.png'),PNG.sync.write(after));fs.writeFileSync(path.join(this.dir,'nobox-ready.png'),PNG.sync.write(ready));fs.writeFileSync(path.join(this.dir,'nobox.json'),JSON.stringify({point,mode:this.lastMode,inputAudit}));
-        return skip('tooltip colour box not found');
-      }
       // Nick + channel must still belong to the clicked row; reject chat scroll races.
       const atPress=this.pressedFrame&&this.pressedFrame.width===ready.width?this.pressedFrame:after;
       if(!signature(ready)||signature(atPress)!==signature(ready)) {
         fs.writeFileSync(path.join(this.dir,'race-ready.png'),PNG.sync.write(ready));
         fs.writeFileSync(path.join(this.dir,'race-after.png'),PNG.sync.write(after));
         fs.writeFileSync(path.join(this.dir,'race.json'),JSON.stringify({message,item:item.en,box,line,link}));
+        // the press may have landed on a nickname instead: close a whisper window it opened
+        const dialog=whisperDialog(await this.recognize(after,item.en));
+        if(dialog)await input('click',Math.round(dialog.x+dialog.w/2),Math.round(dialog.y+dialog.h/2));
         return skip('nick/channel moved after click');
+      }
+      const boxes=colorTooltipBoxes(after,ready,point);
+      if(!boxes.length) {
+        const dialog=whisperDialog(await this.recognize(after,item.en));
+        if(dialog){await input('click',Math.round(dialog.x+dialog.w/2),Math.round(dialog.y+dialog.h/2));return skip('chat moved; closed newly opened whisper dialog');}
+        fs.writeFileSync(path.join(this.dir,'nobox-after.png'),PNG.sync.write(after));fs.writeFileSync(path.join(this.dir,'nobox-ready.png'),PNG.sync.write(ready));fs.writeFileSync(path.join(this.dir,'nobox.json'),JSON.stringify({point,mode:this.lastMode,inputAudit}));
+        return skip('tooltip colour box not found');
       }
       // The screenshot is immutable. Close the live tooltip now so new text can be collected while
       // slower option OCR runs on this image. Previously the entire collector waited until OCR ended.

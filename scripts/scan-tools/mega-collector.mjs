@@ -243,7 +243,8 @@ async function tick() {
     }
     else console.log(`options skipped ${row.nick} [${item.en}]: ${reader.lastSkip} (${Date.now()-now}ms) mode=${reader.lastMode||'?'} seen=${row.seen}`);
     job.lastReason=reader.lastSkip||(reader.lastMissing?.length?'missing '+reader.lastMissing.join(','):'');
-    if(!/input\/OCR: [45]$|cooldown|paused/.test(reader.lastSkip))job.attempts++;
+    if(!/input\/OCR: [45]$|cooldown|paused|moved after click/.test(reader.lastSkip))job.attempts++;
+    if(/moved after click/.test(reader.lastSkip))job.lastAttempt=0; // the chat scrolled under the pointer: try again at once
     if(priority(job)>0&&reader.lastSkip==='no trusted numeric options')optionJobs.delete(key);
     })().catch(e=>console.error('option task failed:',e.message)).finally(()=>{job.active=false;reader.busy=false;optionTasks.delete(task);saveState();});
     optionTasks.add(task);

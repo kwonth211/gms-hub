@@ -91,8 +91,10 @@ if (before["frontPid"] as? Int) == Int(pid) {
     }
     func giveBack(_ reason:String) -> Never { try? FileManager.default.removeItem(atPath:stateFile); emit(["error":reason,"mode":"foreground","state":snapshot()]); exit(5) }
     emit(["phase":"before","mode":"foreground","state":before,"pid":pid,"windowId":wid,"windowPoint":[x,y],"screenPoint":[target.x,target.y]])
+    // After a click the pointer is already back with the owner, which also closed the panel: a park move is not needed.
+    if args[1] != "click" { emit(["result":"foreground_no_park_needed"]); exit(0) }
     guard glide(target) else { giveBack("Owner moved the mouse") }
-    usleep(60000)
+    usleep(25000)
     if args[1]=="click" {
         guard !ownerMoved() else { giveBack("Owner moved the mouse") }
         send(.leftMouseDown,target)
@@ -103,7 +105,7 @@ if (before["frontPid"] as? Int) == Int(pid) {
         // In front the panel fades in; report the click a little later so the grabbed frame shows it fully.
         usleep(250000)
         emit(["phase":"clicked","at":Date().timeIntervalSince1970*1000,"mode":"foreground"])
-        usleep(650000)                                    // the collector grabs the tooltip frame meanwhile
+        usleep(550000)                                    // the collector grabs the tooltip frame meanwhile
     } else {
         usleep(150000)
     }
