@@ -128,3 +128,5 @@
 GA4 Explore: rows **Item ID**, **Item name**; values **Items clicked in list**; break down by **Item list name** and **Item category**. These are built-in dimensions, so custom definitions are unnecessary. Data starts at deployment; it is not backfilled and may take processing time. This measures clicks, not unique users or CTR (no impression event).
 
 Labels use the same item's 24h asking median with 5+ listings across 2+ shops. At least 10% lower = cheap; at least 10% higher = expensive. Sold/reported-missing rows, >24h observations, stale reference snapshots (>25 min), option-bearing listings and equipment are not rated. Equipment options remain visible for manual comparison. Labels do not assert a completed trade price.
+
+`my_char_set` (`action`: `add`·`change`·`remove`·`reset`, `slot`, `item_id`): 홈 내 캐릭터의 "내 장비 세트"에서 부위에 장비를 넣거나 바꾸거나 뺄 때. 세트 안 아이템을 눌러 시세로 갈 때는 기존 `my_char_click`(`kind: set`)이에요.

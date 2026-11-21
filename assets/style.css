@@ -1562,6 +1562,55 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .char-intro { grid-column: 1 / -1; display: grid; gap: 4px; }
 .char-intro p { margin: 0; max-width: 64ch; }
 .char-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 14px 0 12px; }
+/* My gear set (assets/char-set.js): the character wearing the set with the total on the left, one row per slot on the right. */
+.cset { margin-top: 14px; grid-template-rows: auto; }
+.cset-top p { margin: 2px 0 0; font-size: 0.86rem; }
+.cset-grid { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 14px; align-items: start; }
+.cset-figure { margin: 0; display: grid; gap: 8px; justify-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); position: sticky; top: calc(80px + var(--tk-h)); }
+.cset-figure img { width: 120px; height: 160px; object-fit: contain; image-rendering: pixelated; }
+.cset-figure figcaption { display: grid; gap: 2px; justify-items: center; text-align: center; }
+.cset-figure figcaption span { font-size: 0.8rem; color: var(--muted); }
+.cset-figure figcaption strong { font-size: 1.35rem; font-variant-numeric: tabular-nums; }
+.cset-figure figcaption small { font-size: 0.75rem; }
+.cset-reset { margin-top: 4px; border: 0; background: none; color: var(--muted); font-size: 0.78rem; text-decoration: underline; cursor: pointer; }
+.cset-reset:focus-visible { outline: 2px solid var(--accent-fill); outline-offset: 2px; }
+.cset-slots { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.cset-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px 10px; align-items: center; padding: 6px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.cset-row.is-open { border-color: var(--accent-fill); }
+.cset-item { display: flex; align-items: center; gap: 10px; min-width: 0; color: var(--text); text-decoration: none; }
+a.cset-item:hover strong { text-decoration: underline; }
+a.cset-item:focus-visible { outline: 2px solid var(--accent-fill); outline-offset: 2px; border-radius: 6px; }
+.cset-item img { flex: none; }
+.cset-item > span { display: grid; min-width: 0; }
+.cset-item strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.92rem; }
+.cset-item small { color: var(--muted); font-size: 0.78rem; }
+.cset-item.is-empty i { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border: 1px dashed var(--line-strong, var(--line)); border-radius: 8px; color: var(--muted); font-style: normal; font-size: 0.8rem; }
+.cset-item.is-empty strong { color: var(--text-2); font-weight: 600; }
+.cset-price { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cset-acts { display: flex; gap: 4px; grid-column: 3; }
+.cset-acts .btn { padding: 4px 10px; font-size: 0.8rem; min-height: 0; }
+.cset-pick { grid-column: 1 / -1; display: grid; gap: 6px; padding-top: 6px; border-top: 1px solid var(--line); }
+.cset-pick-head { display: flex; gap: 6px; }
+.cset-pick-head input { flex: 1; min-width: 0; }
+.cset-pick-list { list-style: none; margin: 0; padding: 0 4px 0 0; display: grid; gap: 4px; max-height: 300px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.cset-pick-list button { width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); color: var(--text); text-align: left; cursor: pointer; font: inherit; }
+.cset-pick-list button:hover { border-color: var(--accent-fill); }
+.cset-pick-list button:focus-visible { outline: 2px solid var(--accent-fill); outline-offset: 1px; }
+.cset-pick-list button.is-off { opacity: 0.6; }
+.cset-pick-list button > span { display: grid; min-width: 0; }
+.cset-pick-list strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.88rem; }
+.cset-pick-list small { color: var(--muted); font-size: 0.76rem; }
+.cset-pick-list b { font-variant-numeric: tabular-nums; font-size: 0.85rem; white-space: nowrap; }
+.cset-empty { margin: 4px 0 0; font-size: 0.86rem; }
+@media (max-width: 640px) {
+  .cset-grid { grid-template-columns: minmax(0, 1fr); }
+  .cset-figure { position: static; grid-template-columns: auto minmax(0, 1fr); justify-items: start; align-items: center; }
+  .cset-figure img { width: 84px; height: 112px; }
+  .cset-figure figcaption { justify-items: start; text-align: left; }
+  .cset-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .cset-acts { grid-column: 1 / -1; justify-content: flex-end; }
+}
+
 .char-card { display: grid; grid-template-rows: auto 1fr auto; gap: 8px; min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-2); }
 .char-card h3 { margin: 0; font-size: 0.95rem; color: var(--text-2); }
 .char-card > .muted { margin: 0; font-size: 0.9rem; }

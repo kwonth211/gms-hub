@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "char-gear-set",
+   "version": "0.7.57",
+   "level": "minor",
+   "date": "2026-11-21",
+   "path": "/#my-char",
+   "ko": "내 장비 세트 — 부위별로 장비를 입혀 보고 세트 시세를 한눈에",
+   "en": "My gear set — dress your character slot by slot and see what the set costs",
+   "desc": {
+    "ko": "홈의 내 캐릭터에서 무기·모자·상의·하의·신발·장갑·망토·귀고리·방패를 하나씩 넣고 바꾸고 뺄 수 있어요. 입은 모습이 바로 그려지고, 부위마다 지금 시세와 세트 합계가 같이 나와요. 한벌옷을 입으면 하의가, 두손무기를 들면 방패가 저절로 빠져요.",
+    "en": "On the home page character panel, add, swap or remove a weapon, hat, top, bottom, shoes, gloves, cape, earrings and shield. Your character is drawn wearing them, with each piece's live price and the set total. An overall replaces the bottom and a two-handed weapon replaces the shield."
+   }
+  },
+  {
    "id": "scan-moving-screen",
    "version": "0.7.56",
    "level": "patch",

@@ -2,6 +2,7 @@
 // right now. Nothing leaves the browser; a level-up is one tap.
 import { selectRoutes, jobNames } from './training-evidence.js';
 import { POOLS, timeline } from './skill-tree.js';
+import { makeSet } from './char-set.js';
 
 const KEY = 'gms-char';
 const tx = globalThis.tx || ((s) => s);
@@ -126,6 +127,8 @@ export function mountCharPanel(el, { routes, classes, finder, korean }) {
     : (n >= 1e9 ? `${+(n / 1e9).toFixed(2)}b` : n >= 1e6 ? `${+(n / 1e6).toFixed(2)}m` : n >= 1e3 ? `${+(n / 1e3).toFixed(1)}k` : String(n)));
   // Gear and quest lists load once a character is saved; until then the cards say "loading".
   let hub = null, hubLoad = null;
+  // The gear set card (assets/char-set.js) sits on top of the cards once the gear list has loaded.
+  const cset = makeSet({ korean, market: d.market, api: document.body.dataset.priceApi, track, esc, mesos });
   const loadHub = () => (hubLoad ||= fetch(d.hub).then((r) => (r.ok ? r.json() : null)).catch(() => null));
 
   const form = (c) => `<div class="char-new">${avatar(null, false)}<form class="char-form"><div class="char-intro"><h2>${esc(t.setH)}</h2><p class="muted">${esc(t.setP)}</p></div>
@@ -202,7 +205,7 @@ ${jobPicker(c)}
     const routesBody = rows.length
       ? `<ul class="char-list">${rows.map((r) => `<li><a href="${esc(r.href)}" data-route="${esc(r.id)}" data-char-link="route"><strong>${esc(r.title)}</strong><small>Lv. ${r.level.min}–${r.level.max}</small><span>${esc(r.monsters)}</span></a></li>`).join('')}</ul>`
       : `<p class="muted">${esc(t.none)}</p>`;
-    return `<div class="char-grid">
+    return `${hub?.gear?.length ? cset.html(c, BIT[family(c.job)]) : ''}<div class="char-grid">
 ${card('routes', t.routesH, routesBody, `<p class="char-more-row">${moreLink(`${finder}?lv=${c.lv}&job=${c.job}`, t.finder, 'finder')}${cls ? moreLink(cls, t.all, 'class') : ''}</p>`, rows.length)}
 ${card('quests', t.questsH, questsBody(c), `<p class="char-more-row">${moreLink(d.quests, t.all, 'quests')}</p>`, hub ? pickQuests(hub.quests, c).length : 0)}
 ${card('gear', t.gearH, gearBody(c), `<p class="char-more-row">${moreLink(d.equip, t.all, 'equipment')}</p>`, hub ? pickGear(hub.gear, c).length : 0)}
@@ -213,7 +216,9 @@ ${skillBody(c)}`;
     const c = loadChar(), box = el.querySelector('.char-body');
     if (!c || !box) return;
     try {
+      if (hub?.gear) cset.setGear(hub.gear);
       box.innerHTML = body(c);
+      cset.refreshLive(refresh);
     } catch (err) {
       // Old saved data (an older char-hub.json from the cache) should never leave the cards loading forever.
       hub = { gear: [], quests: [], skills: {}, skillNames: {} };
@@ -311,6 +316,7 @@ ${skillBody(c)}`;
     if (a.dataset.route) track('my_char_route_click', { route_id: a.dataset.route });
     track('my_char_click', { kind: a.dataset.charLink, item_id: a.dataset.item ? Number(a.dataset.item) : undefined, ui_value: a.dataset.quest, job: c?.job, level: c?.lv });
   });
+  cset.bind(el, loadChar, (c) => BIT[family(c.job)]);
   document.addEventListener('click', (e) => { if (!e.target.closest('[data-jobpick]')) closeJobs(false); });
   el.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeJobs(true);
