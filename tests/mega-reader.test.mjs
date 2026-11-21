@@ -119,6 +119,13 @@ test('repeat detection preserves separate sellers and separate items while ignor
  assert.equal(seen({...row,text:'[Meba] S> PMO'},104),false);
 });
 
+test('a near-identical resend from the same seller within 2 minutes is kept once',()=>{
+ const seen=repeatFilter(),row={nick:'DarkLife',channel:19,text:'[Steel Slain] S> 47 at slain 16.2m l 14 luk napoleon 14.5m',fingerprint:'a'};
+ assert.equal(seen(row,0),false);
+ assert.equal(seen({...row,text:'[Steel Slain] S> 47 at slain 16.2m 14 luk napoleon 14.5m',fingerprint:'b'},8000),true);
+ assert.equal(seen({...row,text:'[Steel Slain] S> 46 at slain 15m',fingerprint:'c'},9000),false);
+});
+
 test('band colours: gold, dithered pink and teal are megaphones; the dark chat background is not', () => {
   assert.equal(bandClass(216, 168, 40), 'Y');
   assert.equal(bandClass(200, 152, 168), 'P');

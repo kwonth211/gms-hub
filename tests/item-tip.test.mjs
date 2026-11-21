@@ -56,7 +56,7 @@ test('uncaptured megaphone never substitutes base stats or base slots', async ()
 test('captured options show actual totals and zero slots without filling missing stats', async () => {
     const html = await fixture().hover(link(megaphoneItemAttrs(id, captured)));
     assert.match(html, /이 고확에서 확인한 옵션/);
-    assert.match(html, /인 <b>\+21<\/b>/);
+    assert.match(html, /인 <b class="tip-plus">\+21<\/b> <span class="tip-split">\(8 <em class="tip-plus">\+13<\/em>\)/);
     assert.match(html, /업그레이드 가능 횟수 <b>0<\/b>/);
     assert.doesNotMatch(html, /<b>\+8<\/b>|<b>\+65<\/b>/);
 });

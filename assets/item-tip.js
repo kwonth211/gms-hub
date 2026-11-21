@@ -102,7 +102,7 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
       // As in the game: total, then (base +extra) with the extra over the item's base value in orange.
       const b = known ? base[k] ?? 0 : null, x = b == null ? 0 : v - b;
       const split = x ? ` <span class="tip-split">(${b} <em class="${x > 0 ? 'tip-plus' : 'tip-down'}">${x > 0 ? '+' : ''}${x}</em>)</span>` : '';
-      return `<li class="tip-opt"><span>${INC[k] || k} <b class="${x > 0 ? 'tip-plus' : ''}">${v > 0 ? '+' : ''}${v}</b>${split}</span>${note}</li>`;
+      return `<li class="tip-opt"><span>${INC[k] || k} <b${x > 0 ? ' class="tip-plus"' : ''}>${v > 0 ? '+' : ''}${v}</b>${split}</span>${note}</li>`;
     }).join('');
     const out = [`<ul class="tip-stats tip-opts">${rows}</ul>`];
     if (o.slots != null) out.push(`<p>${tr('업그레이드 가능 횟수', 'Upgrade slots')} <b>${o.slots}</b>${total != null ? ` / ${total}` : ''}</p>`);

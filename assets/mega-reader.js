@@ -390,6 +390,13 @@ export function similar(a, b) {
   for (const g of A) if (B.has(g)) both++;
   return both / Math.min(A.size, B.size) > 0.7;
 }
+// At most two characters apart (OCR noise such as a stray "l"), unlike similar(), which also joins real edits.
+function nearlySame(a,b) {
+  if(Math.abs(a.length-b.length)>2)return false;
+  let prev=Array.from({length:b.length+1},(_,j)=>j);
+  for(let i=1;i<=a.length;i++){const cur=[i];let low=i;for(let j=1;j<=b.length;j++){cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));low=Math.min(low,cur[j]);}if(low>2)return false;prev=cur;}
+  return prev[b.length]<=2;
+}
 export function repeatFilter(windowMs = 15 * 60000) {
   const recent = [];
   return (m, now = Date.now()) => {
@@ -398,7 +405,9 @@ export function repeatFilter(windowMs = 15 * 60000) {
     const item=shape(/\[([^\]]+)\]/.exec(m.text)?.[1]||'');
     const nick=s=>s.toLowerCase().replace(/l/g,'i');
     if (recent.some((r) => r.channel===m.channel&&nick(r.nick)===nick(m.nick)&&r.item===item&&
-      (r.fingerprint&&m.fingerprint?r.fingerprint===m.fingerprint:similar(r.key,key)))) return true;
+      // Same pixels = same line. Different pixels but the same seller re-sending near-identical text within
+      // 2 minutes is shown once too: the site list should not carry the same offer twice.
+      (r.fingerprint&&m.fingerprint&&r.fingerprint===m.fingerprint||(r.fingerprint&&m.fingerprint?now-r.at<120000&&nearlySame(r.key,key):similar(r.key,key))))) return true;
     recent.push({ nick: m.nick, channel: m.channel, key, item, fingerprint:m.fingerprint, at: now });
     return false;
   };
