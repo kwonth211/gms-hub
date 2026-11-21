@@ -665,6 +665,18 @@ const SHARE_PAGE_ALT = { market: ['실시간 자유시장 시세', 'Live Free Ma
 function shareImageTags(lang, pagePath) {
   // Item pages (2026-11-21): a live card drawn by the worker (worker/src/og-card.js) with the item's icon, price, 14-day
   // line and listing counts. The build date in the query makes chat apps that keep previews for days fetch a new card daily.
+  const mob = pagePath && pagePath.match(/^\/monsters\/(\d+)\/$/), guide = pagePath && pagePath.match(/^\/quests\/([a-z][a-z0-9-]+)\/$/);
+  const live = (mob && `monster/${mob[1]}`) || (guide && !['best-meso', 'best-exp'].includes(guide[1]) && `quest/${guide[1]}`);
+  if (live && (lang === 'ko' || lang === 'en')) {
+    const url = `https://gms-hub.com/og/${live}-${lang}.png?d=${BUILD_DATE}`, alt = mob ? (lang === 'ko' ? '몬스터 정보 카드 — 레벨, 체력, 출현 위치, 드롭' : 'Monster card — level, HP, where it lives, drops') : (lang === 'ko' ? '퀘스트 공략 카드 — 레벨, 보상, 퀘스트 수' : 'Quest guide card — level, reward, number of quests');
+    return `<meta property="og:image" content="${url}">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="${esc(alt)}">
+<meta name="twitter:image" content="${url}">
+<meta name="twitter:image:alt" content="${esc(alt)}">`;
+  }
   const item = pagePath && pagePath.match(/^\/items\/(\d{7})-/);
   if (item && (lang === 'ko' || lang === 'en')) {
     const url = `https://gms-hub.com/og/item/${item[1]}-${lang}.png?d=${BUILD_DATE}`, alt = lang === 'ko' ? '아이템 시세 카드 — 현재 가격, 최근 14일 시세, 매물 수' : 'Item price card — current price, 14-day trend, listings';
@@ -2193,7 +2205,7 @@ ${jsonScript('dm-data', { lang, t: { ...t.i, hits: t.hits, never: t.never, lines
 // and where to buy it now; next to the live top 10 and the scrolling feed of scanned listings.
 const MK = {
   ko: {
-    title: '글클메 시세: 실시간 자유시장 상점 가격·추이·지금 파는 곳 | GMS Hub',
+    title: '글클메 자유시장 시세: 실시간 상점 가격·추이·지금 파는 곳 | GMS Hub',
     desc: '글로벌 메이플스토리 클래식 월드 자유시장 실시간 시세. 유저들이 스캔한 상점 매물로 판매 중·판매 완료 중앙값, 7일 가격 추이, 최근 확인한 매물의 채널·방을 보여 줘요.',
     h1: '실시간 시세',
     lead: '유저들이 스캔한 자유시장 상점을 모아 아이템별 시세를 보여 줘요. 아이템을 검색해 보세요.',
@@ -4072,6 +4084,19 @@ write('assets/shop-glyphs.json', fs.readFileSync(path.join(root, 'data/shop-glyp
     equips: F.equips.map((x) => { const i = BY.get(x.id); return [x.id, i?.ko || x.ko || '', i?.en || x.en, x.cat, x.lv, x.slots, x.inc, OK.has(x.id) ? 1 : 0, price(x.id), [x.req.STR, x.req.DEX, x.req.INT, x.req.LUK]]; })
   }));
 }
+// Data for the live share cards of monster pages and quest guides (worker/src/og-card.js reads it, cached).
+write('assets/og-cards.json', JSON.stringify({
+  monsters: Object.fromEntries(MONSTERS.monsters.filter((m) => m.status !== 'upcoming').map((m) => [m.id, {
+    ko: m.ko || m.en, en: m.en, lv: +m.lv || 0, hp: +m.hp || 0, exp: +m.exp || 0, boss: String(m.boss) === 'True' || m.boss === true,
+    map: m.locations?.[0] ? { ko: m.locations[0].ko || m.locations[0].en, en: m.locations[0].en } : null, maps: (m.locations || []).length,
+    drops: (m.drops || []).filter((d) => d.cat !== 'Quest').slice(0, 4).map((d) => d.itemId), nDrops: (m.drops || []).length,
+    gif: fs.existsSync(path.join(root, 'assets', 'monsters', `${m.id}.gif`)),
+  }])),
+  guides: Object.fromEntries(QUEST_GUIDES.map(({ guide, data }) => [guide.slug, {
+    title: guide.title, level: guide.level, reward: guide.reward || null, rewardItem: guide.rewardItem ? +guide.rewardItem : null,
+    npc: +(Object.keys(guide.npcs || {})[0] || 0) || null, quests: data.chains.reduce((n, c) => n + c.steps.length, 0),
+  }])),
+}));
 write('assets/mobs.json', JSON.stringify(MOBS.map((m) => [m.id, m.ko || '', m.en, m.lv, m.hp, m.wdef, m.mdef, m.eva, m.el || '', m.undead ? 1 : 0, m.boss ? 1 : 0, m.mp, m.aka.join(' '), m.status || ''])));
 write('assets/weapons.json', JSON.stringify(readJson('data/weapons.json').weapons.map((w) => [w.id, w.ko || '', w.en, w.type, w.lv, w.watk || 0, w.matk || 0])));
 // The 7th column is the market median at build time (0 when none), so every search shows a price the moment it renders;

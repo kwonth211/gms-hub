@@ -356,6 +356,46 @@ async function itemCard(req, env, ctx) {
   }
 }
 
+// Monster and quest-guide share cards: /og/monster/<id>-<lang>.png, /og/quest/<slug>-<lang>.png. The facts come from
+// assets/og-cards.json, which the site build writes; no database reads.
+async function pageCard(req, ctx) {
+  const m = new URL(req.url).pathname.match(/^\/og\/(monster|quest)\/([a-z0-9-]+?)-(ko|en)\.png$/);
+  if (!m) return new Response('not found', { status: 404 });
+  const key = new Request(`${req.url}${req.url.includes('?') ? '&' : '?'}design=3`), cache = caches.default, hit = await cache.match(key);
+  if (hit) return hit;
+  const [, kind, id, lang] = m, ko = lang === 'ko';
+  const data = await fetch('https://gms-hub.com/assets/og-cards.json', { cf: { cacheTtl: 3600, cacheEverything: true } }).then((r) => r.json()).catch(() => null);
+  const nf = (n) => Number(n).toLocaleString('en-US');
+  let card = null;
+  const og = await import('./og-card.js');
+  if (kind === 'monster' && data?.monsters?.[id]) {
+    const x = data.monsters[id];
+    card = { ko, tag: ko ? '몬스터 도감' : 'Monster', name: ko ? x.ko : x.en, en: ko ? x.en : null, main: `Lv. ${x.lv}`,
+      label: `HP ${nf(x.hp)} · EXP ${nf(x.exp)}${x.boss ? (ko ? ' · 보스' : ' · Boss') : ''}`, mapName: x.map ? (ko ? x.map.ko : x.map.en) : null,
+      picUrls: x.drops.map((d) => `https://maplestory.io/api/MCW/1/item/${d}/icon`),
+      counts: ko ? `출현 맵 ${x.maps}곳 · 드롭 ${x.nDrops}종` : `${x.maps} maps · ${x.nDrops} drops`,
+      iconUrl: x.gif ? `https://gms-hub.com/assets/monsters/${id}.gif` : `https://maplestory.io/api/MCW/1/mob/${id}/render/stand` };
+    card.extra = og.monsterExtra(card);
+  } else if (kind === 'quest' && data?.guides?.[id]) {
+    const x = data.guides[id];
+    card = { ko, tag: ko ? '퀘스트 공략' : 'Quest guide', name: x.title?.[lang] || id, en: ko ? x.title?.en : null, main: x.level?.[lang] || '',
+      label: ko ? `퀘스트 ${x.quests}개 · NPC 위치·사냥터·재료까지` : `${x.quests} quests · NPCs, hunting spots and items`, reward: x.reward?.[lang] || null,
+      picUrls: x.rewardItem ? [`https://maplestory.io/api/MCW/1/item/${x.rewardItem}/icon`] : [],
+      counts: ko ? '단계별 공략 · 진행 체크' : 'Step-by-step walkthrough with progress',
+      iconUrl: x.npc ? `https://maplestory.io/api/MCW/1/npc/${x.npc}/render/stand` : null };
+    card.extra = og.questExtra(card);
+  }
+  if (!card) return Response.redirect(`https://gms-hub.com/assets/og-${ko ? 'ko' : 'en'}.png`, 302);
+  try {
+    const png = await og.renderCard(card);
+    const res = new Response(png, { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=21600', 'Access-Control-Allow-Origin': '*' } });
+    ctx.waitUntil(cache.put(key, res.clone()));
+    return res;
+  } catch (e) {
+    return Response.redirect(`https://gms-hub.com/assets/og-${ko ? 'ko' : 'en'}.png`, 302);
+  }
+}
+
 async function cachedPrices(env, ids, origin, ctx) {
   const cache = globalThis.caches?.default;
   if (!cache) return pricesFor(env, ids);
@@ -413,6 +453,7 @@ const api = {
     // gms-hub.com/s/<name>: short shop link with a link preview (src/shop-preview.js, worker route on the site's zone).
     if (new URL(req.url).pathname.startsWith('/s/')) return handleShopLink(req, env, ctx, await itemLabel());
     if (new URL(req.url).pathname.startsWith('/og/item/')) return itemCard(req, env, ctx);
+    if (/^\/og\/(monster|quest)\//.test(new URL(req.url).pathname)) return pageCard(req, ctx);
     const url = new URL(req.url);
     const origin = req.headers.get('Origin') || '';
     const cors = corsHeaders(origin);

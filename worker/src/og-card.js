@@ -57,8 +57,12 @@ export function cardSvg(c) {
     ? { tag: '자유시장 시세', site: '글로벌 메이플스토리 클래식 월드', trend: '최근 14일', none: '아직 거래 기록이 적어요' }
     : { tag: 'Free Market price', site: 'Global MapleStory Classic World', trend: 'Last 14 days', none: 'Not enough trades yet' };
   const hasEn = c.en && c.en !== c.name;
-  const nameSize = c.name.length > 16 ? 44 : c.name.length > 10 ? 54 : 64;
-  const priceText = c.price ? `${money(c.price, c.ko)}${c.ko ? ' 메소' : ' mesos'}` : '—';
+  // Font size from the name's rough width (Hangul about 1 em, Latin about 0.56), so long names stay inside the panel.
+  const units = [...c.name].reduce((n, ch) => n + (/[\u1100-\u11ff\u3130-\u318f\uac00-\ud7af\u4e00-\u9fff]/.test(ch) ? 1 : 0.56), 0);
+  const nameSize = Math.max(32, Math.min(64, Math.floor(636 / Math.max(units, 1))));
+  if (units * nameSize > 660) c.name = c.name.slice(0, Math.floor(660 / nameSize / 0.56) - 1) + '…';
+  const tag = c.tag || t.tag, tagW = 40 + tag.length * (c.ko ? 19 : 11.5);
+  const priceText = c.main || (c.price ? `${money(c.price, c.ko)}${c.ko ? ' 메소' : ' mesos'}` : '—');
   const priceSize = priceText.length > 12 ? 70 : 84;
   const nameY = 200 + nameSize, enY = nameY + 40, priceY = (hasEn ? enY : nameY) + 18 + priceSize, labelY = priceY + 36;
   const chips = [c.req ? `Lv.${c.req}` : null, c.stat].filter(Boolean);
@@ -76,13 +80,13 @@ ${c.bg ? `<image href="${c.bg}" x="0" y="0" width="${W}" height="${H}"/>` : `<re
 ${c.logo ? `<image href="${c.logo}" x="82" y="84" width="48" height="48" image-rendering="optimizeSpeed"/>` : ''}
 <text x="${c.logo ? 142 : 84}" y="121" font-size="31" font-weight="900" fill="#302a2b">GMS Hub</text>
 <text x="728" y="119" font-size="17" font-weight="700" fill="#92613f" text-anchor="end">${esc(t.site)}</text>
-<rect x="84" y="150" width="${c.ko ? 150 : 222}" height="38" rx="19" fill="#ffe7c2"/>
-<text x="${84 + (c.ko ? 75 : 111)}" y="176" font-size="21" font-weight="900" fill="#c2410c" text-anchor="middle">${esc(t.tag)}</text>
+<rect x="84" y="150" width="${tagW}" height="38" rx="19" fill="#ffe7c2"/>
+<text x="${84 + tagW / 2}" y="176" font-size="21" font-weight="900" fill="#c2410c" text-anchor="middle">${esc(tag)}</text>
 <text x="82" y="${nameY}" font-size="${nameSize}" font-weight="900" fill="#302a2b">${esc(c.name)}</text>
 ${hasEn ? `<text x="84" y="${enY}" font-size="24" font-weight="700" fill="#92613f">${esc(c.en)}</text>` : ''}
 <text x="80" y="${priceY}" font-size="${priceSize}" font-weight="900" fill="#ff6a00">${esc(priceText)}</text>
-<text x="84" y="${labelY}" font-size="21" font-weight="700" fill="#89603e">${esc(c.priceLabel || '')}</text>
-${c.daily.length >= 3 ? `<text x="728" y="${labelY}" font-size="20" font-weight="700" fill="#89603e" text-anchor="end">${esc(t.trend)}${trendPct(c.daily, c.ko)}</text>${spark(c.daily, 476, labelY + 12, 252, Math.max(40, 506 - labelY - 12))}` : `<text x="728" y="${labelY}" font-size="20" font-weight="700" fill="#b08a5a" text-anchor="end">${esc(t.none)}</text>`}
+<text x="84" y="${labelY}" font-size="21" font-weight="700" fill="#89603e">${esc(c.label ?? c.priceLabel ?? '')}</text>
+${c.extra ? c.extra(labelY) : (c.daily || []).length >= 3 ? `<text x="728" y="${labelY}" font-size="20" font-weight="700" fill="#89603e" text-anchor="end">${esc(t.trend)}${trendPct(c.daily, c.ko)}</text>${spark(c.daily, 476, labelY + 12, 252, Math.max(40, 506 - labelY - 12))}` : `<text x="728" y="${labelY}" font-size="20" font-weight="700" fill="#b08a5a" text-anchor="end">${esc(t.none)}</text>`}
 <line x1="84" y1="520" x2="728" y2="520" stroke="#dcc7ae" stroke-width="2"/>
 <circle cx="90" cy="547" r="5" fill="#be8545"/>
 <text x="104" y="554" font-size="20" font-weight="700" fill="#89603e">${esc(c.counts)}</text>
@@ -95,9 +99,31 @@ ${chipSvg}
 export async function renderCard(c) {
   await init();
   [c.icon, c.bg, c.logo] = await Promise.all([c.iconUrl && dataUri(c.iconUrl), dataUri('https://gms-hub.com/assets/og-item-bg.png'), dataUri('https://gms-hub.com/assets/og-mushroom.png')].map((p) => Promise.resolve(p).catch(() => null)));
+  const pics = await Promise.all((c.picUrls || []).map((u) => dataUri(u).catch(() => null)));
+  c.pics = pics;
   const svg = cardSvg(c);
-  const text = [...new Set(svg.replace(/<[^>]+>/g, ' ').replace(/data:[^"]+/g, '').replace(/&[a-z]+;/g, ' ') + '0123456789,.+—·-')].join('');
+  const text = [...new Set(svg.replace(/<[^>]+>/g, ' ').replace(/data:[^"]+/g, '').replace(/&#?[a-z0-9]+;/g, ' ') + '0123456789,.+—·-\'"&<>')].join('');
   const [bold, black] = await Promise.all([fontFor(text, 700), fontFor(text, 900)]);
   const png = new Resvg(svg, { fitTo: { mode: 'width', value: W }, font: { fontBuffers: [bold, black], defaultFontFamily: 'Noto Sans KR', loadSystemFonts: false } }).render().asPng();
   return png;
+}
+
+// Monster and quest-guide cards share the frame; only the middle of the panel differs. Small pictures (drops, reward)
+// come in c.picUrls and are embedded as c.pics in the same order.
+const tile = (uri, x, y, size) => (uri ? `<rect x="${x}" y="${y}" width="${size}" height="${size}" rx="12" fill="#ffffff" stroke="#efd2a5" stroke-width="2"/><image href="${uri}" x="${x + 6}" y="${y + 6}" width="${size - 12}" height="${size - 12}" image-rendering="optimizeSpeed" preserveAspectRatio="xMidYMid meet"/>` : '');
+export function monsterExtra(c) {
+  return (labelY) => {
+    // The level is short, so the drops sit to its right; where it lives goes under the HP line.
+    const map = c.mapName ? `<text x="84" y="${labelY + 42}" font-size="22" font-weight="700" fill="#5b3a1f">${esc(c.ko ? '주로 나오는 곳 · ' : 'Found in · ')}${esc(c.mapName)}</text>` : '';
+    const drops = (c.pics || []).filter(Boolean), top = labelY - 112;
+    const icons = drops.length ? `<text x="728" y="${top - 10}" font-size="19" font-weight="700" fill="#89603e" text-anchor="end">${c.ko ? '드롭' : 'Drops'}</text>${drops.map((u, i) => tile(u, 728 - (drops.length - i) * 64 + 6, top, 58)).join('')}` : '';
+    return map + icons;
+  };
+}
+export function questExtra(c) {
+  return (labelY) => {
+    const y = labelY + 24, pic = (c.pics || [])[0];
+    const reward = c.reward ? `${tile(pic, 84, y, 66)}<text x="${pic ? 166 : 84}" y="${y + 28}" font-size="19" font-weight="700" fill="#89603e">${c.ko ? '보상' : 'Reward'}</text><text x="${pic ? 166 : 84}" y="${y + 58}" font-size="24" font-weight="900" fill="#5b3a1f">${esc(c.reward)}</text>` : '';
+    return reward;
+  };
 }
