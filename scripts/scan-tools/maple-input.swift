@@ -124,19 +124,15 @@ if (before["frontPid"] as? Int) == Int(pid) {
         usleep(380000)                                    // the collector grabs the tooltip frame meanwhile (+200 ms)
         // Close the panel: it only closes while the pointer moves inside the game window (top-right corner).
         if ownerMoved() { giveBack("Owner moved the mouse") }
-        // If the owner's pointer was inside the game, gliding straight back there closes the panel too: one move, not two.
-        let homeInGame = home.x>ox+4 && home.x<ox+width-4 && home.y>oy+32 && home.y<oy+height-4
-        if !homeInGame {
-            guard glide(CGPoint(x:ox+width-40,y:oy+40)) else { giveBack("Owner moved the mouse") }
-            usleep(80000)
-        }
+        guard glide(CGPoint(x:ox+width-40,y:oy+40)) else { giveBack("Owner moved the mouse") }
+        usleep(80000)
     } else {
         usleep(120000)                                    // park: the panel closes only while the pointer moves inside the game
     }
     // Put the pointer back where the owner left it, unless they already took it. After a click the panel stays
     // open (the owner's spot may be outside the game window), so the collector sends a park move next.
+    // The owner asked (2026-11-21): no trip back to where the pointer was. It stays at our corner spot (one move per click).
     if ownerMoved() { giveBack("Owner moved the mouse") }
-    _ = glide(home)
     remember()
     emit(["phase":"after","state":snapshot(),"mode":"foreground"])
     emit(["result":"events_posted_game_foreground","note":"Pointer returned to where the owner left it"])
