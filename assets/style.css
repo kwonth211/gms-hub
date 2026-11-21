@@ -3349,7 +3349,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 /* Lab pages (unlisted, owner only; assets/lab.js). */
 .lab { padding-top: 24px; padding-bottom: 40px; }
 /* Loading box for the meso farm list: about a screen tall, so the list arriving does not push the footer and ad up into view. */
-.lab-skel { min-height: 100vh; }
+.lab .lab-skel[aria-busy] { min-height: 100vh; } /* beats the shared [aria-busy="true"]:empty 160px loader below */
 .lab h1 { margin: 4px 0 6px; }
 .lab-crumb { margin: 0; font-size: 0.85rem; color: var(--muted); }
 .lab-sub { margin: 0 0 18px; color: var(--text-2); max-width: 760px; line-height: 1.6; }
