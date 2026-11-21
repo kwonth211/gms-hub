@@ -70,7 +70,7 @@ export function megaphoneBody({ lang, itemsUrl, marketUrl, snapshot, itemName = 
   return `<section class="page-head wrap"><h1>${ko ? '실시간 확성기' : 'Live megaphones'}</h1>
 <p class="lead">${ko ? '게임 안 고확을 실시간으로 모아 보여 드려요. 분홍은 고확, 노랑은 아이템 고확, 청록은 더블 아이템 고확이에요. 여기서 <b>무료 고확</b>을 쏘면 모든 페이지 맨 위 띠에도 같이 흘러가요.' : 'Super megaphones from the game, live: pink for super megaphones, gold for item megaphones, teal for double item megaphones. Send a <b>free megaphone</b> here and it rolls across the top of every page too.'}</p></section>
 <div class="wrap mg-page" id="mg-page" data-items="${itemsUrl}" data-market="${marketUrl}">
-<section class="panel mega-trends" data-mega-trends="full" data-items="${itemsUrl}" data-market="${marketUrl}" data-megaphone="${ko ? '/ko/megaphone/' : '/en/megaphone/'}" hidden aria-label="${ko ? '오늘의 고확' : "Today's megaphones"}"></section>
+<section class="panel mega-trends" data-mega-trends="full" data-items="${itemsUrl}" data-market="${marketUrl}" data-megaphone="${ko ? '/ko/megaphone/' : '/en/megaphone/'}" data-pending aria-label="${ko ? '오늘의 고확' : "Today's megaphones"}"></section>
 <section class="mg-feed-panel" aria-label="${ko ? '게임 확성기' : 'Game megaphones'}">
 ${freeComposer(ko)}
 <div class="mg-filters"><input id="mg-search" class="mg-search" type="search" placeholder="${ko ? '검색: 아이템(한글·영어), 닉네임, 가격…' : 'Search items, names, prices…'}" autocomplete="off">

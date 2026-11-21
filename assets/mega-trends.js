@@ -11,6 +11,8 @@ if (boxes.length) {
   const api = document.body.dataset.priceApi;
   const first = boxes[0];
   const icon = (id) => `<img src="https://maplestory.io/api/MCW/1/item/${id}/icon" width="24" height="24" alt="" loading="lazy">`;
+  // A box that keeps its space while loading (data-pending) is hidden only if there is nothing to show.
+  const gone = () => { for (const b of boxes) if (b.hasAttribute('data-pending')) { b.hidden = true; b.removeAttribute('data-pending'); } };
   (async () => {
     let stats, names;
     try {
@@ -18,8 +20,8 @@ if (boxes.length) {
         fetch(`${api}/megaphones/stats`).then((r) => r.json()),
         (window.__gmsItems ||= fetch(first.dataset.items).then((r) => r.json())).then((rows) => new Map(rows.map(([id, k, e]) => [id, ko && k ? k : e]))),
       ]);
-    } catch (e) { return; }
-    if (!stats?.items?.length) return;
+    } catch (e) { return gone(); }
+    if (!stats?.items?.length) return gone();
     const name = (id) => names.get(id) || `#${id}`;
     const market = first.dataset.market, mega = first.dataset.megaphone;
     const change = (r) => {
@@ -53,6 +55,7 @@ ${compact ? '' : `<div class="mt-side"><h4>${tr('오늘의 고확왕', "Today's 
 <h4>${tr('시간대별 고확', 'Megaphones by hour')} <small>${tr('최근 24시간', 'last 24h')}</small></h4><div class="mt-curve">${curve}</div></div>`}
 </div>`;
       box.hidden = false;
+      box.removeAttribute('data-pending');
     }
     first.addEventListener('click', (e) => { const a = e.target.closest('a[data-item]'); if (a) window.track?.('mega_trend_click', { item_id: Number(a.dataset.item) }); });
   })();

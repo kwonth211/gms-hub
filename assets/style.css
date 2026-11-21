@@ -2326,6 +2326,10 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 @media (max-width: 640px) { .mb-mega-list a { grid-template-columns: auto minmax(0, 1fr); } .mb-mega-meta { grid-column: 1 / -1; } }
 /* Megaphone trends: the items named most, the ones more wanted than offered, top callers and the hourly curve. */
 .mega-trends { padding: 14px 16px; margin: 0 0 14px; }
+/* The full box on the megaphone page keeps its finished height while it loads, so the feed below does not jump
+   (it measured 820px on a 390px phone, 329px on desktop). */
+.mega-trends[data-pending] { min-height: 329px; }
+@media (max-width: 760px) { .mega-trends[data-pending] { min-height: 820px; } }
 .mt-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
 .mt-head h3 { margin: 0; font-size: 1rem; }
 .mt-head h3 small { color: var(--muted); font-weight: 600; font-size: 0.78rem; margin-left: 6px; }
