@@ -632,7 +632,9 @@ const scriptSrc = (name) => {
 // Give module entry points and their relative imports the same content version.
 // This avoids mixing a cached dependency with a newly deployed chart/scanner module.
 const moduleFiles = fs.readdirSync(path.join(root, 'assets')).filter((name) => name.endsWith('.js')).sort();
-const moduleVersion = createHash('sha256').update(moduleFiles.map((name) => `${name}\n${fs.readFileSync(path.join(root, 'assets', name), 'utf8')}`).join('\n')).digest('hex').slice(0, 12);
+const versionModuleImports = (source, version) => source.replace(/(\b(?:from|import)\s+['"])(\.\.?\/[^'"?]+\.js)(['"])/g, `$1$2?v=${version}$3`);
+// The import transform changes the served JS too; hash it so an existing cached parent cannot retain old imports.
+const moduleVersion = createHash('sha256').update(versionModuleImports.toString()).update(moduleFiles.map((name) => `${name}\n${fs.readFileSync(path.join(root, 'assets', name), 'utf8')}`).join('\n')).digest('hex').slice(0, 12);
 const srcLink = (url, label) => `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(label || host(url))}</a>`;
 
 // A new content-addressed URL makes refreshed share cards distinct from cached old artwork.
@@ -4028,7 +4030,7 @@ for (const { source, name } of Object.values(PAGE_SHARE_IMAGES)) fs.copyFileSync
 for (const name of moduleFiles) {
   const source = fs.readFileSync(path.join(root, 'assets', name), 'utf8');
   // Include side-effect imports (collection status), not just `import ... from`.
-  write(`assets/${name}`, source.replace(/(\b(?:from|import)\s+['"])(\.\.?\/[^'"?]+\.js)(['"])/g, `$1$2?v=${moduleVersion}$3`));
+  write(`assets/${name}`, versionModuleImports(source, moduleVersion));
 }
 // Compact item index for the price search: [id, korean, english, category, subcategory, level].
 write('assets/shop-glyphs.json', fs.readFileSync(path.join(root, 'data/shop-glyphs.json')));
