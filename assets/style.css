@@ -1745,7 +1745,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .monster-result-line .monster-hidden-hint[hidden] { display: none; }
 
 /* Item hover card: one dark card in both themes so it reads as a game tooltip over any page. */
-:root { --tip-bg: #1b2236; --tip-line: #34405f; --tip-text: #eef2fa; --tip-muted: #a7b2c9; --tip-good: #7fd99a; --tip-bad: #ff8f8f; --tip-gold: #ffcf3f; }
+:root { --tip-bg: #1b2236; --tip-line: #34405f; --tip-text: #eef2fa; --tip-muted: #a7b2c9; --tip-good: #7fd99a; --tip-bad: #ff8f8f; --tip-gold: #ffcf3f; --tip-plus: #ffa047; }
 .item-tip { position: fixed; left: 0; top: 0; z-index: 80; width: 280px; pointer-events: none; background: var(--tip-bg); color: var(--tip-text);
   border: 1px solid var(--tip-line); border-radius: 12px; box-shadow: 0 14px 34px var(--shadow-c); padding: 12px 14px; font-size: 0.82rem; line-height: 1.45; }
 .item-tip[hidden] { display: none; }
@@ -1764,6 +1764,8 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .item-tip .tip-opt small { white-space: nowrap; }
 .item-tip .tip-up { color: var(--tip-bad); }
 .item-tip .tip-down { color: #8fb8ff; }
+.item-tip .tip-plus { color: var(--tip-plus); font-style: normal; font-weight: 700; }
+.item-tip .tip-split { color: var(--tip-muted); font-variant-numeric: tabular-nums; }
 .item-tip .tip-gold { color: var(--tip-gold); }
 .item-tip .tip-grade { font-weight: 800; }
 .item-tip .tip-price { margin: 0; }

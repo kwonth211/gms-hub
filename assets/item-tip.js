@@ -99,7 +99,10 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
     const rows = OPT_ORDER.filter((k) => o.stats?.[k] != null).map((k) => {
       const v = o.stats[k];
       const note = k === key && grade ? `<small class="${d > 0 ? 'tip-up' : d < 0 ? 'tip-down' : 'tip-muted'}">${grade}</small>` : '';
-      return `<li class="tip-opt"><span>${INC[k] || k} <b>${v > 0 ? '+' : ''}${v}</b></span>${note}</li>`;
+      // As in the game: total, then (base +extra) with the extra over the item's base value in orange.
+      const b = known ? base[k] ?? 0 : null, x = b == null ? 0 : v - b;
+      const split = x ? ` <span class="tip-split">(${b} <em class="${x > 0 ? 'tip-plus' : 'tip-down'}">${x > 0 ? '+' : ''}${x}</em>)</span>` : '';
+      return `<li class="tip-opt"><span>${INC[k] || k} <b class="${x > 0 ? 'tip-plus' : ''}">${v > 0 ? '+' : ''}${v}</b>${split}</span>${note}</li>`;
     }).join('');
     const out = [`<ul class="tip-stats tip-opts">${rows}</ul>`];
     if (o.slots != null) out.push(`<p>${tr('업그레이드 가능 횟수', 'Upgrade slots')} <b>${o.slots}</b>${total != null ? ` / ${total}` : ''}</p>`);
@@ -112,7 +115,8 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
     if (!t) return false;
     const [nameKo, nameEn, cat, sub, lv, job, req, inc, slots, sell, scroll, drops, dropN, questN, cash] = t;
     // "+N" before the name: scrolls that passed, as players write it.
-    const name = (opts?.ups > 0 ? `+${opts.ups} ` : '') + (ko && nameKo ? nameKo : nameEn);
+    const name = ko && nameKo ? nameKo : nameEn;
+    const ups = opts?.ups > 0 ? `<span class="tip-plus">+${opts.ups}</span> ` : '';
     const lines = [];
     if (scroll) {
       const [gain, success, boom] = scroll;
@@ -142,7 +146,7 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
       dropList = `<ul class="tip-mobs">${shown.filter((m) => data.mobs[m]).map((m) => `<li>${sprite(m, 36)}<span>${esc(mobName(m))}</span><small>Lv. ${data.mobs[m][2]}</small></li>`).join('')}</ul>${dropN > shown.length ? `<p class="tip-muted">${tr(`외 ${dropN - shown.length}마리`, `+${dropN - shown.length} more`)}</p>` : ''}`;
     }
     if (questN) from.push(`${tr('퀘스트 보상', 'Quest reward')} ${questN}${tr('개', '')}`);
-    card.innerHTML = `<header><img src="https://maplestory.io/api/MCW/1/item/${id}/icon" width="32" height="32" alt=""><div><strong>${esc(name)}</strong><small>${esc(ko ? CAT[cat] || cat : sub || CAT[cat] || cat)}</small></div></header>
+    card.innerHTML = `<header><img src="https://maplestory.io/api/MCW/1/item/${id}/icon" width="32" height="32" alt=""><div><strong>${ups}${esc(name)}</strong><small>${esc(ko ? CAT[cat] || cat : sub || CAT[cat] || cat)}</small></div></header>
 ${lines.join('')}
 ${priceBlock(id)}
 ${dropList ? `<section><h4>${tr('드롭하는 몬스터', 'Dropped by')}</h4>${dropList}</section>` : ''}
