@@ -28,7 +28,7 @@ export async function contributorsData(env, me = null) {
   const since = kstDay(Date.now() - 6 * 864e5);
   const top = async (where, args) => (await env.DB.prepare(`SELECT who, MAX(name) AS name, MAX(avatar) AS avatar,
       SUM(CASE WHEN kind = 'scan' THEN n ELSE 0 END) AS scans, SUM(CASE WHEN kind = 'gone' THEN n ELSE 0 END) AS gone, SUM(n) AS points
-      FROM contributions WHERE 1 = 1 ${where} GROUP BY who ORDER BY points DESC LIMIT 80`).bind(...args).all()).results || [];
+      FROM contributions WHERE 1 = 1 ${where} GROUP BY who ORDER BY points DESC LIMIT 400`).bind(...args).all()).results || [];
   const anon = async (where, args) => (await env.DB.prepare(`SELECT COALESCE(SUM(n), 0) AS points, COUNT(DISTINCT who) AS people FROM contributions WHERE who LIKE 'a:%' ${where}`).bind(...args).first()) || { points: 0, people: 0 };
   // Not logged in: a short tag from the visitor hash, so the same anonymous contributor keeps one line.
   const clean = (rows) => rows.map((r) => ({ who: r.who, id: r.who.startsWith('d:') ? r.who.slice(2) : '', anon: r.who.startsWith('a:'), game: '', name: r.name || '', avatar: r.avatar || '', scans: r.scans, gone: r.gone, points: r.points }));
@@ -51,7 +51,7 @@ export async function contributorsData(env, me = null) {
       const x = by.get(key);
       if (x) { x.scans += r.scans; x.gone += r.gone; x.points += r.points; } else by.set(key, { ...r });
     }
-    return [...by.values()].sort((a, b) => b.points - a.points).slice(0, 20).map(({ who, ...r }) => r);
+    return [...by.values()].sort((a, b) => b.points - a.points).slice(0, 200).map(({ who, ...r }) => r);
   };
   const out = {
     week: merge(week), all: merge(all),
