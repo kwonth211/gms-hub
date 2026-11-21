@@ -12,6 +12,7 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches && body.dataset.tip
   let data = null;
   let loading = null;
   const prices = new Map();
+  const same = new Map(); // `${id}|${stat}|${value}` -> same-option market summary (null = none)
   const card = document.createElement('div');
   card.className = 'item-tip';
   card.setAttribute('role', 'tooltip');
@@ -57,6 +58,29 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches && body.dataset.tip
   const mobName = (id) => { const m = data.mobs[id]; return m ? (ko ? m[0] : m[1]) : ''; };
   const itemName = (id) => { const t = data.items[id]; return t ? (ko && t[0] ? t[0] : t[1]) : ''; };
 
+  // The one stat that prices a captured piece: attack (magic for wands/staves), else the stat furthest above base.
+  function sameStat(id, opts) {
+    const t = data?.items?.[id], st = opts?.stats;
+    if (!t || t[2] !== 'Equip' || !st || opts.scroll) return null;
+    const sub = t[3], base = t[7] || {};
+    const order = sub === 'Wand' || sub === 'Staff' ? ['MAD', 'PAD'] : ['PAD', 'MAD'];
+    let k = order.find((x) => Number.isInteger(st[x]));
+    if (!k) k = Object.keys(st).filter((x) => Number.isInteger(st[x])).sort((a, b) => (st[b] - (base[b] || 0)) - (st[a] - (base[a] || 0)))[0];
+    return k ? { stat: k, value: st[k], key: `${id}|${k}|${st[k]}` } : null;
+  }
+  function sameBlock(id, opts) {
+    const q = sameStat(id, opts);
+    if (!q) return '';
+    const s = same.get(q.key), label = `${INC[q.stat] || q.stat} ${q.value > 0 ? '+' : ''}${q.value}`;
+    const head = `<h4>${tr(`같은 옵션 시세 · ${label}`, `Same option · ${label}`)}</h4>`;
+    if (s === undefined) return `<section class="tip-market">${head}<p class="tip-muted">${tr('불러오는 중…', 'Loading…')}</p></section>`;
+    if (!s || !(s.open || s.prices.length)) return `<section class="tip-market">${head}<p class="tip-muted">${tr('최근 30일 같은 옵션 매물이 없어요', 'No listing with this option in 30 days')}</p></section>`;
+    const row = (k, v) => (v ? `<div><dt>${k}</dt><dd>${v}</dd></div>` : '');
+    const main = s.open ? s.median : s.recent;
+    return `<section class="tip-market">${head}
+<p class="tip-price"><b>${nf.format(main)}</b> <small>${tr('메소', 'mesos')} · ${s.open ? tr('지금 판매 중 중앙값', 'asking now') : tr('최근 30일 매물 중앙값', '30-day listings')}</small></p>
+<dl>${row(tr('판매 중', 'On sale'), s.open ? `${s.open}${tr('건', '')}` : '')}${row(tr('최저', 'Lowest'), s.low ? nf.format(s.low) : '')}${row(tr('팔린 가격', 'Sold'), s.soldMedian ? nf.format(s.soldMedian) : '')}${row(tr('30일 기록', '30-day records'), `${s.prices.length}${tr('건', '')}`)}</dl></section>`;
+  }
   function priceBlock(id) {
     const p = prices.get(id);
     if (p === undefined) return `<section class="tip-market"><h4>${tr('자유시장', 'Free Market')}</h4><p class="tip-muted">${tr('시세 불러오는 중…', 'Loading prices…')}</p></section>`;
@@ -148,7 +172,7 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
     if (questN) from.push(`${tr('퀘스트 보상', 'Quest reward')} ${questN}${tr('개', '')}`);
     card.innerHTML = `<header><img src="https://maplestory.io/api/MCW/1/item/${id}/icon" width="32" height="32" alt=""><div><strong>${ups}${esc(name)}</strong><small>${esc(ko ? CAT[cat] || cat : sub || CAT[cat] || cat)}</small></div></header>
 ${lines.join('')}
-${priceBlock(id)}
+${sameBlock(id, opts)}${priceBlock(id)}
 ${dropList ? `<section><h4>${tr('드롭하는 몬스터', 'Dropped by')}</h4>${dropList}</section>` : ''}
 ${sell || from.length ? `<section class="tip-npc">${sell ? `<p>${tr('상점에 팔 때', 'Sells to NPC for')} <b>${nf.format(sell)}</b> ${tr('메소', 'mesos')}</p>` : ''}${from.map((f) => `<p>${f}</p>`).join('')}</section>` : ''}
 <footer>${source === 'megaphone' ? tr('시세: 전체 옵션 기준 · 드롭: 플레이어 제보', 'Prices: all options · drops: player reports') : tr('시세: GMS Hub 수집 · 능력치: 게임 데이터 · 드롭: 플레이어 제보', 'Prices: GMS Hub scans · stats: game data · drops: player reports')}</footer>`;
@@ -207,6 +231,17 @@ ${dropList ? `<section><h4>${tr('주요 드롭', 'Notable drops')}</h4><ul class
         prices.set(t.id, r.ok ? (await r.json())[t.id] || null : null);
       } catch (e) {
         prices.set(t.id, null);
+      }
+      if (current === key && render(t)) place();
+    }
+    const q = t.kind === 'item' && body.dataset.priceApi ? sameStat(t.id, t.opts) : null;
+    if (q && !same.has(q.key)) {
+      try {
+        const r = await fetch(`${body.dataset.priceApi}/market/history?id=${t.id}&stat=${q.stat}&val=${q.value}`);
+        const d = r.ok ? await r.json() : null, sm = d?.summary, ps = (d?.rows || []).map((x) => x.price).filter(Number.isFinite).sort((a, b) => a - b);
+        same.set(q.key, d ? { open: sm?.open || 0, median: sm?.median, low: sm?.low, soldMedian: sm?.soldMedian, prices: ps, recent: ps.length ? ps[ps.length >> 1] : null } : null);
+      } catch (e) {
+        same.set(q.key, null);
       }
       if (current === key && render(t)) place();
     }
