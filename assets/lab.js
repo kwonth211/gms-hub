@@ -28,6 +28,13 @@ function head() {
   const h = root.dataset.embed ? 'h2' : 'h1';
   return `<${h}>${esc(root.dataset.h1)}</${h}><p class="lab-sub">${esc(root.dataset.lead)}</p>`;
 }
+// The built page already has the heading and lead (and a loading box): keep them and swap only the box, so the page
+// neither redraws its largest text nor jumps when the data arrives.
+function fill(html) {
+  const skel = root.querySelector('.lab-skel');
+  if (skel && root.querySelector('h1, h2')) { skel.insertAdjacentHTML('beforebegin', html); skel.remove(); }
+  else root.innerHTML = `${head()}${html}`;
+}
 
 // ---------- meso farm ----------
 const sprite = (id) => `${document.body.dataset.sprites || '/assets/monsters/'}${id}.gif`;
@@ -35,8 +42,8 @@ async function viewFarm(data) {
   const cat = await get(`${api}/market/catalog`);
   const price = new Map((cat?.items || []).map((r) => [r.item, { p: r.soldMedian || r.typical || r.median, sold: r.sold || 0, open: r.open || 0 }]));
   const state = store.get('gmshub_lab_farm', { lv: 40, boss: false });
-  root.innerHTML = `${head()}
-<div class="lab-controls"><label>${tr('레벨', 'Level')}<input id="lf-lv" type="number" min="1" max="200" value="${state.lv}"></label><label class="lab-check"><input id="lf-boss" type="checkbox"${state.boss ? ' checked' : ''}>${tr('보스 포함', 'Include bosses')}</label></div><ul id="lf-list" class="lab-farm"></ul>`;
+  fill(`
+<div class="lab-controls"><label>${tr('레벨', 'Level')}<input id="lf-lv" type="number" min="1" max="200" value="${state.lv}"></label><label class="lab-check"><input id="lf-boss" type="checkbox"${state.boss ? ' checked' : ''}>${tr('보스 포함', 'Include bosses')}</label></div><ul id="lf-list" class="lab-farm"></ul>`);
   const draw = () => {
     const lv = Number(document.getElementById('lf-lv').value) || 1, boss = document.getElementById('lf-boss').checked;
     store.set('gmshub_lab_farm', { lv, boss });

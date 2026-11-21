@@ -23,8 +23,8 @@
    "ko": "휴대폰 스크롤 끊김 수정 — 내리는 중에 페이지가 튀지 않게",
    "en": "Smoother scrolling on phones — no more jumps mid-scroll",
    "desc": {
-    "ko": "휴대폰에서 홈·몬스터·고확 페이지를 내릴 때 페이지 길이가 갑자기 바뀌어 화면이 튀던 문제를 고쳤어요. 이제 처음부터 실제 길이로 그려져서 부드럽게 내려가요. 고확 페이지를 처음 열 때 '지금 뜨는 아이템'이 늦게 나타나며 목록을 아래로 밀던 것도 자리를 미리 잡아 두도록 고쳤어요.",
-    "en": "On phones, the home, monster and megaphone pages changed length while you scrolled, so the view jumped. They now lay out at their real length from the start and scroll smoothly. The megaphone page also keeps room for the trending panel while it loads, so the feed no longer gets pushed down."
+    "ko": "휴대폰에서 홈·몬스터·고확 페이지를 내릴 때 페이지 길이가 갑자기 바뀌어 화면이 튀던 문제를 고쳤어요. 이제 처음부터 실제 길이로 그려져서 부드럽게 내려가요. 고확 페이지를 처음 열 때 '지금 뜨는 아이템'이 늦게 나타나며 목록을 아래로 밀던 것도 자리를 미리 잡아 두도록 고쳤어요. 메소 벌이 사냥터도 목록이 들어올 때 화면이 밀리지 않아요.",
+    "en": "On phones, the home, monster and megaphone pages changed length while you scrolled, so the view jumped. They now lay out at their real length from the start and scroll smoothly. The megaphone page also keeps room for the trending panel while it loads, so the feed no longer gets pushed down, and the meso farming page no longer jumps when its list arrives."
    }
   },
   {
