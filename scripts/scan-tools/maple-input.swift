@@ -97,8 +97,10 @@ if (before["frontPid"] as? Int) == Int(pid) {
         guard !ownerMoved() else { giveBack("Owner moved the mouse") }
         send(.leftMouseDown,target); usleep(70000)
         send(.leftMouseUp,target)                         // always release the button we pressed
+        // In front the panel fades in; report the click a little later so the grabbed frame shows it fully.
+        usleep(250000)
         emit(["phase":"clicked","at":Date().timeIntervalSince1970*1000,"mode":"foreground"])
-        usleep(450000)                                    // the collector grabs the tooltip frame meanwhile
+        usleep(650000)                                    // the collector grabs the tooltip frame meanwhile
     } else {
         usleep(150000)
     }
