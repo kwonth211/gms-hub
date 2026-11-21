@@ -231,7 +231,8 @@ export class OptionReader {
     const inputAudit=[];
     const input=async(action,x,y,capture=false,cleanup=false)=>{
       if(paused()&&!cleanup)throw Error('option input paused');
-      const run=exec(this.input,[action,String(x),String(y),String(image.width),String(image.height)],{timeout:2000,maxBuffer:16000});
+      const allow=action==='click'&&this.allow?{GMS_ALLOW:[this.allow.x,this.allow.y,this.allow.w,this.allow.h].map(Math.round).join(',')}:{};
+      const run=exec(this.input,[action,String(x),String(y),String(image.width),String(image.height)],{timeout:2000,maxBuffer:16000,env:{...process.env,...allow}});
       let snapshot=null,pressed=null,output='';
       if(capture)run.child.stdout.on('data',chunk=>{
         output+=chunk;let end;
@@ -278,7 +279,7 @@ export class OptionReader {
         return skip('target row no longer visible or ambiguous');
       }
       line=relocated;link.y=Math.floor((line.top+line.bottom)/2);
-      moved=true;const after=await input('click',box.x+link.x,box.y+link.y,true);if(!after)return skip('no fresh tooltip frame');
+      moved=true;this.allow=box;const after=await input('click',box.x+link.x,box.y+link.y,true);if(!after)return skip('no fresh tooltip frame');
       const point={x:box.x+link.x,y:box.y+link.y};
       // Nick + channel must still belong to the clicked row; reject chat scroll races.
       const atPress=this.pressedFrame&&this.pressedFrame.width===ready.width?this.pressedFrame:after;
@@ -288,13 +289,13 @@ export class OptionReader {
         fs.writeFileSync(path.join(this.dir,'race.json'),JSON.stringify({message,item:item.en,box,line,link}));
         // the press may have landed on a nickname instead: close a whisper window it opened
         const dialog=whisperDialog(await this.recognize(after,item.en));
-        if(dialog){OptionReader.noWhisperUntil=0;await input('click',Math.round(dialog.x+dialog.w/2),Math.round(dialog.y+dialog.h/2));}
+        if(dialog){OptionReader.noWhisperUntil=0;this.allow=dialog;await input('click',Math.round(dialog.x+dialog.w/2),Math.round(dialog.y+dialog.h/2));}
         return skip('nick/channel moved after click');
       }
       const boxes=colorTooltipBoxes(after,ready,point);
       if(!boxes.length) {
         const dialog=whisperDialog(await this.recognize(after,item.en));
-        if(dialog){OptionReader.noWhisperUntil=0;await input('click',Math.round(dialog.x+dialog.w/2),Math.round(dialog.y+dialog.h/2));return skip('chat moved; closed newly opened whisper dialog');}
+        if(dialog){OptionReader.noWhisperUntil=0;this.allow=dialog;await input('click',Math.round(dialog.x+dialog.w/2),Math.round(dialog.y+dialog.h/2));return skip('chat moved; closed newly opened whisper dialog');}
         fs.writeFileSync(path.join(this.dir,'nobox-after.png'),PNG.sync.write(after));fs.writeFileSync(path.join(this.dir,'nobox-ready.png'),PNG.sync.write(ready));fs.writeFileSync(path.join(this.dir,'nobox.json'),JSON.stringify({point,mode:this.lastMode,inputAudit}));
         return skip('tooltip colour box not found');
       }

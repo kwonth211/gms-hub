@@ -32,6 +32,11 @@ let forbid:[CGRect]=(ProcessInfo.processInfo.environment["GMS_FORBID"] ?? "").sp
     let v=$0.split(separator:",").compactMap{Double($0)}; return v.count==4 ? CGRect(x:v[0],y:v[1],width:v[2],height:v[3]) : nil }
 func forbidden(_ px:Double,_ py:Double) -> Bool { forbid.contains{ $0.contains(CGPoint(x:px,y:py)) } }
 if forbidden(x,y) { emit(["error":"Point is inside a no-input area (shop window)","point":[x,y]]); exit(7) }
+// GMS_ALLOW="x,y,w,h": a click may only press inside this area (the chat box). Required for every click.
+let allowV=(ProcessInfo.processInfo.environment["GMS_ALLOW"] ?? "").split(separator:",").compactMap{Double($0)}
+let allow:CGRect?=allowV.count==4 ? CGRect(x:allowV[0],y:allowV[1],width:allowV[2],height:allowV[3]) : nil
+func pressAllowed(_ px:Double,_ py:Double) -> Bool { allow.map{ $0.contains(CGPoint(x:px,y:py)) } ?? false }
+if args[1]=="click" && !pressAllowed(x,y) { emit(["error":"Click outside the allowed area (chat box only)","point":[x,y]]); exit(7) }
 let before=snapshot()
 if args.count==6 && (Double(args[4]) != width || Double(args[5]) != height) {
     emit(["error":"Window resized since capture"]);exit(3)
@@ -80,6 +85,7 @@ if (before["frontPid"] as? Int) == Int(pid) {
     }
     func send(_ type:CGEventType,_ p:CGPoint) {
         if type != .mouseMoved && forbidden(Double(p.x-ox),Double(p.y-oy)) { return }
+        if (type == .leftMouseDown || type == .leftMouseUp) && !pressAllowed(Double(p.x-ox),Double(p.y-oy)) { return }
         guard let e=CGEvent(mouseEventSource:src,mouseType:type,mouseCursorPosition:p,mouseButton:.left) else { return }
         e.setIntegerValueField(.mouseEventDeltaX,value:Int64((p.x-at.x).rounded()))
         e.setIntegerValueField(.mouseEventDeltaY,value:Int64((p.y-at.y).rounded()))
@@ -178,6 +184,7 @@ if topmostPid(pointerNow)==pid {
 }
 func post(_ type:NSEvent.EventType,_ flags:NSEvent.ModifierFlags=[],at px:Double=x,_ py:Double=y) {
     if forbidden(px,py) { emit(["phase":"skipped_forbidden","point":[px,py]]); return }
+    if (type == .leftMouseDown || type == .leftMouseUp) && !pressAllowed(px,py) { emit(["phase":"skipped_outside_allowed","point":[px,py]]); return }
     let native=NSEvent.mouseEvent(with:type,location:NSPoint(x:px,y:height-py),modifierFlags:flags,
         timestamp:ProcessInfo.processInfo.systemUptime,windowNumber:wid,context:nil,eventNumber:0,
         clickCount:type == .leftMouseDragged ? 0 : 1,pressure:type == .leftMouseDown ? 1 : 0)!
