@@ -105,7 +105,7 @@ if (before["frontPid"] as? Int) == Int(pid) {
         // In front the panel fades in; report the click a little later so the grabbed frame shows it fully.
         usleep(250000)
         emit(["phase":"clicked","at":Date().timeIntervalSince1970*1000,"mode":"foreground"])
-        usleep(450000)                                    // the collector grabs the tooltip frame meanwhile
+        usleep(380000)                                    // the collector grabs the tooltip frame meanwhile (+200 ms)
         // Close the panel: it only closes while the pointer moves inside the game window (top-right corner).
         if ownerMoved() { giveBack("Owner moved the mouse") }
         guard glide(CGPoint(x:ox+width-40,y:oy+40)) else { giveBack("Owner moved the mouse") }

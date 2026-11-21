@@ -223,7 +223,7 @@ export class OptionReader {
         output+=chunk;let end;
         // Give the game one 8fps frame to draw the panel. A PNG whose write finishes
         // just after mouse-up may still contain the frame captured before the click.
-        while((end=output.indexOf('\n'))>=0){const line=output.slice(0,end);output=output.slice(end+1);try{const event=JSON.parse(line);if(event.phase==='pressed'&&!pressed)pressed=this.readFrame(event.at,1000).catch(()=>null);if(event.phase==='clicked'&&!snapshot)snapshot=this.readFrame(event.at+(event.mode==='foreground'?400:125),1400).catch(()=>null);}catch{}}
+        while((end=output.indexOf('\n'))>=0){const line=output.slice(0,end);output=output.slice(end+1);try{const event=JSON.parse(line);if(event.phase==='pressed'&&!pressed)pressed=this.readFrame(event.at,1000).catch(()=>null);if(event.phase==='clicked'&&!snapshot)snapshot=this.readFrame(event.at+(event.mode==='foreground'?200:125),1400).catch(()=>null);}catch{}}
       });
       const result=await run.catch(e=>{fs.writeFileSync(path.join(this.dir,'input-failure.json'),JSON.stringify({message,action,x,y,code:e.code,events:e.stdout}));throw e;}); // A capture never overrides a focus/cursor failure.
       const events=result.stdout.trim().split('\n').flatMap(s=>{try{return [JSON.parse(s)];}catch{return [];}});
