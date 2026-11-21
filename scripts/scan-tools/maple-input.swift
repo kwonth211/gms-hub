@@ -60,14 +60,17 @@ if (before["frontPid"] as? Int) == Int(pid) {
     }
     let src=CGEventSource(stateID:.privateState)
     let target=CGPoint(x:ox+x,y:oy+y)
-    var at=home, prev=home
+    var at=home, prev=home, trail=[home]
     let started=Date()
-    // The owner took over if the pointer is neither where we just put it nor one step back (the reported
-    // location can lag one posted event), or they typed since we started.
+    // The owner took over if the pointer is away from every point we posted this run (the reported location
+    // can lag several posted events), or they typed since we started.
     func ownerMoved() -> Bool {
         let p=CGEvent(source:nil)!.location
-        let near={(q:CGPoint) in abs(p.x-q.x)<=3 && abs(p.y-q.y)<=3}
-        return (!near(at) && !near(prev)) || min(since(.keyDown),since(.flagsChanged)) < Date().timeIntervalSince(started)
+        let near=trail.contains{abs(p.x-$0.x)<=8 && abs(p.y-$0.y)<=8}
+        let onPath=zip(trail,trail.dropFirst()).contains{ a,b in
+            let dx=b.x-a.x,dy=b.y-a.y,l=max(1,dx*dx+dy*dy),t=max(0,min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/l))
+            return hypot(p.x-(a.x+t*dx),p.y-(a.y+t*dy))<=8 }
+        return (!near && !onPath) || min(since(.keyDown),since(.flagsChanged)) < Date().timeIntervalSince(started)
     }
     func send(_ type:CGEventType,_ p:CGPoint) {
         guard let e=CGEvent(mouseEventSource:src,mouseType:type,mouseCursorPosition:p,mouseButton:.left) else { return }
@@ -75,7 +78,7 @@ if (before["frontPid"] as? Int) == Int(pid) {
         e.setIntegerValueField(.mouseEventDeltaY,value:Int64((p.y-at.y).rounded()))
         if type == .leftMouseDown || type == .leftMouseUp { e.setIntegerValueField(.mouseEventClickState,value:1) }
         e.post(tap:.cghidEventTap)
-        prev=at; at=p
+        prev=at; at=p; trail.append(p)
     }
     // A few small steps with movement deltas: Wine ignores a jump without them.
     func glide(_ to:CGPoint) -> Bool {

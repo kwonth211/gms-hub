@@ -4,7 +4,7 @@
 // to the worker with the admin key in ~/.config/gms-hub/megaphone-token. Only recognised text/options leave the Mac.
 // Run (from scripts/scan-tools after npm install):  node mega-collector.mjs          # read and post
 //                                                     node mega-collector.mjs --dry  # read and print only
-import { execFileSync, spawn } from 'node:child_process';
+import { execFile, execFileSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -133,6 +133,7 @@ async function flush() {
   finally {posting=posting.filter(r=>!rows.includes(r));saveState();}
 }
 
+let coveredSince=0,lastUnstick=0;
 async function tick() {
   if (!cam) { if (Date.now() - tried > 60000) camera(); return; }
   if(optionReaders.some(r=>r.interacting))return; // Do not OCR chat through an open tooltip.
@@ -151,6 +152,14 @@ async function tick() {
   const anchor = readGlyphs ? slotAnchor(part, lines) : null;
   for (const l of lines) read.push(isLineVisible(part,l)?{...await readLine(part, l, ocr, anchor ? { read: readGlyphs, wTop: windowTop(l, anchor) } : null),top:l.top}:{top:l.top,obscured:true});
   const now = Date.now();
+  // Watchdog: a panel left open over the chat (an interrupted click) hides every line from the reader.
+  // If the chat stays covered or unreadable for 15 s, move the game's pointer to a corner to close it.
+  const covered=!lines.length||read.some(r=>r.obscured);
+  if(!covered)coveredSince=0;else if(!coveredSince)coveredSince=now;
+  if(coveredSince&&now-coveredSince>15000&&now-lastUnstick>15000&&optionReader&&!optionReaders.some(r=>r.busy)) {
+    lastUnstick=now;
+    execFile(optionReader.input,['move',String(img.width-40),'40',String(img.width),String(img.height)],{timeout:3000},(e)=>console.log(`chat covered for ${Math.round((now-coveredSince)/1000)}s: parked the game pointer${e?' (failed: '+(e.code||e.message)+')':''}`));
+  }
   const all = assemble(read);
   if (ticks % 240 === 1 && lines.length) {
     const name = `${new Date(now).toISOString().replace(/[:.]/g, '-')}.png`;
