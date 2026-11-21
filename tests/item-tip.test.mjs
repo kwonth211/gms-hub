@@ -22,15 +22,14 @@ function fixture(source=catalogue) {
   });
   return { card, async hover(target) { handlers.get('pointerover')({ target }); while (timers.length) await timers.shift()(); return card.innerHTML; } };
 }
-test('verified cash metadata distinguishes cosmetic megaphones without inventing stats',async()=>{
+test('cash megaphone items show no option note and invent no stats',async()=>{
  const t=['타니아 소드','Tania Sword','Equip','Cash',0,0,{}, {},0,0,0,[],0,0,1];
  const html=await fixture({items:{[id]:t},mobs:{}}).hover(link(megaphoneItemAttrs(id)));
- assert.match(html,/캐시 외형 아이템/);
  assert.doesNotMatch(html,/옵션 미확인|tip-stats/);
+ // Cash items are never option-checked (owner, 2026-11-21), pet equipment included: no "not captured" note.
  t[3]='Pet Equipment';t[8]=5;
  const pet=await fixture({items:{[id]:t},mobs:{}}).hover(link(megaphoneItemAttrs(id)));
- assert.match(pet,/옵션 미확인/);
- assert.doesNotMatch(pet,/캐시 외형 아이템/);
+ assert.doesNotMatch(pet,/옵션 미확인/);
 });
 function link(attrs = '', href = `/ko/tools/market/?item=${id}`) {
   const decode = s => s.replace(/&(quot|amp|lt|gt|#39);/g, (_, k) => ({ quot: '"', amp: '&', lt: '<', gt: '>', '#39': "'" })[k]);

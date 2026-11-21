@@ -10,8 +10,8 @@
    "ko": "확성기 옵션 — 게임처럼 색으로, 같은 옵션 시세까지",
    "en": "Megaphone options — game-like colours and same-option prices",
    "desc": {
-    "ko": "고확 아이템에 마우스를 올리면 능력치마다 기본 수치와 그보다 높은 만큼을 주황색으로 나눠 보여 줘요. 같은 옵션(예: 공격력 47) 매물 시세도 함께 나와요.",
-    "en": "Hovering a megaphone item splits each stat into its base value and the extra in orange, and shows the market price of listings with the same option (e.g. 47 attack)."
+    "ko": "고확 아이템에 마우스를 올리면 능력치마다 기본 수치와 그보다 높은 만큼을 주황색으로 나눠 보여 줘요. 옵션을 읽은 고확은 목록과 툴팁 모두 같은 옵션(예: 공격력 47) 매물 시세로 비교해요.",
+    "en": "Hovering a megaphone item splits each stat into its base value and the extra in orange. Megaphones with captured options are compared with listings of the same option (e.g. 47 attack), in the list and the hover card."
    }
   },
   {

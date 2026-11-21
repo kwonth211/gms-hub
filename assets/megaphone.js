@@ -3,7 +3,7 @@
 // reading of the trade shorthand.
 import { koMesos, GLOSS, plain, intentOf, priceOf } from './mega-text.js';
 import { optBadge, loadTips as loadOptTips } from './opt-grade.js';
-import { optionParts, megaphoneItemAttrs } from './mega-option-text.js';
+import { optionParts, megaphoneItemAttrs, priceStat } from './mega-option-text.js';
 import { marketSharePath } from './market-share.js';
 import { indexEntry, searchEntries } from './search-index.js';
 export { intentOf, priceOf };
@@ -26,6 +26,8 @@ let focused = false;
 // The header ticker asks for a megaphone that is on this page already: mark it and scroll to it without a reload.
 addEventListener('mega-focus', (e) => { focusId = e.detail.id; focused = false; e.preventDefault(); render(); });
 let rows = [], lastId = 0, lastFree = 0, names = [], byName = new Map(), byId = new Map(), prices = new Map();
+// `${item}|${stat}|${value}` -> price of listings with the same option (null: none in 30 days)
+const samePrices = new Map();
 // Which lines to show: source (all, free = site posts, game) and intent (all, sell, buy).
 const view = { src: 'all', intent: 'all' };
 
@@ -33,7 +35,7 @@ const view = { src: 'all', intent: 'all' };
 // "[Shoes Speed Scroll: Intermediate]" is an exact item megaphone; otherwise the longest catalogue name in the text.
 // Show the linked piece's actual stats, remaining enhancements and upgrade grade under its message.
 function optLine(r, it) {
-  if (it?.cat === 'Equip' && /\[[^\]]+\]/.test(r.text) && !r.opts) return `<p class="mg-opts muted note">${tr('옵션 미확인', 'Options not captured')}</p>`;
+  if (it?.cat === 'Equip' && !it.cash && /\[[^\]]+\]/.test(r.text) && !r.opts) return `<p class="mg-opts muted note">${tr('옵션 미확인', 'Options not captured')}</p>`;
   const b = it && (r.opts?.ups > 0 || r.opts?.clean === true || r.opts?.used === 0) && optBadge(it.id, r.opts);
   const parts = optionParts(r.opts, ko);
   return b || parts.length ? `<p class="mb-opts mg-opts">${b ? `<span class="mb-opt grade ${b.cls}">${esc(b.text)}</span>` : ''}${parts.map((t) => `<span class="mb-opt">${esc(t)}</span>`).join('')}</p>` : '';
@@ -134,9 +136,16 @@ function freeCard(r) {
 <div class="mg-body"><p class="mg-text">${tag}${name}${cost}${esc(r.text)}</p>${cmp}${act}</div>
 <button type="button" class="mg-copy" data-nick="${esc(r.nick)}" title="${esc(tr('귓말 명령어 복사', 'Copy whisper command'))}" aria-label="${esc(tr('귓말 명령어 복사', 'Copy whisper command'))}">${WHISPER}</button></li>`;
 }
+// A captured piece is compared with listings of the same option, never the all-options price.
+function sameOf(r, it) {
+  if (!r.opts || !it || it.cat !== 'Equip' || it.cash) return null;
+  const q = priceStat(r.opts, it.sub);
+  return q ? { ...q, key: `${it.id}|${q.stat}|${q.value}` } : null;
+}
 function card(r) {
   if (r.free) return freeCard(r);
-  const items = itemsOf(r.text), it = items[0], price = priceOf(r.text), market = it && prices.get(it.id);
+  const items = itemsOf(r.text), it = items[0], price = priceOf(r.text), same = sameOf(r, it), sp = same && samePrices.get(same.key);
+  const market = same ? (sp ? { median: sp } : null) : it && prices.get(it.id);
   // Far-off differences usually mean a scrolled or bundled item, not a cheap or pricey one, so they are not shown.
   const raw = price && market?.median ? Math.round(((price - market.median) / market.median) * 100) : null;
   const diff = raw != null && Math.abs(raw) <= 300 ? raw : null;
@@ -145,7 +154,7 @@ function card(r) {
   const text = esc(r.text).replace(/\[([^\]]+)\]/, (m, n) => (it ? `<a class="mg-item" href="${esc(itemHref)}"${itemAttrs}>[${esc(ko && it.ko ? it.ko : n)}]</a>` : m));
   const g = ko ? gloss(r.text, items) : '';
   const tag = r.intent ? `<span class="mg-intent ${r.intent}">${r.intent === 'sell' ? tr('팝니다', 'Selling') : tr('삽니다', 'Buying')}</span>` : '';
-  const cmp = it && market?.median ? `<a class="mg-price" href="${esc(itemHref)}"${itemAttrs}>${tr('시세', 'Market')} ${mesos(market.median)}${diff != null ? ` · <b class="${diff > 0 ? 'up' : diff < 0 ? 'down' : ''}">${diff > 0 ? '+' : ''}${diff}%</b>` : ''}</a>` : '';
+  const cmp = same && sp === null ? `<a class="mg-price" href="${esc(itemHref)}"${itemAttrs}>${tr('같은 옵션 매물 없음', 'No listing with this option')}</a>` : it && market?.median ? `<a class="mg-price" href="${esc(itemHref)}"${itemAttrs}>${same ? tr('같은 옵션 시세', 'Same-option price') : tr('시세', 'Market')} ${mesos(market.median)}${diff != null ? ` · <b class="${diff > 0 ? 'up' : diff < 0 ? 'down' : ''}">${diff > 0 ? '+' : ''}${diff}%</b>` : ''}</a>` : '';
   // One compact row: who and where on the left, the message and its reading in the middle, the whisper copy on the right.
   return `<li class="mg-msg mg-${esc(r.color || 'Y')} mg-k-${esc(r.kind)}${r.id === focusId ? ` mg-focus${focused ? '' : ' mg-pulse'}` : ''}" id="m-${esc(r.id)}">
 <div class="mg-who"><strong class="mg-nick"${r.id === focusId ? ` data-pick="${esc(tr('선택한 고확', 'Selected'))}"` : ''}>${esc(r.nick)}</strong><span class="mg-meta">${Number(r.channel) ? `<span class="mg-ch">CH${String(Number(r.channel)).padStart(2, '0')}</span>` : ''}<time datetime="${new Date(seenAt(r.seen)).toISOString()}" title="${ago(r.seen)}">${clock(r.seen)}</time></span><span class="mg-kind">${KIND[r.kind]?.() || ''}</span></div>
@@ -206,19 +215,31 @@ function render() {
 async function loadItems() {
   try {
     const list = await fetch(root.dataset.items).then((r) => r.json());
-    for (const [id, koName, en, cat] of list) {
-      if (en) byId.set(id, { id, ko: koName, en, cat });
-      if (en && en.length >= 5) byName.set(en.toLowerCase(), { id, ko: koName, en, cat });
+    for (const [id, koName, en, cat, sub, , , cash] of list) {
+      if (en) byId.set(id, { id, ko: koName, en, cat, sub, cash: !!cash });
+      if (en && en.length >= 5) byName.set(en.toLowerCase(), { id, ko: koName, en, cat, sub, cash: !!cash });
     }
     names = [...byName.keys()].sort((a, b) => b.length - a.length);
   } catch (e) {}
 }
 
 async function loadPrices(newRows) {
-  if (newRows.some((r) => r.opts)) await loadOptTips();
+  if (newRows.some((r) => r.opts)) await Promise.all([loadOptTips(), loadSamePrices(newRows)]);
   const ids = [...new Set(newRows.flatMap((r) => (r.free ? (r.item ? [r.item] : []) : itemsOf(r.text).map((i) => i.id))))].filter((id) => !prices.has(id)).slice(0, 60);
   if (!ids.length) return;
   try { const p = await fetch(`${api}/prices?ids=${ids.join(',')}`).then((r) => r.json()); for (const id of ids) prices.set(id, p[id] || null); } catch (e) {}
+}
+// Same-option prices for captured pieces: asking median now, else the median of 30-day listings with that option.
+async function loadSamePrices(list) {
+  const want = new Map();
+  for (const r of list) { const q = !r.free && sameOf(r, itemsOf(r.text)[0]); if (q && !samePrices.has(q.key)) want.set(q.key, [itemsOf(r.text)[0].id, q]); }
+  await Promise.all([...want].slice(0, 24).map(async ([key, [id, q]]) => {
+    try {
+      const d = await fetch(`${api}/market/history?id=${id}&stat=${q.stat}&val=${q.value}`).then((x) => (x.ok ? x.json() : null));
+      const ps = (d?.rows || []).map((x) => x.price).filter(Number.isFinite).sort((a, b) => a - b);
+      samePrices.set(key, d?.summary?.median || (ps.length ? ps[ps.length >> 1] : null));
+    } catch (e) {}
+  }));
 }
 
 // New megaphones pushed over the presence socket (assets/common.js) appear at once; polling stays as the fallback.
