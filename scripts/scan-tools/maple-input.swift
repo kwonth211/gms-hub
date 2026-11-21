@@ -156,6 +156,13 @@ func topmostPid(_ p:CGPoint) -> Int32? {
     }
     return nil
 }
+// A click briefly hides the macOS cursor (Wine takes pointer ownership until releasePointer). Never do it while
+// the owner is moving the mouse or typing in another app: wait until hands are off for 1.5 s.
+do {
+    func idle(_ t:CGEventType) -> Double { CGEventSource.secondsSinceLastEventType(.hidSystemState,eventType:t) }
+    let busy=[CGEventType.mouseMoved,.leftMouseDown,.rightMouseDown,.leftMouseDragged,.scrollWheel,.keyDown].map(idle).min() ?? 9
+    if busy<1.5 { emit(["error":"Owner is using the mouse or keyboard (background)","idle":busy]); exit(4) }
+}
 let pointerNow=CGEvent(source:nil)!.location
 if topmostPid(pointerNow)==pid {
     func since(_ t:CGEventType) -> Double { CGEventSource.secondsSinceLastEventType(.hidSystemState,eventType:t) }
