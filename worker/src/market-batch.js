@@ -11,7 +11,7 @@ const limits = (env, boost = false) => boost ? { ...baseLimits(env),
   periodMinutes: 10, boost: true } : baseLimits(env);
 const baseLimits = env => ({
   periodMinutes: 15,
-  dailyRows: Math.max(1, Math.min(20000, Number(env.MARKET_BATCH_DAILY_ROWS) || 2000)),
+  dailyRows: Math.max(1, Math.min(60000, Number(env.MARKET_BATCH_DAILY_ROWS) || 2000)),
   intervalSeconds: env.MARKET_BATCH_MIN_INTERVAL_SECONDS === undefined ? 21600 : Math.max(0, Number(env.MARKET_BATCH_MIN_INTERVAL_SECONDS) || 0),
   maxBatchRows: Math.max(1, Math.min(500, Number(env.MARKET_BATCH_MAX_ROWS) || 500)),
   // How far one run looks on the source site. Served with the preflight so the extension follows changes without a reload.

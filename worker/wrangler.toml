@@ -18,7 +18,7 @@ DISCORD_TRADE_CHANNEL = "1571870717958430834"
 # Small hourly batches; existing daily usage is retained across a policy change. D1 free allows 100,000 rows written a
 # day and every index entry counts, so a listing costs about four: 9,000 listings a day leaves room for megaphones.
 MARKET_BATCH_PAUSED = "false"
-MARKET_BATCH_DAILY_ROWS = "20000"
+MARKET_BATCH_DAILY_ROWS = "40000"
 MARKET_BATCH_MIN_INTERVAL_SECONDS = "600"
 MARKET_BATCH_MAX_ROWS = "150"
 MARKET_BATCH_MAX_ITEMS = "60"
