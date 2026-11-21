@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "megaphone-option-colors",
+   "version": "0.7.50",
+   "level": "patch",
+   "date": "2026-11-21",
+   "path": "/megaphone/",
+   "ko": "확성기 옵션 — 기본 수치와 추가 수치를 게임처럼 색으로",
+   "en": "Megaphone options — base and extra stats shown like the game",
+   "desc": {
+    "ko": "고확 아이템에 마우스를 올리면 능력치마다 기본 수치와 그보다 높은 만큼을 주황색으로 나눠 보여 줘요. 주문서 성공 횟수(+N)도 주황색이에요.",
+    "en": "Hovering a megaphone item now splits each stat into the item's base value and the extra above it in orange, and shows the +N upgrade count in orange."
+   }
+  },
+  {
    "id": "notices-korean",
    "version": "0.7.49",
    "level": "patch",
