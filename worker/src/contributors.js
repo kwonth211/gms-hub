@@ -66,12 +66,12 @@ export async function contributorsData(env, me = null) {
 
 const medal = (i) => ['🥇', '🥈', '🥉'][i] || `${i + 1}.`;
 export function leaderboardEmbed(d) {
-  const line = (r, i) => `${medal(i)} **${r.game || (r.anon ? '익명 기여자' : r.name || '이름 없음')}** · ${r.points}점 (스캔 ${r.scans} · 판매 확인 ${r.gone})`;
+  const line = (r, i) => `${medal(i)} **${r.game || (r.anon ? '익명 기여자' : r.name || '이름 없음')}** · 아이템 ${r.scans.toLocaleString()}개${r.gone ? ` · 판매 확인 ${r.gone}건` : ''}`;
   return {
     title: '🏆 기여자 순위 · Top contributors',
     url: 'https://gms-hub.com/ko/contributors/?utm_source=discord&utm_medium=board',
     color: 0xf5b301,
-    description: '사이트에서 상점 스캔을 올리거나 팔린 매물을 알려 주면 점수가 올라요. 모두의 시세가 더 정확해져요.',
+    description: '사이트에서 상점 스캔으로 아이템을 올리거나 팔린 매물을 알려 주면 순위가 올라가요. 모두의 시세가 더 정확해져요.',
     fields: [
       { name: '전체 순위', value: d.all.slice(0, 10).map(line).join('\n') || '아직 없어요. 첫 기여자가 되어 보세요!' },
       { name: '최근 7일 1위', value: d.week[0] ? line(d.week[0], 0) : '—' },

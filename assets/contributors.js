@@ -10,14 +10,22 @@ function board(root) {
   // (owner, 2026-11-21: the Discord profile pictures did not fit).
   const MOBS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 16, 17, 19, 21, 22, 25];
   const pick = (s) => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return MOBS[h % MOBS.length]; };
-  const avatar = (r) => `/assets/monsters/${pick(r.game || r.name || r.id || 'x')}.gif`;
+  // Higher on the board, stronger monster (owner, 2026-11-21): 1st Crimson Balrog down to Clang at 20th.
+  const RANK_MOBS = [[700005, '크림슨 발록', 'Crimson Balrog'], [700001, '주니어 발록', 'Jr. Balrog'], [700008, '파우스트', 'Faust'], [53, '타우로스피어', 'Taurospear'],
+    [69, '스켈레톤 지휘관', 'Skeleton Commander'], [52, '타우로마시스', 'Tauromacis'], [50, '레드 드레이크', 'Red Drake'], [51, '와일드카고', 'Wild Kargo'],
+    [49, '다크 스톤골렘', 'Dark Stone Golem'], [700003, '썩은 머쉬맘', 'Blue Mushmom'], [48, '스톤골렘', 'Stone Golem'], [45, '드레이크', 'Drake'],
+    [46, '크로코', 'Croco'], [43, '레이스', 'Wraith'], [59, '라플레시아', 'Rafflesia'], [40, '카파 드레이크', 'Copper Drake'], [65, '스켈독', 'Skelegon dog'],
+    [41, '엄티', 'Umti'], [66, '머미독', 'Mummydog'], [44, '클랑', 'Clang']];
+  const mobFor = (r, i) => RANK_MOBS[i] || [pick(r.game || r.name || r.id || 'x'), '', ''];
+  const avatar = (r, i) => `/assets/contrib/${mobFor(r, i)[0]}.png`; // cropped to the monster, see assets/contrib
+  const mobName = (r, i) => mobFor(r, i)[ko ? 1 : 2];
   const medal = (i) => ['🥇', '🥈', '🥉'][i] || `${i + 1}`;
   let data = null, tab = 'all';
   function render() {
     if (!data) return;
     const rows = data[tab] || [];
     $('[data-ct-list]').innerHTML = rows.length
-      ? rows.map((r, i) => `<li class="ct-row${i < 3 ? ' top' : ''}"><span class="ct-rank">${medal(i)}</span><img class="ct-av" src="${avatar(r)}" alt="" width="36" height="36" loading="lazy"><span class="ct-name">${r.game ? esc(r.game) : r.anon ? `<span class="muted">${ko ? '익명 기여자' : 'Anonymous'}</span>` : esc(r.name || (ko ? '이름 없음' : 'No name'))}</span><span class="ct-detail">${ko ? `스캔 ${r.scans} · 판매 확인 ${r.gone}` : `${r.scans} scans · ${r.gone} sold`}</span><b class="ct-pts">${r.points}${ko ? '점' : ' pts'}</b></li>`).join('')
+      ? rows.map((r, i) => `<li class="ct-row${i < 3 ? ' top' : ''}"><span class="ct-rank">${medal(i)}</span><img class="ct-av" src="${avatar(r, i)}" alt="${esc(mobName(r, i))}" title="${esc(mobName(r, i))}" width="44" height="44" loading="lazy"><span class="ct-name">${r.game ? esc(r.game) : r.anon ? `<span class="muted">${ko ? '익명 기여자' : 'Anonymous'}</span>` : esc(r.name || (ko ? '이름 없음' : 'No name'))}</span><span class="ct-detail">${esc(mobName(r, i))}${r.gone ? (ko ? ` · 판매 확인 ${r.gone}건` : ` · ${r.gone} sold reports`) : ''}</span><b class="ct-pts">${ko ? `아이템 ${r.scans.toLocaleString()}개` : `${r.scans.toLocaleString()} items`}</b></li>`).join('')
       : `<li class="muted">${ko ? '아직 기여자가 없어요. 첫 번째로 이름을 올려 보세요!' : 'No contributors yet. Be the first!'}</li>`;
     const a = tab === 'week' ? data.anonWeek : data.anonAll;
     $('[data-ct-anon]').textContent = a?.points ? (ko ? `로그인하지 않고 올린 분은 가장 많이 올린 상점의 게임 닉네임으로 보여요.` : `Uploads made without logging in show the in-game name of the shop uploaded most.`) : '';
@@ -26,8 +34,8 @@ function board(root) {
     const logged = !!(globalThis.gmsAuth?.().Authorization);
     me.hidden = false;
     me.innerHTML = data.me
-      ? (ko ? `내 점수 · 최근 7일 <b>${data.me.week}점</b> · 전체 <b>${data.me.total}점</b>` : `Your points · last 7 days <b>${data.me.week}</b> · all time <b>${data.me.total}</b>`)
-      : logged ? '' : (ko ? '디스코드로 로그인하고 올리면 내 이름과 점수가 여기에 올라가요. 오른쪽 위 <b>로그인</b> 버튼을 눌러 주세요.' : 'Log in with Discord before uploading and your name and points show up here. Use the <b>Log in</b> button at the top right.');
+      ? (ko ? `내가 올린 것 · 최근 7일 <b>${data.me.week}개</b> · 전체 <b>${data.me.total}개</b>` : `Yours · last 7 days <b>${data.me.week}</b> · all time <b>${data.me.total}</b>`)
+      : logged ? '' : (ko ? '디스코드로 로그인하고 올리면 내가 올린 개수가 여기에 나와요. 오른쪽 위 <b>로그인</b> 버튼을 눌러 주세요.' : 'Log in with Discord before uploading and your name and points show up here. Use the <b>Log in</b> button at the top right.');
     if (!me.innerHTML) me.hidden = true;
   }
   root.addEventListener('click', (e) => { const b = e.target.closest('[data-ct-tab]'); if (b) { tab = b.dataset.ctTab; render(); } });

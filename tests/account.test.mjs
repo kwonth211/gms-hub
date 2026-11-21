@@ -120,5 +120,5 @@ test('contributions: logged-in uploads count under the Discord name, others toge
   assert.deepEqual(d.week.map((r) => [r.name || r.game, r.scans, r.gone, r.points]), [['혹스', 12, 1, 13], ['Leepz', 5, 0, 5]]);
   assert.deepEqual([d.anonWeek.points, d.anonWeek.people], [5, 1]);
   assert.deepEqual(d.me, { week: 13, total: 13 });
-  assert.match(leaderboardEmbed(d).fields[0].value, /혹스.*13점[\s\S]*Leepz\*\* · 5점/);
+  assert.match(leaderboardEmbed(d).fields[0].value, /혹스\*\* · 아이템 12개 · 판매 확인 1건[\s\S]*Leepz\*\* · 아이템 5개/);
 });
