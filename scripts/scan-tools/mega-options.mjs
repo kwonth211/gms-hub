@@ -86,6 +86,7 @@ export class OptionReader {
       if(!title())rows.push(...(await this.recognizeFallback(pixels)).map(r=>place(r,3)));
     }
     const found=title();
+    this.lastPanel={box:imageBox,rows};
     return found?{panel:{...imageBox,title:found},rows}:null;
   }
   async readPanel(image,rows,panel,item,background=null,wholeScroll=false) {
@@ -103,6 +104,18 @@ export class OptionReader {
     const separated=foreground?await this.recognize(cropImage(foreground,{x:0,y:0,w:body.w,h:body.h},false,3),item.en,'separated.png'):[];
     if(separated.length)readings.push(parseTooltipLines([panel.title,...separated],item));
     let opts=agreeOptions(...readings);
+    // Vision marks some perfectly read stat lines as low-confidence (e.g. "MaxMP: +5" at 0.3), and those are
+    // dropped above. Take such a stat only when at least two separate OCR passes read the same non-zero value.
+    if(opts&&item.cat==='Equip') {
+      const low=list=>parseTooltipLines([panel.title,...list.filter(r=>r.confidence<.5).map(r=>({...r,confidence:1}))],item)?.stats||{};
+      const votes=[raw,enlarged,masked,separated].map(low);
+      for(const k of new Set(votes.flatMap(Object.keys))) {
+        if(opts.stats?.[k]!==undefined)continue;
+        const values=votes.map(v=>v[k]).filter(v=>v!==undefined&&v!==0);
+        const best=values.find(v=>values.filter(w=>w===v).length>=2);
+        if(best!==undefined&&new Set(values).size===1)opts={...opts,stats:{...opts.stats,[k]:best}};
+      }
+    }
     this.lastReading={body,raw,enlarged,masked,separated,backgroundModel:foreground?.models,readings};
     const observed=[...raw,...enlarged,...masked,...separated];
     const place=(r,scale)=>({...r,x:body.x+r.x/scale,y:body.y+r.y/scale,w:r.w/scale,h:r.h/scale,...(r.valueBounds?{valueBounds:{x:body.x+r.valueBounds.x/scale,y:body.y+r.valueBounds.y/scale,w:r.valueBounds.w/scale,h:r.valueBounds.h/scale}}:{})});
@@ -257,7 +270,20 @@ export class OptionReader {
       // slower option OCR runs on this image. Previously the entire collector waited until OCR ended.
       await input('move',...park);moved=false;
       await this.readFrame(Date.now(),1100);this.interacting=false;
-      const isolated=await this.readColorPanel(after,ready,item,point,boxes),panel=isolated?.panel,rows=isolated?.rows||[];
+      let isolated=await this.readColorPanel(after,ready,item,point,boxes);
+      this.correctedItem=null;
+      if(!isolated&&this.lastPanel) {
+        // The chat link text can be misread (e.g. "Fairy Wand" read as "Ice Wand"). The tooltip of the row we
+        // pressed is authoritative: if its title is exactly one catalog equipment/scroll name, use that item.
+        const top=this.lastPanel.box.y+65;
+        const names=new Set(this.lastPanel.rows.filter(r=>r.confidence>=.5&&r.y<top).map(r=>String(r.text).trim()));
+        const cands=this.catalog.filter(c=>!c.cash&&(c.cat==='Equip'||/ Scroll: /i.test(c.en))&&[...names].some(t=>tooltipTitle(t,c.en)));
+        if(cands.length===1&&cands[0].en!==item.en) {
+          isolated=await this.readColorPanel(after,ready,cands[0],point,boxes);
+          if(isolated){this.correctedItem=cands[0];item=cands[0];}
+        }
+      }
+      const panel=isolated?.panel,rows=isolated?.rows||[];
       if(!panel||panel.w<120||panel.title.x>box.x+link.x+100){
         fs.writeFileSync(path.join(this.dir,'panel-failure.png'),PNG.sync.write(after));
         fs.writeFileSync(path.join(this.dir,'panel-before.png'),PNG.sync.write(ready));

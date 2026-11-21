@@ -225,9 +225,20 @@ async function tick() {
       if(!Object.keys(row.opts.stats).length)delete row.opts.stats;
       reader.lastMissing=(reader.lastMissing||[]).filter(k=>k==='unread_rows'?Object.keys(row.opts.stats||{}).length+Number(row.opts.attackSpeed!==undefined)+Number(row.opts.knockback!==undefined)<reader.lastStatCount:['slots','ups'].includes(k)?row.opts[k]===undefined:row.opts.stats?.[k]===undefined);
       const recorded=observations.find(r=>r.seen===row.seen&&r.channel===row.channel&&r.nick===row.nick&&r.text===row.text);
+      if(reader.correctedItem) {
+        // the tooltip showed the real item: fix the misread link name in the message we upload
+        // keep row.text (the server finds the uploaded row by it); send the corrected text alongside
+        row.fixedText=row.text.replace(`[${item.en}]`,`[${reader.correctedItem.en}]`);
+        console.log(`link name corrected by tooltip: [${item.en}] -> [${reader.correctedItem.en}] (${row.nick})`);
+        if(recorded)recorded.fixedText=row.fixedText;
+      }
       if(recorded){recorded.opts=row.opts;recorded.capture=reader.lastMissing.length?'partial':'complete';recorded.missing=reader.lastMissing;}
       if(!reader.lastMissing?.length)optionJobs.delete(key);
-      if(!queue.includes(row))queue.push({...row});
+      // A corrected link name needs the server that understands fixedText; until it is deployed
+      // (flag file below), keep such options local so they are never stored under the misread item.
+      const serverFixes=fs.existsSync(path.join(os.homedir(),'.config','gms-hub','mega-fixed-text-server'));
+      if(reader.correctedItem&&!serverFixes)console.log(`  (held back: server does not take corrected names yet)`);
+      else if(!queue.includes(row))queue.push({...row});
       console.log(`options${reader.lastMissing?.length?' partial':''} ${row.nick} [${item.en}] ${JSON.stringify(row.opts)}${reader.lastMissing?.length?' missing='+reader.lastMissing.join(','):''} (${Date.now()-now}ms) mode=${reader.lastMode||'?'} seen=${row.seen}`);
     }
     else console.log(`options skipped ${row.nick} [${item.en}]: ${reader.lastSkip} (${Date.now()-now}ms) mode=${reader.lastMode||'?'} seen=${row.seen}`);
