@@ -312,11 +312,10 @@ test('map pages turn monster spawns around: monsters, spawn counts, full-clear E
   assert.match(read('dist/ko/maps/10001081/index.html'),/<title>글클메 파란버섯 숲/);
 });
 
-test('bare quest pages are gone: old URLs forward to the guide or the quest list, and only guides are linked',()=>{
-  const guided=read('dist/en/quests/10104/index.html'), bare=read('dist/en/quests/1001/index.html');
-  // a forward to a guide passes its search ranking on (no noindex); a forward to the plain list stays noindex
-  assert.doesNotMatch(guided,/noindex/); assert.match(guided,/rel="canonical" href="https:\/\/gms-hub\.com\/en\/quests\/pia\/"/); assert.match(guided,/location\.replace\("\/en\/quests\/pia\/"\)/);
-  assert.match(bare,/noindex/); assert.match(bare,/location\.replace\("\/en\/quests\/"\)/);
+test('bare quest pages are gone: old URLs 404 and the 404 page forwards them to the guide or the quest list',()=>{
+  assert.ok(!fs.existsSync('dist/en/quests/10104/index.html') && !fs.existsSync('dist/ko/quests/506100/index.html'),'no shell pages for old quest ids');
+  const nf=read('dist/404.html');
+  assert.match(nf,/"10104":"\/quests\/pia\/"/); assert.match(nf,/location\.replace\('\/'\+m\[1\]\+\(g\[m\[2\]\]\|\|'\/quests\/'\)\)/);
   const sm=read('dist/sitemap.xml');
   assert.ok(!/\/quests\/\d+\//.test(sm),'no per-quest URLs in the sitemap');
   const idx=read('dist/en/quests/index.html');

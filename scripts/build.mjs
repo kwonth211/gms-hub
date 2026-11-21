@@ -3721,14 +3721,8 @@ for (const lang of LANGS) {
         ld: [breadcrumbLd(lang, lang === 'ko' ? `${name} 장비` : `${name} equipment`, equipPath(c))]
       }));
     }
-    // The old per-quest URLs (/quests/<id>/) forward to the quest's guide, or to the quest list (no ads).
-    // Forwards to a guide carry no noindex (2026-11-20): Google kept showing the old URLs for quest-name searches
-    // ("I Need to Find My Daughter 1", 245 impressions, 0.4% CTR) and a noindexed forward does not hand that ranking
-    // to the guide; canonical + instant refresh read as a permanent redirect. Forwards to the plain list stay noindex.
-    for (const q of QUESTS) {
-      const guide = questPath(q), to = langPath(lang, guide || '/quests/'), url = absUrl(to);
-      write(path.join(lang, 'quests', String(q.id), 'index.html'), `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><title>GMS Hub</title>${guide ? '' : '<meta name="robots" content="noindex">'}<link rel="canonical" href="${url}"><meta http-equiv="refresh" content="0; url=${url}"></head><body><a href="${url}">${url}</a><script>location.replace(${JSON.stringify(to)})</script></body></html>`);
-    }
+    // The old per-quest URLs (/quests/<id>/) are gone (2026-11-21): their 466-byte forward pages (832 opened to search
+    // on 11/20, the night before a sitewide Google drop) now 404, and 404.html sends people to the quest's guide.
   }
 
   const it = IT[lang];
@@ -3854,11 +3848,14 @@ for (const slug of ['', ...PRICE_CATS.map((c) => c.slug)]) {
   }
 }
 
+// Old per-quest URLs have no page any more; a person who follows one lands here and is sent to the guide or the list.
+const OLD_QUEST_GUIDE = Object.fromEntries(QUESTS.filter((q) => questPath(q)).map((q) => [q.id, questPath(q)]));
+const OLD_QUEST_JS = `<script>(function(){var m=location.pathname.match(/^\\/(ko|en|ja|zh)\\/quests\\/(\\d+)\\/?$/);if(!m)return;var g=${JSON.stringify(OLD_QUEST_GUIDE)};location.replace('/'+m[1]+(g[m[2]]||'/quests/'))})()</script>`;
 write(
   '404.html',
   `${head({ lang: 'ko', title: '404 | GMS Hub', desc: T.ko.notFound, noindex: true })}
 <body><main class="wrap center">${spriteSvg('slime', 64)}<h1>404</h1><p>${T.ko.notFound}<br>${T.en.notFound}</p>
-<p class="choice"><a class="btn" href="${href('/ko/')}">${T.ko.backHome}</a> <a class="btn ghost" href="${href('/en/')}">${T.en.backHome}</a>${LOCALES.map((l) => ` <a class="btn ghost" href="${href(`/${l.code}/`)}" lang="${l.hreflang}">${l.name}</a>`).join('')}</p></main></body></html>`
+<p class="choice"><a class="btn" href="${href('/ko/')}">${T.ko.backHome}</a> <a class="btn ghost" href="${href('/en/')}">${T.en.backHome}</a>${LOCALES.map((l) => ` <a class="btn ghost" href="${href(`/${l.code}/`)}" lang="${l.hreflang}">${l.name}</a>`).join('')}</p></main>${OLD_QUEST_JS}</body></html>`
 );
 
 // Admin is a client-side editor that commits data files through the GitHub API. The owner pages (this and the traffic
