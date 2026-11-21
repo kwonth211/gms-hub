@@ -43,6 +43,20 @@ export function itemLink(img,line,glyph=null) {
   return point(group[0],group.at(-1));
 }
 
+// Shop window rectangles from full-frame OCR rows, measured on the owner's shop (2026-11-21, 1366x796 window:
+// panel 423..945 x 150..612; SOLD ITEMS at 578,213; CLOSE STORE at 572,266). A margin is added on every side.
+export function shopZones(rows) {
+  const out=[],m=16;
+  for(const r of rows) {
+    if(!(r.confidence>=.3))continue;const t=String(r.text).trim().toUpperCase().replace(/\s+/g,' ');
+    let dx,dy;
+    if(/^SOLD ITEMS$/.test(t))[dx,dy]=[155,63];
+    else if(/^(CLOSE|LEAVE|OPEN|EXIT) ?STORE$|^(LEAVE|EXIT)$/.test(t))[dx,dy]=[149,116];
+    else continue;
+    out.push({x:r.x-dx-m,y:r.y-dy-m,w:522+2*m,h:462+2*m});
+  }
+  return out;
+}
 export class OptionReader {
   constructor({shot,input,ocr,catalog,readFrame}) {Object.assign(this,{shot,input,ocr,catalog,readFrame});this.last=0;this.dir=fs.mkdtempSync(path.join(os.tmpdir(),'gms-mega-options-'));}
   async recognize(img,name,file='ocr.png',scale=1) {const p=path.join(this.dir,file);fs.writeFileSync(p,PNG.sync.write(img));const {stdout}=await exec(this.ocr,[p,name,String(scale)],{timeout:4000,maxBuffer:2e6});return JSON.parse(stdout);}
@@ -242,9 +256,16 @@ export class OptionReader {
       // A full-frame OCR for an open whisper window costs most of a second per click. Whisper windows are rare
       // and any we open are closed at once, so a clean check stays valid for a few seconds.
       if(!(OptionReader.noWhisperUntil>Date.now())) {
-        if(whisperDialog(await this.recognize(before,item.en,'before.png')))return skip('existing whisper dialog');
-        OptionReader.noWhisperUntil=Date.now()+8000;
+        const rows=await this.recognize(before,item.en,'before.png');
+        // The owner's shop window (CLOSE/LEAVE STORE, SOLD ITEMS) must never get a press or drag from us.
+        const zones=shopZones(rows);
+        if(zones.length){OptionReader.shopZones=zones;OptionReader.shopSeen=Date.now();}
+        else if(Date.now()-(OptionReader.shopSeen||0)>10*60e3)OptionReader.shopZones=[];
+        process.env.GMS_FORBID=(OptionReader.shopZones||[]).map(z=>[z.x,z.y,z.w,z.h].map(Math.round).join(',')).join(';');
+        if(whisperDialog(rows))return skip('existing whisper dialog');
+        OptionReader.noWhisperUntil=Date.now()+8000;OptionReader.shopChecked=true;
       }
+      if(!process.env.GMS_FORBID&&!OptionReader.shopChecked)return skip('shop window not checked yet');
       this.timing.preflight=Date.now()-t0;
       const ready=await this.readFrame(Date.now(),1400);if(!ready||ready.width!==image.width||ready.height!==image.height)return skip('window changed during preflight');
       // Text OCR and dialog checks take time. Follow the exact same pixels to their new row before clicking.

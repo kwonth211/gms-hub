@@ -26,6 +26,12 @@ guard let w=windows.first(where:{ ($0[kCGWindowName as String] as? String)=="Map
       let bounds=w[kCGWindowBounds as String] as? [String:Double],let pid=w[kCGWindowOwnerPID as String] as? Int32,
       let wid=w[kCGWindowNumber as String] as? Int,let width=bounds["Width"],let height=bounds["Height"],let ox=bounds["X"],let oy=bounds["Y"],
       x>=0,x<width,y>=28,y<height else {emit(["error":"Game window missing or point outside client area"]);exit(3)}
+// Areas the collector must never press or drag in (the owner's shop window: CLOSE/LEAVE STORE).
+// GMS_FORBID="x,y,w,h;x,y,w,h" in window coordinates. Any action aimed inside one is refused outright.
+let forbid:[CGRect]=(ProcessInfo.processInfo.environment["GMS_FORBID"] ?? "").split(separator:";").compactMap{
+    let v=$0.split(separator:",").compactMap{Double($0)}; return v.count==4 ? CGRect(x:v[0],y:v[1],width:v[2],height:v[3]) : nil }
+func forbidden(_ px:Double,_ py:Double) -> Bool { forbid.contains{ $0.contains(CGPoint(x:px,y:py)) } }
+if forbidden(x,y) { emit(["error":"Point is inside a no-input area (shop window)","point":[x,y]]); exit(7) }
 let before=snapshot()
 if args.count==6 && (Double(args[4]) != width || Double(args[5]) != height) {
     emit(["error":"Window resized since capture"]);exit(3)
@@ -73,6 +79,7 @@ if (before["frontPid"] as? Int) == Int(pid) {
         return (!near && !onPath) || min(since(.keyDown),since(.flagsChanged)) < Date().timeIntervalSince(started)
     }
     func send(_ type:CGEventType,_ p:CGPoint) {
+        if type != .mouseMoved && forbidden(Double(p.x-ox),Double(p.y-oy)) { return }
         guard let e=CGEvent(mouseEventSource:src,mouseType:type,mouseCursorPosition:p,mouseButton:.left) else { return }
         e.setIntegerValueField(.mouseEventDeltaX,value:Int64((p.x-at.x).rounded()))
         e.setIntegerValueField(.mouseEventDeltaY,value:Int64((p.y-at.y).rounded()))
@@ -170,6 +177,7 @@ if topmostPid(pointerNow)==pid {
     usleep(80000)
 }
 func post(_ type:NSEvent.EventType,_ flags:NSEvent.ModifierFlags=[],at px:Double=x,_ py:Double=y) {
+    if forbidden(px,py) { emit(["phase":"skipped_forbidden","point":[px,py]]); return }
     let native=NSEvent.mouseEvent(with:type,location:NSPoint(x:px,y:height-py),modifierFlags:flags,
         timestamp:ProcessInfo.processInfo.systemUptime,windowNumber:wid,context:nil,eventNumber:0,
         clickCount:type == .leftMouseDragged ? 0 : 1,pressure:type == .leftMouseDown ? 1 : 0)!

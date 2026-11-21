@@ -205,3 +205,11 @@ test('ticker summaries include upgrades and zero slots without inventing missing
  assert.equal(optionSummary(undefined),'');
  assert.equal(optionSummary({ups:0,stats:{PAD:'<script>'}}),'');
 });
+test('the owner shop window becomes a no-input area around CLOSE STORE and SOLD ITEMS',async()=>{
+ const {shopZones}=await import('../scripts/scan-tools/mega-options.mjs');
+ const z=shopZones([{text:'CLOSE STORE',x:572,y:266,confidence:1},{text:'[Work Gloves] S> 5m',x:360,y:679,confidence:1}]);
+ assert.equal(z.length,1);
+ const inside=(p)=>p[0]>=z[0].x&&p[0]<=z[0].x+z[0].w&&p[1]>=z[0].y&&p[1]<=z[0].y+z[0].h;
+ assert.ok(inside([606,270])&&inside([900,600])&&inside([430,160]));
+ assert.ok(!inside([400,640]));                   // the chat line below stays clickable
+});
