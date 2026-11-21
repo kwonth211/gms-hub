@@ -112,3 +112,12 @@ test('Korean notice summaries are redone when a clock time has no time zone or a
   assert.equal(foreignScript('레귤러 스토어 परम릿이 100 NX'), true);
   assert.equal(foreignScript('Regular Store Permit이 100 NX에 판매돼요. ★'), false);
 });
+
+test('the last summary try cuts stray Chinese characters out instead of leaving the notice in English', async () => {
+  const { koByAi } = await import('../worker/src/news.js');
+  const env = { AI: { run: async () => ({ response: JSON.stringify({ title: '커닝 파퀘 黑色 자루 제외', points: ['검은 자루(黑袋)를 잠시 얻을 수 없어요.'], en: ['Black Sacks are off for now.'] }) }) } };
+  await assert.rejects(koByAi(env, 't', 'b'), /other script/);
+  const k = await koByAi(env, 't', 'b', { strict: true, clean: true });
+  assert.equal(k.title, '커닝 파퀘 자루 제외');
+  assert.deepEqual(k.points, ['검은 자루를 잠시 얻을 수 없어요.']);
+});

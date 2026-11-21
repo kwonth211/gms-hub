@@ -213,7 +213,7 @@ export async function officialNews(fetcher = fetch, now = Date.now(), limit = 10
 // and a few lines; the result is kept in the snapshots table (key news-ko) and reused. Hand-written entries (KO,
 // KO_POINTS) always win, and a failed or odd answer leaves the notice in English until the next run.
 const AI_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
-export async function koByAi(env, title, body, { strict = false } = {}) {
+export async function koByAi(env, title, body, { strict = false, clean = false } = {}) {
   // The second try is stricter: the model kept slipping Chinese characters into Korean (2026-11-21, a KPQ notice stayed
   // in English for hours), so it is told the allowed scripts outright and runs at temperature 0.
   const STRICT = strict ? ' Use only Korean Hangul, English letters, digits and punctuation: never Chinese characters (Hanja), Japanese kana or any other script, not even in parentheses.' : '';
@@ -229,6 +229,15 @@ export async function koByAi(env, title, body, { strict = false } = {}) {
   const en = (Array.isArray(j.en) ? j.en : []).filter((p) => typeof p === 'string' && p.trim()).map((p) => p.trim().slice(0, 300)).slice(0, 5);
   const enOk = en.length && !en.some((p) => /[^\p{Script=Latin}\p{N}\p{P}\p{S}\s]/u.test(p) || bareTime(p));
   if (!t || !points.length || !/[가-힣]/.test(t + points.join(''))) throw new Error('unusable answer');
+  // Last try (owner 2026-11-21: "무조건 한국어"): stray characters of another script are cut out instead of failing,
+  // with any parentheses left empty, so a usable Korean summary exists from the first run.
+  if (clean && foreignScript(t + points.join(' '))) {
+    const cut = (x) => x.replace(/[^\p{Script=Hangul}\p{Script=Latin}\p{N}\p{P}\p{S}\s]/gu, '').replace(/\(\s*\)|\[\s*\]/g, '').replace(/\s{2,}/g, ' ').replace(/\s+([.,!?)])/g, '$1').trim();
+    const t2 = cut(t), p2 = points.map(cut).filter((x) => /[가-힣]/.test(x));
+    if (!t2 || !p2.length) throw new Error('nothing left after cleaning');
+    if (bareTime(t2 + ' ' + p2.join(' '))) throw new Error('clock time without time zone');
+    return { title: t2, points: p2, ...(enOk ? { en } : {}) };
+  }
   if (foreignScript(t + points.join(' '))) throw new Error(`other script in answer: ${[...new Set((t + points.join('')).match(/[^\p{Script=Hangul}\p{Script=Latin}\p{N}\p{P}\p{S}\s]/gu) || [])].join('').slice(0, 12)}`);
   if (bareTime(t + ' ' + points.join(' '))) throw new Error('clock time without time zone');
   return { title: t, points, ...(enOk ? { en } : {}) };
@@ -279,8 +288,8 @@ export async function refreshNews(env, fetcher = fetch, now = Date.now()) {
     const bad = made[x.id] && !usable(made[x.id]);
     if ((!made[x.id] || bad || made[x.id].v !== AI_VERSION || made[x.id].en !== x.en) && env.AI && added < 2) {
       const body = x.raw || await fetcher(`${FEED}/${x.id}`, { signal: AbortSignal.timeout(8000) }).then((r) => r.json()).then((j) => noticeText(j.body)).catch(() => '');
-      const once = (strict) => koByAi(env, x.en, body, { strict }).catch((e) => { console.log('news ko failed', x.id, String(e)); return null; });
-      const k = body ? (await once(false)) || (await once(true)) : null;
+      const once = (o) => koByAi(env, x.en, body, o).catch((e) => { console.log('news ko failed', x.id, String(e)); return null; });
+      const k = body ? (await once({})) || (await once({ strict: true })) || (await once({ strict: true, clean: true })) : null;
       if (k) { made[x.id] = { ...k, en: x.en, v: AI_VERSION }; added++; }
     }
     const k = made[x.id];

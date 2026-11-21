@@ -78,10 +78,10 @@ test('a notice waits for its Korean summary, and a card that had to go out in En
   const real = globalThis.fetch, calls = [];
   globalThis.fetch = async (url, init) => { calls.push([init.method, String(url)]); return Response.json({ id: 'm1' }); };
   const en = { id: 7, cat: 'general', en: 'Black Sacks', ko: 'Black Sacks', date: '2026-11-20T22:00:00Z', sum: { en: ['English line'], ko: ['English line'] } };
-  await newsToDiscord(env, { items: [en] }, Date.parse('2026-11-20T23:00:00Z'));
-  assert.equal(calls.length, 0); // one hour in: still waiting for Korean
+  await newsToDiscord(env, { items: [en] }, Date.parse('2026-11-20T22:30:00Z'));
+  assert.equal(calls.length, 0); // half an hour in: still waiting for Korean
   await newsToDiscord(env, { items: [en] }, Date.parse('2026-11-21T05:00:00Z'));
-  assert.equal(calls.at(-1)[0], 'POST'); // six hours: goes out in English
+  assert.equal(calls.at(-1)[0], 'POST'); // past an hour: goes out in English
   await newsToDiscord(env, { items: [{ ...en, ko: '검은 자루', sum: { en: ['English line'], ko: ['한국어 요약이에요.'] } }] }, Date.parse('2026-11-21T06:00:00Z'));
   globalThis.fetch = real;
   assert.deepEqual(calls.at(-1), ['PATCH', 'https://discord.com/api/v10/channels/c/messages/m1']);

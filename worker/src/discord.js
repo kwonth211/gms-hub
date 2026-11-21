@@ -140,13 +140,14 @@ export async function newsToDiscord(env, data, now = Date.now()) {
   const st = row ? JSON.parse(row.json) : { sent: data.items.map((x) => String(x.id)), reminded: [] };
   let changed = !row, posted = 0;
   // Korean is ready when the summary is no longer the English lines (owner 2026-11-21: a notice went out in English).
-  // A notice waits up to six hours for it; if it still has to go out in English, the card is edited once Korean arrives.
+  // A notice waits up to an hour for it (the summary now always comes out in Korean, cleaned if need be); if it still has
+  // to go out in English, the card is edited once Korean arrives.
   const korean = (x) => !!x.sum?.ko?.length && JSON.stringify(x.sum.ko) !== JSON.stringify(x.sum.en) && /[가-힣]/.test(x.sum.ko.join(''));
   st.msg ||= {}; st.english ||= [];
   for (const x of data.items) {
     const id = String(x.id);
     if (st.sent.includes(id) || posted >= 2) continue;
-    if (!korean(x) && now - Date.parse(x.date) < 6 * 3600000) continue;
+    if (!korean(x) && now - Date.parse(x.date) < 3600000) continue;
     const msg = await botPost(env, channel, { embeds: [noticeEmbed(x)] });
     if (msg) { st.sent.push(id); st.msg[id] = msg; if (!korean(x)) st.english.push(id); posted++; changed = true; }
   }
