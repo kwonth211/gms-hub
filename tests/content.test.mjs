@@ -23,6 +23,13 @@ test('consent initialization precedes both async Google tags and config on index
   }
 });
 
+test('home and market fetch the current collection-status module even for returning visitors', () => {
+  for (const name of ['home.js','market.js']) {
+    assert.match(read(`dist/assets/${name}`), /import '\.\/collection-status\.js\?v=[a-f0-9]{12}'/);
+    assert.match(read(`dist/assets/${name}`), /from '\.\/[^']+\.js\?v=[a-f0-9]{12}'/);
+  }
+});
+
 test('market discovery links reach item pages and compact price labels preserve the market workspace', () => {
   for (const lang of ['ko', 'en']) {
     const market = read(`dist/${lang}/tools/market/index.html`);

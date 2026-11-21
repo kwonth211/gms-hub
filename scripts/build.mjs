@@ -4027,7 +4027,8 @@ for (const { source, name } of Object.values(SHARE_IMAGES)) fs.copyFileSync(path
 for (const { source, name } of Object.values(PAGE_SHARE_IMAGES)) fs.copyFileSync(path.join(root, 'assets', source), path.join(out, 'assets', name));
 for (const name of moduleFiles) {
   const source = fs.readFileSync(path.join(root, 'assets', name), 'utf8');
-  write(`assets/${name}`, source.replace(/(from\s+['"])(\.\.?\/[^'"?]+\.js)(['"])/g, `$1$2?v=${moduleVersion}$3`));
+  // Include side-effect imports (collection status), not just `import ... from`.
+  write(`assets/${name}`, source.replace(/(\b(?:from|import)\s+['"])(\.\.?\/[^'"?]+\.js)(['"])/g, `$1$2?v=${moduleVersion}$3`));
 }
 // Compact item index for the price search: [id, korean, english, category, subcategory, level].
 write('assets/shop-glyphs.json', fs.readFileSync(path.join(root, 'data/shop-glyphs.json')));
