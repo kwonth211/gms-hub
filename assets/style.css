@@ -3681,6 +3681,4 @@ body.exp-running .exp-stop { display: inline-flex; }
 .mb-exact-filter button { flex:none; }
 @media(max-width:600px) { .mb-exact-filter { align-items:flex-start; flex-direction:column; } }
 
-/* Home hero: the "upload my shop" link first in the chip row, solid so it reads as an action (2026-11-21). */
-.hero-new a.hero-scan { background: var(--accent-fill); border-color: var(--accent-fill); color: #fff; margin-right: 4px; }
-.hero-new a.hero-scan:hover { filter: brightness(1.05); border-color: var(--accent-fill); }
+/* Home hero: "내 상점 올리기" in the shortcut row under the search (owner 2026-11-21), same button as its neighbours. */

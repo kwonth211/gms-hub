@@ -1249,8 +1249,7 @@ function fhPromo(lang) {
 
 function heroNew(lang) {
   const ko = lang === 'ko';
-  // "내 상점 올리기" sits first in the hero row (owner 2026-11-21), styled apart from the NEW chips.
-  return `<p class="hero-new"><a class="hero-scan" href="${href(langPath(lang, '/tools/scan/'))}" data-scan-cta="home-hero">● ${ko ? '내 상점 올리기' : 'Upload my shop'}</a><span class="hero-new-tag">NEW</span>${UPDATES.filter((u) => u.path !== '/').slice(0, 3).map((u) => `<a href="${href(langPath(lang, u.path))}">${esc((ko ? u.ko : u.en).split(' — ')[0])}</a>`).join('')}<a class="hero-new-all" href="${href(langPath(lang, '/updates/'))}">${ko ? '업데이트 소식' : "What's new"}</a></p>`;
+  return `<p class="hero-new"><span class="hero-new-tag">NEW</span>${UPDATES.filter((u) => u.path !== '/').slice(0, 3).map((u) => `<a href="${href(langPath(lang, u.path))}">${esc((ko ? u.ko : u.en).split(' — ')[0])}</a>`).join('')}<a class="hero-new-all" href="${href(langPath(lang, '/updates/'))}">${ko ? '업데이트 소식' : "What's new"}</a></p>`;
 }
 // Home: every update, newest first, eight to a page (assets/updates-pager.js turns the pages; without scripts the whole list
 // shows). Each opens its entry on the patch notes page (/updates/). Anything from the last three days (KST, rebuilt
@@ -1428,6 +1427,7 @@ ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이�
 <a href="#my-char" data-discover="home_character" data-discover-place="home-search">${lang === 'ko' ? '내 캐릭터 맞춤 홈' : 'My character home'}</a>
 <a href="${href(langPath(lang, '/tools/market/?fav=1'))}" data-discover="home_wishlist" data-discover-place="home-search">${lang === 'ko' ? '저장한 관심 아이템' : 'My saved items'}</a>
 <a href="${href(langPath(lang, '/tools/exp/'))}" data-discover="home_exp" data-discover-place="home-search">${lang === 'ko' ? '내 시간당 경험치 측정' : 'Measure my EXP/hour'}</a>
+<a class="home-scan" href="${href(langPath(lang, '/tools/scan/'))}" data-scan-cta="home-hero" data-discover="home_scan" data-discover-place="home-search">${lang === 'ko' ? '내 상점 올리기' : 'Upload my shop'}</a>
 </nav>
 ${heroNew(lang)}
 <dl class="hero-stats"><div data-market-stat="listings"><dt>${lang === 'ko' ? '24시간 매물' : 'Listings, 24h'}</dt><dd>–</dd></div><div data-market-stat="shops"><dt>${lang === 'ko' ? '24시간 확인한 상점' : 'Shops checked, 24h'}</dt><dd>–</dd></div>${lang === 'ko'
