@@ -5265,5 +5265,8 @@
  "● Scan shops from my screen": "● 自分の画面からショップをスキャン",
  "● Share your MapleStory window": "● MapleStoryのウィンドウを共有",
  "✅ Alert on. Check your Discord DMs; you are also in the GMS Hub Discord now.": "✅ 通知オン。DiscordのDMを確認してください。GMS HubのDiscordにも参加しました。",
- "👍 {t0}Upvote": "👍 {t0}おすすめ"
+ "👍 {t0}Upvote": "👍 {t0}おすすめ",
+ "Scheduled collection delayed": "定期収集が遅延中",
+ "Minimum interval {h}h": "最短 {h}時間間隔",
+ "Minimum interval {m}m": "最短 {m}分間隔"
 }

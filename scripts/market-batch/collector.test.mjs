@@ -5,6 +5,16 @@ import { JSDOM } from 'jsdom';
 import reader from './extension/reader-core.js';
 const fixture=JSON.parse(fs.readFileSync(new URL('./fixtures/shop.json',import.meta.url)));
 const catalog={2040801:'Gloves Attack Scroll: Intermediate',2044701:'Claw Attack Scroll: Intermediate'};
+test('world picker caret does not reject valid Windia shops and other worlds remain rejected',()=>{
+ const d=new JSDOM(fixture.html).window.document;
+ d.querySelector('#world').outerHTML='<button id="world" aria-label="World: Windia"><span class="world-drop-label">Windia</span><span aria-hidden="true">▾</span></button>';
+ assert.equal(reader.validate(reader.readShop(d,fixture.capturedAt),catalog).ok,true);
+ d.querySelector('#world').setAttribute('aria-label','World: Scania');
+ assert.equal(reader.validate(reader.readShop(d,fixture.capturedAt),catalog).reason,'world');
+ d.querySelector('#world').removeAttribute('aria-label');
+ assert.equal(reader.readWorld(d),'Windia');
+ d.querySelector('#world').remove();assert.equal(reader.readWorld(d),'');
+});
 function mock(itemCount=2, listDelay=0) {
  const catalogue=JSON.parse(fs.readFileSync(new URL('../../data/items.json',import.meta.url)));
  const extra=catalogue.items.filter(x=>x.id!==2040801&&x.id!==2044701).slice(0,Math.max(0,itemCount-2));

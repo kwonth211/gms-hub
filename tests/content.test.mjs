@@ -11,6 +11,18 @@ const evidence = JSON.parse(read('data/editorial/korean-guides.json'));
 const guides = JSON.parse(read('data/guides.json')).guides;
 execFileSync(process.execPath,['scripts/build.mjs'],{cwd:root});
 
+test('consent initialization precedes both async Google tags and config on indexed and noindex pages', () => {
+  for (const lang of ['ko','en','ja','zh']) {
+    const html=read(`dist/${lang}/index.html`);
+    const consent=html.indexOf("w.gtag('consent', 'default'");
+    assert.ok(consent>0 && consent<html.indexOf('https://www.googletagmanager.com/gtag/js'));
+    assert.ok(consent<html.indexOf("gtag('config','G-"));
+    const ad=html.indexOf('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js');
+    if(ad>=0)assert.ok(consent<ad);
+    assert.equal((html.match(/gtag\('config','G-/g)||[]).length,1);
+  }
+});
+
 test('market discovery links reach item pages and compact price labels preserve the market workspace', () => {
   for (const lang of ['ko', 'en']) {
     const market = read(`dist/${lang}/tools/market/index.html`);
@@ -60,6 +72,7 @@ test('GA and Clarity exclude local/internal browsers without excluding ordinary 
   const html = read('dist/ko/index.html');
   const scripts = [...html.matchAll(/<script(?: [^>]*)?>([\s\S]*?)<\/script>/g)].map(m => m[1]);
   const ga = scripts.find(s => s.includes('var gmsInternal='));
+  const consent = scripts.find(s => s.includes("w.gtag('consent', 'default'"));
   const clarity = scripts.find(s => s.includes('https://www.clarity.ms/tag/'));
   for (const hostname of ['localhost', '127.0.0.1', '[::1]', 'gms-hub.com']) {
     for (const flag of ['', '1']) {
@@ -67,6 +80,8 @@ test('GA and Clarity exclude local/internal browsers without excluding ordinary 
       const ctx = { location: { hostname, search: '' }, localStorage: { getItem: () => flag },
         document: {}, addEventListener: (...args) => scheduled.push(args), window: { dataLayer: { push: x => events.push(Array.from(x)) } } };
       ctx.dataLayer = ctx.window.dataLayer;
+      vm.runInNewContext(consent, ctx);
+      ctx.gtag = ctx.window.gtag;
       vm.runInNewContext(ga, ctx);
       ctx.window.gmsInternal = ctx.gmsInternal;
       vm.runInNewContext(clarity, ctx);

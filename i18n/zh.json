@@ -5265,5 +5265,8 @@
  "● Scan shops from my screen": "● 從我的畫面掃描商店",
  "● Share your MapleStory window": "● 分享你的 MapleStory 視窗",
  "✅ Alert on. Check your Discord DMs; you are also in the GMS Hub Discord now.": "✅ 提醒已开启。请查看 Discord 私信；你也已加入 GMS Hub Discord。",
- "👍 {t0}Upvote": "👍 {t0}推薦"
+ "👍 {t0}Upvote": "👍 {t0}推薦",
+ "Scheduled collection delayed": "定期收集延遲",
+ "Minimum interval {h}h": "最短間隔 {h} 小時",
+ "Minimum interval {m}m": "最短間隔 {m} 分鐘"
 }

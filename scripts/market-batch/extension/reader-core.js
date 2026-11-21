@@ -1,10 +1,17 @@
 (function (root) {
   const get = (node, selector) => node.querySelector(selector)?.textContent.trim() || '';
+  function readWorld(doc) {
+    const world = doc.querySelector('#world');
+    // The world picker now includes a decorative caret. Read its selected label,
+    // never the whole menu or a guessed default world.
+    const accessible = /^World:\s*(.+)$/.exec(world?.getAttribute('aria-label') || '');
+    return accessible ? accessible[1].trim() : get(doc, '#world .world-drop-label') || get(doc, '#world');
+  }
   function readShop(doc, capturedAt = new Date().toISOString()) {
     const modal = doc.querySelector('#sv-modal');
     if (!modal || modal.closest('[hidden]')) throw new Error('상점 상세가 열려 있지 않습니다.');
     return {
-      capturedAt, world: get(doc, '#world'), step: get(modal, '.sv-count'),
+      capturedAt, world: readWorld(doc), step: get(modal, '.sv-count'),
       seller: get(modal, '.sv-tag'), channel: get(modal, '.sv-ch'), room: get(modal, '.sv-fm'),
       items: [...modal.querySelectorAll('.sv-item')].map(e => ({
         classes: e.className, name: get(e, 'b'), icon: e.querySelector('img')?.getAttribute('src'), line: get(e, 'small')
@@ -55,7 +62,7 @@
         channel: +ch[1], room: +fm[1], seen: seen.toISOString().replace('T', ' ').slice(0, 19) } };
     } catch (error) { return { ok: false, reason: error.message }; }
   }
-  const api = { readShop, validate };
+  const api = { readWorld, readShop, validate };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.GmsBatchReader = api;
 })(globalThis);

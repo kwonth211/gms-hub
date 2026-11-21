@@ -28,6 +28,7 @@ const out = path.join(root, 'dist');
 const readJson = (p) => JSON.parse(fs.readFileSync(path.join(root, p), 'utf8'));
 
 const config = readJson('site.config.json');
+const GOOGLE_CONSENT_BOOT = fs.readFileSync(path.join(root, 'assets/google-consent.js'), 'utf8');
 const sites = readJson('data/sites.json');
 const training = readJson('data/training.json');
 const editorialEvidence = readJson('data/editorial/korean-guides.json');
@@ -701,7 +702,7 @@ function head({ lang, title, desc, pagePath, noindex, ld = [], only, bare }) {
   // (clarity.q) holds anything sent before.
   const ga = config.gaMeasurementId
     ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${esc(config.gaMeasurementId)}"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());
+<script>gtag('js',new Date());
 // Operator, local and automated visits are tagged internal (GA4 "Internal traffic" filter): localhost, or any browser that once opened ?internal=1.
 var gmsInternal=['localhost','127.0.0.1','[::1]'].includes(location.hostname);try{if(/[?&]internal=1(&|$)/.test(location.search))localStorage.setItem('gmshub_internal','1');gmsInternal=gmsInternal||localStorage.getItem('gmshub_internal')==='1'}catch(e){}
 gtag('config','${esc(config.gaMeasurementId)}',gmsInternal?{traffic_type:'internal'}:{});</script>`
@@ -750,7 +751,8 @@ ${pagePath === '/tools/market/' ? `<link rel="preload" as="fetch" href="${esc(co
 <link rel="stylesheet" href="${scriptSrc('style.css')}">
 <style>${CHARM_VARS}</style>
 <script type="speculationrules">${SPECULATION}</script>
-${bare ? '' : `${adsense}
+${bare ? '' : `${config.gaMeasurementId ? `<script>${GOOGLE_CONSENT_BOOT}</script>` : ''}
+${adsense}
 ${ga}
 ${clarity}
 ${cfBeacon}`}

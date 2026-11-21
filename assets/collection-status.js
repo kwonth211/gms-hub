@@ -1,13 +1,17 @@
-const tx = globalThis.tx || ((s) => s);
+const tx = globalThis.tx || ((s, vars = {}) => s.replace(/\{(\w+)\}/g, (match, key) => vars[key] ?? match));
 // Collection completion is different from a visitor refreshing the directory.
 export function collectionStatusView(s, lang = 'ko', now = Date.now()) {
   const ko = lang === 'ko', last = Date.parse(s.lastSuccessAt), next = Date.parse(s.nextEligibleAt);
-  const hours = Math.max(1, Math.round((Number(s.intervalSeconds) || 3600) / 3600));
+  const seconds = Number(s.intervalSeconds) > 0 && Number.isFinite(Number(s.intervalSeconds)) ? Number(s.intervalSeconds) : 3600;
+  const minutes = Math.ceil(seconds / 60);
   const stamp = n => new Date(n).toLocaleString(ko ? 'ko-KR' : 'en-US', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit', ...(ko ? {timeZone:'Asia/Seoul'} : {})});
-  const state = ['paused','budget_wait'].includes(s.state) ? s.state : !Number.isFinite(last) ? 'waiting' : now-last > hours*90*60000 ? 'delayed' : 'recent';
-  const title = ko ? {paused:'정기 수집 일시 중지',budget_wait:'한도 초기화 대기',waiting:'첫 수집 대기',delayed:'시세 수집 지연',recent:'최근 수집 반영됨'}[state]
-    : {paused:tx('Collection paused'),budget_wait:tx('Waiting for daily reset'),waiting:tx('Awaiting first collection'),delayed:tx('Collection delayed'),recent:tx('Recent collection received')}[state];
-  const schedule = ko ? `${hours}시간 간격 수집` : tx('Collection every {h}h', {h: hours});
+  const state = ['paused','budget_wait'].includes(s.state) ? s.state : !Number.isFinite(last) ? 'waiting' : now-last > seconds*1500 ? 'delayed' : 'recent';
+  const title = ko ? {paused:'정기 수집 일시 중지',budget_wait:'한도 초기화 대기',waiting:'첫 수집 대기',delayed:'정기 시세 수집 지연',recent:'최근 수집 반영됨'}[state]
+    : {paused:tx('Collection paused'),budget_wait:tx('Waiting for daily reset'),waiting:tx('Awaiting first collection'),delayed:tx('Scheduled collection delayed'),recent:tx('Recent collection received')}[state];
+  // The API exposes the minimum allowed ingest interval, not the local runner's schedule.
+  const schedule = minutes % 60 === 0
+    ? (ko ? `최소 ${minutes/60}시간 간격` : tx('Minimum interval {h}h', {h: minutes/60}))
+    : (ko ? `최소 ${minutes}분 간격` : tx('Minimum interval {m}m', {m: minutes}));
   const completed = Number.isFinite(last) ? (ko ? `최근 수집 완료 ${stamp(last)}` : tx('Last collection {at}', {at: stamp(last)})) : (ko ? '아직 저장 기록 없음' : tx('No completed collection yet'));
   const waiting = state==='budget_wait'&&Number.isFinite(next) ? (ko?` · ${stamp(next)} 이후 수집 가능`:tx(' · eligible after {at}', {at: stamp(next)})) : '';
   return {state,title,description:`${schedule} · ${completed}${waiting}`};

@@ -25,7 +25,7 @@
     const maxShops = options.mode === 'test' ? 40 : Math.min(600, Number(options.maxShops) || 360);
     const maxItems = options.mode === 'test' ? 2 : Math.min(60, Number(options.maxItems) || 12);
     const perItem = Math.min(50, Number(options.shopsPerItem) || 20);
-    const report = { version: '0.6.1', runId: options.runId, world: 'Windia', startedAt: new Date().toISOString(),
+    const report = { version: '0.7.6', runId: options.runId, world: 'Windia', startedAt: new Date().toISOString(),
       status: 'running', rows: [], shops: 0, rejected: {}, queue: [], skippedItems: [], aiCalls: 0 };
     const rows = new Map();
     const openModal = () => { const el = document.querySelector('#sv-modal'); return el && !el.closest('[hidden]') ? el : null; };
@@ -44,6 +44,7 @@
       guard();
       if (openModal()) throw new Error('전용 탭의 상점 상세가 이미 열려 있습니다.');
       await until(() => document.querySelector('tr[data-id] .item-select'), '아이템 목록');
+      if (GmsBatchReader.readWorld(document) !== 'Windia') throw failure('WORLD_MISMATCH', '월드 확인 실패: Windia가 선택되어야 합니다.');
       // The collector tab keeps meso.watch's own filters between runs (a search word, a class, a category tab), which once
       // left it cycling through the same 8 of 1,500 items. Reset them so every run draws from the full list.
       const search = document.querySelector('#search');
@@ -135,7 +136,10 @@
       }
       if (search?.value) { search.value = ''; search.dispatchEvent(new Event('input', { bubbles: true })); }
       report.rows = [...rows.values()]; report.nextCursor = (offset + report.queue.length) % all.length;
-      if (!report.rows.length) throw failure('NO_VALID_ROWS', '검증 통과 매물 없음');
+      if (!report.rows.length) {
+        const reasons = Object.entries(report.rejected).map(([reason, count]) => `${reason} ${count}건`).join(', ');
+        throw failure('NO_VALID_ROWS', `검증 통과 매물 없음${reasons ? ` (${reasons})` : ''}`);
+      }
       report.status = 'completed';
     } catch (e) {
       report.status = cancelled() ? 'cancelled' : 'failed'; report.error = e.message; report.errorCode = e.code || 'UNEXPECTED';
