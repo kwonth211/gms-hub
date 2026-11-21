@@ -259,6 +259,8 @@ ${dropList ? `<section><h4>${tr('주요 드롭', 'Notable drops')}</h4><ul class
   }
   document.addEventListener('pointerover', (e) => {
     if (e.target.closest('.item-tip, nav, header.site-header, select, input, button')) return;
+    // Rows that hold editors (the home gear set): only the item link itself opens a card, not the whole row.
+    if (e.target.closest('[data-tip-off]') && !e.target.closest('a[href]')) return;
     const t = targetOf(e.target);
     if (!t || !t.id) return;
     const key = keyOf(t);

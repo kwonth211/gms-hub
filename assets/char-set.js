@@ -175,7 +175,7 @@ ${fields.map((k) => num(`s_${k}`, t.stat[k], f?.stats?.[k] ?? base?.stats?.[k]))
 <span class="cset-acts"><button type="button" class="btn ghost${f ? ' is-on' : ''}" data-cset-edit="${slot}" aria-expanded="${editing === slot}">${esc(t.opt)}</button><button type="button" class="btn ghost" data-cset-open="${slot}">${esc(t.change)}</button><button type="button" class="btn ghost" data-cset-remove="${slot}" aria-label="${esc(`${t.slot[slot]} ${t.remove}`)}">×</button></span>`
         : `<span class="cset-item is-empty"><i aria-hidden="true">${esc(t.slot[slot].slice(0, 1))}</i><span><strong>${esc(t.slot[slot])}</strong><small>${esc(why || '—')}</small></span></span>
 <span class="cset-acts">${why ? '' : `<button type="button" class="btn ghost cset-add" data-cset-open="${slot}" aria-label="${esc(`${t.slot[slot]} ${t.add}`)}">+ ${esc(t.add)}</button>`}</span>`;
-      return `<li class="cset-row${open === slot || (editing === slot && id) ? ' is-open' : ''}" data-slot="${slot}">${main}${open === slot ? picker(slot, c, bit) : ''}${editing === slot && id ? editor(slot, f) : ''}</li>`;
+      return `<li data-tip-off class="cset-row${open === slot || (editing === slot && id) ? ' is-open' : ''}" data-slot="${slot}">${main}${open === slot ? picker(slot, c, bit) : ''}${editing === slot && id ? editor(slot, f) : ''}</li>`;
     }).join('');
     return `<div class="char-card cset" data-kind="set"><div class="cset-top"><h3>${esc(t.h)}</h3><p class="muted">${esc(t.p)}</p></div>
 <div class="cset-grid"><figure class="cset-figure"><img src="${esc(renderUrl(set, subOf))}" alt="${esc(t.h)}" data-cset-img loading="lazy">
