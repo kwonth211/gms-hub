@@ -1,7 +1,8 @@
 // Verified with MapleStory Classic World on macOS, 2026-11-20.
 // Usage: background-item-input move|click|release <window-image-x> <window-image-y>
 // Coordinates include the title bar, as in a shadow-free window capture.
-// Never activates an app, posts globally, warps the pointer, or injects code.
+// Background: never activates an app, posts globally, warps the pointer, or injects code.
+// Foreground (game in front): moves the real pointer only while the owner is idle, then puts it back.
 import AppKit
 import ApplicationServices
 import Darwin
@@ -28,6 +29,86 @@ guard let w=windows.first(where:{ ($0[kCGWindowName as String] as? String)=="Map
 let before=snapshot()
 if args.count==6 && (Double(args[4]) != width || Double(args[5]) != height) {
     emit(["error":"Window resized since capture"]);exit(3)
+}
+// ---- Foreground mode: the game is the front app (the owner is looking at it) ----
+// Wine follows the real pointer while the game is in front, so window-targeted events are not enough.
+// Act only after the owner has left mouse and keyboard alone for a while, move the real pointer to the
+// link, click, keep it there long enough for the tooltip frame, then put the pointer back where it was.
+// Any real (hardware) input during that time aborts at once and leaves the pointer to the owner.
+if (before["frontPid"] as? Int) == Int(pid) {
+    // Posted mouse events reset the system's mouse idle timers too, so the owner's mouse is judged by the
+    // pointer position instead: unchanged since our last foreground action, or no mouse event for 2 s.
+    // Keyboard timers are only touched by real typing (we never post keys).
+    let stateFile=(NSTemporaryDirectory() as NSString).appendingPathComponent("gms-maple-input-fg.json")
+    func since(_ t:CGEventType) -> Double { CGEventSource.secondsSinceLastEventType(.hidSystemState,eventType:t) }
+    let mouseTypes:[CGEventType]=[.mouseMoved,.leftMouseDown,.rightMouseDown,.leftMouseDragged,.rightMouseDragged,.scrollWheel]
+    let keyIdle=min(since(.keyDown),since(.flagsChanged))
+    let mouseIdle=mouseTypes.map(since).min() ?? 0
+    let home=CGEvent(source:nil)!.location
+    var mineLast=false
+    if let d=try? Data(contentsOf:URL(fileURLWithPath:stateFile)),
+       let j=try? JSONSerialization.jsonObject(with:d) as? [String:Double],
+       let t=j["t"],let hx=j["x"],let hy=j["y"] {
+        let ago=Date().timeIntervalSince1970-t
+        // the newest mouse event is our own return glide, and the pointer is still where we left it
+        mineLast = mouseIdle >= ago-0.15 && abs(hx-home.x)<1 && abs(hy-home.y)<1
+    }
+    guard keyIdle>=2.0, mouseIdle>=2.0 || mineLast,
+          !CGEventSource.buttonState(.hidSystemState,button:.left),
+          !CGEventSource.buttonState(.hidSystemState,button:.right) else {
+        emit(["error":"Owner is using the game (foreground, recent input)","keyIdle":keyIdle,"mouseIdle":mouseIdle]);exit(4)
+    }
+    let src=CGEventSource(stateID:.privateState)
+    let target=CGPoint(x:ox+x,y:oy+y)
+    var at=home
+    let started=Date()
+    // The owner took over if the pointer is not where we put it, or they typed since we started.
+    func ownerMoved() -> Bool {
+        let p=CGEvent(source:nil)!.location
+        return abs(p.x-at.x)>2 || abs(p.y-at.y)>2 || min(since(.keyDown),since(.flagsChanged)) < Date().timeIntervalSince(started)
+    }
+    func send(_ type:CGEventType,_ p:CGPoint) {
+        guard let e=CGEvent(mouseEventSource:src,mouseType:type,mouseCursorPosition:p,mouseButton:.left) else { return }
+        e.setIntegerValueField(.mouseEventDeltaX,value:Int64((p.x-at.x).rounded()))
+        e.setIntegerValueField(.mouseEventDeltaY,value:Int64((p.y-at.y).rounded()))
+        if type == .leftMouseDown || type == .leftMouseUp { e.setIntegerValueField(.mouseEventClickState,value:1) }
+        e.post(tap:.cghidEventTap)
+        at=p
+    }
+    // A few small steps with movement deltas: Wine ignores a jump without them.
+    func glide(_ to:CGPoint) -> Bool {
+        let from=at, n=max(4,min(10,Int(hypot(to.x-from.x,to.y-from.y)/60)))
+        for i in 1...n {
+            if ownerMoved() { return false }
+            let f=Double(i)/Double(n), e=f*f*(3-2*f)
+            send(.mouseMoved,CGPoint(x:from.x+(to.x-from.x)*e,y:from.y+(to.y-from.y)*e)); usleep(6000)
+        }
+        return true
+    }
+    func remember() {
+        let j=["t":Date().timeIntervalSince1970,"x":Double(at.x),"y":Double(at.y)]
+        try? JSONSerialization.data(withJSONObject:j).write(to:URL(fileURLWithPath:stateFile))
+    }
+    func giveBack(_ reason:String) -> Never { try? FileManager.default.removeItem(atPath:stateFile); emit(["error":reason,"mode":"foreground","state":snapshot()]); exit(5) }
+    emit(["phase":"before","mode":"foreground","state":before,"pid":pid,"windowId":wid,"windowPoint":[x,y],"screenPoint":[target.x,target.y]])
+    guard glide(target) else { giveBack("Owner moved the mouse") }
+    usleep(60000)
+    if args[1]=="click" {
+        guard !ownerMoved() else { giveBack("Owner moved the mouse") }
+        send(.leftMouseDown,target); usleep(70000)
+        send(.leftMouseUp,target)                         // always release the button we pressed
+        emit(["phase":"clicked","at":Date().timeIntervalSince1970*1000,"mode":"foreground"])
+        usleep(450000)                                    // the collector grabs the tooltip frame meanwhile
+    } else {
+        usleep(150000)
+    }
+    // Put the pointer back where the owner left it, unless they already took it.
+    if ownerMoved() { giveBack("Owner moved the mouse") }
+    _ = glide(home)
+    remember()
+    emit(["phase":"after","state":snapshot(),"mode":"foreground"])
+    emit(["result":"events_posted_game_foreground","note":"Pointer returned to where the owner left it"])
+    exit(0)
 }
 guard (before["frontPid"] as? Int) != Int(pid),
       !CGEventSource.buttonState(.combinedSessionState,button:.left),
