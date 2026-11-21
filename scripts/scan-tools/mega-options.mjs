@@ -280,7 +280,13 @@ export class OptionReader {
       // The screenshot is immutable. Close the live tooltip now so new text can be collected while
       // slower option OCR runs on this image. Previously the entire collector waited until OCR ended.
       await input('move',...park);moved=false;
-      await this.readFrame(Date.now(),1100);this.interacting=false;this.timing.interact=Date.now()-t0;
+      // A panel left open hides the chat from the reader. Make sure it is gone; move once more if not.
+      for(const spot of [[park[0],60],[Math.round(image.width/2),45]]) {
+        const shown=await this.readFrame(Date.now(),1100);
+        if(!shown||!colorTooltipBoxes(shown,ready,point).length)break;
+        await input('move',...spot,false,true).catch(()=>{});
+      }
+      this.interacting=false;this.timing.interact=Date.now()-t0;
       let isolated=await this.readColorPanel(after,ready,item,point,boxes);
       this.correctedItem=null;
       if(!isolated&&this.lastPanel) {

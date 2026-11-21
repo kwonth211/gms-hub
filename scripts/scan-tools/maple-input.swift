@@ -91,8 +91,6 @@ if (before["frontPid"] as? Int) == Int(pid) {
     }
     func giveBack(_ reason:String) -> Never { try? FileManager.default.removeItem(atPath:stateFile); emit(["error":reason,"mode":"foreground","state":snapshot()]); exit(5) }
     emit(["phase":"before","mode":"foreground","state":before,"pid":pid,"windowId":wid,"windowPoint":[x,y],"screenPoint":[target.x,target.y]])
-    // After a click the pointer is already back with the owner, which also closed the panel: a park move is not needed.
-    if args[1] != "click" { emit(["result":"foreground_no_park_needed"]); exit(0) }
     guard glide(target) else { giveBack("Owner moved the mouse") }
     usleep(25000)
     if args[1]=="click" {
@@ -107,9 +105,10 @@ if (before["frontPid"] as? Int) == Int(pid) {
         emit(["phase":"clicked","at":Date().timeIntervalSince1970*1000,"mode":"foreground"])
         usleep(550000)                                    // the collector grabs the tooltip frame meanwhile
     } else {
-        usleep(150000)
+        usleep(120000)                                    // park: the panel closes only while the pointer moves inside the game
     }
-    // Put the pointer back where the owner left it, unless they already took it.
+    // Put the pointer back where the owner left it, unless they already took it. After a click the panel stays
+    // open (the owner's spot may be outside the game window), so the collector sends a park move next.
     if ownerMoved() { giveBack("Owner moved the mouse") }
     _ = glide(home)
     remember()
