@@ -100,7 +100,18 @@ export function makeSet({ korean, market, api, track, esc, mesos }) {
   // the player changed from the base, plus the upgrade counts. A clean pick is then "every slot left, nothing passed".
   const filterOf = (id, stats, rest) => {
     const base = baseOf(id)?.stats || {};
-    return optionFilter({ stats: Object.fromEntries(Object.entries(stats).filter(([k, v]) => base[k] !== v)), ...rest });
+    // A stat the item does not have is stored as missing, not 0, so 0 there means "any".
+    return optionFilter({ stats: Object.fromEntries(Object.entries(stats).filter(([k, v]) => base[k] !== v && !(v === 0 && base[k] === undefined))), ...rest });
+  };
+  // Options saved by an earlier version (base values included) are cleaned the same way when read.
+  const optsNow = () => {
+    const set = loadSet(), raw = loadOpts(), out = {};
+    for (const [slot, f] of Object.entries(raw)) {
+      if (!set[slot]) continue;
+      const g = filterOf(set[slot], f.stats || {}, { ...(f.ups !== undefined ? { ups: f.ups } : {}), ...(f.slots !== undefined ? { slots: f.slots } : {}) });
+      if (g) out[slot] = g;
+    }
+    return out;
   };
   const cleanOf = (id) => { const b = baseOf(id); return b ? optionFilter({ ...(b.slots !== undefined ? { slots: b.slots } : {}), ups: 0 }) : null; };
   // A slot with options is priced from listings with the same options only, never from the item-wide price.
@@ -110,7 +121,7 @@ export function makeSet({ korean, market, api, track, esc, mesos }) {
 
   const refreshLive = async (set, redraw) => {
     if (!api) return;
-    const opts = loadOpts();
+    const opts = optsNow();
     for (const [slot, f] of Object.entries(opts)) {
       const id = set[slot], k = id && optKey(id, f);
       if (!k || k in optLive) continue;
@@ -148,7 +159,7 @@ ${fields.map((k) => num(`s_${k}`, t.stat[k], f?.stats?.[k] ?? base?.stats?.[k]))
   };
 
   const html = (c, bit) => {
-    const set = loadSet(), opts = loadOpts();
+    const set = loadSet(), opts = optsNow();
     const bySlot = Object.fromEntries(Object.entries(set).map(([slot, id]) => [id, slot]));
     const tot = setTotal(set, (id) => priceIn(bySlot[id], id, opts));
     const blocked = (slot) => (slot === 'bottom' && set.top && subOf(set.top) === 'Overall' ? t.worn
