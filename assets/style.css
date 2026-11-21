@@ -3739,3 +3739,4 @@ body.exp-running .exp-stop { display: inline-flex; }
 .ct-page.in-modal { position: relative; padding: 0; }
 .ct-page.in-modal h2 { margin: 4px 0 8px; }
 .ct-close { position: absolute; top: -8px; right: -6px; border: 0; background: none; font-size: 1.6rem; line-height: 1; color: var(--muted); cursor: pointer; padding: 6px; }
+.ct-av { object-fit: contain; image-rendering: pixelated; background: var(--veil); padding: 3px; }

@@ -6,17 +6,21 @@ function board(root) {
   const ko = root.dataset.lang === 'ko';
   const $ = (s) => root.querySelector(s);
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-  const avatar = (r) => (r.avatar && r.id ? `https://cdn.discordapp.com/avatars/${r.id}/${r.avatar}.png?size=64` : 'https://cdn.discordapp.com/embed/avatars/0.png');
+  // Each contributor gets one of the early-game monsters as a picture, always the same one for the same name
+  // (owner, 2026-11-21: the Discord profile pictures did not fit).
+  const MOBS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 16, 17, 19, 21, 22, 25];
+  const pick = (s) => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return MOBS[h % MOBS.length]; };
+  const avatar = (r) => `/assets/monsters/${pick(r.game || r.name || r.id || 'x')}.gif`;
   const medal = (i) => ['🥇', '🥈', '🥉'][i] || `${i + 1}`;
   let data = null, tab = 'all';
   function render() {
     if (!data) return;
     const rows = data[tab] || [];
     $('[data-ct-list]').innerHTML = rows.length
-      ? rows.map((r, i) => `<li class="ct-row${i < 3 ? ' top' : ''}"><span class="ct-rank">${medal(i)}</span><img class="ct-av" src="${avatar(r)}" alt="" width="36" height="36" loading="lazy"><span class="ct-name">${r.anon ? `<span class="muted">${ko ? '익명 기여자' : 'Anonymous'} ${esc(r.anon)}</span>` : esc(r.name || (ko ? '이름 없음' : 'No name'))}</span><span class="ct-detail">${ko ? `스캔 ${r.scans} · 판매 확인 ${r.gone}` : `${r.scans} scans · ${r.gone} sold`}</span><b class="ct-pts">${r.points}${ko ? '점' : ' pts'}</b></li>`).join('')
+      ? rows.map((r, i) => `<li class="ct-row${i < 3 ? ' top' : ''}"><span class="ct-rank">${medal(i)}</span><img class="ct-av" src="${avatar(r)}" alt="" width="36" height="36" loading="lazy"><span class="ct-name">${r.game ? esc(r.game) : r.anon ? `<span class="muted">${ko ? '익명 기여자' : 'Anonymous'}</span>` : esc(r.name || (ko ? '이름 없음' : 'No name'))}</span><span class="ct-detail">${ko ? `스캔 ${r.scans} · 판매 확인 ${r.gone}` : `${r.scans} scans · ${r.gone} sold`}</span><b class="ct-pts">${r.points}${ko ? '점' : ' pts'}</b></li>`).join('')
       : `<li class="muted">${ko ? '아직 기여자가 없어요. 첫 번째로 이름을 올려 보세요!' : 'No contributors yet. Be the first!'}</li>`;
     const a = tab === 'week' ? data.anonWeek : data.anonAll;
-    $('[data-ct-anon]').textContent = a?.points ? (ko ? `'익명 기여자'는 로그인하지 않고 올린 분들이에요. 디스코드로 로그인하고 올리면 내 이름으로 올라가요.` : `"Anonymous" means uploads made without logging in. Log in with Discord to get your own name up here.`) : '';
+    $('[data-ct-anon]').textContent = a?.points ? (ko ? `로그인하지 않고 올린 분은 가장 많이 올린 상점의 게임 닉네임으로 보여요.` : `Uploads made without logging in show the in-game name of the shop uploaded most.`) : '';
     for (const b of root.querySelectorAll('[data-ct-tab]')) b.setAttribute('aria-pressed', String(b.dataset.ctTab === tab));
     const me = $('[data-ct-me]');
     const logged = !!(globalThis.gmsAuth?.().Authorization);

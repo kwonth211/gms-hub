@@ -890,7 +890,7 @@ const api = {
         r.seller,r.item,r.price,r.channel,r.room,reporter,r.qty || 1,r.sold ? 1 : 0)));
       const changed = ok.filter((_, i) => results[i].meta.changes > 0);
       // Leaderboard points for the uploader (logged-in visitors under their Discord name, see contributors.js).
-      if (changed.length && ctx?.waitUntil) ctx.waitUntil(recordContribution(env, req, 'scan', changed.length, reporter).catch(() => null));
+      if (changed.length && ctx?.waitUntil) ctx.waitUntil(recordContribution(env, req, 'scan', changed.length, reporter, changed.map((r) => r.seller)).catch(() => null));
       if (changed.length) {
         await refreshItemMarket(env, changed.map((r) => r.item)).catch(() => null);
         if (ctx?.waitUntil) ctx.waitUntil(itemLabel().then((nameOf) => notifyListings(env, changed, nameOf)).catch(() => null));

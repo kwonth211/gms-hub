@@ -10,12 +10,12 @@ import { recordContribution, contributorsData, leaderboardEmbed } from '../worke
 
 function env(extra = {}) {
   const sqlite = new DatabaseSync(':memory:');
-  for (const f of ['0025_accounts.sql', '0026_contributions.sql']) sqlite.exec(fs.readFileSync(new URL(`../worker/migrations/${f}`, import.meta.url), 'utf8'));
+  for (const f of ['0025_accounts.sql', '0026_contributions.sql', '0027_contributor_sellers.sql']) sqlite.exec(fs.readFileSync(new URL(`../worker/migrations/${f}`, import.meta.url), 'utf8'));
   const DB = { prepare(sql, args = []) {
     return { bind: (...v) => DB.prepare(sql, v), all: async () => ({ results: sqlite.prepare(sql).all(...args) }),
       first: async () => sqlite.prepare(sql).get(...args) ?? null,
       run: async () => ({ meta: { changes: Number(sqlite.prepare(sql).run(...args).changes) } }) };
-  } };
+  }, batch: async (stmts) => Promise.all(stmts.map((x) => x.run())) };
   return { DB, sqlite, DISCORD_BOT_TOKEN: 'bot', DISCORD_CLIENT_SECRET: 'sec', DISCORD_APP_ID: '55', DISCORD_GUILD_ID: '77', ...extra };
 }
 const W = 'https://w.example';
@@ -114,11 +114,11 @@ test('contributions: logged-in uploads count under the Discord name, others toge
   const anon = new Request(`${W}/listings`, { method: 'POST' });
   await recordContribution(e, withSession, 'scan', 12, 'hashA');
   await recordContribution(e, withSession, 'gone', 1, 'hashA');
-  await recordContribution(e, anon, 'scan', 5, 'hashB');
+  await recordContribution(e, anon, 'scan', 5, 'hashB', ['Leepz', 'Leepz', 'Leepz', 'Leepz', 'Other']);
   await recordContribution(e, anon, 'scan', 0, 'hashC');
   const d = await contributorsData(e, '123456789');
-  assert.deepEqual(d.week.map((r) => [r.name || r.anon, r.scans, r.gone, r.points]), [['혹스', 12, 1, 13], ['HASH', 5, 0, 5]]);
+  assert.deepEqual(d.week.map((r) => [r.name || r.game, r.scans, r.gone, r.points]), [['혹스', 12, 1, 13], ['Leepz', 5, 0, 5]]);
   assert.deepEqual([d.anonWeek.points, d.anonWeek.people], [5, 1]);
   assert.deepEqual(d.me, { week: 13, total: 13 });
-  assert.match(leaderboardEmbed(d).fields[0].value, /혹스.*13점[\s\S]*익명 기여자 HASH/);
+  assert.match(leaderboardEmbed(d).fields[0].value, /혹스.*13점[\s\S]*Leepz\*\* · 5점/);
 });

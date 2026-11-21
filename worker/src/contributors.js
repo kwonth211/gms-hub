@@ -8,10 +8,16 @@ import { marketEmbed } from './discord.js';
 
 const kstDay = (t = Date.now()) => new Date(t + 9 * 3600000).toISOString().slice(0, 10);
 
-export async function recordContribution(env, req, kind, n, anonKey) {
+export async function recordContribution(env, req, kind, n, anonKey, sellers = []) {
   if (!(n > 0)) return;
   const s = await readSession(env.DISCORD_CLIENT_SECRET, (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '')).catch(() => null);
   const who = s ? `d:${s.u}` : `a:${String(anonKey || '').slice(0, 16)}`;
+  if (!s && sellers.length) {
+    const count = {};
+    for (const x of sellers) count[x] = (count[x] || 0) + 1;
+    const up = env.DB.prepare('INSERT INTO contributor_sellers (who, seller, n) VALUES (?, ?, ?) ON CONFLICT (who, seller) DO UPDATE SET n = n + excluded.n');
+    await env.DB.batch(Object.entries(count).slice(0, 20).map(([seller, k]) => up.bind(who, seller, k))).catch(() => null);
+  }
   await env.DB.prepare(`INSERT INTO contributions (day, who, name, avatar, kind, n) VALUES (?, ?, ?, ?, ?, ?)
     ON CONFLICT (day, who, kind) DO UPDATE SET n = n + excluded.n, name = excluded.name, avatar = excluded.avatar`)
     .bind(kstDay(), who, s ? s.n : null, s ? s.a : null, kind, n).run();
@@ -25,9 +31,20 @@ export async function contributorsData(env, me = null) {
       FROM contributions WHERE 1 = 1 ${where} GROUP BY who ORDER BY points DESC LIMIT 20`).bind(...args).all()).results || [];
   const anon = async (where, args) => (await env.DB.prepare(`SELECT COALESCE(SUM(n), 0) AS points, COUNT(DISTINCT who) AS people FROM contributions WHERE who LIKE 'a:%' ${where}`).bind(...args).first()) || { points: 0, people: 0 };
   // Not logged in: a short tag from the visitor hash, so the same anonymous contributor keeps one line.
-  const clean = (rows) => rows.map((r) => ({ id: r.who.startsWith('d:') ? r.who.slice(2) : '', anon: r.who.startsWith('a:') ? r.who.slice(2, 6).toUpperCase() : '', name: r.name || '', avatar: r.avatar || '', scans: r.scans, gone: r.gone, points: r.points }));
+  const clean = (rows) => rows.map((r) => ({ who: r.who, id: r.who.startsWith('d:') ? r.who.slice(2) : '', anon: r.who.startsWith('a:'), game: '', name: r.name || '', avatar: r.avatar || '', scans: r.scans, gone: r.gone, points: r.points }));
+  const week = clean(await top('AND day >= ?', [since])), all = clean(await top('', []));
+  // Anonymous rows: the in-game name of the shop they uploaded most (owner, 2026-11-21: just use that name).
+  const anonIds = [...new Set([...week, ...all].filter((r) => r.who.startsWith('a:')).map((r) => r.who))];
+  if (anonIds.length) {
+    const { results } = await env.DB.prepare(`SELECT who, seller, n, (SELECT SUM(n) FROM contributor_sellers c2 WHERE c2.who = c1.who) AS total
+      FROM contributor_sellers c1 WHERE who IN (${anonIds.map(() => '?').join(',')}) ORDER BY n DESC`).bind(...anonIds).all();
+    const game = {};
+    for (const r of results || []) if (!game[r.who]) game[r.who] = r.seller;
+    for (const r of [...week, ...all]) if (game[r.who]) r.game = game[r.who];
+  }
+  for (const r of [...week, ...all]) delete r.who;
   const out = {
-    week: clean(await top('AND day >= ?', [since])), all: clean(await top('', [])),
+    week, all,
     anonWeek: await anon('AND day >= ?', [since]), anonAll: await anon('', []), since,
   };
   if (me) {
@@ -39,7 +56,7 @@ export async function contributorsData(env, me = null) {
 
 const medal = (i) => ['🥇', '🥈', '🥉'][i] || `${i + 1}.`;
 export function leaderboardEmbed(d) {
-  const line = (r, i) => `${medal(i)} **${r.anon ? `익명 기여자 ${r.anon}` : r.name || '이름 없음'}** · ${r.points}점 (스캔 ${r.scans} · 판매 확인 ${r.gone})`;
+  const line = (r, i) => `${medal(i)} **${r.game || (r.anon ? '익명 기여자' : r.name || '이름 없음')}** · ${r.points}점 (스캔 ${r.scans} · 판매 확인 ${r.gone})`;
   return {
     title: '🏆 기여자 순위 · Top contributors',
     url: 'https://gms-hub.com/ko/contributors/?utm_source=discord&utm_medium=board',
