@@ -3763,3 +3763,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 @keyframes gms-load { 0% { transform: scaleX(0); } 30% { transform: scaleX(.45); } 100% { transform: scaleX(.92); } }
 [aria-busy="true"]:empty { display: block; min-height: 160px; border-radius: 12px; background: linear-gradient(90deg, var(--line) 0%, var(--panel-2) 50%, var(--line) 100%); background-size: 200% 100%; animation: skel-shine 1.4s ease-in-out infinite; -webkit-mask: repeating-linear-gradient(to bottom, #000 0 44px, transparent 44px 56px); mask: repeating-linear-gradient(to bottom, #000 0 44px, transparent 44px 56px); list-style: none; }
 @media (prefers-reduced-motion: reduce) { .gms-loadbar.on { animation: none; transform: scaleX(.6); } [aria-busy="true"]:empty { animation: none; } }
+/* While a shop scan is running, nothing on this page moves: when the visitor shares the entire screen, a scrolling ticker or
+   falling leaves on it would keep the picture "changing" (assets/scan.js reads calmer frames first). */
+body.scanning .mg-ticker, body.scanning .charm-leaves, body.scanning .charm-walk, body.scanning .gms-loadbar { visibility: hidden !important; }
+body.scanning *, body.scanning *::before, body.scanning *::after { animation-play-state: paused !important; }

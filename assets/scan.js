@@ -17,6 +17,7 @@ const fill = (s, v) => s.replace(/\{(\w+)\}/g, (_, k) => v[k]);
 const TICK_MS = 500;
 // Share of sampled pixels that must change before a frame counts as new: opening or scrolling a shop passes, idle animation does not.
 const CHANGE_RATIO = 0.04;
+const FORCE_READ_MS = 5000;
 const SAMPLE_URL = '/__scan/frame';
 
 const video = document.createElement('video');
@@ -251,7 +252,8 @@ async function keepSample(canvas) {
 // scan_issue { issue, ... } so GA shows where people drop off; the first readable shop is scan_first_rows.
 let scanStartedAt = 0, everRows = 0, firstSureAt = 0, missLoc = 0;
 const issued = new Set();
-const issue = (kind, params = {}) => { if (issued.has(kind)) return; issued.add(kind); track('scan_issue', { issue: kind, after_s: scanStartedAt ? Math.round((Date.now() - scanStartedAt) / 1000) : 0, ...params }); };
+// ui_label / ui_value are registered GA dimensions, so the kind of problem and the capture size show up in reports.
+const issue = (kind, params = {}) => { if (issued.has(kind)) return; issued.add(kind); track('scan_issue', { issue: kind, ui_label: kind, ui_value: params.w ? `${params.w}x${params.h}@${params.scale}` : String(params.msg || ''), after_s: scanStartedAt ? Math.round((Date.now() - scanStartedAt) / 1000) : 0, ...params }); };
 
 async function recognize(canvas) {
   const img = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
@@ -755,8 +757,12 @@ async function tick() {
   // A shop left open without changes still needs its settle time to pass before uploading.
   upload();
   const sig = signature();
-  if (changed(lastSig, sig)) settling = true;
-  else if (settling || Date.now() - lastRead > 3000) {
+  // A screen that never holds still (a busy Free Market, or "entire screen" shared with animated pages on it) used to
+  // block every read: the scan stayed at "waiting" forever (Clarity, 2026-11-21: 13 of 22 starters never got a row).
+  // Now a read happens at least every 5 seconds even while the picture keeps changing.
+  const moving = changed(lastSig, sig);
+  if (moving) settling = true;
+  if ((!moving && (settling || Date.now() - lastRead > 3000)) || (moving && Date.now() - lastRead > FORCE_READ_MS)) {
     const saveSample = settling;
     settling = false;
     frames++;
@@ -798,7 +804,7 @@ async function start() {
     track('scan_share_cancel', { reason: e?.name || 'error' });
     return;
   }
-  scanStartedAt = Date.now(); everRows = 0; firstSureAt = 0; missLoc = 0; issued.clear();
+  scanStartedAt = Date.now(); everRows = 0; firstSureAt = 0; missLoc = 0; issued.clear(); lastRead = 0;
   video.srcObject = stream;
   try { await video.play(); } catch { issue('video_play'); stop(); say(i18n.readFail); return; }
   document.body.classList.add('scanning');
@@ -807,7 +813,7 @@ async function start() {
   showShare();
   say(fill(i18n.watching, { n: frames }));
   timer = setInterval(tick, TICK_MS);
-  track('scan_start', { width: video.videoWidth, height: video.videoHeight });
+  track('scan_start', { width: video.videoWidth, height: video.videoHeight, ui_value: `${video.videoWidth}x${video.videoHeight}@${(window.devicePixelRatio || 1).toFixed(2)}` });
 }
 
 // Reloading or closing the page loses the read list and stops the screen share, so the browser asks first
@@ -836,7 +842,7 @@ function stop() {
   ['share', 'shop'].forEach((k) => check(k, 'wait', i18n.wait));
   locationStatus();
   say(fill(i18n.stopped, { n: frames }));
-  track('scan_stop', { frames, rows: listings.size, uploaded, minutes: scanStartedAt ? Math.round((Date.now() - scanStartedAt) / 60000) : 0, issues: [...issued].join(',') || 'none' });
+  track('scan_stop', { frames, rows: listings.size, uploaded, minutes: scanStartedAt ? Math.round((Date.now() - scanStartedAt) / 60000) : 0, issues: [...issued].join(',') || 'none', ui_label: [...issued].join(',') || 'none', ui_value: `frames ${frames} rows ${listings.size} up ${uploaded}` });
 }
 
 $('scan-start').addEventListener('click', start);
