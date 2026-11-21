@@ -169,12 +169,12 @@ if topmostPid(pointerNow)==pid {
     emit(["phase":"pointer_moved_off_game","from":[pointerNow.x,pointerNow.y],"to":[spot.x,spot.y]])
     usleep(80000)
 }
-func post(_ type:NSEvent.EventType,_ flags:NSEvent.ModifierFlags=[]) {
-    let native=NSEvent.mouseEvent(with:type,location:NSPoint(x:x,y:height-y),modifierFlags:flags,
+func post(_ type:NSEvent.EventType,_ flags:NSEvent.ModifierFlags=[],at px:Double=x,_ py:Double=y) {
+    let native=NSEvent.mouseEvent(with:type,location:NSPoint(x:px,y:height-py),modifierFlags:flags,
         timestamp:ProcessInfo.processInfo.systemUptime,windowNumber:wid,context:nil,eventNumber:0,
         clickCount:type == .leftMouseDragged ? 0 : 1,pressure:type == .leftMouseDown ? 1 : 0)!
     let event=native.cgEvent!
-    event.location=CGPoint(x:ox+x,y:oy+y)
+    event.location=CGPoint(x:ox+px,y:oy+py)
     event.setIntegerValueField(.mouseEventWindowUnderMousePointer,value:Int64(wid))
     event.setIntegerValueField(.mouseEventWindowUnderMousePointerThatCanHandleThisEvent,value:Int64(wid))
     event.postToPid(pid)
@@ -208,6 +208,10 @@ if args[1]=="click" {
     usleep(80000)
     post(.leftMouseUp,[.command]) // Always release the synthetic button pair.
     emit(["phase":"clicked","at":Date().timeIntervalSince1970*1000])
+    // Keep the panel up while the collector grabs it (+125 ms), then move the game pointer to the top-right
+    // corner, which closes the panel, in the same run instead of a separate park move.
+    usleep(320000)
+    post(.leftMouseDragged,at:width-40,40)
 }
 for delay in [UInt32(10000),90000,200000] {
     usleep(delay)
