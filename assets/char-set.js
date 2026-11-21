@@ -96,9 +96,16 @@ export function makeSet({ korean, market, api, track, esc, mesos }) {
   const fitsChar = (g, c, bit) => g[4] <= c.lv && (!g[5] || (g[5] & bit));
   // A clean piece: its base stats, every upgrade slot left, none passed. Picking an item starts from this.
   const baseOf = (id) => { const g = byId.get(id); return g ? optionFilter({ stats: g[9] || {}, ...(Number.isInteger(g[10]) ? { slots: g[10] } : {}), ups: 0 }) : null; };
+  // Base stats differ a little from piece to piece (defense 10-14 on the same gloves), so the price filter keeps only what
+  // the player changed from the base, plus the upgrade counts. A clean pick is then "every slot left, nothing passed".
+  const filterOf = (id, stats, rest) => {
+    const base = baseOf(id)?.stats || {};
+    return optionFilter({ stats: Object.fromEntries(Object.entries(stats).filter(([k, v]) => base[k] !== v)), ...rest });
+  };
+  const cleanOf = (id) => { const b = baseOf(id); return b ? optionFilter({ ...(b.slots !== undefined ? { slots: b.slots } : {}), ups: 0 }) : null; };
   // A slot with options is priced from listings with the same options only, never from the item-wide price.
   const priceIn = (slot, id, opts) => (opts[slot] ? optLive[optKey(id, opts[slot])]?.price || null : priceOf(id));
-  const optText = (f) => [...Object.entries(f.stats || {}).map(([k, v]) => `${t.stat[k] || k} ${v}`),
+  const optText = (f) => [...(!f.stats && f.ups === 0 ? [t.base] : []), ...Object.entries(f.stats || {}).map(([k, v]) => `${t.stat[k] || k} ${v}`),
     ...(f.ups !== undefined ? [`${t.ups} ${f.ups}`] : []), ...(f.slots !== undefined ? [`${t.slots} ${f.slots}`] : [])].join(' · ');
 
   const refreshLive = async (set, redraw) => {
@@ -124,7 +131,7 @@ export function makeSet({ korean, market, api, track, esc, mesos }) {
     const fields = [...new Set([...Object.keys(base?.stats || {}), ...Object.keys(f?.stats || {}), ...OPT_FIELDS[slot === 'weapon' ? 'weapon' : 'other']])];
     const num = (name, label, val) => `<label><span>${esc(label)}</span><input type="number" inputmode="numeric" name="${name}" value="${val ?? ''}" min="-99" max="999" placeholder="—"></label>`;
     return `<form class="cset-opt" data-cset-optform="${slot}"><p class="muted">${esc(t.optHint)}</p><div class="cset-opt-grid">
-${fields.map((k) => num(`s_${k}`, t.stat[k], f?.stats?.[k])).join('')}${num('ups', t.ups, f?.ups)}${num('slots', t.slots, f?.slots)}</div>
+${fields.map((k) => num(`s_${k}`, t.stat[k], f?.stats?.[k] ?? base?.stats?.[k])).join('')}${num('ups', t.ups, f?.ups)}${num('slots', t.slots, f?.slots)}</div>
 <div class="cset-opt-acts"><button type="submit" class="btn">${esc(t.apply)}</button>${base ? `<button type="button" class="btn ghost" data-cset="base-opt">${esc(t.base)}</button>` : ''}${f ? `<button type="button" class="btn ghost" data-cset="clear-opt">${esc(t.anyOpt)}</button>` : ''}<button type="button" class="btn ghost" data-cset="close">${esc(t.close)}</button></div></form>`;
   };
 
@@ -185,11 +192,11 @@ ${tot.n ? `<button type="button" class="cset-reset" data-cset="reset">${esc(t.re
         const id = Number(w.dataset.csetWear), slot = slotOf(subOf(id)), had = loadSet()[slot];
         const next = wear(loadSet(), id, subOf), o2 = loadOpts();
         for (const k of Object.keys(o2)) if (next[k] !== loadSet()[k]) delete o2[k];
-        const base = baseOf(id);
-        if (base) o2[slot] = base;
+        const clean = cleanOf(id);
+        if (clean) o2[slot] = clean;
         saveSet(next); saveOpts(o2);
         track('my_char_set', { action: had ? 'change' : 'add', slot, item_id: id });
-        open = null; query = ''; editing = baseOf(id) ? slot : null; redraw(false); return;
+        open = null; query = ''; editing = cleanOf(id) ? slot : null; redraw(false); return;
       }
       const r = e.target.closest('[data-cset-remove]');
       if (r) {
@@ -203,8 +210,8 @@ ${tot.n ? `<button type="button" class="cset-reset" data-cset="reset">${esc(t.re
       if (b?.dataset.cset === 'close') { open = null; editing = null; query = ''; redraw(false); }
       if (b?.dataset.cset === 'reset') { saveSet({}); saveOpts({}); track('my_char_set', { action: 'reset' }); open = null; editing = null; redraw(false); }
       if (b?.dataset.cset === 'base-opt' && editing) {
-        const o2 = loadOpts(), base = baseOf(loadSet()[editing]);
-        if (base) o2[editing] = base; saveOpts(o2);
+        const o2 = loadOpts(), clean = cleanOf(loadSet()[editing]);
+        if (clean) o2[editing] = clean; else delete o2[editing]; saveOpts(o2);
         editing = editing; redraw(false); return;
       }
       if (b?.dataset.cset === 'clear-opt' && editing) {
@@ -224,7 +231,7 @@ ${tot.n ? `<button type="button" class="cset-reset" data-cset="reset">${esc(t.re
         if (!Number.isFinite(v)) continue;
         if (inp.name.startsWith('s_')) stats[inp.name.slice(2)] = v; else raw[inp.name] = v;
       }
-      const f = optionFilter({ stats, ...raw }), o2 = loadOpts();
+      const f = filterOf(loadSet()[slot], stats, raw), o2 = loadOpts();
       if (f) o2[slot] = f; else delete o2[slot];
       saveOpts(o2);
       track('my_char_set', { action: f ? 'options' : 'options_clear', slot, item_id: loadSet()[slot] });
