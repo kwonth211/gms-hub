@@ -6,8 +6,6 @@
 import { readSession } from './account.js';
 import { marketEmbed } from './discord.js';
 
-// The owner's characters (memory: owner-characters) never count.
-const OWNER = new Set(['hookstk', 'pipinstall']);
 const kstDay = (t = Date.now()) => new Date(t + 9 * 3600000).toISOString().slice(0, 10);
 
 export async function recordContribution(env, req, kind, n, anonKey, sellers = []) {
@@ -44,12 +42,11 @@ export async function contributorsData(env, me = null) {
     for (const r of results || []) if (!game[r.who]) game[r.who] = r.seller;
     for (const r of [...week, ...all]) if (game[r.who]) r.game = game[r.who];
   }
-  // The owner's own characters are not contributors (their uploads are testing), and one person who uploaded from several
-  // connections shows up under the same in-game name more than once: those lines are added together.
+  // One person who uploaded from several connections shows up under the same in-game name more than once: those lines
+  // are added together. The owner's own characters count like everyone else's (owner, 2026-11-21).
   const merge = (rows) => {
     const by = new Map();
     for (const r of rows) {
-      if (r.game && OWNER.has(r.game.toLowerCase())) continue;
       const key = r.game ? `g:${r.game.toLowerCase()}` : r.who;
       const x = by.get(key);
       if (x) { x.scans += r.scans; x.gone += r.gone; x.points += r.points; } else by.set(key, { ...r });
