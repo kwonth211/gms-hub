@@ -205,14 +205,16 @@ async function tick() {
   // but must not consume four retries while stat-bearing equipment scrolls off the chat.
   const priority=job=>{const item=jobItem(job);return item&&(Number.isInteger(item.slots)||/ Scroll: /i.test(item.en))?0:1;};
   const reader=optionReaders.find(r=>!r.busy);
-  if(reader) for(const [key,job] of [...optionJobs].sort((a,b)=>a[1].attempts-b[1].attempts||priority(a[1])-priority(b[1])||a[1].lastAttempt-b[1].lastAttempt)) {
+  if(reader) for(const [key,job] of [...optionJobs].sort((a,b)=>Math.min(a[1].attempts,2)-Math.min(b[1].attempts,2)||priority(a[1])-priority(b[1])||a[1].created-b[1].created||a[1].lastAttempt-b[1].lastAttempt)) {
     const {row,m}=job;
     if(job.active||now-job.lastAttempt<1000)continue;
     const item=jobItem(job);
     if(!item || (item.cash&&item.sub!=='Pet Equipment'&&!Number.isInteger(item.slots)) || (item.cat!=='Equip' && !/ Scroll: /i.test(item.en))){optionJobs.delete(key);continue;}
     const matches=fingerprints.flatMap((f,i)=>f===job.fingerprint&&!read[i].obscured?[i]:[]);
-    if(matches.length!==1)continue;
-    const i=matches[0];
+    if(!matches.length)continue;
+    // a repeated identical ad: take the copy nearest to where this job's row was last seen
+    const i=matches.reduce((a,b)=>Math.abs(lines[b].top-(job.top??lines[b].top))<Math.abs(lines[a].top-(job.top??lines[a].top))?b:a);
+    job.top=lines[i].top;
     job.lastAttempt=now;
     job.active=true;reader.busy=true;
     const task=(async()=>{
@@ -226,9 +228,9 @@ async function tick() {
       if(recorded){recorded.opts=row.opts;recorded.capture=reader.lastMissing.length?'partial':'complete';recorded.missing=reader.lastMissing;}
       if(!reader.lastMissing?.length)optionJobs.delete(key);
       if(!queue.includes(row))queue.push({...row});
-      console.log(`options${reader.lastMissing?.length?' partial':''} ${row.nick} [${item.en}] ${JSON.stringify(row.opts)}${reader.lastMissing?.length?' missing='+reader.lastMissing.join(','):''} (${Date.now()-now}ms)`);
+      console.log(`options${reader.lastMissing?.length?' partial':''} ${row.nick} [${item.en}] ${JSON.stringify(row.opts)}${reader.lastMissing?.length?' missing='+reader.lastMissing.join(','):''} (${Date.now()-now}ms) mode=${reader.lastMode||'?'} seen=${row.seen}`);
     }
-    else console.log(`options skipped ${row.nick} [${item.en}]: ${reader.lastSkip} (${Date.now()-now}ms)`);
+    else console.log(`options skipped ${row.nick} [${item.en}]: ${reader.lastSkip} (${Date.now()-now}ms) mode=${reader.lastMode||'?'} seen=${row.seen}`);
     job.lastReason=reader.lastSkip||(reader.lastMissing?.length?'missing '+reader.lastMissing.join(','):'');
     if(!/input\/OCR: [45]$|cooldown|paused/.test(reader.lastSkip))job.attempts++;
     if(priority(job)>0&&reader.lastSkip==='no trusted numeric options')optionJobs.delete(key);

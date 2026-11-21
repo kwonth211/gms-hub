@@ -6,7 +6,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { PNG } from 'pngjs';
 import Tesseract from 'tesseract.js';
-import { findBadge, senderFingerprint, lineFingerprint, locateFingerprint, glyphs, itemGlyphBounds } from '../../assets/mega-reader.js';
+import { findBadge, senderFingerprint, lineFingerprint, locateFingerprint, locateFingerprintNear, glyphs, itemGlyphBounds } from '../../assets/mega-reader.js';
 const exec = promisify(execFile);
 import { colorTooltipBoxes, selectTooltipBox, agreeTooltipNumber, agreeLabeledNumber, tooltipBody, tooltipField, tooltipStatRows, missingTooltipFields, subtractTooltipBackground, emptyUpgradeSuffix, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog, nameKey, tooltipTitle } from '../../assets/mega-tooltip.js';
 export { nameKey } from '../../assets/mega-tooltip.js';
@@ -214,6 +214,7 @@ export class OptionReader {
       });
       const result=await run.catch(e=>{fs.writeFileSync(path.join(this.dir,'input-failure.json'),JSON.stringify({message,action,x,y,code:e.code,events:e.stdout}));throw e;}); // A capture never overrides a focus/cursor failure.
       const events=result.stdout.trim().split('\n').flatMap(s=>{try{return [JSON.parse(s)];}catch{return [];}});
+      if(action==='click')this.lastMode=events.find(e=>e.phase==='before')?.mode||'background';
       inputAudit.push({action,point:{x,y},before:events.find(e=>e.phase==='before')?.state,after:events.filter(e=>e.phase==='after').map(e=>e.state),restores:events.filter(e=>e.phase==='restore').map(e=>e.state)});
       // Foreground clicks report the press moment: the row check uses that frame, because fast megaphones
       // may scroll the chat during the fade-in wait while the panel itself still belongs to the pressed row.
@@ -228,7 +229,7 @@ export class OptionReader {
       const ready=await this.readFrame(Date.now(),1400);if(!ready||ready.width!==image.width||ready.height!==image.height)return skip('window changed during preflight');
       // Text OCR and dialog checks take time. Follow the exact same pixels to their new row before clicking.
       // Never click the stale y-coordinate, or use item name alone to select another seller's item.
-      const relocated=locateFingerprint(cropImage(ready,box),fingerprint);
+      const relocated=locateFingerprintNear(cropImage(ready,box),fingerprint,line.top);
       if(!relocated){
         fs.writeFileSync(path.join(this.dir,'target-before.png'),PNG.sync.write(image));
         fs.writeFileSync(path.join(this.dir,'target-ready.png'),PNG.sync.write(ready));

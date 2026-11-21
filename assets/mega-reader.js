@@ -219,6 +219,13 @@ export function locateFingerprint(img, fingerprint) {
   const matches=findLines(img).filter(line=>lineFingerprint(img,line)===fingerprint);
   return matches.length===1 ? matches[0] : null;
 }
+// Same as locateFingerprint, but when the exact same message is visible twice (a seller repeating an ad),
+// take the copy nearest to where the row was last seen instead of giving up.
+export function locateFingerprintNear(img, fingerprint, y) {
+  const matches=findLines(img).filter(line=>lineFingerprint(img,line)===fingerprint);
+  if(!matches.length)return null;
+  return matches.reduce((a,b)=>Math.abs(b.top-y)<Math.abs(a.top-y)?b:a);
+}
 export function senderFingerprint(img,line) {
   const badge=findBadge(img,line),anchor=slotAnchor(img,[line]);
   if(!badge||!anchor)return null;
