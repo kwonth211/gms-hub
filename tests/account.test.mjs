@@ -117,8 +117,8 @@ test('contributions: logged-in uploads count under the Discord name, others toge
   await recordContribution(e, anon, 'scan', 5, 'hashB');
   await recordContribution(e, anon, 'scan', 0, 'hashC');
   const d = await contributorsData(e, '123456789');
-  assert.deepEqual(d.week.map((r) => [r.name, r.scans, r.gone, r.points]), [['혹스', 12, 1, 13]]);
+  assert.deepEqual(d.week.map((r) => [r.name || r.anon, r.scans, r.gone, r.points]), [['혹스', 12, 1, 13], ['HASH', 5, 0, 5]]);
   assert.deepEqual([d.anonWeek.points, d.anonWeek.people], [5, 1]);
   assert.deepEqual(d.me, { week: 13, total: 13 });
-  assert.match(leaderboardEmbed(d).fields[0].value, /혹스.*13점/);
+  assert.match(leaderboardEmbed(d).fields[0].value, /혹스.*13점[\s\S]*익명 기여자 HASH/);
 });

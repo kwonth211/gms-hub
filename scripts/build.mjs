@@ -909,15 +909,16 @@ function headerSearch(lang, tabs) {
 // Pages that are not in the header tabs (the moved tabs, guides, ranking, gear, bosses, databases, shop tools) open from one menu at the end
 // of the header, so none of them is reachable only from the home page or the footer.
 // Contributor leaderboard shell; assets/contributors.js fills it from the worker's /contributors.
-function contributorsBody(lang) {
+function contributorsBody(lang, modal = false) {
   const ko = lang === 'ko';
-  return `<section class="wrap ct-page" data-contributors data-api="${esc(config.voteApi)}" data-lang="${lang}">
-<p class="eyebrow">${ko ? '함께 만드는 시세' : 'Built together'}</p>
-<h1>${ko ? '🏆 기여자 순위' : '🏆 Top contributors'}</h1>
+  // The market page shows the same board in a dialog (owner, 2026-11-21); it loads when opened.
+  return `<section class="${modal ? 'ct-page in-modal' : 'wrap ct-page'}" data-contributors${modal ? ' data-lazy' : ''} data-api="${esc(config.voteApi)}" data-lang="${lang}">
+${modal ? `<button type="button" class="ct-close" data-ct-close aria-label="${ko ? '닫기' : 'Close'}">×</button>` : ''}<p class="eyebrow">${ko ? '함께 만드는 시세' : 'Built together'}</p>
+${modal ? '<h2>' : '<h1>'}${ko ? '🏆 기여자 순위' : '🏆 Top contributors'}${modal ? '</h2>' : '</h1>'}
 <p class="lead">${ko ? '상점 스캔을 올리거나 팔린 매물을 알려 주면 모두가 보는 시세가 더 정확해져요. 올린 매물 1건, 판매 확인 1건이 각각 1점이에요. 디스코드로 로그인하고 올리면 여기와 디스코드 시세 채널에 이름이 올라가요.' : 'Uploading shop scans and reporting sold listings keeps everyone\'s prices accurate. Each uploaded listing and each sold report is one point. Log in with Discord and your name shows here and in the Discord market channel.'}</p>
 <div class="ct-actions"><a class="btn" href="${href(langPath(lang, '/tools/scan/'))}">${ko ? '📸 상점 스캔 올리기' : '📸 Upload a shop scan'}</a><a class="btn ghost" href="${href(langPath(lang, '/tools/market/?view=listings'))}">${ko ? '✅ 팔린 매물 알려 주기' : '✅ Report sold listings'}</a></div>
 <div class="ct-me" data-ct-me hidden></div>
-<div class="seg ct-tabs" role="group"><button type="button" data-ct-tab="week" aria-pressed="true">${ko ? '최근 7일' : 'Last 7 days'}</button><button type="button" data-ct-tab="all" aria-pressed="false">${ko ? '전체' : 'All time'}</button></div>
+<div class="seg ct-tabs" role="group"><button type="button" data-ct-tab="all" aria-pressed="true">${ko ? '전체 순위' : 'All time'}</button><button type="button" data-ct-tab="week" aria-pressed="false">${ko ? '최근 7일' : 'Last 7 days'}</button></div>
 <ol class="ct-list" data-ct-list><li class="muted">${ko ? '불러오는 중…' : 'Loading…'}</li></ol>
 <p class="muted small" data-ct-anon></p>
 </section>`;
@@ -2318,6 +2319,7 @@ function marketBrowser(lang, fixed, placeholder) {
 <div id="mb-summary" class="mb-summary" hidden aria-label="${tr('검색한 아이템 시세 요약','Price summary for the search')}"></div><p class="muted note" id="mb-list-note"></p><p id="mb-count" role="status" class="muted note"></p><div class="mb-refresh-bar" id="mb-list-refresh" hidden><span id="mb-list-at"></span><button type="button" class="mb-reload" data-refresh-list><svg class="mb-reload-ico" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2.5v3h-3"/></svg>${tr('새로고침','Refresh')}</button></div><div id="mb-results" aria-busy="true"><ul class="skel-wrap skel-offers skel-list" aria-label="${t.loading}">${'<li><span class="skel" style="width:28px;height:28px;border-radius:8px"></span><span class="skel" style="width:34%;height:14px"></span><span class="skel" style="width:16%;height:14px;margin-left:auto"></span></li>'.repeat(10)}</ul></div><div id="mb-pagination" class="mb-pagination"></div><div class="mb-ad-mid" id="mb-ad-mid">${AD_MID}</div></section>
 <section id="mk-detail" class="panel mb-detail"${fixed ? '' : ' hidden'} aria-label="${tr('선택한 아이템','Selected item')}">${placeholder || ''}</section></div>
 <dialog id="mb-shop" class="mb-shop"><div id="mb-shop-body"></div></dialog>
+<dialog class="mb-shop ct-modal" data-ct-modal aria-label="${lang === 'ko' ? '기여자 순위' : 'Top contributors'}">${contributorsBody(lang, true)}</dialog>
 <div class="mk-foot"><div class="mk-bar"><dl class="mk-stats">${stat('open',tr('최근 판매 매물','Recent asking listings'))}${stat('shops',tr('상점','Shops'))}${stat('items',tr('아이템 · 7일','Items · 7d'))}${stat('records',tr('매물 기록 · 7일','Listing records · 7d'))}</dl><a class="btn small-btn" href="${href(langPath(lang, '/tools/scan/'))}">${t.scan}</a></div>
 ${collectionStatus(lang)}</div>
 </div>
@@ -2325,7 +2327,7 @@ ${jsonScript('mk-data', { ...{ lang, api: config.voteApi, itemsUrl: href(`/asset
 }
 function marketBody(lang) {
   const t = MK[lang], tr = (ko,en) => lang === 'ko' ? ko : en;
-  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 볼 수 있어요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="mb-head-actions"><a class="btn mb-scan-cta" href="${href(langPath(lang, '/tools/scan/'))}" data-scan-cta="market-head">● ${tr('내 상점 올리기', 'Upload my shop')}</a><a class="btn ghost" href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 리포트', "Today's price report")}</a></p></section>
+  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 볼 수 있어요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="mb-head-actions"><a class="btn mb-scan-cta" href="${href(langPath(lang, '/tools/scan/'))}" data-scan-cta="market-head">● ${tr('내 상점 올리기', 'Upload my shop')}</a><a class="btn ghost" href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 리포트', "Today's price report")}</a><button type="button" class="btn ghost" data-ct-open>🏆 ${tr('기여자 순위', 'Top contributors')}</button></p></section>
 ${marketBrowser(lang, 0)}
 ${marketSnapshot(lang)}
 ${marketGuide(lang)}`;
@@ -3372,7 +3374,7 @@ for (const lang of LANGS) {
       title: MK[lang].title,
       desc: MK[lang].desc,
       body: marketBody(lang),
-      modules: ['market.js'],
+      modules: ['market.js', 'contributors.js'],
       ld: [appLd(MK[lang].h1, MK[lang].desc, '/tools/market/'), breadcrumbLd(lang, MK[lang].h1, '/tools/market/')]
     },
     damage: {

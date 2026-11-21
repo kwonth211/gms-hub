@@ -3735,3 +3735,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 .ct-tabs { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
 .ct-tabs button { font: inherit; padding: 8px 14px; background: transparent; color: var(--muted); border: 0; cursor: var(--cur-hand, pointer); }
 .ct-tabs button[aria-pressed='true'] { background: var(--panel-2); color: var(--text); font-weight: 700; }
+.ct-modal { max-width: 680px; }
+.ct-page.in-modal { position: relative; padding: 0; }
+.ct-page.in-modal h2 { margin: 4px 0 8px; }
+.ct-close { position: absolute; top: -8px; right: -6px; border: 0; background: none; font-size: 1.6rem; line-height: 1; color: var(--muted); cursor: pointer; padding: 6px; }

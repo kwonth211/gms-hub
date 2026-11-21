@@ -22,9 +22,10 @@ export async function contributorsData(env, me = null) {
   const since = kstDay(Date.now() - 6 * 864e5);
   const top = async (where, args) => (await env.DB.prepare(`SELECT who, MAX(name) AS name, MAX(avatar) AS avatar,
       SUM(CASE WHEN kind = 'scan' THEN n ELSE 0 END) AS scans, SUM(CASE WHEN kind = 'gone' THEN n ELSE 0 END) AS gone, SUM(n) AS points
-      FROM contributions WHERE who LIKE 'd:%' ${where} GROUP BY who ORDER BY points DESC LIMIT 20`).bind(...args).all()).results || [];
+      FROM contributions WHERE 1 = 1 ${where} GROUP BY who ORDER BY points DESC LIMIT 20`).bind(...args).all()).results || [];
   const anon = async (where, args) => (await env.DB.prepare(`SELECT COALESCE(SUM(n), 0) AS points, COUNT(DISTINCT who) AS people FROM contributions WHERE who LIKE 'a:%' ${where}`).bind(...args).first()) || { points: 0, people: 0 };
-  const clean = (rows) => rows.map((r) => ({ id: r.who.slice(2), name: r.name || '', avatar: r.avatar || '', scans: r.scans, gone: r.gone, points: r.points }));
+  // Not logged in: a short tag from the visitor hash, so the same anonymous contributor keeps one line.
+  const clean = (rows) => rows.map((r) => ({ id: r.who.startsWith('d:') ? r.who.slice(2) : '', anon: r.who.startsWith('a:') ? r.who.slice(2, 6).toUpperCase() : '', name: r.name || '', avatar: r.avatar || '', scans: r.scans, gone: r.gone, points: r.points }));
   const out = {
     week: clean(await top('AND day >= ?', [since])), all: clean(await top('', [])),
     anonWeek: await anon('AND day >= ?', [since]), anonAll: await anon('', []), since,
@@ -38,15 +39,16 @@ export async function contributorsData(env, me = null) {
 
 const medal = (i) => ['🥇', '🥈', '🥉'][i] || `${i + 1}.`;
 export function leaderboardEmbed(d) {
-  const line = (r, i) => `${medal(i)} **${r.name || '이름 없음'}** · ${r.points}점 (스캔 ${r.scans} · 판매 확인 ${r.gone})`;
+  const line = (r, i) => `${medal(i)} **${r.anon ? `익명 기여자 ${r.anon}` : r.name || '이름 없음'}** · ${r.points}점 (스캔 ${r.scans} · 판매 확인 ${r.gone})`;
   return {
-    title: '🏆 이번 주 기여자 순위 · Top contributors',
+    title: '🏆 기여자 순위 · Top contributors',
     url: 'https://gms-hub.com/ko/contributors/?utm_source=discord&utm_medium=board',
     color: 0xf5b301,
     description: '사이트에서 상점 스캔을 올리거나 팔린 매물을 알려 주면 점수가 올라요. 모두의 시세가 더 정확해져요.',
     fields: [
-      { name: '최근 7일', value: d.week.slice(0, 10).map(line).join('\n') || '아직 없어요. 첫 기여자가 되어 보세요!' },
-      { name: '로그인하지 않은 기여', value: `${d.anonWeek.points}점 · ${d.anonWeek.people}명\n디스코드로 로그인하고 올리면 여기에 이름이 올라가요.` },
+      { name: '전체 순위', value: d.all.slice(0, 10).map(line).join('\n') || '아직 없어요. 첫 기여자가 되어 보세요!' },
+      { name: '최근 7일 1위', value: d.week[0] ? line(d.week[0], 0) : '—' },
+      { name: '내 이름으로 올리려면', value: '사이트에서 디스코드로 로그인하고 올리면 "익명" 대신 내 디스코드 이름이 올라가요.' },
     ],
     footer: { text: 'gms-hub.com/ko/contributors · 1시간마다 갱신' },
     timestamp: new Date().toISOString(),
