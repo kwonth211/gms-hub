@@ -314,6 +314,47 @@ async function pricesFor(env, ids) {
 // same entries, so database reads follow the number of distinct items looked at in five minutes, not the number of
 // visitors or of id combinations. Items with nothing to show are cached too (as null), so they are not re-read either.
 const PRICE_TTL = 1800; // 30 min: a 14-day summary barely moves in that time, and each miss re-reads hundreds of raw rows (was 5 min: ~4.5M reads/day)
+// Item share card PNG: /og/item/<id>-<ko|en>.png (gms-hub.com route and workers.dev). Item pages point og:image here
+// with the build date in the query, so chat apps that cache previews still get a fresh card each day.
+async function itemCard(req, env, ctx) {
+  const m = new URL(req.url).pathname.match(/^\/og\/item\/(\d{7})-(ko|en)\.png$/);
+  if (!m) return new Response('not found', { status: 404 });
+  const cache = caches.default, hit = await cache.match(req);
+  if (hit) return hit;
+  const id = Number(m[1]), ko = m[2] === 'ko';
+  const nameOf = await itemLabel();
+  const [prices, hist, meta] = await Promise.all([
+    cachedPrices(env, [id], new URL(req.url).origin, ctx).catch(() => ({})),
+    marketHistory(env, new URLSearchParams({ id: String(id) })).catch(() => null),
+    fetch(`https://maplestory.io/api/MCW/1/item/${id}`, { cf: { cacheTtl: 86400, cacheEverything: true } }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+  ]);
+  const s = prices[id] || {}, mi = meta?.metaInfo || {};
+  const price = s.typical?.price || s.median || null;
+  // Days far from the usual price (a scrolled glove among clean ones) would bend the line; keep days within 3x of the middle.
+  const raw = (hist?.daily || []).slice(-14).map((d) => d.typical || d.median).filter((v) => v > 0);
+  const mid = [...raw].sort((a, b) => a - b)[Math.floor(raw.length / 2)] || 0;
+  const daily = raw.filter((v) => v <= mid * 3 && v >= mid / 3);
+  const atk = mi.incPAD ? (ko ? `공격력 +${mi.incPAD}` : `ATT +${mi.incPAD}`) : mi.incMAD ? (ko ? `마력 +${mi.incMAD}` : `M.ATT +${mi.incMAD}`) : null;
+  const day = new Date(Date.now() + 9 * 3600000).toISOString().slice(5, 16).replace('-', '/').replace('T', ' ');
+  const counts = ko
+    ? `팝니다 ${s.selling?.n || 0} · 팔림 ${s.sold?.n || 0}${s.mega?.n ? ` · 고확 ${s.mega.n}` : ''} · ${day} 기준`
+    : `Selling ${s.selling?.n || 0} · Sold ${s.sold?.n || 0}${s.mega?.n ? ` · Megaphones ${s.mega.n}` : ''} · as of ${day} KST`;
+  try {
+    // Loaded only here: the renderer is WebAssembly, which the Node test runner cannot import with the rest of the worker.
+    const { renderCard } = await import('./og-card.js');
+    const png = await renderCard({
+      ko, name: nameOf(id, ko ? 'ko' : 'en') || meta?.description?.name || `#${id}`, en: ko ? nameOf(id, 'en') : null, price,
+      priceLabel: price ? (s.typical?.price ? (ko ? '보통 거래가 · 최근 실제 판매 기준' : 'Typical trade price · recent sales') : (ko ? '상점 매물 중간 가격' : 'Median shop price')) : (ko ? '아직 시세가 없어요' : 'No price yet'),
+      daily, counts, req: mi.reqLevel || null, stat: atk, iconUrl: `https://maplestory.io/api/MCW/1/item/${id}/icon`,
+    });
+    const res = new Response(png, { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=21600', 'Access-Control-Allow-Origin': '*' } });
+    ctx.waitUntil(cache.put(req, res.clone()));
+    return res;
+  } catch (e) {
+    return Response.redirect(`https://gms-hub.com/assets/og-market-${ko ? 'ko' : 'en'}.png`, 302);
+  }
+}
+
 async function cachedPrices(env, ids, origin, ctx) {
   const cache = globalThis.caches?.default;
   if (!cache) return pricesFor(env, ids);
@@ -370,6 +411,7 @@ const api = {
   async fetch(req, env, ctx) {
     // gms-hub.com/s/<name>: short shop link with a link preview (src/shop-preview.js, worker route on the site's zone).
     if (new URL(req.url).pathname.startsWith('/s/')) return handleShopLink(req, env, ctx, await itemLabel());
+    if (new URL(req.url).pathname.startsWith('/og/item/')) return itemCard(req, env, ctx);
     const url = new URL(req.url);
     const origin = req.headers.get('Origin') || '';
     const cors = corsHeaders(origin);

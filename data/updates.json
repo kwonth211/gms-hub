@@ -2,6 +2,20 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "item-share-cards",
+   "version": "0.7.48",
+   "level": "minor",
+   "date": "2026-11-21",
+   "path": "/items/",
+   "ko": "아이템 링크 공유 카드 — 카톡·디스코드에 아이템 그림과 시세가 바로",
+   "en": "Item share cards — the item, its price and a 14-day line right in the chat",
+   "desc": {
+    "ko": "아이템 페이지 링크를 카카오톡이나 디스코드에 붙이면 아이템 그림, 보통 거래가, 최근 14일 시세 그래프와 오르내림, 팝니다·팔림 매물 수가 들어간 카드가 떠요. 카드는 매일 새 시세로 다시 그려져요.",
+    "en": "Paste an item page link in KakaoTalk, Discord or X and the preview shows the item, its typical trade price, a 14-day price line with the change, and how many are selling and sold. The card is redrawn with fresh prices every day."
+   },
+   "highlight": true
+  },
+  {
    "id": "matching-option-market-prices",
    "version": "0.7.47",
    "level": "patch",

@@ -1,0 +1,8 @@
+{
+  "name": "gms-hub-worker",
+  "private": true,
+  "description": "Only for bundling: resvg turns item share cards (SVG) into PNG.",
+  "dependencies": {
+    "@resvg/resvg-wasm": "2.6.2"
+  }
+}

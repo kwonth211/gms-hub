@@ -663,6 +663,19 @@ const SHARE_PAGE_ALT = { market: ['실시간 자유시장 시세', 'Live Free Ma
   quests: ['퀘스트 단계별 공략', 'Step-by-step quest guides'], 'best-meso': ['돈 버는 퀘스트 순위', 'Quests that make the most mesos'],
   megaphone: ['실시간 확성기', 'Live megaphones'], newbie: ['글클메 뉴비 가이드', 'Classic World beginner guide'] };
 function shareImageTags(lang, pagePath) {
+  // Item pages (2026-11-21): a live card drawn by the worker (worker/src/og-card.js) with the item's icon, price, 14-day
+  // line and listing counts. The build date in the query makes chat apps that keep previews for days fetch a new card daily.
+  const item = pagePath && pagePath.match(/^\/items\/(\d{7})-/);
+  if (item && (lang === 'ko' || lang === 'en')) {
+    const url = `https://gms-hub.com/og/item/${item[1]}-${lang}.png?d=${BUILD_DATE}`, alt = lang === 'ko' ? '아이템 시세 카드 — 현재 가격, 최근 14일 시세, 매물 수' : 'Item price card — current price, 14-day trend, listings';
+    return `<meta property="og:image" content="${url}">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="${esc(alt)}">
+<meta name="twitter:image" content="${url}">
+<meta name="twitter:image:alt" content="${esc(alt)}">`;
+  }
   const key = pagePath && SHARE_PAGES.find(([p]) => pagePath.startsWith(p))?.[1];
   const card = key && PAGE_SHARE_IMAGES[`${key}-${lang}`];
   if (card) {
