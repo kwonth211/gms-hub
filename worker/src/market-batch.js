@@ -151,9 +151,10 @@ export async function handleMarketBatch(req, env, knownItems, onListings) {
     return reply({ ok: true, summary: await storeSummary(env, summary, Date.now(), true) });
   }
   if (!validBatch(body, known)) return reply({ error: 'invalid batch' }, 400);
-  const policy = limits(env);
-  if (body.rows.length > policy.maxBatchRows) return reply({ error: 'batch exceeds configured row limit', policy }, 400);
+  // The row limit follows the boost switch too (read with the usage), or a boosted run is refused here.
   const usage = await env.DB.prepare(usageSql).first();
+  const policy = limits(env, boosting(usage));
+  if (body.rows.length > policy.maxBatchRows) return reply({ error: 'batch exceeds configured row limit', policy }, 400);
   const quotaReply = async () => {
     const latestUsage = await env.DB.prepare(usageSql).first();
     const status = collectionPolicy(env, latestUsage, Date.now(), body.rows.length);
