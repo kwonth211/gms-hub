@@ -11,6 +11,7 @@ const mon = (s) => MONTHS.indexOf(s.slice(0, 3).toLowerCase()) + 1;
 
 // Titles the rules cannot write. Keyed by the notice id.
 const KO = {
+  d1573467690268627145: '커닝 파티퀘스트 Black Sack 잠시 제외',
   47857: '11월 18일 캐시샵 업데이트',
   48552: '11월 업데이트: 이벤트 안내',
   48256: '11월 업데이트: 포가튼 할로우 미리보기',
@@ -31,6 +32,8 @@ const KO = {
 // version and compensation lines from the notice itself (maintPoints) and these are added after them. `link` is a page
 // of ours on the same subject. A notice with no entry shows the feed's own one-line summary.
 const KO_POINTS = {
+  // Hand-written after the model kept failing on it (2026-11-21).
+  d1573467690268627145: { p: ['커닝 파티퀘스트에서 Black Sack(검은 자루)을 잠시 얻을 수 없게 했어요. 이 아이템으로 다른 플레이어를 괴롭히는 일이 신고됐기 때문이에요.', '원인을 고친 뒤 다음 업데이트에서 다시 얻을 수 있게 할 예정이에요.'] },
   // Written by hand (2026-11-18, owner: this round by Claude, later notices by Workers AI). en: lines for English pages.
   47857: {p: ["미스터리 패션 크레이트를 11월 18일 점검 후부터 12월 2일 16:59(한국 시간)까지 팔아요. 1개 3,500 NX, 11개 35,000 NX(원래 38,500 NX)예요.", "열면 Tania, Strawberry Milk, Leopard Print 세트 등 염색할 수 있는 코디 장비 중 하나가 무작위로 나와요.", "일반 상점 허가증(Regular Store Permit, 90일)이 1,500 NX에서 100 NX로 할인돼요. 12월 9일 점검 전까지, 월드마다 한 번 살 수 있어요.", "시그니처 스킨 컬러 쿠폰(2,000 NX)에 새 피부색 Alabaster, Clay, Green이 추가돼요.", "새 월드 제니스가 열리면서 뷰티(5,900 NX)·편의(9,900 NX)·펫 부스터 에센셜스 팩을 월드마다 한 번씩 살 수 있게 됐어요."], en: ["Mystery Fashion Crate on sale from the end of maintenance on Nov 18 until Dec 2, 07:59 UTC: 3,500 NX for one, 35,000 NX for 11 (was 38,500 NX).", "Each crate gives one random dyeable outfit item, from sets such as Tania, Strawberry Milk and Leopard Print.", "The Regular Store Permit (90 days) is 100 NX instead of 1,500 NX until the Dec 9 maintenance, once per world.", "The Signature Skin Color Coupon (2,000 NX) adds Alabaster, Clay and Green.", "With Zenith opening, the Beauty (5,900 NX), Convenience (9,900 NX) and Pet Booster Essentials Packs can be bought once per world."]},
   47370: {en: ["Maintenance: Oct 30, 22:00 UTC – Oct 31, 00:00 UTC (about 2 hours). Restart the Nexon Launcher or Steam to get the latest version.", "Cash items you own were extended by 2 hours."]},
@@ -210,9 +213,12 @@ export async function officialNews(fetcher = fetch, now = Date.now(), limit = 10
 // and a few lines; the result is kept in the snapshots table (key news-ko) and reused. Hand-written entries (KO,
 // KO_POINTS) always win, and a failed or odd answer leaves the notice in English until the next run.
 const AI_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
-export async function koByAi(env, title, body) {
-  const out = await env.AI.run(AI_MODEL, { max_tokens: 700, temperature: 0.2, messages: [
-    { role: 'system', content: 'You summarize official MapleStory Classic World notices for Korean players. Reply with JSON only, no other text: {"title": "<Korean title, under 40 characters>", "points": ["<3 to 5 short Korean sentences>"], "en": ["<the same 3 to 5 points as short plain English sentences>"]}. Write natural Korean in 해요체: every sentence ends in 요 (예: 판매해요, 3,500 NX예요), never in 니다. Lead with what is new and what it costs or gives; leave out legal notes and country restrictions. Keep the facts players need: dates and times exactly as the notice states them, and write every clock time as HH:MM followed by its time zone exactly as the notice gives it (for example 12월 2일 07:59 UTC); never drop the time zone. Nexon often writes the zone once before a date range ("UTC: Wednesday, November 18 (End of Maintenance) - Wednesday, December 2 7:59 AM"): that zone applies to every time in the range, so write 11월 18일 정기점검 후부터 12월 2일 07:59 UTC까지. Always say when a sale or event starts and ends, prices, level limits, rewards, what changes. Keep item, monster, map and NPC names in English. Never add anything the notice does not say.' },
+export async function koByAi(env, title, body, { strict = false } = {}) {
+  // The second try is stricter: the model kept slipping Chinese characters into Korean (2026-11-21, a KPQ notice stayed
+  // in English for hours), so it is told the allowed scripts outright and runs at temperature 0.
+  const STRICT = strict ? ' Use only Korean Hangul, English letters, digits and punctuation: never Chinese characters (Hanja), Japanese kana or any other script, not even in parentheses.' : '';
+  const out = await env.AI.run(AI_MODEL, { max_tokens: 700, temperature: strict ? 0 : 0.2, messages: [
+    { role: 'system', content: 'You summarize official MapleStory Classic World notices for Korean players. Reply with JSON only, no other text: {"title": "<Korean title, under 40 characters>", "points": ["<3 to 5 short Korean sentences>"], "en": ["<the same 3 to 5 points as short plain English sentences>"]}. Write natural Korean in 해요체: every sentence ends in 요 (예: 판매해요, 3,500 NX예요), never in 니다. Lead with what is new and what it costs or gives; leave out legal notes and country restrictions. Keep the facts players need: dates and times exactly as the notice states them, and write every clock time as HH:MM followed by its time zone exactly as the notice gives it (for example 12월 2일 07:59 UTC); never drop the time zone. Nexon often writes the zone once before a date range ("UTC: Wednesday, November 18 (End of Maintenance) - Wednesday, December 2 7:59 AM"): that zone applies to every time in the range, so write 11월 18일 정기점검 후부터 12월 2일 07:59 UTC까지. Always say when a sale or event starts and ends, prices, level limits, rewards, what changes. Keep item, monster, map and NPC names in English. Never add anything the notice does not say.' + STRICT },
     { role: 'user', content: `Title: ${title}\n\n${String(body).slice(0, 6000)}` }] });
   const raw = typeof out?.response === 'string' ? out.response : JSON.stringify(out?.response ?? '');
   const j = JSON.parse(raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1));
@@ -223,7 +229,7 @@ export async function koByAi(env, title, body) {
   const en = (Array.isArray(j.en) ? j.en : []).filter((p) => typeof p === 'string' && p.trim()).map((p) => p.trim().slice(0, 300)).slice(0, 5);
   const enOk = en.length && !en.some((p) => /[^\p{Script=Latin}\p{N}\p{P}\p{S}\s]/u.test(p) || bareTime(p));
   if (!t || !points.length || !/[가-힣]/.test(t + points.join(''))) throw new Error('unusable answer');
-  if (foreignScript(t + points.join(' '))) throw new Error('other script in answer');
+  if (foreignScript(t + points.join(' '))) throw new Error(`other script in answer: ${[...new Set((t + points.join('')).match(/[^\p{Script=Hangul}\p{Script=Latin}\p{N}\p{P}\p{S}\s]/gu) || [])].join('').slice(0, 12)}`);
   if (bareTime(t + ' ' + points.join(' '))) throw new Error('clock time without time zone');
   return { title: t, points, ...(enOk ? { en } : {}) };
 }
@@ -273,8 +279,8 @@ export async function refreshNews(env, fetcher = fetch, now = Date.now()) {
     const bad = made[x.id] && !usable(made[x.id]);
     if ((!made[x.id] || bad || made[x.id].v !== AI_VERSION || made[x.id].en !== x.en) && env.AI && added < 2) {
       const body = x.raw || await fetcher(`${FEED}/${x.id}`, { signal: AbortSignal.timeout(8000) }).then((r) => r.json()).then((j) => noticeText(j.body)).catch(() => '');
-      const once = () => koByAi(env, x.en, body).catch((e) => { console.log('news ko failed', x.id, String(e)); return null; });
-      const k = body ? (await once()) || (await once()) : null;
+      const once = (strict) => koByAi(env, x.en, body, { strict }).catch((e) => { console.log('news ko failed', x.id, String(e)); return null; });
+      const k = body ? (await once(false)) || (await once(true)) : null;
       if (k) { made[x.id] = { ...k, en: x.en, v: AI_VERSION }; added++; }
     }
     const k = made[x.id];

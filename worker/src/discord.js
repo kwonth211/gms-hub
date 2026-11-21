@@ -139,12 +139,23 @@ export async function newsToDiscord(env, data, now = Date.now()) {
   const save = (s) => env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('discord-news',?,datetime('now'))").bind(JSON.stringify(s)).run();
   const st = row ? JSON.parse(row.json) : { sent: data.items.map((x) => String(x.id)), reminded: [] };
   let changed = !row, posted = 0;
+  // Korean is ready when the summary is no longer the English lines (owner 2026-11-21: a notice went out in English).
+  // A notice waits up to six hours for it; if it still has to go out in English, the card is edited once Korean arrives.
+  const korean = (x) => !!x.sum?.ko?.length && JSON.stringify(x.sum.ko) !== JSON.stringify(x.sum.en) && /[가-힣]/.test(x.sum.ko.join(''));
+  st.msg ||= {}; st.english ||= [];
   for (const x of data.items) {
     const id = String(x.id);
     if (st.sent.includes(id) || posted >= 2) continue;
-    const ready = (x.sum?.ko?.length && JSON.stringify(x.sum.ko) !== JSON.stringify(x.sum.en)) || now - Date.parse(x.date) > 3600000;
-    if (!ready) continue;
-    if (await botPost(env, channel, { embeds: [noticeEmbed(x)] })) { st.sent.push(id); posted++; changed = true; }
+    if (!korean(x) && now - Date.parse(x.date) < 6 * 3600000) continue;
+    const msg = await botPost(env, channel, { embeds: [noticeEmbed(x)] });
+    if (msg) { st.sent.push(id); st.msg[id] = msg; if (!korean(x)) st.english.push(id); posted++; changed = true; }
+  }
+  for (const id of [...st.english]) {
+    const x = data.items.find((y) => String(y.id) === id);
+    if (!x) { st.english = st.english.filter((e) => e !== id); changed = true; continue; }
+    if (!korean(x) || !st.msg[id]) continue;
+    const r = await bot(env, 'PATCH', `/channels/${channel}/messages/${st.msg[id]}`, { embeds: [noticeEmbed(x)] });
+    if (r?.ok) { st.english = st.english.filter((e) => e !== id); changed = true; }
   }
   for (const x of data.items) {
     const id = String(x.id);
@@ -154,7 +165,7 @@ export async function newsToDiscord(env, data, now = Date.now()) {
     const s = unix(x.maint.start), e = unix(x.maint.end);
     if (await botPost(env, channel, { content: `⏰ **곧 점검이 시작돼요** <t:${s}:R> · <t:${s}:t> ~ <t:${e}:t>\nMaintenance starts <t:${s}:R> and ends <t:${e}:t>.` })) { (st.reminded ||= []).push(id); changed = true; }
   }
-  if (changed) { st.sent = st.sent.slice(-60); st.reminded = (st.reminded || []).slice(-30); await save(st); }
+  if (changed) { st.sent = st.sent.slice(-60); st.reminded = (st.reminded || []).slice(-30); st.msg = Object.fromEntries(Object.entries(st.msg).filter(([k]) => st.sent.includes(k))); await save(st); }
 }
 
 // 무료 고확 relayed to #한국어-거래: the post as a small card (colour by intent) with a link to it on the site.
