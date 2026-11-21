@@ -147,3 +147,13 @@ test('equipment options ride along with a row, survive a later run without them,
  assert.equal((await post(e,later)).status,200);
  assert.deepEqual(JSON.parse(e.sqlite.prepare('SELECT opts FROM listings ORDER BY price').get().opts).stats,{PAD:9,LUK:2});
 });
+
+test('boost mode: bigger scope and a 10 minute period while the switch is on, normal when off', () => {
+  const env = { MARKET_BATCH_DAILY_ROWS: '20000', MARKET_BATCH_MIN_INTERVAL_SECONDS: '600', MARKET_BATCH_MAX_ROWS: '150', MARKET_BATCH_MAX_SHOPS: '150' };
+  const on = collectionPolicy(env, { rows: 0, lastAt: null, boost: '{"on":true}' });
+  assert.equal(on.policy.maxShops, 200); assert.equal(on.maxRows, 200); assert.equal(on.policy.periodMinutes, 10);
+  for (const boost of [null, '{"on":false}', 'garbage']) {
+    const off = collectionPolicy(env, { rows: 0, lastAt: null, boost });
+    assert.equal(off.policy.maxShops, 150); assert.equal(off.maxRows, 150); assert.equal(off.policy.periodMinutes, 15);
+  }
+});

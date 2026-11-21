@@ -1,6 +1,9 @@
 importScripts('config.private.js');
 const SCHEDULE = 'gms-market-hourly', WATCHDOG = 'gms-market-watchdog', RETRY = 'gms-market-upload';
 const INTERVAL = 15 * 60000;
+// The server can shorten the period (boost window): it sends policy.periodMinutes with every preflight.
+const period = (s) => Math.max(10, Math.min(60, Number(s?.policy?.periodMinutes) || 15));
+const gap = (s) => period(s) * 60000;
 const SUMMARY_EVERY = 3 * 3600000;
 const COLLECT_RETRY = 'gms-market-collect-retry';
 const PAGE = 'https://meso.watch/?gms-batch=1';
@@ -17,7 +20,7 @@ async function beat(event, force = false, gap = 45000) {
   if (!GMS_BATCH_CONFIG.token || (!force && Date.now() - lastBeatAt < gap)) return;
   lastBeatAt = Date.now();
   const s = await get();
-  const body = { version: '0.7.6', instance: GMS_BATCH_CONFIG.name || 'chrome', event, enabled: !!s.enabled, phase: s.run?.phase || (s.pending ? 'pending' : 'idle'), shops: s.run?.progress?.shops ?? null,
+  const body = { version: '0.7.7', instance: GMS_BATCH_CONFIG.name || 'chrome', event, enabled: !!s.enabled, phase: s.run?.phase || (s.pending ? 'pending' : 'idle'), shops: s.run?.progress?.shops ?? null,
     rows: s.run?.progress?.rows ?? null, item: s.run?.progress?.item ?? null, hidden: !!s.run?.progress?.hidden, error: s.error || null, runId: s.run?.runId || null,
     startedAt: s.run?.startedAt || null, nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
   fetch(ENDPOINT + '?heartbeat=1', { method: 'POST', headers: { Authorization: `Bearer ${GMS_BATCH_CONFIG.token}`, 'Content-Type': 'application/json' },
@@ -33,15 +36,15 @@ async function recycleWindow(s) {
 async function broadcast() {
   const s = await get();
   // No secret is ever included in content-script messages or the public DOM.
-  return { ...s, version: '0.7.6', nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
+  return { ...s, version: '0.7.7', nextAt: s.retryAt || (await chrome.alarms.get(SCHEDULE))?.scheduledTime || null };
 }
 async function ensureAlarms() {
   const s = await get();
   await chrome.alarms.clear('gms-market-15m');
   const scheduled = await chrome.alarms.get(SCHEDULE);
-  const gate = Math.max((s.lastAttemptAt || 0) + INTERVAL, s.lastSuccessAt ? Date.parse(s.lastSuccessAt) + INTERVAL : 0, s.retryAt || 0);
-  if (s.enabled && (!scheduled || scheduled.periodInMinutes !== 15 || scheduled.scheduledTime < gate))
-    await chrome.alarms.create(SCHEDULE, { when: Math.max(Date.now() + 60000, gate), periodInMinutes: 15 });
+  const gate = Math.max((s.lastAttemptAt || 0) + gap(s), s.lastSuccessAt ? Date.parse(s.lastSuccessAt) + gap(s) : 0, s.retryAt || 0);
+  if (s.enabled && (!scheduled || scheduled.periodInMinutes !== period(s) || scheduled.scheduledTime < gate))
+    await chrome.alarms.create(SCHEDULE, { when: Math.max(Date.now() + 60000, gate), periodInMinutes: period(s) });
   if (s.enabled && s.retryAt && !await chrome.alarms.get(COLLECT_RETRY)) await chrome.alarms.create(COLLECT_RETRY, { when: Math.max(Date.now() + 1000, s.retryAt) });
   if (!await chrome.alarms.get(WATCHDOG)) await chrome.alarms.create(WATCHDOG, { periodInMinutes: 1 });
 }
@@ -78,7 +81,7 @@ async function launch(mode, trigger) {
   let maxRows = 50, scope = {};
   if (mode !== 'test') {
     // Manual actions, retries and restored alarms all share the same crawl limit.
-    const localNext = Math.max((s.lastAttemptAt || 0) + INTERVAL, s.lastSuccessAt ? Date.parse(s.lastSuccessAt) + INTERVAL : 0);
+    const localNext = Math.max((s.lastAttemptAt || 0) + gap(s), s.lastSuccessAt ? Date.parse(s.lastSuccessAt) + gap(s) : 0);
     let response, policy;
     try {
       // `instance` tells the server this is current code (0.7.1+, the dedicated collector browser); an older install left
@@ -106,7 +109,7 @@ async function launch(mode, trigger) {
       if (s.enabled) await chrome.alarms.create(COLLECT_RETRY, { when: s.retryAt });
       return { waiting: true, nextAt: s.retryAt };
     }
-    maxRows = Math.min(150, Number(policy.maxRows));
+    maxRows = Math.min(250, Number(policy.maxRows));
     // Scope of one run comes from the server so it can change without reloading the extension; hard caps stay here.
     scope = { maxItems: Math.min(60, Number(policy.policy.maxItems) || 12), shopsPerItem: Math.min(50, Number(policy.policy.shopsPerItem) || 20),
       maxShops: Math.min(600, Number(policy.policy.maxShops) || 360) };
@@ -278,7 +281,7 @@ chrome.alarms.onAlarm.addListener(alarm => enqueue(async () => {
   }
   if (alarm.name === WATCHDOG) {
     const s = await get();
-    if (s.run && !s.pending && ((s.run.phase === 'loading' && Date.now() - s.run.startedAt > 90000) || Date.now() - (s.run.readyAt || s.run.startedAt) > 14 * 60000)) { await recycleWindow(s); await put(s); await recover('수집 창 응답 시간 초과'); }
+    if (s.run && !s.pending && ((s.run.phase === 'loading' && Date.now() - s.run.startedAt > 90000) || Date.now() - (s.run.readyAt || s.run.startedAt) > 20 * 60000)) { await recycleWindow(s); await put(s); await recover('수집 창 응답 시간 초과'); }
     // No shop read for four minutes while collecting: the window is stuck (a frozen renderer), so it is replaced.
     else if (s.run?.phase === 'collecting' && !s.pending && Date.now() - (s.run.progressAt || s.run.readyAt || s.run.startedAt) > 4 * 60000) { await recycleWindow(s); await put(s); await recover('수집 진행 멈춤 (창 재생성)'); }
     else if (!s.run) await beat('idle', false, 5 * 60000);

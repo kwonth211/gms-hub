@@ -25,7 +25,7 @@
     const maxShops = options.mode === 'test' ? 40 : Math.min(600, Number(options.maxShops) || 360);
     const maxItems = options.mode === 'test' ? 2 : Math.min(60, Number(options.maxItems) || 12);
     const perItem = Math.min(50, Number(options.shopsPerItem) || 20);
-    const report = { version: '0.7.6', runId: options.runId, world: 'Windia', startedAt: new Date().toISOString(),
+    const report = { version: '0.7.7', runId: options.runId, world: 'Windia', startedAt: new Date().toISOString(),
       status: 'running', rows: [], shops: 0, rejected: {}, queue: [], skippedItems: [], aiCalls: 0 };
     const rows = new Map();
     const openModal = () => { const el = document.querySelector('#sv-modal'); return el && !el.closest('[hidden]') ? el : null; };

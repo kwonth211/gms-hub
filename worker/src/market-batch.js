@@ -2,7 +2,15 @@ import { normalizeOptions } from './item-options.js';
 import { refreshItemMarket } from './market-browser.js';
 // Authenticated, idempotent ingestion for the private deterministic collector.
 const reply = (body, status = 200, headers = {}) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store', ...headers } });
-const limits = env => ({
+// Boost mode (owner, 2026-11-21): a switch the owner flips when he asks (scripts/collector-boost.sh on|off, stored in
+// snapshots 'market-boost'). While on, the collector runs every 10 minutes with a bigger scope; it stays on until turned off.
+const boosting = (usage) => { try { return !!JSON.parse(usage?.boost || 'null')?.on; } catch { return false; } };
+const limits = (env, boost = false) => boost ? { ...baseLimits(env),
+  maxBatchRows: Math.max(1, Math.min(500, Number(env.MARKET_BATCH_BOOST_MAX_ROWS) || 200)),
+  maxShops: Math.max(1, Math.min(600, Number(env.MARKET_BATCH_BOOST_MAX_SHOPS) || 200)),
+  periodMinutes: 10, boost: true } : baseLimits(env);
+const baseLimits = env => ({
+  periodMinutes: 15,
   dailyRows: Math.max(1, Math.min(20000, Number(env.MARKET_BATCH_DAILY_ROWS) || 2000)),
   intervalSeconds: env.MARKET_BATCH_MIN_INTERVAL_SECONDS === undefined ? 21600 : Math.max(0, Number(env.MARKET_BATCH_MIN_INTERVAL_SECONDS) || 0),
   maxBatchRows: Math.max(1, Math.min(500, Number(env.MARKET_BATCH_MAX_ROWS) || 500)),
@@ -13,9 +21,10 @@ const limits = env => ({
 });
 const usageSql = `SELECT
   (SELECT COALESCE(SUM(accepted),0) FROM market_batch_runs WHERE received_at >= date('now')) AS rows,
-  (SELECT MAX(received_at) FROM market_batch_runs) AS lastAt`;
+  (SELECT MAX(received_at) FROM market_batch_runs) AS lastAt,
+  (SELECT json FROM snapshots WHERE key = 'market-boost') AS boost`;
 export function collectionPolicy(env, usage, now = Date.now(), requestedRows = 1) {
-  const policy = limits(env), remaining = Math.max(0, policy.dailyRows - usage.rows);
+  const policy = limits(env, boosting(usage)), remaining = Math.max(0, policy.dailyRows - usage.rows);
   const last = usage.lastAt ? Date.parse(usage.lastAt.replace(' ', 'T') + 'Z') : 0;
   const reset = new Date(now); reset.setUTCHours(24, 0, 0, 0);
   const budgetAvailable = remaining >= requestedRows;
@@ -197,4 +206,18 @@ export async function collectorView(env) {
   const status = await getCollectionStatus(env);
   return { heartbeat: beat ? { ...JSON.parse(beat.json), at: beat.at.replace(' ', 'T') + 'Z', ageSeconds: Math.round((Date.now() - Date.parse(beat.at.replace(' ', 'T') + 'Z')) / 1000) } : null,
     runs: results, state: status.state, lastSuccessAt: status.lastSuccessAt, nextEligibleAt: status.nextEligibleAt, todayRows: status.usage?.rows ?? null, asOf: status.asOf };
+}
+
+// GET: is boost on? POST {"on": true|false}: flip it. Owner key only (MAIL_ADMIN_TOKEN).
+export async function handleMarketBoost(req, env) {
+  const auth = req.headers.get('Authorization') || '';
+  if (!env.MAIL_ADMIN_TOKEN || auth.length > 256 || await digest(auth) !== await digest(`Bearer ${env.MAIL_ADMIN_TOKEN}`)) return reply({ error: 'forbidden' }, 403);
+  if (req.method === 'POST') {
+    let body; try { body = await req.json(); } catch { return reply({ error: 'invalid JSON' }, 400); }
+    if (typeof body?.on !== 'boolean') return reply({ error: 'send {"on": true} or {"on": false}' }, 400);
+    await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('market-boost',?,datetime('now'))").bind(JSON.stringify({ on: body.on })).run();
+  } else if (req.method !== 'GET') return reply({ error: 'method not allowed' }, 405);
+  const row = await env.DB.prepare("SELECT json, at FROM snapshots WHERE key = 'market-boost'").first();
+  const on = boosting({ boost: row?.json });
+  return reply({ on, since: row?.at || null, policy: limits(env, on) });
 }
