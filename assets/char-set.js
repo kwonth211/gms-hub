@@ -75,14 +75,16 @@ export function makeSet({ korean, market, api, track, esc, mesos }) {
       slot: { weapon: '무기', hat: '모자', top: '상의·한벌옷', bottom: '하의', shoes: '신발', glove: '장갑', cape: '망토', earrings: '귀고리', shield: '방패' },
       opt: '옵션', optHint: '아는 값만 적으세요. 비운 칸은 상관없음이에요. 같은 옵션으로 팔린·판매 중인 매물로 시세를 계산해요.', apply: '적용', clearOpt: '옵션 지우기',
       ups: '강화 성공', slots: '남은 업횟', optOpen: (n) => `같은 옵션 판매 중 ${n}건`, optRecent: (n) => `같은 옵션 최근 30일 ${n}건`, optNone: '같은 옵션 기록 없음', optLoading: '옵션 시세 찾는 중…',
-      stat: { PAD: '공격력', MAD: '마력', STR: 'STR', DEX: 'DEX', INT: 'INT', LUK: 'LUK', ACC: '명중', EVA: '회피', Speed: '이동속도', Jump: '점프', PDD: '방어력', MHP: 'HP' } }
+      base: '기본(노작)', anyOpt: '옵션 상관없이',
+      stat: { PAD: '공격력', MAD: '마력', STR: 'STR', DEX: 'DEX', INT: 'INT', LUK: 'LUK', ACC: '명중', EVA: '회피', Speed: '이동속도', Jump: '점프', PDD: '방어력', MDD: '마법방어', MHP: 'HP', MMP: 'MP', CRT: '크리티컬', CRD: '크리 데미지' } }
     : { h: 'My gear set', p: 'Put a piece in each slot to see your character wearing it, what each piece sells for now and the whole set.', total: 'Set total', add: 'Add', change: 'Change', remove: 'Remove',
       search: 'Find an item by name', close: 'Close', noPrice: 'No price', cant: 'Not wearable yet', missing: (n) => `${n} without a price left out`, empty: 'No gear yet. Tap + on a slot to add one.',
       none: 'No matching gear.', worn: 'Wearing an overall', two: 'Two-handed weapon', reset: 'Clear the set', live: 'Live prices',
       slot: { weapon: 'Weapon', hat: 'Hat', top: 'Top / overall', bottom: 'Bottom', shoes: 'Shoes', glove: 'Gloves', cape: 'Cape', earrings: 'Earrings', shield: 'Shield' },
       opt: 'Options', optHint: 'Fill in only what you know; empty means any. The price comes from listings with the same options.', apply: 'Apply', clearOpt: 'Clear options',
       ups: 'Upgrades passed', slots: 'Slots left', optOpen: (n) => `${n} for sale with these options`, optRecent: (n) => `${n} in 30 days with these options`, optNone: 'No listings with these options', optLoading: 'Finding the option price…',
-      stat: { PAD: 'Attack', MAD: 'Magic', STR: 'STR', DEX: 'DEX', INT: 'INT', LUK: 'LUK', ACC: 'Accuracy', EVA: 'Avoid', Speed: 'Speed', Jump: 'Jump', PDD: 'Defense', MHP: 'HP' } };
+      base: 'Base (clean)', anyOpt: 'Any options',
+      stat: { PAD: 'Attack', MAD: 'Magic', STR: 'STR', DEX: 'DEX', INT: 'INT', LUK: 'LUK', ACC: 'Accuracy', EVA: 'Avoid', Speed: 'Speed', Jump: 'Jump', PDD: 'Defense', MDD: 'M. Defense', MHP: 'HP', MMP: 'MP', CRT: 'Critical', CRD: 'Crit damage' } };
   let gear = [], byId = new Map(), live = {}, open = null, query = '', liveFor = '', editing = null;
   const optLive = {}; // `${id}|${filter}` -> { price, n, kind } (null while loading)
   const optKey = (id, f) => `${id}|${encodeOptionFilter(f)}`;
@@ -92,6 +94,8 @@ export function makeSet({ korean, market, api, track, esc, mesos }) {
   const nameOf = (id) => { const g = byId.get(id); return g ? (korean ? g[1] : g[2]) : `#${id}`; };
   const icon = (id, s = 32) => `<img src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="${s}" height="${s}" loading="lazy">`;
   const fitsChar = (g, c, bit) => g[4] <= c.lv && (!g[5] || (g[5] & bit));
+  // A clean piece: its base stats, every upgrade slot left, none passed. Picking an item starts from this.
+  const baseOf = (id) => { const g = byId.get(id); return g ? optionFilter({ stats: g[9] || {}, ...(Number.isInteger(g[10]) ? { slots: g[10] } : {}), ups: 0 }) : null; };
   // A slot with options is priced from listings with the same options only, never from the item-wide price.
   const priceIn = (slot, id, opts) => (opts[slot] ? optLive[optKey(id, opts[slot])]?.price || null : priceOf(id));
   const optText = (f) => [...Object.entries(f.stats || {}).map(([k, v]) => `${t.stat[k] || k} ${v}`),
@@ -116,11 +120,12 @@ export function makeSet({ korean, market, api, track, esc, mesos }) {
     } catch (e) {}
   };
   const editor = (slot, f) => {
-    const fields = OPT_FIELDS[slot === 'weapon' ? 'weapon' : 'other'];
+    const id = loadSet()[slot], base = baseOf(id);
+    const fields = [...new Set([...Object.keys(base?.stats || {}), ...Object.keys(f?.stats || {}), ...OPT_FIELDS[slot === 'weapon' ? 'weapon' : 'other']])];
     const num = (name, label, val) => `<label><span>${esc(label)}</span><input type="number" inputmode="numeric" name="${name}" value="${val ?? ''}" min="-99" max="999" placeholder="—"></label>`;
     return `<form class="cset-opt" data-cset-optform="${slot}"><p class="muted">${esc(t.optHint)}</p><div class="cset-opt-grid">
 ${fields.map((k) => num(`s_${k}`, t.stat[k], f?.stats?.[k])).join('')}${num('ups', t.ups, f?.ups)}${num('slots', t.slots, f?.slots)}</div>
-<div class="cset-opt-acts"><button type="submit" class="btn">${esc(t.apply)}</button>${f ? `<button type="button" class="btn ghost" data-cset="clear-opt">${esc(t.clearOpt)}</button>` : ''}<button type="button" class="btn ghost" data-cset="close">${esc(t.close)}</button></div></form>`;
+<div class="cset-opt-acts"><button type="submit" class="btn">${esc(t.apply)}</button>${base ? `<button type="button" class="btn ghost" data-cset="base-opt">${esc(t.base)}</button>` : ''}${f ? `<button type="button" class="btn ghost" data-cset="clear-opt">${esc(t.anyOpt)}</button>` : ''}<button type="button" class="btn ghost" data-cset="close">${esc(t.close)}</button></div></form>`;
   };
 
   const picker = (slot, c, bit) => {
@@ -180,9 +185,11 @@ ${tot.n ? `<button type="button" class="cset-reset" data-cset="reset">${esc(t.re
         const id = Number(w.dataset.csetWear), slot = slotOf(subOf(id)), had = loadSet()[slot];
         const next = wear(loadSet(), id, subOf), o2 = loadOpts();
         for (const k of Object.keys(o2)) if (next[k] !== loadSet()[k]) delete o2[k];
+        const base = baseOf(id);
+        if (base) o2[slot] = base;
         saveSet(next); saveOpts(o2);
         track('my_char_set', { action: had ? 'change' : 'add', slot, item_id: id });
-        open = null; query = ''; redraw(false); return;
+        open = null; query = ''; editing = baseOf(id) ? slot : null; redraw(false); return;
       }
       const r = e.target.closest('[data-cset-remove]');
       if (r) {
@@ -195,6 +202,11 @@ ${tot.n ? `<button type="button" class="cset-reset" data-cset="reset">${esc(t.re
       const b = e.target.closest('[data-cset]');
       if (b?.dataset.cset === 'close') { open = null; editing = null; query = ''; redraw(false); }
       if (b?.dataset.cset === 'reset') { saveSet({}); saveOpts({}); track('my_char_set', { action: 'reset' }); open = null; editing = null; redraw(false); }
+      if (b?.dataset.cset === 'base-opt' && editing) {
+        const o2 = loadOpts(), base = baseOf(loadSet()[editing]);
+        if (base) o2[editing] = base; saveOpts(o2);
+        editing = editing; redraw(false); return;
+      }
       if (b?.dataset.cset === 'clear-opt' && editing) {
         const o2 = loadOpts(); delete o2[editing]; saveOpts(o2);
         track('my_char_set', { action: 'options_clear', slot: editing, item_id: loadSet()[editing] });

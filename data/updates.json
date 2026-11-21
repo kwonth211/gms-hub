@@ -10,8 +10,8 @@
    "ko": "내 장비 세트 — 부위별로 장비·옵션을 넣고 세트 시세를 한눈에",
    "en": "My gear set — dress your character slot by slot and see what the set costs",
    "desc": {
-    "ko": "홈의 내 캐릭터에서 무기·모자·상의·하의·신발·장갑·망토·귀고리·방패를 하나씩 넣고 바꾸고 뺄 수 있어요. 입은 모습이 바로 그려지고, 부위마다 지금 시세와 세트 합계가 같이 나와요. 한벌옷을 입으면 하의가, 두손무기를 들면 방패가 저절로 빠져요. 부위마다 '옵션'에 공격력·주스탯·강화 횟수 같은 값을 넣으면 같은 옵션으로 올라온 매물만으로 시세를 계산해요.",
-    "en": "On the home page character panel, add, swap or remove a weapon, hat, top, bottom, shoes, gloves, cape, earrings and shield. Your character is drawn wearing them, with each piece's live price and the set total. An overall replaces the bottom and a two-handed weapon replaces the shield. Set a piece's options (attack, main stats, upgrades) and it is priced from listings with the same options only."
+    "ko": "홈의 내 캐릭터에서 무기·모자·상의·하의·신발·장갑·망토·귀고리·방패를 하나씩 넣고 바꾸고 뺄 수 있어요. 입은 모습이 바로 그려지고, 부위마다 지금 시세와 세트 합계가 같이 나와요. 한벌옷을 입으면 하의가, 두손무기를 들면 방패가 저절로 빠져요. 아이템을 고르면 기본 옵션(노작)이 채워지고, 공격력·주스탯·강화 횟수를 바꾸면 같은 옵션으로 올라온 매물만으로 시세를 계산해요.",
+    "en": "On the home page character panel, add, swap or remove a weapon, hat, top, bottom, shoes, gloves, cape, earrings and shield. Your character is drawn wearing them, with each piece's live price and the set total. An overall replaces the bottom and a two-handed weapon replaces the shield. A picked item starts with its clean base options; change attack, main stats or upgrades and it is priced from listings with the same options only."
    }
   },
   {

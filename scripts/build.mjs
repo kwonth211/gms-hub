@@ -4096,6 +4096,7 @@ write('assets/shop-glyphs.json', fs.readFileSync(path.join(root, 'data/shop-glyp
 // (scroll shorthand like 장공 60%), market prices, and whether the gear can be obtained now.
 {
   const F = readJson('data/forge.json');
+  const FORGE_EQ = new Map(F.equips.map((x) => [x.id, x]));
   const BY = new Map(itemsData.items.map((i) => [i.id, i]));
   const OK = new Set(EQUIPMENT.map((e) => e.id));
   const price = (id) => { const i = BY.get(id); const v = i && shownMedian(i); return v ? Math.round(v) : null; };
@@ -4103,7 +4104,8 @@ write('assets/shop-glyphs.json', fs.readFileSync(path.join(root, 'data/shop-glyp
   // only once a character is saved. Gear: [id, ko, en, slot, level, job bits, weapon attack or magic, defense, median price].
   // Quests: [guide slug, start levels of its parts, title, card line, reward] with ko/en text.
   write('assets/char-hub.json', JSON.stringify({
-    gear: EQUIPMENT.map((e) => [e.id, e.ko, e.en, e.sub, e.lv, e.job, e.inc.PAD || e.inc.MAD || 0, e.inc.PDD || 0, price(e.id)]),
+    // [9] base stats and [10] upgrade slots of a clean piece (data/forge.json): the gear set fills them in as the default options.
+    gear: EQUIPMENT.map((e) => { const f = FORGE_EQ.get(e.id); return [e.id, e.ko, e.en, e.sub, e.lv, e.job, e.inc.PAD || e.inc.MAD || 0, e.inc.PDD || 0, price(e.id), f?.inc || e.inc || {}, f?.slots ?? null]; }),
     // Quests you can do now: the guided quests (Korean and English titles, what they give), with the level each part starts at.
     quests: QUEST_GUIDES.map(({ guide: g }) => [g.slug, g.level.en.split('·').map((part) => Number(part.match(/\d+/)?.[0])).filter(Boolean), g.title, g.card, g.reward]),
     // Standard skill build per job id (100 = 1st job warrior, 410 = assassin …) and the names of the skills they use.
