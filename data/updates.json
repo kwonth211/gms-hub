@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "notices-korean",
+   "version": "0.7.49",
+   "level": "patch",
+   "date": "2026-11-21",
+   "path": "/",
+   "ko": "게임 공지 — 한국어 요약이 빠지던 공지도 처음부터 한국어로",
+   "en": "Game notices — summaries no longer stay in English",
+   "desc": {
+    "ko": "가끔 한국어 요약을 만들지 못해 영어 원문 그대로 보이던 게임 공지를 고쳤어요. 홈의 게임 공지와 디스코드 #공지 모두 처음부터 한국어로 나와요.",
+    "en": "Some game notices stayed in English when their Korean summary failed; fixed. The home page and the Discord announcements now get Korean from the start."
+   }
+  },
+  {
    "id": "item-share-cards",
    "version": "0.7.48",
    "level": "minor",
