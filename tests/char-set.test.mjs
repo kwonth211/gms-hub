@@ -32,3 +32,9 @@ test('the picture uses a two-handed stance for two-handed weapons', () => {
   assert.match(renderUrl({ weapon: 8, hat: 7 }, subOf), /,8,7\/stand2\//);
   assert.match(renderUrl({ weapon: 6 }, subOf), /\/stand1\//);
 });
+test('option price: open asks first, then the last 30 days, else none', async () => {
+  const { optionPrice } = await import('../assets/char-set.js');
+  assert.deepEqual(optionPrice({ summary: { median: 150000, open: 3 }, rows: [] }), { price: 150000, n: 3, kind: 'open' });
+  assert.deepEqual(optionPrice({ summary: { median: null }, rows: [{ price: 160000 }, { price: 120000 }, { price: 180000 }] }), { price: 160000, n: 3, kind: 'recent' });
+  assert.deepEqual(optionPrice({ summary: {}, rows: [] }), { price: null, n: 0, kind: 'none' });
+});

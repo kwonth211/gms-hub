@@ -1602,6 +1602,15 @@ a.cset-item:focus-visible { outline: 2px solid var(--accent-fill); outline-offse
 .cset-pick-list small { color: var(--muted); font-size: 0.76rem; }
 .cset-pick-list b { font-variant-numeric: tabular-nums; font-size: 0.85rem; white-space: nowrap; }
 .cset-empty { margin: 4px 0 0; font-size: 0.86rem; }
+.cset-price { display: grid; justify-items: end; }
+.cset-price small { font-weight: 400; font-size: 0.72rem; color: var(--muted); }
+.cset-acts .btn.is-on { border-color: var(--accent-fill); color: var(--accent-ink, var(--text)); }
+.cset-opt { grid-column: 1 / -1; display: grid; gap: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+.cset-opt p { margin: 0; font-size: 0.8rem; }
+.cset-opt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px; }
+.cset-opt-grid label { display: grid; gap: 2px; font-size: 0.76rem; color: var(--text-2); }
+.cset-opt-grid input { width: 100%; min-width: 0; padding: 5px 6px; font: inherit; font-size: 0.88rem; }
+.cset-opt-acts { display: flex; flex-wrap: wrap; gap: 6px; }
 @media (max-width: 640px) {
   .cset-grid { grid-template-columns: minmax(0, 1fr); }
   .cset-figure { position: static; grid-template-columns: auto minmax(0, 1fr); justify-items: start; align-items: center; }
