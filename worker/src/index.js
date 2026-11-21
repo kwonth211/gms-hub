@@ -319,7 +319,8 @@ const PRICE_TTL = 1800; // 30 min: a 14-day summary barely moves in that time, a
 async function itemCard(req, env, ctx) {
   const m = new URL(req.url).pathname.match(/^\/og\/item\/(\d{7})-(ko|en)\.png$/);
   if (!m) return new Response('not found', { status: 404 });
-  const cache = caches.default, hit = await cache.match(req);
+  // The design version is part of the cache key, so a new look is not hidden behind six hours of cached old cards.
+  const key = new Request(`${req.url}${req.url.includes('?') ? '&' : '?'}design=2`), cache = caches.default, hit = await cache.match(key);
   if (hit) return hit;
   const id = Number(m[1]), ko = m[2] === 'ko';
   const nameOf = await itemLabel();
@@ -348,7 +349,7 @@ async function itemCard(req, env, ctx) {
       daily, counts, req: mi.reqLevel || null, stat: atk, iconUrl: `https://maplestory.io/api/MCW/1/item/${id}/icon`,
     });
     const res = new Response(png, { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=21600', 'Access-Control-Allow-Origin': '*' } });
-    ctx.waitUntil(cache.put(req, res.clone()));
+    ctx.waitUntil(cache.put(key, res.clone()));
     return res;
   } catch (e) {
     return Response.redirect(`https://gms-hub.com/assets/og-market-${ko ? 'ko' : 'en'}.png`, 302);
