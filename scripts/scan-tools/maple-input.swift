@@ -203,7 +203,9 @@ guard NSWorkspace.shared.frontmostApplication?.processIdentifier != pid else {re
 if args[1]=="click" {
     // Command-modified native click prevents the background window being raised.
     // This sets only event flags; no Command keydown/keyup is sent.
-    post(.leftMouseDown,[.command]);usleep(80000)
+    post(.leftMouseDown,[.command])
+    emit(["phase":"pressed","at":Date().timeIntervalSince1970*1000])
+    usleep(80000)
     post(.leftMouseUp,[.command]) // Always release the synthetic button pair.
     emit(["phase":"clicked","at":Date().timeIntervalSince1970*1000])
 }
