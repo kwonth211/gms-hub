@@ -6,6 +6,8 @@
 import { readSession } from './account.js';
 import { marketEmbed } from './discord.js';
 
+// The owner's characters (memory: owner-characters) never count.
+const OWNER = new Set(['hookstk', 'pipinstall']);
 const kstDay = (t = Date.now()) => new Date(t + 9 * 3600000).toISOString().slice(0, 10);
 
 export async function recordContribution(env, req, kind, n, anonKey, sellers = []) {
@@ -28,7 +30,7 @@ export async function contributorsData(env, me = null) {
   const since = kstDay(Date.now() - 6 * 864e5);
   const top = async (where, args) => (await env.DB.prepare(`SELECT who, MAX(name) AS name, MAX(avatar) AS avatar,
       SUM(CASE WHEN kind = 'scan' THEN n ELSE 0 END) AS scans, SUM(CASE WHEN kind = 'gone' THEN n ELSE 0 END) AS gone, SUM(n) AS points
-      FROM contributions WHERE 1 = 1 ${where} GROUP BY who ORDER BY points DESC LIMIT 20`).bind(...args).all()).results || [];
+      FROM contributions WHERE 1 = 1 ${where} GROUP BY who ORDER BY points DESC LIMIT 80`).bind(...args).all()).results || [];
   const anon = async (where, args) => (await env.DB.prepare(`SELECT COALESCE(SUM(n), 0) AS points, COUNT(DISTINCT who) AS people FROM contributions WHERE who LIKE 'a:%' ${where}`).bind(...args).first()) || { points: 0, people: 0 };
   // Not logged in: a short tag from the visitor hash, so the same anonymous contributor keeps one line.
   const clean = (rows) => rows.map((r) => ({ who: r.who, id: r.who.startsWith('d:') ? r.who.slice(2) : '', anon: r.who.startsWith('a:'), game: '', name: r.name || '', avatar: r.avatar || '', scans: r.scans, gone: r.gone, points: r.points }));
@@ -42,9 +44,20 @@ export async function contributorsData(env, me = null) {
     for (const r of results || []) if (!game[r.who]) game[r.who] = r.seller;
     for (const r of [...week, ...all]) if (game[r.who]) r.game = game[r.who];
   }
-  for (const r of [...week, ...all]) delete r.who;
+  // The owner's own characters are not contributors (their uploads are testing), and one person who uploaded from several
+  // connections shows up under the same in-game name more than once: those lines are added together.
+  const merge = (rows) => {
+    const by = new Map();
+    for (const r of rows) {
+      if (r.game && OWNER.has(r.game.toLowerCase())) continue;
+      const key = r.game ? `g:${r.game.toLowerCase()}` : r.who;
+      const x = by.get(key);
+      if (x) { x.scans += r.scans; x.gone += r.gone; x.points += r.points; } else by.set(key, { ...r });
+    }
+    return [...by.values()].sort((a, b) => b.points - a.points).slice(0, 20).map(({ who, ...r }) => r);
+  };
   const out = {
-    week, all,
+    week: merge(week), all: merge(all),
     anonWeek: await anon('AND day >= ?', [since]), anonAll: await anon('', []), since,
   };
   if (me) {
