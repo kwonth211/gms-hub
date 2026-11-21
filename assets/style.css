@@ -2001,6 +2001,11 @@ html[data-charm='off'] .charm-leaves { display: none; }
 .mg-feed mark { background: var(--star); color: var(--star-ink); border-radius: 3px; padding: 0 1px; }
 .mg-search { flex: 2 1 240px; font-size: 1rem; }
 .mg-count { margin: 4px 0 6px; }
+.mg-dc { margin: 8px 0 6px; padding: 9px 12px; border-radius: 10px; background: color-mix(in srgb, #5865f2 9%, transparent); border: 1px solid color-mix(in srgb, #5865f2 30%, transparent); font-size: .9rem; line-height: 1.5; }
+.mg-dc a { white-space: nowrap; font-weight: 700; color: #5865f2; text-decoration: none; margin-left: 4px; }
+.mg-dc a .discord-ico { vertical-align: -2px; margin-right: 4px; }
+:root[data-theme="dark"] .mg-dc a { color: #8f98ff; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mg-dc a { color: #8f98ff; } }
 /* Band colours from the game: pink super, gold item, teal double. Shown as a thin edge and a faint wash, not a full box. */
 .mg-page { --mg-Y: #d9a520; --mg-P: #d26fc3; --mg-C: #2fb3cf; }
 .mg-msg { --band: var(--mg-Y); display: grid; grid-template-columns: 128px minmax(0, 1fr) auto; gap: 2px 14px; align-items: start; padding: 10px 12px 10px 14px; border-bottom: 1px solid var(--line); box-shadow: inset 3px 0 0 var(--band); background: linear-gradient(90deg, color-mix(in srgb, var(--band) 9%, transparent), transparent 45%); }

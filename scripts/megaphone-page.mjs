@@ -65,7 +65,7 @@ function freeComposer(ko) {
 </form>`;
 }
 
-export function megaphoneBody({ lang, itemsUrl, marketUrl, snapshot, itemName = (id) => `#${id}`, itemHref = () => marketUrl }) {
+export function megaphoneBody({ lang, discord = '', discordIcon = '', itemsUrl, marketUrl, snapshot, itemName = (id) => `#${id}`, itemHref = () => marketUrl }) {
   const ko = lang === 'ko';
   return `<section class="page-head wrap"><h1>${ko ? '실시간 확성기' : 'Live megaphones'}</h1>
 <p class="lead">${ko ? '게임 안 고확을 실시간으로 모아 보여 드려요. 분홍은 고확, 노랑은 아이템 고확, 청록은 더블 아이템 고확이에요. 여기서 <b>무료 고확</b>을 쏘면 모든 페이지 맨 위 띠에도 같이 흘러가요.' : 'Super megaphones from the game, live: pink for super megaphones, gold for item megaphones, teal for double item megaphones. Send a <b>free megaphone</b> here and it rolls across the top of every page too.'}</p></section>
@@ -77,6 +77,7 @@ ${freeComposer(ko)}
 <div class="mg-seg" data-mg-view="src" role="group" aria-label="${ko ? '어디서 온 고확' : 'Source'}"><button type="button" data-v="all" aria-pressed="true">${ko ? '전체' : 'All'}</button><button type="button" data-v="free" aria-pressed="false">${ko ? '무료 고확' : 'Free megas'}</button><button type="button" data-v="game" aria-pressed="false">${ko ? '게임 고확' : 'In game'}</button></div>
 <div class="mg-seg" data-mg-view="intent" role="group" aria-label="${ko ? '팝니다·삽니다' : 'Selling or buying'}"><button type="button" data-v="all" aria-pressed="true">${ko ? '모두' : 'Both'}</button><button type="button" data-v="sell" aria-pressed="false">${ko ? '팝니다' : 'Selling'}</button><button type="button" data-v="buy" aria-pressed="false">${ko ? '삽니다' : 'Buying'}</button></div></div>
 <p class="muted small mg-note">${ko ? '화면 글자 인식으로 모아서 오타가 있을 수 있어요. 한국어 풀이는 거래 용어 기준 자동 풀이예요.' : 'Read from the game screen, so expect the odd typo.'}</p>
+${discord ? `<p class="mg-dc">🔔 ${ko ? '찾는 아이템이 확성기나 상점에 <b>원하는 가격으로 뜨면 디스코드 DM</b>으로 알려 드려요. 확성기 옆 <b>시세</b>를 누르면 맨 위에서 알림을 걸 수 있어요.' : 'Get a <b>Discord DM when an item shows up at your price</b> in megaphones or shops. Tap <b>Market</b> next to a megaphone to set it.'} <a href="${esc(discord)}" target="_blank" rel="noopener" data-discord="megaphone">${discordIcon}${ko ? 'GMS Hub 디스코드 들어가기' : 'Join the GMS Hub Discord'}</a></p>` : ''}
 <p class="muted small mg-count" id="mg-count" role="status"></p>
 <ol class="mg-feed" id="mg-feed" aria-live="polite" tabindex="0"></ol>
 <p id="mg-empty" class="panel" hidden>${ko ? '아직 들어온 확성기가 없어요. 수집이 켜지면 여기에 바로 나와요.' : 'No megaphones yet. They appear here as soon as collection is running.'}</p>
