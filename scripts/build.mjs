@@ -223,12 +223,14 @@ const T = {
     aboutTitle: 'GMS Hub 소개',
     aboutDesc: 'GMS Hub는 글로벌 메이플스토리 클래식 월드 유저를 위한 비공식 팬 사이트예요.',
     aboutH1: 'GMS Hub 소개',
-    aboutBody: `<p>GMS Hub는 <strong>글로벌 메이플스토리 클래식 월드</strong>를 하는 한국어·영어 유저를 위한 <strong>비공식 팬 사이트</strong>예요. 처음에는 흩어져 있는 공략·시세·계산기 사이트를 한곳에 모으려고 시작했고, 지금은 직접 만든 도구와 가이드를 함께 운영해요.</p>
+    aboutBody: `<p>GMS Hub는 <strong>글로벌 메이플스토리 클래식 월드</strong>(글클메)를 하는 한국어·영어 유저를 위한 <strong>비공식 팬 사이트</strong>예요. 사냥하다가 "이 아이템 지금 얼마지?" 싶을 때 확성기를 기다리거나 디스코드를 뒤지지 않고, 검색 한 번으로 답을 얻고 싶어서 만들기 시작했어요.</p>
 <h2>무엇이 있나요</h2>
-<ul><li><strong>계산기:</strong> <a href="/ko/tools/scroll/">주문서 계산기</a>, <a href="/ko/tools/drop-rate/">확률 계산기</a>, <a href="/ko/tools/damage/">몇 방 컷 계산기</a>는 공개 데이터와 계산 모델을 사용해요. 공식과 예시는 각 페이지 아래에 적어 두었어요.</li><li><strong>사냥터 추천:</strong> <a href="/ko/tools/training/">직업별 조건과 동선</a>을 정리해요. 실제 플레이와 공략을 바탕으로 해요.</li><li><strong>실시간 시세:</strong> 유저가 상점 스캐너로 읽은 자유시장 매물을 모아 <a href="/ko/tools/market/">아이템별 시세</a>를 계산해요. 계산 방법은 시세 페이지 아래에 있어요.</li><li><strong>가이드:</strong> 육성, 전직, 파티 퀘스트, 주문서, 거래를 다룬 <a href="/ko/guides/">한국어 가이드</a>를 직접 써요.</li><li><strong>사이트 모음:</strong> 클래식 월드 관련 사이트를 용도별로 정리해요.</li></ul>
+<ul><li><strong>실시간 시세:</strong> 자유시장 매물과 확성기를 모아 <a href="/ko/tools/market/">아이템별 시세</a>를 보여 줘요. 매물마다 채널과 자유시장 방 번호가 붙어 있어 가장 싼 곳으로 바로 갈 수 있고, 팔린 가격은 부르는 가격과 따로 계산해요. 주문서를 바른 장비는 같은 옵션끼리만 묶어서 값을 매겨요.</li><li><strong>확성기:</strong> <a href="/ko/megaphone/">오늘 나온 확성기</a>를 검색할 수 있고, 확성기에 걸린 아이템의 실제 옵션과 시세가 옆에 같이 떠요.</li><li><strong>퀘스트:</strong> 긴 연계 퀘스트는 <a href="/ko/quests/">단계별 가이드</a>로 정리해요. NPC 위치, 잡아야 할 몬스터와 나오는 곳, 보상과 재료의 오늘 시세까지 한 페이지에 있고, 끝낸 단계를 체크하면 다음에 와도 이어서 볼 수 있어요.</li><li><strong>사냥터:</strong> <a href="/ko/tools/training/">직업별 사냥터와 동선</a>, 드롭 시세로 고른 <a href="/ko/tools/meso-farm/">메소 사냥터</a>를 정리해요.</li><li><strong>도감과 계산기:</strong> <a href="/ko/items/">아이템</a>, <a href="/ko/monsters/">몬스터</a>, <a href="/ko/maps/">맵</a> 도감과 <a href="/ko/tools/scroll/">주문서</a>·<a href="/ko/tools/drop-rate/">확률</a>·<a href="/ko/tools/damage/">몇 방 컷</a> 계산기가 있어요. 계산기의 공식과 예시는 각 페이지 아래에 적어 두었어요.</li><li><strong>내 캐릭터:</strong> 홈에서 캐릭터를 등록하면 레벨에 맞는 퀘스트와 장비를 보여 주고, 부위별로 장비 세트를 꾸며 세트 시세를 볼 수 있어요.</li><li><strong>가이드:</strong> 육성, 전직, 파티 퀘스트, 거래를 다룬 <a href="/ko/guides/">가이드</a>를 직접 써요.</li></ul>
 <h2>누가, 어떻게 운영하나요</h2>
 <p>GMS Hub는 클래식 월드를 직접 플레이하는 <strong>개인 개발자 한 명</strong>이 운영해요. 2026년 10월에 문을 열었고, 넥슨이나 다른 회사의 지원은 받지 않아요. 사이트에 붙는 광고는 서버 운영비에 써요.</p>
-<ul><li><strong>시세:</strong> 유저가 올린 상점 매물과 게임 확성기를 계속 모아요. <a href="/ko/tools/market/today/">오늘의 시세</a>는 매일 밤, <a href="/ko/report/">주간 리포트</a>는 매주 월요일에 새로 정리해요.</li><li><strong>공략과 데이터:</strong> 게임 패치가 나오면 바뀐 내용을 반영해요. 무엇을 언제 고쳤는지는 <a href="/ko/updates/">업데이트 소식</a>에 날짜와 함께 남겨요.</li><li><strong>오류 제보:</strong> 틀린 내용을 알려 주시면 확인해서 고치고, 고친 내용도 업데이트 소식에 적어요.</li></ul>
+<ul><li><strong>시세:</strong> 상점 매물과 게임 확성기를 하루 종일 모아요. <a href="/ko/tools/market/today/">오늘의 시세</a>는 매일 밤, <a href="/ko/report/">주간 리포트</a>는 매주 월요일에 새로 정리해요. 확실히 읽지 못한 옵션은 짐작해서 채우지 않고 빼 둬요.</li><li><strong>퀘스트 가이드:</strong> 실제로 퀘스트를 진행하며 확인한 순서와 위치로 써요. 플레이 영상과 유저 제보로 다시 맞춰 보고, 틀린 곳은 바로 고쳐요.</li><li><strong>사냥터:</strong> 경험치와 메소를 실제로 잰 기록이 있는 곳 위주로 올리고, 어떤 장비·파티 조건에서 잰 값인지 같이 적어요.</li><li><strong>공략과 데이터:</strong> 게임 패치가 나오면 바뀐 내용을 반영해요. 무엇을 언제 고쳤는지는 <a href="/ko/updates/">업데이트 소식</a>에 날짜와 함께 남겨요.</li><li><strong>오류 제보:</strong> 틀린 내용을 알려 주시면 확인해서 고치고, 고친 내용도 업데이트 소식에 적어요.</li></ul>
+<h2>커뮤니티</h2>
+<p>시세 질문, 건의, 오류 제보는 <a href="{discord}" target="_blank" rel="noopener">GMS Hub 디스코드</a>에서 가장 빨리 답해요. 영상은 <a href="https://www.youtube.com/channel/UCkCvHQERtAK7qqn4WquS3eA" target="_blank" rel="noopener">GMS Hub 유튜브</a>에 올려요.</p>
 <h2>원칙</h2>
 <ul><li><strong>자료의 성격과 한계를 구분해요.</strong> 플레이 기록과 공략을 검토하고 장비·파티 조건을 붙여 재구성해요. 모든 조건에서 같은 결과를 재현한 실험은 아니에요.</li><li>자료가 충돌하면 조건과 정정 내용을 확인하고, 고정된 수익이나 순위를 약속하지 않아요.</li><li>현금 거래 사이트는 올리지 않아요.</li></ul>
 <h2>다루는 게임</h2>
@@ -448,12 +450,14 @@ const T = {
     aboutTitle: 'About GMS Hub',
     aboutDesc: 'GMS Hub is an unofficial fan site for Global MapleStory Classic World players.',
     aboutH1: 'About GMS Hub',
-    aboutBody: `<p>GMS Hub is an <strong>unofficial fan site</strong> for English- and Korean-speaking <strong>Global MapleStory Classic World</strong> players. It started as one place to find the scattered guide, price and calculator sites, and now also runs its own tools and guides.</p>
+    aboutBody: `<p>GMS Hub is an <strong>unofficial fan site</strong> for English- and Korean-speaking <strong>Global MapleStory Classic World</strong> players. It started from one wish: in the middle of a grind, search an item and get a real price, instead of waiting on megaphones or digging through Discord.</p>
 <h2>What's here</h2>
-<ul><li><strong>Calculators:</strong> the <a href="/en/tools/scroll/">scroll calculator</a>, <a href="/en/tools/drop-rate/">odds calculator</a> and <a href="/en/tools/damage/">hits-to-kill calculator</a> use public data and mathematical models, with results conditional on their inputs and assumptions. Each page explains its formulas with a worked example.</li><li><strong>Training routes:</strong> <a href="/en/tools/training/">class-specific entry conditions, rotations and costs</a>, without theoretical EXP rankings.</li><li><strong>Live prices:</strong> Free Market listings that players read with the shop scanner, turned into <a href="/en/tools/market/">per-item prices</a>. The method is described under the market page.</li><li><strong>Guides:</strong> Detailed Korean and English progression, quest and tool guides.</li><li><strong>Site directory:</strong> Classic World sites grouped by purpose.</li></ul>
+<ul><li><strong>Live prices:</strong> Free Market listings and megaphones turned into <a href="/en/tools/market/">per-item prices</a>. Every listing shows its channel and FM room so you can walk to the cheapest one, sold prices are kept apart from asking prices, and scrolled gear is priced only against items with the same options.</li><li><strong>Megaphones:</strong> <a href="/en/megaphone/">today's megaphones</a>, searchable, with the linked item's real options and market price beside each one.</li><li><strong>Quests:</strong> <a href="/en/quests/">step-by-step guides</a> for the long chains: where each NPC stands, which monsters to hunt and where, and what every reward and material is worth today. Tick steps off and the page remembers where you left off.</li><li><strong>Training:</strong> <a href="/en/tools/training/">class-specific spots and rotations</a>, and <a href="/en/tools/meso-farm/">meso farming spots</a> ranked by live drop prices.</li><li><strong>Databases and calculators:</strong> <a href="/en/items/">items</a>, <a href="/en/monsters/">monsters</a> and <a href="/en/maps/">maps</a>, plus the <a href="/en/tools/scroll/">scroll</a>, <a href="/en/tools/drop-rate/">odds</a> and <a href="/en/tools/damage/">hits-to-kill</a> calculators, each with its formula and a worked example.</li><li><strong>My character:</strong> add your character on the home page for quests and gear at your level, and build a gear set slot by slot to see what it costs.</li><li><strong>Guides:</strong> progression, job advancement, party quest and trading <a href="/en/guides/">guides</a>, written by hand.</li></ul>
 <h2>Who runs it, and how</h2>
 <p>GMS Hub is run by <strong>one independent developer</strong> who plays Classic World. It opened in October 2026 and has no backing from Nexon or any other company. Ads on the site go toward server costs.</p>
-<ul><li><strong>Prices:</strong> shop listings sent by players and in-game megaphones are collected continuously. <a href="/en/tools/market/today/">Today's prices</a> are rebuilt every night and the <a href="/en/report/">weekly report</a> every Monday.</li><li><strong>Guides and data:</strong> when a game patch lands, the changes are worked in. What changed and when is logged on the <a href="/en/updates/">updates page</a>.</li><li><strong>Corrections:</strong> report a mistake and it gets checked and fixed, and the fix is logged on the updates page too.</li></ul>
+<ul><li><strong>Prices:</strong> shop listings and in-game megaphones are collected around the clock. <a href="/en/tools/market/today/">Today's prices</a> are rebuilt every night and the <a href="/en/report/">weekly report</a> every Monday. Options that can't be read clearly are left out, never guessed.</li><li><strong>Quest guides:</strong> written from actually running the quests, then checked again against gameplay videos and player reports.</li><li><strong>Training spots:</strong> listed mainly where EXP and mesos per hour were actually measured, with the gear and party conditions of the measurement.</li><li><strong>Guides and data:</strong> when a game patch lands, the changes are worked in. What changed and when is logged on the <a href="/en/updates/">updates page</a>.</li><li><strong>Corrections:</strong> report a mistake and it gets checked and fixed, and the fix is logged on the updates page too.</li></ul>
+<h2>Community</h2>
+<p>Price questions, suggestions and bug reports get the fastest answer in the <a href="{discord}" target="_blank" rel="noopener">GMS Hub Discord</a>. Videos go up on the <a href="https://www.youtube.com/channel/UCkCvHQERtAK7qqn4WquS3eA" target="_blank" rel="noopener">GMS Hub YouTube channel</a>.</p>
 <h2>Principles</h2>
 <ul><li><strong>Evidence has limits.</strong> We synthesize gameplay and guides with explicit gear and party conditions; these are not controlled benchmarks for every setup.</li><li>We check corrections and conflicting conditions instead of promising fixed profit or rankings.</li><li>We never list real-money trading sites.</li></ul>
 <h2>Which game</h2>
@@ -2611,7 +2615,7 @@ function scrollGuide(lang) {
 </section>`;
 }
 
-const prose = (h1, body) => `<article class="wrap prose"><h1>${h1}</h1>${body.replaceAll('{issues}', issuesUrl)}</article>`;
+const prose = (h1, body) => `<article class="wrap prose"><h1>${h1}</h1>${body.replaceAll('{issues}', issuesUrl).replaceAll('{discord}', config.discord || '/')}</article>`;
 
 // Contact, sponsorship and support: one page for bug reports, ad or partnership enquiries, and tips. Tip platforms come
 // from site.config.json "support" (ko-fi, toss.me…) and are shown only once a link is set.
@@ -3412,7 +3416,11 @@ for (const lang of LANGS) {
       modules: ['price.js'],
       ld: [appLd(PR[lang].h1, PR[lang].desc, '/tools/price/'), breadcrumbLd(lang, PR[lang].h1, '/tools/price/')]
     },
-    about: { title: t.aboutTitle, desc: t.aboutDesc, body: prose(t.aboutH1, t.aboutBody), ld: [breadcrumbLd(lang, t.aboutH1, '/about/')] },
+    about: { title: t.aboutTitle, desc: t.aboutDesc, body: prose(t.aboutH1, t.aboutBody), ld: [breadcrumbLd(lang, t.aboutH1, '/about/'), {
+      '@context': 'https://schema.org', '@type': 'AboutPage', url: absUrl(langPath(lang, '/about/')), name: t.aboutTitle, inLanguage: lang,
+      mainEntity: { '@type': 'Organization', name: config.siteName, alternateName: ['GMSHub', '글클메 허브'], url: absUrl(langPath(lang, '/')), email: 'contact@gms-hub.com', foundingDate: '2026-10',
+        sameAs: [config.discord, 'https://www.youtube.com/channel/UCkCvHQERtAK7qqn4WquS3eA'].filter(Boolean) }
+    }] },
     privacy: { title: t.privacyTitle, desc: t.privacyDesc, body: prose(t.privacyH1, t.privacyBody) },
     terms: { title: t.termsTitle, desc: t.termsDesc, body: prose(t.termsH1, t.termsBody) },
     contact: {
