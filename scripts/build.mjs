@@ -972,6 +972,9 @@ function presencePill(lang) {
     : '<p class="presence" hidden><i class="pr-dot" aria-hidden="true"></i><span class="pr-now">Live</span><b data-site>0</b> <span class="pr-label">online</span></p>';
 }
 
+// Korean pages invite into #한국어-수다, every other language into #english-chat, where the bot greets in English
+// (owner, 2026-11-22). Both invites never expire.
+const dcInvite = (lang) => (lang === 'ko' ? config.discord : config.discordEn || config.discord);
 const DISCORD_ICON = (size = 18) => `<svg class="discord-ico" viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>`;
 function footer(lang) {
   const t = T[lang];
@@ -980,7 +983,7 @@ function footer(lang) {
 <p>${esc(t.footerDisclaimer)}</p>
 ${'' /* No-scraping notice on every page (owner, 2026-11-18); the full clause is section 7 of the terms. */}<p class="footer-noscrape">${esc(t.footerNoScrape || T.en.footerNoScrape)} <a href="${href(langPath(lang, '/terms/'))}">${t.terms}</a></p>
 <p><button type="button" class="charm-toggle" data-charm-toggle><span class="charm-on-label">${lang === 'ko' ? '낙엽 효과 끄기' : 'Turn off falling leaves'}</span><span class="charm-off-label">${lang === 'ko' ? '낙엽 효과 켜기' : 'Turn on falling leaves'}</span></button></p>
-<p>${guides.some((g) => g.lang === lang) ? `<a href="${href(langPath(lang, '/guides/'))}">${t.navGuides}</a> · ` : ''}<a href="${href(langPath(lang, '/about/'))}">${t.navAbout}</a> · <a href="${href(langPath(lang, '/privacy/'))}">${t.privacy}</a> · <a href="${href(langPath(lang, '/terms/'))}">${t.terms}</a> · <a href="${href(langPath(lang, '/contact/'))}">${lang === 'ko' ? '문의·협찬·후원' : 'Contact and support'}</a> · <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub</a>${config.discord ? ` · <a href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="footer">${DISCORD_ICON(14)}${lang === 'ko' ? '디스코드' : 'Discord'}</a> · <a href="${href(langPath(lang, '/discord-bot/'))}">${lang === 'ko' ? '디스코드 봇' : 'Discord bot'}</a>` : ''}${Object.values(config.support || {}).some(Boolean) ? ` · <a href="${href(langPath(lang, '/contact/'))}#support" data-support="footer">${lang === 'ko' ? '서버비 후원' : 'Help cover the server bill'}</a>` : ''}</p>
+<p>${guides.some((g) => g.lang === lang) ? `<a href="${href(langPath(lang, '/guides/'))}">${t.navGuides}</a> · ` : ''}<a href="${href(langPath(lang, '/about/'))}">${t.navAbout}</a> · <a href="${href(langPath(lang, '/privacy/'))}">${t.privacy}</a> · <a href="${href(langPath(lang, '/terms/'))}">${t.terms}</a> · <a href="${href(langPath(lang, '/contact/'))}">${lang === 'ko' ? '문의·협찬·후원' : 'Contact and support'}</a> · <a href="${issuesUrl}" target="_blank" rel="noopener">GitHub</a>${config.discord ? ` · <a href="${esc(dcInvite(lang))}" target="_blank" rel="noopener" data-discord="footer">${DISCORD_ICON(14)}${lang === 'ko' ? '디스코드' : 'Discord'}</a> · <a href="${href(langPath(lang, '/discord-bot/'))}">${lang === 'ko' ? '디스코드 봇' : 'Discord bot'}</a>` : ''}${Object.values(config.support || {}).some(Boolean) ? ` · <a href="${href(langPath(lang, '/contact/'))}#support" data-support="footer">${lang === 'ko' ? '서버비 후원' : 'Help cover the server bill'}</a>` : ''}</p>
 </div></footer>`;
 }
 
@@ -1069,7 +1072,7 @@ function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], module
   // (noindex: thin item/map detail pages) carry none since 2026-11-17, for the AdSense review ("must pass", owner).
   const ads = !noindex && !NO_AD_PAGES.has(pageKey) && Object.values(config.adfit || {}).some(Boolean);
   return `${head({ lang, title, desc, pagePath, ld, only, noindex })}
-<body data-page="${pageKey}"${ads && (config.adfit?.railLeft || config.adfit?.railRight) ? ' data-rails' : ''} data-price-api="${esc(config.voteApi)}"${config.discord ? ` data-discord-url="${esc(config.discord)}"` : ''} data-tips="${esc(href('/assets/item-tips.json'))}" data-sprites="${esc(href('/assets/monsters/'))}">
+<body data-page="${pageKey}"${ads && (config.adfit?.railLeft || config.adfit?.railRight) ? ' data-rails' : ''} data-price-api="${esc(config.voteApi)}"${config.discord ? ` data-discord-url="${esc(dcInvite(lang))}"` : ''} data-tips="${esc(href('/assets/item-tips.json'))}" data-sprites="${esc(href('/assets/monsters/'))}">
 ${header(lang, pagePath, only)}
 <main>${ads && pageKey !== 'home' ? adfitRails() : ''}${withMidAd(withTopAd(withDownload(body, lang, pageKey, pagePath), ads), ads)}${ads && !body.includes(AD_MID) ? adfitSlot() : ''}</main>
 ${footer(lang)}
@@ -1450,7 +1453,7 @@ ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이�
 </div>
 <div id="search-item-state" class="search-item-state" hidden><span></span> <button type="button" id="search-retry" hidden>${lang === 'ko' ? '다시 불러오기' : 'Retry'}</button></div>
 <div id="search-groups"></div>
-<p id="search-empty" class="search-empty" hidden>${lang === 'ko' ? '일치하는 결과가 없어요. 더 짧은 이름이나 영문 이름으로 검색해 보세요.' : 'No matches. Try a shorter name or an English item name.'}${config.discord ? ` <a href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="search-empty">${DISCORD_ICON(14)}${lang === 'ko' ? '디스코드에서 물어보기' : 'Ask on Discord'}</a>` : ''}</p>
+<p id="search-empty" class="search-empty" hidden>${lang === 'ko' ? '일치하는 결과가 없어요. 더 짧은 이름이나 영문 이름으로 검색해 보세요.' : 'No matches. Try a shorter name or an English item name.'}${config.discord ? ` <a href="${esc(dcInvite(lang))}" target="_blank" rel="noopener" data-discord="search-empty">${DISCORD_ICON(14)}${lang === 'ko' ? '디스코드에서 물어보기' : 'Ask on Discord'}</a>` : ''}</p>
 </section>
 </div>
 <p class="search-help" id="search-help">${lang === 'ko' ? '한글·영문·초성·줄임말로 검색하세요. 예: 귀힘, 미스릴, 좀비 루팡, 사냥터' : 'Search by name or keyword. Try Gloves Attack, Mithril, Zombie Lupin or training.'}</p>
@@ -2577,7 +2580,7 @@ function scrollGuide(lang) {
 </section>`;
 }
 
-const prose = (h1, body) => `<article class="wrap prose"><h1>${h1}</h1>${body.replaceAll('{issues}', issuesUrl).replaceAll('{discord}', config.discord || '/')}</article>`;
+const prose = (h1, body, lang = 'ko') => `<article class="wrap prose"><h1>${h1}</h1>${body.replaceAll('{issues}', issuesUrl).replaceAll('{discord}', dcInvite(lang) || '/')}</article>`;
 
 // Contact, sponsorship and support: one page for bug reports, ad or partnership enquiries, and tips. Tip platforms come
 // from site.config.json "support" (ko-fi, toss.me…) and are shown only once a link is set.
@@ -2596,7 +2599,7 @@ function contactBody(lang) {
 <div class="contact-grid">
 ${config.discord ? `<section class="panel contact-card"><h2>${tr('디스코드 커뮤니티', 'Discord community')}</h2>
 <p>${tr('질문, 시세·파티 이야기, 사이트 건의와 오류 제보를 디스코드에서 바로 나눌 수 있어요. 사이트 업데이트 소식도 여기에 먼저 올려요.', 'Ask questions, talk prices and parties, and send site feedback or bug reports on Discord. Site updates are posted there first.')}</p>
-<p class="contact-actions"><a class="btn small-btn" href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="contact">${DISCORD_ICON(16)}${tr('디스코드 참여하기', 'Join the Discord')}</a>${config.discordBotInstall ? `<a class="btn ghost small-btn" href="${href(langPath(lang, '/discord-bot/'))}">${tr('디스코드 봇', 'Discord bot')}</a>` : ''}</p></section>
+<p class="contact-actions"><a class="btn small-btn" href="${esc(dcInvite(lang))}" target="_blank" rel="noopener" data-discord="contact">${DISCORD_ICON(16)}${tr('디스코드 참여하기', 'Join the Discord')}</a>${config.discordBotInstall ? `<a class="btn ghost small-btn" href="${href(langPath(lang, '/discord-bot/'))}">${tr('디스코드 봇', 'Discord bot')}</a>` : ''}</p></section>
 ` : ''}<section class="panel contact-card"><h2>${tr('오류 제보·데이터 수정', 'Bug reports and data fixes')}</h2>
 <p>${tr('가격·드랍·사냥터 정보가 틀렸거나 페이지가 깨졌다면 알려 주세요. 어느 페이지의 무엇인지 적어 주시면 빨리 고칠 수 있어요.', 'Wrong prices, drops or training spots, or a broken page: tell us which page and what is wrong.')}</p>
 <p class="contact-actions"><a class="btn small-btn" href="${mail(tr('[GMS Hub] 오류 제보', '[GMS Hub] Bug report'))}">${tr('메일로 제보', 'Report by email')}</a><a class="btn ghost small-btn" href="${issuesUrl}" target="_blank" rel="noopener">${tr('GitHub에 남기기', 'Open a GitHub issue')}</a></p></section>
@@ -2653,7 +2656,7 @@ function botBody(lang) {
 <h1>${tr('디스코드에서 바로 보는<br>글클메 시세', 'MapleStory Classic World prices,<br>right in Discord')}</h1>
 <p class="bp-lead">${tr('채팅창에 <code>/시세</code>만 치면 지금 시세가, <code>/매물</code>이면 판매 중인 상점이 바로 와요. 원하는 가격에 매물이 뜨면 DM으로 알려 주고요.', 'Type <code>/price</code> for the price now, <code>/listings</code> for the shops selling it, and get a DM when it shows up at your price.')}</p>
 <div class="bp-actions"><a class="bp-btn bp-btn-dc" href="${esc(install(0))}" target="_blank" rel="noopener" data-discord="bot-install-server">${DISCORD_ICON(20)}${tr('서버에 봇 추가', 'Add to a server')}</a><a class="bp-btn bp-btn-alt" href="${esc(install(1))}" target="_blank" rel="noopener" data-discord="bot-install-user">${tr('내 계정에 추가', 'Add to my account')}</a></div>
-<ul class="bp-trust"><li>${check}${tr('무료', 'Free')}</li><li>${check}${tr('서버 권한 요구 없음', 'No server permissions')}</li><li>${check}${tr('채팅 내용 안 읽음', 'Never reads your chat')}</li><li>${check}${tr('한국어·영어 자동', 'Korean or English, automatically')}</li></ul>${config.discord ? `<p class="bp-join">${tr('봇 말고 커뮤니티를 찾으세요?', 'Looking for the community instead?')} <a href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="bot-page-hero">${tr('GMS Hub 디스코드 들어가기', 'Join the GMS Hub Discord')}</a></p>` : ''}
+<ul class="bp-trust"><li>${check}${tr('무료', 'Free')}</li><li>${check}${tr('서버 권한 요구 없음', 'No server permissions')}</li><li>${check}${tr('채팅 내용 안 읽음', 'Never reads your chat')}</li><li>${check}${tr('한국어·영어 자동', 'Korean or English, automatically')}</li></ul>${config.discord ? `<p class="bp-join">${tr('봇 말고 커뮤니티를 찾으세요?', 'Looking for the community instead?')} <a href="${esc(dcInvite(lang))}" target="_blank" rel="noopener" data-discord="bot-page-hero">${tr('GMS Hub 디스코드 들어가기', 'Join the GMS Hub Discord')}</a></p>` : ''}
 </div>${win(tr('시세-질문', 'price-check'), tr('/시세', '/price'), [[tr('아이템', 'item'), tr('장갑 공격력 주문서', 'Glove ATT scroll')]], 'price', 190)}</section>
 
 <section class="bp-band"><div class="wrap"><h2>${tr('이렇게 답해요', 'What it answers')}</h2><p class="bp-sub">${tr('아래 답은 예시가 아니라 지금 데이터로 채운 실제 결과예요.', 'These replies are filled from live data, not made up.')}</p>
@@ -2669,7 +2672,7 @@ function botBody(lang) {
 <ol class="bp-steps"><li><b>1</b><h3>${tr('어디에 쓸지 고르기', 'Choose where')}</h3><p>${tr('길드·친구 서버에서 다 같이 쓰려면 <b>서버에 봇 추가</b>, 혼자 어디서나 쓰려면 <b>내 계정에 추가</b>.', '<b>Add to a server</b> for your guild or friends, <b>Add to my account</b> to use it yourself anywhere.')}</p></li><li><b>2</b><h3>${tr('승인 누르기', 'Authorize')}</h3><p>${tr('디스코드 창에서 서버를 고르고 승인을 눌러요. 따로 설정할 건 없어요.', 'Pick the server in the Discord window and press Authorize. Nothing else to set up.')}</p></li><li><b>3</b><h3>${tr('채팅창에 / 치기', 'Type / in chat')}</h3><p>${tr('명령어 목록에 GMS Hub가 떠요. 고르고 아이템 이름만 넣으면 끝.', 'GMS Hub shows up in the command list. Pick one, type an item name, done.')}</p></li></ol>
 <div class="bp-actions bp-actions-center"><a class="bp-btn bp-btn-dc" href="${esc(install(0))}" target="_blank" rel="noopener" data-discord="bot-install-server-2">${DISCORD_ICON(20)}${tr('서버에 봇 추가', 'Add to a server')}</a><a class="bp-btn bp-btn-alt" href="${esc(install(1))}" target="_blank" rel="noopener" data-discord="bot-install-user-2">${tr('내 계정에 추가', 'Add to my account')}</a></div></section>
 
-${config.discord ? `<section class="wrap bp-section"><div class="bp-community"><div><h2>${tr('GMS Hub 디스코드 커뮤니티', 'The GMS Hub Discord')}</h2><p>${tr('봇 없이도 들어와서 시세 질문, 건의, 오류 제보를 할 수 있어요. 새 기능 소식도 여기서 제일 먼저 알려요.', 'Join without the bot to ask about prices, suggest features and report bugs. New features are announced here first.')}</p></div><a class="bp-btn bp-btn-light" href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="bot-page">${DISCORD_ICON(20)}${tr('디스코드 들어가기', 'Join the Discord')}</a></div></section>` : ''}
+${config.discord ? `<section class="wrap bp-section"><div class="bp-community"><div><h2>${tr('GMS Hub 디스코드 커뮤니티', 'The GMS Hub Discord')}</h2><p>${tr('봇 없이도 들어와서 시세 질문, 건의, 오류 제보를 할 수 있어요. 새 기능 소식도 여기서 제일 먼저 알려요.', 'Join without the bot to ask about prices, suggest features and report bugs. New features are announced here first.')}</p></div><a class="bp-btn bp-btn-light" href="${esc(dcInvite(lang))}" target="_blank" rel="noopener" data-discord="bot-page">${DISCORD_ICON(20)}${tr('디스코드 들어가기', 'Join the Discord')}</a></div></section>` : ''}
 
 <section class="wrap bp-section bp-narrow"><h2>${tr('자주 묻는 질문', 'FAQ')}</h2>
 ${faq.map(([q, a]) => `<details class="bot-faq"><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('\n')}
@@ -3460,13 +3463,13 @@ for (const lang of LANGS) {
       modules: ['price.js'],
       ld: [appLd(PR[lang].h1, PR[lang].desc, '/tools/price/'), breadcrumbLd(lang, PR[lang].h1, '/tools/price/')]
     },
-    about: { title: t.aboutTitle, desc: t.aboutDesc, body: prose(t.aboutH1, t.aboutBody), ld: [breadcrumbLd(lang, t.aboutH1, '/about/'), {
+    about: { title: t.aboutTitle, desc: t.aboutDesc, body: prose(t.aboutH1, t.aboutBody, lang), ld: [breadcrumbLd(lang, t.aboutH1, '/about/'), {
       '@context': 'https://schema.org', '@type': 'AboutPage', url: absUrl(langPath(lang, '/about/')), name: t.aboutTitle, inLanguage: lang,
       mainEntity: { '@type': 'Organization', name: config.siteName, alternateName: ['GMSHub', '글클메 허브'], url: absUrl(langPath(lang, '/')), email: 'contact@gms-hub.com', foundingDate: '2026-10',
         sameAs: [config.discord, 'https://www.youtube.com/channel/UCkCvHQERtAK7qqn4WquS3eA'].filter(Boolean) }
     }] },
-    privacy: { title: t.privacyTitle, desc: t.privacyDesc, body: prose(t.privacyH1, t.privacyBody) },
-    terms: { title: t.termsTitle, desc: t.termsDesc, body: prose(t.termsH1, t.termsBody) },
+    privacy: { title: t.privacyTitle, desc: t.privacyDesc, body: prose(t.privacyH1, t.privacyBody, lang) },
+    terms: { title: t.termsTitle, desc: t.termsDesc, body: prose(t.termsH1, t.termsBody, lang) },
     contact: {
       title: lang === 'ko' ? '문의·협찬·후원 | GMS Hub' : 'Contact, sponsorship and support | GMS Hub',
       desc: lang === 'ko' ? 'GMS Hub 오류 제보, 광고·협찬·제휴 문의, 사이트 후원 창구예요.' : 'Report a bug, ask about advertising or partnerships, or support GMS Hub.',
@@ -3702,7 +3705,7 @@ for (const lang of LANGS) {
       lang, pageKey: 'megaphone', pagePath: '/megaphone/', modules: ['megaphone.js', 'mega-trends.js'],
       title: lang === 'ko' ? '글클메 실시간 확성기: 고확·팝니다·삽니다 모아 보기 | GMS Hub' : 'MapleStory Classic World Live Megaphones: Super Megaphones, Buying & Selling | GMS Hub',
       desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드 게임 확성기를 실시간으로 모아 보여 줘요. 고확과 일반 확성기 구분, 팝니다·삽니다·채널 필터, 시세 비교, 귓말 복사까지.' : 'Live MapleStory Classic World megaphones: super and regular megaphones apart, buying and selling filters, market price comparison and a one-tap whisper command.',
-      body: megaphoneBody({ lang, discord: config.discord, discordIcon: DISCORD_ICON(15), itemsUrl: href(`/assets/items.json?v=${BUILD_DATE}-c`), marketUrl: href(langPath(lang, '/tools/market/')), snapshot: readJson('data/mega-snapshot.json'),
+      body: megaphoneBody({ lang, discord: dcInvite(lang), discordIcon: DISCORD_ICON(15), itemsUrl: href(`/assets/items.json?v=${BUILD_DATE}-c`), marketUrl: href(langPath(lang, '/tools/market/')), snapshot: readJson('data/mega-snapshot.json'),
         itemName: (id) => { const i = ITEMS_BY_ID.get(id); return i ? itemName(lang, i) : `#${id}`; },
         itemHref: (id) => (ITEM_PAGE_IDS.has(id) ? link(itemPath(ITEMS_BY_ID.get(id))) : href(langPath(lang, `/tools/market/?item=${id}`))) }),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '실시간 확성기' : 'Live megaphones', '/megaphone/')]

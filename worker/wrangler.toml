@@ -33,7 +33,7 @@ VAPID_SUBJECT = "mailto:contact@gms-hub.com"
 # Discord bot slash commands (src/discord-bot.js): the application's public key that verifies Discord's signature
 # (public, shown on the Developer Portal), and the invite the bot hands out.
 DISCORD_PUBLIC_KEY = "d680698602135c2a47f7054d1ec72b69ab810f0b8965de527a74375a32a801b2"
-DISCORD_INVITE = "https://discord.gg/kVmXpHSKq"
+DISCORD_INVITE = "https://discord.gg/nUKhUjKvRX"
 # /feedback posts into this channel of the GMS Hub server (needs the DISCORD_BOT_TOKEN secret, as do /alert DMs).
 DISCORD_FEEDBACK_CHANNEL = "1570460324203602010"
 # Website price alerts log in with Discord (src/discord-oauth.js): the application (client) id and the server people join.
