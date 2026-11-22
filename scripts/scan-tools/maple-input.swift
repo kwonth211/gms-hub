@@ -210,12 +210,47 @@ func releasePointer() {
 }
 // Wine routes ordinary mouseMoved by the topmost window at the screen point.
 // A window-associated drag event routes directly; no button is held or pressed.
+// Real-cursor check (2026-11-22, the owner's shop kept closing): a background press lands wherever the GAME's own
+// pointer is, not where we aimed. If the move above is dropped, the press would hit whatever is under the game's
+// pointer (LEAVE STORE included). So before pressing, look at the window itself: the game draws its hand cursor,
+// and it must have just appeared exactly at our point. No hand there -> no press. Costs ~10 ms per look.
+typealias CapFn = @convention(c) (CGRect, UInt32, UInt32, UInt32) -> Unmanaged<CGImage>?
+let capFn:CapFn?=dlsym(dlopen("/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics",RTLD_NOW),"CGWindowListCreateImage").map{unsafeBitCast($0,to:CapFn.self)}
+func grab(_ rx:Double,_ ry:Double,_ rw:Int,_ rh:Int) -> [UInt8]? {
+    guard let capFn, let img=capFn(CGRect(x:ox+rx,y:oy+ry,width:Double(rw),height:Double(rh)),8,UInt32(wid),1|16)?.takeRetainedValue(),
+          let ctx=CGContext(data:nil,width:rw,height:rh,bitsPerComponent:8,bytesPerRow:rw*4,space:CGColorSpaceCreateDeviceRGB(),bitmapInfo:CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+    ctx.draw(img,in:CGRect(x:0,y:0,width:rw,height:rh))
+    return Array(UnsafeBufferPointer(start:ctx.data!.assumingMemoryBound(to:UInt8.self),count:rw*rh*4))
+}
+// Newly appeared near-white pixels (the glove) in a 28x32 box around the tip, against the same box before the move.
+func gloveScore(_ a:[UInt8],_ c:[UInt8]) -> Int {
+    var n=0
+    for i in stride(from:0,to:min(a.count,c.count),by:4) {
+        let d=abs(Int(a[i])-Int(c[i]))+abs(Int(a[i+1])-Int(c[i+1]))+abs(Int(a[i+2])-Int(c[i+2]))
+        if d>60 && c[i]>200 && c[i+1]>200 && c[i+2]>200 { n+=1 }
+    }
+    return n
+}
+let gloveBox=(x:x-4,y:y-6,w:28,h:32), ctrlBox=(x:x-48,y:y-6,w:28,h:32)
+let gloveBefore=args[1]=="click" ? grab(gloveBox.x,gloveBox.y,gloveBox.w,gloveBox.h) : nil
+let ctrlBefore=args[1]=="click" ? grab(ctrlBox.x,ctrlBox.y,ctrlBox.w,ctrlBox.h) : nil
 if args[1] != "release" { post(.leftMouseDragged) }
 usleep(50000)
 // postToPid never warps the system pointer. Ordinary pointer movement or switching between
 // other apps is not a capture failure. Stop only if the user starts interacting with the game.
 guard NSWorkspace.shared.frontmostApplication?.processIdentifier != pid else {releasePointer();emit(["error":"Game became foreground after move","state":snapshot()]);exit(5)}
 if args[1]=="click" {
+    // Press only once the game's own hand cursor is seen sitting on our point (see grab above).
+    guard let gb=gloveBefore, let cb=ctrlBefore else { emit(["error":"Cannot see the game cursor (capture failed); no press"]); exit(8) }
+    var seen=false, last=0, ctrl=0
+    for _ in 0..<40 {                                     // up to ~0.5 s; usually ~0.1 s
+        guard let g=grab(gloveBox.x,gloveBox.y,gloveBox.w,gloveBox.h), let c=grab(ctrlBox.x,ctrlBox.y,ctrlBox.w,ctrlBox.h) else { break }
+        last=gloveScore(gb,g); ctrl=gloveScore(cb,c)
+        if last>=40 && ctrl<20 { seen=true; break }
+        usleep(12000)
+    }
+    guard seen else { releasePointer(); emit(["error":"Game cursor not at the target; no press","glove":last,"control":ctrl]); exit(8) }
+    emit(["phase":"cursor_verified","glove":last])
     // Command-modified native click prevents the background window being raised.
     // This sets only event flags; no Command keydown/keyup is sent.
     post(.leftMouseDown,[.command])

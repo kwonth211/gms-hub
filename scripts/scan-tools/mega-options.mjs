@@ -260,8 +260,12 @@ export class OptionReader {
         const rows=await this.recognize(before,item.en,'before.png');
         // The owner's shop window (CLOSE/LEAVE STORE, SOLD ITEMS) must never get a press or drag from us.
         const zones=shopZones(rows);
-        if(zones.length){OptionReader.shopZones=zones;OptionReader.shopSeen=Date.now();}
-        else if(Date.now()-(OptionReader.shopSeen||0)>10*60e3)OptionReader.shopZones=[];
+        // Never forget a shop window we have seen (a tooltip covering its text used to empty the list after
+        // 10 min). Keep the last few positions; a different window size starts over.
+        const size=`${before.width}x${before.height}`;
+        if(OptionReader.shopSize!==size){OptionReader.shopSize=size;OptionReader.shopZones=[];}
+        for(const z of zones){OptionReader.shopZones=[z,...(OptionReader.shopZones||[]).filter(o=>Math.abs(o.x-z.x)>8||Math.abs(o.y-z.y)>8)].slice(0,4);}
+        if(zones.length)OptionReader.shopSeen=Date.now();
         process.env.GMS_FORBID=(OptionReader.shopZones||[]).map(z=>[z.x,z.y,z.w,z.h].map(Math.round).join(',')).join(';');
         if(whisperDialog(rows))return skip('existing whisper dialog');
         OptionReader.noWhisperUntil=Date.now()+8000;OptionReader.shopChecked=true;
