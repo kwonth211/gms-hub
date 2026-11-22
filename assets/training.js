@@ -12,6 +12,10 @@ const lv = Number(params.get('lv'));
 if (Number.isInteger(lv) && lv >= 1 && lv <= 100) fields.lv.value = lv;
 for (const key of ['job','goal','party']) if ([...fields[key].options].some(o => o.value === params.get(key))) fields[key].value = params.get(key);
 fields.advanced.checked = params.get('advanced') === '1';
+// The class chips at the top drive the (hidden) class select: one press filters the list in place.
+const chips = [...(document.querySelectorAll?.('.tr-job') || [])];
+const markChip = () => { for (const a of chips) { const on = a.dataset.job === fields.job.value; a.classList.toggle('current', on); on ? a.setAttribute('aria-current', 'true') : a.removeAttribute('aria-current'); } };
+for (const a of chips) a.addEventListener('click', (e) => { e.preventDefault(); fields.job.value = a.dataset.job; show(true); });
 // No conditions in the link: open on the character saved on the home page, if any.
 const saved = loadChar();
 if (saved && !params.has('lv') && !params.has('job')) {
@@ -24,8 +28,11 @@ const criteria = () => ({ level: String(fields.lv.value).trim() === '' ? null : 
 let lastTerm = '';
 function show(userAction = false) {
   const c = criteria();
+  markChip();
   const rows = selectRoutes(data.routes, c);
-  status.textContent = c.level == null ? (lang === 'ko' ? `전체 사냥터 ${rows.length}곳` : tx('All {n} training spots', { n: rows.length })) : lang === 'ko' ? `${c.level}레벨 사냥 후보 ${rows.length}곳` : tx('{n} options for level {lv}', {n: rows.length, lv: c.level});
+  // With a class chosen and no level, the heading names the class ("헌터 사냥터 34곳").
+  const jobLabel = c.job ? chips.find((a) => a.dataset.job === c.job)?.textContent : '';
+  status.textContent = c.level == null && jobLabel ? (lang === 'ko' ? `${jobLabel} 사냥터 ${rows.length}곳` : `${jobLabel}: ${tx('{n} training spots', { n: rows.length })}`) : c.level == null ? (lang === 'ko' ? `전체 사냥터 ${rows.length}곳` : tx('All {n} training spots', { n: rows.length })) : lang === 'ko' ? `${c.level}레벨 사냥 후보 ${rows.length}곳` : tx('{n} options for level {lv}', {n: rows.length, lv: c.level});
   result.innerHTML = routeCards(rows, lang, `/${location.pathname.split('/')[1]}`);
   if (c.level != null) result.querySelector('.tr-route-list')?.style.setProperty('--you', `${Math.min(100, (c.level - 1) / 80 * 100)}%`);
   if (userAction) {
@@ -46,7 +53,7 @@ form.addEventListener('submit',e=>{e.preventDefault();if(form.reportValidity())s
 form.addEventListener('change',()=>{if(form.checkValidity())show(true);});
 show();
 // Links from the bestiary or home search point at one route card; it exists only after the client render above.
-if (location.hash.startsWith('#route-')) document.getElementById(location.hash.slice(1))?.scrollIntoView({ block: 'start' });
+if (location.hash.startsWith('#route-')) { const el = document.getElementById(location.hash.slice(1)); if (el) { el.open = true; el.scrollIntoView({ block: 'start' }); } }
 // Copy a link that restores these exact filters elsewhere; the URL holds only the filter values.
 const share = document.getElementById('tr-share'), shareStatus = document.getElementById('tr-share-status');
 share?.addEventListener('click', () => {

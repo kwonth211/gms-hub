@@ -263,7 +263,8 @@ test('class training pages are indexable, unique and list each route once',()=>{
     assert.equal(sitemap.includes(`/${lang}/tools/training/class/${slug}/`),indexed,`${lang} ${slug} sitemap`);
     const title=html.match(/<title>([^<]*)<\/title>/)[1]; assert.ok(!titles.has(title),title); titles.add(title);
     const ids=[...html.matchAll(/id="route-([\w-]+)"/g)].map(m=>m[1]);
-    assert.ok(ids.length>=10,`${lang} ${slug} has ${ids.length} routes`);
+    // Since 2026-11-22 a class page lists only the routes picked for the class; the shared ones live in the finder.
+    assert.ok(ids.length>=5,`${lang} ${slug} has ${ids.length} routes`);
     assert.equal(new Set(ids).size,ids.length,`${lang} ${slug} repeats a route`);
   }
   assert.match(read('dist/ko/tools/training/class/ice-lightning/index.html'),/<title>글클메 썬콜 사냥터/);

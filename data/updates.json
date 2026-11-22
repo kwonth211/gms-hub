@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "training-class-filter",
+   "version": "0.7.61",
+   "level": "minor",
+   "date": "2026-11-22",
+   "path": "/tools/training/",
+   "ko": "사냥터 추천 — 맨 위에서 직업 바로 고르기",
+   "en": "Training routes — pick your class at the top",
+   "desc": {
+    "ko": "사냥터 추천 맨 위에 직업 버튼이 생겼어요. 누르면 그 직업에 맞는 사냥터만 바로 걸러져요. 직업별 사냥터 페이지는 그 직업에게 권하는 곳과 실제 플레이 기록만 담은 짧은 요약으로 바뀌었어요.",
+    "en": "The training page now has class buttons at the top; press one and the list narrows to that class at once. The per-class pages became short summaries: the routes picked for the class and its play records."
+   }
+  },
+  {
    "id": "item-monster-glance",
    "version": "0.7.60",
    "level": "minor",

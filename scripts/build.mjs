@@ -1527,8 +1527,9 @@ function trainingBody(lang) {
   return `${pageHead(lang,'sword',t.trH1,t.trLead)}<div class="wrap tr-page">
 ${fhPromo(lang)}
 <form id="tr-form" class="panel tr-filters">
+${''/* Class filter as visible chips at the top (owner 2026-11-22): one list filtered in place instead of a page per class. The links work as plain ?job= links; assets/training.js filters without a reload. */}<div class="tr-jobs" role="group" aria-label="${tr('직업','Class')}"><a class="band-link tr-job current" data-job="" href="${href(langPath(lang,'/tools/training/'))}">${tr('모든 직업','All classes')}</a>${Object.entries(jobNames[lang]).map(([key,label])=>`<a class="band-link tr-job" data-job="${key}" href="${href(langPath(lang,'/tools/training/'))}?job=${key}">${label}</a>`).join('')}</div>
 <label>${t.level}<input type="number" name="lv" min="1" max="100" placeholder="${lang === 'ko' ? '전체' : 'All'}" inputmode="numeric"></label>
-<label>${tr('직업','Class')}<select name="job"><option value="">${tr('모든 직업','All classes')}</option>${Object.entries(jobNames[lang]).map(([key,label])=>`<option value="${key}">${label}</option>`).join('')}</select></label>
+<label hidden>${tr('직업','Class')}<select name="job"><option value="">${tr('모든 직업','All classes')}</option>${Object.entries(jobNames[lang]).map(([key,label])=>`<option value="${key}">${label}</option>`).join('')}</select></label>
 <label>${tr('우선순위','Priority')}<select name="goal"><option value="balanced">${tr('전체 비교','Compare all')}</option><option value="economy">${tr('물약 절약','Lower supply cost')}</option></select></label>
 <label>${tr('사냥 방식','Party setup')}<select name="party"><option value="any">${tr('솔로 + 파티','Solo + party')}</option><option value="solo">${tr('솔로 가능한 곳','Solo options')}</option></select></label>
 <button class="btn" type="submit">${tr('사냥터 찾기','Find routes')}</button>
@@ -1548,7 +1549,7 @@ function trainingBandBody(lang,band) {
 const classRoutes = (cls) => selectRoutes(training.routes, { job: cls.job, advanced: true });
 function classNav(lang, current) {
   const tr = (ko, en) => (lang === 'ko' ? ko : en);
-  return `<nav class="band-nav" aria-label="${tr('직업별 사냥터', 'Training by class')}"><h2>${tr('직업별 사냥터', 'Training by class')}</h2><div>${TR_CLASSES.map((c) => {
+  return `<nav class="band-nav" aria-label="${tr('직업별 사냥터', 'Training by class')}"><h2>${tr('직업별 사냥터 요약', 'Route summaries by class')}</h2><div>${TR_CLASSES.map((c) => {
     const label = lang === 'ko' ? c.ko : c.en;
     return current && c.slug === current.slug ? `<strong class="band-link current" aria-current="page">${label}</strong>` : `<a class="band-link" href="${href(langPath(lang, classPath(c)))}">${label}</a>`;
   }).join('')}</div></nav>`;
@@ -1573,24 +1574,41 @@ function classHub(lang, cls) {
   ].join('')}</nav>`;
 }
 
+// A class page is a short summary, not a second copy of the route cards (2026-11-22: the 15 class pages were 70-99%
+// the same text, each carrying every shared card in full). It keeps what belongs to the class — the routes tagged for
+// it, play records by that class, its skill/gear links — and sends the reader to the one filtered list for the cards.
+const TR_FAMILY = { fighter: 'warrior', page: 'warrior', spear: 'warrior', hunter: 'archer', crossbow: 'archer', fire: 'mage', ice: 'mage', cleric: 'mage', assassin: 'thief', bandit: 'thief' };
+const classOwnsJob = (cls, job) => job === cls.job || TR_FAMILY[job] === cls.job || TR_FAMILY[cls.job] === job;
 function trainingClassBody(lang, cls) {
   const tr = (ko, en) => (lang === 'ko' ? ko : en);
   const name = lang === 'ko' ? cls.ko : cls.en;
   const rows = classRoutes(cls);
-  const own = rows.filter((r) => r.jobs.length).length;
-  // Each route sits under the band it starts in, so a route card (and its #route- anchor) appears once.
-  const groups = TR_BANDS.map((band) => ({ band, rows: rows.filter((r) => r.level.min >= band[0] && r.level.min <= band[1]) })).filter((g) => g.rows.length);
-  const bandLabel = (band) => (lang === 'ko' ? `${band[0]}~${band[1]}레벨` : `Level ${band[0]}–${band[1]}`);
-  const overview = `<div class="table-wrap tr-class-overview"><table class="data"><thead><tr><th>${tr('레벨', 'Level')}</th><th>${tr('사냥 경로', 'Route')}</th><th>${tr('대상', 'For')}</th></tr></thead><tbody>${rows
-    .map((r) => `<tr><td class="lv">Lv. ${r.level.min}–${r.level.max}</td><td><a href="#route-${r.id}">${esc(r.title[lang])}</a></td><td>${r.jobs.length ? `<ul class="tr-for">${r.jobs.map((j) => `<li>${esc(jobNames[lang][j])}</li>`).join('')}</ul>` : tr('공통', 'All classes')}</td></tr>`)
-    .join('')}</tbody></table></div>`;
+  const own = rows.filter((r) => r.jobs.length), shared = rows.filter((r) => !r.jobs.length);
+  const finder = (r) => `${href(langPath(lang, '/tools/training/'))}?job=${cls.job}${r?.advanced ? '&advanced=1' : ''}${r ? `#route-${r.id}` : ''}`;
+  // Same rows as the finder (level bar, monster sprites, top drops, accuracy) so the page reads like the list it
+  // summarises (owner 2026-11-22); each opens to its summary and a link to the full card.
+  const ownTable = own.length ? `<h2>${tr(`${name}에게 따로 권하는 사냥터 ${own.length}곳`, `${own.length} routes picked for ${name}`)}</h2>
+${routeCards(own, lang, `/${lang}`, finder)}` : '';
+  const rates = rows.flatMap((r) => (r.rates || []).filter((x) => x.job && classOwnsJob(cls, x.job)).map((x) => ({ r, x })));
+  const partyName = { ko: { solo: '솔로', party: '파티' }, en: { solo: 'solo', party: 'party' } };
+  const basisName = { ko: { measured: '실측', calc: '계산', model: '모델 추정', community: '커뮤니티', report: '유저 보고' }, en: { measured: 'measured', calc: 'calculated', model: 'model', community: 'community', report: 'reports' } };
+  const rateTable = rates.length ? `<h2>${tr(`${name} 플레이 기록: 시간당 경험치·메소`, `${name} play records: EXP and mesos an hour`)}</h2>
+<div class="table-wrap tr-class-overview tr-class-rates"><table class="data"><thead><tr><th>${tr('사냥터', 'Route')}</th><th>${tr('경험치/시간', 'EXP/h')}</th><th>${tr('메소/시간', 'Mesos/h')}</th><th>${tr('조건', 'Conditions')}</th></tr></thead><tbody>${rates
+    .map(({ r, x }) => `<tr><td><a href="${finder(r)}">${esc(r.title[lang])}</a></td><td translate="no">${x.exp != null ? rateNum(x.exp, lang) : '–'}</td><td translate="no">${x.mesos != null ? rateNum(x.mesos, lang) : '–'}</td><td>${[x.level && `Lv ${esc(x.level)}`, esc(jobNames[lang][x.job]), partyName[lang][x.party], basisName[lang][x.basis]].filter(Boolean).join(' · ')}${x.note ? `<small class="tr-class-sum">${esc(x.note[lang])}</small>` : ''}</td></tr>`)
+    .join('')}</tbody></table></div>` : '';
+  // The routes open to every class are the same on all 15 pages, so they are not repeated here: one line and a link
+  // to the filtered list, where they sit in level order with this class's own routes.
+  const sharedTable = `<h2>${tr(`모든 직업 공통 사냥터 ${shared.length}곳`, `${shared.length} routes open to every class`)}</h2>
+<p>${tr(`1레벨부터 쓰는 공통 사냥터 ${shared.length}곳은 전체 사냥터 목록에 ${name} 사냥터와 레벨 순서로 함께 나와요.`, `The ${shared.length} routes every class can use from level 1 are in the full list, in level order with the ${name} routes.`)}</p>
+<p><a class="btn ghost" href="${finder()}">${tr(`${name} 사냥터 ${rows.length}곳 전체 보기`, `See all ${rows.length} routes for ${name}`)}</a></p>`;
   const guide = guides.find((g) => g.slug === cls.guide && g.lang === lang && g.status === 'published');
-  return `${pageHead(lang, 'sword', tr(`${name} 사냥터`, `${name} training routes`), tr(`레벨 구간마다 ${name}에게 맞는 사냥 경로 ${rows.length}곳이에요. ${name} 전용 ${own}곳과 모든 직업 공통 경로를 함께 담았어요.`, `${rows.length} routes by level: ${own} for this class, the rest open to every class.`))}<div class="wrap tr-page">
+  return `${pageHead(lang, 'sword', tr(`${name} 사냥터`, `${name} training routes`), tr(`${name}에게 맞는 사냥 경로 ${rows.length}곳을 레벨 순서로 추렸어요. ${name}에게 따로 권하는 곳이 ${own.length}곳, 모든 직업 공통이 ${shared.length}곳이에요.`, `${rows.length} routes for ${name} in level order: ${own.length} picked for this class and ${shared.length} open to every class.`))}<div class="wrap tr-page">
 ${classHub(lang, cls)}
-<p class="tr-review-note">${tr('레벨은 이동을 검토하는 구간이에요. 카드마다 진입 기준, 잡을 몬스터와 필요한 명중, 물약 비용, 자리가 없을 때 대안을 적어 두었어요.', 'Levels are trial windows. Each card lists entry conditions, the monsters and the accuracy they need, supply costs and a fallback when the map is busy.')}</p>
-${groups.map((g) => `<h2>${bandLabel(g.band)}</h2>${routeCards(g.rows, lang)}`).join('\n')}
-<p class="tr-result-actions"><a class="btn" href="${href(langPath(lang, '/tools/training/'))}?job=${cls.job}">${tr(`내 레벨로 ${name} 사냥터 찾기`, 'Find routes for my level')}</a>${guide ? `<a href="${href(langPath(lang, guidePath(guide)))}">${esc(guide.h1 || guide.title)}</a>` : ''}</p>
-${classNav(lang, cls)}${bandNav(lang)}${trainingMethod(lang)}</div>`;
+<p class="tr-result-actions"><a class="btn" href="${finder()}">${tr(`전체 사냥터에서 ${name}만 골라 보기`, `Open the full list filtered to ${name}`)}</a>${guide ? `<a href="${href(langPath(lang, guidePath(guide)))}">${esc(guide.h1 || guide.title)}</a>` : ''}</p>
+${ownTable}
+${rateTable}
+${sharedTable}
+${classNav(lang, cls)}${bandNav(lang)}</div>`;
 }
 
 // ---------- scrolls ----------
@@ -3546,7 +3564,7 @@ for (const lang of LANGS) {
     const h1 = lang === 'ko' ? `${name} 사냥터` : `${name} training routes`;
     return {
       title: lang === 'ko' ? `글클메 ${name} 사냥터 추천·육성 루트: 레벨별 ${rows.length}곳 (1~${top}) | GMS Hub` : `MapleStory Classic World ${name} Training Routes by Level (1–${top}) | GMS Hub`,
-      desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드 ${name} 레벨별 사냥터 ${rows.length}곳. 진입 레벨, 잡을 몬스터와 필요 명중, 물약 비용, 다음 이동 시점을 정리했어요. ${name} 스킬트리와 장비도 바로 이어져요.` : `${name} training in MapleStory Classic World: ${rows.length} routes by level with entry conditions, monsters and the accuracy they need, supply costs and what to do next.`,
+      desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드 ${name} 레벨별 사냥터 ${rows.length}곳을 한 표로 정리했어요. ${name}에게 따로 권하는 곳, 필요 명중, 실제 플레이의 시간당 경험치와 ${name} 스킬트리·장비까지 이어져요.` : `${name} training in MapleStory Classic World: ${rows.length} routes by level in one table, the ones picked for ${name}, the accuracy they need and EXP an hour from real play.`,
       body: trainingClassBody(lang, cls), modules: ['exp-community.js'],
       ld: [breadcrumbLd(lang, h1, classPath(cls))]
     };

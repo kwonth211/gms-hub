@@ -1493,6 +1493,13 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 }
 .tr-for { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 10px; }
 .tr-class-overview { margin-bottom: 24px; }
+.tr-class-sum { display: block; margin-top: 4px; color: var(--muted); font-size: 0.82rem; line-height: 1.5; }
+.tr-filters > .tr-jobs { display: flex; flex-wrap: wrap; gap: 8px; flex-basis: 100%; grid-column: 1 / -1; }
+.tr-job { cursor: pointer; }
+.tr-class-rates td:first-child { min-width: 150px; }
+.tr-class-rates td:last-child { min-width: 170px; }
+.tr-class-rates td:nth-child(2), .tr-class-rates td:nth-child(3) { white-space: nowrap; }
+.tr-page > h2 { margin: 28px 0 12px; }
 .tr-class-overview td:first-child { white-space: nowrap; }
 /* Item database pages: requirement and class lists inline, farm maps under each dropper. */
 .item-req { list-style: none; margin: 0; padding: 0; display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 2px 10px; }
