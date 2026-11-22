@@ -616,7 +616,9 @@ const TR_CLASSES = [
   { job: 'bandit', slug: 'bandit', ko: '시프(단도)', en: 'Bandit', guide: 'bandit' }
 ];
 const classPath = (c) => `/tools/training/class/${c.slug}/`;
-PAGES.push(...TR_CLASSES.map((cls) => ({ key: 'trClass', path: classPath(cls), cls })));
+// 2026-11-22 (owner): no page per class any more. The 15 class pages repeated the same routes (70-99% the same text);
+// the one training page filters by class with the chips at its top, and each old class URL forwards there.
+const classFinder = (c) => `/tools/training/?job=${c.job}`;
 
 const issuesUrl = `https://github.com/${config.github.owner}/${config.github.repo}/issues`;
 const CONTACT_EMAIL = 'contact@gms-hub.com';
@@ -994,7 +996,7 @@ const RAIL_MIN = 1440;
 // heading. Static menus link a workbook built with the site; live menus (prices, megaphones, ranking) build theirs in the
 // browser from the API snapshot the page already uses. The line under the button says what the sheets hold.
 const XL_BY_PAGE = { monsters: 'monsters', bosses: 'monsters', items: 'items', equipment: 'equipment', equipmentClass: 'equipment', maps: 'maps',
-  quests: 'quests', questBest: 'quests', training: 'training', trBand: 'training', trClass: 'training', scroll: 'scrolls', drop: 'boxes',
+  quests: 'quests', questBest: 'quests', training: 'training', trBand: 'training', scroll: 'scrolls', drop: 'boxes',
   market: 'live:market', price: 'live:market', marketToday: 'live:market', rank: 'live:rank', megaphone: 'live:mega' };
 const XL_LIVE_SHEETS = {
   market: { ko: '거래 많은 아이템 TOP 100 · 실시간 인기 TOP 10과 7일 가격 흐름', en: 'Top 100 traded · Live top 10 with 7 days of prices' },
@@ -1006,7 +1008,7 @@ const XL_LIVE_SHEETS = {
 // (a table's wrapper if it has one). A heading right above the block takes the button on its own line; otherwise the
 // button gets a right-aligned row above the block. No match: it stays under the page heading, aligned right.
 const XL_ANCHOR = { market: ['<div class="mb-workspace"'], marketToday: ['mt-table'], megaphone: ['class="panel mega-trends'], rank: ['rank-table-panel'],
-  training: ['<section id="tr-result"'], trBand: ['class="tr-route-list'], trClass: ['class="tr-route-list'], monsters: ['id="monster-grid"'], bosses: ['boss-table'],
+  training: ['<section id="tr-result"'], trBand: ['class="tr-route-list'], monsters: ['id="monster-grid"'], bosses: ['boss-table'],
   items: ['item-page', '<section class="panel"'], equipment: ['<form class="panel eq-filters"'], equipmentClass: ['<form class="panel eq-filters"'], maps: ['map-page', '<section class="panel"'],
   quests: ['<section class="panel" id="area-'], questBest: ['<section class="panel" id="lv-'], questGuide: ['class="gq-cols'], scroll: ['id="sc-compare"'], drop: ['<nav class="chips box-tabs"'] };
 function placeAt(body, markers, btn) {
@@ -1472,7 +1474,7 @@ ${jsonScript('home-routes', training.routes.map((r) => ({ id: r.id, title: r.tit
   level: r.level, jobs: r.jobs, party: r.party, costTier: r.costTier, advanced: r.advanced,
   mobs: r.mobs.flatMap((m) => [m.ko, m.en]), href: href(langPath(lang, `/tools/training/?lv=${r.level.min}#route-${r.id}`)) })))}
 ${jsonScript('home-classes', TR_CLASSES.map((c) => ({ slug: c.slug, job: c.job, title: lang === 'ko' ? `${c.ko} 사냥터` : `${c.en} training routes`, n: classRoutes(c).length,
-  href: href(langPath(lang, classPath(c))), keywords: `${c.ko} ${c.en} ${jobNames.ko[c.job]} ${jobNames.en[c.job]}` })))}
+  href: href(langPath(lang, classFinder(c))), keywords: `${c.ko} ${c.en} ${jobNames.ko[c.job]} ${jobNames.en[c.job]}` })))}
 ${gameNews(lang)}
 ${updatesSection(lang)}
 ${body[0]}
@@ -1537,80 +1539,16 @@ ${''/* Class filter as visible chips at the top (owner 2026-11-22): one list fil
 <p class="tr-filter-help">${tr('표시 레벨은 이동 검토 구간이에요. 카드의 진입 기준을 먼저 확인하세요.','Levels are trial windows; read each card’s entry conditions first.')}</p>
 </form><div class="tr-result-head"><h2 id="tr-status" role="status">${tr('20레벨 사냥 후보','Options for level 20')} ${initial.length}${tr('곳','')}</h2><div class="tr-result-actions"><button type="button" class="btn ghost small-btn" id="tr-share" data-ok="${tr('조건 링크를 복사했어요','Link copied')}" data-fail="${tr('복사하지 못했어요. 주소창의 주소를 직접 복사해 주세요.','Could not copy. Copy the address from the address bar.')}">${tr('이 조건 링크 복사','Copy link to these filters')}</button><span id="tr-share-status" class="share-status" role="status" aria-live="polite"></span><a href="${href(langPath(lang,'/guides/choose-your-job/'))}">${tr('직업별 육성 가이드','Class guides')}</a></div></div>
 <section id="tr-result">${routeCards(initial,lang)}</section><noscript><p>${tr('조건 검색에는 JavaScript가 필요해요. 아래 레벨별 페이지에서 전체 경로를 볼 수 있어요.','Filters require JavaScript. Browse the level-band pages below for all routes.')}</p></noscript>
-${ratesTable(lang)}${classNav(lang)}${bandNav(lang)}${trainingMethod(lang)}</div>${jsonScript('training-data',publicTrainingData(training))}`;
+${ratesTable(lang)}${bandNav(lang)}${trainingMethod(lang)}</div>${jsonScript('training-data',publicTrainingData(training))}`;
 }
 function trainingBandBody(lang,band) {
   const t=T[lang]; const rows=bandSpots(band); const vars={a:band[0],b:band[1],n:rows.length};
   return `${pageHead(lang,'sword',fill(t.trBandH1,vars),fill(t.trBandLead,vars))}<div class="wrap tr-page">
 <p class="tr-review-note">${lang==='ko'?'이 구간과 겹치는 모든 직업의 경로예요. 장비 조건부 후보도 포함되니 진입 기준과 직업을 확인하세요.':'All class routes overlapping this band, including gear-dependent trials. Check class and entry conditions.'}</p>${routeCards(rows,lang)}
-<p><a class="btn" href="${href(langPath(lang,'/tools/training/'))}?lv=${band[0]}">${t.trBandFinder}</a></p>${bandNav(lang,band)}${classNav(lang)}${trainingMethod(lang)}</div>`;
+<p><a class="btn" href="${href(langPath(lang,'/tools/training/'))}?lv=${band[0]}">${t.trBandFinder}</a></p>${bandNav(lang,band)}${trainingMethod(lang)}</div>`;
 }
 
 const classRoutes = (cls) => selectRoutes(training.routes, { job: cls.job, advanced: true });
-function classNav(lang, current) {
-  const tr = (ko, en) => (lang === 'ko' ? ko : en);
-  return `<nav class="band-nav" aria-label="${tr('직업별 사냥터', 'Training by class')}"><h2>${tr('직업별 사냥터 요약', 'Route summaries by class')}</h2><div>${TR_CLASSES.map((c) => {
-    const label = lang === 'ko' ? c.ko : c.en;
-    return current && c.slug === current.slug ? `<strong class="band-link current" aria-current="page">${label}</strong>` : `<a class="band-link" href="${href(langPath(lang, classPath(c)))}">${label}</a>`;
-  }).join('')}</div></nav>`;
-}
-// What people searching a class by name also want (Search Console, 2026-11-09..15: "글클메 사수", "글클메 헌터 스킬트리"
-// sat at rank 6-9 and the class pages linked to none of it): the skill tree, the gear list, the calculators.
-const CLASS_HUB = { warrior: ['warrior', 'warrior'], fighter: ['warrior', 'warrior-110'], page: ['warrior', 'warrior-120'], spear: ['warrior', 'warrior-130'],
-  archer: ['bowman', 'bowman'], hunter: ['bowman', 'bowman-310'], crossbow: ['bowman', 'bowman-320'],
-  mage: ['magician', 'magician'], fire: ['magician', 'magician-210'], ice: ['magician', 'magician-220'], cleric: ['magician', 'magician-230'],
-  thief: ['thief', 'thief'], assassin: ['thief', 'thief-410'], bandit: ['thief', 'thief-420'] };
-function classHub(lang, cls) {
-  const hub = CLASS_HUB[cls.job];
-  if (!hub) return '';
-  const ko = lang === 'ko', name = ko ? cls.ko : cls.en, eq = EQ_CLASSES.find((c) => c.slug === hub[0]);
-  const link = (path, label) => `<a class="btn ghost small-btn" href="${href(langPath(lang, path))}">${esc(label)}</a>`;
-  return `<nav class="tr-class-hub" aria-label="${ko ? `${name} 육성에 같이 보는 것` : `More for ${name}`}"><strong>${ko ? `${name} 육성에 같이 보는 것` : `More for ${name}`}</strong>${[
-    link(`/skills/#${hub[1]}`, ko ? `${name} 스킬트리` : `${name} skill build`),
-    link(equipPath(eq), ko ? `${eq.ko} 장비` : `${eq.en} equipment`),
-    link('/tools/damage/', ko ? '몇 방 컷 계산기' : 'Hits-to-kill calculator'),
-    link('/tools/meso-farm/', ko ? '메소 벌이 사냥터' : 'Meso farming spots'),
-    link('/tools/market/', ko ? '장비·주문서 시세' : 'Gear and scroll prices')
-  ].join('')}</nav>`;
-}
-
-// A class page is a short summary, not a second copy of the route cards (2026-11-22: the 15 class pages were 70-99%
-// the same text, each carrying every shared card in full). It keeps what belongs to the class — the routes tagged for
-// it, play records by that class, its skill/gear links — and sends the reader to the one filtered list for the cards.
-const TR_FAMILY = { fighter: 'warrior', page: 'warrior', spear: 'warrior', hunter: 'archer', crossbow: 'archer', fire: 'mage', ice: 'mage', cleric: 'mage', assassin: 'thief', bandit: 'thief' };
-const classOwnsJob = (cls, job) => job === cls.job || TR_FAMILY[job] === cls.job || TR_FAMILY[cls.job] === job;
-function trainingClassBody(lang, cls) {
-  const tr = (ko, en) => (lang === 'ko' ? ko : en);
-  const name = lang === 'ko' ? cls.ko : cls.en;
-  const rows = classRoutes(cls);
-  const own = rows.filter((r) => r.jobs.length), shared = rows.filter((r) => !r.jobs.length);
-  const finder = (r) => `${href(langPath(lang, '/tools/training/'))}?job=${cls.job}${r?.advanced ? '&advanced=1' : ''}${r ? `#route-${r.id}` : ''}`;
-  // Same rows as the finder (level bar, monster sprites, top drops, accuracy) so the page reads like the list it
-  // summarises (owner 2026-11-22); each opens to its summary and a link to the full card.
-  const ownTable = own.length ? `<h2>${tr(`${name}에게 따로 권하는 사냥터 ${own.length}곳`, `${own.length} routes picked for ${name}`)}</h2>
-${routeCards(own, lang, `/${lang}`, finder)}` : '';
-  const rates = rows.flatMap((r) => (r.rates || []).filter((x) => x.job && classOwnsJob(cls, x.job)).map((x) => ({ r, x })));
-  const partyName = { ko: { solo: '솔로', party: '파티' }, en: { solo: 'solo', party: 'party' } };
-  const basisName = { ko: { measured: '실측', calc: '계산', model: '모델 추정', community: '커뮤니티', report: '유저 보고' }, en: { measured: 'measured', calc: 'calculated', model: 'model', community: 'community', report: 'reports' } };
-  const rateTable = rates.length ? `<h2>${tr(`${name} 플레이 기록: 시간당 경험치·메소`, `${name} play records: EXP and mesos an hour`)}</h2>
-<div class="table-wrap tr-class-overview tr-class-rates"><table class="data"><thead><tr><th>${tr('사냥터', 'Route')}</th><th>${tr('경험치/시간', 'EXP/h')}</th><th>${tr('메소/시간', 'Mesos/h')}</th><th>${tr('조건', 'Conditions')}</th></tr></thead><tbody>${rates
-    .map(({ r, x }) => `<tr><td><a href="${finder(r)}">${esc(r.title[lang])}</a></td><td translate="no">${x.exp != null ? rateNum(x.exp, lang) : '–'}</td><td translate="no">${x.mesos != null ? rateNum(x.mesos, lang) : '–'}</td><td>${[x.level && `Lv ${esc(x.level)}`, esc(jobNames[lang][x.job]), partyName[lang][x.party], basisName[lang][x.basis]].filter(Boolean).join(' · ')}${x.note ? `<small class="tr-class-sum">${esc(x.note[lang])}</small>` : ''}</td></tr>`)
-    .join('')}</tbody></table></div>` : '';
-  // The routes open to every class are the same on all 15 pages, so they are not repeated here: one line and a link
-  // to the filtered list, where they sit in level order with this class's own routes.
-  const sharedTable = `<h2>${tr(`모든 직업 공통 사냥터 ${shared.length}곳`, `${shared.length} routes open to every class`)}</h2>
-<p>${tr(`1레벨부터 쓰는 공통 사냥터 ${shared.length}곳은 전체 사냥터 목록에 ${name} 사냥터와 레벨 순서로 함께 나와요.`, `The ${shared.length} routes every class can use from level 1 are in the full list, in level order with the ${name} routes.`)}</p>
-<p><a class="btn ghost" href="${finder()}">${tr(`${name} 사냥터 ${rows.length}곳 전체 보기`, `See all ${rows.length} routes for ${name}`)}</a></p>`;
-  const guide = guides.find((g) => g.slug === cls.guide && g.lang === lang && g.status === 'published');
-  return `${pageHead(lang, 'sword', tr(`${name} 사냥터`, `${name} training routes`), tr(`${name}에게 맞는 사냥 경로 ${rows.length}곳을 레벨 순서로 추렸어요. ${name}에게 따로 권하는 곳이 ${own.length}곳, 모든 직업 공통이 ${shared.length}곳이에요.`, `${rows.length} routes for ${name} in level order: ${own.length} picked for this class and ${shared.length} open to every class.`))}<div class="wrap tr-page">
-${classHub(lang, cls)}
-<p class="tr-result-actions"><a class="btn" href="${finder()}">${tr(`전체 사냥터에서 ${name}만 골라 보기`, `Open the full list filtered to ${name}`)}</a>${guide ? `<a href="${href(langPath(lang, guidePath(guide)))}">${esc(guide.h1 || guide.title)}</a>` : ''}</p>
-${ownTable}
-${rateTable}
-${sharedTable}
-${classNav(lang, cls)}${bandNav(lang)}</div>`;
-}
-
 // ---------- scrolls ----------
 
 // Real scrolls for the picker: each family (e.g. Gloves Attack) with its tiers' item ids, mapped to the gain ladder in
@@ -3557,21 +3495,8 @@ for (const lang of LANGS) {
     };
   };
 
-  const classDef = (cls) => {
-    const rows = classRoutes(cls);
-    const name = lang === 'ko' ? cls.ko : cls.en;
-    const top = Math.max(...rows.map((r) => r.level.max));
-    const h1 = lang === 'ko' ? `${name} 사냥터` : `${name} training routes`;
-    return {
-      title: lang === 'ko' ? `글클메 ${name} 사냥터 추천·육성 루트: 레벨별 ${rows.length}곳 (1~${top}) | GMS Hub` : `MapleStory Classic World ${name} Training Routes by Level (1–${top}) | GMS Hub`,
-      desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드 ${name} 레벨별 사냥터 ${rows.length}곳을 한 표로 정리했어요. ${name}에게 따로 권하는 곳, 필요 명중, 실제 플레이의 시간당 경험치와 ${name} 스킬트리·장비까지 이어져요.` : `${name} training in MapleStory Classic World: ${rows.length} routes by level in one table, the ones picked for ${name}, the accuracy they need and EXP an hour from real play.`,
-      body: trainingClassBody(lang, cls), modules: ['exp-community.js'],
-      ld: [breadcrumbLd(lang, h1, classPath(cls))]
-    };
-  };
-
   for (const p of PAGES) {
-    const def = p.band ? bandDef(p.band) : p.cls ? classDef(p.cls) : defs[p.key];
+    const def = p.band ? bandDef(p.band) : defs[p.key];
     write(path.join(lang, p.path, 'index.html'), page({ lang, pageKey: p.key, pagePath: p.path, ...def }));
   }
   // 내 상점 페이지 (assets/shop-page.js, owner 2026-11-19): /shop/?n=<seller>, one shareable page per seller. Content comes
@@ -3967,6 +3892,12 @@ for (const lang of LANGS) {
 for (const lang of LANGS) {
   const url = absUrl(langPath(lang, '/tools/scan/'));
   write(`${lang}/tools/my-shop/index.html`, `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><title>GMS Hub</title><meta name="robots" content="noindex"><link rel="canonical" href="${url}"><meta http-equiv="refresh" content="0; url=${url}"></head><body><a href="${url}">${url}</a><script>location.replace(${JSON.stringify(langPath(lang, '/tools/scan/'))})</script></body></html>`);
+  // Old class pages: canonical to the training page and an instant forward to it with the class already chosen.
+  // No noindex, so the ranking the class URLs had passes to the training page (same reasoning as the quest forwards).
+  for (const c of TR_CLASSES) {
+    const url = absUrl(langPath(lang, '/tools/training/'));
+    write(`${lang}${classPath(c)}index.html`, `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><title>GMS Hub</title><link rel="canonical" href="${url}"><meta http-equiv="refresh" content="0; url=${url}?job=${c.job}"></head><body><a href="${url}?job=${c.job}">${url}</a><script>location.replace(${JSON.stringify(href(langPath(lang, classFinder(c))))})</script></body></html>`);
+  }
 }
 
 // Root: send visitors to their language before anything else loads. The redirect runs first in <head> and the page
@@ -4186,7 +4117,6 @@ Not affiliated with NEXON. Prices are medians of shops players scanned in the la
 - [Quests](${absUrl('/en/quests/')}): ${QUESTS.length} quests with start level, items to bring and who drops them, monsters to hunt and rewards
 - [Map database](${absUrl('/en/maps/')}): ${MAPS.length} maps with their monsters, spawn points, EXP per full clear and drops
 - [Training routes](${absUrl('/en/tools/training/')}): conditional routes by level, with entry requirements and supply costs
-${TR_CLASSES.map((c) => `- [${c.en} training routes](${absUrl(langPath('en', classPath(c)))})`).join('\n')}
 - [Hits-to-kill calculator](${absUrl('/en/tools/damage/')}): hits to kill and accuracy per monster from your stats
 - [Scroll calculator](${absUrl('/en/tools/scroll/')}): Lesser, Intermediate, Greater and Chaos scroll odds
 - [Drop-rate calculator](${absUrl('/en/tools/drop-rate/')}): chance after N kills or box opens, with Nexon's official box rates
@@ -4198,7 +4128,7 @@ ${publishedGuides.filter((g) => g.lang === 'en').map((g) => `- [${g.h1 || g.titl
 - [글클메 허브 홈](${absUrl('/ko/')}): 사이트 모음, 실시간 시세, 몬스터 DB, 사냥터
 - [실시간 시세](${absUrl('/ko/tools/market/')})
 - [몬스터 도감](${absUrl('/ko/monsters/')})
-${TR_CLASSES.map((c) => `- [${c.ko} 사냥터](${absUrl(langPath('ko', classPath(c)))})`).join('\n')}
+- [사냥터 추천](${absUrl('/ko/tools/training/')}): 레벨·직업별 사냥터
 `);
 // Content hash per page, published with the site: CI compares it with the live copy and pings IndexNow only for pages
 // that really changed. Cache-busting query strings are dropped first so a JS release doesn't mark every page as changed.

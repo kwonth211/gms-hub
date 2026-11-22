@@ -57,9 +57,7 @@ export function rateLines(rates, lang, tx = (s) => s) {
   }).join('');
 }
 // `prefix` is the page's own language path (/zh, /ja…); derived locales render with English text but must link to their own pages.
-// `more` (class summary pages): a function giving the link to the full card. The row keeps its look — level bar,
-// monsters, drops, accuracy — but opens to the one-line summary, the rates and that link instead of the full advice.
-export function routeCards(rows, lang = 'ko', prefix = `/${lang}`, more = null) {
+export function routeCards(rows, lang = 'ko', prefix = `/${lang}`) {
   // Monster sprites live beside the language folders; the page tells the browser where, the build derives it from prefix.
   const sprites = globalThis.document?.body?.dataset.sprites || `${prefix.replace(/\/[a-z]{2}$/, '')}/assets/monsters/`;
   const tr = (ko,en) => lang === 'ko' ? ko : tx(en);
@@ -85,7 +83,7 @@ export function routeCards(rows, lang = 'ko', prefix = `/${lang}`, more = null) 
     const rateBlock = rates.length ? `<div class="tr-rates"><h4>${tr('시간당 경험치·메소','EXP and mesos an hour')}</h4><ul>${rateLines(rates, lang, tx)}</ul></div>` : '';
     return `<details class="tr-row" id="route-${esc(r.id)}" data-route="${esc(r.id)}">
 <summary><span class="tr-lv"><b>Lv. ${r.level.min}–${r.level.max}</b>${bar}</span><span class="tr-name"><strong>${esc(r.title[lang])}</strong>${badge}<span class="tr-who">${who.map(w => `<span>${w}</span>`).join('')}</span>${measure}</span><span class="tr-mobs">${mobs}</span><span class="tr-drops">${(r.drops || []).slice(0, 3).map(dropLink).join('') || '<span>–</span>'}</span><span class="tr-acc">${acc != null ? `<span><span class="sr-only">${tr('필요 명중','Accuracy')} </span>${acc}</span>` : '<span>–</span>'}<small>${acc != null ? tr(`Lv. ${r.level.min} 기준`, `at Lv. ${r.level.min}`) : ''}</small></span></summary>
-<div class="tr-detail"><p>${esc(r.summary[lang])}</p>${rateBlock}${more ? `<p><a class="btn ghost small-btn" href="${esc(more(r))}">${tr('진입 기준·물약·동선 자세히 보기','Entry conditions, supplies and rotation')}</a></p>` : `${(r.drops || []).length > 3 ? `<div class="tr-drop-all"><h4>${tr('이 사냥터 드랍 아이템','Drops on this route')}</h4><div class="tr-drops">${r.drops.map(dropLink).join('')}</div><small>${tr('시세는 실시간 시세 페이지의 최근 가격이에요. 가격이 없는 건 매물이 3건 미만인 아이템이에요.','Prices are recent live-market prices; items without one had fewer than 3 listings.')}</small></div>` : ''}<dl>${item(tr('진입 기준','Before moving'),r.entry)}${item(tr('물약과 비용','Supplies and costs'),r.cost)}${item(tr('가는 길과 동선','Access and rotation'),r.route)}${item(tr('옮길 때','When to move'),r.exit)}${item(tr('자리 없을 때','Alternative'),r.alternative)}</dl>`}</div></details>`;
+<div class="tr-detail"><p>${esc(r.summary[lang])}</p>${rateBlock}${(r.drops || []).length > 3 ? `<div class="tr-drop-all"><h4>${tr('이 사냥터 드랍 아이템','Drops on this route')}</h4><div class="tr-drops">${r.drops.map(dropLink).join('')}</div><small>${tr('시세는 실시간 시세 페이지의 최근 가격이에요. 가격이 없는 건 매물이 3건 미만인 아이템이에요.','Prices are recent live-market prices; items without one had fewer than 3 listings.')}</small></div>` : ''}<dl>${item(tr('진입 기준','Before moving'),r.entry)}${item(tr('물약과 비용','Supplies and costs'),r.cost)}${item(tr('가는 길과 동선','Access and rotation'),r.route)}${item(tr('옮길 때','When to move'),r.exit)}${item(tr('자리 없을 때','Alternative'),r.alternative)}</dl></div></details>`;
   }).join('')}</div>`;
 }
 export function validateTraining(data, evidence, monsters = null) {

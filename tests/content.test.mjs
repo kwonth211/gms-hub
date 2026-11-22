@@ -251,30 +251,27 @@ test('site review fixes: localized route links, unique monster titles, honest pr
   assert.ok(read('assets/style.css').includes('.item-page { display: grid; grid-template-columns: minmax(0, 1fr);'));
 });
 
-test('class training pages are indexable, unique and list each route once',()=>{
+test('one training page filters by class; old class URLs forward to it and leave the sitemap',()=>{
   const sitemap=read('dist/sitemap.xml');
-  const slugs=['warrior','bowman','hunter','crossbowman','magician','fire-poison','ice-lightning','cleric','thief','assassin','bandit'];
-  const titles=new Set();
-  for(const lang of ['ko','en','zh','ja']) for(const slug of slugs){
+  assert.ok(!sitemap.includes('/tools/training/class/'));
+  for(const lang of ['ko','en','zh','ja']) for(const [slug,job] of [['warrior','warrior'],['bowman','archer'],['hunter','hunter'],['ice-lightning','ice'],['spearman','spear'],['bandit','bandit']]){
     const html=read(`dist/${lang}/tools/training/class/${slug}/index.html`);
-    // zh/ja are machine-translated and noindex since 2026-11-15 (AdSense review); ko/en stay in search.
-    const indexed=lang==='ko'||lang==='en';
-    assert.equal(!html.includes('content="noindex'),indexed,`${lang} ${slug} noindex`);
-    assert.equal(sitemap.includes(`/${lang}/tools/training/class/${slug}/`),indexed,`${lang} ${slug} sitemap`);
-    const title=html.match(/<title>([^<]*)<\/title>/)[1]; assert.ok(!titles.has(title),title); titles.add(title);
-    const ids=[...html.matchAll(/id="route-([\w-]+)"/g)].map(m=>m[1]);
-    // Since 2026-11-22 a class page lists only the routes picked for the class; the shared ones live in the finder.
-    assert.ok(ids.length>=5,`${lang} ${slug} has ${ids.length} routes`);
-    assert.equal(new Set(ids).size,ids.length,`${lang} ${slug} repeats a route`);
+    assert.ok(html.includes(`<link rel="canonical" href="https://gms-hub.com/${lang}/tools/training/">`),`${lang} ${slug} canonical`);
+    assert.ok(html.includes(`/${lang}/tools/training/?job=${job}`),`${lang} ${slug} forward`);
+    assert.ok(html.length<1200,`${lang} ${slug} is a forward, not a page`);
   }
-  assert.match(read('dist/ko/tools/training/class/ice-lightning/index.html'),/<title>글클메 썬콜 사냥터/);
-  assert.ok(read('dist/ko/tools/training/index.html').includes('/ko/tools/training/class/fire-poison/'));
+  for(const lang of ['ko','en']){
+    const html=read(`dist/${lang}/tools/training/index.html`);
+    assert.equal((html.match(/class="band-link tr-job/g)||[]).length,15,`${lang} class chips`);
+    assert.ok(!html.includes('/tools/training/class/'),`${lang} links to a class page`);
+  }
+  assert.ok(!read('dist/ko/guides/fighter/index.html').includes('/tools/training/class/'));
 });
 
 test('llms.txt and page hashes are published for AI assistants and IndexNow',()=>{
   const llms=read('dist/llms.txt');
   assert.match(llms,/^# GMS Hub/);
-  assert.ok(llms.includes('/en/monsters/') && llms.includes('/ko/tools/training/class/'));
+  assert.ok(llms.includes('/en/monsters/') && llms.includes('/ko/tools/training/'));
   const hashes=JSON.parse(read('dist/page-hashes.json'));
   assert.ok(hashes['/ko/'] && hashes['/en/tools/market/']);
   assert.ok(!Object.keys(hashes).some(p=>p.startsWith('/admin')),'noindex pages stay out');
