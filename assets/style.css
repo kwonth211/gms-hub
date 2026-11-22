@@ -3539,7 +3539,6 @@ body.exp-running .exp-stop { display: inline-flex; }
 @media (prefers-reduced-motion: reduce) { .mt-track i { animation: none; } .mt-rank a { transition: none; } .mt-rank a:hover { transform: none; } }
 
 /* Class training pages: links to the skill tree, gear and calculators for that class. */
-@media (max-width: 520px) { 
 /* Quest rankings: the meso and EXP orders link to each other. */
 .quest-rank-tabs { margin-top: 10px; }
 .quest-rank-tabs a[aria-current='page'] { font-weight: 700; color: var(--text); text-decoration: none; }
