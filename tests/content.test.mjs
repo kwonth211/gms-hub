@@ -424,3 +424,17 @@ test('every page has the optional Discord login button and loads the account scr
   const ko = read('dist/ko/privacy/index.html');
   assert.match(ko, /디스코드 로그인/);
 });
+
+// 2026-11-22: a half-deleted line left "@media (max-width: 520px) {" open, which put every rule after it (the account
+// menu and later) behind a phone-only query on the live site. An unbalanced stylesheet must not deploy.
+test('style.css braces are balanced and never close below zero',()=>{
+  const css=read('assets/style.css').replace(/\/\*[\s\S]*?\*\//g,'').replace(/"[^"\n]*"|'[^'\n]*'/g,'');
+  let depth=0, line=1;
+  for(const ch of css){
+    if(ch==='\n') line++;
+    else if(ch==='{') depth++;
+    else if(ch==='}'){ depth--; assert.ok(depth>=0,`style.css closes a block that is not open near line ${line}`); }
+    assert.ok(depth<=3,`style.css nests deeper than expected near line ${line}`);
+  }
+  assert.equal(depth,0,'style.css has an unclosed block');
+});
