@@ -808,6 +808,9 @@ async function start() {
   video.srcObject = stream;
   try { await video.play(); } catch { issue('video_play'); stop(); say(i18n.readFail); return; }
   document.body.classList.add('scanning');
+  // Only a shared entire screen can show this page itself; then its animations would keep the picture "changing".
+  // A shared game window or tab never shows it, so the page keeps moving as usual (owner 2026-11-22: the header froze).
+  document.body.classList.toggle('scan-still', stream.getVideoTracks()[0].getSettings?.().displaySurface === 'monitor');
   $('scan-stop').disabled = false;
   stream.getVideoTracks()[0].addEventListener('ended', stop);
   showShare();
@@ -832,7 +835,7 @@ function stop() {
   stream?.getTracks().forEach((t) => t.stop());
   stream = null;
   lastSig = null;
-  document.body.classList.remove('scanning');
+  document.body.classList.remove('scanning', 'scan-still');
   $('scan-stop').disabled = true;
   $('scan-start').disabled = !dataReady;
   // The last channel and room stay for the next share (a manual choice still wins).
