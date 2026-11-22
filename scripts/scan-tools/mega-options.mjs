@@ -10,6 +10,8 @@ import { findBadge, senderFingerprint, lineFingerprint, locateFingerprint, locat
 const exec = promisify(execFile);
 import { colorTooltipBoxes, selectTooltipBox, agreeTooltipNumber, agreeLabeledNumber, tooltipBody, tooltipField, tooltipStatRows, missingTooltipFields, subtractTooltipBackground, emptyUpgradeSuffix, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog, nameKey, tooltipTitle } from '../../assets/mega-tooltip.js';
 export { nameKey } from '../../assets/mega-tooltip.js';
+// Every input we send, with times, so a closed shop can be matched against our own actions (owner 2026-11-22).
+export const inputLog=[];
 export function cropImage(img, b, mask = false, scale = 1) {
   const out = new PNG({ width:b.w*scale, height:b.h*scale });
   for(let y=0;y<b.h;y++) for(let x=0;x<b.w;x++) {
@@ -56,6 +58,20 @@ export function shopZones(rows) {
     out.push({x:r.x-dx-m,y:r.y-dy-m,w:522+2*m,h:462+2*m});
   }
   return out;
+}
+// Pixels of the shop's CLOSE STORE button, to notice the moment the shop window disappears.
+export function shopButtonRef(img,r) {
+  const box={x:Math.max(0,Math.round(r.x)-4),y:Math.max(0,Math.round(r.y)-3),w:Math.round(r.w)+8,h:Math.round(r.h)+6};
+  return {box,size:`${img.width}x${img.height}`,px:buttonPixels(img,box)};
+}
+export function buttonPixels(img,box) {
+  const out=[];for(let y=box.y;y<box.y+box.h;y++)for(let x=box.x;x<box.x+box.w;x++){const i=(y*img.width+x)*4;out.push(img.data[i],img.data[i+1],img.data[i+2]);}
+  return out;
+}
+export function shopButtonVisible(img,ref) {
+  if(!ref||`${img.width}x${img.height}`!==ref.size)return null;
+  const now=buttonPixels(img,ref.box);let diff=0;for(let i=0;i<now.length;i++)diff+=Math.abs(now[i]-ref.px[i]);
+  return diff/now.length<18;
 }
 export class OptionReader {
   constructor({shot,input,ocr,catalog,readFrame}) {Object.assign(this,{shot,input,ocr,catalog,readFrame});this.last=0;this.dir=fs.mkdtempSync(path.join(os.tmpdir(),'gms-mega-options-'));}
@@ -240,7 +256,9 @@ export class OptionReader {
         // just after mouse-up may still contain the frame captured before the click.
         while((end=output.indexOf('\n'))>=0){const line=output.slice(0,end);output=output.slice(end+1);try{const event=JSON.parse(line);if(event.phase==='pressed'&&!pressed)pressed=this.readFrame(event.at,1000).catch(()=>null);if(event.phase==='clicked'&&!snapshot)snapshot=this.readFrame(event.at+(event.mode==='foreground'?200:125),1400).catch(()=>null);}catch{}}
       });
-      const result=await run.catch(e=>{fs.writeFileSync(path.join(this.dir,'input-failure.json'),JSON.stringify({message,action,x,y,code:e.code,events:e.stdout}));throw e;}); // A capture never overrides a focus/cursor failure.
+      const logged={start:Date.now(),action,x,y,item:message?.text?.slice(0,60)};inputLog.push(logged);if(inputLog.length>200)inputLog.shift();
+      const result=await run.catch(e=>{logged.end=Date.now();logged.code=e.code;logged.events=String(e.stdout||'').slice(0,1500);fs.writeFileSync(path.join(this.dir,'input-failure.json'),JSON.stringify({message,action,x,y,code:e.code,events:e.stdout}));throw e;});
+      logged.end=Date.now();logged.code=0;logged.events=result.stdout.slice(0,1500); // A capture never overrides a focus/cursor failure.
       const events=result.stdout.trim().split('\n').flatMap(s=>{try{return [JSON.parse(s)];}catch{return [];}});
       if(action==='click')this.lastMode=events.find(e=>e.phase==='before')?.mode||'background';
       inputAudit.push({action,point:{x,y},before:events.find(e=>e.phase==='before')?.state,after:events.filter(e=>e.phase==='after').map(e=>e.state),restores:events.filter(e=>e.phase==='restore').map(e=>e.state)});
@@ -266,6 +284,8 @@ export class OptionReader {
         if(OptionReader.shopSize!==size){OptionReader.shopSize=size;OptionReader.shopZones=[];}
         for(const z of zones){OptionReader.shopZones=[z,...(OptionReader.shopZones||[]).filter(o=>Math.abs(o.x-z.x)>8||Math.abs(o.y-z.y)>8)].slice(0,4);}
         if(zones.length)OptionReader.shopSeen=Date.now();
+        const btn=rows.find(r=>r.confidence>=.3&&/^CLOSE ?STORE$/i.test(String(r.text).trim()));
+        if(btn)OptionReader.shopButton=shopButtonRef(before,btn);
         process.env.GMS_FORBID=(OptionReader.shopZones||[]).map(z=>[z.x,z.y,z.w,z.h].map(Math.round).join(',')).join(';');
         if(whisperDialog(rows))return skip('existing whisper dialog');
         OptionReader.noWhisperUntil=Date.now()+8000;OptionReader.shopChecked=true;

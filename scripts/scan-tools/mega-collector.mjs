@@ -11,7 +11,7 @@ import path from 'node:path';
 import { PNG } from 'pngjs';
 import Tesseract from 'tesseract.js';
 import { findChatBox, stableChatBox, findLines, isLineVisible, readLine, assemble, repeatFilter, continuousMessage, itemFixer, glyphReader, slotAnchor, windowTop, lineFingerprint } from '../../assets/mega-reader.js';
-import { OptionReader, nameKey } from './mega-options.mjs';
+import { OptionReader, nameKey, inputLog, shopButtonVisible } from './mega-options.mjs';
 
 const API = 'https://gms-hub-votes.kwonth211.workers.dev/internal/megaphone';
 const DRY = process.argv.includes('--dry');
@@ -134,6 +134,33 @@ async function flush() {
 }
 
 let coveredSince=0,lastUnstick=0;
+// Shop black box (owner 2026-11-22: the shop kept closing and nobody could say why). Keep the last frames; when the
+// CLOSE STORE button that was on screen stays gone for 3 s, save those frames with our recent inputs and owner idle times.
+const shopFrames=[];let shopGoneSince=0,shopWasVisible=false;
+function shopWatch(img,raw) {
+  shopFrames.push({t:Date.now(),raw});while(shopFrames.length&&Date.now()-shopFrames[0].t>15000)shopFrames.shift();
+  const visible=shopButtonVisible(img,OptionReader.shopButton);
+  if(visible===null)return;
+  if(visible){shopWasVisible=true;shopGoneSince=0;return;}
+  if(!shopWasVisible)return;
+  if(!shopGoneSince){shopGoneSince=Date.now();return;}
+  if(Date.now()-shopGoneSince<3000)return;
+  shopWasVisible=false;const ref=OptionReader.shopButton;OptionReader.shopButton=null;
+  const dir=path.join(os.homedir(),'gms-hub-samples','shop-closed',new Date().toISOString().replace(/[:.]/g,'-'));
+  try {
+    fs.mkdirSync(dir,{recursive:true});
+    for(const f of shopFrames)fs.writeFileSync(path.join(dir,`${new Date(f.t).toISOString().replace(/[:.]/g,'-')}.png`),f.raw);
+    let idle='';try{idle=execFileSync('ioreg',['-c','IOHIDSystem']).toString().match(/HIDIdleTime" = (\d+)/)?.[1];}catch{}
+    let front='';try{front=execFileSync('osascript',['-e','tell application "System Events" to get name of first process whose frontmost is true'],{timeout:2000}).toString().trim();}catch{}
+    fs.writeFileSync(path.join(dir,'info.json'),JSON.stringify({goneSince:new Date(shopGoneSince).toISOString(),detected:new Date().toISOString(),ownerIdleSeconds:idle?Number(idle)/1e9:null,front,button:ref.box,recentInputs:inputLog.filter(e=>e.start>shopGoneSince-20000)},null,1));
+    const near=inputLog.filter(e=>e.start>shopGoneSince-5000&&e.start<shopGoneSince+500);
+    console.log(`SHOP CLOSED at ${new Date(shopGoneSince).toISOString()}: our inputs in the 5 s before: ${near.map(e=>`${e.action}@${e.x},${e.y} ${new Date(e.start).toISOString().slice(11,23)} code=${e.code}`).join(' | ')||'none'}; owner idle ${idle?(Number(idle)/1e9).toFixed(1):'?'}s; front=${front}; saved ${dir}`);
+  } catch(e){console.log('SHOP CLOSED (save failed: '+e.message+')');}
+}
+let shopWatchAt=0;
+setInterval(()=>{ // its own timer: the main tick pauses during clicks, which is exactly when we must watch
+  try{const at=fs.statSync(shot).mtimeMs;if(at===shopWatchAt)return;shopWatchAt=at;const raw=fs.readFileSync(shot);shopWatch(PNG.sync.read(raw),raw);}catch{}
+},400).unref();
 async function tick() {
   if (!cam) { if (Date.now() - tried > 60000) camera(); return; }
   if(optionReaders.some(r=>r.interacting))return; // Do not OCR chat through an open tooltip.
