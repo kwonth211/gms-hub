@@ -20,11 +20,11 @@
    "level": "patch",
    "date": "2026-11-22",
    "path": "/",
-   "ko": "내 캐릭터 — 장비 세트를 입은 모습이 캐릭터 그림으로",
-   "en": "My character — your picture now wears your gear set",
+   "ko": "내 캐릭터 — 장비 세트를 입은 모습으로, 한 칸에 정리",
+   "en": "My character — wearing your gear set, all in one box",
    "desc": {
-    "ko": "홈 '내 캐릭터' 맨 위 그림이 장비 세트에 넣은 장비를 입은 모습으로 바뀌었어요. 세트에서 장비를 넣거나 빼면 바로 따라 바뀌어요. 사진 올리기 기능은 없앴어요.",
-    "en": "The picture at the top of My character on the home page now wears the gear you put in your gear set, and changes as soon as you add or remove a piece. Uploading your own picture has been removed."
+    "ko": "홈 '내 캐릭터'와 장비 세트를 한 칸으로 합쳤어요. 맨 위에서 직업과 레벨을 바꾸고, 바로 아래에서 세트를 입은 캐릭터 모습과 세트 합계, 부위별 장비를 한눈에 봐요. 장비를 넣거나 빼면 그림도 바로 바뀌어요. 사진 올리기 기능은 없앴어요.",
+    "en": "My character and the gear set are now one box on the home page: change class and level at the top, and right below see your character wearing the set, the set total and each slot. The picture changes as soon as you add or remove a piece. Uploading your own picture has been removed."
    }
   },
   {

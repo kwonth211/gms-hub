@@ -185,11 +185,10 @@ ${fields.map((k) => num(`s_${k}`, t.stat[k], f?.stats?.[k] ?? base?.stats?.[k]))
 <span class="cset-acts">${why ? '' : `<button type="button" class="btn ghost cset-add" data-cset-open="${slot}" aria-label="${esc(`${t.slot[slot]} ${t.add}`)}">+ ${esc(t.add)}</button>`}</span>`;
       return `<li data-tip-off class="cset-row${open === slot || (editing === slot && id) ? ' is-open' : ''}" data-slot="${slot}">${main}${open === slot ? picker(slot, c, bit) : ''}${editing === slot && id ? editor(slot, f) : ''}</li>`;
     }).join('');
-    return `<div class="char-card cset" data-kind="set"><div class="cset-top"><h3>${esc(t.h)}</h3><p class="muted">${esc(t.p)}</p></div>
-<div class="cset-grid"><figure class="cset-figure">
+    return `<div class="cset" data-kind="set"><div class="cset-grid"><figure class="cset-figure"><img src="${esc(renderUrl(set, subOf))}" alt="${esc(t.h)}" data-char-img>
 <figcaption><span>${esc(t.total)}</span><strong>${tot.n ? esc(mesos(tot.sum)) : '—'}</strong>${tot.missing ? `<small class="muted">${esc(t.missing(tot.missing))}</small>` : ''}<small class="muted">${esc(t.live)}</small>
 ${tot.n ? `<button type="button" class="cset-reset" data-cset="reset">${esc(t.reset)}</button>` : ''}</figcaption></figure>
-<ul class="cset-slots">${rows}</ul></div>${tot.n ? '' : `<p class="muted cset-empty">${esc(t.empty)}</p>`}</div>`;
+<div class="cset-list"><h3>${esc(t.h)}</h3><ul class="cset-slots">${rows}</ul>${tot.n ? '' : `<p class="muted cset-empty">${esc(t.empty)}</p>`}</div></div></div>`;
   };
 
   // Events on the panel element (delegated once); redraw() rebuilds only the set card.
@@ -276,7 +275,7 @@ ${tot.n ? `<button type="button" class="cset-reset" data-cset="reset">${esc(t.re
   };
 
   return {
-    renderNow, syncPicture,
+    renderNow, syncPicture, text: t,
     setGear(list) { gear = list || []; byId = new Map(gear.map((g) => [g[0], g])); },
     html, bind, refreshLive: (redraw) => refreshLive(loadSet(), redraw)
   };

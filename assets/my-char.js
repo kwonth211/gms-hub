@@ -131,7 +131,7 @@ export function mountCharPanel(el, { routes, classes, finder, korean }) {
   const cset = makeSet({ korean, market: d.market, api: document.body.dataset.priceApi, track, esc, mesos });
   const loadHub = () => (hubLoad ||= fetch(d.hub).then((r) => (r.ok ? r.json() : null)).catch(() => null));
 
-  const form = (c) => `<div class="char-new">${avatar(null)}<form class="char-form"><div class="char-intro"><h2>${esc(t.setH)}</h2><p class="muted">${esc(t.setP)}</p></div>
+  const form = (c) => `<div class="char-new">${avatar()}<form class="char-form"><div class="char-intro"><h2>${esc(t.setH)}</h2><p class="muted">${esc(t.setP)}</p></div>
 <label>${esc(t.job)}<select name="job" required>${Object.entries(names).map(([k, v]) => `<option value="${k}"${c?.job === k ? ' selected' : ''}>${esc(v)}</option>`).join('')}</select></label>
 <label>${esc(t.lv)}<input name="lv" type="number" min="1" max="200" inputmode="numeric" required value="${c?.lv || ''}" placeholder="30"></label>
 <button class="btn" type="submit">${esc(t.save)}</button></form></div>`;
@@ -173,9 +173,8 @@ export function mountCharPanel(el, { routes, classes, finder, korean }) {
     return `<div class="char-card char-skills" data-kind="skills"><h3>${esc(t.skillH(names[c.job], plan.pool))}</h3>${note ? `<p class="muted">${esc(note)}</p>` : ''}<ol class="char-steps">${steps}</ol>${more}</div>`;
   };
   // Saved view: the class picker and level stepper sit in the header and change everything below at once.
-  // A saved character is drawn wearing its gear set (the set card below changes it); before that, the plain beginner.
-  const avatarSrc = (c) => (c ? cset.renderNow() : `${d.avatars}beginner.png`);
-  const avatar = (c) => `<figure class="char-avatar${c ? ' is-set' : ''}"><div class="char-avatar-frame"><img src="${esc(avatarSrc(c))}" alt="${esc(t.mine)}" width="96" height="96" data-char-img></div></figure>`;
+  // Before a character is saved: the plain beginner. After that the picture lives in the gear set (wearing the set).
+  const avatar = () => `<figure class="char-avatar"><div class="char-avatar-frame"><img src="${esc(`${d.avatars}beginner.png`)}" alt="${esc(t.mine)}" width="96" height="96"></div></figure>`;
   // Class picker: the site's own menu (the native select looked out of place), grouped by family; the family itself means
   // "still 1st job".
   const GROUPS = [['warrior', ['fighter', 'page', 'spear']], ['mage', ['fire', 'ice', 'cleric']], ['archer', ['hunter', 'crossbow']], ['thief', ['assassin', 'bandit']]];
@@ -188,10 +187,10 @@ export function mountCharPanel(el, { routes, classes, finder, korean }) {
     btn.setAttribute('aria-expanded', 'false');
     if (focus) btn.focus();
   };
-  const head = (c) => `<div class="char-head">${avatar(c)}<div class="char-head-main"><h2>${esc(t.mine)}</h2><div class="char-controls">
+  const head = (c) => `<section class="char-main"><div class="char-main-top"><div class="char-main-title"><h2>${esc(t.mine)}</h2><p class="muted">${esc(cset.text.p)}</p></div><div class="char-controls">
 ${jobPicker(c)}
 <div class="char-lv" role="group" aria-label="${esc(t.lv)}"><button type="button" class="btn ghost" data-char="down" aria-label="${esc(t.down)}">−</button><label><span>Lv.</span><input data-char-lv type="number" min="1" max="200" inputmode="numeric" value="${c.lv}" aria-label="${esc(t.lv)}"></label><button type="button" class="btn ghost" data-char="up" aria-label="${esc(t.up)}">+</button></div>
-</div></div></div><div class="char-body"></div>`;
+</div></div><div class="char-set-host" aria-busy="true"></div></section><div class="char-body"></div>`;
   const body = (c) => {
     // The spots that open closest to the character's level fit best; ties keep the finder's own order.
     const rows = selectRoutes(routes, { level: c.lv, job: c.job }).map((r, i) => ({ r, i })).sort((a, b) => b.r.level.min - a.r.level.min || a.i - b.i).map(({ r }) => r);
@@ -199,24 +198,32 @@ ${jobPicker(c)}
     const routesBody = rows.length
       ? `<ul class="char-list">${rows.map((r) => `<li><a href="${esc(r.href)}" data-route="${esc(r.id)}" data-char-link="route"><strong>${esc(r.title)}</strong><small>Lv. ${r.level.min}–${r.level.max}</small><span>${esc(r.monsters)}</span></a></li>`).join('')}</ul>`
       : `<p class="muted">${esc(t.none)}</p>`;
-    return `${hub?.gear?.length ? cset.html(c, BIT[family(c.job)]) : ''}<div class="char-grid">
+    return `<div class="char-grid">
 ${card('routes', t.routesH, routesBody, `<p class="char-more-row">${moreLink(`${finder}?lv=${c.lv}&job=${c.job}`, t.finder, 'finder')}${cls ? moreLink(cls, t.all, 'class') : ''}</p>`, rows.length)}
 ${card('quests', t.questsH, questsBody(c), `<p class="char-more-row">${moreLink(d.quests, t.all, 'quests')}</p>`, hub ? pickQuests(hub.quests, c).length : 0)}
 ${card('gear', t.gearH, gearBody(c), `<p class="char-more-row">${moreLink(d.equip, t.all, 'equipment')}</p>`, hub ? pickGear(hub.gear, c).length : 0)}
 </div>
 ${skillBody(c)}`;
   };
+  // The gear set needs the gear list; until it arrives its place is a skeleton.
+  const setHost = (c) => {
+    const host = el.querySelector('.char-set-host');
+    if (!host || !hub) return;
+    host.innerHTML = hub.gear?.length ? cset.html(c, BIT[family(c.job)]) : '';
+    host.removeAttribute('aria-busy');
+  };
   const refresh = () => {
     const c = loadChar(), box = el.querySelector('.char-body');
     if (!c || !box) return;
     try {
       if (hub?.gear) cset.setGear(hub.gear);
+      setHost(c);
       box.innerHTML = body(c);
-      cset.syncPicture(el);
       cset.refreshLive(refresh);
     } catch (err) {
       // Old saved data (an older char-hub.json from the cache) should never leave the cards loading forever.
       hub = { gear: [], quests: [], skills: {}, skillNames: {} };
+      setHost(c);
       box.innerHTML = body(c);
     }
   };
@@ -242,8 +249,6 @@ ${skillBody(c)}`;
     const input = el.querySelector('[data-char-lv]');
     if (input && Number(input.value) !== next.lv) input.value = next.lv;
     refresh();
-    const img = el.querySelector('[data-char-img]');
-    if (img && img.getAttribute('src') !== avatarSrc(next)) img.src = avatarSrc(next);
     track('my_char_change', { field, job: next.job, level: next.lv });
   };
   el.addEventListener('submit', (e) => {
