@@ -116,7 +116,7 @@ function fillPrice() {
   const p = id ? live[id] : 0;
   form.price.value = p || 0;
   const link = id ? `${form.dataset.market}?item=${id}` : '';
-  const drops = `<a href="${form.dataset.drops}?q=${encodeURIComponent(fam[0])}#drop-finder">${i18n.lang === 'ko' ? '드롭 몬스터' : 'Who drops it'}</a>`;
+  const drops = `<a href="${form.dataset.drops}?q=${encodeURIComponent(fam[0])}#drop-finder">${i18n.lang === 'ko' ? '드랍 몬스터' : 'Who drops it'}</a>`;
   priceNote.innerHTML = p
     ? `${i18n.lang === 'ko' ? '시세 중앙값' : 'Market median'} ${new Intl.NumberFormat(i18n.lang).format(p)} · <a href="${link}">${i18n.lang === 'ko' ? '시세 보기' : 'See listings'}</a> · ${drops}`
     : id ? `${i18n.lang === 'ko' ? '최근 시세가 없어요' : 'No recent price'} · <a href="${link}">${i18n.lang === 'ko' ? '시세 보기' : 'Market'}</a> · ${drops}` : (i18n.lang === 'ko' ? '이 등급은 없는 주문서예요' : 'This tier does not exist for this scroll');

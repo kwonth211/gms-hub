@@ -88,10 +88,10 @@ const T = {
     navGuides: '가이드',
     switchLang: 'English',
     homeTitle: '글클메 허브: 시세·사냥터 추천·몬스터 DB·스킬트리 | GMS Hub',
-    homeDesc: '글클메 실시간 자유시장 시세·확성기, 직업별 사냥터 추천, 퀘스트 공략, 몬스터 드롭·장비 DB, 스킬트리를 한곳에서 찾아요.',
+    homeDesc: '글클메 실시간 자유시장 시세·확성기, 직업별 사냥터 추천, 퀘스트 공략, 몬스터 드랍·장비 DB, 스킬트리를 한곳에서 찾아요.',
     heroKicker: '글클메 유저를 위한 길잡이',
     heroTitle: '시세·사냥터·내 캐릭터, <br>한 번에 찾아보세요',
-    heroSub: '아이템 시세와 드롭, 내 레벨에 맞는 사냥터·퀘스트·장비까지 한곳에서 찾아요.',
+    heroSub: '아이템 시세와 드랍, 내 레벨에 맞는 사냥터·퀘스트·장비까지 한곳에서 찾아요.',
     searchPlaceholder: '아이템, 몬스터, 사이트 검색 (어디서든 / 키)',
     statSites: '수록 사이트',
     statCats: '카테고리',
@@ -123,7 +123,7 @@ const T = {
     toolsHeading: 'GMS Hub 자체 도구',
     trCardDesc: "직업·레벨별 진입 조건, 사냥 동선과 물약 비용을 비교해요.",
     scCardDesc: 'Lesser·Intermediate·Greater·Chaos 주문서로 몇 번 붙고 터질 확률이 얼마인지 계산해요.',
-    dropCardDesc: "입력한 드롭률이 일정하고 시도가 독립일 때의 획득 확률을 계산해요.",
+    dropCardDesc: "입력한 드랍률이 일정하고 시도가 독립일 때의 획득 확률을 계산해요.",
     open: '열기',
     faqHeading: '자주 묻는 질문',
     sourcesLabel: '출처',
@@ -182,11 +182,11 @@ const T = {
     colLadder: '종류',
     colExpected: '1장당 기대 상승치',
 
-    dropTitle: '글클메 드롭률·확률 계산기와 넥슨 공식 상자 확률 | GMS Hub',
+    dropTitle: '글클메 드랍률·확률 계산기와 넥슨 공식 상자 확률 | GMS Hub',
     dropDesc: '글로벌 메이플스토리 클래식 월드 확률 계산기. 넥슨 공식 랜덤박스(미스터리 패션 크레이트 등) 확률표와 함께 몇 번 열거나 잡아야 얻는지 계산해요.',
     dropH1: '확률 계산기',
     dropLead: '"1% 템, 100번이면 나오나?" 상자 열기와 몬스터 사냥 모두 계산할 수 있어요.',
-    rateInput: '드롭률 (%)',
+    rateInput: '드랍률 (%)',
     rateHint: '예: 1/500이면 0.2',
     killsInput: '시도 횟수 (상자 개수 · 사냥 수)',
     resAtLeastOne: '한 번 이상 얻을 확률',
@@ -201,15 +201,15 @@ const T = {
     colChance: '확률',
     boxUpcoming: '예정 확률',
     boxSearch: '아이템 이름 검색',
-    monsterHeading: '몬스터 드롭률',
-    monsterNote: '넥슨 공식 확률 페이지에는 랜덤박스 확률만 있고 몬스터 드롭률은 없어요. 그래서 여기에는 확인된 드롭률만 올려요.',
-    dbHeading: '몬스터 드롭률 데이터',
+    monsterHeading: '몬스터 드랍률',
+    monsterNote: '넥슨 공식 확률 페이지에는 랜덤박스 확률만 있고 몬스터 드랍률은 없어요. 그래서 여기에는 확인된 드랍률만 올려요.',
+    dbHeading: '몬스터 드랍률 데이터',
     dbLead: '행을 누르면 계산기에 바로 들어가요.',
     dbSearch: '몬스터나 아이템 이름 검색',
-    dbEmpty: '아직 확인된 드롭률이 없어요. 몬스터별 드롭 목록은 사이트 모음의 DB 사이트에서 볼 수 있어요.',
+    dbEmpty: '아직 확인된 드랍률이 없어요. 몬스터별 드랍 목록은 사이트 모음의 DB 사이트에서 볼 수 있어요.',
     colMob: '몬스터',
     colItem: '아이템',
-    colRate: '드롭률',
+    colRate: '드랍률',
     colSource: '출처',
     colNote: '비고',
     formulaHeading: '계산 방법',
@@ -225,7 +225,7 @@ const T = {
     aboutH1: 'GMS Hub 소개',
     aboutBody: `<p>GMS Hub는 <strong>글로벌 메이플스토리 클래식 월드</strong>(글클메)를 하는 한국어·영어 유저를 위한 <strong>비공식 팬 사이트</strong>예요. 사냥하다가 "이 아이템 지금 얼마지?" 싶을 때 확성기를 기다리거나 디스코드를 뒤지지 않고, 검색 한 번으로 답을 얻고 싶어서 만들기 시작했어요.</p>
 <h2>무엇이 있나요</h2>
-<ul><li><strong>실시간 시세:</strong> 자유시장 매물과 확성기를 모아 <a href="/ko/tools/market/">아이템별 시세</a>를 보여 줘요. 매물마다 채널과 자유시장 방 번호가 붙어 있어 가장 싼 곳으로 바로 갈 수 있고, 팔린 가격은 부르는 가격과 따로 계산해요. 주문서를 바른 장비는 같은 옵션끼리만 묶어서 값을 매겨요.</li><li><strong>확성기:</strong> <a href="/ko/megaphone/">오늘 나온 확성기</a>를 검색할 수 있고, 확성기에 걸린 아이템의 실제 옵션과 시세가 옆에 같이 떠요.</li><li><strong>퀘스트:</strong> 긴 연계 퀘스트는 <a href="/ko/quests/">단계별 가이드</a>로 정리해요. NPC 위치, 잡아야 할 몬스터와 나오는 곳, 보상과 재료의 오늘 시세까지 한 페이지에 있고, 끝낸 단계를 체크하면 다음에 와도 이어서 볼 수 있어요.</li><li><strong>사냥터:</strong> <a href="/ko/tools/training/">직업별 사냥터와 동선</a>, 드롭 시세로 고른 <a href="/ko/tools/meso-farm/">메소 사냥터</a>를 정리해요.</li><li><strong>도감과 계산기:</strong> <a href="/ko/items/">아이템</a>, <a href="/ko/monsters/">몬스터</a>, <a href="/ko/maps/">맵</a> 도감과 <a href="/ko/tools/scroll/">주문서</a>·<a href="/ko/tools/drop-rate/">확률</a>·<a href="/ko/tools/damage/">몇 방 컷</a> 계산기가 있어요. 계산기의 공식과 예시는 각 페이지 아래에 적어 두었어요.</li><li><strong>내 캐릭터:</strong> 홈에서 캐릭터를 등록하면 레벨에 맞는 퀘스트와 장비를 보여 주고, 부위별로 장비 세트를 꾸며 세트 시세를 볼 수 있어요.</li><li><strong>가이드:</strong> 육성, 전직, 파티 퀘스트, 거래를 다룬 <a href="/ko/guides/">가이드</a>를 직접 써요.</li></ul>
+<ul><li><strong>실시간 시세:</strong> 자유시장 매물과 확성기를 모아 <a href="/ko/tools/market/">아이템별 시세</a>를 보여 줘요. 매물마다 채널과 자유시장 방 번호가 붙어 있어 가장 싼 곳으로 바로 갈 수 있고, 팔린 가격은 부르는 가격과 따로 계산해요. 주문서를 바른 장비는 같은 옵션끼리만 묶어서 값을 매겨요.</li><li><strong>확성기:</strong> <a href="/ko/megaphone/">오늘 나온 확성기</a>를 검색할 수 있고, 확성기에 걸린 아이템의 실제 옵션과 시세가 옆에 같이 떠요.</li><li><strong>퀘스트:</strong> 긴 연계 퀘스트는 <a href="/ko/quests/">단계별 가이드</a>로 정리해요. NPC 위치, 잡아야 할 몬스터와 나오는 곳, 보상과 재료의 오늘 시세까지 한 페이지에 있고, 끝낸 단계를 체크하면 다음에 와도 이어서 볼 수 있어요.</li><li><strong>사냥터:</strong> <a href="/ko/tools/training/">직업별 사냥터와 동선</a>, 드랍 시세로 고른 <a href="/ko/tools/meso-farm/">메소 사냥터</a>를 정리해요.</li><li><strong>도감과 계산기:</strong> <a href="/ko/items/">아이템</a>, <a href="/ko/monsters/">몬스터</a>, <a href="/ko/maps/">맵</a> 도감과 <a href="/ko/tools/scroll/">주문서</a>·<a href="/ko/tools/drop-rate/">확률</a>·<a href="/ko/tools/damage/">몇 방 컷</a> 계산기가 있어요. 계산기의 공식과 예시는 각 페이지 아래에 적어 두었어요.</li><li><strong>내 캐릭터:</strong> 홈에서 캐릭터를 등록하면 레벨에 맞는 퀘스트와 장비를 보여 주고, 부위별로 장비 세트를 꾸며 세트 시세를 볼 수 있어요.</li><li><strong>가이드:</strong> 육성, 전직, 파티 퀘스트, 거래를 다룬 <a href="/ko/guides/">가이드</a>를 직접 써요.</li></ul>
 <h2>누가, 어떻게 운영하나요</h2>
 <p>GMS Hub는 클래식 월드를 직접 플레이하는 <strong>개인 개발자 한 명</strong>이 운영해요. 2026년 10월에 문을 열었고, 넥슨이나 다른 회사의 지원은 받지 않아요. 사이트에 붙는 광고는 서버 운영비에 써요.</p>
 <ul><li><strong>시세:</strong> 상점 매물과 게임 확성기를 하루 종일 모아요. <a href="/ko/tools/market/today/">오늘의 시세</a>는 매일 밤, <a href="/ko/report/">주간 리포트</a>는 매주 월요일에 새로 정리해요. 확실히 읽지 못한 옵션은 짐작해서 채우지 않고 빼 둬요.</li><li><strong>퀘스트 가이드:</strong> 실제로 퀘스트를 진행하며 확인한 순서와 위치로 써요. 플레이 영상과 유저 제보로 다시 맞춰 보고, 틀린 곳은 바로 고쳐요.</li><li><strong>사냥터:</strong> 경험치와 메소를 실제로 잰 기록이 있는 곳 위주로 올리고, 어떤 장비·파티 조건에서 잰 값인지 같이 적어요.</li><li><strong>공략과 데이터:</strong> 게임 패치가 나오면 바뀐 내용을 반영해요. 무엇을 언제 고쳤는지는 <a href="/ko/updates/">업데이트 소식</a>에 날짜와 함께 남겨요.</li><li><strong>오류 제보:</strong> 틀린 내용을 알려 주시면 확인해서 고치고, 고친 내용도 업데이트 소식에 적어요.</li></ul>
@@ -676,7 +676,7 @@ function shareImageTags(lang, pagePath) {
   const mob = pagePath && pagePath.match(/^\/monsters\/(\d+)\/$/), guide = pagePath && pagePath.match(/^\/quests\/([a-z][a-z0-9-]+)\/$/);
   const live = (mob && `monster/${mob[1]}`) || (guide && !['best-meso', 'best-exp'].includes(guide[1]) && `quest/${guide[1]}`);
   if (live && (lang === 'ko' || lang === 'en')) {
-    const url = `https://gms-hub.com/og/${live}-${lang}.png?d=${BUILD_DATE}`, alt = mob ? (lang === 'ko' ? '몬스터 정보 카드 — 레벨, 체력, 출현 위치, 드롭' : 'Monster card — level, HP, where it lives, drops') : (lang === 'ko' ? '퀘스트 공략 카드 — 레벨, 보상, 퀘스트 수' : 'Quest guide card — level, reward, number of quests');
+    const url = `https://gms-hub.com/og/${live}-${lang}.png?d=${BUILD_DATE}`, alt = mob ? (lang === 'ko' ? '몬스터 정보 카드 — 레벨, 체력, 출현 위치, 드랍' : 'Monster card — level, HP, where it lives, drops') : (lang === 'ko' ? '퀘스트 공략 카드 — 레벨, 보상, 퀘스트 수' : 'Quest guide card — level, reward, number of quests');
     return `<meta property="og:image" content="${url}">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
@@ -1371,7 +1371,7 @@ function homeBody(lang) {
 <h2>${t.toolsHeading}</h2>
 <div class="tool-cards">
 ${(lang === 'ko' ? [
-tool('/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monster database', lang === 'ko' ? '몬스터 78종의 능력치, 드롭 아이템, 출현 위치를 검색하세요.' : 'Explore stats, reported drops and map locations for 78 monsters.'),
+tool('/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monster database', lang === 'ko' ? '몬스터 78종의 능력치, 드랍 아이템, 출현 위치를 검색하세요.' : 'Explore stats, reported drops and map locations for 78 monsters.'),
 tool('/equipment/', 'hammer', lang === 'ko' ? '장비 찾기' : 'Equipment finder', lang === 'ko' ? `직업과 레벨로 지금 얻을 수 있는 장비 ${EQUIPMENT.length}개를 찾고, 떨어뜨리는 몬스터를 봐요.` : `${EQUIPMENT.length} pieces of gear by class and level, with the monsters that drop them and quests that give them.`),
 tool('/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Live megaphones', lang === 'ko' ? '게임 확성기를 실시간으로 모아 보고, 시세와 비교하고, 귓말을 바로 복사해요.' : 'Game megaphones live, compared with market prices, with a one-tap whisper command.'),
 tool('/rank/', 'crown', lang === 'ko' ? '캐릭터 랭킹' : 'Character rankings', lang === 'ko' ? '레벨 순위 상위 1,000명과 직업 분포, 내 캐릭터 순위를 찾고 맞는 사냥터로 바로 가요.' : 'Top 1,000 by level, the class breakdown, and your own rank with training spots for your level.'),
@@ -1385,11 +1385,11 @@ tool('/tools/price/', 'coin', t.navPrice, PR[lang].cardDesc),
 tool('/tools/damage/', 'hammer', DMG[lang].h1, DMG[lang].cardDesc),
 tool('/tools/exp/', 'clock', EXP[lang].h1, EXP[lang].cardDesc),
 tool('/tools/scan/', 'megaphone', SCAN[lang].h1, SCAN[lang].cardDesc),
-tool('/quests/', 'scroll', lang === 'ko' ? '퀘스트' : 'Quests', lang === 'ko' ? `퀘스트 ${QUESTS.length}개의 시작 레벨, 모아 올 아이템과 드롭 몬스터, 보상을 봐요.` : `${QUESTS.length} quests: start level, items to bring and who drops them, rewards.`),
-tool('/bosses/', 'crown', lang === 'ko' ? '보스 몬스터' : 'Bosses', lang === 'ko' ? '마노부터 주니어 발록까지 보스의 출현 맵, 필요 명중, 드롭을 한 표로 봐요.' : 'Mano to Jr. Balrog: spawn maps, accuracy needed and equipment drops in one table.'),
-tool('/maps/', 'tree', lang === 'ko' ? '맵 도감' : 'Maps', lang === 'ko' ? `맵 ${MAPS.filter((l) => l.availability === 'open').length}곳의 몬스터, 출현 수, 드롭을 지역별로 봐요.` : `${MAPS.filter((l) => l.availability === 'open').length} maps: which monsters spawn there, how many, and what they drop.`)
+tool('/quests/', 'scroll', lang === 'ko' ? '퀘스트' : 'Quests', lang === 'ko' ? `퀘스트 ${QUESTS.length}개의 시작 레벨, 모아 올 아이템과 드랍 몬스터, 보상을 봐요.` : `${QUESTS.length} quests: start level, items to bring and who drops them, rewards.`),
+tool('/bosses/', 'crown', lang === 'ko' ? '보스 몬스터' : 'Bosses', lang === 'ko' ? '마노부터 주니어 발록까지 보스의 출현 맵, 필요 명중, 드랍을 한 표로 봐요.' : 'Mano to Jr. Balrog: spawn maps, accuracy needed and equipment drops in one table.'),
+tool('/maps/', 'tree', lang === 'ko' ? '맵 도감' : 'Maps', lang === 'ko' ? `맵 ${MAPS.filter((l) => l.availability === 'open').length}곳의 몬스터, 출현 수, 드랍을 지역별로 봐요.` : `${MAPS.filter((l) => l.availability === 'open').length} maps: which monsters spawn there, how many, and what they drop.`)
 ] : [
-tool('/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monster database', lang === 'ko' ? '몬스터 78종의 능력치, 드롭 아이템, 출현 위치를 검색하세요.' : 'Explore stats, reported drops and map locations for 78 monsters.'),
+tool('/monsters/', 'slime', lang === 'ko' ? '몬스터 도감' : 'Monster database', lang === 'ko' ? '몬스터 78종의 능력치, 드랍 아이템, 출현 위치를 검색하세요.' : 'Explore stats, reported drops and map locations for 78 monsters.'),
 tool('/equipment/', 'hammer', lang === 'ko' ? '장비 찾기' : 'Equipment finder', lang === 'ko' ? `직업과 레벨로 지금 얻을 수 있는 장비 ${EQUIPMENT.length}개를 찾고, 떨어뜨리는 몬스터를 봐요.` : `${EQUIPMENT.length} pieces of gear by class and level, with the monsters that drop them and quests that give them.`),
 tool('/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Live megaphones', lang === 'ko' ? '게임 확성기를 실시간으로 모아 보고, 시세와 비교하고, 귓말을 바로 복사해요.' : 'Game megaphones live, compared with market prices, with a one-tap whisper command.'),
 tool('/rank/', 'crown', lang === 'ko' ? '캐릭터 랭킹' : 'Character rankings', lang === 'ko' ? '레벨 순위 상위 1,000명과 직업 분포, 내 캐릭터 순위를 찾고 맞는 사냥터로 바로 가요.' : 'Top 1,000 by level, the class breakdown, and your own rank with training spots for your level.'),
@@ -1397,9 +1397,9 @@ tool('/quests/glove-attack/', 'scroll', lang === 'ko' ? '장공 퀘스트 공략
 tool('/quests/best-exp/', 'star', lang === 'ko' ? '경험치 퀘스트' : 'Best EXP quests', lang === 'ko' ? '레벨 구간마다 보상 경험치가 큰 퀘스트 10개씩.' : 'The ten biggest EXP quest rewards for each level band.'),
 tool('/tools/training/', 'sword', t.navTraining, t.trCardDesc),
 tool('/tools/market/', 'coin', t.navMarket, MK[lang].lead),
-tool('/quests/', 'scroll', lang === 'ko' ? '퀘스트' : 'Quests', lang === 'ko' ? `퀘스트 ${QUESTS.length}개의 시작 레벨, 모아 올 아이템과 드롭 몬스터, 보상을 봐요.` : `${QUESTS.length} quests: start level, items to bring and who drops them, rewards.`),
-tool('/bosses/', 'crown', lang === 'ko' ? '보스 몬스터' : 'Bosses', lang === 'ko' ? '마노부터 주니어 발록까지 보스의 출현 맵, 필요 명중, 드롭을 한 표로 봐요.' : 'Mano to Jr. Balrog: spawn maps, accuracy needed and equipment drops in one table.'),
-tool('/maps/', 'tree', lang === 'ko' ? '맵 도감' : 'Maps', lang === 'ko' ? `맵 ${MAPS.filter((l) => l.availability === 'open').length}곳의 몬스터, 출현 수, 드롭을 지역별로 봐요.` : `${MAPS.filter((l) => l.availability === 'open').length} maps: which monsters spawn there, how many, and what they drop.`),
+tool('/quests/', 'scroll', lang === 'ko' ? '퀘스트' : 'Quests', lang === 'ko' ? `퀘스트 ${QUESTS.length}개의 시작 레벨, 모아 올 아이템과 드랍 몬스터, 보상을 봐요.` : `${QUESTS.length} quests: start level, items to bring and who drops them, rewards.`),
+tool('/bosses/', 'crown', lang === 'ko' ? '보스 몬스터' : 'Bosses', lang === 'ko' ? '마노부터 주니어 발록까지 보스의 출현 맵, 필요 명중, 드랍을 한 표로 봐요.' : 'Mano to Jr. Balrog: spawn maps, accuracy needed and equipment drops in one table.'),
+tool('/maps/', 'tree', lang === 'ko' ? '맵 도감' : 'Maps', lang === 'ko' ? `맵 ${MAPS.filter((l) => l.availability === 'open').length}곳의 몬스터, 출현 수, 드랍을 지역별로 봐요.` : `${MAPS.filter((l) => l.availability === 'open').length} maps: which monsters spawn there, how many, and what they drop.`),
 tool('/tools/drop-rate/', 'bag', t.navDrop, t.dropCardDesc),
 tool('/tools/damage/', 'hammer', DMG[lang].h1, DMG[lang].cardDesc),
 tool('/tools/exp/', 'clock', EXP[lang].h1, EXP[lang].cardDesc),
@@ -1722,7 +1722,7 @@ const PR = {
       'One-Handed Blunt Weapon': '한손둔기', 'Two-Handed Blunt': '두손둔기', 'One-Handed BW': '한손둔기', 'Two-Handed BW': '두손둔기',
       Hat: '모자', Top: '상의', Bottom: '하의', Overall: '한벌옷', Shoes: '신발', Glove: '장갑', Shield: '방패', Cape: '망토', Earrings: '귀고리', Ring: '반지',
       Potion: '물약', 'Food and Drink': '음식', Thrown: '표창', Arrow: '화살', 'Crossbow Bolt': '석궁 화살', 'Teleport Item': '귀환 주문서',
-      Helmet: '투구 주문서', Topwear: '상의 주문서', Bottomwear: '하의 주문서', Gloves: '장갑 주문서', 'Monster Drop': '몬스터 드롭', 'Mineral Ore': '광물', 'Rare Ore': '보석 원석',
+      Helmet: '투구 주문서', Topwear: '상의 주문서', Bottomwear: '하의 주문서', Gloves: '장갑 주문서', 'Monster Drop': '몬스터 드랍', 'Mineral Ore': '광물', 'Rare Ore': '보석 원석',
       Gem: '보석', Chair: '의자', Furniture: '가구', Decoration: '장식', 'Summoning Sack': '소환 주머니', 'Pet Food': '펫 먹이', 'EXP Buff': '경험치 버프'
     },
     howHeading: '이렇게 쓰면 돼요',
@@ -1985,11 +1985,11 @@ const SCAN = {
       shopOk: '{seller} 상점 · {n}개 읽음',
       shopPartial: '{seller} 상점 · {n}개 읽음, {skip}개는 못 읽음',
       channelOk: 'CH {ch}',
-      channelNone: '위 드롭다운에서 채널을 선택하거나 채널 변경 창을 열어 주세요',
+      channelNone: '위 드랍다운에서 채널을 선택하거나 채널 변경 창을 열어 주세요',
       roomOk: '자유시장 {room}번 방',
       roomAsk: '처음 보는 방이에요. 미니맵의 방 번호를 한 번만 알려 주세요',
       roomSave: '확인',
-      roomNone: '위 드롭다운에서 방을 선택해 주세요',
+      roomNone: '위 드랍다운에서 방을 선택해 주세요',
       uploadOk: '{n}개 반영됨',
       uploadNeed: '아이템·가격을 두 번 확인하고, 판매자·채널·방이 있어야 반영해요',
       uploadFail: '반영 실패, 다시 시도할게요',
@@ -2309,10 +2309,12 @@ const MK = {
 function marketBrowser(lang, fixed, placeholder) {
   const t = MK[lang], tr = (ko,en) => lang === 'ko' ? ko : en;
   const stat = (key,label) => `<div><dd id="mk-stat-${key}">–</dd><dt>${label}</dt></div>`;
-  return `<div class="${fixed ? 'mk market-browser mb-single' : 'wrap mk market-browser'}">
-<div class="mb-status"><p id="mk-status" role="status" aria-label="${esc(t.loading)}"><span class="skel" style="display:inline-block;width:220px;max-width:60vw;height:12px;vertical-align:middle" aria-hidden="true"></span></p><button id="mk-retry" class="btn ghost small-btn" type="button">${tr('새로고침','Refresh')}</button></div>
+  // On an item page the list, its filters, the market totals and the contributor board are never shown (CSS hid them),
+  // so they wait in an inert <template>: market.js still finds its controls there, and the page text is the item's own.
+  const statusTabs = `<div class="mb-status"><p id="mk-status" role="status" aria-label="${esc(t.loading)}"><span class="skel" style="display:inline-block;width:220px;max-width:60vw;height:12px;vertical-align:middle" aria-hidden="true"></span></p><button id="mk-retry" class="btn ghost small-btn" type="button">${tr('새로고침','Refresh')}</button></div>
 <div class="mb-tabs" role="tablist" aria-label="${tr('시장 탐색','Browse market')}"><button id="mb-tab-items" role="tab" aria-selected="true" aria-controls="mb-browser" data-view="items">${tr('아이템 시세','Item prices')}</button><button id="mb-tab-listings" role="tab" aria-selected="false" tabindex="-1" aria-controls="mb-browser" data-view="listings">${tr('전체 매물','All listings')}</button></div>
-<div class="mb-workspace" id="mb-workspace"><section class="panel mb-browser" id="mb-browser" role="tabpanel" aria-labelledby="mb-tab-items">
+`;
+  const browser = `<section class="panel mb-browser" id="mb-browser" role="tabpanel" aria-labelledby="mb-tab-items">
 <div class="mb-search"><label for="mk-q">${tr('아이템 검색','Search items')}</label><div><input type="search" id="mk-q" placeholder="${esc(t.placeholder)}" autocomplete="off"><button id="mb-clear-search" class="btn ghost small-btn" type="button">${tr('지우기','Clear')}</button></div></div>
 <div id="mb-mine" class="mb-mine" hidden aria-label="${tr('관심 아이템과 최근 본 아이템','Wishlist and recently viewed items')}"></div>
 <div class="mb-categories" id="mb-categories" role="group" aria-label="${tr('아이템 분류','Item category')}">${[['all','전체','All'],['scroll','주문서','Scrolls'],['weapon','무기','Weapons'],['equip','장비','Equips'],['stars','표창','Stars'],['cash','캐시','Cash'],['other','소비·기타','Use & other'],['npc','NPC 판매 이득','Better sold to NPC']].map(([id,ko,en])=>`<button type="button" data-category="${id}" aria-pressed="${id==='all'}">${tr(ko,en)}</button>`).join('')}</div><label class="mb-class">${tr('직업','Class')} <select id="mb-class">${[['','모든 직업','All classes'],['warrior','전사 전체','All warriors'],['fighter','파이터','Fighter'],['page','페이지','Page'],['spearman','스피어맨','Spearman'],['magician','마법사','Magician'],['bowman','궁수 전체','All bowmen'],['hunter','헌터','Hunter'],['crossbowman','석궁사수','Crossbowman'],['thief','도적 전체','All thieves'],['assassin','어쌔신','Assassin'],['bandit','시프','Bandit']].map(([v,ko,en])=>`<option value="${v}">${tr(ko,en)}</option>`).join('')}</select></label>
@@ -2321,11 +2323,15 @@ function marketBrowser(lang, fixed, placeholder) {
 <div id="mb-report-controls" hidden><label>${tr('제보 종류','Report type')} <select id="mb-report-kind"><option value="">${tr('전체','All')}</option><option value="selling">${tr('판매가','Asking')}</option><option value="sold">${tr('판매 완료','Sold')}</option><option value="buying">${tr('구매 희망','Buying')}</option></select></label></div>
 <div id="mb-range" hidden><label>${tr('조회 기간','Time range')} <select id="mb-days"><option value="7">${tr('최근 7일','Last 7 days')}</option><option value="1">${tr('최근 24시간','Last 24 hours')}</option><option value="30">${tr('최근 30일','Last 30 days')}</option></select></label></div>
 <div id="mb-summary" class="mb-summary" hidden aria-label="${tr('검색한 아이템 시세 요약','Price summary for the search')}"></div><p class="muted note" id="mb-list-note"></p><p id="mb-count" role="status" class="muted note"></p><div class="mb-refresh-bar" id="mb-list-refresh" hidden><span id="mb-list-at"></span><button type="button" class="mb-reload" data-refresh-list><svg class="mb-reload-ico" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2.5v3h-3"/></svg>${tr('새로고침','Refresh')}</button></div><div id="mb-results" aria-busy="true"><ul class="skel-wrap skel-offers skel-list" aria-label="${t.loading}">${'<li><span class="skel" style="width:28px;height:28px;border-radius:8px"></span><span class="skel" style="width:34%;height:14px"></span><span class="skel" style="width:16%;height:14px;margin-left:auto"></span></li>'.repeat(10)}</ul></div><div id="mb-pagination" class="mb-pagination"></div><div class="mb-ad-mid" id="mb-ad-mid">${AD_MID}</div></section>
-<section id="mk-detail" class="panel mb-detail"${fixed ? '' : ' hidden'} aria-label="${tr('선택한 아이템','Selected item')}">${placeholder || ''}</section></div>
+`;
+  const ct = `<dialog class="mb-shop ct-modal" data-ct-modal aria-label="${lang === 'ko' ? '기여자 순위' : 'Top contributors'}">${contributorsBody(lang, true)}</dialog>`;
+  const foot = `<div class="mk-foot"><div class="mk-bar"><dl class="mk-stats">${stat('open',tr('최근 판매 매물','Recent asking listings'))}${stat('shops',tr('상점','Shops'))}${stat('items',tr('아이템 · 7일','Items · 7d'))}${stat('records',tr('매물 기록 · 7일','Listing records · 7d'))}</dl><a class="btn small-btn" href="${href(langPath(lang, '/tools/scan/'))}">${t.scan}</a></div>
+${collectionStatus(lang)}</div>`;
+  return `<div class="${fixed ? 'mk market-browser mb-single' : 'wrap mk market-browser'}">
+${fixed ? '' : statusTabs}<div class="mb-workspace" id="mb-workspace">${fixed ? '' : browser}<section id="mk-detail" class="panel mb-detail"${fixed ? '' : ' hidden'} aria-label="${tr('선택한 아이템','Selected item')}">${placeholder || ''}</section></div>
 <dialog id="mb-shop" class="mb-shop"><div id="mb-shop-body"></div></dialog>
-<dialog class="mb-shop ct-modal" data-ct-modal aria-label="${lang === 'ko' ? '기여자 순위' : 'Top contributors'}">${contributorsBody(lang, true)}</dialog>
-<div class="mk-foot"><div class="mk-bar"><dl class="mk-stats">${stat('open',tr('최근 판매 매물','Recent asking listings'))}${stat('shops',tr('상점','Shops'))}${stat('items',tr('아이템 · 7일','Items · 7d'))}${stat('records',tr('매물 기록 · 7일','Listing records · 7d'))}</dl><a class="btn small-btn" href="${href(langPath(lang, '/tools/scan/'))}">${t.scan}</a></div>
-${collectionStatus(lang)}</div>
+${fixed ? '' : ct}
+${fixed ? `<template id="mb-offstage">${statusTabs}${browser}${ct}${foot}</template>` : foot}
 </div>
 ${jsonScript('mk-data', { ...{ lang, api: config.voteApi, itemsUrl: href(`/assets/items.json?v=${BUILD_DATE}-c`), t, itemBase: href(langPath(lang, '/items/')), itemLink: IT[lang].pageLink, itemPages: PRICED.map((i) => i.id), itemPaths: Object.fromEntries(PRICED.map((i) => [i.id, href(langPath(lang, itemPath(i)))])), alerts: config.alerts && config.vapidPublic ? { key: config.vapidPublic, sw: href('/sw.js') } : null }, ...(fixed ? { fixed, itemPages: [], itemPaths: {} } : {}) })}`;
 }
@@ -2350,7 +2356,7 @@ function marketSnapshot(lang) {
   const rows = R.listed.map((r) => ({ ...r, i: byId.get(r.item) })).filter((r) => r.i);
   const day = (R.updated || BUILD_DATE).slice(0, 10);
   return `<section class="wrap panel mb-snapshot"><h2>${ko ? '지금 매물이 많은 아이템과 시세' : 'Most listed items and their prices'} <small class="muted" translate="no">${esc(day)}</small></h2>
-<p class="muted small">${ko ? `자유시장에 매물이 가장 많은 아이템 ${rows.length}개의 판매가 중앙값과 최저가예요. 이름을 누르면 그 아이템의 시세·드롭 정보와 최신 매물, 채널·방을 확인할 수 있어요.` : `The ${rows.length} items with the most Free Market listings, with their median and lowest asking price. Open an item to see its prices, drops and live listings with channels and rooms.`} <a href="${href(langPath(lang, '/tools/market/today/'))}">${ko ? '오늘의 시세 · 맥박 보기' : "Today's prices & pulse"}</a></p>
+<p class="muted small">${ko ? `자유시장에 매물이 가장 많은 아이템 ${rows.length}개의 판매가 중앙값과 최저가예요. 이름을 누르면 그 아이템의 시세·드랍 정보와 최신 매물, 채널·방을 확인할 수 있어요.` : `The ${rows.length} items with the most Free Market listings, with their median and lowest asking price. Open an item to see its prices, drops and live listings with channels and rooms.`} <a href="${href(langPath(lang, '/tools/market/today/'))}">${ko ? '오늘의 시세 · 맥박 보기' : "Today's prices & pulse"}</a></p>
 <ul class="mt-said">${rows.map((r) => `<li><a class="mt-item" href="${ITEM_PAGE_IDS.has(r.i.id) ? href(langPath(lang, itemPath(r.i))) : `${market}?item=${r.i.id}`}"><img src="https://maplestory.io/api/MCW/1/item/${r.i.id}/icon" width="28" height="28" alt="" loading="lazy"><span>${esc(ko && r.i.ko ? r.i.ko : r.i.en)}</span></a><small>${ko ? '중앙값' : 'median'} ${mesos(r.median)} · ${ko ? '최저' : 'low'} ${mesos(r.low)} · ${ko ? `매물 ${nf(r.open)}` : `${nf(r.open)} listed`}</small></li>`).join('')}</ul></section>`;
 }
 
@@ -2372,9 +2378,9 @@ function dropFinder(lang) {
 <label class="df-search">${ko ? '아이템 이름' : 'Item name'}<input type="search" id="df-q" autocomplete="off" placeholder="${ko ? '예: 장갑 공격력 주문서, 미스릴 원석' : 'e.g. Gloves Attack Scroll, Mithril Ore'}"></label>
 <p class="df-examples">${examples.map((i) => `<button type="button" class="chip" data-q="${esc(itemName(lang, i))}">${esc(itemName(lang, i))}</button>`).join('')}</p>
 <div id="df-results" aria-live="polite"></div>
-<p class="muted small">${ko ? '몬스터 목록은 플레이어 제보예요.' : 'Monster lists come from player reports.'} <a href="${href(langPath(lang, '/monsters/'))}">${ko ? '몬스터 도감' : 'Monster database'}</a> · <a href="${href(langPath(lang, '/bosses/'))}">${ko ? '보스 드롭' : 'Boss drops'}</a></p>
+<p class="muted small">${ko ? '몬스터 목록은 플레이어 제보예요.' : 'Monster lists come from player reports.'} <a href="${href(langPath(lang, '/monsters/'))}">${ko ? '몬스터 도감' : 'Monster database'}</a> · <a href="${href(langPath(lang, '/bosses/'))}">${ko ? '보스 드랍' : 'Boss drops'}</a></p>
 ${jsonScript('drop-index', { items, mobs: mobs.map((m) => [m.ko || m.en, m.en, m.lv, href(langPath(lang, monsterPath(m))), m.id]),
-  t: ko ? { more: '외 {n}종', none: '그 이름으로 드롭 제보가 있는 아이템이 없어요. 더 짧게 검색해 보세요.', repeated: '반복 제보', found: '{n}개 아이템' } : { more: '+{n} more', none: 'No reported drops for that name. Try a shorter name.', repeated: 'Repeated reports', found: '{n} items' } })}
+  t: ko ? { more: '외 {n}종', none: '그 이름으로 드랍 제보가 있는 아이템이 없어요. 더 짧게 검색해 보세요.', repeated: '반복 제보', found: '{n}개 아이템' } : { more: '+{n} more', none: 'No reported drops for that name. Try a shorter name.', repeated: 'Repeated reports', found: '{n} items' } })}
 </section>`;
 }
 function dropBody(lang) {
@@ -2438,8 +2444,8 @@ ${drops.entries.length
 <div class="table-wrap"><table class="data clickable" id="drop-db"><thead><tr><th>${t.colMob}</th><th>${t.colItem}</th><th>${t.colRate}</th><th>${t.colNote}</th></tr></thead><tbody>${rows}</tbody></table></div>
 <p class="muted small">${t.dataUpdated}: ${esc(drops.updated)}</p>`
   : // An empty table read as a broken feature; until a sourced rate exists, point to where drop lists live and to the calculator.
-    `<p>${lang === 'ko' ? `아직 확인된 몬스터 드롭률은 없어요. 대신 <a href="${href(langPath(lang, '/monsters/'))}">몬스터 도감</a>에서 몬스터 ${MONSTERS.monsters.length}종의 드롭 아이템 목록을 볼 수 있어요. 다른 곳에서 확인한 확률을 위 계산기에 넣으면 몇 마리를 잡아야 하는지 바로 나와요.` : `No sourced monster drop rates yet. The <a href="${href(langPath(lang, '/monsters/'))}">monster database</a> lists the reported drops of ${MONSTERS.monsters.length} monsters; put a rate you trust into the calculator above to see how many kills it takes.`}</p>
-<h3>${lang === 'ko' ? '파밍하러 많이 가는 몬스터의 드롭 목록' : 'Drop lists of monsters players farm'}</h3>
+    `<p>${lang === 'ko' ? `아직 확인된 몬스터 드랍률은 없어요. 대신 <a href="${href(langPath(lang, '/monsters/'))}">몬스터 도감</a>에서 몬스터 ${MONSTERS.monsters.length}종의 드랍 아이템 목록을 볼 수 있어요. 다른 곳에서 확인한 확률을 위 계산기에 넣으면 몇 마리를 잡아야 하는지 바로 나와요.` : `No sourced monster drop rates yet. The <a href="${href(langPath(lang, '/monsters/'))}">monster database</a> lists the reported drops of ${MONSTERS.monsters.length} monsters; put a rate you trust into the calculator above to see how many kills it takes.`}</p>
+<h3>${lang === 'ko' ? '파밍하러 많이 가는 몬스터의 드랍 목록' : 'Drop lists of monsters players farm'}</h3>
 <ul class="monster-routes">${MONSTERS.monsters.filter((m) => MONSTER_NOTES.notes[m.id]?.drops?.length).sort((a, b) => a.lv - b.lv).slice(0, 12).map((m) => `<li><a href="${href(langPath(lang, monsterPath(m)))}#monster-drops"><img class="mob-sprite" src="${href(`/assets/monsters/${m.id}.gif`)}" width="32" height="32" alt="" loading="lazy"><strong>${esc(monsterName(m, lang))}</strong><small>Lv. ${m.lv}</small></a></li>`).join('')}</ul>`}
 </section>
 <section>
@@ -2540,11 +2546,11 @@ function dropGuide(lang) {
   };
   return lang === 'ko'
     ? `<section class="prose guide">
-<h2>드롭률 계산, 이렇게 읽어요</h2>
+<h2>드랍률 계산, 이렇게 읽어요</h2>
 <h3>"1%면 100번에 하나"가 아닌 이유</h3>
 <p>1% 아이템을 100번 시도하면 기대 획득 개수는 1개지만, <strong>한 번이라도 얻을 확률은 ${v.p100}</strong>예요. 매 시도가 서로 독립이라서 운이 나쁘면 100번 모두 실패할 수 있기 때문이에요. 200번 시도해도 확률은 ${v.p200}로, 100%에 가까워질 뿐 도달하지는 않아요.</p>
 <h3>몇 번 해야 할까?</h3>
-<p>1% 아이템을 기준으로 하면 50% 확률로 얻으려면 <strong>${v.t50}번</strong>, 90%는 <strong>${v.t90}번</strong>, 99%는 <strong>${v.t99}번</strong>이 필요해요. 위 계산기에 드롭률만 넣으면 같은 방식으로 원하는 아이템의 횟수를 볼 수 있어요.</p>
+<p>1% 아이템을 기준으로 하면 50% 확률로 얻으려면 <strong>${v.t50}번</strong>, 90%는 <strong>${v.t90}번</strong>, 99%는 <strong>${v.t99}번</strong>이 필요해요. 위 계산기에 드랍률만 넣으면 같은 방식으로 원하는 아이템의 횟수를 볼 수 있어요.</p>
 <h3>"이번엔 나오겠지"는 착각이에요</h3>
 <p>공식적으로 보정(천장) 시스템이 안내되지 않은 경우, 앞에서 몇 번 실패했든 다음 시도의 확률은 그대로예요. 이미 200번 실패했어도 다음 한 번의 확률은 여전히 1%예요. 그래서 계산기는 "지금부터 몇 번 더"를 기준으로 보면 돼요.</p>
 <h3>기대값과 확률을 구분하세요</h3>
@@ -2636,7 +2642,7 @@ ${config.discord ? `<section class="panel contact-card"><h2>${tr('디스코드 �
 <p>${tr('질문, 시세·파티 이야기, 사이트 건의와 오류 제보를 디스코드에서 바로 나눌 수 있어요. 사이트 업데이트 소식도 여기에 먼저 올려요.', 'Ask questions, talk prices and parties, and send site feedback or bug reports on Discord. Site updates are posted there first.')}</p>
 <p class="contact-actions"><a class="btn small-btn" href="${esc(config.discord)}" target="_blank" rel="noopener" data-discord="contact">${DISCORD_ICON(16)}${tr('디스코드 참여하기', 'Join the Discord')}</a>${config.discordBotInstall ? `<a class="btn ghost small-btn" href="${href(langPath(lang, '/discord-bot/'))}">${tr('디스코드 봇', 'Discord bot')}</a>` : ''}</p></section>
 ` : ''}<section class="panel contact-card"><h2>${tr('오류 제보·데이터 수정', 'Bug reports and data fixes')}</h2>
-<p>${tr('가격·드롭·사냥터 정보가 틀렸거나 페이지가 깨졌다면 알려 주세요. 어느 페이지의 무엇인지 적어 주시면 빨리 고칠 수 있어요.', 'Wrong prices, drops or training spots, or a broken page: tell us which page and what is wrong.')}</p>
+<p>${tr('가격·드랍·사냥터 정보가 틀렸거나 페이지가 깨졌다면 알려 주세요. 어느 페이지의 무엇인지 적어 주시면 빨리 고칠 수 있어요.', 'Wrong prices, drops or training spots, or a broken page: tell us which page and what is wrong.')}</p>
 <p class="contact-actions"><a class="btn small-btn" href="${mail(tr('[GMS Hub] 오류 제보', '[GMS Hub] Bug report'))}">${tr('메일로 제보', 'Report by email')}</a><a class="btn ghost small-btn" href="${issuesUrl}" target="_blank" rel="noopener">${tr('GitHub에 남기기', 'Open a GitHub issue')}</a></p></section>
 <section class="panel contact-card"><h2>${tr('광고·협찬·제휴 문의', 'Advertising, sponsorship and partnerships')}</h2>
 <p>${tr('게임 관련 서비스·커뮤니티·크리에이터의 배너, 소개, 링크 제휴를 받아요. 회사·채널 이름, 원하는 노출 위치와 기간, 예산을 적어 주세요.', 'Banners, features and link partnerships for game-related services, communities and creators. Tell us who you are, where and how long you want to appear, and your budget.')}</p>
@@ -2673,7 +2679,7 @@ function botBody(lang) {
     ['movers', tr('/급등락', '/movers'), tr('방향', 'direction'), tr('하루 사이 많이 오르고 내린 아이템', 'Biggest risers and fallers of the day'), tr('/급등락 방향:오른 것', '/movers direction:up')],
     ['megaphone', tr('/고확', '/megaphone'), tr('아이템', 'item'), tr('최근 고확에서 그 아이템을 팔고 사는 글', 'Recent megaphones buying or selling it'), tr('/고확 에메랄드 귀고리', '/megaphone emerald earrings')],
     ['item', tr('/아이템', '/item'), tr('아이템', 'item'), tr('레벨, 직업, 능력치, 업횟, 상점 판매가, 시세', 'Level, class, stats, slots, NPC price, market price'), tr('/아이템 스틸 슬레인', '/item steel slain')],
-    ['mob', tr('/몬스터', '/mob'), tr('이름', 'name'), tr('레벨, HP, 경험치, 많이 나오는 맵, 드롭', 'Level, HP, EXP, busiest maps, drops'), tr('/몬스터 엄티', '/mob zombie lupin')],
+    ['mob', tr('/몬스터', '/mob'), tr('이름', 'name'), tr('레벨, HP, 경험치, 많이 나오는 맵, 드랍', 'Level, HP, EXP, busiest maps, drops'), tr('/몬스터 엄티', '/mob zombie lupin')],
     ['train', tr('/사냥터', '/train'), tr('레벨 · 직업', 'level · class'), tr('레벨과 직업에 맞는 사냥터와 동선', 'Training spots for your level and class'), tr('/사냥터 45 클레릭', '/train 45 cleric')],
     ['alert', tr('/알림', '/alert'), tr('추가 · 목록 · 삭제', 'add · list · remove'), tr('원하는 가격 이하로 매물이나 고확이 뜨면 DM', 'A DM when it shows up at or under your price'), tr('/알림 추가 일비 표창 가격:300만', '/alert add ilbi price:3m')],
     ['feedback', tr('/건의', '/feedback'), tr('내용', 'text'), tr('사이트에 바라는 점이나 틀린 정보 보내기', 'Send a request or a correction'), tr('/건의 보스 타이머 만들어 주세요', '/feedback add boss timers')],
@@ -2938,7 +2944,7 @@ const IT = {
     // With a price the title carries it, so the search result answers the question before the click.
     titlePrice: '{name} 시세 {median} 메소 ({date}) · 글클메 자유시장 | GMS Hub',
     descNow: '{name} 글클메 자유시장 시세: 지금 판매 중 매물의 중앙값 {median} 메소 (판매 중 {open}건, 최저 {low}). 지금 파는 상점의 채널·방과 7일 추이도 보여 줘요.',
-    nowHeadline: '판매 중 중앙값', nowSub: '판매 중 {open}건 · 최저 {low}', nowAsOf: '{date} 기준 · 페이지를 열면 최신 값으로 바뀌어요', nowAsOfLive: '방금 받은 실시간 시세예요', openN: '판매 {n}건', lastN: '최근 시세', lastHeadline: '최근 시세', lastSub: '지금은 판매 중인 매물이 없어요. 마지막으로 본 매물 기준이에요.',
+    nowHeadline: '판매 중 중앙값', nowSub: '판매 중 {open}건 · 최저 {low}', nowAsOf: '{date} 기준', nowAsOfLive: '방금 받은 실시간 시세예요', openN: '판매 {n}건', lastN: '최근 시세', lastHeadline: '최근 시세', lastSub: '지금은 판매 중인 매물이 없어요. 마지막으로 본 매물 기준이에요.',
     desc: '{name} 글클메 자유시장 시세: {basis} 중앙값 {median} 메소 (최근 14일 매물 {n}건, {low}~{high}). 유저가 스캔한 상점 매물 기준이고, 7일 추이와 지금 파는 채널·방도 보여 줘요.',
     descNone: '{name} 글로벌 메이플 클래식 월드 아이템 정보 ({info}). 최근 14일 스캔 시세가 아직 없어요. 상점을 스캔하면 시세가 바로 쌓여요.',
     h1: '{name} 시세',
@@ -2967,13 +2973,13 @@ const IT = {
     loading: '매물을 불러오는 중이에요…', failed: '실시간 매물을 불러오지 못했어요.', noData: '최근 7일 매물이 없어요.', noOpen: '최근 24시간 안에 확인한 판매 매물이 없어요.',
     table: { price: '가격', qty: '묶음', seller: '판매자', where: '위치', seen: '본 시각' },
     indexTitle: '글클메 아이템 시세·DB: 주문서·무기·방어구·소비 시세 {n}개 | GMS Hub',
-    indexDesc: '글로벌 메이플 클래식 월드 아이템 {n}개의 자유시장 시세, 드롭하는 몬스터, 기본 능력치를 분류별로 모았어요. 시세는 매일 갱신돼요.',
+    indexDesc: '글로벌 메이플 클래식 월드 아이템 {n}개의 자유시장 시세, 드랍하는 몬스터, 기본 능력치를 분류별로 모았어요. 시세는 매일 갱신돼요.',
     indexH1: '아이템 DB',
-    indexLead: '시세가 있는 아이템 {p}개와 몬스터가 드롭하는 아이템을 합쳐 {n}개예요. 아이템을 누르면 시세 추이, 드롭 몬스터, 능력치를 볼 수 있어요.',
+    indexLead: '시세가 있는 아이템 {p}개와 몬스터가 드랍하는 아이템을 합쳐 {n}개예요. 아이템을 누르면 시세 추이, 드랍 몬스터, 능력치를 볼 수 있어요.',
     pricedH: '최근 시세가 있는 아이템',
-    dropH: '드롭 아이템',
-    titleDrop: '글클메 {name}: 드롭 몬스터·능력치·사냥 위치 | GMS Hub',
-    descDrop: '{name} ({info}) 드롭 몬스터 {n}종과 그 몬스터가 나오는 맵, 기본 능력치를 정리했어요. 최근 시세가 있으면 함께 보여 줘요.',
+    dropH: '드랍 아이템',
+    titleDrop: '글클메 {name}: 드랍 몬스터·능력치·사냥 위치 | GMS Hub',
+    descDrop: '{name} ({info}) 드랍 몬스터 {n}종과 그 몬스터가 나오는 맵, 기본 능력치를 정리했어요. 최근 시세가 있으면 함께 보여 줘요.',
     h1Drop: '{name}',
     leadDrop: '어떤 몬스터가 떨어뜨리는지, 어디서 잡는지, 기본 능력치는 얼마인지 정리했어요.',
     stats: { req: '착용 조건', job: '직업', slots: '업그레이드 가능 횟수', speed: '공격 속도', sell: '상점 판매가', base: '기본 능력치는 게임 클라이언트 데이터 기준이에요.' },
@@ -2989,7 +2995,7 @@ const IT = {
     title: '{name} Price – MapleStory Classic World Free Market | GMS Hub',
     titlePrice: '{name} Price: {median} mesos ({date}) – MapleStory Classic World | GMS Hub',
     descNow: '{name} price in MapleStory Classic World: median of the listings for sale now {median} mesos ({open} for sale, lowest {low}). With the shops selling it now, their channels and rooms, and a 7-day trend.',
-    nowHeadline: 'Median of listings for sale', nowSub: '{open} for sale · lowest {low}', nowAsOf: 'As of {date} · updates to the latest when the page opens', nowAsOfLive: 'Live price, just loaded', openN: '{n} for sale', lastN: 'recent price', lastHeadline: 'Recent price', lastSub: 'Nothing for sale right now; this is from the last listings seen.',
+    nowHeadline: 'Median of listings for sale', nowSub: '{open} for sale · lowest {low}', nowAsOf: 'As of {date}', nowAsOfLive: 'Live price, just loaded', openN: '{n} for sale', lastN: 'recent price', lastHeadline: 'Recent price', lastSub: 'Nothing for sale right now; this is from the last listings seen.',
     desc: '{name} price in MapleStory Classic World: {basis} median {median} mesos ({n} listings in 14 days, {low}–{high}). From Free Market shops players scanned, with a 7-day trend and where it is for sale now.',
     descNone: '{name} in MapleStory Classic World ({info}). No scanned price in the last 14 days yet; scanning a shop that sells it adds one right away.',
     h1: '{name} Price',
@@ -3048,9 +3054,13 @@ function itemDesc(lang, i) {
   const name = lang === 'ko' ? itemName(lang, i) : itemSeoName(lang, i);
   if (!p) return DROP_INDEX.has(i.id) ? fill(t.descDrop, { name, info: itemInfoText(lang, i), n: DROP_INDEX.get(i.id).length }) : fill(t.descNone, { name, info: itemInfoText(lang, i) });
   const a = lang === 'ko' && scrollAlias(i), now = nowOf(i);
-  if (now) return fill(t.descNow, { name: a ? `${a.short}(${a.long}, ${i.ko})` : name, median: mesoText(lang, now.median), open: now.open, low: mesoText(lang, now.low) });
-  if (a) return `글클메 ${a.short}(${a.long}, ${i.ko}) 자유시장 시세: ${t.basis[p.basis]} 중앙값 ${mesoText(lang, p.median)} 메소, 최근 매물 ${p.n}건(${mesoText(lang, p.low)}~${mesoText(lang, p.high)}). 지금 파는 상점의 채널·방과 7일 시세 추이를 확인하세요.`;
-  return fill(t.desc, { name, basis: t.basis[p.basis], median: mesoText(lang, p.median), n: p.n, low: mesoText(lang, p.low), high: mesoText(lang, p.high) });
+  const st = statsOf(i), mob = (DROP_INDEX.get(i.id) || []).filter(({ m }) => m.status === 'active').sort((x, y) => x.m.lv - y.m.lv)[0]?.m;
+  const tail = lang === 'ko'
+    ? `${st?.sold ? ` 최근 7일 ${st.sold}개 팔림.` : ''}${mob ? ` 드랍: ${monsterName(mob, lang)}(Lv. ${mob.lv}).` : ''}`
+    : `${st?.sold ? ` ${st.sold} sold in 7 days.` : ''}${mob ? ` Dropped by ${monsterName(mob, lang)} (Lv. ${mob.lv}).` : ''}`;
+  if (now) return fill(t.descNow, { name: a ? `${a.short}(${a.long}, ${i.ko})` : name, median: mesoText(lang, now.median), open: now.open, low: mesoText(lang, now.low) }).replace(/ 지금 파는 상점의 채널·방과 7일 추이도 보여 줘요\.$| With the shops selling it now, their channels and rooms, and a 7-day trend\.$/, '') + tail;
+  if (a) return `글클메 ${a.short}(${a.long}, ${i.ko}) 자유시장 시세: ${t.basis[p.basis]} 중앙값 ${mesoText(lang, p.median)} 메소, 최근 매물 ${p.n}건(${mesoText(lang, p.low)}~${mesoText(lang, p.high)}).` + tail;
+  return fill(t.desc, { name, basis: t.basis[p.basis], median: mesoText(lang, p.median), n: p.n, low: mesoText(lang, p.low), high: mesoText(lang, p.high) }).replace(/ 유저가 스캔한 상점 매물 기준이고, 7일 추이와 지금 파는 채널·방도 보여 줘요\.$| From Free Market shops players scanned, with a 7-day trend and where it is for sale now\.$/, '') + tail;
 }
 
 // Monsters reported to drop this item (community reports, see the bestiary), available maps first, then by level.
@@ -3059,8 +3069,8 @@ function dropMonsters(lang, i) {
   const rows = (DROP_INDEX.get(i.id) || []).slice().sort((a, b) => (a.m.status === 'active' ? 0 : 1) - (b.m.status === 'active' ? 0 : 1) || a.m.lv - b.m.lv);
   if (!rows.length) return '';
   const status = (m) => m.status === 'active' ? '' : `<span class="monster-tag status-${m.status}">${m.status === 'upcoming' ? (ko ? '11/18 개방' : 'Opens Nov 18') : (ko ? '미개방' : 'Unreleased')}</span>`;
-  return `<section class="panel item-drop-mobs"><h2>${ko ? '드롭하는 몬스터' : 'Dropped by'} <small class="muted">${rows.length}</small></h2>
-<p class="muted note">${ko ? '플레이어 드롭 제보로 모은 목록이에요. 반복 제보는 여러 사람이 얻은 항목이에요.' : 'From player drop reports. Repeated reports come from several players.'}</p>
+  return `<section class="panel item-drop-mobs"><h2>${ko ? '드랍하는 몬스터' : 'Dropped by'} <small class="muted">${rows.length}</small></h2>
+<p class="muted note"><button type="button" class="info-link" data-info="drop-reports">ⓘ ${ko ? '드랍 제보는 어떻게 모아요?' : 'Where do drop lists come from?'}</button></p>
 <ul class="monster-related">${rows.map(({ m, confidence }) => `<li><a href="${href(langPath(lang, monsterPath(m)))}"><img class="monster-sprite" src="${href(`/assets/monsters/${m.id}.gif`)}" width="64" height="64" alt="" loading="lazy"><span><strong>${esc(monsterName(m, lang))}</strong><small>Lv. ${m.lv} · HP ${new Intl.NumberFormat('en-US').format(m.hp)} · ${confidence === 'repeated' ? (ko ? '반복 제보' : 'Repeated reports') : (ko ? '제보 적음' : 'Limited reports')}</small>${status(m)}${farmMaps(lang, m)}</span></a></li>`).join('')}</ul></section>`;
 }
 
@@ -3133,9 +3143,9 @@ const ANS = {
     aNow: '자유시장 상점에 올라온 매물의 중앙값은 {median} 메소예요. 판매 중인 매물은 {open}건이고 가장 싼 매물은 {low} 메소예요 ({date} 기준).',
     aRange: '최근 14일 동안 올라온 매물은 {low}~{high} 메소 사이였어요.',
     aLast: '지금 판매 중인 매물은 없고, 마지막으로 확인된 시세는 {median} 메소예요 ({date} 기준).',
-    qDrop: '{name} 드롭 몬스터는?',
-    aDrop: '드롭 제보가 있는 몬스터는 {n}종이에요: {list}.',
-    aDropMore: '드롭 제보가 있는 몬스터는 {n}종이에요. 레벨이 낮은 순으로 {list} 등이 있어요.',
+    qDrop: '{name} 드랍 몬스터는?',
+    aDrop: '드랍 제보가 있는 몬스터는 {n}종이에요: {list}.',
+    aDropMore: '드랍 제보가 있는 몬스터는 {n}종이에요. 레벨이 낮은 순으로 {list} 등이 있어요.',
     qNpc: 'NPC 상점에 파는 게 나아요?',
     aNpcLow: 'NPC 상점은 {sell} 메소를 줘요. 시세의 {pct}% 정도라 자유시장에 파는 편이 나아요.',
     aNpcHigh: 'NPC 상점은 {sell} 메소를 줘요. 시세의 {pct}%라서 자유시장에 올리기보다 NPC 상점에 파는 편이 나아요.'
@@ -3154,6 +3164,50 @@ const ANS = {
     aNpcHigh: 'An NPC shop pays {sell} mesos, {pct}% of the market price, so selling it to the NPC beats listing it.'
   }
 };
+// Each item's own market activity over the live catalog window (7 days): sightings, shops, sales, the sold median and the
+// day-over-day move of its typical price (scripts/fetch-item-prices.mjs saves them). These, and where the item stands among
+// items of the same kind, are what make one item page read differently from the next (2026-11-22, owner).
+const STATS = itemPrices.stats || {};
+const statsOf = (i) => { const r = STATS[i.id]; return r ? { records: r[0], shops: r[1], sold: r[2], soldMedian: r[3], day: r[4] } : null; };
+const PRICE_RANK = new Map();
+{
+  const groups = new Map();
+  for (const i of PRICED) { const v = nowOf(i)?.median; if (!v) continue; const k = `${i.cat}|${i.sub || ''}`; if (!groups.has(k)) groups.set(k, []); groups.get(k).push([i, v]); }
+  for (const list of groups.values()) { list.sort((a, b) => b[1] - a[1]); list.forEach(([i], n) => PRICE_RANK.set(i.id, { rank: n + 1, of: list.length })); }
+}
+const SALES_RANK = new Map();
+{
+  const groups = new Map();
+  for (const i of PRICED) { const st = statsOf(i); if (!st) continue; const k = `${i.cat}|${i.sub || ''}`; if (!groups.has(k)) groups.set(k, []); groups.get(k).push([i, st]); }
+  for (const list of groups.values()) {
+    list.sort((a, b) => b[1].sold - a[1].sold || b[1].records - a[1].records);
+    list.forEach(([i], n) => SALES_RANK.set(i.id, { rank: n + 1, of: list.length }));
+  }
+}
+// Korean particle after a word: 은/는, 이/가, 이에요/예요 (batchim decides; digits and Latin letters by how they are read).
+const hasBatchim = (w) => { const c = String(w).trim().slice(-1); const n = c.charCodeAt(0); if (n >= 0xac00 && n <= 0xd7a3) return (n - 0xac00) % 28 !== 0; return /[013678LMNRlmnr]$/.test(c); };
+const josa = (w, a, b) => (hasBatchim(w) ? a : b);
+// 으로/로: a ㄹ batchim takes 로 (1 일, 7 칠, 8 팔, 길, …).
+const euro = (w) => { const c = String(w).trim().slice(-1), n = c.charCodeAt(0); const rieul = (n >= 0xac00 && n <= 0xd7a3 && (n - 0xac00) % 28 === 8) || /[178]$/.test(c); return hasBatchim(w) && !rieul ? '으로' : '로'; };
+// What the item is, in a few words: "Lv. 15 도적 모자", "장갑 공격력 주문서", "소비 아이템".
+function itemWhat(lang, i) {
+  const ko = lang === 'ko', d = ITEM_DETAILS[i.id] || {}, req = d.req || {};
+  const kind = i.sub ? subLabel(lang, i) : (IT[lang].cats[i.cat] || i.cat);
+  if (i.cat !== 'Equip') return ko ? (i.sub ? kind : `${kind} 아이템`) : (i.sub ? kind.toLowerCase() : `${kind.toLowerCase()} item`);
+  const jobs = req.job ? Object.entries(IT[lang].jobs).filter(([b]) => b > 0 && req.job & b).map(([, n]) => n) : [];
+  const who = jobs.length ? jobs.join('·') : (ko ? '공용' : 'all-class');
+  return ko ? `${req.lv ? `Lv. ${req.lv} ` : ''}${who} ${kind}` : `${req.lv ? `level ${req.lv} ` : ''}${who.toLowerCase()} ${kind.toLowerCase()}`;
+}
+// The first sentence under the title: what it is and how it traded this week, all from this item's own data.
+function itemLead(lang, i) {
+  const ko = lang === 'ko', name = itemSeoName(lang, i), what = itemWhat(lang, i), st = statsOf(i), nf = new Intl.NumberFormat(lang);
+  const head = ko ? `${name}${josa(name, '은', '는')} ${what}${josa(what, '이에요', '예요')}.` : `${name} is a ${what}.`;
+  // No activity numbers at all means the fetch failed, not that the item is quiet: then only say what it is.
+  if (!st) return Object.keys(STATS).length ? `${head} ${ko ? '최근 7일에는 자유시장 매물이 거의 없었어요.' : 'It hardly appeared in the Free Market over the last 7 days.'}` : head;
+  const seen = ko ? `최근 7일 동안 자유시장${st.shops ? ` 상점 ${nf.format(st.shops)}곳` : ''}에서 ${nf.format(st.records)}번 보였고` : `Over the last 7 days it was seen ${nf.format(st.records)} times${st.shops ? ` in ${nf.format(st.shops)} Free Market shops` : ' in the Free Market'}`;
+  const sold = ko ? (st.sold ? `${nf.format(st.sold)}개가 팔렸어요.` : '팔린 기록은 아직 없어요.') : (st.sold ? ` and ${nf.format(st.sold)} sold.` : ', with no sale recorded yet.');
+  return ko ? `${head} ${seen}, ${sold}` : `${head} ${seen}${sold}`;
+}
 // [{ q, qHtml, html, text }]: html for the page (monsters linked), text for the FAQ structured data.
 function itemAnswers(lang, i) {
   const a = ANS[lang] || ANS.en;
@@ -3166,7 +3220,21 @@ function itemAnswers(lang, i) {
   const now = nowOf(i), last = lastPrice(i);
   if (now) {
     const range = p.low && p.high && p.high > p.low ? ' ' + fill(a.aRange, { low: nf.format(p.low), high: nf.format(p.high) }) : '';
-    add(a.qPrice, a.aNow + range.replace(/[{}]/g, ''), { median: nf.format(now.median), open: now.open, low: nf.format(now.low), date: PRICES_DATE });
+    // Worded by the item's own market: a crowded listing board, a thin one, or a single shop; a wide or a narrow range.
+    const ko = lang === 'ko', wide = p.low && p.high && p.high >= p.low * 3;
+    const lead = now.open >= 10
+      ? (ko ? `지금 ${now.open}건이 걸려 있고 중앙값은 ${nf.format(now.median)} 메소예요. 가장 싼 건 ${nf.format(now.low)} 메소예요.` : `${now.open} are listed right now at a median of ${nf.format(now.median)} mesos; the cheapest is ${nf.format(now.low)}.`)
+      : now.open > 1
+      ? (ko ? `판매 중인 매물이 ${now.open}건뿐이라 값이 쉽게 움직여요. 지금 중앙값은 ${nf.format(now.median)} 메소, 가장 싼 건 ${nf.format(now.low)} 메소예요.` : `Only ${now.open} are for sale, so the price moves easily: median ${nf.format(now.median)} mesos, cheapest ${nf.format(now.low)}.`)
+      : (ko ? `지금은 한 곳에서만 ${nf.format(now.median)} 메소에 팔고 있어요.` : `Just one shop is selling it right now, at ${nf.format(now.median)} mesos.`);
+    const why = i.cat === 'Equip' ? (ko ? '옵션이나 작 상태에 따라' : 'which usually follows options and scroll results') : isScroll(i) ? (ko ? '급처 매물과 묶음 판매 때문에' : 'driven by quick-sale listings and bundles') : (ko ? '판매자마다' : 'varying from seller to seller');
+    const pr = PRICE_RANK.get(i.id), kindName = i.sub ? subLabel(lang, i) : (IT[lang].cats[i.cat] || i.cat);
+    const rankLine = pr && pr.of >= 5 ? (pr.rank <= 3 ? (ko ? ` ${kindName} ${pr.of}종 중 ${pr.rank === 1 ? '가장 비싸요' : `${pr.rank}번째로 비싸요`}.` : ` It is the ${pr.rank === 1 ? 'most expensive' : `number ${pr.rank} by price`} of ${pr.of} ${kindName.toLowerCase()} items.`)
+      : pr.rank > pr.of - 3 ? (ko ? ` ${kindName} ${pr.of}종 중 가장 싼 편이에요.` : ` It is among the cheapest of ${pr.of} ${kindName.toLowerCase()} items.`) : '') : '';
+    const span = p.low && p.high && p.high > p.low
+      ? (wide ? (ko ? ` 최근 14일 가격 폭이 ${nf.format(p.low)}~${nf.format(p.high)} 메소로 넓어서, ${why} 값이 크게 달라요.` : ` Over 14 days prices ran from ${nf.format(p.low)} to ${nf.format(p.high)} mesos, a wide spread ${why}.`)
+        : (ko ? ` 최근 14일 동안은 ${nf.format(p.low)}~${nf.format(p.high)} 메소 사이에서 움직였어요.` : ` Over 14 days it moved between ${nf.format(p.low)} and ${nf.format(p.high)} mesos.`)) : '';
+    add(a.qPrice, `${lead}${rankLine}${span} (${PRICES_DATE}${ko ? ' 기준' : ''})`.replace(/[{}]/g, ''), {});
   } else if (last) {
     add(a.qPrice, a.aLast, { median: nf.format(last), date: PRICES_DATE });
   }
@@ -3175,8 +3243,31 @@ function itemAnswers(lang, i) {
     const shown = mobs.slice(0, 4);
     const label = (m) => `${monsterName(m, lang)} (Lv. ${m.lv})`;
     const tpl = mobs.length > shown.length ? a.aDropMore : a.aDrop;
-    add(a.qDrop, tpl, { n: mobs.length, list: shown.map(({ m }) => label(m)).join(', ') },
+    const where = (shown[0].m.locations || []).filter((l) => l.availability === 'open').sort((x, y) => y.count - x.count)[0];
+    const farm = where ? (lang === 'ko' ? ` ${monsterName(shown[0].m, lang)}${josa(monsterName(shown[0].m, lang), '은', '는')} ${where.ko || where.en}에 가장 많이 나와요.` : ` ${monsterName(shown[0].m, lang)} is most common in ${where.en}.`) : '';
+    add(a.qDrop, tpl + farm.replace(/[{}]/g, ''), { n: mobs.length, list: shown.map(({ m }) => label(m)).join(', ') },
       { n: mobs.length, list: shown.map(({ m }) => `<a href="${href(langPath(lang, monsterPath(m)))}">${esc(label(m))}</a>`).join(', ') });
+  }
+  // How much it trades and where it stands among items of the same kind.
+  const st = statsOf(i), rank = SALES_RANK.get(i.id), ko = lang === 'ko', kind = i.sub ? subLabel(lang, i) : (IT[lang].cats[i.cat] || i.cat);
+  if (st) {
+    const parts = [ko ? `최근 7일 동안 ${st.shops ? `상점 ${nf.format(st.shops)}곳에서 ` : ''}${nf.format(st.records)}번 보였고 ${st.sold ? `${nf.format(st.sold)}개가 팔렸어요.` : '팔린 기록은 아직 없어요. 걸린 값이 실제 거래가보다 높을 수 있어요.'}`
+      : `Over the last 7 days it was seen ${nf.format(st.records)} times${st.shops ? ` in ${nf.format(st.shops)} shops` : ''}; ${st.sold ? `${nf.format(st.sold)} sold.` : 'none has been recorded as sold, so asking prices may run above real deals.'}`];
+    if (rank && rank.of >= 3 && rank.rank <= 10 && st.sold) parts.push(ko ? `${kind} ${rank.of}종 가운데 ${rank.rank === 1 ? '가장 많이 팔렸어요' : `${rank.rank}번째로 많이 팔렸어요`}.` : `Among ${rank.of} ${kind.toLowerCase()} items it is ${rank.rank === 1 ? 'the best seller' : `number ${rank.rank} by sales`}.`);
+    add(ko ? '{name} 얼마나 거래돼요?' : 'How much does {name} trade?', parts.join(' ').replace(/[{}]/g, ''), {});
+  }
+  // Is the asking price above what it actually sells for, and which way it moved since yesterday.
+  if (now && st) {
+    const lines = [];
+    if (st.soldMedian && st.sold >= 2) {
+      const gap = Math.round(((now.median - st.soldMedian) / st.soldMedian) * 100);
+      lines.push(gap > 10 ? (ko ? `실제로 팔린 값의 중앙값은 ${nf.format(st.soldMedian)} 메소라, 지금 걸린 값이 ${gap}% 높아요. 흥정해 볼 만해요.` : `It actually sells for a median of ${nf.format(st.soldMedian)} mesos, so today's asks are ${gap}% higher; worth haggling.`)
+        : gap < -10 ? (ko ? `지금 걸린 값이 실제로 팔린 값(${nf.format(st.soldMedian)} 메소)보다 ${-gap}% 낮아요. 싸게 나온 편이에요.` : `Today's asks are ${-gap}% below what it sells for (${nf.format(st.soldMedian)} mesos), so it is cheap right now.`)
+        : (ko ? `지금 걸린 값과 실제로 팔린 값(${nf.format(st.soldMedian)} 메소)이 비슷해요.` : `Asks are close to what it actually sells for (${nf.format(st.soldMedian)} mesos).`));
+    }
+    if (now.low && now.median && now.low < now.median * 0.7) lines.push(ko ? `가장 싼 매물(${nf.format(now.low)} 메소)은 중앙값보다 ${Math.round((1 - now.low / now.median) * 100)}% 싸요.` : `The cheapest listing (${nf.format(now.low)} mesos) is ${Math.round((1 - now.low / now.median) * 100)}% under the median.`);
+    if (st.day && Math.abs(st.day) >= 3) lines.push(ko ? `하루 사이 보통 가격이 ${Math.abs(st.day)}% ${st.day > 0 ? '올랐어요' : '내렸어요'}.` : `Its typical price ${st.day > 0 ? 'rose' : 'fell'} ${Math.abs(st.day)}% since yesterday.`);
+    if (lines.length) add(ko ? '{name} 지금 사면 비싸요?' : 'Is {name} overpriced right now?', lines.join(' ').replace(/[{}]/g, ''), {});
   }
   const sell = ITEM_DETAILS[i.id]?.sell || 0, market = now?.median ?? last;
   if (sell && market) {
@@ -3227,25 +3318,22 @@ function itemBody(lang, i) {
     i.cat === 'Use' && /\bScroll\b/.test(i.en) ? `<a href="${href(langPath(lang, '/tools/scroll/'))}">${t.scrollTool}</a>` : '',
     i.cat === 'Equip' && WEAPON_SUB.test(i.sub || '') ? `<a href="${href(langPath(lang, '/tools/damage/'))}">${t.damageTool}</a>` : ''
   ].filter(Boolean);
-  const external = PRICE_SITES.map((s) => `<a href="${esc(s.url.replace('{id}', i.id).replace('{en}', encodeURIComponent(i.en)))}" target="_blank" rel="noopener">${esc(s.name)}</a>`).join(' · ');
   return `<section class="page-head wrap">
 <p class="crumbs"><a href="${href(langPath(lang, '/tools/market/'))}">${T[lang].navMarket}</a><span aria-hidden="true"> › </span><a href="${href(langPath(lang, '/items/'))}">${t.indexH1}</a></p>
 <span class="badge-game">${esc(T[lang].gameBadge)}</span>
 <h1 class="item-title">${itemIcon(i.id, 40)}<span>${esc(fill(dropOnly ? t.h1Drop : t.h1, { name: itemSeoName(lang, i) }))}${lang === 'ko' && scrollAlias(i) ? `<small class="en-name">${esc(scrollAlias(i).long)} · ${esc(i.ko)} · ${esc(i.en)}</small>` : lang === 'ko' && i.ko ? `<small class="en-name">${esc(i.en)}</small>` : ''}</span></h1>
-<p class="lead">${esc(dropOnly ? t.leadDrop : t.lead)}</p>
+<p class="lead">${esc(itemLead(lang, i))}</p>
 </section>
 <div class="wrap item-page">
 ${dropOnly ? dropMonsters(lang, i) : ''}
 ${p ? marketBrowser(lang, i.id, `<div class="item-price">${price}</div>`) : ``}
 ${itemAnswersHtml(lang, i)}
 <section class="panel item-info"><h2>${t.infoH}</h2><dl>${rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
-${ITEM_DETAILS[i.id] && i.cat === 'Equip' ? `<p class="muted note">${t.stats.base}</p>` : ''}
 ${tools.length ? `<h3>${t.tools}</h3><p>${tools.join(' · ')}</p>` : ''}</section>
 ${dropOnly ? '' : dropMonsters(lang, i)}
 ${itemQuests(lang, i)}
 <section class="panel"><h2>${t.related}</h2><ul class="item-links">${relatedItems(i).map((x) => itemLink(lang, x)).join('')}</ul></section>
-<p class="muted small">${t.method}</p>
-<p class="muted small">${t.external}: ${external}</p>
+<p class="muted small"><button type="button" class="info-link" data-info="item-method" data-sites="${esc(JSON.stringify(PRICE_SITES.map((x) => ({ name: x.name, url: x.url.replace('{id}', i.id).replace('{en}', encodeURIComponent(i.en)) }))))}">ⓘ ${lang === 'ko' ? '시세는 어떻게 계산해요?' : 'How are prices worked out?'}</button></p>
 </div>
 `;
 }
@@ -3560,36 +3648,82 @@ for (const lang of LANGS) {
     return href(langPath(l, item ? itemPath(item) : `/tools/market/?item=${d.itemId}`));
   };
   write(path.join(lang, 'monsters', 'index.html'), page({
-    lang, pageKey: 'monsters', pagePath: '/monsters/', title: lang === 'ko' ? '글클메 몬스터 DB: 드롭 아이템·체력·출현 위치 | GMS Hub' : 'MapleStory Classic World Monster Database: Drops, HP & Locations | GMS Hub',
-    desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드 몬스터 ${MONSTERS.monsters.length}종의 체력, 경험치, 드롭 아이템, 출현 위치, 필요 명중을 검색하는 몬스터 도감.` : `Search ${MONSTERS.monsters.length} MapleStory Classic World monsters: HP, EXP, reported drops, map locations and the accuracy you need.`,
+    lang, pageKey: 'monsters', pagePath: '/monsters/', title: lang === 'ko' ? '글클메 몬스터 DB: 드랍 아이템·체력·출현 위치 | GMS Hub' : 'MapleStory Classic World Monster Database: Drops, HP & Locations | GMS Hub',
+    desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드 몬스터 ${MONSTERS.monsters.length}종의 체력, 경험치, 드랍 아이템, 출현 위치, 필요 명중을 검색하는 몬스터 도감.` : `Search ${MONSTERS.monsters.length} MapleStory Classic World monsters: HP, EXP, reported drops, map locations and the accuracy you need.`,
     body: monsterIndex({lang, data: MONSTERS, url: href}), modules: ['monsters.js'],
     ld: [breadcrumbLd(lang, monsterTitle, '/monsters/')]
   }));
   write(path.join(lang, 'bosses', 'index.html'), page({
     lang, pageKey: 'bosses', pagePath: '/bosses/',
-    title: lang === 'ko' ? '글클메 보스 정리: 출현 위치·체력·필요 명중·드롭 | GMS Hub' : 'MapleStory Classic World Bosses: Spawn Locations, HP, Accuracy & Drops | GMS Hub',
-    desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드 필드 보스(마노, 스텀피, 머쉬맘, 주니어 발록 등)의 출현 맵, 체력, 경험치, 필요 명중, 주요 드롭을 한 표로 정리했어요.' : 'Every MapleStory Classic World field boss (Mano, Stumpy, Mushmom, Jr. Balrog and more) in one table: spawn map, HP, EXP, accuracy needed and equipment drops.',
+    title: lang === 'ko' ? '글클메 보스 정리: 출현 위치·체력·필요 명중·드랍 | GMS Hub' : 'MapleStory Classic World Bosses: Spawn Locations, HP, Accuracy & Drops | GMS Hub',
+    desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드 필드 보스(마노, 스텀피, 머쉬맘, 주니어 발록 등)의 출현 맵, 체력, 경험치, 필요 명중, 주요 드랍을 한 표로 정리했어요.' : 'Every MapleStory Classic World field boss (Mano, Stumpy, Mushmom, Jr. Balrog and more) in one table: spawn map, HP, EXP, accuracy needed and equipment drops.',
     body: bossIndex({ lang, data: MONSTERS, url: href, itemUrl: monsterItemUrl, accuracy: dmgAccNeed, timersHref: href(langPath(lang, '/')) + '#timers' }),
     ld: [breadcrumbLd(lang, lang === 'ko' ? '보스 몬스터' : 'Bosses', '/bosses/')]
   }));
+  // Each monster's own answers (where it lives, what level, weaknesses, its priciest drops), written from its data so no two
+  // monster pages read alike (2026-11-22, owner). The same rows feed the FAQ structured data.
+  const dropName = (lang, d) => { const it = ITEMS_BY_ID.get(d.itemId); return it ? itemSeoName(lang, it) : (lang === 'ko' ? d.ko || d.en : d.en); };
+  const priceById = (id) => NOW[id]?.[0] ?? RECENT[id] ?? headline(itemPrices.prices[id])?.median ?? 0;
+  const monsterAnswers = (lang, m, name) => {
+    const ko = lang === 'ko', nf = new Intl.NumberFormat(lang), out = [];
+    const add = (q, a) => out.push({ q, a });
+    const maps = (m.locations || []).filter((l) => l.availability === 'open').sort((x, y) => y.count - x.count);
+    if (maps.length) {
+      const top = maps.slice(0, 2).map((l) => ko ? `${l.ko || l.en}(${l.count}자리)` : `${l.en} (${l.count} spawn points)`);
+      add(ko ? `${name} 어디서 잡아요?` : `Where do I find ${name}?`, ko
+        ? `${top.join('와 ')}에 가장 많이 나와요.${maps.length > 2 ? ` 그 밖에 ${maps.length - 2}개 맵에도 나와요.` : ''}`
+        : `Most spawn points are in ${top.join(' and ')}.${maps.length > 2 ? ` It also appears on ${maps.length - 2} more maps.` : ''}`);
+    } else if (m.locations?.length) add(ko ? `${name} 어디서 잡아요?` : `Where do I find ${name}?`, ko ? '지금 열린 맵에는 나오지 않아요. 아래 출현 위치는 아직 열리지 않은 맵이에요.' : 'It is not on any open map yet; the locations below are unreleased maps.');
+    const band = MONSTER_NOTES.notes[m.id]?.band, rank = RATIO_RANK.get(m.id), ratio = m.hp ? Math.round((m.exp / m.hp) * 1000) / 10 : 0;
+    const lvParts = [];
+    if (band) lvParts.push(ko ? `플레이 기록으로는 보통 Lv. ${band[0]}–${band[1]}에 잡아요.` : `Players usually hunt it around level ${band[0]}–${band[1]}.`);
+    if (rank && ratio) lvParts.push(ko ? `체력 100당 경험치는 ${ratio}${euro(ratio)}, 지금 잡을 수 있는 몬스터 ${rank.total}종 중 ${rank.rank}위예요.` : `It gives ${ratio} EXP per 100 HP, rank ${rank.rank} of ${rank.total} monsters on open maps.`);
+    if (m.eva) lvParts.push(ko ? `같은 레벨이면 명중 ${nf.format(dmgAccNeed(m.lv, m))}${josa(dmgAccNeed(m.lv, m), '이', '가')} 있어야 빗나가지 않아요.` : `At the same level you need ${nf.format(dmgAccNeed(m.lv, m))} accuracy to never miss.`);
+    if (lvParts.length) add(ko ? `${name} 몇 레벨에 잡아요?` : `What level should I hunt ${name} at?`, lvParts.join(' '));
+    const EL = ko ? { F: '불', I: '얼음', L: '번개', S: '독', H: '성', D: '어둠', P: '물리' } : { F: 'fire', I: 'ice', L: 'lightning', S: 'poison', H: 'holy', D: 'dark', P: 'physical' };
+    const els = [...(m.el || '').matchAll(/([A-Z])(\d)/g)].filter(([, e]) => EL[e]);
+    const weak = els.filter(([, , c]) => c === '3').map(([, e]) => EL[e]), strong = els.filter(([, , c]) => c === '1' || c === '2').map(([, e, c]) => ko ? `${EL[e]} ${c === '1' ? '면역' : '저항'}` : `${c === '1' ? 'immune to' : 'resists'} ${EL[e]}`);
+    if (weak.length || strong.length) add(ko ? `${name} 약점은 뭐예요?` : `What is ${name} weak to?`, ko
+      ? `${weak.length ? `${weak.join('·')} 공격에 약해서 피해가 더 들어가요.` : '약점 속성은 없어요.'}${strong.length ? ` ${strong.join(', ')}이라 그 속성은 피하는 게 좋아요.` : ''}`
+      : `${weak.length ? `Weak to ${weak.join(' and ')}, so those hit harder.` : 'No elemental weakness.'}${strong.length ? ` It ${strong.join(', ')}, so avoid those.` : ''}`);
+    const priced = m.drops.filter((d) => d.cat !== 'Quest').map((d) => ({ d, p: priceById(d.itemId) })).filter((x) => x.p > 0).sort((a, b) => b.p - a.p).slice(0, 3);
+    if (priced.length) {
+      const eq = m.drops.filter((d) => d.cat === 'Equip').length, sc = m.drops.filter((d) => /Scroll/.test(d.en)).length;
+      add(ko ? `${name} 드랍 중 비싼 건 뭐예요?` : `Which ${name} drops are worth the most?`, ko
+        ? `드랍 ${m.drops.length}종 중 자유시장 시세가 높은 건 ${priced.map(({ d, p }) => `${dropName(lang, d)}(${mesoText(lang, p)} 메소)`).join(', ')}예요.${eq || sc ? ` 장비 ${eq}종${sc ? `, 주문서 ${sc}종` : ''}이 섞여 있어요.` : ''}`
+        : `Of its ${m.drops.length} drops, the priciest on the Free Market are ${priced.map(({ d, p }) => `${dropName(lang, d)} (${mesoText(lang, p)} mesos)`).join(', ')}.${eq || sc ? ` That includes ${eq} equipment${sc ? ` and ${sc} scrolls` : ''}.` : ''}`);
+    }
+    return out;
+  };
+  const glanceHtml = (lang, name, rows) => rows.length ? `<section class="monster-section monster-glance"><h2>${lang === 'ko' ? `${esc(name)} 한눈에 보기` : `${esc(name)} at a glance`}</h2>${rows.map((r) => `<h3>${esc(r.q)}</h3><p>${esc(r.a)}</p>`).join('')}</section>` : '';
+  const glanceLd = (rows) => rows.length ? [{ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: rows.map((r) => ({ '@type': 'Question', name: r.q, acceptedAnswer: { '@type': 'Answer', text: r.a } })) }] : [];
+  const monsterDesc = (lang, m, name) => {
+    const ko = lang === 'ko', nf = new Intl.NumberFormat(lang);
+    const map = (m.locations || []).filter((l) => l.availability === 'open').sort((x, y) => y.count - x.count)[0];
+    const top = m.drops.filter((d) => d.cat !== 'Quest').map((d) => ({ d, p: priceById(d.itemId) })).filter((x) => x.p > 0).sort((a, b) => b.p - a.p)[0];
+    return ko
+      ? `${name} Lv. ${m.lv}, HP ${nf.format(m.hp)}, EXP ${nf.format(m.exp)}.${map ? ` ${map.ko || map.en}에 가장 많이 나와요.` : ''} 드랍 ${m.drops.length}종${top ? `, 그중 시세가 가장 높은 건 ${dropName(lang, top.d)}(${mesoText(lang, top.p)} 메소)` : ''}.`
+      : `${name}, level ${m.lv}, HP ${nf.format(m.hp)}, EXP ${nf.format(m.exp)}.${map ? ` Most common in ${map.en}.` : ''} ${m.drops.length} reported drops${top ? `; the priciest is ${dropName(lang, top.d)} (${mesoText(lang, top.p)} mesos)` : ''}.`;
+  };
   // Several monsters share a Korean name (Fairy 1-4, Jr. Boogie 1-2); their pages get the English variant so titles stay unique.
   const nameCount = MONSTERS.monsters.reduce((c, x) => c.set(monsterName(x, lang), (c.get(monsterName(x, lang)) || 0) + 1), new Map());
   for (const m of MONSTERS.monsters) {
     const name = nameCount.get(monsterName(m, lang)) > 1 && lang === 'ko' ? `${monsterName(m, lang)} (${m.en})` : monsterName(m, lang);
+    const glance = monsterAnswers(lang, m, name);
     write(path.join(lang, 'monsters', String(m.id), 'index.html'), page({
       lang, pageKey: 'monster', pagePath: monsterPath(m),
-      title: lang === 'ko' ? `글클메 ${name}: 드롭·체력·출현 위치 | GMS Hub` : `${name}: MapleStory Classic World drops, stats & locations | GMS Hub`,
-      desc: lang === 'ko' ? `${name} Lv. ${m.lv}, HP ${m.hp}, EXP ${m.exp}. 드롭 제보 ${m.drops.length}종과 출현 위치·속성 저항을 확인하세요.` : `${name}, level ${m.lv}, HP ${m.hp}, EXP ${m.exp}. Explore ${m.drops.length} reported drops, map locations and elemental responses.`,
+      title: lang === 'ko' ? `글클메 ${name} (Lv.${m.lv}) 드랍·체력·출현 위치 | GMS Hub` : `${name} (Lv. ${m.lv}): MapleStory Classic World drops, stats & locations | GMS Hub`,
+      desc: monsterDesc(lang, m, name),
       body: monsterDetail({lang, m, data: MONSTERS, url: href, itemUrl: monsterItemUrl, sellPrice: (id) => ITEM_DETAILS[id]?.sell || 0, notes: MONSTER_NOTES.notes[m.id] || null,
-        routes: training.routes.filter((r) => r.mobIds.includes(m.id)), accuracy: (lv) => dmgAccNeed(lv, m), rank: RATIO_RANK.get(m.id) || null}), modules: ['monsters.js'],
-      noindex: m.status === 'unplaced', ld: [breadcrumbLd(lang, name, monsterPath(m))]
+        routes: training.routes.filter((r) => r.mobIds.includes(m.id)), accuracy: (lv) => dmgAccNeed(lv, m), rank: RATIO_RANK.get(m.id) || null, glance: glanceHtml(lang, name, glance)}), modules: ['monsters.js', 'info-notes.js'],
+      noindex: m.status === 'unplaced', ld: [breadcrumbLd(lang, name, monsterPath(m)), ...glanceLd(glance)]
     }));
   }
 
   write(path.join(lang, 'maps', 'index.html'), page({
     lang, pageKey: 'maps', pagePath: '/maps/',
-    title: lang === 'ko' ? '글클메 맵 도감: 사냥터별 몬스터·레벨·드롭 | GMS Hub' : 'MapleStory Classic World Maps: Monsters, Levels & Drops by Map | GMS Hub',
-    desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드 맵 ${MAPS.length}곳의 몬스터, 레벨, 출현 지점, 드롭을 지역별로 정리했어요.` : `${MAPS.length} MapleStory Classic World maps by region: which monsters spawn there, their levels, spawn points and drops.`,
+    title: lang === 'ko' ? '글클메 맵 도감: 사냥터별 몬스터·레벨·드랍 | GMS Hub' : 'MapleStory Classic World Maps: Monsters, Levels & Drops by Map | GMS Hub',
+    desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드 맵 ${MAPS.length}곳의 몬스터, 레벨, 출현 지점, 드랍을 지역별로 정리했어요.` : `${MAPS.length} MapleStory Classic World maps by region: which monsters spawn there, their levels, spawn points and drops.`,
     body: mapIndex({ lang, maps: MAPS, url: href }),
     ld: [breadcrumbLd(lang, lang === 'ko' ? '맵 도감' : 'Map database', '/maps/')]
   }));
@@ -3597,8 +3731,8 @@ for (const lang of LANGS) {
     const name = mapName(l, lang);
     write(path.join(lang, 'maps', String(l.id), 'index.html'), page({
       lang, pageKey: 'map', pagePath: mapPath(l),
-      title: lang === 'ko' ? `글클메 ${name}: 몬스터·레벨·드롭 | GMS Hub` : `${name}: MapleStory Classic World map, monsters & drops | GMS Hub`,
-      desc: lang === 'ko' ? `${name} (Lv. ${l.minLv}~${l.maxLv}): 나오는 몬스터 ${l.mobs.length}종, 출현 지점 ${l.total}곳, 한 바퀴 EXP, 확정 명중과 드롭 아이템을 정리했어요.` : `${name} (levels ${l.minLv}–${l.maxLv}): ${l.mobs.length} monster types, ${l.total} spawn points, EXP per full clear, sure-hit accuracy and drops.`,
+      title: lang === 'ko' ? `글클메 ${name}: 몬스터·레벨·드랍 | GMS Hub` : `${name}: MapleStory Classic World map, monsters & drops | GMS Hub`,
+      desc: lang === 'ko' ? `${name} (Lv. ${l.minLv}~${l.maxLv}): 나오는 몬스터 ${l.mobs.length}종, 출현 지점 ${l.total}곳, 한 바퀴 EXP, 확정 명중과 드랍 아이템을 정리했어요.` : `${name} (levels ${l.minLv}–${l.maxLv}): ${l.mobs.length} monster types, ${l.total} spawn points, EXP per full clear, sure-hit accuracy and drops.`,
       body: mapDetail({ lang, l, maps: MAPS, url: href, itemUrl: monsterItemUrl, notes: MONSTER_NOTES.notes, layout: MAP_LAYOUTS[l.id], accuracy: (lv, m) => dmgAccNeed(lv, m),
         routes: training.routes.filter((r) => r.mobIds.some((id) => l.mobs.some(({ m }) => m.id === id))) }),
       // Map pages are templates of game data (28 days: 4 clicks over 384 pages); kept for visitors, out of search.
@@ -3697,10 +3831,10 @@ for (const lang of LANGS) {
     const ko = lang === 'ko';
     const labPages = [
       ['/tools/meso-farm/', 'meso-farm',
-        ko ? '글클메 쌀먹 사냥터: 레벨별 돈 되는 몬스터와 드롭 시세 | GMS Hub' : 'MapleStory Classic World Meso Farming: Monsters With the Most Valuable Drops | GMS Hub',
-        ko ? '글클메 쌀먹(메소 벌이) 사냥터 찾기. 내 레벨 근처 몬스터를 지금 자유시장 시세로 비싼 드롭이 있는 순서로 보여 줘요. 드롭마다 개당 메소, 많이 나오는 맵까지.' : 'Monsters near your level ranked by what their drops sell for on the Free Market right now, with the price per item and where they spawn.',
+        ko ? '글클메 쌀먹 사냥터: 레벨별 돈 되는 몬스터와 드랍 시세 | GMS Hub' : 'MapleStory Classic World Meso Farming: Monsters With the Most Valuable Drops | GMS Hub',
+        ko ? '글클메 쌀먹(메소 벌이) 사냥터 찾기. 내 레벨 근처 몬스터를 지금 자유시장 시세로 비싼 드랍이 있는 순서로 보여 줘요. 드랍마다 개당 메소, 많이 나오는 맵까지.' : 'Monsters near your level ranked by what their drops sell for on the Free Market right now, with the price per item and where they spawn.',
         ko ? '메소 벌이 사냥터' : 'Meso farming spots',
-        ko ? '메소 벌이에 좋은 몬스터를 찾는 페이지예요. 레벨을 넣으면 그 근처 몬스터가 떨어뜨리는 아이템 중 지금 시세가 높은 것부터 보여 줘요. 가격은 아이템 1개당 최근 판매 완료 가격(없으면 보통 판매 가격)이고, 드롭 확률은 알 수 없어서 "떨어지면 돈이 되는 것"만 알려 줘요.' : 'Enter a level to see the monsters around it, ranked by the market price of what they drop. Prices are per item (recent sold price, else the typical asking price). Drop rates are unknown, so this shows what is worth money if it drops.']
+        ko ? '메소 벌이에 좋은 몬스터를 찾는 페이지예요. 레벨을 넣으면 그 근처 몬스터가 떨어뜨리는 아이템 중 지금 시세가 높은 것부터 보여 줘요. 가격은 아이템 1개당 최근 판매 완료 가격(없으면 보통 판매 가격)이고, 드랍 확률은 알 수 없어서 "떨어지면 돈이 되는 것"만 알려 줘요.' : 'Enter a level to see the monsters around it, ranked by the market price of what they drop. Prices are per item (recent sold price, else the typical asking price). Drop rates are unknown, so this shows what is worth money if it drops.']
     ];
     for (const [p, view, title, desc, h1, lead] of labPages) {
       write(path.join(lang, ...p.split('/').filter(Boolean), 'index.html'), page({
@@ -3749,7 +3883,7 @@ for (const lang of LANGS) {
       itemHref: (e) => (ITEM_PAGE_IDS.has(e.id) ? link(itemPath(ITEM_PAGES.find((i) => i.id === e.id))) : link(`/tools/market/?item=${e.id}`)) };
     write(path.join(lang, 'equipment', 'index.html'), page({
       lang, pageKey: 'equipment', pagePath: '/equipment/', modules: ['equipment.js'],
-      title: lang === 'ko' ? '글클메 장비 찾기: 직업·레벨별 장비와 드롭 몬스터 | GMS Hub' : 'MapleStory Classic World Gear by Class & Level: Stats and Where to Get It | GMS Hub',
+      title: lang === 'ko' ? '글클메 장비 찾기: 직업·레벨별 장비와 드랍 몬스터 | GMS Hub' : 'MapleStory Classic World Gear by Class & Level: Stats and Where to Get It | GMS Hub',
       desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드에서 지금 얻을 수 있는 장비 ${EQUIPMENT.length}개를 직업·부위·레벨로 찾아요. 능력치, 업그레이드 횟수, 떨어뜨리는 몬스터와 주는 퀘스트까지.` : `${EQUIPMENT.length} pieces of MapleStory Classic World (MSCW) gear you can get right now, by class, slot and level: stats, upgrade slots, the monsters that drop them and the quests that give them.`,
       body: equipmentIndexBody(eqCtx, EQUIPMENT),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '장비 찾기' : 'Equipment finder', '/equipment/')]
@@ -3797,7 +3931,7 @@ for (const lang of LANGS) {
           : priceOf(i)?.median ? fill(it.titlePrice, { name, median: mesoText(lang, shownMedian(i)), date: PRICES_DATE.slice(5).replace('-', '/') }) : fill(dropOnly ? it.titleDrop : it.title, { name: itemSeoName(lang, i) }),
         desc: itemDesc(lang, i),
         body: itemBody(lang, i),
-        modules: priceOf(i) ? ['market.js'] : [],
+        modules: priceOf(i) ? ['market.js', 'info-notes.js'] : ['info-notes.js'],
         noindex: !INDEXABLE.includes(i),
         ld: [breadcrumbLd(lang, fill(dropOnly ? it.h1Drop : it.h1, { name: itemSeoName(lang, i) }), itemPath(i)), ...itemFaqLd(lang, i)]
       })

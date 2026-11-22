@@ -64,7 +64,7 @@ export function questDetail({ lang, q, quests, npcs, items, mobs, drops, link, i
   };
   const dropHint = (id) => {
     const rows = (drops.get(id) || []).filter(({ m }) => m.status === 'active').sort((a, b) => a.m.lv - b.m.lv).slice(0, 3);
-    return rows.length ? `<small class="quest-drop"><span>${ko ? '드롭' : 'Dropped by'}</span>${rows.map(({ m }) => `<a href="${mobHref(m)}" translate="no"><img class="mob-sprite" src="${mobSprite(m)}" width="22" height="22" alt="" loading="lazy">${esc(ko ? m.ko || m.en : m.en)}</a>`).join('')}</small>` : '';
+    return rows.length ? `<small class="quest-drop"><span>${ko ? '드랍' : 'Dropped by'}</span>${rows.map(({ m }) => `<a href="${mobHref(m)}" translate="no"><img class="mob-sprite" src="${mobSprite(m)}" width="22" height="22" alt="" loading="lazy">${esc(ko ? m.ko || m.en : m.en)}</a>`).join('')}</small>` : '';
   };
   const mob = ({ id, count }) => {
     const m = mobs.get(id);

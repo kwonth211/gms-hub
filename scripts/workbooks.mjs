@@ -36,7 +36,7 @@ export function buildWorkbooks({ out, langs, abs, buildDate, monsters, items, eq
       (m.drops || []).length, link(L('보기', 'Open'), monsterPath(m))];
     const monCols = [{ h: L('몬스터', 'Monster') }, { h: L('레벨', 'Level'), t: 'int' }, { h: 'HP', t: 'int' }, { h: L('경험치', 'EXP'), t: 'int' }, { h: L('HP 100당 경험치', 'EXP per 100 HP'), t: 'num' },
       { h: L('같은 레벨 필요 명중', 'Accuracy needed (same level)'), t: 'int' }, { h: L('물리 방어', 'W.Def'), t: 'int' }, { h: L('마법 방어', 'M.Def'), t: 'int' }, { h: L('속성', 'Element') },
-      { h: L('많이 나오는 맵 (마릿수)', 'Main maps (spawns)'), t: 'wrap' }, { h: L('드롭 종류', 'Drops'), t: 'int' }, { h: L('사이트', 'Site'), t: 'link' }];
+      { h: L('많이 나오는 맵 (마릿수)', 'Main maps (spawns)'), t: 'wrap' }, { h: L('드랍 종류', 'Drops'), t: 'int' }, { h: L('사이트', 'Site'), t: 'link' }];
     const dropRows = [];
     const byItem = new Map();
     for (const m of active) for (const d of m.drops || []) (byItem.get(d.itemId) || byItem.set(d.itemId, { d, mobs: [] }).get(d.itemId)).mobs.push(m);
@@ -48,7 +48,7 @@ export function buildWorkbooks({ out, langs, abs, buildDate, monsters, items, eq
       { name: L('레벨대별 효율 TOP', 'Best per level band'), title: L('레벨대별 경험치 효율 TOP 5', 'Top 5 EXP per HP in each level band'), note: L('보스는 빼고, 지금 열린 맵에 나오는 몬스터만 비교했어요.', 'Bosses left out; only monsters that spawn on open maps.'),
         cols: [{ h: L('레벨대', 'Levels') }, { h: L('순위', 'Rank'), t: 'int' }, ...monCols],
         rows: BANDS.flatMap(([a, b]) => active.filter((m) => !m.boss && m.lv >= a && m.lv <= b && openMaps(m).length).sort((x, y) => y.exp / y.hp - x.exp / x.hp).slice(0, 5).map((m, i) => [`${a}–${b > 100 ? '' : b}`, i + 1, ...monRow(m)])) },
-      { name: L('아이템별 드롭 몬스터', 'Who drops what'), title: L('이 아이템은 누가 떨어뜨리나', 'Which monsters drop each item'), note: L('플레이어 제보로 모은 드롭 목록이에요. 드롭 확률은 공개되지 않아요.', 'Drop lists come from player reports; drop rates are not published.'),
+      { name: L('아이템별 드랍 몬스터', 'Who drops what'), title: L('이 아이템은 누가 떨어뜨리나', 'Which monsters drop each item'), note: L('플레이어 제보로 모은 드랍 목록이에요. 드랍 확률은 공개되지 않아요.', 'Drop lists come from player reports; drop rates are not published.'),
         cols: [{ h: L('아이템', 'Item') }, { h: L('분류', 'Type') }, { h: L('떨어뜨리는 몬스터 수', 'Monsters'), t: 'int' }, { h: L('몬스터 (레벨)', 'Monsters (level)'), t: 'wrap' }, { h: L('가장 낮은 레벨', 'Lowest level'), t: 'int' }, { h: L('사이트', 'Site'), t: 'link' }], rows: dropRows },
       { name: L('보스', 'Bosses'), title: L('보스 몬스터', 'Bosses'), note: stamp, cols: monCols, rows: active.filter((m) => m.boss).sort((a, b) => a.lv - b.lv).map(monRow) }
     ] };
@@ -74,7 +74,7 @@ export function buildWorkbooks({ out, langs, abs, buildDate, monsters, items, eq
     const bringRows = [];
     const need = new Map();
     for (const q of live) for (const b of q.bring) (need.get(b.id) || need.set(b.id, []).get(b.id)).push({ q, count: b.count });
-    for (const [id, list] of need) { const drops = byItem.get(id)?.mobs || []; bringRows.push([itemName(id), list.length, list.map(({ q, count }) => `${q.name} (${count})`).join(', '), drops.map((m) => `${nm(m)} Lv.${m.lv}`).join(', ') || L('몬스터 드롭 아님 (상점·퀘스트)', 'Not a monster drop (shop or quest)'), drops.length ? itemLink(id) : null]); }
+    for (const [id, list] of need) { const drops = byItem.get(id)?.mobs || []; bringRows.push([itemName(id), list.length, list.map(({ q, count }) => `${q.name} (${count})`).join(', '), drops.map((m) => `${nm(m)} Lv.${m.lv}`).join(', ') || L('몬스터 드랍 아님 (상점·퀘스트)', 'Not a monster drop (shop or quest)'), drops.length ? itemLink(id) : null]); }
     bringRows.sort((a, b) => b[1] - a[1]);
     books.quests = { title: L('퀘스트', 'Quests'), sheets: [
       { name: L('레벨순 체크리스트', 'Checklist by level'), title: L('퀘스트 체크리스트 — 시작 레벨순', 'Quest checklist by start level'), note: `${stamp}. ${L('완료 칸에 표시하면서 쓰세요.', 'Tick the Done column as you go.')}`, cols: qCols, rows: [...live].sort((a, b) => (a.lv || 0) - (b.lv || 0) || a.id - b.id).map(qRow) },
@@ -110,7 +110,7 @@ export function buildWorkbooks({ out, langs, abs, buildDate, monsters, items, eq
       { h: L('떨어뜨리는 몬스터', 'Dropped by'), t: 'wrap' }, { h: L('주는 퀘스트', 'Quest reward'), t: 'wrap' }, { h: L('사이트', 'Site'), t: 'link' }];
     const eqRow = (e) => { const c = equipmentCells(e, lang); return [e.lv, c.sub, ko ? e.ko : e.en, c.stats, c.req, e.slots, e.mobs.slice(0, 6).map((m) => `${nm(m)} Lv.${m.lv}`).join(', '), e.quests.map((q) => q.name).join(', '), itemLink(e.id)]; };
     books.equipment = { title: L('직업별 장비', 'Gear by class'), sheets: [
-      ...EQ_CLASSES.map((c) => ({ name: ko ? c.ko : c.en, title: `${ko ? c.ko : c.en} ${L('장비 — 레벨순', 'gear by level')}`, note: `${stamp}. ${L('지금 몬스터 드롭이나 퀘스트로 얻을 수 있는 장비만 넣었어요.', 'Only gear you can get now from monster drops or quests.')}`,
+      ...EQ_CLASSES.map((c) => ({ name: ko ? c.ko : c.en, title: `${ko ? c.ko : c.en} ${L('장비 — 레벨순', 'gear by level')}`, note: `${stamp}. ${L('지금 몬스터 드랍이나 퀘스트로 얻을 수 있는 장비만 넣었어요.', 'Only gear you can get now from monster drops or quests.')}`,
         cols: eqCols, rows: equipment.filter((e) => e.job & c.bit).map(eqRow) })),
       { name: L('공용', 'All classes'), title: L('모든 직업이 쓰는 장비', 'Gear every class can wear'), note: stamp, cols: eqCols, rows: equipment.filter((e) => !e.job).map(eqRow) }
     ] };

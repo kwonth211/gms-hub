@@ -47,7 +47,7 @@ test('drop labels are traceable observations, never invented probabilities or vo
 });
 test('unmapped and unreleased monsters are not described as currently huntable',()=>{
   const faust=data.monsters.find(m=>m.id===700008);assert.equal(faust.status,'unplaced');
-  assert.match(render(faust),/아직 들어온 드롭 제보가 없어요/);
+  assert.match(render(faust),/아직 들어온 드랍 제보가 없어요/);
   assert.match(render(faust),/출현 맵 없음/);
   // Forgotten Hollow opened with the 11/18 patch: its monsters are huntable now and carry no 'opens Nov 18' label.
   const glow=data.monsters.find(m=>m.id===54);assert.equal(glow.status,'active');assert.doesNotMatch(render(glow),/11\/18 개방 예정/);
@@ -86,6 +86,6 @@ test('hunting notes resolve to real monsters, recorded sources and reported drop
   assert.equal(accuracyNeeded(37,mob('Lupin')),89); assert.equal(accuracyNeeded(32,mob('Lupin')),106); assert.equal(accuracyNeeded(48,mob('Wraith')),104);
   // Notable drops are rendered first and tagged.
   const lupin=monsterDetail({lang:'ko',m:mob('Lupin'),data,url,itemUrl:d=>`/x/${d.itemId}`,notes:notes[35],routes:[],accuracy:l=>accuracyNeeded(l,mob('Lupin'))});
-  assert.ok(lupin.indexOf('파밍 목적 드롭')<lupin.indexOf('제보 적음'));
+  assert.ok(lupin.indexOf('파밍 목적 드랍')<lupin.indexOf('제보 적음'));
   assert.ok(lupin.includes('Lv. 37 <small>동일 레벨</small></th><td>89'));
 });

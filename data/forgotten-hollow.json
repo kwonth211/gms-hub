@@ -598,7 +598,7 @@
    "en": "Where the ten non-crafted new weapons come from"
   },
   {
-   "ko": "드롭 확률 (클래식은 공개하지 않아요)",
+   "ko": "드랍 확률 (클래식은 공개하지 않아요)",
    "en": "Drop rates (Classic does not publish them)"
   },
   {
@@ -1189,7 +1189,7 @@
       "en": "Contribution (default)"
      },
      "text": {
-      "ko": "우선권이 있는 사람이 1분 동안 먼저 줍고, 그 뒤에는 파티원 누구나 주워요. 보스 드롭은 바로 누구나 주울 수 있어요.",
+      "ko": "우선권이 있는 사람이 1분 동안 먼저 줍고, 그 뒤에는 파티원 누구나 주워요. 보스 드랍은 바로 누구나 주울 수 있어요.",
       "en": "The member with priority has one minute, then anyone in the party can pick up. Boss drops are open to everyone at once."
      }
     },

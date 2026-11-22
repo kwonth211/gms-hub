@@ -180,9 +180,9 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
     card.innerHTML = `<header><img src="https://maplestory.io/api/MCW/1/item/${id}/icon" width="32" height="32" alt=""><div><strong>${ups}${esc(name)}</strong><small>${esc(ko ? CAT[cat] || cat : sub || CAT[cat] || cat)}</small></div></header>
 ${lines.join('')}
 ${sameBlock(id, opts)}${priceBlock(id)}
-${dropList ? `<section><h4>${tr('드롭하는 몬스터', 'Dropped by')}</h4>${dropList}</section>` : ''}
+${dropList ? `<section><h4>${tr('드랍하는 몬스터', 'Dropped by')}</h4>${dropList}</section>` : ''}
 ${sell || from.length ? `<section class="tip-npc">${sell ? `<p>${tr('상점에 팔 때', 'Sells to NPC for')} <b>${nf.format(sell)}</b> ${tr('메소', 'mesos')}</p>` : ''}${from.map((f) => `<p>${f}</p>`).join('')}</section>` : ''}
-<footer>${source === 'megaphone' ? tr('시세: 전체 옵션 기준 · 드롭: 플레이어 제보', 'Prices: all options · drops: player reports') : tr('시세: GMS Hub 수집 · 능력치: 게임 데이터 · 드롭: 플레이어 제보', 'Prices: GMS Hub scans · stats: game data · drops: player reports')}</footer>`;
+<footer>${source === 'megaphone' ? tr('시세: 전체 옵션 기준 · 드랍: 플레이어 제보', 'Prices: all options · drops: player reports') : tr('시세: GMS Hub 수집 · 능력치: 게임 데이터 · 드랍: 플레이어 제보', 'Prices: GMS Hub scans · stats: game data · drops: player reports')}</footer>`;
     return true;
   }
 
@@ -205,8 +205,8 @@ ${sell || from.length ? `<section class="tip-npc">${sell ? `<p>${tr('상점에 �
 <dl class="tip-mob-stats">${row('HP', nf.format(hp))}${row('EXP', nf.format(exp))}${row(tr('회피', 'Avoid'), nf.format(eva))}${row(tr('필요 명중', 'Accuracy'), acc ? nf.format(acc) : '—')}</dl>
 ${elLine ? `<p>${elLine}</p>` : ''}
 <section><h4>${tr('출현 맵', 'Spawns at')}</h4><p>${where}</p></section>
-${dropList ? `<section><h4>${tr('주요 드롭', 'Notable drops')}</h4><ul class="tip-drops">${dropList}</ul>${dropN > drops.length ? `<p class="tip-muted">${tr(`외 ${dropN - drops.length}종`, `+${dropN - drops.length} more`)}</p>` : ''}</section>` : ''}
-<footer>${tr('필요 명중은 같은 레벨 기준 · 드롭: 플레이어 제보', 'Accuracy at its own level · drops: player reports')}</footer>`;
+${dropList ? `<section><h4>${tr('주요 드랍', 'Notable drops')}</h4><ul class="tip-drops">${dropList}</ul>${dropN > drops.length ? `<p class="tip-muted">${tr(`외 ${dropN - drops.length}종`, `+${dropN - drops.length} more`)}</p>` : ''}</section>` : ''}
+<footer>${tr('필요 명중은 같은 레벨 기준 · 드랍: 플레이어 제보', 'Accuracy at its own level · drops: player reports')}</footer>`;
     return true;
   }
   const render = (t) => (t.kind === 'mob' ? renderMob(t.id) : renderItem(t.id, t.opts, t.source));

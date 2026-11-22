@@ -83,7 +83,7 @@ export function mapDetail({ lang, l, maps, url, itemUrl, routes, accuracy, notes
     .slice(0, 24);
   const dropList = drops.length
     ? `<ul class="item-links">${drops.map(({ d, m }) => `<li><a href="${itemUrl(d, lang)}"><img src="https://maplestory.io/api/MCW/1/item/${d.itemId}/icon" alt="" width="24" height="24" loading="lazy"><span>${esc(ko ? d.ko || d.en : d.en)}</span><small>${esc(monsterName(m, lang))}</small></a></li>`).join('')}</ul>`
-    : `<p class="muted">${ko ? '이 맵 몬스터의 드롭 제보가 아직 없어요.' : 'No drop reports for the monsters here yet.'}</p>`;
+    : `<p class="muted">${ko ? '이 맵 몬스터의 드랍 제보가 아직 없어요.' : 'No drop reports for the monsters here yet.'}</p>`;
   const routeList = routes.length
     ? `<ul class="monster-routes">${routes.map((r) => `<li><a href="${link(`/tools/training/?lv=${r.level.min}#route-${r.id}`)}"><strong>${esc(r.title[lang])}</strong><small>Lv. ${r.level.min}–${r.level.max}</small></a></li>`).join('')}</ul>`
     : '';
@@ -108,11 +108,11 @@ ${mapView({ lang, l, lay: layout, url })}
 <section class="panel"><h2>${ko ? '나오는 몬스터' : 'Monsters on this map'}</h2>
 <div class="table-wrap"><table class="data"><thead><tr><th>${ko ? '몬스터' : 'Monster'}</th><th>${ko ? '레벨' : 'Level'}</th><th>HP</th><th>EXP</th><th>${ko ? '출현 지점' : 'Spawns'}</th><th>${ko ? '확정 명중' : 'Sure-hit accuracy'}</th></tr></thead><tbody>${rows}</tbody></table></div>
 <p class="muted note">${ko ? '확정 명중은 몬스터와 같은 레벨일 때 빗나가지 않는 데 필요한 명중이에요. 몇 방 컷 계산기와 같은 공식이에요.' : 'Sure-hit accuracy is what you need at the monster’s own level to never miss, from the same formula as the hits-to-kill calculator.'}</p></section>
-<section class="panel"><h2>${ko ? '이 맵에서 얻는 드롭' : 'Drops on this map'}</h2>
-<p class="muted note">${ko ? '플레이어 드롭 제보로 모은 목록이에요.' : 'From player drop reports.'}</p>${dropList}</section>
+<section class="panel"><h2>${ko ? '이 맵에서 얻는 드랍' : 'Drops on this map'}</h2>
+<p class="muted note">${ko ? '플레이어 드랍 제보로 모은 목록이에요.' : 'From player drop reports.'}</p>${dropList}</section>
 ${routeList ? `<section class="panel"><h2>${ko ? '이 맵 몬스터가 나오는 사냥 경로' : 'Training routes with these monsters'}</h2>${routeList}</section>` : ''}
 ${nearby.length ? `<section class="panel"><h2>${ko ? '같은 지역의 비슷한 맵' : 'Similar maps nearby'}</h2><ul class="monster-routes">${nearby.map((x) => `<li><a href="${link(mapPath(x))}"><strong>${esc(mapName(x, lang))}</strong><small>Lv. ${x.minLv}–${x.maxLv}</small></a></li>`).join('')}</ul></section>` : ''}
-<p class="muted small">${ko ? '출현 지점과 능력치는 게임 클라이언트 데이터, 드롭은 유저 제보를 정리했어요.' : 'Spawn points and stats come from the game client data; drops are player reports.'}</p>
+<p class="muted small">${ko ? '출현 지점과 능력치는 게임 클라이언트 데이터, 드랍은 유저 제보를 정리했어요.' : 'Spawn points and stats come from the game client data; drops are player reports.'}</p>
 </div>`;
 }
 
@@ -122,7 +122,7 @@ export function mapIndex({ lang, maps, url }) {
   const regions = [...new Set(maps.map((l) => l.region))];
   const open = maps.filter((l) => l.availability === 'open');
   return `<section class="page-head wrap"><h1>${ko ? '맵 도감' : 'Map database'}</h1>
-<p class="lead">${ko ? `사냥할 수 있는 맵 ${open.length}곳의 몬스터, 레벨, 출현 지점, 드롭을 정리했어요. 몬스터 레벨이 낮은 맵부터 보여 줘요.` : `${open.length} huntable maps with their monsters, levels, spawn points and drops, lowest level first.`}</p></section>
+<p class="lead">${ko ? `사냥할 수 있는 맵 ${open.length}곳의 몬스터, 레벨, 출현 지점, 드랍을 정리했어요. 몬스터 레벨이 낮은 맵부터 보여 줘요.` : `${open.length} huntable maps with their monsters, levels, spawn points and drops, lowest level first.`}</p></section>
 <div class="wrap map-page">
 ${regions
   .map((r) => {

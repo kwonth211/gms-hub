@@ -394,12 +394,12 @@
             "ko"
           ],
           "desc": {
-            "ko": "한국어 클래식 월드 사이트. 아이템 1,902개·몬스터 181종 드롭표, 직업별 1~70 사냥 동선, 직업 티어표, 몇 방 컷 계산기.",
+            "ko": "한국어 클래식 월드 사이트. 아이템 1,902개·몬스터 181종 드랍표, 직업별 1~70 사냥 동선, 직업 티어표, 몇 방 컷 계산기.",
             "en": "Korean-language Classic World site: drop tables for 1,902 items and 181 monsters, 1–70 leveling routes by class, a class tier list and a hits-to-kill calculator."
           },
           "features": {
             "ko": [
-              "드롭표",
+              "드랍표",
               "거래소",
               "명중률 계산기",
               "N방컷 계산기",

@@ -3824,3 +3824,13 @@ body.exp-running .exp-stop { display: inline-flex; }
    falling leaves on it would keep the picture "changing" (assets/scan.js reads calmer frames first). */
 body.scanning .mg-ticker, body.scanning .charm-leaves, body.scanning .charm-walk, body.scanning .gms-loadbar { visibility: hidden !important; }
 body.scanning *, body.scanning *::before, body.scanning *::after { animation-play-state: paused !important; }
+/* ⓘ explanations (assets/info-notes.js): a quiet text button, and the dialog it opens */
+.info-link { background: none; border: 0; padding: 0; font: inherit; font-size: .88em; color: var(--text-2); text-decoration: underline dotted; text-underline-offset: 3px; cursor: var(--cur-hand, pointer); }
+.info-link:hover, .info-link:focus-visible { color: var(--text); }
+dialog.info-note { max-width: min(460px, calc(100vw - 32px)); width: 100%; border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px 14px; background: var(--panel); color: var(--text); box-shadow: 0 18px 50px rgba(0,0,0,.25); }
+dialog.info-note::backdrop { background: rgba(0,0,0,.35); }
+dialog.info-note h2 { font-size: 1.05rem; margin: 0 0 10px; }
+dialog.info-note p { margin: 0 0 10px; line-height: 1.6; font-size: .95rem; }
+dialog.info-note .info-note-actions { text-align: right; margin: 6px 0 0; }
+.monster-glance h3 { font-size: 1rem; margin: 14px 0 4px; }
+.monster-glance p { margin: 0 0 6px; line-height: 1.6; }

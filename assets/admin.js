@@ -6,7 +6,7 @@ const API = `https://api.github.com/repos/${repo.owner}/${repo.repo}/contents/`;
 const TOKEN_KEY = 'cb_admin_token';
 
 const FILES = [
-  { path: 'data/drops.json', label: '드롭 확률', editor: 'drops' },
+  { path: 'data/drops.json', label: '드랍 확률', editor: 'drops' },
   { path: 'data/scrolls.json', label: '주문서 등급 확률', editor: 'scrolls' },
   { path: 'data/training.json', label: '사냥터', editor: 'json' },
   { path: 'data/sites.json', label: '사이트 링크', editor: 'json' }
@@ -114,7 +114,7 @@ function status(msg, isErr = false) {
 const DROP_COLS = [
   ['monster', '몬스터'],
   ['item', '아이템'],
-  ['rate', '드롭률(%)'],
+  ['rate', '드랍률(%)'],
   ['source', '출처 URL'],
   ['note', '비고']
 ];
@@ -178,7 +178,7 @@ function validate(file, data) {
   if (file.editor === 'drops') {
     for (const [i, d] of data.entries.entries()) {
       if (!d.monster || !d.item) return `${i + 1}행: 몬스터와 아이템을 입력하세요.`;
-      if (!(d.rate > 0 && d.rate <= 100)) return `${i + 1}행: 드롭률은 0보다 크고 100 이하여야 해요.`;
+      if (!(d.rate > 0 && d.rate <= 100)) return `${i + 1}행: 드랍률은 0보다 크고 100 이하여야 해요.`;
       if (d.source && !/^https?:\/\//.test(d.source)) return `${i + 1}행: 출처는 http(s) URL이어야 해요.`;
     }
   }

@@ -33,17 +33,17 @@ const retryItems = document.getElementById('search-retry');
 const clearSearch = document.getElementById('search-clear');
 const escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const labels = korean
-  ? { item: '아이템', mob: '몬스터', site: '사이트', tool: '도구·가이드', market: '시세 보기', mobAction: '상세 정보', mobStatus: { upcoming: '11/18 열리는 포가튼 할로우 몬스터', unavailable: '미개방 지역', unplaced: '아직 맵에 없음' }, mobInfo: (lv, hp) => `${lv}레벨 · HP ${hp.toLocaleString('ko')} · 드롭 아이템·출현 위치·능력치`, loading: '아이템을 불러오는 중…', error: '아이템을 불러오지 못했어요. 사이트와 도구는 계속 검색할 수 있어요.', partial: ' · 아이템 불러오는 중', failed: ' · 아이템 검색 일시 불가', external: '새 탭에서 열기' }
+  ? { item: '아이템', mob: '몬스터', site: '사이트', tool: '도구·가이드', market: '시세 보기', mobAction: '상세 정보', mobStatus: { upcoming: '11/18 열리는 포가튼 할로우 몬스터', unavailable: '미개방 지역', unplaced: '아직 맵에 없음' }, mobInfo: (lv, hp) => `${lv}레벨 · HP ${hp.toLocaleString('ko')} · 드랍 아이템·출현 위치·능력치`, loading: '아이템을 불러오는 중…', error: '아이템을 불러오지 못했어요. 사이트와 도구는 계속 검색할 수 있어요.', partial: ' · 아이템 불러오는 중', failed: ' · 아이템 검색 일시 불가', external: '새 탭에서 열기' }
   : { item: tx('Items'), mob: tx('Monsters'), site: tx('Sites'), tool: tx('Tools & guides'), market: tx('View prices'), mobAction: tx('View details'), mobStatus: { upcoming: tx('Forgotten Hollow, opens Nov 18'), unavailable: tx('Unreleased area'), unplaced: tx('Not on any map yet') }, mobInfo: (lv, hp) => tx('Level {lv} · {hp} HP · drops, locations and combat stats', { lv, hp: hp.toLocaleString('en') }), loading: tx('Loading items…'), error: tx('Items could not be loaded. Sites and tools are still searchable.'), partial: tx(' · loading items'), failed: tx(' · items unavailable'), external: tx('Opens in a new tab') };
 const siteAliases = { 'meso.watch': '메소워치 메소 와치', 'maplemarket.fyi': '메이플마켓', 'meowdb.com': '니아먀오 니아메오', 'henesys.gg': '헤네시스', 'discord.com': '디스코드 디코', 'discord.gg': '디스코드 디코', 'reddit.com': '레딧', 'metaroad.gg': '메타로드', 'dcinside.com': '디시 디씨 갤러리 갤' };
 const toolKeywords = {
   training: '사냥터 레벨업 경험치 사냥 맵 training level exp map grind',
   scroll: '주문서 강화 작 공격력 업그레이드 슬롯 계산기 scroll upgrade slot calculator',
-  'drop-rate': '확률 드롭 상자 박스 뽑기 계산기 drop rate box gacha chance calculator',
+  'drop-rate': '확률 드랍 상자 박스 뽑기 계산기 drop rate box gacha chance calculator',
   market: '시세 가격 메소 아이템 거래 매물 경매장 경매 가격변동 그래프 차트 price market auction item mesos',
   price: '시세 가격 메소 아이템 거래 price market item mesos',
   scan: '상점 스캔 이미지 인식 화면 공유 shop scan scanner ocr',
-  monsters: '몬스터 도감 드롭 아이템 체력 경험치 출현 위치 monster bestiary drops hp exp locations',
+  monsters: '몬스터 도감 드랍 아이템 체력 경험치 출현 위치 monster bestiary drops hp exp locations',
   damage: '몇방 몇 방 컷 데미지 대미지 딜 명중률 몬스터 계산기 damage hits kill accuracy calculator',
   // Guides, by slug: the words players use that the titles do not.
   'kerning-party-quest': '파티퀘스트 파티 퀘스트 파퀘 커파 커닝 파티퀘 KPQ party quest 라케리스 보너스',

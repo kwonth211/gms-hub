@@ -63,7 +63,7 @@ if ($('drop-query')) {
     cards.forEach((el,id)=>{el.hidden=(matched&&!matched.has(id))||(category&&category!==el.dataset.cat)||($('drop-repeated').checked&&el.dataset.confidence!=='repeated');if(!el.hidden)shown++;});
     const sort=sorts[$('drop-sort').value]||sorts.order;
     [...cards].sort((a,b)=>sort(a,b)||num(a,'order')-num(b,'order')).forEach(el=>list.append(el));
-    $('drop-count').textContent=countText(shown,cards.length);$('drop-empty').hidden=shown>0;
+    $('drop-count').textContent=countText(shown,cards.length);$('drop-empty').hidden=shown>0;if(!shown)$('drop-empty').textContent=ko?'조건에 맞는 드랍 제보가 없어요.':tx('No reported drops match these filters.');
   }
   $('drop-query').addEventListener('input',render);$('drop-category').addEventListener('change',render);$('drop-repeated').addEventListener('change',render);
   $('drop-sort').addEventListener('change',()=>{render();track('monster_drop_sort',{sort:$('drop-sort').value});});
@@ -91,7 +91,7 @@ if ($('location-sort')) {
     let shown=0;
     rows.forEach(row=>{row.hidden=row.dataset.availability!=='open'&&!$('location-unavailable')?.checked;if(!row.hidden)shown++;});
     [...rows].sort((a,b)=>(a.dataset.availability==='open'?0:1)-(b.dataset.availability==='open'?0:1)||Number(b.dataset[$('location-sort').value])-Number(a.dataset[$('location-sort').value])).forEach(row=>tbody.append(row));
-    $('location-empty').hidden=shown>0;
+    $('location-empty').hidden=shown>0;if(!shown)$('location-empty').textContent=ko?'지금 들어갈 수 있는 출현 맵이 없어요. 미개방 맵 포함을 켜면 참고 위치를 볼 수 있어요.':tx('No accessible maps. Include unreleased maps to see reference locations.');
   }
   $('location-sort').addEventListener('change',render);$('location-unavailable')?.addEventListener('change',render);render();
 }

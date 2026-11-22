@@ -11,10 +11,12 @@ try {
   const prices = await r.json();
   if (!prices || typeof prices !== 'object' || Array.isArray(prices)) throw new Error('unexpected body');
   // The live market list's numbers (median of what is for sale now, lowest ask, count), so the pages show the same price.
-  let now = {}, recent = {};
+  // stats: [records, shops, sold, soldMedian, typicalDay] over the catalog window (7 days), for each item's own sentences.
+  let now = {}, recent = {}, stats = {};
   try {
     const c = await fetch(`${config.voteApi}/market/catalog`, { signal: AbortSignal.timeout(20000) }).then((r) => (r.ok ? r.json() : null));
     for (const r of c?.items || []) {
+      if (r.records > 0) stats[r.item] = [r.records, r.shops || 0, r.sold || 0, r.soldMedian ?? null, r.typicalDay ?? null];
       if (r.open > 0 && r.median != null) now[r.item] = [r.median, r.low, r.open];
       // Nothing for sale right now: the market list shows the item's recent typical price instead, and so do we.
       else if (r.typical) recent[r.item] = r.typical;
@@ -22,7 +24,7 @@ try {
   } catch (e) {
     console.warn(`item prices: no live catalog (${e.message})`);
   }
-  writeFileSync(file, `${JSON.stringify({ updated: new Date().toISOString(), prices, now, recent })}\n`);
+  writeFileSync(file, `${JSON.stringify({ updated: new Date().toISOString(), prices, now, recent, stats })}\n`);
   console.log(`item prices: ${Object.keys(prices).length} items, ${Object.keys(now).length} for sale now`);
 } catch (e) {
   console.warn(`item prices: kept the committed file (${e.message})`);

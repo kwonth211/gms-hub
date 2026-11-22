@@ -226,7 +226,7 @@ test('every training route names its monsters and new evidence-backed routes app
   assert.ok(html.includes('id="route-wraith"')&&/필요 명중 <\/span>104/.test(html));
   assert.ok(read('dist/ko/tools/training/index.html').includes('"mobs":[{"id":43,'),'route monsters shipped in the page data');
   assert.ok(read('dist/ko/monsters/43/index.html').includes('/ko/tools/training/?lv=48#route-wraith'));
-  assert.ok(read('dist/ko/items/1032007-emerald-earrings/index.html').includes('드롭하는 몬스터'));
+  assert.ok(read('dist/ko/items/1032007-emerald-earrings/index.html').includes('드랍하는 몬스터'));
 });
 test('site review fixes: localized route links, unique monster titles, honest price headline, searchable routes',()=>{
   const r=training.routes.find(r=>r.id==='wraith');
@@ -297,7 +297,7 @@ test('monster drops get item database pages with droppers, farm maps and stats',
   assert.ok(read('dist/ja/items/1002003-red-headband/index.html').includes('translate="no"'));
   const ko=read('dist/ko/items/1002003-red-headband/index.html');
   // Same as the English title: a live listing in CI puts the price first.
-  assert.match(ko,/<title>[^<]*빨간색 머리띠[^<]*(드롭 몬스터|시세|메소)/);
+  assert.match(ko,/<title>[^<]*빨간색 머리띠[^<]*(드랍 몬스터|시세|메소)/);
 });
 
 test('map pages turn monster spawns around: monsters, spawn counts, full-clear EXP and drops',()=>{

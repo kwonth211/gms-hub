@@ -19,7 +19,10 @@ const D = JSON.parse(document.getElementById("mk-data").textContent),
   ko = D.lang === "ko";
 // On an item page (/items/<id>/) the same detail panel opens for that one item, full width, with no list around it.
 const FIXED = Number(D.fixed) || 0;
-const $ = (id) => document.getElementById(id),
+// On an item page the list, filters and totals sit in an inert <template id="mb-offstage"> (never shown there); the
+// code still drives them, so lookups fall back to it.
+const OFFSTAGE = document.getElementById("mb-offstage")?.content;
+const $ = (id) => document.getElementById(id) || OFFSTAGE?.getElementById(id) || null,
   tr = (a, b) => (ko ? a : tx(b)),
   nf = new Intl.NumberFormat(D.lang);
 const esc = (s) =>
@@ -398,7 +401,7 @@ function renderDirectory() {
   );
   const start = (page - 1) * 40;
   $("mb-results").innerHTML = rows.length
-    ? `<div class="mb-table-wrap"><table class="mb-table mb-catalog"><thead><tr><th><span class="sr-only">${tr("관심", "Wishlist")}</span>☆</th><th>${tr("아이템", "Item")}</th><th class="mb-src">${tr("드롭", "Drops")}</th><th>${tr("판매가 중앙값 / 최저가", "Asking median / lowest")}<small>${T.priceUnit} · 24h</small></th><th>${tr("24시간", "24h")}</th><th>${tr("판매 매물", "Asking")}</th><th>${tr("최근 확인", "Last seen")}</th></tr></thead><tbody>${rows
+    ? `<div class="mb-table-wrap"><table class="mb-table mb-catalog"><thead><tr><th><span class="sr-only">${tr("관심", "Wishlist")}</span>☆</th><th>${tr("아이템", "Item")}</th><th class="mb-src">${tr("드랍", "Drops")}</th><th>${tr("판매가 중앙값 / 최저가", "Asking median / lowest")}<small>${T.priceUnit} · 24h</small></th><th>${tr("24시간", "24h")}</th><th>${tr("판매 매물", "Asking")}</th><th>${tr("최근 확인", "Last seen")}</th></tr></thead><tbody>${rows
         .slice(start, start + 40)
         .map(
           (r) =>
@@ -1410,8 +1413,8 @@ async function fillItemInfo(id) {
   // Item facts stay under the price; drops and quest rewards sit below the listings.
   const factBox = $("mb-facts");
   if (factBox) factBox.innerHTML = facts.length ? `<p class="mb-info-facts">${facts.map((f) => `<span>${f}</span>`).join("")}</p>` : "";
-  box.innerHTML = `<h3>${tr("드롭하는 몬스터", "Dropped by")} <small>${dropN ? tr(`${dropN}마리`, `${dropN}`) : ""}</small></h3>
-${mobs.length ? `<ul class="mb-drops">${mobs.map((m) => { const x = data.mobs[m]; return `<li><a href="${mobLink(m)}"><img src="${sprites}${m}.gif" width="36" height="36" alt="" loading="lazy"><span>${esc(ko ? x[0] : x[1])}</span><small>Lv. ${x[2]}${x[7] ? ` <b class="mb-boss">${tr("보스", "BOSS")}</b>` : ""}</small></a></li>`; }).join("")}</ul>${dropN > mobs.length ? `<p class="muted note">${tr(`외 ${dropN - mobs.length}마리는 아이템 페이지에서 볼 수 있어요.`, `${dropN - mobs.length} more on the item page.`)}</p>` : ""}` : `<p class="muted note">${tr("지금 열린 맵의 몬스터는 이 아이템을 드롭하지 않아요.", "No monster on an open map drops this item.")}</p>`}
+  box.innerHTML = `<h3>${tr("드랍하는 몬스터", "Dropped by")} <small>${dropN ? tr(`${dropN}마리`, `${dropN}`) : ""}</small></h3>
+${mobs.length ? `<ul class="mb-drops">${mobs.map((m) => { const x = data.mobs[m]; return `<li><a href="${mobLink(m)}"><img src="${sprites}${m}.gif" width="36" height="36" alt="" loading="lazy"><span>${esc(ko ? x[0] : x[1])}</span><small>Lv. ${x[2]}${x[7] ? ` <b class="mb-boss">${tr("보스", "BOSS")}</b>` : ""}</small></a></li>`; }).join("")}</ul>${dropN > mobs.length ? `<p class="muted note">${tr(`외 ${dropN - mobs.length}마리는 아이템 페이지에서 볼 수 있어요.`, `${dropN - mobs.length} more on the item page.`)}</p>` : ""}` : `<p class="muted note">${tr("지금 열린 맵의 몬스터는 이 아이템을 드랍하지 않아요.", "No monster on an open map drops this item.")}</p>`}
 ${cat === "Equip" ? equipExtras(id, data) : ""}
 ${data.quests?.[id]?.length ? `<h3>${tr("퀘스트 보상", "Quest reward")} <small>${tr(`${questN}개`, `${questN}`)}</small></h3><ul class="mb-quests">${data.quests[id].map(([p, name, lv]) => `<li>${p ? `<a href="/${D.lang}${p}">${esc(name)}</a>` : esc(name)}${lv ? `<small>Lv. ${lv}+</small>` : ""}</li>`).join("")}</ul>` : ""}`;
 }

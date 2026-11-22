@@ -419,7 +419,7 @@
     "en": "Find a Stirge area in the subway and cover nearby spawns rather than chasing distant targets."
    },
    "cost": {
-    "ko": "표창 충전비와 MP 소비를 같이 계산해요. 물약 드롭만으로 흑자라고 판단하지 않아요.",
+    "ko": "표창 충전비와 MP 소비를 같이 계산해요. 물약 드랍만으로 흑자라고 판단하지 않아요.",
     "en": "Count star recharge and MP costs; potion drops alone do not establish profit."
    },
    "exit": {
@@ -1926,7 +1926,7 @@
     "en": "In Wild Kargo’s Area, leave space to group and clear after Rush."
    },
    "cost": {
-    "ko": "몸박이 계속 발생하는 고비용 후보예요. 희귀 드롭의 기대 가격으로 물약 손실을 상쇄했다고 계산하지 마세요.",
+    "ko": "몸박이 계속 발생하는 고비용 후보예요. 희귀 드랍의 기대 가격으로 물약 손실을 상쇄했다고 계산하지 마세요.",
     "en": "Repeated contact can be costly; do not offset supply losses with imagined rare-drop income."
    },
    "exit": {
@@ -2711,7 +2711,7 @@
     "en": "Wild Boar, Dark Axe Stump, Jr. Boogie"
    },
    "summary": {
-    "ko": "20대 중반에 들르는 전통 사냥터예요. 큰 드롭은 없지만 가죽, 동물 털 묶음, 뻣뻣한 깃털 같은 재료가 계속 나와요.",
+    "ko": "20대 중반에 들르는 전통 사냥터예요. 큰 드랍은 없지만 가죽, 동물 털 묶음, 뻣뻣한 깃털 같은 재료가 계속 나와요.",
     "en": "A classic mid-20s map. No big drop, but leather, animal fur bundles and stiff feathers keep coming."
    },
    "entry": {
@@ -3448,7 +3448,7 @@
     "en": "Talk to Pason in Lith Harbor to reach Florina Beach, then head east: Look-Out Shed → Lorang Lorang → Lorang and Clang. A hidden portal on the far-right palm leads to Clang and Lorang (12 monsters), which most find weak for solo play."
    },
    "cost": {
-    "ko": "플로리나에선 마을 귀환 주문서가 안 써져요. 마을의 발렌 상점에서 하얀 포션(350)과 화살·표창을 사고, 이동 속도 포션을 챙기면 편해요. 클랑은 로우어·망토 INT 60%·장갑 공격력 주문서 등 비싼 드롭이 많아요.",
+    "ko": "플로리나에선 마을 귀환 주문서가 안 써져요. 마을의 발렌 상점에서 하얀 포션(350)과 화살·표창을 사고, 이동 속도 포션을 챙기면 편해요. 클랑은 로우어·망토 INT 60%·장갑 공격력 주문서 등 비싼 드랍이 많아요.",
     "en": "Return scrolls do not work in Florina. Valen's shop in town sells White Potions (350) plus arrows and stars; speed potions help. Clangs drop pricey items such as the Lower crossbow and Cape INT 60% scrolls."
    },
    "exit": {
@@ -3591,7 +3591,7 @@
     "en": "After 45, move on to Lorang and Clang or Hot Sand."
    },
    "alternative": {
-    "ko": "로랑 로랑(파티), 해변 주변 전망 오두막(마을 바로 옆, 금비 표창 드롭).",
+    "ko": "로랑 로랑(파티), 해변 주변 전망 오두막(마을 바로 옆, 금비 표창 드랍).",
     "en": "Lorang Lorang (party) or the Look-Out Shed next to town (drops Ilbi stars)."
    },
    "mobIds": [

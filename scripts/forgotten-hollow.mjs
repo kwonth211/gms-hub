@@ -154,7 +154,7 @@ ${elTags(m) ? `<p class="fh-els">${elTags(m)}</p>` : ''}
 </article>`;
   const monstersSec = `<section class="fh-sec wrap" id="monsters">
 <h2>${tr('새 몬스터 10종', 'The ten new monsters')}</h2>
-<p class="fh-lead">${tr('체력, 경험치, 방어, 속성은 게임 데이터 기준이에요. 같은 레벨 명중은 빗나가지 않는 명중 값이고, 레벨이 낮으면 더 필요해요. 드롭은 테스트에서 확인된 장비·주문서만 골랐어요.', 'HP, EXP, defence and elements are from the game data. Same-level accuracy is what you need to never miss at the monster\'s level; lower levels need more. Drops list the gear and scrolls seen in the beta.')} ${tag('data')}</p>
+<p class="fh-lead">${tr('체력, 경험치, 방어, 속성은 게임 데이터 기준이에요. 같은 레벨 명중은 빗나가지 않는 명중 값이고, 레벨이 낮으면 더 필요해요. 드랍은 테스트에서 확인된 장비·주문서만 골랐어요.', 'HP, EXP, defence and elements are from the game data. Same-level accuracy is what you need to never miss at the monster\'s level; lower levels need more. Drops list the gear and scrolls seen in the beta.')} ${tag('data')}</p>
 <div class="fh-mobs">${FH_MOB_IDS.map((id) => mobCard(mobs.get(id))).join('')}</div>
 <div class="fh-scroll"><table class="fh-acc"><caption>${tr('내 레벨별로 빗나가지 않는 명중', 'Accuracy to never miss, by your level')}</caption>
 <thead><tr><th>${tr('몬스터', 'Monster')}</th>${[40, 45, 50, 55, 60].map((l) => `<th>Lv ${l}</th>`).join('')}</tr></thead>
@@ -219,7 +219,7 @@ ${elTags(m) ? `<p class="fh-els">${elTags(m)}</p>` : ''}
 <dl class="fh-mob-stats fh-boss-stats"><div><dt>${tr('레벨', 'Level')}</dt><dd>60</dd></div><div><dt>HP</dt><dd>${n(boss.hp, lang)}</dd></div><div><dt>${tr('경험치', 'EXP')}</dt><dd>${n(boss.exp, lang)}</dd></div><div><dt>${tr('물리 방어', 'DEF')}</dt><dd>${boss.wdef}</dd></div><div><dt>${tr('마법 방어', 'M.DEF')}</dt><dd>${boss.mdef}</dd></div></dl>
 <p class="fh-els">${elTags(boss)}</p>
 <ul class="fh-facts">${fh.boss.facts.map((f) => `<li>${esc(L(f))} ${tag(f.state)}</li>`).join('')}</ul>
-<h3 class="fh-sub">${tr('드롭', 'Drops')} ${tag('data')}</h3>
+<h3 class="fh-sub">${tr('드랍', 'Drops')} ${tag('data')}</h3>
 <div class="fh-drops fh-drops-big">${(boss.drops || []).map((d) => `<span><img src="${icon(d.itemId)}" alt="" width="28" height="28" loading="lazy"><span translate="no">${esc(withRate(ko ? d.ko : d.en))}</span></span>`).join('')}</div>
 <p class="fh-hero-actions"><a class="btn" href="${mapHref(10006121)}">${tr('보스 맵 보기', 'See the boss map')}</a><a class="btn ghost" href="${calcHref(boss)}">${tr('몇 방 컷 계산', 'Hits to kill')}</a></p>
 </div></div>
