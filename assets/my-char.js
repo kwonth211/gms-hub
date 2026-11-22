@@ -131,7 +131,7 @@ export function mountCharPanel(el, { routes, classes, finder, korean }) {
   const cset = makeSet({ korean, market: d.market, api: document.body.dataset.priceApi, track, esc, mesos });
   const loadHub = () => (hubLoad ||= fetch(d.hub).then((r) => (r.ok ? r.json() : null)).catch(() => null));
 
-  const form = (c) => `<div class="char-new">${avatar(null, false)}<form class="char-form"><div class="char-intro"><h2>${esc(t.setH)}</h2><p class="muted">${esc(t.setP)}</p></div>
+  const form = (c) => `<div class="char-new">${avatar(null)}<form class="char-form"><div class="char-intro"><h2>${esc(t.setH)}</h2><p class="muted">${esc(t.setP)}</p></div>
 <label>${esc(t.job)}<select name="job" required>${Object.entries(names).map(([k, v]) => `<option value="${k}"${c?.job === k ? ' selected' : ''}>${esc(v)}</option>`).join('')}</select></label>
 <label>${esc(t.lv)}<input name="lv" type="number" min="1" max="200" inputmode="numeric" required value="${c?.lv || ''}" placeholder="30"></label>
 <button class="btn" type="submit">${esc(t.save)}</button></form></div>`;
@@ -173,15 +173,9 @@ export function mountCharPanel(el, { routes, classes, finder, korean }) {
     return `<div class="char-card char-skills" data-kind="skills"><h3>${esc(t.skillH(names[c.job], plan.pool))}</h3>${note ? `<p class="muted">${esc(note)}</p>` : ''}<ol class="char-steps">${steps}</ol>${more}</div>`;
   };
   // Saved view: the class picker and level stepper sit in the header and change everything below at once.
-  // The character picture: the player's own if they added one, otherwise a beginner (below level 10) or one holding the
-  // family's first weapon.
-  const AVATAR = { warrior: 'warrior', mage: 'mage', archer: 'archer', thief: 'thief' };
-  const avatarSrc = (c) => loadCharImg() || `${d.avatars}${!c || c.lv < 10 ? 'beginner' : AVATAR[family(c.job)] || 'beginner'}.png`;
-  const avatar = (c, editable) => {
-    const own = !!loadCharImg();
-    return `<figure class="char-avatar${own ? ' is-own' : ''}"><div class="char-avatar-frame"><img src="${esc(avatarSrc(c))}" alt="${esc(t.mine)}" width="96" height="96" data-char-img></div>${editable
-      ? `<figcaption><label class="char-photo-btn"><input type="file" accept="image/*" data-char-upload class="sr-only">${esc(own ? t.change : t.upload)}</label>${own ? `<button type="button" class="char-photo-reset" data-char="reset-img">${esc(t.reset)}</button>` : ''}<small class="muted" data-char-photo-msg>${esc(t.photoNote)}</small></figcaption>` : ''}</figure>`;
-  };
+  // A saved character is drawn wearing its gear set (the set card below changes it); before that, the plain beginner.
+  const avatarSrc = (c) => (c ? cset.renderNow() : `${d.avatars}beginner.png`);
+  const avatar = (c) => `<figure class="char-avatar${c ? ' is-set' : ''}"><div class="char-avatar-frame"><img src="${esc(avatarSrc(c))}" alt="${esc(t.mine)}" width="96" height="96" data-char-img></div></figure>`;
   // Class picker: the site's own menu (the native select looked out of place), grouped by family; the family itself means
   // "still 1st job".
   const GROUPS = [['warrior', ['fighter', 'page', 'spear']], ['mage', ['fire', 'ice', 'cleric']], ['archer', ['hunter', 'crossbow']], ['thief', ['assassin', 'bandit']]];
@@ -194,7 +188,7 @@ export function mountCharPanel(el, { routes, classes, finder, korean }) {
     btn.setAttribute('aria-expanded', 'false');
     if (focus) btn.focus();
   };
-  const head = (c) => `<div class="char-head">${avatar(c, true)}<div class="char-head-main"><h2>${esc(t.mine)}</h2><div class="char-controls">
+  const head = (c) => `<div class="char-head">${avatar(c)}<div class="char-head-main"><h2>${esc(t.mine)}</h2><div class="char-controls">
 ${jobPicker(c)}
 <div class="char-lv" role="group" aria-label="${esc(t.lv)}"><button type="button" class="btn ghost" data-char="down" aria-label="${esc(t.down)}">−</button><label><span>Lv.</span><input data-char-lv type="number" min="1" max="200" inputmode="numeric" value="${c.lv}" aria-label="${esc(t.lv)}"></label><button type="button" class="btn ghost" data-char="up" aria-label="${esc(t.up)}">+</button></div>
 </div></div></div><div class="char-body"></div>`;
@@ -218,6 +212,7 @@ ${skillBody(c)}`;
     try {
       if (hub?.gear) cset.setGear(hub.gear);
       box.innerHTML = body(c);
+      cset.syncPicture(el);
       cset.refreshLive(refresh);
     } catch (err) {
       // Old saved data (an older char-hub.json from the cache) should never leave the cards loading forever.
@@ -260,18 +255,7 @@ ${skillBody(c)}`;
     track('my_char_save', { job: f.job.value, level: lv });
     render();
   });
-  el.addEventListener('change', async (e) => {
-    if (e.target.matches('[data-char-upload]')) {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      let ok = false;
-      try { ok = file.type.startsWith('image/') && saveCharImg(await shrink(file)); } catch (err) { ok = false; }
-      track('my_char_photo', { action: ok ? 'upload' : 'fail' });
-      if (ok) return render();
-      const msg = el.querySelector('[data-char-photo-msg]');
-      if (msg) msg.textContent = t.photoFail;
-      return;
-    }
+  el.addEventListener('change', (e) => {
     if (e.target.matches('[data-char-job]') && jobNames.en[e.target.value]) change({ job: e.target.value }, 'job');
     if (e.target.matches('[data-char-lv]') && Number(e.target.value) > 0) change({ lv: Number(e.target.value) }, 'level');
   });
@@ -299,11 +283,6 @@ ${skillBody(c)}`;
       b.setAttribute('aria-expanded', String(open));
       if (open) (menu.querySelector('[aria-checked="true"]') || menu.querySelector('button'))?.focus();
       return;
-    }
-    if (b?.dataset.char === 'reset-img') {
-      saveCharImg(null);
-      track('my_char_photo', { action: 'reset' });
-      return render();
     }
     if (b?.dataset.char === 'up' || b?.dataset.char === 'down') {
       const c = loadChar();

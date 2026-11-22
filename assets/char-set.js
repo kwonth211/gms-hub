@@ -186,7 +186,7 @@ ${fields.map((k) => num(`s_${k}`, t.stat[k], f?.stats?.[k] ?? base?.stats?.[k]))
       return `<li data-tip-off class="cset-row${open === slot || (editing === slot && id) ? ' is-open' : ''}" data-slot="${slot}">${main}${open === slot ? picker(slot, c, bit) : ''}${editing === slot && id ? editor(slot, f) : ''}</li>`;
     }).join('');
     return `<div class="char-card cset" data-kind="set"><div class="cset-top"><h3>${esc(t.h)}</h3><p class="muted">${esc(t.p)}</p></div>
-<div class="cset-grid"><figure class="cset-figure"><img src="${esc(renderUrl(set, subOf))}" alt="${esc(t.h)}" data-cset-img loading="lazy">
+<div class="cset-grid"><figure class="cset-figure">
 <figcaption><span>${esc(t.total)}</span><strong>${tot.n ? esc(mesos(tot.sum)) : '—'}</strong>${tot.missing ? `<small class="muted">${esc(t.missing(tot.missing))}</small>` : ''}<small class="muted">${esc(t.live)}</small>
 ${tot.n ? `<button type="button" class="cset-reset" data-cset="reset">${esc(t.reset)}</button>` : ''}</figcaption></figure>
 <ul class="cset-slots">${rows}</ul></div>${tot.n ? '' : `<p class="muted cset-empty">${esc(t.empty)}</p>`}</div>`;
@@ -198,6 +198,7 @@ ${tot.n ? `<button type="button" class="cset-reset" data-cset="reset">${esc(t.re
       const box = el.querySelector('[data-kind="set"]'), c = getChar();
       if (!box || !c) return;
       box.outerHTML = html(c, bitOf(c));
+      syncPicture(el);
       if (focusSearch) { const q = el.querySelector('[data-cset-q]'); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }
       refreshLive(loadSet(), () => redraw(false));
     };
@@ -268,7 +269,14 @@ ${tot.n ? `<button type="button" class="cset-reset" data-cset="reset">${esc(t.re
     el.addEventListener('keydown', (e) => { if (e.key === 'Escape' && (open || editing)) { open = null; editing = null; query = ''; redraw(false); } });
   };
 
+  const renderNow = () => renderUrl(loadSet(), subOf);
+  const syncPicture = (root) => {
+    const img = root.querySelector('[data-char-img]'), src = renderNow();
+    if (img && img.getAttribute('src') !== src) img.src = src;
+  };
+
   return {
+    renderNow, syncPicture,
     setGear(list) { gear = list || []; byId = new Map(gear.map((g) => [g[0], g])); },
     html, bind, refreshLive: (redraw) => refreshLive(loadSet(), redraw)
   };

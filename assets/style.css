@@ -1522,13 +1522,9 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .char-avatar { display: grid; justify-items: center; gap: 6px; margin: 0; }
 .char-avatar-frame { box-sizing: border-box; display: flex; align-items: flex-end; justify-content: center; width: 96px; height: 104px; padding: 6px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel-2); overflow: hidden; }
 .char-avatar-frame img { display: block; width: auto; height: auto; max-width: 84px; max-height: 92px; object-fit: contain; image-rendering: pixelated; }
-.char-avatar.is-own .char-avatar-frame { align-items: center; padding: 0; }
-.char-avatar.is-own .char-avatar-frame img { width: 100%; height: 100%; max-width: none; max-height: none; object-fit: cover; image-rendering: auto; }
+.char-avatar.is-set .char-avatar-frame { width: 120px; height: 150px; }
+.char-avatar.is-set .char-avatar-frame img { max-width: 108px; max-height: 138px; }
 .char-avatar figcaption { display: grid; justify-items: center; gap: 2px; max-width: 132px; text-align: center; }
-.char-photo-btn { position: relative; cursor: var(--cur-hand, pointer); color: var(--accent-edge); font-size: 0.8rem; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
-.char-photo-btn:focus-within { outline: 2px solid var(--accent-fill); outline-offset: 2px; border-radius: 4px; }
-.char-photo-reset { padding: 0; border: 0; background: none; color: var(--muted); font: inherit; font-size: 0.76rem; text-decoration: underline; cursor: var(--cur-hand, pointer); }
-.char-photo-reset:focus-visible { outline: 2px solid var(--accent-fill); outline-offset: 2px; }
 .char-avatar figcaption small { font-size: 0.7rem; line-height: 1.3; }
 @media (max-width: 560px) { .char-head, .char-new { grid-template-columns: minmax(0, 1fr); justify-items: start; } .char-avatar { grid-template-columns: auto minmax(0, 1fr); align-items: center; justify-items: start; } .char-avatar figcaption { justify-items: start; text-align: left; } }
 .char-actions { display: flex; gap: 10px; }
@@ -1567,7 +1563,6 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .cset-top p { margin: 2px 0 0; font-size: 0.86rem; }
 .cset-grid { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 14px; align-items: start; }
 .cset-figure { margin: 0; display: grid; gap: 8px; justify-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); position: sticky; top: calc(80px + var(--tk-h)); }
-.cset-figure img { width: 120px; height: 160px; object-fit: contain; image-rendering: pixelated; }
 .cset-figure figcaption { display: grid; gap: 2px; justify-items: center; text-align: center; }
 .cset-figure figcaption span { font-size: 0.8rem; color: var(--muted); }
 .cset-figure figcaption strong { font-size: 1.35rem; font-variant-numeric: tabular-nums; }
@@ -1613,8 +1608,7 @@ a.cset-item:focus-visible { outline: 2px solid var(--accent-fill); outline-offse
 .cset-opt-acts { display: flex; flex-wrap: wrap; gap: 6px; }
 @media (max-width: 640px) {
   .cset-grid { grid-template-columns: minmax(0, 1fr); }
-  .cset-figure { position: static; grid-template-columns: auto minmax(0, 1fr); justify-items: start; align-items: center; }
-  .cset-figure img { width: 84px; height: 112px; }
+  .cset-figure { position: static; justify-items: start; }
   .cset-figure figcaption { justify-items: start; text-align: left; }
   .cset-row { grid-template-columns: minmax(0, 1fr) auto; }
   .cset-acts { grid-column: 1 / -1; justify-content: flex-end; }
