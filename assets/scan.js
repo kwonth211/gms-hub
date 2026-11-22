@@ -797,7 +797,9 @@ async function start() {
   $('scan-start').disabled = true;
   sessionRevision++;
   try {
-    stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 10 }, audio: false });
+    // The scan only needs the game window: the share dialog opens on the window list, and this tab itself is left out.
+    // Entire screen stays allowed because a full-screen game can show up black as a window on some PCs.
+    stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 10, displaySurface: 'window' }, audio: false, selfBrowserSurface: 'exclude' });
   } catch (e) {
     say(i18n.denied);
     $('scan-start').disabled = false;
@@ -808,15 +810,12 @@ async function start() {
   video.srcObject = stream;
   try { await video.play(); } catch { issue('video_play'); stop(); say(i18n.readFail); return; }
   document.body.classList.add('scanning');
-  // Only a shared entire screen can show this page itself; then its animations would keep the picture "changing".
-  // A shared game window or tab never shows it, so the page keeps moving as usual (owner 2026-11-22: the header froze).
-  document.body.classList.toggle('scan-still', stream.getVideoTracks()[0].getSettings?.().displaySurface === 'monitor');
   $('scan-stop').disabled = false;
   stream.getVideoTracks()[0].addEventListener('ended', stop);
   showShare();
   say(fill(i18n.watching, { n: frames }));
   timer = setInterval(tick, TICK_MS);
-  track('scan_start', { width: video.videoWidth, height: video.videoHeight, ui_value: `${video.videoWidth}x${video.videoHeight}@${(window.devicePixelRatio || 1).toFixed(2)}` });
+  track('scan_start', { width: video.videoWidth, height: video.videoHeight, ui_value: `${video.videoWidth}x${video.videoHeight}@${(window.devicePixelRatio || 1).toFixed(2)}`, surface: stream.getVideoTracks()[0].getSettings?.().displaySurface || '' });
 }
 
 // Reloading or closing the page loses the read list and stops the screen share, so the browser asks first
@@ -835,7 +834,7 @@ function stop() {
   stream?.getTracks().forEach((t) => t.stop());
   stream = null;
   lastSig = null;
-  document.body.classList.remove('scanning', 'scan-still');
+  document.body.classList.remove('scanning');
   $('scan-stop').disabled = true;
   $('scan-start').disabled = !dataReady;
   // The last channel and room stay for the next share (a manual choice still wins).
