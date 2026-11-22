@@ -4068,7 +4068,8 @@ ${TR_CLASSES.map((c) => `- [${c.ko} 사냥터](${absUrl(langPath('ko', classPath
   write('page-hashes.json', JSON.stringify(hashes));
 }
 // GitHub Pages project sites can't serve a root robots.txt; this one takes effect once a custom domain is set.
-write('robots.txt', `User-agent: *\nAllow: /\nDisallow: ${config.basePath}/admin/\n\nSitemap: ${absUrl('/sitemap.xml')}\n`);
+// Daum webmaster tool proves ownership with a comment line in robots.txt ("#DaumWebMasterTool:<pin>:<id>"), set in site.config.json.
+write('robots.txt', `User-agent: *\nAllow: /\nDisallow: ${config.basePath}/admin/\n\nSitemap: ${absUrl('/sitemap.xml')}\n${config.daumWebmaster ? `\n${config.daumWebmaster}\n` : ''}`);
 if (config.adsenseClient) {
   write('ads.txt', `google.com, ${config.adsenseClient.replace(/^ca-/, '')}, DIRECT, f08c47fec0942fa0\n`);
 }

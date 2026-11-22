@@ -33,5 +33,6 @@
     "kofi": "https://ko-fi.com/gmshub"
   },
   "vapidPublic": "BJqUwAMBL2kL0VOHin8sIsDgRP-g7I34ddinSHW3JJlCKoU8tSXPSjTZbQo4I71kSWSvbSg8XAg8w_e29WOWaog",
-  "alerts": false
+  "alerts": false,
+  "daumWebmaster": "#DaumWebMasterTool:e2544047c1b8504a8f9b545b27a1bea255af346d52a3d46ee97d41591cbf69ef:CwADIp+6ZHYYqogn2XaFYA=="
 }
