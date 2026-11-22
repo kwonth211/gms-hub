@@ -48,7 +48,7 @@ async function show(name) {
   if (!rows.length) {
     body.innerHTML = `<div class="shop-empty"><p><strong>${esc(name)}</strong>${tr('의 상점에서 최근 24시간 안에 확인된 매물이 없어요.', ' has no listings seen in the last 24 hours.')}</p>
 <p>${tr('상점 스캔으로 내 상점을 올리면 바로 여기에 보여요.', 'Scan your shop and it shows up here right away.')}</p>
-<p><a class="btn" href="../tools/scan/">${tr('내 상점 올리기', 'Upload my shop')}</a></p></div>`;
+<p><a class="btn" href="../tools/scan/">${tr('내 상점 스캔', 'Scan my shop')}</a></p></div>`;
     return;
   }
   // The shop is where its newest listing was seen; listings elsewhere (an older spot) are listed under it.

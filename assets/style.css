@@ -3751,7 +3751,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 .mb-exact-filter button { flex:none; }
 @media(max-width:600px) { .mb-exact-filter { align-items:flex-start; flex-direction:column; } }
 
-/* Home hero: "내 상점 올리기" in the shortcut row under the search (owner 2026-11-21), same button as its neighbours. */
+/* Home hero: "내 상점 스캔" in the shortcut row under the search (owner 2026-11-21), same button as its neighbours. */
 
 /* Site-wide "Log in with Discord" (assets/account.js). Optional; the button sits beside the Discord icon. */
 .acct { position: relative; flex: none; }

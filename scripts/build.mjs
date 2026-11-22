@@ -1456,7 +1456,7 @@ ${[['all', lang === 'ko' ? '전체' : 'All'], ['item', lang === 'ko' ? '아이�
 <a href="#my-char" data-discover="home_character" data-discover-place="home-search">${lang === 'ko' ? '내 캐릭터 맞춤 홈' : 'My character home'}</a>
 <a href="${href(langPath(lang, '/tools/market/?fav=1'))}" data-discover="home_wishlist" data-discover-place="home-search">${lang === 'ko' ? '저장한 관심 아이템' : 'My saved items'}</a>
 <a href="${href(langPath(lang, '/tools/exp/'))}" data-discover="home_exp" data-discover-place="home-search">${lang === 'ko' ? '내 시간당 경험치 측정' : 'Measure my EXP/hour'}</a>
-<a class="home-scan" href="${href(langPath(lang, '/tools/scan/'))}" data-scan-cta="home-hero" data-discover="home_scan" data-discover-place="home-search">${lang === 'ko' ? '내 상점 올리기' : 'Upload my shop'}</a>
+<a class="home-scan" href="${href(langPath(lang, '/tools/scan/'))}" data-scan-cta="home-hero" data-discover="home_scan" data-discover-place="home-search">${lang === 'ko' ? '내 상점 스캔' : 'Scan my shop'}</a>
 </nav>
 ${heroNew(lang)}
 <dl class="hero-stats"><div data-market-stat="listings"><dt>${lang === 'ko' ? '24시간 매물' : 'Listings, 24h'}</dt><dd>–</dd></div><div data-market-stat="shops"><dt>${lang === 'ko' ? '24시간 확인한 상점' : 'Shops checked, 24h'}</dt><dd>–</dd></div>${lang === 'ko'
@@ -2337,7 +2337,7 @@ ${jsonScript('mk-data', { ...{ lang, api: config.voteApi, itemsUrl: href(`/asset
 }
 function marketBody(lang) {
   const t = MK[lang], tr = (ko,en) => lang === 'ko' ? ko : en;
-  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 볼 수 있어요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="mb-head-actions"><a class="btn mb-scan-cta" href="${href(langPath(lang, '/tools/scan/'))}" data-scan-cta="market-head">● ${tr('내 상점 올리기', 'Upload my shop')}</a><a class="btn ghost" href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 리포트', "Today's price report")}</a><button type="button" class="btn ghost" data-ct-open>🏆 ${tr('기여자 순위', 'Top contributors')}</button></p></section>
+  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 볼 수 있어요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="mb-head-actions"><a class="btn mb-scan-cta" href="${href(langPath(lang, '/tools/scan/'))}" data-scan-cta="market-head">● ${tr('내 상점 스캔', 'Scan my shop')}</a><a class="btn ghost" href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 리포트', "Today's price report")}</a><button type="button" class="btn ghost" data-ct-open>🏆 ${tr('기여자 순위', 'Top contributors')}</button></p></section>
 ${marketBrowser(lang, 0)}
 ${marketSnapshot(lang)}
 ${marketGuide(lang)}`;
