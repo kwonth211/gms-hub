@@ -50,6 +50,6 @@ Claude, Codex, 그 밖의 어떤 에이전트든 글을 쓰거나 고칠 때 이
 2. 문장마다 "그래서 뭘 하라는 건데?"에 답이 있는가.
 3. 지워도 뜻이 안 바뀌는 문장이 남아 있지 않은가.
 4. 고치기 전과 숫자·링크·이름이 같은가.
-5. 영어판도 같은 식으로 썼는가 ("compare", "test", "candidate", "may", "consider" 대신 "go to", "move to", "works when").
+5. 영어판도 같은 식으로 썼는가. "compare, candidate, consider, observed, benchmark, verify"는 같은 테스트가 세고, "test / trial / may / assume"도 둘러대는 뜻이면 쓰지 않는다. 대신 "go to", "move to", "you need", "stay while"로 쓴다. (게임의 "test server", 전직 시험 "trial", 확률 계산의 "assumes"는 그대로 둔다.)
 
 `tests/voice-baseline.json`의 숫자는 아직 못 고친 글에 남아 있는 개수다. 글을 고치면 그 숫자를 낮춘다. 높이지 않는다.

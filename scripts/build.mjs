@@ -121,7 +121,7 @@ const T = {
     statSource: '출처',
     langNames: { ko: '한국어', en: 'EN', zh: '中文', ja: '日本語', es: 'ES', pt: 'PT' },
     toolsHeading: 'GMS Hub 자체 도구',
-    trCardDesc: "직업·레벨별 진입 조건, 사냥 동선과 물약 비용을 비교해요.",
+    trCardDesc: "직업·레벨별 진입 조건, 사냥 동선과 물약 비용을 한눈에 봐요.",
     scCardDesc: 'Lesser·Intermediate·Greater·Chaos 주문서로 몇 번 붙고 터질 확률이 얼마인지 계산해요.',
     dropCardDesc: "입력한 드랍률이 일정하고 시도가 독립일 때의 획득 확률을 계산해요.",
     open: '열기',
@@ -129,7 +129,7 @@ const T = {
     sourcesLabel: '출처',
 
     trTitle: "글클메 사냥터 추천·정리: 레벨별·직업별 사냥터와 물약 비용 | GMS Hub",
-    trDesc: "직업과 레벨에 맞는 사냥터의 진입 조건, 위치, 층별 동선, 물약 비용, 다음 이동 시점과 대체 장소를 비교하세요.",
+    trDesc: "직업과 레벨에 맞는 사냥터의 진입 조건, 위치, 층별 동선, 물약 비용, 다음에 옮길 시점과 대체 장소를 알려 줘요.",
     trH1: "사냥터 추천",
     trLead: "내 직업과 레벨에 맞춰, 무리 없이 잡히는 다음 사냥터를 찾아보세요.",
     level: '내 레벨',
@@ -232,7 +232,7 @@ const T = {
 <h2>커뮤니티</h2>
 <p>시세 질문, 건의, 오류 제보는 <a href="{discord}" target="_blank" rel="noopener">GMS Hub 디스코드</a>에서 가장 빨리 답해요. 영상은 <a href="https://www.youtube.com/channel/UCkCvHQERtAK7qqn4WquS3eA" target="_blank" rel="noopener">GMS Hub 유튜브</a>에 올려요.</p>
 <h2>원칙</h2>
-<ul><li><strong>자료의 성격과 한계를 구분해요.</strong> 플레이 기록과 공략을 검토하고 장비·파티 조건을 붙여 재구성해요. 모든 조건에서 같은 결과를 재현한 실험은 아니에요.</li><li>자료가 충돌하면 조건과 정정 내용을 확인하고, 고정된 수익이나 순위를 약속하지 않아요.</li><li>현금 거래 사이트는 올리지 않아요.</li></ul>
+<ul><li><strong>플레이 기록과 공략을 모아서 써요.</strong> 사냥터마다 필요한 장비와 파티 조건을 같이 적어요. 장비가 다르면 결과도 달라요.</li><li>자료끼리 내용이 다르면 조건과 정정 내용을 확인해서 맞는 쪽을 써요. 얼마를 번다거나 몇 위라고 약속하지 않아요.</li><li>현금 거래 사이트는 올리지 않아요.</li></ul>
 <h2>다루는 게임</h2>
 <p>클래식 월드 하나만 다뤄요. 다른 메이플스토리 버전과는 맵, 몬스터, 강화 시스템이 달라서 섞지 않아요.</p>
 <h2>사이트 추가·오류 제보·문의</h2>
@@ -348,7 +348,7 @@ const T = {
     statSource: 'Source',
     langNames: { ko: 'Korean', en: 'EN', zh: '中文', ja: '日本語', es: 'ES', pt: 'PT' },
     toolsHeading: 'Database and tools',
-    trCardDesc: "Compare class routes, entry conditions, rotations and supply costs.",
+    trCardDesc: "Class routes with entry conditions, rotations and supply costs.",
     scCardDesc: 'See how many Lesser, Intermediate, Greater or Chaos scrolls pass and how likely a boom is.',
     dropCardDesc: "Calculate odds assuming the supplied drop rate stays constant across independent attempts.",
     open: 'Open',
@@ -377,14 +377,14 @@ const T = {
     trBandTitle: "MapleStory Classic World Level {a}–{b} Training Spots: Where to Grind | GMS Hub",
     trBandDesc: "Where to train at level {a}–{b} in MapleStory Classic World: {n} spots compared by class, with the monsters, what each spot needs and potion costs.",
     trBandH1: "Level {a}–{b} Training Routes",
-    trBandLead: "Compare {n} routes in this band. Read class, gear and supply requirements before moving.",
+    trBandLead: "{n} routes in this band. Read the class, gear and supply requirements before moving.",
     trBandFinder: "Find routes for your setup",
     noDate: 'undated',
 
     scTitle: 'MapleStory Classic World Scroll Success Rates: 100%, 60%, 10% & Chaos Calculator | GMS Hub',
     scDesc: 'Classic World scroll odds (Lesser 100%, Intermediate 60%, Greater 10%, Chaos 10%): pass distribution, boom chance and expected stat gain.',
     scH1: 'Scroll Calculator',
-    scLead: 'A probability model using sourced preset rates. Compare inputs with the current item tooltip.',
+    scLead: 'Works out scroll odds from preset success rates. Check them against the item tooltip in game.',
     scTier: 'Scroll tier',
     scLadder: 'Scroll type (gain)',
     scCustom: 'Custom',
@@ -459,7 +459,7 @@ const T = {
 <h2>Community</h2>
 <p>Price questions, suggestions and bug reports get the fastest answer in the <a href="{discord}" target="_blank" rel="noopener">GMS Hub Discord</a>. Videos go up on the <a href="https://www.youtube.com/channel/UCkCvHQERtAK7qqn4WquS3eA" target="_blank" rel="noopener">GMS Hub YouTube channel</a>.</p>
 <h2>Principles</h2>
-<ul><li><strong>Evidence has limits.</strong> We synthesize gameplay and guides with explicit gear and party conditions; these are not controlled benchmarks for every setup.</li><li>We check corrections and conflicting conditions instead of promising fixed profit or rankings.</li><li>We never list real-money trading sites.</li></ul>
+<ul><li><strong>Built from play records and guides.</strong> Each route lists the gear and party it needs; results change with your gear.</li><li>When sources disagree we check the conditions and corrections and use the one that holds. We do not promise a profit or a ranking.</li><li>We never list real-money trading sites.</li></ul>
 <h2>Which game</h2>
 <p>Classic World only. Other MapleStory versions have different maps, monsters and upgrade systems, so we keep them out.</p>
 <h2>Suggest a site, report an error or contact us</h2>
@@ -1508,11 +1508,11 @@ function bandNav(lang, current) {
 }
 function trainingMethod(lang) {
   const tr = (ko,en) => lang === 'ko' ? ko : en;
-  return `<section class="panel tr-method"><h2>${tr('새 사냥터는 이렇게 비교하세요','Compare a new map in three steps')}</h2><ol>
-<li>${tr('<strong>같은 장비로 10분씩.</strong> 버프·파티 인원·담당 층을 맞추고 미스와 처치 타수를 봐요.','<strong>Use equal ten-minute trials.</strong> Keep gear, buffs, party size and platform role comparable; check misses and casts per kill.')}</li>
-<li>${tr('<strong>경험치와 비용을 같이.</strong> 획득 메소와 실제 판매 수입에서 사용한 물약·탄약·이동비를 빼요. 미판매 희귀 아이템은 따로 적어요.','<strong>Compare EXP and costs.</strong> Subtract consumed supplies and travel from looted Mesos and actual sales; keep unsold rare drops separate.')}</li>
-<li>${tr('<strong>이동은 조건이 맞을 때.</strong> 레벨 범위는 이동을 검토하는 구간이에요. 공격 횟수·명중·물약 소비가 나빠지면 이전 맵을 유지하세요.','<strong>Move when the conditions work.</strong> Levels are trial windows. Stay on your previous map if hits, accuracy or supply consumption worsen.')}</li></ol>
-<p>${tr('실제 플레이와 공략을 바탕으로 재구성한 조건부 안내예요. 같은 결과를 모든 장비에서 재현한 실측표는 아니에요.','These conditional routes synthesize gameplay and guides; they are not controlled benchmarks for every setup.')}</p>
+  return `<section class="panel tr-method"><h2>${tr('새 사냥터로 옮기기 전에 이렇게 재 보세요','Before you move to a new map')}</h2><ol>
+<li>${tr('<strong>같은 장비로 10분씩.</strong> 버프·파티 인원·맡은 층을 똑같이 맞추고 미스와 타수를 세요.','<strong>Hunt ten minutes on each map.</strong> Same gear, buffs, party size and floor; count misses and casts per kill.')}</li>
+<li>${tr('<strong>경험치와 나간 돈을 같이.</strong> 주운 메소와 실제로 판 돈에서 쓴 물약·탄약·이동비를 빼요. 안 팔린 희귀 아이템은 따로 적어요.','<strong>Count EXP and costs together.</strong> Subtract the supplies and travel you paid for from looted mesos and real sales; keep unsold rare drops separate.')}</li>
+<li>${tr('<strong>옮기는 건 조건이 맞을 때.</strong> 레벨 범위는 옮길 만한 구간이에요. 타수·명중·물약값이 나빠지면 하던 맵에 남으세요.','<strong>Move when the numbers hold.</strong> A level range says when a move becomes possible. Stay on your old map if hits, accuracy or supply use get worse.')}</li></ol>
+<p>${tr('실제 플레이 기록과 공략을 모아 정리했어요. 장비에 따라 결과가 달라요.','Built from real play records and guides; results change with your gear.')}</p>
 <p><a href="${href(langPath(lang,'/guides/leveling-1-30/'))}">${tr('1~30레벨 상세 동선','Detailed early progression')}</a> · <a href="${href(langPath(lang,'/guides/leveling-30-70/'))}">${tr('30레벨 이후 직업별 분기','Class routes after 30')}</a></p></section>`;
 }
 // Every sourced rate on one table, by level: the quickest answer to "how much does this map give an hour", with the
@@ -1541,19 +1541,19 @@ ${fhPromo(lang)}
 ${''/* Class filter as visible chips at the top (owner 2026-11-22): one list filtered in place instead of a page per class. The links work as plain ?job= links; assets/training.js filters without a reload. */}<div class="tr-jobs" role="group" aria-label="${tr('직업','Class')}"><a class="band-link tr-job current" data-job="" href="${href(langPath(lang,'/tools/training/'))}">${tr('모든 직업','All classes')}</a>${Object.entries(jobNames[lang]).map(([key,label])=>`<a class="band-link tr-job" data-job="${key}" href="${href(langPath(lang,'/tools/training/'))}?job=${key}">${label}</a>`).join('')}</div>
 <label>${t.level}<input type="number" name="lv" min="1" max="100" placeholder="${lang === 'ko' ? '전체' : 'All'}" inputmode="numeric"></label>
 <label hidden>${tr('직업','Class')}<select name="job"><option value="">${tr('모든 직업','All classes')}</option>${Object.entries(jobNames[lang]).map(([key,label])=>`<option value="${key}">${label}</option>`).join('')}</select></label>
-<label>${tr('우선순위','Priority')}<select name="goal"><option value="balanced">${tr('전체 비교','Compare all')}</option><option value="economy">${tr('물약 절약','Lower supply cost')}</option></select></label>
+<label>${tr('우선순위','Priority')}<select name="goal"><option value="balanced">${tr('전체 보기','Show all')}</option><option value="economy">${tr('물약 절약','Lower supply cost')}</option></select></label>
 <label>${tr('사냥 방식','Party setup')}<select name="party"><option value="any">${tr('솔로 + 파티','Solo + party')}</option><option value="solo">${tr('솔로 가능한 곳','Solo options')}</option></select></label>
 <button class="btn" type="submit">${tr('사냥터 찾기','Find routes')}</button>
-<label class="tr-check"><input name="advanced" type="checkbox">${tr('장비·명중이 갖춰져야 하는 사냥터도 보기','Include demanding gear / accuracy options')}</label>
-<p class="tr-filter-help">${tr('표시된 레벨은 이 사냥터로 옮길 만한 구간이에요. 카드의 진입 기준부터 보세요.','Levels are trial windows; read each card’s entry conditions first.')}</p>
-</form><div class="tr-result-head"><h2 id="tr-status" role="status">${tr('20레벨 사냥 후보','Options for level 20')} ${initial.length}${tr('곳','')}</h2><div class="tr-result-actions"><button type="button" class="btn ghost small-btn" id="tr-share" data-ok="${tr('조건 링크를 복사했어요','Link copied')}" data-fail="${tr('복사하지 못했어요. 주소창의 주소를 직접 복사해 주세요.','Could not copy. Copy the address from the address bar.')}">${tr('이 조건 링크 복사','Copy link to these filters')}</button><span id="tr-share-status" class="share-status" role="status" aria-live="polite"></span><a href="${href(langPath(lang,'/guides/choose-your-job/'))}">${tr('직업별 육성 가이드','Class guides')}</a></div></div>
+<label class="tr-check"><input name="advanced" type="checkbox">${tr('장비·명중이 갖춰져야 하는 사냥터도 보기','Also show maps that need gear or accuracy')}</label>
+<p class="tr-filter-help">${tr('표시된 레벨은 이 사냥터로 옮길 만한 구간이에요. 카드의 진입 기준부터 보세요.','The level shown is when a move to this map becomes possible. Read the card’s entry conditions first.')}</p>
+</form><div class="tr-result-head"><h2 id="tr-status" role="status">${tr('20레벨 사냥터','Maps for level 20')} ${initial.length}${tr('곳','')}</h2><div class="tr-result-actions"><button type="button" class="btn ghost small-btn" id="tr-share" data-ok="${tr('조건 링크를 복사했어요','Link copied')}" data-fail="${tr('복사하지 못했어요. 주소창의 주소를 직접 복사해 주세요.','Could not copy. Copy the address from the address bar.')}">${tr('이 조건 링크 복사','Copy link to these filters')}</button><span id="tr-share-status" class="share-status" role="status" aria-live="polite"></span><a href="${href(langPath(lang,'/guides/choose-your-job/'))}">${tr('직업별 육성 가이드','Class guides')}</a></div></div>
 <section id="tr-result">${routeCards(initial,lang)}</section><noscript><p>${tr('조건 검색에는 JavaScript가 필요해요. 아래 레벨별 페이지에서 전체 경로를 볼 수 있어요.','Filters require JavaScript. Browse the level-band pages below for all routes.')}</p></noscript>
 ${ratesTable(lang)}${bandNav(lang)}${trainingMethod(lang)}</div>${jsonScript('training-data',publicTrainingData(training))}`;
 }
 function trainingBandBody(lang,band) {
   const t=T[lang]; const rows=bandSpots(band); const vars={a:band[0],b:band[1],n:rows.length};
   return `${pageHead(lang,'sword',fill(t.trBandH1,vars),fill(t.trBandLead,vars))}<div class="wrap tr-page">
-<p class="tr-review-note">${lang==='ko'?'이 레벨대에 갈 수 있는 모든 직업의 사냥터예요. 장비가 갖춰져야 하는 곳도 섞여 있으니 직업과 진입 기준을 같이 보세요.':'All class routes overlapping this band, including gear-dependent trials. Check class and entry conditions.'}</p>${routeCards(rows,lang)}
+<p class="tr-review-note">${lang==='ko'?'이 레벨대에 갈 수 있는 모든 직업의 사냥터예요. 장비가 갖춰져야 하는 곳도 섞여 있으니 직업과 진입 기준을 같이 보세요.':'Every class’s maps for this level band, including ones that need gear. Read the class and the entry conditions together.'}</p>${routeCards(rows,lang)}
 <p><a class="btn" href="${href(langPath(lang,'/tools/training/'))}?lv=${band[0]}">${t.trBandFinder}</a></p>${bandNav(lang,band)}${trainingMethod(lang)}</div>`;
 }
 
@@ -1810,7 +1810,7 @@ const EXP = {
     stats: { now: '지금 EXP', rate: '시간당 경험치', recent: '최근 5분 속도', pct: '시간당 %', next: '다음 레벨까지', gained: '이번 측정 획득', time: '측정 시간', best: '내 최고 기록 대비' },
     demo: '예시로 먼저 보기', demoOff: '예시 끄기', demoNote: '예시 화면이에요. 40분 동안 사냥한 기록을 넣어 봤어요. 실제로 재려면 위의 시작 버튼을 누르세요.',
     pip: '미니 창 띄우기', spotLabel: '사냥터 메모', spotPh: '예: 개미굴 2, 파티 3명', alertLabel: 'EXP가 3분 넘게 안 오르면 소리로 알리기',
-    log: { heading: '사냥 기록', help: '정지하거나 새로 측정할 때 3분 넘게 잰 기록이 여기에 남아요. 같은 몬스터 기록끼리 최고 기록과 비교해요. 이 브라우저에 저장되고, 디스코드로 로그인하면 다른 기기에서도 이어져요.',
+    log: { heading: '사냥 기록', help: '정지하거나 새로 측정할 때 3분 넘게 잰 기록이 여기에 남아요. 같은 몬스터를 잰 기록 중 최고 기록과 나란히 보여 줘요. 이 브라우저에 저장되고, 디스코드로 로그인하면 다른 기기에서도 이어져요.',
       cols: ['날짜', '측정 시간', '시간당 경험치', '시간당 %', '얻은 경험치', '몬스터', '사냥터 메모', ''], empty: '아직 남은 기록이 없어요.', del: '삭제', excel: '엑셀로 받기', clear: '기록 전체 삭제', clearAsk: '사냥 기록을 모두 지울까요?',
       share: '사냥터 순위에 보태기', shared: '보탰어요 ✓', shareNeed: '레벨과 직업을 먼저 넣어 주세요.', shareOk: '보태 주셔서 고마워요! 같은 곳 기록이 3명 넘게 모이면 사냥터 추천에 유저 실측으로 나와요.', shareFail: '지금은 보낼 수 없어요. 잠시 뒤 다시 눌러 주세요.' },
     me: { lv: '내 레벨', job: '직업', party: '파티 인원', solo: '솔로', people: '{n}명', help: '사냥터 순위에 보탤 때 같이 올라가요. 이 브라우저에 기억해요.' },
@@ -1831,7 +1831,7 @@ const EXP = {
       kills: '{mob} 약 {n}마리', killsPerHour: '시간당 약 {n}마리',
       resetAsk: '지금 기록을 지우고 새로 측정할까요?', manualOk: '기록했어요.', manualFirstOk: '시작값을 기록했어요. 사냥이 끝나면 그때 EXP를 넣고 다시 눌러 주세요.', manualFirst: '시작값 기록', manualNext: '지금 값 기록', manualBad: 'EXP와 퍼센트(소수점 두 자리)를 확인해 주세요.',
       stalled: 'EXP가 {m}분째 안 올라요. 죽었거나 접속이 끊겼는지 확인해 보세요.', levelUp: '레벨 업! 다음 레벨도 이어서 재요.', logged: '사냥 기록에 남겼어요.',
-      pipNo: '이 브라우저는 미니 창을 지원하지 않아요. PC 크롬이나 엣지 최신 버전에서 돼요.', bestNone: '같은 몬스터로 재면 비교해요', bestVs: '{pct}% (최고 {best})', perHourShort: '/시간'
+      pipNo: '이 브라우저는 미니 창을 지원하지 않아요. PC 크롬이나 엣지 최신 버전에서 돼요.', bestNone: '같은 몬스터를 다시 재면 최고 기록과 나란히 보여요', bestVs: '{pct}% (최고 {best})', perHourShort: '/시간'
     }
   },
   en: {
@@ -2211,7 +2211,7 @@ const MK = {
     recent: '방금 올라온 매물',
     pick: '아이템을 검색하거나 순위에서 골라 보세요.',
     noData: '이 아이템은 아직 최근 7일 매물이 없어요. 스캔하면 바로 쌓여요.',
-    tiles: { avg: '판매 중 중앙값 (24시간)', low: '관측 최저가 (24시간)', last: '판매 완료 중앙값 (24시간)', count: '최근 7일 매물' },
+    tiles: { avg: '판매 중 중앙값 (24시간)', low: '최저가 (24시간)', last: '판매 완료 중앙값 (24시간)', count: '최근 7일 매물' },
     trend: '가격 추이 (7일)',
     trendNote: '선은 날짜별 중앙값, 띠는 그날의 최저~최고, 점은 매물 하나하나예요.',
     dist: '가격대 분포',
@@ -2496,8 +2496,8 @@ function marketGuide(lang) {
   const tr = (ko,en) => lang === 'ko' ? ko : en;
   return `<section class="wrap prose guide"><details><summary>${tr('시세와 매물은 어떻게 집계하나요?','How are listings and prices calculated?')}</summary>
 <h3>${tr('아이템 시세와 전체 매물','Item prices and all listings')}</h3><p>${tr('아이템 시세는 최근 7일간 확인한 상점 매물을 아이템별로 모아 한 줄씩 보여 줘요. 아이템을 누르면 지금 파는 곳이 열려요. 판매자·채널·방으로 찾거나 이전 기록을 보려면 전체 매물을 쓰세요.','Item prices groups the shop listings seen in the last 7 days into one row per item; open an item to see where it is for sale now. Use All listings to search by seller, channel or room, or to see older records.')}</p>
-<h3>${tr('가격과 매물 수의 기준','Prices and listing counts')}</h3><p>${tr('목록의 중앙값과 최저가는 최근 판매 중 매물 기준이에요. 높은 가격도 실제 매물 목록에서 숨기지 않아요. 판매 완료 표시는 관측된 상태이며 실제 체결을 보증하지 않아요. 가격 제보를 판매 상점 수나 재고에 합산하지 않아요.','Directory medians and lowest asks use recent asking listings. High asking prices remain visible. Sold is an observed status, not a verified transaction. Anonymous reports are not counted as shop inventory.')}</p>
-<h3>${tr('가격 추이와 매물대','Price trends and depth')}</h3><p>${tr('가격 추이는 저장된 관측 이력을 사용해요. 동일 매물을 다시 관측한 것은 새로운 거래가 아니에요. 매물대는 현재 판매 중인 매물 행을 한 번씩 세며 묶음 수량이나 누적 관측 횟수로 부풀리지 않아요. 관측이 없는 구간은 비워 둡니다. 목록은 5분마다 확인하며 선택한 아이템과 필터는 유지해요.','Trends use retained observations. Seeing the same listing again is not a new trade. Depth counts each current asking listing once, rather than summing bundle quantities or repeat observations. Missing intervals remain empty. The directory checks for updates every 5 minutes while preserving your selection and filters.')}</p></details></section>`;
+<h3>${tr('가격과 매물 수의 기준','Prices and listing counts')}</h3><p>${tr('목록의 중앙값과 최저가는 최근 판매 중 매물 기준이에요. 높은 가격도 실제 매물 목록에서 숨기지 않아요. ‘판매 완료’는 팔린 것으로 확인된 매물에 붙는 표시예요. 실제로 돈이 오갔는지까지는 알 수 없어요. 가격 제보를 판매 상점 수나 재고에 합산하지 않아요.','Directory medians and lowest asks use recent asking listings. High asking prices remain visible. Sold marks a listing confirmed as sold; whether money changed hands is not known. Anonymous reports are not counted as shop inventory.')}</p>
+<h3>${tr('가격 추이와 매물대','Price trends and depth')}</h3><p>${tr('가격 추이는 그동안 모은 매물 기록으로 그려요. 같은 매물을 다시 확인한 건 새 거래로 세지 않아요. 매물대는 지금 판매 중인 매물을 한 번씩만 세고, 묶음 수량이나 여러 번 확인한 횟수로 부풀리지 않아요. 기록이 없는 구간은 비워 둬요. 목록은 5분마다 확인하며 선택한 아이템과 필터는 유지해요.','Trends use retained observations. Seeing the same listing again is not a new trade. Depth counts each current asking listing once, rather than summing bundle quantities or repeat observations. Missing intervals remain empty. The directory checks for updates every 5 minutes while preserving your selection and filters.')}</p></details></section>`;
 }
 
 function dropGuide(lang) {

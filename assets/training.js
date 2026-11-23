@@ -32,7 +32,7 @@ function show(userAction = false) {
   const rows = selectRoutes(data.routes, c);
   // With a class chosen and no level, the heading names the class ("헌터 사냥터 34곳").
   const jobLabel = c.job ? chips.find((a) => a.dataset.job === c.job)?.textContent : '';
-  status.textContent = c.level == null && jobLabel ? (lang === 'ko' ? `${jobLabel} 사냥터 ${rows.length}곳` : `${jobLabel}: ${tx('{n} training spots', { n: rows.length })}`) : c.level == null ? (lang === 'ko' ? `전체 사냥터 ${rows.length}곳` : tx('All {n} training spots', { n: rows.length })) : lang === 'ko' ? `${c.level}레벨 사냥 후보 ${rows.length}곳` : tx('{n} options for level {lv}', {n: rows.length, lv: c.level});
+  status.textContent = c.level == null && jobLabel ? (lang === 'ko' ? `${jobLabel} 사냥터 ${rows.length}곳` : `${jobLabel}: ${tx('{n} training spots', { n: rows.length })}`) : c.level == null ? (lang === 'ko' ? `전체 사냥터 ${rows.length}곳` : tx('All {n} training spots', { n: rows.length })) : lang === 'ko' ? `${c.level}레벨 사냥터 ${rows.length}곳` : tx('{n} options for level {lv}', {n: rows.length, lv: c.level});
   result.innerHTML = routeCards(rows, lang, `/${location.pathname.split('/')[1]}`);
   if (c.level != null) result.querySelector('.tr-route-list')?.style.setProperty('--you', `${Math.min(100, (c.level - 1) / 80 * 100)}%`);
   if (userAction) {

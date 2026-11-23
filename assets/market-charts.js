@@ -6,19 +6,19 @@ const COPY = {
   ko: {
     title: '가격 흐름과 매물대', period: '조회 기간', periods: ['1시간', '6시간', '24시간', '7일'],
     both: '함께 보기', asking: '판매 중', sold: '판매 완료', series: '가격 추이 표시',
-    trend: '가격 변동 추이', trendNote: '시간 구간별 중앙값 · 세로선은 최저~최고 · 아래 막대는 관측 매물 수',
+    trend: '가격 변동 추이', trendNote: '시간 구간별 중앙값 · 세로선은 최저~최고 · 아래 막대는 매물 수',
     basis: '각 매물의 마지막 확인 시각 기준이에요. 판매 완료도 확인한 가격이며, 실제 거래 시각·거래량은 아니에요.',
     profile: '가격대별 매물', profileNote: '막대를 누르면 해당 가격대의 전체 채널 매물을 볼 수 있어요.',
-    depth: '누적 판매 매물', depthNote: '해당 가격 이하에 관측된 판매 중 매물 수예요. 묶음 수량을 합산한 재고가 아니에요.',
+    depth: '누적 판매 매물', depthNote: '그 가격 이하로 올라온 판매 중 매물 수예요. 묶음 수량을 더한 재고는 아니에요.',
     empty: '이 기간에 확인한 기록이 없어요. 더 긴 기간을 선택해 보세요.',
     noSeries: '선택한 상태의 가격 기록이 없어요.', noAsking: '이 기간에 확인한 판매 중 매물이 없어요.',
     sparse: '표본이 적어 가격 흐름을 판단하기 어려워요. 추가 기록이 쌓이면 함께 확인해 주세요.',
-    interval: '관측 구간', change: '관측 구간 변동', notEnough: '비교할 시간 구간 부족', peak: '가장 많은 가격대', tied: '{n}개 가격대 동률',
-    count: '관측 매물', unit: '건', price: '메소', median: '중앙값', range: '최저~최고',
+    interval: '기록 구간', change: '구간 변동', notEnough: '비교할 시간 구간 부족', peak: '가장 많은 가격대', tied: '{n}개 가격대 동률',
+    count: '매물', unit: '건', price: '메소', median: '중앙값', range: '최저~최고',
     inspect: '그래프를 누르거나 Tab 키로 이동하면 구간별 수치를 볼 수 있어요.',
     profileScope: '판매 중 · 최근 {h}시간 · {n}건', table: '시간 구간별 수치 보기', time: '확인 시각',
     accumulated: '이하 누적', none: '기록 없음', cap: '최근 {n}개 기록만 표시해요.',
-    selected: '선택한 가격대', clear: '가격대 해제', amount: '관측 매물 수'
+    selected: '선택한 가격대', clear: '가격대 해제', amount: '매물 수'
   },
   en: {
     title: tx('Price trends & listing depth'), period: tx('Time range'), periods: [tx('1h'), tx('6h'), tx('24h'), tx('7d')],
@@ -55,7 +55,7 @@ function optRange(b, badge) {
 
 export function mountMarketCharts(root, rows, { lang = 'ko', now = Date.now(), truncated = false, limit = 400, profileRows = rows, persistent = false, profileTruncated = false, onBand = null, optBadge = null } = {}) {
   const t = { ...(COPY[lang] || COPY.en), ...(persistent ? (lang === 'ko'
-    ? { asking: '판매가 관측', sold: '판매 완료 관측', count: '관측 기록', amount: '관측 기록 수' }
+    ? { asking: '판매가 기록', sold: '판매 완료 기록', count: '기록', amount: '기록 수' }
     : { asking: tx('Observed asks'), sold: tx('Observed sold'), count: tx('Observations'), amount: tx('Observations') }) : {}) };
   const nf = new Intl.NumberFormat(lang);
   // Korean readers get Korea Standard Time regardless of device clock; other languages use the viewer's zone.
@@ -72,7 +72,7 @@ export function mountMarketCharts(root, rows, { lang = 'ko', now = Date.now(), t
   let analysis, width = 0;
   root.innerHTML = `<section class="market-analysis" aria-labelledby="analysis-title">
     <div class="analysis-heading"><h3 id="analysis-title">${t.title}</h3><div class="chart-segments" role="group" aria-label="${t.period}">${PERIODS.map((h, i) => `<button type="button" data-period="${h}" aria-pressed="${h === hours}">${t.periods[i]}</button>`).join('')}</div></div>
-    <p class="analysis-basis">${persistent ? (lang === 'ko' ? '추이는 저장된 관측 이력, 매물대는 최근 24시간에 확인한 판매 중 매물 기준이에요.' : tx('Trends use retained observations; depth uses distinct asking listings seen in the last 24h.')) : t.basis}</p>
+    <p class="analysis-basis">${persistent ? (lang === 'ko' ? '추이는 그동안 모은 기록, 매물대는 최근 24시간에 확인한 판매 중 매물 기준이에요.' : tx('Trends use retained observations; depth uses distinct asking listings seen in the last 24h.')) : t.basis}</p>
     ${truncated ? `<p class="analysis-warning">${t.cap.replace('{n}', limit)}</p>` : ''}
     ${profileTruncated ? `<p class="analysis-warning">${lang === 'ko' ? '매물대는 낮은 가격순 10,000건까지 집계했어요. 전체 매물은 목록에서 확인하세요.' : tx('Depth includes the 10,000 lowest-priced listings. Browse the list for all records.')}</p>` : ''}
     <div data-analysis-body></div>

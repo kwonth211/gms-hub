@@ -98,11 +98,11 @@
    },
    "exit": {
     "ko": "15레벨 장비로 바꾼 다음 추락주의나 나무던전으로 넘어가요.",
-    "en": "Compare level-15 equipment before testing Construction Site or tree dungeons."
+    "en": "Switch to level-15 equipment, then move to Construction Site or the tree dungeons."
    },
    "alternative": {
     "ko": "현자의 숲에서 슬라임·초록버섯을 잡아요.",
-    "en": "Compare Slime and Green Mushroom around The Wise Man’s Forest."
+    "en": "Hunt Slimes and Green Mushrooms around The Wise Man’s Forest."
    },
    "mobIds": [
     2,
@@ -143,7 +143,7 @@
    },
    "entry": {
     "ko": "슬라임 1타·초록버섯 1~2타가 안정적인지 보세요. 근접 직업은 좁은 층을 고르면 추격이 줄어요.",
-    "en": "Test reliable one-hit Slimes and one/two-hit Green Mushrooms; melee classes favor compact floors."
+    "en": "You want one-hit Slimes and one- or two-hit Green Mushrooms; melee classes do best on compact floors."
    },
    "route": {
     "ko": "엘리니아 북쪽숲 나무던전에서 현재 몬스터 배치를 보고 한 층씩 돌아요. 초록버섯만 찾아 맵 전체를 왕복하지 마세요.",
@@ -151,11 +151,11 @@
    },
    "cost": {
     "ko": "물약을 아끼고 싶을 때 좋은 자리예요. 남는 돈은 장비와 회복 아이템에 따라 달라요.",
-    "en": "A candidate for saving potions; net income depends on your gear and recovery items."
+    "en": "A good spot for saving potions; what you keep depends on your gear and recovery items."
    },
    "exit": {
     "ko": "지금 층에서 칠 몬스터가 없어 기다리는 시간이 길어지면 파티 사냥이나 커닝 파퀘로 가요.",
-    "en": "If you spend too much time waiting for targets, compare party training or KPQ."
+    "en": "If you spend too much time waiting for targets, go to party training or KPQ."
    },
    "alternative": {
     "ko": "헤네시스 버섯동산·마을 사이 길에서 퀘스트 몬스터를 같이 잡아요.",
@@ -176,7 +176,7 @@
      "src": "shumi-woodcutter",
      "note": {
       "ko": "원숭이숲 윗층 초록버섯 나무꾼, 루팡 파티 옆에서 10분 측정(23분/렙); 같은 레벨 개미굴 솔로 1.5만",
-      "en": "Monkey Forest top-floor green mushrooms beside a Lupin party, 10-min test (23 min per level); Ant Tunnel solo at the same level 15k"
+      "en": "Monkey Forest top-floor green mushrooms beside a Lupin party, 10-min run (23 min per level); Ant Tunnel solo at the same level 15k"
      }
     }
    ]
@@ -214,7 +214,7 @@
    },
    "entry": {
     "ko": "현재 무기로 연속 공격할 MP를 확보하고, 발판 끝에서 사거리가 닿는지 먼저 봐요.",
-    "en": "Bring enough MP supplies and test your attack reach from platform edges."
+    "en": "Bring enough MP supplies and learn your attack reach from the platform edges."
    },
    "route": {
     "ko": "커닝시티 공사장 쪽에서 추락주의로 이동해요. 같은 발판의 몬스터를 정리한 뒤 다음 층으로 옮겨요.",
@@ -226,7 +226,7 @@
    },
    "exit": {
     "ko": "21레벨부터는 파퀘도 좋아요. 표도는 스티지가 1타에 잡히면 그쪽으로 가요.",
-    "en": "At 21 compare KPQ; claw users can test one-hit Stirges."
+    "en": "From 21 KPQ is a good move; claw users go to Stirges once they die in one hit."
    },
    "alternative": {
     "ko": "공사장 주변 다른 층 또는 엘리니아 나무던전.",
@@ -264,7 +264,7 @@
    },
    "summary": {
     "ko": "윗 사냥터에서 물약이 너무 많이 들 때 가는 4인 파티 경로예요.",
-    "en": "A four-player route to compare when field training consumes too many supplies."
+    "en": "A four-player route for when field training eats too many supplies."
    },
    "entry": {
     "ko": "입장은 21레벨부터예요. 막 들어와서 화력이 모자라면 24레벨 전후에 다시 와요. 보스용 HP 물약은 따로 챙기세요.",
@@ -284,7 +284,7 @@
    },
    "alternative": {
     "ko": "21~30은 나무던전·스티지, 30대는 발굴지·개미굴 중 타수가 적게 나오는 곳으로 가요.",
-    "en": "Compare tree dungeons or Stirges early; Excavation Site or Ant Tunnel in the thirties."
+    "en": "Tree dungeons or Stirges early; Excavation Site or Ant Tunnel in the thirties, whichever takes fewer hits."
    },
    "mobIds": [
     29,
@@ -408,7 +408,7 @@
    },
    "summary": {
     "ko": "표창 도적이 돈을 덜 쓰고 사냥하기 좋은 대표 자리예요. 날아다녀서 근접 단검과는 안 맞아요.",
-    "en": "A low-cost comparison for claw users; flying targets are awkward for dagger melee."
+    "en": "The standard low-cost spot for claw users; flying targets are awkward for dagger melee."
    },
    "entry": {
     "ko": "럭키세븐 1번에 잡히는지가 핵심이에요. 25레벨 메바로 바꾸고 다시 와 보고, 그래도 2번 이상 쳐야 하면 하던 맵으로 돌아가요.",
@@ -424,7 +424,7 @@
    },
    "exit": {
     "ko": "스티지가 편하게 잡히면 파퀘나 35 전후의 주니어 레이스로 넘어가요.",
-    "en": "Compare KPQ, then Jr. Wraith near the mid-thirties once ready."
+    "en": "Move on to KPQ, then Jr. Wraith near the mid-thirties."
    },
    "alternative": {
     "ko": "나무던전·커닝 파퀘. 순수 단검은 이 경로 대신 근접 사냥터를 골라요.",
@@ -460,11 +460,11 @@
    },
    "summary": {
     "ko": "20레벨에 다들 가는 코스는 아니에요. 무기를 바꾸고 파티까지 구한 표도가 가 볼 만한 곳이에요.",
-    "en": "An equipped claw-user trial, not the default route at level 20."
+    "en": "For claw users who already have the weapon and a party, not the default route at level 20."
    },
    "entry": {
     "ko": "20제 아대와 파티를 갖추고, 뿔버섯이 2번 안에 잡혀야 해요. MP가 빠듯하면 가지 마세요.",
-    "en": "With a level-20 claw and party, test kills within two casts. Avoid this without an MP reserve."
+    "en": "With a level-20 claw and a party, you need kills within two casts. Skip this without an MP reserve."
    },
    "route": {
     "ko": "슬리피우드 개미굴 입구에서 위쪽 층부터 담당하고, 버섯별 처치 타수를 따로 봐요.",
@@ -511,11 +511,11 @@
    },
    "summary": {
     "ko": "30 전후에 파티와 짧은 동선으로 돌기 좋은 곳이에요.",
-    "en": "A party-based comparison around level 30."
+    "en": "A party route with short paths around level 30."
    },
    "entry": {
     "ko": "아래층 몬스터가 1~2번에 잡히는지 먼저 봐요. 둘이서 구역을 나눌 수 있을 때 가기 좋아요.",
-    "en": "Test one/two-cast kills and split areas with a partner."
+    "en": "You need one- or two-cast kills; split the areas with a partner."
    },
    "route": {
     "ko": "페리온에서 유적 발굴지 방향으로 이동해 I 구역에서 층을 나눠요.",
@@ -581,7 +581,7 @@
    },
    "route": {
     "ko": "개미굴 I에만 몰리지 말고 II·III에서도 파티와 층을 나눠요.",
-    "en": "Compare Ant Tunnel I, II and III and agree on floor assignments."
+    "en": "Spread across Ant Tunnel I, II and III and agree on floor assignments."
    },
    "cost": {
     "ko": "파티원이 빠져서 몬스터가 쌓이거나 몸박이 늘면 물약값을 다시 세어 보세요.",
@@ -593,7 +593,7 @@
    },
    "alternative": {
     "ko": "발굴지 I·III, 불타버린 땅은 각각 들어갈 조건이 달라요.",
-    "en": "Compare Excavation Site or Burnt Land after checking their entry conditions."
+    "en": "Excavation Site and Burnt Land each have their own entry conditions."
    },
    "mobIds": [
     19,
@@ -646,11 +646,11 @@
    },
    "summary": {
     "ko": "헌터로 막 전직했다면 느린 몬스터를 멀리서 잡는 사냥이 좋아요.",
-    "en": "Hunters can compare this slower-target route immediately after advancement."
+    "en": "Right after advancing, Hunters do well here against slow targets from range."
    },
    "entry": {
     "ko": "멀리서 먼저 쏘고, 다가오기 전에 잡을 수 있는지 봐요. 불독은 쓰던 공격기와 파이어 애로우 중 타수가 적은 쪽을 써요.",
-    "en": "Kill before contact; Fire/Poison users should compare their old attack with Fire Arrow."
+    "en": "Kill before contact; Fire/Poison users go with whichever of their old attack or Fire Arrow kills in fewer casts."
    },
    "route": {
     "ko": "커닝시티 방황의 늪 I·II에서 긴 발판을 골라 좌우로 정리해요.",
@@ -662,7 +662,7 @@
    },
    "exit": {
     "ko": "헌터는 깊은 개미굴로, 불독은 주니어 레이스로 넘어가요.",
-    "en": "Hunters can compare Deep Ant Tunnel; Fire/Poison users can compare Jr. Wraith."
+    "en": "Hunters move on to Deep Ant Tunnel; Fire/Poison users to Jr. Wraith."
    },
    "alternative": {
     "ko": "커닝 파퀘 또는 기존 나무던전에서 숙련도 스킬을 먼저 올려요.",
@@ -707,7 +707,7 @@
    },
    "entry": {
     "ko": "미스가 자주 나는지 직접 쳐 보세요. 헌터는 포커스를 얼마나 찍었는지, 표도는 무기를 바꿨는지에 따라 들어갈 시점이 달라요.",
-    "en": "Test misses with your own gear and buffs; Hunter Focus and claw upgrades change readiness."
+    "en": "Watch for misses with your own gear and buffs; Hunter Focus and claw upgrades change when you are ready."
    },
    "route": {
     "ko": "커닝시티 지하철의 주니어 레이스 구역에서 층을 맡아 이동을 줄여요.",
@@ -719,7 +719,7 @@
    },
    "exit": {
     "ko": "편하게 잡히면 로랑이나 불타버린 땅으로 가요. 무기 강화에 드는 돈까지 따져 보세요.",
-    "en": "Compare Lorang or Burnt Land once ready, including equipment investment."
+    "en": "Move to Lorang or Burnt Land once kills are easy, counting what the equipment costs."
    },
    "alternative": {
     "ko": "스티지 1타 유지, 깊은 개미굴, 커닝 파퀘.",
@@ -787,11 +787,11 @@
    },
    "entry": {
     "ko": "보우 마스터리와 명중 상태를 확인하고, 담당 구역에서 공격이 계속 이어지는지 봐요.",
-    "en": "Check Mastery and accuracy, then test continuous coverage of your assigned floor."
+    "en": "Check Mastery and accuracy, then make sure you can keep your assigned floor clear."
    },
    "route": {
     "ko": "개미굴 안쪽의 깊은 개미굴 I로 이동해요. 지붕 쪽에서 닿는 발판을 확인하고 파티와 구역을 나눠요.",
-    "en": "Enter Deep Ant Tunnel I and test the platforms reachable from the roof area."
+    "en": "Enter Deep Ant Tunnel I and use the platforms you can reach from the roof area."
    },
    "cost": {
     "ko": "몹을 쫓아 아래로 자주 떨어지면 이동과 피격 비용이 커져요.",
@@ -799,11 +799,11 @@
    },
    "exit": {
     "ko": "40대 로랑은 2타에 편하게 잡힐 때 가세요.",
-    "en": "Compare Lorang in the forties only when two-hit kills are reliable."
+    "en": "Go to Lorang in the forties only when two-hit kills are reliable."
    },
    "alternative": {
     "ko": "리게이터나 주니어 레이스. 명중과 타수가 더 잘 나오는 쪽으로 가요.",
-    "en": "Compare Ligator or Jr. Wraith kill reliability."
+    "en": "Ligator or Jr. Wraith, whichever you hit and kill more reliably."
    },
    "mobIds": [
     19,
@@ -835,7 +835,7 @@
    },
    "summary": {
     "ko": "35 이후에 발굴지 I보다 센 곳을 찾을 때 가는 경로예요.",
-    "en": "A stronger comparison after Excavation Site I in the mid-thirties."
+    "en": "The step up from Excavation Site I in the mid-thirties."
    },
    "entry": {
     "ko": "한 구역을 밀 수 있는 화력과 회복 여유가 있어야 해요. 미스·3타 이상이 잦으면 낮은 구역이 나아요.",
@@ -847,7 +847,7 @@
    },
    "cost": {
     "ko": "잠깐 잰 경험치만 보지 말고 같은 시간에 쓴 물약도 같이 세어 보세요.",
-    "en": "Compare potion consumption alongside EXP during equal-length trials."
+    "en": "Count the potions you use over the same time, not just the EXP."
    },
    "exit": {
     "ko": "잡는 속도가 빨라져도 파티가 느슨하면 아래 맵으로 돌아가는 게 나아요.",
@@ -919,11 +919,11 @@
    },
    "entry": {
     "ko": "파이어보어가 2타 안에 잡혀야 해요. 불독의 파이어 애로우 경로와는 다른 이야기예요.",
-    "en": "Test kills within two casts; this is not a Fire Arrow route."
+    "en": "You need kills within two casts; this is not a Fire Arrow route."
    },
    "route": {
     "ko": "깊은 골짜기 I→II→아래쪽 불타는 지역에서 불타버린 땅으로 이동해요. I이 붐비면 위쪽 포털의 II로 가요.",
-    "en": "Travel through Deep Valley I/II to the burning area; compare the neighboring Burnt Land section."
+    "en": "Travel through Deep Valley I/II to the burning area; if it is crowded, use the neighboring Burnt Land section."
    },
    "cost": {
     "ko": "걷는 거리보다 몬스터와 겹쳐 맞는 횟수를 먼저 줄여요.",
@@ -931,7 +931,7 @@
    },
    "exit": {
     "ko": "1~2타가 유지되면 로랑이나 슬리피 던전으로 넘어가 보세요.",
-    "en": "Compare Lorang or Sleepy Dungeon while keeping reliable kills."
+    "en": "While kills stay reliable, move on to Lorang or Sleepy Dungeon."
    },
    "alternative": {
     "ko": "서쪽바위산 IV, 발굴지, 개미굴의 빈 구역.",
@@ -1010,7 +1010,7 @@
    },
    "cost": {
     "ko": "원거리 공격을 맞으면서 쫓아다니면 아낀 물약값이 도로 나가요.",
-    "en": "Chasing under ranged fire may increase supply use."
+    "en": "Chasing under ranged fire uses more supplies."
    },
    "exit": {
     "ko": "루팡 때문에 타수와 피격이 크게 늘면 이전 맵으로 돌아가요.",
@@ -1042,7 +1042,7 @@
      "src": "jinsil-west-rocky",
      "note": {
       "ko": "10분 실측 분당 2,380; 메소 시간당 최소 7만, 장비 잘 뜨면 10만; 원숭이숲·콜드아이 파티(분당 2,100~2,300, 메소 1~3만)보다 나음",
-      "en": "10-min test 2,380/min; at least 70k mesos an hour, up to 100k with gear drops; beats Monkey Forest / Cold Eye parties (2,100–2,300/min, 10–30k mesos)"
+      "en": "10-min run 2,380/min; at least 70k mesos an hour, up to 100k with gear drops; beats Monkey Forest / Cold Eye parties (2,100–2,300/min, 10–30k mesos)"
      }
     }
    ]
@@ -1072,7 +1072,7 @@
    "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
    "title": {
     "ko": "이블아이의 굴 · 근접 사냥",
-    "en": "Evil Eye cave · melee trial"
+    "en": "Evil Eye cave · melee"
    },
    "monsters": {
     "ko": "이블아이",
@@ -1080,11 +1080,11 @@
    },
    "summary": {
     "ko": "붙어 있는 몬스터를 금방금방 잡을 수 있을 때 좋아요. 37 전사가 파퀘보다 느려서 돌아간 사례도 있어요.",
-    "en": "Useful to compare compact melee kills; a level-37 Warrior found KPQ faster and returned."
+    "en": "Good for quick melee kills on tightly packed targets; a level-37 Warrior found KPQ faster and returned."
    },
    "entry": {
     "ko": "최소 데미지가 606을 넘으면 매번 한 방이에요. 파이터는 37레벨 파워스트라이크, 시프는 떡작 35제 단검으로 한 방이 나와야 해요.",
-    "en": "Once minimum damage passes 606 every hit kills. Fighters test Power Strike at 37, Bandits a scrolled level-35 dagger."
+    "en": "Once minimum damage passes 606 every hit kills. Fighters need Power Strike at 37, Bandits a scrolled level-35 dagger."
    },
    "route": {
     "ko": "이블아이의 굴 4층→1층 순서로 쓸며 내려온 뒤 캐시샵에 들어갔다 나오면 맨 위층에서 다시 시작해요(시프 40~45 루트).",
@@ -1191,7 +1191,7 @@
    },
    "route": {
     "ko": "플로리나 비치의 로랑로랑에서 층을 나눠요. 1층은 몬스터가 끊기지 않지만 많이 맞고, 2층은 물약이 덜 들어요.",
-    "en": "Split floors in Florina Beach’s Lorang Lorang. Compare the busier first floor with the second floor’s lower contact exposure."
+    "en": "Split floors in Florina Beach’s Lorang Lorang. The first floor never runs dry but you get hit more; the second floor costs fewer potions."
    },
    "cost": {
     "ko": "강화 무기·파티 조건이 빠지면 MP와 몸박 비용이 늘어요.",
@@ -1199,7 +1199,7 @@
    },
    "exit": {
     "ko": "50 전후에는 레이스로 넘어가요. 명중 물약값을 넣어서 계산해요.",
-    "en": "Near 50, compare Wraith including accuracy-supply costs."
+    "en": "Near 50, move to Wraith and count the accuracy potions."
    },
    "alternative": {
     "ko": "불타버린 땅, 깊은 개미굴, 스티지·주니어 레이스 유지.",
@@ -1237,7 +1237,7 @@
    },
    "entry": {
     "ko": "루팡과 커즈아이가 2번 안에 잡혀야 해요.",
-    "en": "First test kills within two casts on Lupin and Curse Eye."
+    "en": "You need kills within two casts on Lupin and Curse Eye."
    },
    "route": {
     "ko": "슬리피우드 집 안쪽 던전 I→II. 위에서 아래로 정리한 뒤 F9 캐시샵에 들어갔다 나오면 맨 위로 돌아와요.",
@@ -1245,7 +1245,7 @@
    },
    "cost": {
     "ko": "다시 올라오는 시간과 루팡에게 맞는 양까지 넣어서 따져요. 경험치 숫자만 보고 흑자라고 보면 안 돼요.",
-    "en": "Include climbing time and Lupin damage in your comparison."
+    "en": "Count the climbing time and the damage Lupins deal."
    },
    "exit": {
     "ko": "강한 몬스터만 남거나 추격이 길어지면 더 단순한 맵으로 옮겨요.",
@@ -1297,11 +1297,11 @@
    },
    "summary": {
     "ko": "근접 직업이 짧은 발판을 찾을 때, 클레릭이 물약을 아끼고 싶을 때 가는 곳이에요.",
-    "en": "A compact-platform comparison for melee classes and supply-conscious Clerics."
+    "en": "Compact platforms for melee classes and for Clerics watching their supplies."
    },
    "entry": {
     "ko": "1~2번에 잡히는 구역부터 가요. 클레릭은 힐만 누르지 말고 공격기로 잡았을 때를 봐야 해요.",
-    "en": "Test short kills; Clerics should compare their actual attack, not assume Heal-only training."
+    "en": "Start where kills are quick; Clerics should count on their real attack, not on Heal alone."
    },
    "route": {
     "ko": "엘리니아 북쪽숲의 위쪽 나무던전에서 커즈아이 구역을 찾아 한 층씩 정리해요.",
@@ -1313,7 +1313,7 @@
    },
    "exit": {
     "ko": "너무 빨리 잡혀서 기다리는 시간만 늘면 원숭이숲이나 레이스로 가요.",
-    "en": "If waiting dominates, compare Monkey Forest or Wraith."
+    "en": "If you mostly wait for spawns, go to Monkey Forest or Wraith."
    },
    "alternative": {
     "ko": "이블아이의 굴, 슬리피 던전 II.",
@@ -1396,7 +1396,7 @@
    },
    "summary": {
     "ko": "40대 후반에 명중과 타수가 갖춰지면 가는 경로예요.",
-    "en": "Compare in the late forties once accuracy and kill count are ready."
+    "en": "For the late forties, once accuracy and kill count are ready."
    },
    "entry": {
     "ko": "48레벨 기준 명중 104가 필요해요(아래 표). 49레벨 불독이 명중 104·마력 255로 혼자 분당 2,149 경험치를 기록했어요.",
@@ -1416,7 +1416,7 @@
    },
    "alternative": {
     "ko": "로랑이나 커즈아이로 가요. 불독은 콜드아이 구역이 좋아요.",
-    "en": "Lorang or Curse Eye; Fire/Poison can compare Cold Eye."
+    "en": "Lorang or Curse Eye; Fire/Poison should go to Cold Eye."
    },
    "mobIds": [
     43
@@ -1503,7 +1503,7 @@
    },
    "summary": {
     "ko": "어쌔신·헌터·불독이 콜드아이를 편하게 잡는 발판이에요. 또 다른 길은 콜드아이 23마리만 나와요.",
-    "en": "Assassins, Hunters and Fire/Poison users compare safe attack positions against Cold Eye. Another Path spawns 23 Cold Eyes and nothing else."
+    "en": "Platforms where Assassins, Hunters and Fire/Poison users kill Cold Eyes safely. Another Path spawns 23 Cold Eyes and nothing else."
    },
    "entry": {
     "ko": "40레벨에 다 맞히려면 명중 약 82(LUK 위주 어쌔신은 장비 없이 39레벨쯤)이고, 두 방에 잡혀야 해요. 헌터는 사거리, 불독은 화살이 지형에 막히지 않는 자리를 먼저 봐요.",
@@ -1519,7 +1519,7 @@
    },
    "exit": {
     "ko": "물약이 덜 들고 잡는 속도도 괜찮으면 남고, 아니면 레이스나 하던 사냥터로 가요.",
-    "en": "Compare Wraith or your earlier map using both kills and supply use."
+    "en": "Stay if kills are quick and supplies hold; otherwise go to Wraith or back to your earlier map."
    },
    "alternative": {
     "ko": "빛을 잃은 터널 I은 콜드아이가 더 많지만 드레이크가 섞여 40대 후반까지 잘 안 맞아요. 헌터는 로랑·불타버린 땅, 불독은 주니어 레이스.",
@@ -1600,11 +1600,11 @@
    },
    "exit": {
     "ko": "잠깐 돌아 봤는데도 적자가 크면 콜드아이나 로랑으로 돌아가요.",
-    "en": "Return to Cold Eye or Lorang if a short trial is already too expensive."
+    "en": "Return to Cold Eye or Lorang if even a short run costs too much."
    },
    "alternative": {
     "ko": "콜드아이, 로랑, 레이스 중 물약이 덜 드는 곳.",
-    "en": "Compare Cold Eye, Lorang or Wraith costs."
+    "en": "Cold Eye, Lorang or Wraith, whichever costs you fewer potions."
    },
    "mobIds": [
     49,
@@ -1695,7 +1695,7 @@
    },
    "exit": {
     "ko": "58 전후에 군영 I로 가요. 아래층부터 돌아 보세요.",
-    "en": "Around the late fifties, compare Camp I starting with manageable floors."
+    "en": "Around the late fifties, move to Camp I and start on the lower floors."
    },
    "alternative": {
     "ko": "레이스 또는 현재 1~2타가 유지되는 맵.",
@@ -1766,11 +1766,11 @@
    },
    "summary": {
     "ko": "50대 후반부터 사냥한 기록이 있는 곳이라 60대에도 계속 돌 수 있어요.",
-    "en": "Based on late-fifties play, a route to compare or maintain into the sixties."
+    "en": "Players hunt here from the late fifties, and it holds up into the sixties."
    },
    "entry": {
     "ko": "표도는 4명이 층을 나눠요. 법사는 내 공격기로 맡은 몬스터가 몇 방에 잡히는지 봐요. 힐 몰이만으로 계산하지 마세요.",
-    "en": "Assign floors for claw users; Magicians should test their actual attacks, not assume Heal grinding."
+    "en": "Assign floors for claw users; Magicians should count on their real attacks, not on Heal grinding."
    },
    "route": {
     "ko": "군영 1은 25마리 중 20마리가 사병(필요 명중 111)이에요. 1~4층을 한 명씩 맡는 6인 파티가 정석이고, 60레벨쯤 장교가 많은 군영 3(필요 명중 120)으로 넘어가요.",
@@ -1782,7 +1782,7 @@
    },
    "exit": {
     "ko": "60 이후에도 지금 층의 타수가 줄면 계속 있어도 돼요. 더 안쪽은 아직 사냥 기록이 없어요.",
-    "en": "Keep the route as kills improve; deeper areas require a separate trial."
+    "en": "Stay while kills keep getting faster; there are no hunting records for the deeper areas yet."
    },
    "alternative": {
     "ko": "유적의 무덤 III, 레이스, 커즈아이.",
@@ -1853,7 +1853,7 @@
    "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
    "title": {
     "ko": "커즈아이 → 원숭이숲",
-    "en": "Curse Eye → Monkey Forest comparison"
+    "en": "Curse Eye → Monkey Forest"
    },
    "monsters": {
     "ko": "커즈아이 · 루팡 · 좀비루팡",
@@ -1861,15 +1861,15 @@
    },
    "summary": {
     "ko": "전사는 레벨 상승보다 몰이와 몸박 비용을 보고 기존 맵에서 옮겨요.",
-    "en": "Warriors should compare grouping and contact costs before leaving a familiar map."
+    "en": "Warriors: grouping and contact damage decide this, so do not leave a map that works too early."
    },
    "entry": {
     "ko": "지금 무기와 마스터리가 맞아야 해요. 루팡이 금방 잡힐 때만 다음 몬스터로 넘어가요.",
-    "en": "Match weapon and Mastery; test harder targets only after short, reliable Lupin kills."
+    "en": "Match weapon and Mastery; move to harder targets only after Lupins die fast and reliably."
    },
    "route": {
     "ko": "엘리니아 커즈아이 구역이나 원숭이숲으로 가요. 짧은 발판에서 몰아 잡는 동선을 고르세요.",
-    "en": "Compare Curse Eye sections with Monkey Forest using compact grouping routes."
+    "en": "Use the Curse Eye sections or Monkey Forest, on routes where you can group targets on short platforms."
    },
    "cost": {
     "ko": "원거리 공격을 맞으며 쫓아가면 MP를 아껴도 HP 비용이 커져요.",
@@ -1877,7 +1877,7 @@
    },
    "exit": {
     "ko": "한 구역이 충분히 빠르면 60대에도 계속 돌아요. 더 센 맵은 잠깐만 가 보세요.",
-    "en": "Keep a productive route into the sixties and test stronger maps briefly."
+    "en": "Keep a route that works into the sixties and make only short visits to stronger maps."
    },
    "alternative": {
     "ko": "불타버린 땅·슬리피 던전 II에서 빠른 처치 유지.",
@@ -1907,7 +1907,7 @@
    "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
    "title": {
     "ko": "와일드카고의 영역 · 고레벨",
-    "en": "Wild Kargo’s Area · higher-level trial"
+    "en": "Wild Kargo’s Area · higher level"
    },
    "monsters": {
     "ko": "와일드카고 · 콜드아이",
@@ -1915,11 +1915,11 @@
    },
    "summary": {
     "ko": "71 파이터가 실제로 사냥한 곳이에요. 조건이 갖춰져야 가요.",
-    "en": "A conditional option based on level-71 Fighter footage, not a proven efficiency range up to 100."
+    "en": "A level-71 Fighter hunted here; it only works with the setup below."
    },
    "entry": {
     "ko": "분노와 주력 무기 숙련을 찍고, 회복에 여유가 있을 때 가요. 이 사례는 강화한 50제 두손도끼를 썼어요.",
-    "en": "Test with Rage, matching Mastery and a supply reserve; the observed setup used an upgraded level-50 two-handed axe."
+    "en": "Go with Rage, matching Mastery and a supply reserve; that Fighter used an upgraded level-50 two-handed axe."
    },
    "route": {
     "ko": "슬리피우드 깊은 지역의 와일드카고의 영역에서 돌진 후 정리할 공간을 확보해요.",
@@ -1971,11 +1971,11 @@
    },
    "summary": {
     "ko": "단검으로 바꾼 뒤 루팡이 편하게 잡힐 때 가요. 레벨이 올라도 돈이 덜 드는 동선을 계속 돌 수 있어요.",
-    "en": "Compare after your dagger setup handles Lupins reliably; a lower-cost route may remain useful as you level."
+    "en": "Go once your dagger setup kills Lupins reliably; this cheaper route stays useful as you level."
    },
    "entry": {
     "ko": "루팡부터 금방 잡고, 좀비루팡은 따로 쳐 보세요. 강화 단검으로 1타가 나온 사례를 기본 장비로도 될 거라고 생각하지 마세요.",
-    "en": "Test Lupin first, then Zombie Lupin separately. Upgraded-weapon one-hit examples do not apply to basic gear."
+    "en": "Start with Lupins and try Zombie Lupins separately. One-hit kills with an upgraded weapon do not carry over to basic gear."
    },
    "route": {
     "ko": "엘리니아 원숭이숲에서 짧은 발판을 골라 몬스터를 모아요. 원거리 공격을 맞으며 맵 전체를 추격하지 마세요.",
@@ -1987,11 +1987,11 @@
    },
    "exit": {
     "ko": "지금 몬스터가 빨리 잡히면 계속 돌아요. 더 센 맵은 쓸 돈을 정해 놓고 잠깐만 가 보세요.",
-    "en": "Stay while kills remain productive; test stronger maps with a fixed supply budget."
+    "en": "Stay while kills are quick; visit stronger maps with a fixed supply budget."
    },
    "alternative": {
     "ko": "커즈아이 구역·이블아이의 굴·불타버린 땅 중 더 빨리 잡히는 곳.",
-    "en": "Compare faster kills in Curse Eye, Evil Eye or Burnt Land areas."
+    "en": "Curse Eye, Evil Eye or Burnt Land, whichever gives you faster kills."
    },
    "mobIds": [
     35,
@@ -2008,7 +2008,7 @@
      "src": "cm3-36-70",
      "note": {
       "ko": "원숭이숲 2, Lv55 어쌔신 테스트: 경험치는 낮지만 메소는 가장 많이 남음",
-      "en": "Monkey Forest II, Lv55 assassin test: lower EXP but the most mesos kept"
+      "en": "Monkey Forest II, Lv55 assassin run: lower EXP but the most mesos kept"
      }
     }
    ]
@@ -2031,7 +2031,7 @@
    "editorialBasis": "76시프 실전.76~100은 준비된 고레벨 캐릭터의 시험창이며 전구간 검증 또는 시급추천 아님.",
    "title": {
     "ko": "성역 입구 · 고레벨 시프",
-    "en": "Sanctuary Entrance · advanced Bandit trial"
+    "en": "Sanctuary Entrance · advanced Bandit"
    },
    "monsters": {
     "ko": "콜드아이 등 성역 입구 몬스터",
@@ -2043,11 +2043,11 @@
    },
    "entry": {
     "ko": "단검 숙련, 스틸·세비지, 회복 준비가 된 다음에 가요. 이 사례는 강화 신기타를 썼어요.",
-    "en": "Test with developed dagger skills, Steal/Savage Blow and recovery; the observed character used an upgraded Shinkita."
+    "en": "Go with developed dagger skills, Steal/Savage Blow and recovery; that Bandit used an upgraded Shinkita."
    },
    "route": {
     "ko": "슬리피우드 깊은 지역의 성역 입구에서 덜 맞는 자리를 잡고 사냥해요.",
-    "en": "Reach Sanctuary Entrance deeper in Sleepywood and compare attacks while maintaining room to control contact."
+    "en": "Reach Sanctuary Entrance deeper in Sleepywood and fight from a spot where you take fewer hits."
    },
    "cost": {
     "ko": "실제 회복제 사용량으로 판단하세요.",
@@ -2055,7 +2055,7 @@
    },
    "exit": {
     "ko": "하던 동선보다 돈이 더 들거나 잡는 시간이 길어지면 돌아가요. 76 이후는 아직 사냥 기록이 없어요.",
-    "en": "Return if costs or kill times exceed your earlier route; later levels require their own comparison."
+    "en": "Return if costs or kill times exceed your earlier route; there are no hunting records past 76 yet."
    },
    "alternative": {
     "ko": "원숭이숲·커즈아이 등 이전에 안정적으로 잡던 구역.",
@@ -2098,7 +2098,7 @@
    },
    "entry": {
     "ko": "볼트나 클로 몇 번에 잡히는지 보세요. 한 방 확률과 마나 효율은 초록버섯 쪽이 더 나을 때가 있어요.",
-    "en": "Count how many Bolts or Claws a kill takes; Green Mushroom may beat it on one-hit chance and MP efficiency."
+    "en": "Count how many Bolts or Claws a kill takes; Green Mushrooms can be better on one-hit chance and MP."
    },
    "route": {
     "ko": "커닝시티 지하철 1호선 1구역. 사람이 많아 자리가 없으면 북쪽 숲 나무던전으로 옮기세요.",
@@ -2110,7 +2110,7 @@
    },
    "exit": {
     "ko": "스티지가 한 방이면 환승구역으로, 아니면 나무던전 초록버섯으로 옮기세요.",
-    "en": "Move to Stirge at the transfer area if it dies in one hit, otherwise compare Green Mushroom in the tree dungeons."
+    "en": "Move to Stirge at the transfer area if it dies in one hit; otherwise go to Green Mushrooms in the tree dungeons."
    },
    "alternative": {
     "ko": "자리가 없으면 북쪽 숲 나무던전 IV의 슬라임·초록버섯.",
@@ -2167,7 +2167,7 @@
    },
    "alternative": {
     "ko": "파티가 없으면 이블아이의 굴로 가요. 한 방에 잡혀야 해요.",
-    "en": "Without a party, test the one-hit condition at the Evil Eye cave."
+    "en": "Without a party, go to the Evil Eye cave; you need one-hit kills."
    },
    "advanced": false,
    "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님.",
@@ -2236,7 +2236,7 @@
    },
    "route": {
     "ko": "페리온 바위길 III 위쪽 포탈로 발굴지 I, 안쪽으로 II·III. 36레벨부터는 III(5분 약 7,500)로 가요.",
-    "en": "Take the upper portal from Rocky Road III to Site I, then deeper to II and III; from 36 compare Site III (about 7,500 EXP per 5 minutes)."
+    "en": "Take the upper portal from Rocky Road III to Site I, then deeper to II and III; from 36 go to Site III (about 7,500 EXP per 5 minutes)."
    },
    "cost": {
     "ko": "발굴지 I은 5분에 약 6,000 경험치가 나왔어요. 많이 맞기 시작하면 바위길 쪽으로 빠지세요.",
@@ -2244,11 +2244,11 @@
    },
    "exit": {
     "ko": "35레벨이 넘으면 발굴지 III나 불타버린 땅으로 가요.",
-    "en": "From 35 compare Site III or Burnt Land."
+    "en": "From 35 go to Site III or Burnt Land."
    },
    "alternative": {
     "ko": "개미굴 한 방 자리(5분 약 7,500)와 효율이 비슷해요.",
-    "en": "A one-hit Ant Tunnel spot (about 7,500 per 5 minutes) is comparable."
+    "en": "A one-hit Ant Tunnel spot gives about the same (about 7,500 per 5 minutes)."
    },
    "advanced": false,
    "editorialBasis": "영상의 플레이·공략 구간을 바탕으로 한 이동 검토 범위. 진입·이탈 조건과 비용 비교 방법은 편집 제안이며 실측 효율 보장이 아님."
@@ -2358,7 +2358,7 @@
    },
    "exit": {
     "ko": "50레벨이 넘으면 콜드아이·레이스·크로코 중 한 곳으로 옮기세요.",
-    "en": "Past 50 compare Cold Eye, Wraith and Croco."
+    "en": "Past 50 move to Cold Eye, Wraith or Croco."
    },
    "alternative": {
     "ko": "자리가 없으면 콜드아이 옥상 자리나 로랑로랑.",
@@ -2431,7 +2431,7 @@
    },
    "exit": {
     "ko": "47레벨이 넘으면 로랑(흑자)이나 레이스(두 방에 잡힐 때)로 가요.",
-    "en": "From 47 compare Lorang (profitable) or Wraith (two-hit condition)."
+    "en": "From 47 go to Lorang (profitable) or Wraith (if two hits kill)."
    },
    "alternative": {
     "ko": "북쪽 나무던전 커즈아이.",
@@ -2548,7 +2548,7 @@
    },
    "entry": {
     "ko": "명중이 되고 타수가 일정하게 나오는지 먼저 보세요. 썬콜은 낮은 몬스터를 묶어 잡는 번개 사냥이 더 나을 수 있어요.",
-    "en": "Confirm accuracy and hit count first; Ice mages should compare with grouping weaker targets under Thunderbolt."
+    "en": "Confirm accuracy and hit count first; Ice mages often do better grouping weaker targets under Thunderbolt."
    },
    "route": {
     "ko": "드레이크 계열 안쪽 맵이에요. 자리가 있는 채널부터 찾으세요.",
@@ -2784,7 +2784,7 @@
    },
    "exit": {
     "ko": "35 전후면 떠나요. 어쌔신은 어두컴컴한 늪 II·불타버린 땅·로랑으로, 근접은 커즈아이나 절망의 늪으로 가요.",
-    "en": "Leave around 35: Assassins compare the Murky Swamp II, Burnt Land or Lorangs; melee compares Curse Eyes or the Swamp of Despair."
+    "en": "Leave around 35: Assassins go to the Murky Swamp II, Burnt Land or Lorangs; melee goes to Curse Eyes or the Swamp of Despair."
    },
    "alternative": {
     "ko": "개미 터널 I은 20명 넘게 몰려요. 이블아이의 굴은 좁고 물약이 많이 들어요.",
@@ -3344,7 +3344,7 @@
    },
    "exit": {
     "ko": "70 이후 3차 전직 전까지는 같은 지하철의 레이스 맵으로 가요.",
-    "en": "Beyond 70, compare the Wraith maps in the same subway."
+    "en": "Beyond 70, go to the Wraith maps in the same subway."
    },
    "alternative": {
     "ko": "1호선 3구역 · 레이스",
@@ -3453,7 +3453,7 @@
    },
    "exit": {
     "ko": "56부터는 골렘의 사원, 60부터는 슬리피 던전 다크 스톤골렘으로 가요.",
-    "en": "From 56 compare Golem's Temple; from 60, Dark Stone Golems in the Sleepy Dungeon."
+    "en": "From 56 go to Golem's Temple; from 60, Dark Stone Golems in the Sleepy Dungeon."
    },
    "alternative": {
     "ko": "자리가 없으면 같은 해변의 뜨거운 모래나, 50부터 드레이크 사냥터로 가요.",
@@ -3505,7 +3505,7 @@
    },
    "exit": {
     "ko": "솔로 자리는 구하기 어려워요. 60 이후엔 슬리피 던전이나 군영으로 가요.",
-    "en": "Solo slots can be hard to find. After 60, compare Sleepy Dungeon and the Camps."
+    "en": "Solo slots are hard to find. After 60, go to Sleepy Dungeon or the Camps."
    },
    "alternative": {
     "ko": "로랑과 클랑(솔로), 로랑 로랑(6인 파티).",
