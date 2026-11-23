@@ -79,7 +79,7 @@ function card(it) {
   const kind = [i18n.subs[it.sub] || (i18n.lang === 'ko' ? i18n.cats[it.cat] : it.sub), it.lv ? fill(i18n.level, { lv: it.lv }) : '', twinNote(it)].filter(Boolean).join(' · ');
   const en = it.name !== it.en ? `<span class="en">${esc(it.en)}</span>` : '';
   return `<article class="item-card" data-id="${it.id}">
-<div class="item-head"><img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="32" height="32" loading="lazy"><div><strong>${esc(it.name)}</strong>${en}<small>${esc(kind)}</small></div></div>
+<div class="item-head"><img src="https://maplestory.io/api/MCW/1.2/item/${it.id}/icon" alt="" width="32" height="32" loading="lazy"><div><strong>${esc(it.name)}</strong>${en}<small>${esc(kind)}</small></div></div>
 ${i18n.api ? `<div class="hub-price" data-id="${it.id}"><span class="hub-label">${i18n.hubLabel}</span><span class="hub-value">…</span></div>` : ''}
 <div class="price-links">${i18n.sites.map((s) => siteLink(s, it)).join('')}</div>
 ${i18n.api && i18n.reports ? reportForm(it) : ''}

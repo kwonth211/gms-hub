@@ -182,7 +182,7 @@ function resultRow(entry) {
   const icon = entry.type === 'mob'
     ? `<img class="mob-sprite" src="${document.body.dataset.sprites}${String(entry.id).replace('mob-', '')}.gif" alt="" width="30" height="30" loading="lazy">`
     : entry.type === 'item'
-    ? `<img src="https://maplestory.io/api/MCW/1/item/${entry.id}/icon" alt="" width="30" height="30" loading="lazy">`
+    ? `<img src="https://maplestory.io/api/MCW/1.2/item/${entry.id}/icon" alt="" width="30" height="30" loading="lazy">`
     : `<span class="search-result-icon" aria-hidden="true">${external ? '↗' : '⌘'}</span>`;
   return `<a class="search-result" href="${escHtml(entry.href)}" data-result-type="${entry.type}" data-result-id="${escHtml(entry.id)}"${external ? ` target="_blank" rel="noopener" aria-label="${escHtml(entry.title)} · ${labels.external}"` : ''}>${icon}<span class="search-result-copy"><strong>${escHtml(entry.title)}</strong><small>${escHtml(entry.description || '')}</small></span><span class="search-result-action${entry.type === 'item' && (prices.get(entry.id)?.median || builtPrice.has(entry.id)) ? ' priced' : ''}">${entry.type === 'item' ? priceTag(entry.id) : entry.type === 'mob' ? `${labels.mobAction}` : external ? '↗' : '→'}</span></a>`;
 }
@@ -482,7 +482,7 @@ function changeCell(change) {
 function rankRow(r, it) {
   return `<li data-item="${it.id}" data-rank="${r.rank}"><a href="${live.dataset.price}?item=${it.id}&src=home" data-live-item="${it.id}">
 <span class="rank">${r.rank}</span>${moveCell(r.move)}
-<img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="26" height="26" loading="lazy">
+<img src="https://maplestory.io/api/MCW/1.2/item/${it.id}/icon" alt="" width="26" height="26" loading="lazy">
 <span class="name" title="${escHtml(it.name)}">${escHtml(it.name)}</span>
 <span class="avg"><small>${r.median != null ? escHtml(r.basis === 'sold' ? liveText.soldMedian : liveText.askMedian) : escHtml(liveText.avg)}</small>${mesos(r.median ?? r.avg)}</span>
 ${sparkline(r, it.name)}
@@ -545,7 +545,7 @@ function optShort(r) {
 }
 function recentRow(r, it, fresh) {
   return `<li class="${r.sold ? 'sold' : ''}${fresh ? ' fresh' : ''}" data-key="${escHtml(rowKey(r))}" data-price-band="${listingPriceBand(r, liveCatalog)}" data-item-list="home_recent"${r.opts ? itemAttrs(it.id, r.opts, 'listing') : ''}><a href="${live.dataset.price}?item=${it.id}&src=home" data-live-item="${it.id}">
-<img src="https://maplestory.io/api/MCW/1/item/${it.id}/icon" alt="" width="26" height="26" loading="lazy">
+<img src="https://maplestory.io/api/MCW/1.2/item/${it.id}/icon" alt="" width="26" height="26" loading="lazy">
 <span class="name">${newMark(r.seen)}<span class="nm">${escHtml(it.name)}</span>${r.sold ? `<span class="tag">${escHtml(liveText.sold)}</span>` : ''}${optShort(r)}</span>
 <span class="price">${priceBadge(listingPriceBand(r, liveCatalog), korean)}${mesos(r.price)}${r.qty > 1 ? ` <small>×${r.qty}</small>` : ''}</span>
 <span class="meta">${escHtml(r.seller)} · CH ${r.channel} · ${placeLabel(r.room, korean)}</span>
@@ -745,7 +745,7 @@ async function renderMine() {
   } catch (e) {}
   const chip = (id, kind) => {
     const it = index.get(id), p = summary[id];
-    return `<a class="mine-chip" href="${live.dataset.price}?item=${id}&src=home" data-kind="${kind}" data-item="${id}"><img src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="22" height="22" loading="lazy"><span class="mine-name">${escHtml(it.name)}</span>${p?.median ? `<b>${mesos(p.median)}</b><small>${priceBasis[p.basis]}${p.last ? ` · ${ago(p.last)}` : ''}</small>` : `<small>${escHtml(liveText.noTrend)}</small>`}</a>`;
+    return `<a class="mine-chip" href="${live.dataset.price}?item=${id}&src=home" data-kind="${kind}" data-item="${id}"><img src="https://maplestory.io/api/MCW/1.2/item/${id}/icon" alt="" width="22" height="22" loading="lazy"><span class="mine-name">${escHtml(it.name)}</span>${p?.median ? `<b>${mesos(p.median)}</b><small>${priceBasis[p.basis]}${p.last ? ` · ${ago(p.last)}` : ''}</small>` : `<small>${escHtml(liveText.noTrend)}</small>`}</a>`;
   };
   const group = (title, ids, kind) => ids.length ? `<div class="mine-group"><h4>${escHtml(title)} <span>${ids.length}</span></h4><div class="mine-row">${ids.map((id) => chip(id, kind)).join('')}</div></div>` : '';
   mine.innerHTML = `<div class="mine-head"><h3>${escHtml(liveText.mine)}</h3><a href="${live.dataset.price}?view=items">${escHtml(liveText.mineAll)}</a></div>${group(liveText.mineWish, wish, 'wishlist')}${group(liveText.mineRecent, recentIds, 'recent')}<p class="muted small">${escHtml(liveText.mineNote)}</p>`;

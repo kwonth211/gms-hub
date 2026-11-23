@@ -82,7 +82,7 @@ export function mapDetail({ lang, l, maps, url, itemUrl, routes, accuracy, notes
     .filter(({ d }) => (seen.has(d.itemId) ? false : seen.add(d.itemId)))
     .slice(0, 24);
   const dropList = drops.length
-    ? `<ul class="item-links">${drops.map(({ d, m }) => `<li><a href="${itemUrl(d, lang)}"><img src="https://maplestory.io/api/MCW/1/item/${d.itemId}/icon" alt="" width="24" height="24" loading="lazy"><span>${esc(ko ? d.ko || d.en : d.en)}</span><small>${esc(monsterName(m, lang))}</small></a></li>`).join('')}</ul>`
+    ? `<ul class="item-links">${drops.map(({ d, m }) => `<li><a href="${itemUrl(d, lang)}"><img src="https://maplestory.io/api/MCW/1.2/item/${d.itemId}/icon" alt="" width="24" height="24" loading="lazy"><span>${esc(ko ? d.ko || d.en : d.en)}</span><small>${esc(monsterName(m, lang))}</small></a></li>`).join('')}</ul>`
     : `<p class="muted">${ko ? '이 맵 몬스터의 드랍 제보가 아직 없어요.' : 'No drop reports for the monsters here yet.'}</p>`;
   const routeList = routes.length
     ? `<ul class="monster-routes">${routes.map((r) => `<li><a href="${link(`/tools/training/?lv=${r.level.min}#route-${r.id}`)}"><strong>${esc(r.title[lang])}</strong><small>Lv. ${r.level.min}–${r.level.max}</small></a></li>`).join('')}</ul>`

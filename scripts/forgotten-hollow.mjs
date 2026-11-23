@@ -3,7 +3,7 @@
 // the town, best maps, class picks, the boss, what to prepare) from data/forgotten-hollow.json. Each fact carries how sure
 // it is: official (Nexon's notice), data (client / beta data), video (player reports from the beta) or pending.
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-const icon = (id) => `https://maplestory.io/api/MCW/1/item/${id}/icon`;
+const icon = (id) => `https://maplestory.io/api/MCW/1.2/item/${id}/icon`;
 const npcImg = (id) => `https://maplestory.io/api/MCW/1/npc/${id}/icon`;
 const n = (v, lang) => Number(v).toLocaleString(lang === 'ko' ? 'ko-KR' : 'en-US');
 

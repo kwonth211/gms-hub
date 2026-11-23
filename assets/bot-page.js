@@ -35,7 +35,7 @@ async function run() {
     const t = tips?.items?.[id];
     return t ? (ko && t[0] ? t[0] : t[1]) : String(id);
   };
-  const icon = (id) => `<img class="dc-thumb" src="https://maplestory.io/api/MCW/1/item/${id}/icon?resize=2" alt="" width="40" height="40" loading="lazy">`;
+  const icon = (id) => `<img class="dc-thumb" src="https://maplestory.io/api/MCW/1.2/item/${id}/icon?resize=2" alt="" width="40" height="40" loading="lazy">`;
 
   // /시세: the most traded item right now.
   get('/market/top').then(async (top) => {

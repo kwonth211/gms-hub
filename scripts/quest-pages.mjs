@@ -60,7 +60,7 @@ export function questDetail({ lang, q, quests, npcs, items, mobs, drops, link, i
     const it = item(id);
     const name = it ? esc(ko && it.ko ? it.ko : it.en) : `#${id}`;
     const href = it && itemHref(it);
-    return `<li>${`<img src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="24" height="24" loading="lazy">`}${href ? `<a href="${href}">${name}</a>` : `<span>${name}</span>`}<b>× ${nf(Math.abs(count))}</b>${job ? `<small>${esc(jobsLabel([job], lang) || '')}</small>` : ''}</li>`;
+    return `<li>${`<img src="https://maplestory.io/api/MCW/1.2/item/${id}/icon" alt="" width="24" height="24" loading="lazy">`}${href ? `<a href="${href}">${name}</a>` : `<span>${name}</span>`}<b>× ${nf(Math.abs(count))}</b>${job ? `<small>${esc(jobsLabel([job], lang) || '')}</small>` : ''}</li>`;
   };
   const dropHint = (id) => {
     const rows = (drops.get(id) || []).filter(({ m }) => m.status === 'active').sort((a, b) => a.m.lv - b.m.lv).slice(0, 3);
@@ -117,7 +117,7 @@ ${q.prereq.length || q.next.length ? `<section class="panel quest-chain">${q.pre
 // by the Discord login like every gms-* key) and are painted by assets/quest-check.js; the three list pages and the
 // step-by-step guides share that one list of finished quests.
 // c: { lang, link, npcs, items: Map, mobs: Map, drops: Map, byId: Map, itemHref(item), mobHref(mob), mobPic(id) }
-const ITEM_ICON = (id, size) => `<img class="qc-icon" src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="${size}" height="${size}" loading="lazy" decoding="async">`;
+const ITEM_ICON = (id, size) => `<img class="qc-icon" src="https://maplestory.io/api/MCW/1.2/item/${id}/icon" alt="" width="${size}" height="${size}" loading="lazy" decoding="async">`;
 const kmoney = (n, ko) => (ko ? (Math.abs(n) >= 1e8 ? `${+(n / 1e8).toFixed(2)}억` : Math.abs(n) >= 1e4 ? `${+(n / 1e4).toFixed(Math.abs(n) >= 1e6 ? 0 : 1)}만` : nf(n)) : Math.abs(n) >= 1e6 ? `${+(n / 1e6).toFixed(2)}m` : Math.abs(n) >= 1e3 ? `${+(n / 1e3).toFixed(1)}k` : nf(n));
 // A reward's job is a bit mask in the client data: 1 beginner, 2 warrior, 4 magician, 8 bowman, 16 thief.
 const rewardJob = (bits, lang) => { const f = [0, 100, 200, 300, 400].filter((_, i) => bits & (1 << i)); return f.length && f.length < 5 ? f.map((x) => JOB[lang === 'ko' ? 'ko' : 'en'][x]).join(', ') : ''; };
@@ -241,7 +241,7 @@ function questGuideCards({ lang, guides, link }) {
   const cards = guides.map(({ guide: g, data }) => {
     const steps = data.chains.flatMap((c) => c.steps);
     const npc = steps[0]?.startNpc;
-    return `<a class="tool-card qg-card" href="${link(`/quests/${g.slug}/`)}"><span class="qg-pics">${g.rewardItem ? `<img src="https://maplestory.io/api/MCW/1/item/${g.rewardItem}/icon" alt="" width="32" height="32" loading="lazy">` : ''}${npc ? `<img src="https://maplestory.io/api/MCW/1/npc/${npc}/icon" alt="" height="44" loading="lazy">` : ''}</span><strong>${esc(L(g.title))}</strong><p>${esc(L(g.card))}</p><small class="qg-meta">${esc(L(g.level))}${ko ? ` · ${steps.length}단계` : ` · ${steps.length} steps`}${g.reward ? ` · ${esc(L(g.reward))}` : ''}</small><span>${ko ? '공략 보기' : 'Open the guide'}</span></a>`;
+    return `<a class="tool-card qg-card" href="${link(`/quests/${g.slug}/`)}"><span class="qg-pics">${g.rewardItem ? `<img src="https://maplestory.io/api/MCW/1.2/item/${g.rewardItem}/icon" alt="" width="32" height="32" loading="lazy">` : ''}${npc ? `<img src="https://maplestory.io/api/MCW/1/npc/${npc}/icon" alt="" height="44" loading="lazy">` : ''}</span><strong>${esc(L(g.title))}</strong><p>${esc(L(g.card))}</p><small class="qg-meta">${esc(L(g.level))}${ko ? ` · ${steps.length}단계` : ` · ${steps.length} steps`}${g.reward ? ` · ${esc(L(g.reward))}` : ''}</small><span>${ko ? '공략 보기' : 'Open the guide'}</span></a>`;
   }).join('');
   return `<section class="panel" id="guides"><h2><span>${ko ? '퀘스트 공략' : 'Quest guides'}</span><small class="muted">${ko ? '단계별 NPC 위치·재료·동선·시세' : 'NPC spots, items, routes and prices, step by step'}</small></h2><div class="tool-cards">${cards}</div></section>`;
 }

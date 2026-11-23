@@ -45,7 +45,7 @@ self.addEventListener('push', (event) => {
     if (!hits.length) return self.registration.showNotification('GMS Hub', { body: 'Price alert', tag: 'gms-alert', icon: '/assets/icon-192.png' });
     for (const h of hits.slice(0, 3)) {
       const [title, body] = (T[h.lang] || T.en)(h);
-      await self.registration.showNotification(title, { body, tag: `gms-alert-${h.item}`, icon: `https://maplestory.io/api/MCW/1/item/${h.item}/icon`, badge: '/assets/icon-192.png', data: { url: `/${['ko', 'en', 'zh', 'ja'].includes(h.lang) ? h.lang : 'en'}/tools/market/?item=${h.item}&src=alert` } });
+      await self.registration.showNotification(title, { body, tag: `gms-alert-${h.item}`, icon: `https://maplestory.io/api/MCW/1.2/item/${h.item}/icon`, badge: '/assets/icon-192.png', data: { url: `/${['ko', 'en', 'zh', 'ja'].includes(h.lang) ? h.lang : 'en'}/tools/market/?item=${h.item}&src=alert` } });
     }
   })());
 });

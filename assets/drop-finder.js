@@ -21,7 +21,7 @@ if (box && input && out) {
             return `<a href="${mh}"${rep ? ` title="${esc(t.repeated)}"` : ''}><img class="mob-sprite" src="${document.body.dataset.sprites}${id}.gif" width="32" height="32" alt="" loading="lazy"><b>${esc(ko ? mk : me)}</b><small>Lv. ${lv}</small></a>`;
           }).join('');
           const more = rows.length > 6 ? `<a class="df-more" href="${href}">${t.more.replace('{n}', rows.length - 6)}</a>` : '';
-          return `<li><a class="df-item" href="${href}"><img src="https://maplestory.io/api/MCW/1/item/${itemId}/icon" width="28" height="28" alt="" loading="lazy">${esc(ko ? nameKo : nameEn)}</a><div class="df-mobs">${shown}${more}</div></li>`;
+          return `<li><a class="df-item" href="${href}"><img src="https://maplestory.io/api/MCW/1.2/item/${itemId}/icon" width="28" height="28" alt="" loading="lazy">${esc(ko ? nameKo : nameEn)}</a><div class="df-mobs">${shown}${more}</div></li>`;
         }).join('')}</ul>`
       : `<p class="muted">${t.none}</p>`;
     if (user) {

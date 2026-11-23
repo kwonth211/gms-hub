@@ -10,7 +10,7 @@ if (boxes.length) {
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const api = document.body.dataset.priceApi;
   const first = boxes[0];
-  const icon = (id) => `<img src="https://maplestory.io/api/MCW/1/item/${id}/icon" width="24" height="24" alt="" loading="lazy">`;
+  const icon = (id) => `<img src="https://maplestory.io/api/MCW/1.2/item/${id}/icon" width="24" height="24" alt="" loading="lazy">`;
   // A box that keeps its space while loading (data-pending) is hidden only if there is nothing to show.
   const gone = () => { for (const b of boxes) if (b.hasAttribute('data-pending')) { b.hidden = true; b.removeAttribute('data-pending'); } };
   (async () => {

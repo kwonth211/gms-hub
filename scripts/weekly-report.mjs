@@ -142,7 +142,7 @@ function fmt(lang, items) {
     ? (n >= 1e8 ? `${+(n / 1e8).toFixed(2)}억` : n >= 1e4 ? `${+(n / 1e4).toFixed(n >= 1e6 ? 0 : 1)}만` : nf(n))
     : (n >= 1e6 ? `${+(n / 1e6).toFixed(2)}m` : n >= 1e3 ? `${+(n / 1e3).toFixed(1)}k` : nf(n));
   const pct = (c) => `${c > 0 ? '+' : ''}${Math.round(c * 100)}%`;
-  const icon = (id, size = 32) => `<img class="wr-icon" src="https://maplestory.io/api/MCW/1/item/${id}/icon" width="${size}" height="${size}" alt="" loading="lazy">`;
+  const icon = (id, size = 32) => `<img class="wr-icon" src="https://maplestory.io/api/MCW/1.2/item/${id}/icon" width="${size}" height="${size}" alt="" loading="lazy">`;
   return { ko, tr, byId, name, nf, mesos, pct, icon };
 }
 

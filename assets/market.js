@@ -35,7 +35,7 @@ const esc = (s) =>
   );
 const money = (n) => (n == null ? "—" : nf.format(n)),
   icon = (id, size = 28) =>
-    `<img src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="${size}" height="${size}" loading="lazy">`;
+    `<img src="https://maplestory.io/api/MCW/1.2/item/${id}/icon" alt="" width="${size}" height="${size}" loading="lazy">`;
 // Korean pages show absolute times in Korea Standard Time whatever the device clock says; other languages use the viewer's zone.
 const TZ = ko ? { timeZone: "Asia/Seoul" } : {};
 const date = (s) => new Date(parseUtc(s)).toLocaleString(D.lang, TZ) + (ko ? " KST" : "");
@@ -1367,7 +1367,7 @@ function equipExtras(id, data) {
   const near = Object.entries(data.items).filter(([sid, t]) => t[2] === "Equip" && t[3] === sub && Number(sid) !== id && Math.abs((t[4] || 0) - (lv || 0)) <= 10)
     .sort((a, b) => Math.abs(a[1][4] - lv) - Math.abs(b[1][4] - lv) || a[1][4] - b[1][4]).slice(0, 6);
   const statLine = (t) => Object.entries(t[7] || {}).slice(0, 3).map(([k, v]) => `${TIP_INC[k] ? TIP_INC[k]() : esc(k)} +${v}`).join(" · ");
-  const compare = near.length ? `<h3>${tr("비슷한 장비 비교", "Compare similar gear")}</h3><ul class="mb-near">${[[String(id), me], ...near].sort((a, b) => a[1][4] - b[1][4]).map(([sid, t]) => { const p = priceOfItem(Number(sid)); return `<li${Number(sid) === id ? ' class="me"' : ""}><a href="?item=${sid}" data-item="${sid}"><img src="https://maplestory.io/api/MCW/1/item/${sid}/icon" width="26" height="26" alt="" loading="lazy"><span>${esc(ko && t[0] ? t[0] : t[1])}<small>Lv. ${t[4] || 0} · ${statLine(t) || "—"}</small></span><b>${p ? kmoney(p) : "—"}</b></a></li>`; }).join("")}</ul>` : "";
+  const compare = near.length ? `<h3>${tr("비슷한 장비 비교", "Compare similar gear")}</h3><ul class="mb-near">${[[String(id), me], ...near].sort((a, b) => a[1][4] - b[1][4]).map(([sid, t]) => { const p = priceOfItem(Number(sid)); return `<li${Number(sid) === id ? ' class="me"' : ""}><a href="?item=${sid}" data-item="${sid}"><img src="https://maplestory.io/api/MCW/1.2/item/${sid}/icon" width="26" height="26" alt="" loading="lazy"><span>${esc(ko && t[0] ? t[0] : t[1])}<small>Lv. ${t[4] || 0} · ${statLine(t) || "—"}</small></span><b>${p ? kmoney(p) : "—"}</b></a></li>`; }).join("")}</ul>` : "";
   return `${scrolls ? `<h3>${tr("이 장비에 쓰는 주문서", "Scrolls for this item")}${me[8] ? ` <small>${tr(`업그레이드 ${me[8]}번`, `${me[8]} slots`)}</small>` : ""}</h3><ul class="mb-scrolls">${scrolls}</ul>` : ""}${compare}`;
 }
 async function fillItemInfo(id) {

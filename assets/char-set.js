@@ -93,7 +93,7 @@ export function makeSet({ korean, market, api, track, esc, mesos }) {
   // Live price from the worker when it answered, the price in the daily build otherwise.
   const priceOf = (id) => live[id]?.median || byId.get(id)?.[8] || null;
   const nameOf = (id) => { const g = byId.get(id); return g ? (korean ? g[1] : g[2]) : `#${id}`; };
-  const icon = (id, s = 32) => `<img src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="${s}" height="${s}" loading="lazy">`;
+  const icon = (id, s = 32) => `<img src="https://maplestory.io/api/MCW/1.2/item/${id}/icon" alt="" width="${s}" height="${s}" loading="lazy">`;
   const fitsChar = (g, c, bit) => g[4] <= c.lv && (!g[5] || (g[5] & bit));
   // A clean piece: its base stats, every upgrade slot left, none passed. Picking an item starts from this.
   const baseOf = (id) => { const g = byId.get(id); return g ? optionFilter({ stats: g[9] || {}, ...(Number.isInteger(g[10]) ? { slots: g[10] } : {}), ups: 0 }) : null; };

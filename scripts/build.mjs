@@ -1126,7 +1126,7 @@ function marketTodayBody(lang) {
   // every day.
   const mesos = (n) => `<span translate="no">${ko ? (n >= 1e8 ? `${+(n / 1e8).toFixed(2)}억` : n >= 1e4 ? `${+(n / 1e4).toFixed(n >= 1e6 ? 0 : 1)}만` : nf(n)) : n >= 1e6 ? `${+(n / 1e6).toFixed(2)}m` : n >= 1e3 ? `${+(n / 1e3).toFixed(1)}k` : nf(n)}</span>`;
   const market = href(langPath(lang, '/tools/market/'));
-  const icon = (id) => `<img src="https://maplestory.io/api/MCW/1/item/${id}/icon" width="28" height="28" alt="" loading="lazy">`;
+  const icon = (id) => `<img src="https://maplestory.io/api/MCW/1.2/item/${id}/icon" width="28" height="28" alt="" loading="lazy">`;
   const itemUrl = (i) => ITEM_PAGE_IDS.has(i.id) ? href(langPath(lang, itemPath(i))) : `${market}?item=${i.id}`;
   const link = (i) => `<a class="mt-item" href="${itemUrl(i)}">${icon(i.id)}<span>${esc(name(i))}</span></a>`;
   const day = (R?.updated || BUILD_DATE).slice(0, 10);
@@ -2324,7 +2324,7 @@ function marketSnapshot(lang) {
   const day = (R.updated || BUILD_DATE).slice(0, 10);
   return `<section class="wrap panel mb-snapshot"><h2>${ko ? '지금 매물이 많은 아이템과 시세' : 'Most listed items and their prices'} <small class="muted" translate="no">${esc(day)}</small></h2>
 <p class="muted small">${ko ? `자유시장에 매물이 가장 많은 아이템 ${rows.length}개의 판매가 중앙값과 최저가예요. 이름을 누르면 그 아이템의 시세·드랍 정보와 최신 매물, 채널·방을 확인할 수 있어요.` : `The ${rows.length} items with the most Free Market listings, with their median and lowest asking price. Open an item to see its prices, drops and live listings with channels and rooms.`} <a href="${href(langPath(lang, '/tools/market/today/'))}">${ko ? '오늘의 시세 · 맥박 보기' : "Today's prices & pulse"}</a></p>
-<ul class="mt-said">${rows.map((r) => `<li><a class="mt-item" href="${ITEM_PAGE_IDS.has(r.i.id) ? href(langPath(lang, itemPath(r.i))) : `${market}?item=${r.i.id}`}"><img src="https://maplestory.io/api/MCW/1/item/${r.i.id}/icon" width="28" height="28" alt="" loading="lazy"><span>${esc(ko && r.i.ko ? r.i.ko : r.i.en)}</span></a><small>${ko ? '중앙값' : 'median'} ${mesos(r.median)} · ${ko ? '최저' : 'low'} ${mesos(r.low)} · ${ko ? `매물 ${nf(r.open)}` : `${nf(r.open)} listed`}</small></li>`).join('')}</ul></section>`;
+<ul class="mt-said">${rows.map((r) => `<li><a class="mt-item" href="${ITEM_PAGE_IDS.has(r.i.id) ? href(langPath(lang, itemPath(r.i))) : `${market}?item=${r.i.id}`}"><img src="https://maplestory.io/api/MCW/1.2/item/${r.i.id}/icon" width="28" height="28" alt="" loading="lazy"><span>${esc(ko && r.i.ko ? r.i.ko : r.i.en)}</span></a><small>${ko ? '중앙값' : 'median'} ${mesos(r.median)} · ${ko ? '최저' : 'low'} ${mesos(r.low)} · ${ko ? `매물 ${nf(r.open)}` : `${nf(r.open)} listed`}</small></li>`).join('')}</ul></section>`;
 }
 
 // "Drop rate" visitors mostly want to know which monster drops an item (Clarity: half of them went straight back), so the
@@ -2890,7 +2890,7 @@ const WEAPON_SUB = /Wand|Staff|Bow|Claw|Dagger|Spear|Pole ?Arm|Sword|Axe|Blunt|B
       .map(({ cat, rare, ...d }) => d);
   }
 }
-const itemIcon = (id, size) => `<img src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="${size}" height="${size}" loading="lazy">`;
+const itemIcon = (id, size) => `<img src="https://maplestory.io/api/MCW/1.2/item/${id}/icon" alt="" width="${size}" height="${size}" loading="lazy">`;
 
 // Korean players think in 만/억; elsewhere k/m/b (same as the live market page).
 function mesoText(lang, n) {

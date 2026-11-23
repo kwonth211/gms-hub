@@ -62,6 +62,6 @@ fs.writeFileSync('data/monsters.json', JSON.stringify({ updated, monsters }, nul
 fs.writeFileSync('data/editorial/monsters.json', JSON.stringify({ updated,
   scope: '78 existing MCW monsters. Stats compared against rendered current monster table; speed/knockback/elements from MCW client. Map spawn points from rendered location tables; official Korean map/item names from MCW API. Community drop reports are observations, not authoritative server tables or measured rates. Closed/unreleased areas retain their reference reports but are explicitly unavailable.',
   dropRule: 'Only positive net weighted votes are listed. repeated: up >= 10 and up >= 3*down; otherwise limited. Vote weights are not player counts. No historic GMS/MSEA drop tables or probabilities imported.',
-  sources: ['https://meowdb.com/msclassic/ko/monsters', 'https://maplestory.io/api/MCW/1/map?count=5000', 'https://maplestory.io/api/MCW/1/item?count=50000'],
+  sources: ['https://meowdb.com/msclassic/ko/monsters', 'https://maplestory.io/api/MCW/1/map?count=5000', 'https://maplestory.io/api/MCW/1.2/item?count=50000'],
   monsters: evidence }, null, 2) + '\n');
 console.log(`${monsters.length} monsters, ${monsters.reduce((n,m)=>n+m.locations.length,0)} map placements, ${monsters.reduce((n,m)=>n+m.drops.length,0)} drop reports`);

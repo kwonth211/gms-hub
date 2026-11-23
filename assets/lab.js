@@ -8,7 +8,7 @@ const tr = (k, e) => (ko ? k : e);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const nf = new Intl.NumberFormat(ko ? 'ko-KR' : 'en-US');
 const kmoney = (n) => (n == null ? '—' : ko ? (n >= 1e8 ? `${+(n / 1e8).toFixed(2)}억` : n >= 1e4 ? `${+(n / 1e4).toFixed(n >= 1e6 ? 0 : 1)}만` : nf.format(n)) : n >= 1e6 ? `${+(n / 1e6).toFixed(2)}M` : n >= 1e3 ? `${+(n / 1e3).toFixed(1)}K` : nf.format(n));
-const icon = (id, s = 28) => `<img src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="${s}" height="${s}" loading="lazy">`;
+const icon = (id, s = 28) => `<img src="https://maplestory.io/api/MCW/1.2/item/${id}/icon" alt="" width="${s}" height="${s}" loading="lazy">`;
 const store = { get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
 const track = (n, p) => window.track?.(n, p);
 const api = root?.dataset.api;

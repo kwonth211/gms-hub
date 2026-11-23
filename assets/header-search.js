@@ -31,7 +31,7 @@ if (btn) {
     entries = [
       ...pageEntries,
       ...mobs.map(([id, mko, men, lv, , , , , , , , , aliases]) => indexEntry({ type: 'mob', id: `m${id}`, title: ko && mko ? mko : men, sub: `Lv. ${lv}`, href: `${btn.dataset.monsters}${id}/`, icon: `/assets/monsters/${id}.gif`, names: [mko, men, ...String(aliases || '').split(' ')] })),
-      ...items.map(([id, iko, ien, cat, isub, , price]) => indexEntry({ type: 'item', id, price: price || 0, title: ko && iko ? iko : ien, sub: ko && iko ? ien : '', href: `${btn.dataset.market}?item=${id}`, icon: `https://maplestory.io/api/MCW/1/item/${id}/icon`, names: [iko, ien, String(id)], keywords: gearKeywords(cat, isub), types: gearTypes(cat, isub) })),
+      ...items.map(([id, iko, ien, cat, isub, , price]) => indexEntry({ type: 'item', id, price: price || 0, title: ko && iko ? iko : ien, sub: ko && iko ? ien : '', href: `${btn.dataset.market}?item=${id}`, icon: `https://maplestory.io/api/MCW/1.2/item/${id}/icon`, names: [iko, ien, String(id)], keywords: gearKeywords(cat, isub), types: gearTypes(cat, isub) })),
     ];
     render();
   }));

@@ -69,7 +69,7 @@ async function show(name) {
     const opt = r.opts ? optBadge(r.item, r.opts, tips) : null;
     const elsewhere = r.channel !== newest.channel || r.room !== newest.room;
     return `<li class="shop-item${r.goneN ? ' is-gone' : ''}"><a href="../tools/market/?item=${r.item}" ${itemAttrs(r.item, r.opts || null, 'listing')}>
-<img src="https://maplestory.io/api/MCW/1/item/${r.item}/icon" width="36" height="36" alt="" loading="lazy">
+<img src="https://maplestory.io/api/MCW/1.2/item/${r.item}/icon" width="36" height="36" alt="" loading="lazy">
 <span class="shop-name"><strong>${esc(nameOf(r.item))}</strong>${opt ? `<em class="${esc(opt.cls)}">${esc(opt.text)}</em>` : ''}<small>${elsewhere ? `${place(r.channel, r.room)} · ` : ''}${ago(r.seen)}${r.goneN ? ` · ${tr('팔렸다는 신고 있음', 'reported sold')}` : ''}</small></span>
 <span class="shop-price"><strong>${won(r.price)}</strong>${r.qty > 1 ? `<small>×${nf.format(r.qty)}</small>` : ''}${m ? `<small>${tr('시세', 'market')} ${won(m)}</small>` : ''}${tag}</span></a></li>`;
   };

@@ -522,7 +522,7 @@ function render(r, tr) {
   wantMedian(r.item?.id);
   const title = r.item ? (i18n.lang === 'ko' ? r.item.ko || r.item.en : r.item.en) : r.name || i18n.unreadable;
   const sub = r.item && title !== r.item.en ? `<small>${esc(r.item.en)}</small>` : '';
-  const icon = r.item ? `<img src="https://maplestory.io/api/MCW/1/item/${r.item.id}/icon" alt="" width="28" height="28">` : '';
+  const icon = r.item ? `<img src="https://maplestory.io/api/MCW/1.2/item/${r.item.id}/icon" alt="" width="28" height="28">` : '';
   tr.classList.toggle('sold', r.sold);
   tr.innerHTML = `<td><span class="item">${icon}<span>${esc(title)}${sub}</span></span></td>
 <td class="price">${r.price ? `${nf.format(r.price)} <small>${i18n.each}</small>${r.qty > 1 ? `<small class="bundle">${fill(i18n.bundle, { n: nf.format(r.qty), total: nf.format(r.price * r.qty) })}</small>` : ''}` : '?'}</td>

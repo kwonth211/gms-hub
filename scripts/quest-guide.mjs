@@ -4,7 +4,7 @@
 // extra notes. Monster drop sources and spawn maps come from data/monsters.json. assets/quest-route.js turns each page into
 // a quest log with progress, the road of stops and live free-market prices.
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-const icon = (id) => `https://maplestory.io/api/MCW/1/item/${id}/icon`;
+const icon = (id) => `https://maplestory.io/api/MCW/1.2/item/${id}/icon`;
 // NPC standing images from the same source as the item icons (the quest data's NPC ids are the game's).
 const npcImg = (id) => `https://maplestory.io/api/MCW/1/npc/${id}/icon`;
 const n = (v, lang) => Number(v).toLocaleString(lang === 'ko' ? 'ko-KR' : 'en-US');

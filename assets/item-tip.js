@@ -177,7 +177,7 @@ ${p.high > p.low ? `<div class="tip-range" aria-hidden="true"><i style="left:${s
       dropList = `<ul class="tip-mobs">${shown.filter((m) => data.mobs[m]).map((m) => `<li>${sprite(m, 36)}<span>${esc(mobName(m))}</span><small>Lv. ${data.mobs[m][2]}</small></li>`).join('')}</ul>${dropN > shown.length ? `<p class="tip-muted">${tr(`외 ${dropN - shown.length}마리`, `+${dropN - shown.length} more`)}</p>` : ''}`;
     }
     if (questN) from.push(`${tr('퀘스트 보상', 'Quest reward')} ${questN}${tr('개', '')}`);
-    card.innerHTML = `<header><img src="https://maplestory.io/api/MCW/1/item/${id}/icon" width="32" height="32" alt=""><div><strong>${ups}${esc(name)}</strong><small>${esc(ko ? CAT[cat] || cat : sub || CAT[cat] || cat)}</small></div></header>
+    card.innerHTML = `<header><img src="https://maplestory.io/api/MCW/1.2/item/${id}/icon" width="32" height="32" alt=""><div><strong>${ups}${esc(name)}</strong><small>${esc(ko ? CAT[cat] || cat : sub || CAT[cat] || cat)}</small></div></header>
 ${lines.join('')}
 ${sameBlock(id, opts)}${priceBlock(id)}
 ${dropList ? `<section><h4>${tr('드랍하는 몬스터', 'Dropped by')}</h4>${dropList}</section>` : ''}
@@ -200,7 +200,7 @@ ${sell || from.length ? `<section class="tip-npc">${sell ? `<p>${tr('상점에 �
     const row = (k, v) => `<div><dt>${k}</dt><dd>${v}</dd></div>`;
     const where = maps.length ? maps.map(([k, e]) => esc(ko ? k : e)).join(', ') + (mapN > maps.length ? ` ${tr(`외 ${mapN - maps.length}곳`, `+${mapN - maps.length} more`)}` : '')
       : status === 'upcoming' ? tr('11/18 개방 지역', 'Area opens Nov 18') : tr('출현 맵 없음', 'No open map');
-    const dropList = drops.filter((d) => data.items[d]).map((d) => `<li><img src="https://maplestory.io/api/MCW/1/item/${d}/icon" width="24" height="24" alt="" loading="lazy"><span>${esc(itemName(d))}</span></li>`).join('');
+    const dropList = drops.filter((d) => data.items[d]).map((d) => `<li><img src="https://maplestory.io/api/MCW/1.2/item/${d}/icon" width="24" height="24" alt="" loading="lazy"><span>${esc(itemName(d))}</span></li>`).join('');
     card.innerHTML = `<header class="tip-mob-head">${sprite(id, 56)}<div><strong>${esc(ko ? nameKo : nameEn)}</strong><small>Lv. ${lv}${boss ? ` · ${tr('보스', 'Boss')}` : ''}${ko && nameEn !== nameKo ? ` · ${esc(nameEn)}` : ''}</small></div></header>
 <dl class="tip-mob-stats">${row('HP', nf.format(hp))}${row('EXP', nf.format(exp))}${row(tr('회피', 'Avoid'), nf.format(eva))}${row(tr('필요 명중', 'Accuracy'), acc ? nf.format(acc) : '—')}</dl>
 ${elLine ? `<p>${elLine}</p>` : ''}

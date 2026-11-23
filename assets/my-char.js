@@ -153,7 +153,7 @@ export function mountCharPanel(el, { routes, classes, finder, korean }) {
     const list = pickGear(hub.gear, c);
     if (!list.length) return `<p class="muted">${esc(t.noGear)}</p>`;
     return `<ul class="char-list char-gear">${list.map(([id, ko, en, sub, need, , , , price]) => `<li><a href="${esc(`${d.market}?item=${id}&src=char`)}" data-char-link="gear" data-item="${id}">`
-      + `<img src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="28" height="28" loading="lazy"><strong>${esc(korean ? ko : en)}</strong>`
+      + `<img src="https://maplestory.io/api/MCW/1.2/item/${id}/icon" alt="" width="28" height="28" loading="lazy"><strong>${esc(korean ? ko : en)}</strong>`
       + `<small>${esc(korean ? SLOT_KO[sub] || sub : sub)} · Lv. ${need}</small><b${price ? '' : ' class="muted"'}>${esc(price ? mesos(price) : t.noPrice)}</b></a></li>`).join('')}</ul>`;
   };
 

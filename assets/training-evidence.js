@@ -66,7 +66,7 @@ export function routeCards(rows, lang = 'ko', prefix = `/${lang}`) {
   // need in one line; the advice opens underneath. `--you` on the list (set by the finder) marks the reader's level.
   const head = `<div class="tr-row-head" aria-hidden="true"><span>${tr('레벨','Level')}</span><span>${tr('사냥터','Route')}</span><span>${tr('몬스터','Monsters')}</span><span>${tr('주요 드랍','Top drops')}</span><span>${tr('필요 명중','Accuracy')}</span></div>`;
   // Item names stay as in the game client; prices are the live market's (3+ listings), shown in 만 / k.
-  const icon = (id) => `<img class="tr-drop-icon" src="https://maplestory.io/api/MCW/1/item/${id}/icon" width="24" height="24" alt="" loading="lazy">`;
+  const icon = (id) => `<img class="tr-drop-icon" src="https://maplestory.io/api/MCW/1.2/item/${id}/icon" width="24" height="24" alt="" loading="lazy">`;
   const dropLink = (d) => `<a href="${prefix}${d.path}">${icon(d.id)}<span><b>${esc(lang === 'ko' ? d.ko : d.en)}</b>${d.price ? `<small translate="no">${rateNum(d.price, lang)}${lang === 'ko' ? ' 메소' : ''}</small>` : ''}</span></a>`;
   return `<div class="tr-route-list">${head}${rows.map(r => {
     const item = (label,value) => `<div><dt>${label}</dt><dd>${esc(value[lang])}</dd></div>`;

@@ -10,7 +10,7 @@ const $ = (id) => document.getElementById(id);
 const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const nf = new Intl.NumberFormat(ko ? 'ko-KR' : 'en-US');
-const icon = (id) => `https://maplestory.io/api/MCW/1/item/${id}/icon`;
+const icon = (id) => `https://maplestory.io/api/MCW/1.2/item/${id}/icon`;
 const money = (n) => (n == null ? T.noPrice : ko ? (n >= 1e8 ? `${(n / 1e8).toFixed(2).replace(/\.?0+$/, '')}억` : n >= 1e4 ? `${Math.round(n / 1e4).toLocaleString('ko-KR')}만` : nf.format(n)) : n >= 1e6 ? `${(n / 1e6).toFixed(2).replace(/\.?0+$/, '')}m` : n >= 1e3 ? `${Math.round(n / 1e3)}k` : nf.format(n));
 const track = (name, p) => window.track?.(name, { page_type: 'forge', ...p });
 const STAT_ORDER = ['STR', 'DEX', 'INT', 'LUK', 'MHP', 'MMP', 'PAD', 'MAD', 'PDD', 'MDD', 'ACC', 'EVA', 'Speed', 'Jump', 'CRT', 'CRD'];

@@ -218,7 +218,7 @@ export function newbieTermsLd({ lang, page, url }) {
 // data); monster level/HP/EXP from data/monsters.json; Free Market prices from data/item-prices.json (refreshed on every
 // deploy); NPC shop prices of Meat (80) and Lemon (150), damage taken, EXP per 5 minutes and party shorthand from
 // Korean beginner videos (2026-10/11). No source names on the page (owner rule).
-const icon = (id, size = 32) => `<img class="nb-ico" src="https://maplestory.io/api/MCW/1/item/${id}/icon" width="${size}" height="${size}" alt="" loading="lazy">`;
+const icon = (id, size = 32) => `<img class="nb-ico" src="https://maplestory.io/api/MCW/1.2/item/${id}/icon" width="${size}" height="${size}" alt="" loading="lazy">`;
 export function newbieRoadmap({ lang, link, asset, items, mobs, prices, pricesAt }) {
   const ko = lang === 'ko';
   const tr = (k, e) => (ko ? k : e);

@@ -55,7 +55,7 @@ function row(e, { lang, link, itemHref, mobHref, questHref, mobSprite }) {
   ].join('');
   return `<tr data-lv="${e.lv}" data-sub="${esc(e.sub)}" data-job="${e.job}">
 <td class="num">${e.lv}</td>
-<th scope="row"><a class="eq-name" href="${itemHref(e)}"><img src="https://maplestory.io/api/MCW/1/item/${e.id}/icon" alt="" width="32" height="32" loading="lazy"><span translate="no">${esc(name)}</span></a>${reqLine(e) ? `<small class="eq-req">${reqLine(e)}</small>` : ''}</th>
+<th scope="row"><a class="eq-name" href="${itemHref(e)}"><img src="https://maplestory.io/api/MCW/1.2/item/${e.id}/icon" alt="" width="32" height="32" loading="lazy"><span translate="no">${esc(name)}</span></a>${reqLine(e) ? `<small class="eq-req">${reqLine(e)}</small>` : ''}</th>
 <td><div class="eq-stats">${statLine(e, lang) || '—'}</div></td>
 <td class="num">${e.slots || '—'}</td>
 <td><div class="eq-from">${from}</div></td></tr>`;

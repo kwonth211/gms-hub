@@ -43,7 +43,7 @@ ${Array.from({length:18},(_,i)=>{const a=i*2.399;const x=230+Math.cos(a)*(174+(i
 // Right-hand art for page cards: each page shows what it is (a shop list, monsters and an EXP bar, a quest log, a
 // podium of mesos, megaphone bubbles, glossary words). Item and NPC icons come from the game data API; monsters are the
 // site's own pictures. Illustrations only: no live prices or counts.
-const ICON = (id) => `https://maplestory.io/api/MCW/1/item/${id}/icon`;
+const ICON = (id) => `https://maplestory.io/api/MCW/1.2/item/${id}/icon`;
 const MOB = (id) => `data:image/gif;base64,${fs.readFileSync(path.join(root, 'assets/monsters', `${id}.gif`)).toString('base64')}`;
 function art(key, lang) {
   const ko = lang === 'ko';
