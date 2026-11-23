@@ -1544,8 +1544,8 @@ ${''/* Class filter as visible chips at the top (owner 2026-11-22): one list fil
 <label>${tr('우선순위','Priority')}<select name="goal"><option value="balanced">${tr('전체 비교','Compare all')}</option><option value="economy">${tr('물약 절약','Lower supply cost')}</option></select></label>
 <label>${tr('사냥 방식','Party setup')}<select name="party"><option value="any">${tr('솔로 + 파티','Solo + party')}</option><option value="solo">${tr('솔로 가능한 곳','Solo options')}</option></select></label>
 <button class="btn" type="submit">${tr('사냥터 찾기','Find routes')}</button>
-<label class="tr-check"><input name="advanced" type="checkbox">${tr('장비·명중 조건이 까다로운 후보도 보기','Include demanding gear / accuracy options')}</label>
-<p class="tr-filter-help">${tr('표시 레벨은 이동 검토 구간이에요. 카드의 진입 기준을 먼저 확인하세요.','Levels are trial windows; read each card’s entry conditions first.')}</p>
+<label class="tr-check"><input name="advanced" type="checkbox">${tr('장비·명중이 갖춰져야 하는 사냥터도 보기','Include demanding gear / accuracy options')}</label>
+<p class="tr-filter-help">${tr('표시된 레벨은 이 사냥터로 옮길 만한 구간이에요. 카드의 진입 기준부터 보세요.','Levels are trial windows; read each card’s entry conditions first.')}</p>
 </form><div class="tr-result-head"><h2 id="tr-status" role="status">${tr('20레벨 사냥 후보','Options for level 20')} ${initial.length}${tr('곳','')}</h2><div class="tr-result-actions"><button type="button" class="btn ghost small-btn" id="tr-share" data-ok="${tr('조건 링크를 복사했어요','Link copied')}" data-fail="${tr('복사하지 못했어요. 주소창의 주소를 직접 복사해 주세요.','Could not copy. Copy the address from the address bar.')}">${tr('이 조건 링크 복사','Copy link to these filters')}</button><span id="tr-share-status" class="share-status" role="status" aria-live="polite"></span><a href="${href(langPath(lang,'/guides/choose-your-job/'))}">${tr('직업별 육성 가이드','Class guides')}</a></div></div>
 <section id="tr-result">${routeCards(initial,lang)}</section><noscript><p>${tr('조건 검색에는 JavaScript가 필요해요. 아래 레벨별 페이지에서 전체 경로를 볼 수 있어요.','Filters require JavaScript. Browse the level-band pages below for all routes.')}</p></noscript>
 ${ratesTable(lang)}${bandNav(lang)}${trainingMethod(lang)}</div>${jsonScript('training-data',publicTrainingData(training))}`;
@@ -1553,7 +1553,7 @@ ${ratesTable(lang)}${bandNav(lang)}${trainingMethod(lang)}</div>${jsonScript('tr
 function trainingBandBody(lang,band) {
   const t=T[lang]; const rows=bandSpots(band); const vars={a:band[0],b:band[1],n:rows.length};
   return `${pageHead(lang,'sword',fill(t.trBandH1,vars),fill(t.trBandLead,vars))}<div class="wrap tr-page">
-<p class="tr-review-note">${lang==='ko'?'이 구간과 겹치는 모든 직업의 경로예요. 장비 조건부 후보도 포함되니 진입 기준과 직업을 확인하세요.':'All class routes overlapping this band, including gear-dependent trials. Check class and entry conditions.'}</p>${routeCards(rows,lang)}
+<p class="tr-review-note">${lang==='ko'?'이 레벨대에 갈 수 있는 모든 직업의 사냥터예요. 장비가 갖춰져야 하는 곳도 섞여 있으니 직업과 진입 기준을 같이 보세요.':'All class routes overlapping this band, including gear-dependent trials. Check class and entry conditions.'}</p>${routeCards(rows,lang)}
 <p><a class="btn" href="${href(langPath(lang,'/tools/training/'))}?lv=${band[0]}">${t.trBandFinder}</a></p>${bandNav(lang,band)}${trainingMethod(lang)}</div>`;
 }
 
