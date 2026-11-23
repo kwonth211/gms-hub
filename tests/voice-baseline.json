@@ -1,0 +1,4 @@
+{
+ "note": "Hedging words still left per file (tests/voice.test.mjs, docs/writing-rules.md). Lower a number when you rewrite the file; never raise one. A file not listed must have none.",
+ "files": {}
+}
