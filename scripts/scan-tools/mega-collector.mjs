@@ -147,7 +147,7 @@ let coveredSince=0,lastUnstick=0;
 // Windows (2026-11-23): the shop collector's item tooltips keep covering the chat. When a megaphone line shows up
 // that has not been read yet and is covered, ask the shop collector to move the pointer away and wait ('hold'),
 // so the line can be read and its item link pressed at once; 'release' hands the mouse back early.
-let tallBox=null,lastOptionEnd=0;
+let tallBox=null,lastOptionEnd=0,lastFree=Date.now();
 const optionCache=new Map();
 const cacheKey=row=>[row.channel,row.nick.toLowerCase(),shape(row.text)].join('|');
 const CHAT_X=Number(process.env.GMS_CHAT_X||278);
@@ -201,6 +201,7 @@ setInterval(()=>{ // its own timer: the main tick pauses during clicks, which is
 async function tick() {
   if (!cam) { if (Date.now() - tried > 60000) camera(); return; }
   if(optionReaders.some(r=>r.interacting))return; // Do not OCR chat through an open tooltip.
+  lastFree=Date.now();
   let at = 0;
   try { at = fs.statSync(shot).mtimeMs; } catch { /* no frame yet */ }
   // No new frame: nothing on the window changed. A minute without one means the stream is stuck, so start it over.
@@ -365,7 +366,7 @@ async function tick() {
     console.log(`options skipped ${row.nick} [${item.en}]: ${reader.lastSkip} (${Date.now()-now}ms) mode=${reader.lastMode||'?'} seen=${row.seen}`); }
     job.lastReason=reader.lastSkip||(reader.lastMissing?.length?'missing '+reader.lastMissing.join(','):'');
     if(!/input\/OCR: [45]$|cooldown|paused|moved after click/.test(reader.lastSkip))job.attempts++;
-    if(job.attempts>=(WIN?2:4))job.created=0; // owner 2026-11-22: no long click series on one link (one got 18 clicks); expire next tick
+    if(job.attempts>=4)job.created=0; // owner 2026-11-22: no long click series on one link (one got 18 clicks); expire next tick
     if(/moved after click/.test(reader.lastSkip))job.lastAttempt=0; // the chat scrolled under the pointer: try again at once
     if(priority(job)>0&&reader.lastSkip==='no trusted numeric options')optionJobs.delete(key);
     })().catch(e=>console.error('option task failed:',e.message)).finally(()=>{lastOptionEnd=Date.now();job.active=false;reader.busy=false;optionTasks.delete(task);saveState();if(WIN&&!optionReaders.some(r=>r.busy)){holdOpen=false;lend('release');}});
@@ -388,6 +389,9 @@ new Worker("const {workerData:b}=require('node:worker_threads');let last=-1,sinc
 while (!stopping) {
   const t0 = Date.now();
   Atomics.add(beat,0,1);
+  // 2026-11-23 17:43: after one option read the chat was never read again for 43 minutes — the loop kept running but an
+  // option reader stayed marked as pressing a link. No chat reading for 90 s ends the process; the run loop restarts it.
+  if(Date.now()-lastFree>90000){console.error(new Date().toISOString(),`stuck: chat not read for ${Math.round((Date.now()-lastFree)/1000)} s (option reader busy=${optionReaders.map(r=>`${!!r.busy}/${!!r.interacting}`).join(',')}), restarting`);process.exit(1);}
   try { await tick(); } catch (e) { console.error(new Date().toISOString(), e.message, String(e.stack).split(String.fromCharCode(10)).slice(1,4).join(' | ')); }
   await new Promise((r) => setTimeout(r, Math.max(200, TICK_MS - (Date.now() - t0))));
 }
