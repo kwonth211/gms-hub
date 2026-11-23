@@ -7,7 +7,9 @@ import { promisify } from 'node:util';
 import { PNG } from 'pngjs';
 import Tesseract from 'tesseract.js';
 import { findBadge, senderFingerprint, lineFingerprint, locateFingerprint, locateFingerprintNear, glyphs, itemGlyphBounds } from '../../assets/mega-reader.js';
-const exec = promisify(execFile);
+const execP = promisify(execFile);
+// A helper is a path (Mac binaries) or [command, ...leading args] (Windows: node/python scripts).
+const exec = (bin,args,opts) => Array.isArray(bin) ? execP(bin[0],[...bin.slice(1),...args],{windowsHide:true,...opts}) : execP(bin,args,opts);
 import { colorTooltipBoxes, selectTooltipBox, agreeTooltipNumber, agreeLabeledNumber, tooltipBody, tooltipField, tooltipStatRows, missingTooltipFields, subtractTooltipBackground, emptyUpgradeSuffix, parseTooltipLines, agreeOptions, safeItemClickX, whisperDialog, nameKey, tooltipTitle } from '../../assets/mega-tooltip.js';
 export { nameKey } from '../../assets/mega-tooltip.js';
 // Every input we send, with times, so a closed shop can be matched against our own actions (owner 2026-11-22).
@@ -74,7 +76,7 @@ export function shopButtonVisible(img,ref) {
   return diff/now.length<18;
 }
 export class OptionReader {
-  constructor({shot,input,ocr,catalog,readFrame}) {Object.assign(this,{shot,input,ocr,catalog,readFrame});this.last=0;this.dir=fs.mkdtempSync(path.join(os.tmpdir(),'gms-mega-options-'));}
+  constructor({shot,input,ocr,catalog,readFrame,exact=null}) {Object.assign(this,{shot,input,ocr,catalog,readFrame,exact});this.last=0;this.dir=fs.mkdtempSync(path.join(os.tmpdir(),'gms-mega-options-'));}
   async recognize(img,name,file='ocr.png',scale=1) {const p=path.join(this.dir,file);fs.writeFileSync(p,PNG.sync.write(img));const {stdout}=await exec(this.ocr,[p,name,String(scale)],{timeout:4000,maxBuffer:2e6});return JSON.parse(stdout);}
   async recognizeFallback(img,psm='6') {
     this.fallback ||= Tesseract.createWorker('eng').then(async w=>{await w.setParameters({tessedit_pageseg_mode:'6'});return w;});
@@ -248,7 +250,7 @@ export class OptionReader {
     const input=async(action,x,y,capture=false,cleanup=false)=>{
       if(paused()&&!cleanup)throw Error('option input paused');
       const allow=action==='click'&&this.allow?{GMS_ALLOW:[this.allow.x,this.allow.y,this.allow.w,this.allow.h].map(Math.round).join(',')}:{};
-      const run=exec(this.input,[action,String(x),String(y),String(image.width),String(image.height)],{timeout:2000,maxBuffer:16000,env:{...process.env,...allow}});
+      const run=exec(this.input,[action,String(x),String(y),String(image.width),String(image.height)],{timeout:process.platform==='win32'?13000:2000,maxBuffer:16000,env:{...process.env,...allow}});
       let snapshot=null,pressed=null,output='';
       if(capture)run.child.stdout.on('data',chunk=>{
         output+=chunk;let end;
@@ -288,7 +290,7 @@ export class OptionReader {
         if(btn)OptionReader.shopButton=shopButtonRef(before,btn);
         process.env.GMS_FORBID=(OptionReader.shopZones||[]).map(z=>[z.x,z.y,z.w,z.h].map(Math.round).join(',')).join(';');
         if(whisperDialog(rows))return skip('existing whisper dialog');
-        OptionReader.noWhisperUntil=Date.now()+8000;OptionReader.shopChecked=true;
+        OptionReader.noWhisperUntil=Date.now()+(process.platform==="win32"?60000:8000);OptionReader.shopChecked=true;
       }
       if(!process.env.GMS_FORBID&&!OptionReader.shopChecked)return skip('shop window not checked yet');
       this.timing.preflight=Date.now()-t0;
@@ -356,7 +358,25 @@ export class OptionReader {
          for(const old of fs.readdirSync(this.dir).filter(f=>/^pf-.*\.json$/.test(f)).map(f=>[f,fs.statSync(path.join(this.dir,f)).mtimeMs]).sort((a,b)=>a[1]-b[1]).slice(0,-30).map(a=>a[0]))for(const e of ['.json','.png'])fs.rmSync(path.join(this.dir,old.replace(/\.json$/,e)),{force:true});}
         return skip('target tooltip title missing');
       }
-      let opts=await this.readPanel(after,rows,panel,item,ready);
+      // Windows: the shop collector's pixel-exact tooltip reader (win/maple_tooltip.py) reads every stat row with
+      // certainty in ~0.3 s; Tesseract took several seconds per panel and dropped rows. OCR stays as the fallback
+      // (and reads the title's (+N) when the exact reader's title table lacks a digit).
+      let opts=null,exact=null;
+      if(this.exact&&item.cat==='Equip'&&item.id) {
+        try {
+          const shot=path.join(this.dir,'exact.png');fs.writeFileSync(shot,PNG.sync.write(after));
+          const {stdout}=await exec(this.exact,[shot,String(Math.round(panel.x)),String(item.id)],{timeout:4000,maxBuffer:1e5});
+          exact=JSON.parse(stdout);
+        } catch { exact=null; }
+        if(exact) {
+          opts={...exact.opts};
+          const speed=rows.map(r=>/Attack Speed:?s*(very fast|very slow|fast|average|slow)/i.exec(String(r.text))?.[1]).find(Boolean);
+          if(speed)opts.attackSpeed=speed.toLowerCase();
+          if(exact.upsUnread) { const n=tooltipTitle(panel.title.text,item.en)?.ups; if(Number.isInteger(n)&&n<=20&&(opts.used===undefined||n<=opts.used))opts.ups=n; }
+          this.lastMissing=[];this.lastStatCount=Object.keys(opts.stats||{}).length;this.lastReading={exact:true};
+        }
+      }
+      if(!opts)opts=await this.readPanel(after,rows,panel,item,ready);
       if(item.cat==='Equip'&&opts&&opts.ups===undefined&&opts.used!==0) {
         // Clean items have no (+N) suffix. Only retry an unread suffix after checking the slots.
         const header={x:panel.x,y:panel.y,w:Math.min(panel.w,235),h:Math.min(panel.h,Math.ceil(panel.title.h+12))};

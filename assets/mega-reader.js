@@ -5,7 +5,8 @@
 // Background colour → band class. Pink bands are dithered between two tones, so the ranges are wide.
 export function bandClass(r, g, b) {
   if (r > 170 && g > 120 && g < 200 && b < 90) return 'Y';
-  if (r > 160 && g > 120 && g < 175 && b > 140) return 'P';
+  // Windows capture (HDR desktop) shows the pink band brighter: 255,185,207 / 242,175,199 (2026-11-23). Greys are kept out by r - g.
+  if (r > 160 && g > 120 && b > 140 && (g < 175 || (g < 195 && r - g > 40))) return 'P';
   if (b > 150 && g > 150 && r < 150) return 'C';
   return null;
 }
@@ -47,6 +48,7 @@ export function findChatBox(img) {
   // Keep every cluster with the same chat edges, otherwise visible older megaphones
   // disappear from the crop as soon as a two-line notice arrives in the middle.
   const aligned=near.filter(r=>Math.abs(r.first-x0)<=16&&Math.abs(r.last-x1)<=16);
+  if (!aligned.length) return null;
   const y0 = Math.max(0, aligned[0].y - 48), y1 = Math.min(h, aligned.at(-1).y + 48);
   return { x: Math.max(0, x0 - 12), y: y0, w: Math.min(w, x1 + 24) - Math.max(0, x0 - 12), h: y1 - y0 };
 }
@@ -211,7 +213,9 @@ export function lineFingerprint(img, line) {
       (!badge||g.x+g.w<=badge.left||g.x>=badge.message));
     let hash=2166136261;
     for(const g of gs)for(const ch of `${g.x-left}:${g.key};`)hash=Math.imul(hash^ch.charCodeAt(0),16777619)>>>0;
-    return `slot2:${line.color}:${channel??'?'}:${line.right-left}:${hash}`;
+    // The band's right edge wobbles by a few pixels on the Windows capture (545/551 for the same row, 2026-11-23),
+    // so the width is not part of the identity: colour, channel digits and every letter's position already are.
+    return `slot3:${line.color}:${channel??'?'}:${hash}`;
   }
   return `${line.bottom-line.top}:${line.right}:${lineBitmap(img,line,{x0:0,scale:1,pad:0}).sig}`;
 }
