@@ -1,0 +1,423 @@
+{
+ "updated": "2026-11-23",
+ "source": "https://maplestory.io/api/MCW/1/item",
+ "items": {
+  "4031000": {
+   "en": "Sera's Mirror",
+   "ko": "세라의 거울"
+  },
+  "4031001": {
+   "en": "Maria's Letter",
+   "ko": "마리아의 편지"
+  },
+  "4031002": {
+   "en": "Lucas's Letter",
+   "ko": "루카스의 편지"
+  },
+  "4031003": {
+   "en": "Rusty Screw",
+   "ko": "오래된 나사"
+  },
+  "4031004": {
+   "en": "Old Wooden Board",
+   "ko": "낡은 나무판자"
+  },
+  "4031005": {
+   "en": "Estelle's Special Sauce",
+   "ko": "에스텔의 특제 소스"
+  },
+  "4031006": {
+   "en": "Old Gold Watch",
+   "ko": "오래된 금시계"
+  },
+  "4031007": {
+   "en": "Broken Mirror Glass",
+   "ko": "깨진 거울조각"
+  },
+  "4031008": {
+   "en": "Sparkling Glass Marble",
+   "ko": "반짝이는 유리구슬"
+  },
+  "4031009": {
+   "en": "Weird Medicine",
+   "ko": "이상한 약"
+  },
+  "4031010": {
+   "en": "Arcon's Blood",
+   "ko": "아콘의 피"
+  },
+  "4031011": {
+   "en": "Sparkling Rock",
+   "ko": "반짝이는 돌"
+  },
+  "4031012": {
+   "en": "Witchgrass Leaf",
+   "ko": "마녀풀의 잎사귀"
+  },
+  "4031013": {
+   "en": "Dances with Balrog's Letter",
+   "ko": "'발록과 함께 춤을'의 편지"
+  },
+  "4031014": {
+   "en": "Grendel the Really Old's Letter",
+   "ko": "'노인 그렌델'의 편지"
+  },
+  "4031015": {
+   "en": "Athena Pierce's Letter",
+   "ko": "'아테나 피어스'의 편지"
+  },
+  "4031016": {
+   "en": "The Dark Lord's Letter",
+   "ko": "다크로드의 편지"
+  },
+  "4031017": {
+   "en": "Dark Marble",
+   "ko": "검은 구슬"
+  },
+  "4031018": {
+   "en": "The Proof of a Hero",
+   "ko": "영웅의 증거"
+  },
+  "4031019": {
+   "en": "Dark Marble",
+   "ko": "검은 구슬"
+  },
+  "4031020": {
+   "en": "The Proof of a Hero",
+   "ko": "영웅의 증거"
+  },
+  "4031021": {
+   "en": "Dark Marble",
+   "ko": "검은 구슬"
+  },
+  "4031022": {
+   "en": "The Proof of a Hero",
+   "ko": "영웅의 증거"
+  },
+  "4031023": {
+   "en": "Dark Marble",
+   "ko": "검은 구슬"
+  },
+  "4031024": {
+   "en": "The Proof of a Hero",
+   "ko": "영웅의 증거"
+  },
+  "4031025": {
+   "en": "Pink Anthurium",
+   "ko": "핑크 안시리움"
+  },
+  "4031026": {
+   "en": "Double-Rooted Red Ginseng",
+   "ko": "두 뿌리 홍삼"
+  },
+  "4031027": {
+   "en": "Hero's Gladius",
+   "ko": "영웅의 글라디우스"
+  },
+  "4031030": {
+   "en": "Rina's Unagi Special",
+   "ko": "리나의 특제 장어구이"
+  },
+  "4031031": {
+   "en": "Fresh Milk",
+   "ko": "신선한 우유"
+  },
+  "4031032": {
+   "en": "Secret Book",
+   "ko": "비밀의 책"
+  },
+  "4031033": {
+   "en": "Black Feather",
+   "ko": "검은 깃털"
+  },
+  "4031039": {
+   "en": "Shumi's Coin",
+   "ko": "슈미의 동전"
+  },
+  "4031040": {
+   "en": "Shumi's Roll of Cash",
+   "ko": "슈미의 돈뭉치"
+  },
+  "4031041": {
+   "en": "Shumi's Sack of Cash",
+   "ko": "슈미의 돈주머니"
+  },
+  "4031042": {
+   "en": "Pink Viola",
+   "ko": "핑크 비올라"
+  },
+  "4031043": {
+   "en": "Blue Viola",
+   "ko": "블루 비올라"
+  },
+  "4031044": {
+   "en": "White Viola",
+   "ko": "화이트 비올라"
+  },
+  "4031045": {
+   "en": "Monster Card",
+   "ko": "몬스터 카드"
+  },
+  "4031046": {
+   "en": "Omok Table",
+   "ko": "바둑판"
+  },
+  "4031047": {
+   "en": "Omok Piece: Slime",
+   "ko": "슬라임 오목알"
+  },
+  "4031048": {
+   "en": "Omok Piece: Mushroom",
+   "ko": "버섯 오목알"
+  },
+  "4031049": {
+   "en": "Omok Table",
+   "ko": "바둑판"
+  },
+  "4031050": {
+   "en": "Omok Piece: Slime",
+   "ko": "슬라임 오목알"
+  },
+  "4031051": {
+   "en": "Omok Piece: Pig",
+   "ko": "돼지 오목알"
+  },
+  "4031052": {
+   "en": "Omok Table",
+   "ko": "바둑판"
+  },
+  "4031053": {
+   "en": "Omok Piece: Slime",
+   "ko": "슬라임 오목알"
+  },
+  "4031054": {
+   "en": "Omok Piece: Octopus",
+   "ko": "옥토퍼스 오목알"
+  },
+  "4031055": {
+   "en": "Omok Table",
+   "ko": "바둑판"
+  },
+  "4031056": {
+   "en": "Omok Piece: Pig",
+   "ko": "돼지 오목알"
+  },
+  "4031057": {
+   "en": "Omok Piece: Mushroom",
+   "ko": "버섯 오목알"
+  },
+  "4031058": {
+   "en": "Omok Table",
+   "ko": "바둑판"
+  },
+  "4031059": {
+   "en": "Omok Piece: Octopus",
+   "ko": "옥토퍼스 오목알"
+  },
+  "4031060": {
+   "en": "Omok Piece: Mushroom",
+   "ko": "버섯 오목알"
+  },
+  "4031061": {
+   "en": "Omok Table",
+   "ko": "바둑판"
+  },
+  "4031062": {
+   "en": "Omok Piece: Pig",
+   "ko": "돼지 오목알"
+  },
+  "4031063": {
+   "en": "Omok Piece: Octopus",
+   "ko": "옥토퍼스 오목알"
+  },
+  "4031064": {
+   "en": "Red Cape",
+   "ko": "빨간 망토"
+  },
+  "4031068": {
+   "en": "Animal Fossil",
+   "ko": "동물의 뼈화석"
+  },
+  "4031069": {
+   "en": "Plant Fossil",
+   "ko": "식물의 나뭇잎화석"
+  },
+  "4031070": {
+   "en": "Winston's Recommendation",
+   "ko": "윈스턴의 소개장"
+  },
+  "4031071": {
+   "en": "Fossil Box",
+   "ko": "화석 상자"
+  },
+  "4031072": {
+   "en": "Plant Sample",
+   "ko": "식물 샘플"
+  },
+  "4031073": {
+   "en": "Stuffed Drake Skull",
+   "ko": "박제된 드레이크 머리뼈"
+  },
+  "4031074": {
+   "en": "Fossil Report",
+   "ko": "화석연구 보고서"
+  },
+  "4031075": {
+   "en": "Stump's Teardrop",
+   "ko": "스텀프의 눈물"
+  },
+  "4031076": {
+   "en": "Ayan's Toy Sword",
+   "ko": "아얀의 장난감 칼"
+  },
+  "4031077": {
+   "en": "Ayan's Letter",
+   "ko": "아얀의 편지"
+  },
+  "4031078": {
+   "en": "Alligator Skin Pouch",
+   "ko": "악어 가죽 주머니"
+  },
+  "4031079": {
+   "en": "Flying Medicine",
+   "ko": "비상의 비약"
+  },
+  "4031081": {
+   "en": "Glowing Mushroom",
+   "ko": "빛나는 버섯"
+  },
+  "4031089": {
+   "en": "Lewis's Letter",
+   "ko": "루이스의 편지"
+  },
+  "4031090": {
+   "en": "Dances with Balrog's Letter",
+   "ko": "발록과 함께 춤을의 편지"
+  },
+  "4031091": {
+   "en": "Lewis's Letter",
+   "ko": "루이스의 편지"
+  },
+  "4031092": {
+   "en": "Chief Stan's Letter",
+   "ko": "촌장 스탄의 편지"
+  },
+  "4031111": {
+   "en": "Mrs. Ming Ming's Cooking Recipe",
+   "ko": "밍밍 부인의 요리법"
+  },
+  "4031112": {
+   "en": "Bruce's Special Cake",
+   "ko": "브루스의 특별한 케이크"
+  },
+  "4031113": {
+   "en": "Vitamin Gummy",
+   "ko": "비타민 젤리"
+  },
+  "4031114": {
+   "en": "Special Stirge Phobia Cure",
+   "ko": "특별한 스티지 공포증 치료제"
+  },
+  "4031115": {
+   "en": "Scorched Arcon Scroll",
+   "ko": "그을린 아콘 주문서"
+  },
+  "4031116": {
+   "en": "Old Chief Stan's Hammer",
+   "ko": "촌장 스탄의 낡은 망치"
+  },
+  "4031117": {
+   "en": "Chief Stan's Hammer",
+   "ko": "촌장 스탄의 망치"
+  },
+  "4031118": {
+   "en": "Torn Ledger Pages",
+   "ko": "찢어진 장부 페이지"
+  },
+  "4031119": {
+   "en": "Incomplete Ledger",
+   "ko": "미완성 장부"
+  },
+  "4031120": {
+   "en": "Bound Ledger",
+   "ko": "제본된 장부"
+  },
+  "4031121": {
+   "en": "Smooth Horn Marble",
+   "ko": "매끄러운 뿔 구슬"
+  },
+  "4031122": {
+   "en": "Torn Note",
+   "ko": "찢어진 쪽지"
+  },
+  "4031123": {
+   "en": "Athena Pierce's Box",
+   "ko": "아테나 피어스의 상자"
+  },
+  "4031124": {
+   "en": "Broken Wooden Bow",
+   "ko": "부러진 나무 활"
+  },
+  "4031125": {
+   "en": "Repaired Wooden Bow",
+   "ko": "수리된 나무 활"
+  },
+  "4031126": {
+   "en": "Alex's Gift Sack",
+   "ko": "알렉스의 선물"
+  },
+  "4031127": {
+   "en": "A Gift for Nella",
+   "ko": "넬라를 위한 선물"
+  },
+  "4031128": {
+   "en": "A Gift for JM",
+   "ko": "JM에게 주는 선물"
+  },
+  "4031129": {
+   "en": "Halloween Candies",
+   "ko": "할로윈 사탕"
+  },
+  "4031130": {
+   "en": "Stamped Ledger",
+   "ko": "도장이 찍힌 장부"
+  },
+  "4031131": {
+   "en": "Encrypted Document",
+   "ko": "암호화된 문서"
+  },
+  "4031132": {
+   "en": "Encrypted Document",
+   "ko": "암호화된 문서"
+  },
+  "4031133": {
+   "en": "Ink of Truth",
+   "ko": "진실의 잉크"
+  },
+  "4031134": {
+   "en": "Maple Leaf",
+   "ko": "단풍잎"
+  },
+  "4031135": {
+   "en": "Deciphered Document",
+   "ko": "해독된 문서"
+  },
+  "4031136": {
+   "en": "Amended Ledger",
+   "ko": "수정된 장부"
+  },
+  "4031137": {
+   "en": "Very Dry Branch",
+   "ko": "바짝 마른 나뭇가지"
+  },
+  "4031140": {
+   "en": "Hearthkeeper's Journal"
+  },
+  "4031141": {
+   "en": "Elda's Name-Charm"
+  },
+  "4031142": {
+   "en": "Elda's Last Message"
+  }
+ }
+}

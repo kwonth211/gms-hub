@@ -8,10 +8,20 @@ const fmt = (v) => Math.round(v).toLocaleString(D.lang === 'ko' ? 'ko-KR' : 'en-
 const fill = (s, v) => s.replace(/\{(\w+)\}/g, (_, k) => v[k]);
 const mesos = (v) => (D.lang === 'ko' ? (v >= 10000 ? `${+(v / 10000).toFixed(v >= 1e6 ? 0 : 1)}만` : fmt(v)) : v >= 1e6 ? `${+(v / 1e6).toFixed(2)}m` : v >= 1000 ? `${+(v / 1000).toFixed(1)}k` : fmt(v));
 
-let done = new Set();
-try { done = new Set(JSON.parse(localStorage.getItem(KEY) || '[]')); } catch (e) {}
+// Finished quests are one list for the whole site (gms-quests-done, shared with the quest checklists in
+// assets/quest-check.js): a step ticked here is ticked on the list pages and the other way round. Ticks saved under this
+// guide's own key before 2026-11-23 are moved into that list once.
+const ALL = 'gms-quests-done';
+const STEP_IDS = new Set(D.steps.map((s) => s.id));
+const readAll = () => { try { return new Set(JSON.parse(localStorage.getItem(ALL) || '[]').map(Number)); } catch (e) { return new Set(); } };
+const writeAll = (set) => { try { localStorage.setItem(ALL, JSON.stringify([...set])); } catch (e) {} };
+try {
+  const old = JSON.parse(localStorage.getItem(KEY) || 'null');
+  if (Array.isArray(old)) { const all = readAll(); for (const id of old) all.add(Number(id)); writeAll(all); localStorage.removeItem(KEY); }
+} catch (e) {}
+let done = new Set([...readAll()].filter((id) => STEP_IDS.has(id)));
 let current = null;
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...done])); } catch (e) {} };
+const save = () => { const all = readAll(); for (const id of STEP_IDS) { if (done.has(id)) all.add(id); else all.delete(id); } writeAll(all); };
 const stepEl = (id) => document.querySelector(`.gq-step[data-q="${id}"]`);
 
 // ---------- road ----------
@@ -145,3 +155,7 @@ document.addEventListener('change', (e) => {
   paintHave();
 });
 paintHave();
+// The list changed in another tab or through the account sync.
+const reread = () => { done = new Set([...readAll()].filter((id) => STEP_IDS.has(id))); render(); };
+addEventListener('storage', (e) => { if (e.key === ALL || e.key === null) reread(); });
+addEventListener('gms-account-sync', reread);

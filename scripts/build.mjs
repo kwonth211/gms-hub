@@ -580,6 +580,8 @@ const MAPS = collectMaps(MONSTERS.monsters);
 const MAP_LAYOUTS = fs.existsSync(path.join(root, 'data/map-layouts.json')) ? readJson('data/map-layouts.json').maps : {};
 const QUEST_RAW = readJson('data/quests-raw.json');
 const QUESTS = collectQuests(QUEST_RAW, { buildDate: BUILD_DATE });
+// Names of quest-only items (scripts/fetch-quest-items.mjs); they are not in items.json because they cannot be traded.
+const QUEST_ITEMS = readJson('data/quest-items.json').items;
 // Quest guides (/quests/<slug>/), one per data/quest-guides/*.json: steps from the client's quest data, places, routes and
 // tips from the editorial file. The /quests/ page lists them above the quest database, and the header's quest tab opens it.
 const QG_ITEMS = new Map((readJson('data/items.json').items || readJson('data/items.json')).map((i) => Array.isArray(i) ? [i[0], { ko: i[1], en: i[2] }] : [i.id, i]));
@@ -3698,11 +3700,14 @@ for (const lang of LANGS) {
     const itemHref = (i) => (ITEM_PAGE_IDS.has(i.id) ? link(itemPath(i)) : null);
     const mobHref = (m) => link(monsterPath(m));
     const mobSprite = (m) => href(`/assets/monsters/${m.id}.gif`);
+    // What a quest card needs to name and link things (scripts/quest-pages.mjs questCard); shared by the three quest lists.
+    const questCtx = { lang, link, npcs: QUEST_RAW.npcs, items: { get: (id) => items.get(id) || QUEST_ITEMS[id] }, mobs, drops: DROP_INDEX, byId: new Map(QUESTS.map((q) => [q.id, q])), itemHref, mobHref,
+      mobPic: (id) => (MOB_GIF.has(id) ? href(`/assets/monsters/${id}.gif`) : null) };
     write(path.join(lang, 'quests', 'index.html'), page({
       lang, pageKey: 'quests', pagePath: '/quests/',
       title: lang === 'ko' ? '글클메 퀘스트 정리: 레벨별 퀘스트 343개·보상·필요 아이템 | GMS Hub' : 'MapleStory Classic World Quests: Levels, Rewards & Requirements | GMS Hub',
       desc: lang === 'ko' ? `글로벌 메이플스토리 클래식 월드 퀘스트 ${QUESTS.length}개를 지역별로 정리했어요. 시작 레벨, 모아 올 아이템과 그 아이템을 떨어뜨리는 몬스터, 보상 EXP와 메소까지.` : `All ${QUESTS.length} MapleStory Classic World quests by area: start level, items to bring and who drops them, monsters to hunt, EXP and meso rewards.`,
-      body: questIndex({ lang, quests: QUESTS, link, guides: QUEST_GUIDES, promo: fhPromo(lang) }),
+      body: questIndex({ c: questCtx, quests: QUESTS, guides: QUEST_GUIDES, promo: fhPromo(lang) }), modules: ['quest-check.js'],
       ld: [breadcrumbLd(lang, lang === 'ko' ? '퀘스트' : 'Quests', '/quests/')]
     }));
     write(path.join(lang, 'megaphone', 'index.html'), page({
@@ -3851,13 +3856,11 @@ ${farmFaq.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')}
     {
       const pr = itemPrices.prices || {};
       const price = (id) => { const p = pr[id]; if (!p) return null; if (p.sold?.n >= 2 && p.sold.median) return p.sold.median; return (p.selling?.n ?? p.n) >= 3 ? (p.selling?.median ?? p.median) : null; };
-      const itemById = new Map(itemsData.items.map((i) => [i.id, i]));
-      const itemName = (id, l) => { const i = itemById.get(id); return i ? (l === 'ko' && i.ko ? i.ko : i.en) : `#${id}`; };
       write(path.join(lang, 'quests', 'best-meso', 'index.html'), page({
         lang, pageKey: 'questBest', pagePath: '/quests/best-meso/',
         title: lang === 'ko' ? '글클메 돈 버는 퀘스트 순위: 메소 많이 남는 퀘스트로 쌀먹 하는 법 | GMS Hub' : 'MapleStory Classic World Quests That Make the Most Mesos | GMS Hub',
         desc: lang === 'ko' ? '글클메(글로벌 메이플스토리 클래식 월드) 쌀먹 방법 중 퀘스트로 메소 버는 법. 보상 아이템을 오늘 자유시장 시세로 계산하고 재료값을 빼서, 메소가 많이 남는 퀘스트 순위를 레벨별로 정리했어요.' : 'MapleStory Classic World quests ranked by profit: reward items priced at today\'s Free Market value minus material costs, by level band.',
-        body: questMoneyBody({ lang, quests: QUESTS, link, price, itemName, updated: itemPrices.updated, mobPic: (id) => (MOB_GIF.has(id) ? href(`/assets/monsters/${id}.gif`) : null), mobName: (id, l) => { const m = MOB_BY_ID.get(id); return m ? (l === 'ko' && m.ko ? m.ko : m.en) : ''; } }),
+        body: questMoneyBody({ c: questCtx, quests: QUESTS, price, updated: itemPrices.updated }), modules: ['quest-check.js'],
         ld: [breadcrumbLd(lang, lang === 'ko' ? '돈 버는 퀘스트' : 'Best meso quests', '/quests/best-meso/')]
       }));
     }
@@ -3865,7 +3868,7 @@ ${farmFaq.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')}
       lang, pageKey: 'questBest', pagePath: '/quests/best-exp/',
       title: lang === 'ko' ? '글클메 경험치 퀘스트 추천: 레벨별 보상 EXP 순위 | GMS Hub' : 'MapleStory Classic World Best EXP Quests by Level | GMS Hub',
       desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드에서 레벨 구간마다 보상 경험치가 가장 큰 퀘스트 10개씩. 시작 레벨, 메소 보상, 할 일까지 정리했어요.' : 'The quests that pay the most EXP at each level in MapleStory Classic World (MSCW): start level, EXP and meso rewards and what each one asks you to do.',
-      body: questBestBody({ lang, quests: QUESTS, link, itemName: (id, l) => { const i = itemsData.items.find((x) => x.id === id); return i ? (l === 'ko' && i.ko ? i.ko : i.en) : `#${id}`; }, mobPic: (id) => (MOB_GIF.has(id) ? href(`/assets/monsters/${id}.gif`) : null), mobName: (id, l) => { const m = MOB_BY_ID.get(id); return m ? (l === 'ko' && m.ko ? m.ko : m.en) : ''; } }),
+      body: questBestBody({ c: questCtx, quests: QUESTS }), modules: ['quest-check.js'],
       ld: [breadcrumbLd(lang, lang === 'ko' ? '경험치 퀘스트' : 'Best EXP quests', '/quests/best-exp/')]
     }));
     const eqCtx = { lang, link, mobHref, mobSprite, questHref: (q) => { const p = questPath(q); return p ? link(p) : ''; }, // quests without a guide page get no link (was href="/konull")

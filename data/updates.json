@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "quest-checklist",
+   "version": "0.7.64",
+   "level": "minor",
+   "date": "2026-11-23",
+   "path": "/quests/",
+   "ko": "퀘스트 체크리스트 — 끝낸 퀘스트 체크, 줄 펼쳐 보기",
+   "en": "Quest checklist — tick off quests, open a row for details",
+   "desc": {
+    "ko": "전체 퀘스트, 경험치 퀘스트, 돈 버는 퀘스트 목록이 체크리스트로 바뀌었어요. 한 줄에 레벨·NPC·조건·보상이 아이콘으로 보이고, 줄을 누르면 잡을 몬스터와 모을 아이템, 드랍 몬스터, 선행 퀘스트가 펼쳐져요. 끝낸 퀘스트를 체크하면 세 목록과 공략 페이지에 같이 표시되고, 디스코드로 로그인하면 다른 기기에서도 이어져요.",
+    "en": "The quest list, best EXP quests and best meso quests are now checklists. Each row shows level, NPC, requirements and rewards as icons, and opens to list the monsters, items, who drops them and the quests before it. A ticked quest is marked on all three lists and in the guides, and follows you to other devices when you log in with Discord."
+   }
+  },
+  {
    "id": "meso-farm-table",
    "version": "0.7.63",
    "level": "minor",

@@ -345,7 +345,9 @@ test('equipment finder lists obtainable gear per class with stats and where to g
 });
 test('best EXP quests rank quest rewards per level band without repeatables or replacement characters',()=>{
   const html=read('dist/en/quests/best-exp/index.html');
-  assert.match(html,/<h2>Level 11–20( <small[^>]*>[^<]*<\/small>)?<\/h2>/);
+  assert.match(html,/<h2>Level 11–20( <small[^>]*>[^<]*<\/small>)*<\/h2>/);
+  assert.match(html,/<li class="qc[^"]*" data-q="\d+"[^>]*><details><summary>\s*<input type="checkbox" class="qc-box"/,'each quest is a card with a tick box that opens');
+  for (const p of ['dist/ko/quests/index.html','dist/ko/quests/best-meso/index.html']) assert.ok(read(p).includes('data-qc-bar') && read(p).includes('quest-check.js'),p);
   assert.ok(!html.includes('�'));
   assert.match(read('dist/en/quests/index.html'),/href="\/en\/quests\/best-exp\/"/);
 });

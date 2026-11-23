@@ -110,27 +110,125 @@ ${q.prereq.length || q.next.length ? `<section class="panel quest-chain">${q.pre
 </div>`;
 }
 
-export function questIndex({ lang, quests, link, guides = [], promo = '' }) {
+// ---------- quest checklist cards ----------
+// One quest = one card that opens and closes (owner 2026-11-23: "체크리스트 형태로… 테이블 로우를 열고 닫기"). Closed, a card
+// shows the tick box, start level, NPC, what it asks for and what it pays as icons; opened, the same things with names,
+// counts, who drops the materials, and the quests before and after. Ticks live in localStorage (gms-quests-done, synced
+// by the Discord login like every gms-* key) and are painted by assets/quest-check.js; the three list pages and the
+// step-by-step guides share that one list of finished quests.
+// c: { lang, link, npcs, items: Map, mobs: Map, drops: Map, byId: Map, itemHref(item), mobHref(mob), mobPic(id) }
+const ITEM_ICON = (id, size) => `<img class="qc-icon" src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="${size}" height="${size}" loading="lazy" decoding="async">`;
+const kmoney = (n, ko) => (ko ? (Math.abs(n) >= 1e8 ? `${+(n / 1e8).toFixed(2)}억` : Math.abs(n) >= 1e4 ? `${+(n / 1e4).toFixed(Math.abs(n) >= 1e6 ? 0 : 1)}만` : nf(n)) : Math.abs(n) >= 1e6 ? `${+(n / 1e6).toFixed(2)}m` : Math.abs(n) >= 1e3 ? `${+(n / 1e3).toFixed(1)}k` : nf(n));
+// A reward's job is a bit mask in the client data: 1 beginner, 2 warrior, 4 magician, 8 bowman, 16 thief.
+const rewardJob = (bits, lang) => { const f = [0, 100, 200, 300, 400].filter((_, i) => bits & (1 << i)); return f.length && f.length < 5 ? f.map((x) => JOB[lang === 'ko' ? 'ko' : 'en'][x]).join(', ') : ''; };
+const onePickOf = (gets) => gets.length > 1 && (new Set(gets.map((g) => g.count)).size === 1 || gets.some((g) => g.job != null));
+
+export function questCard(c, q, { rank = 0, money = null } = {}) {
+  const ko = c.lang === 'ko';
+  const iname = (id) => { const it = c.items.get(id); return it ? (ko && it.ko ? it.ko : it.en) : `#${id}`; };
+  const mname = (id) => { const m = c.mobs.get(id); return m ? (ko && m.ko ? m.ko : m.en) : `#${id}`; };
+  const npcName = (id) => { const n = id != null && c.npcs[id]; return n ? (ko ? n.ko || n.en : n.en) : ''; };
+  const given = new Set(q.starts.map((i) => i.id));
+  const jobs = jobsLabel(q.jobs, c.lang);
+  const area = areaName(q.area, c.lang);
+  const onePick = onePickOf(q.gets);
+
+  // Closed card: icons with counts only.
+  const more = (n) => (n > 0 ? `<span class="qc-chip is-text">+${n}</span>` : '');
+  const huntChips = q.hunt.slice(0, 2).map((h) => { const src = c.mobPic(h.id); const t = `${mname(h.id)} ×${nf(h.count)}`; return `<span class="qc-chip" title="${esc(t)}">${src ? `<img class="qc-mob" src="${src}" alt="${esc(mname(h.id))}" loading="lazy" decoding="async">` : `<span translate="no">${esc(mname(h.id))}</span>`}<b>${nf(h.count)}</b></span>`; }).join('');
+  const bringChips = q.bring.slice(0, 3 - Math.min(q.hunt.length, 2)).map((i) => `<span class="qc-chip" title="${esc(`${iname(i.id)} ×${nf(i.count)}`)}">${ITEM_ICON(i.id, 22)}<b>${nf(i.count)}</b></span>`).join('');
+  const shownNeed = Math.min(q.hunt.length, 2) + Math.min(q.bring.length, 3 - Math.min(q.hunt.length, 2));
+  const need = q.hunt.length || q.bring.length ? `${huntChips}${bringChips}${more(q.hunt.length + q.bring.length - shownNeed)}` : `<span class="qc-chip is-text">${ko ? '대화·전달' : 'Talk or deliver'}</span>`;
+  const getChips = (money?.best ? [money.best, ...q.gets.filter((g) => g.id !== money.best.id)] : q.gets).slice(0, 2)
+    .map((g) => `<span class="qc-chip" title="${esc(`${iname(g.id)}${g.count > 1 ? ` ×${nf(g.count)}` : ''}`)}">${ITEM_ICON(g.id, 22)}${g.count > 1 ? `<b>${nf(g.count)}</b>` : ''}</span>`).join('') + more(q.gets.length - 2);
+  const pay = money
+    ? `${getChips}<b class="qc-net">+${kmoney(money.net, ko)}</b>`
+    : `${getChips}${q.exp || q.meso ? `<span class="qc-num">${q.exp ? `<b class="qc-exp">+${nf(q.exp)} <small>EXP</small></b>` : ''}${q.meso ? `<span class="qc-meso">${nf(q.meso)} ${ko ? '메소' : 'mesos'}</span>` : ''}</span>` : ''}${!q.exp && !q.meso && !q.gets.length ? `<span class="qc-chip is-text">${q.skills ? (ko ? '스킬 습득' : 'Skill') : q.fame ? `${ko ? '인기도' : 'Fame'} +${q.fame}` : '—'}</span>` : ''}`;
+  const tags = `${q.expired ? `<i class="qc-tag">${ko ? '종료' : 'Ended'}</i>` : ''}${q.repeat ? `<i class="qc-tag">${ko ? '반복' : 'Repeatable'}</i>` : ''}`;
+  const who = [area, npcName(q.startNpc ?? q.endNpc), jobs && jobs !== area ? jobs : ''].filter(Boolean);
+
+  // Opened card: the same with names.
+  const dropHint = (id) => {
+    const rows = (c.drops.get(id) || []).filter(({ m }) => m.status === 'active').sort((a, b) => a.m.lv - b.m.lv).slice(0, 3);
+    return rows.length ? `<small class="qc-drop"><span>${ko ? '드랍' : 'Dropped by'}</span>${rows.map(({ m }) => `<a href="${c.mobHref(m)}" translate="no">${esc(ko ? m.ko || m.en : m.en)}</a>`).join('')}</small>` : '';
+  };
+  const itemLi = (g, hint) => {
+    const it = c.items.get(g.id), href = it && c.itemHref(it);
+    const j = g.job != null ? rewardJob(g.job, c.lang) : '';
+    return `<li>${ITEM_ICON(g.id, 28)}<div><span>${href ? `<a href="${href}" translate="no">${esc(iname(g.id))}</a>` : `<span translate="no">${esc(iname(g.id))}</span>`} <b>×${nf(Math.abs(g.count))}</b>${j ? ` <small>${esc(j)}</small>` : ''}</span>${hint ? (given.has(g.id) ? `<small class="qc-drop">${ko ? '퀘스트를 받을 때 줘요' : 'Handed to you at the start'}</small>` : dropHint(g.id)) : ''}</div></li>`;
+  };
+  const mobLi = (h) => { const m = c.mobs.get(h.id), src = c.mobPic(h.id); return `<li>${src ? `<img class="qc-mob" src="${src}" alt="" loading="lazy" decoding="async">` : ''}<div><span>${m ? `<a href="${c.mobHref(m)}" translate="no">${esc(mname(h.id))}</a>` : `<span translate="no">${esc(mname(h.id))}</span>`} <b>×${nf(h.count)}</b>${m ? ` <small>Lv. ${m.lv}</small>` : ''}</span></div></li>`; };
+  const todo = q.hunt.length || q.bring.length
+    ? `${q.hunt.length ? `<h4>${ko ? '잡을 몬스터' : 'Hunt'}</h4><ul class="qc-items">${q.hunt.map(mobLi).join('')}</ul>` : ''}${q.bring.length ? `<h4>${ko ? '모아 올 아이템' : 'Bring'}</h4><ul class="qc-items">${q.bring.map((i) => itemLi(i, true)).join('')}</ul>` : ''}`
+    : `<p>${ko ? 'NPC와 대화하거나 물건을 전달하면 끝나요.' : 'Done by talking to the NPC or delivering something.'}</p>`;
+  const facts = [
+    q.exp ? ['EXP', `+${nf(q.exp)}`] : null,
+    q.meso ? [ko ? '메소' : 'Mesos', nf(q.meso)] : null,
+    q.fame ? [ko ? '인기도' : 'Fame', `+${q.fame}`] : null,
+    q.skills ? [ko ? '스킬' : 'Skill', ko ? '습득' : 'Learned'] : null,
+    money ? [ko ? '보상 값' : 'Reward value', kmoney(q.meso + money.reward, ko)] : null,
+    money ? [ko ? '재료값' : 'Materials', money.cost ? `−${kmoney(money.cost, ko)}` : money.mats.some((i) => i.p == null) ? (ko ? '직접 모음' : 'farmed') : '0'] : null,
+    money ? [ko ? '남는 메소' : 'Profit', `<b class="qc-net">+${kmoney(money.net, ko)}</b>`] : null
+  ].filter(Boolean);
+  const rewards = `${facts.length ? `<dl class="qc-facts">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>` : ''}${q.gets.length ? `<ul class="qc-items">${q.gets.map((g) => itemLi(g, false)).join('')}</ul>${onePick ? `<p class="qc-note">${q.gets.some((g) => g.job != null) ? (ko ? '직업에 맞는 하나를 받아요.' : 'You get the one for your class.') : ko ? `${q.gets.length}개 중 하나를 받아요.${money && money.priced.length > 1 ? ' 보상 값은 평균이에요.' : ''}` : `You get one of these ${q.gets.length}.${money && money.priced.length > 1 ? ' The reward value is their average.' : ''}`}</p>` : ''}` : ''}${!facts.length && !q.gets.length ? `<p>${ko ? '보상 정보가 없어요.' : 'No listed reward.'}</p>` : ''}`;
+  const ref = (id) => { const x = c.byId.get(id); return x ? `<li data-ref="${x.id}">${questName(x, c.link, ' translate="no"')}${x.lv ? ` <small>Lv. ${x.lv}</small>` : ''}</li>` : ''; };
+  const info = [
+    [ko ? '지역' : 'Area', esc(area)],
+    [ko ? '시작 레벨' : 'Start level', q.lv ? `Lv. ${q.lv}` : (ko ? '제한 없음' : 'Any')],
+    jobs ? [ko ? '직업' : 'Class', esc(jobs)] : null,
+    npcName(q.startNpc) ? [ko ? '시작 NPC' : 'Start NPC', `<span translate="no">${esc(npcName(q.startNpc))}</span>`] : null,
+    npcName(q.endNpc) && q.endNpc !== q.startNpc ? [ko ? '완료 NPC' : 'Turn in to', `<span translate="no">${esc(npcName(q.endNpc))}</span>`] : null,
+    q.ends ? [ko ? '기간' : 'Ends', q.ends] : null
+  ].filter(Boolean);
+  const guide = questPath(q);
+  const chain = `${q.prereq.length ? `<h4>${ko ? '먼저 끝낼 퀘스트' : 'Complete first'}</h4><ul class="qc-refs">${q.prereq.map(ref).join('')}</ul>` : ''}${q.next.length ? `<h4>${ko ? '다음 퀘스트' : 'Leads to'}</h4><ul class="qc-refs">${q.next.slice(0, 6).map(ref).join('')}</ul>` : ''}`;
+  const npcId = q.startNpc ?? q.endNpc;
+  return `<li class="qc${rank ? ` qc-r${rank}` : ''}${q.expired ? ' is-expired' : ''}" data-q="${q.id}" data-lv="${q.lv || 1}" data-exp="${q.exp}"${money ? ` data-net="${money.net}"` : ''}><details><summary>
+<input type="checkbox" class="qc-box" aria-label="${ko ? '이 퀘스트 완료 표시' : 'Mark this quest done'}">
+<span class="qc-who"><span class="qc-rank">${rank ? `<span class="qc-medal${rank <= 3 ? ` m${rank}` : ''}">${rank}</span>` : ''}<span class="qc-lv">Lv. ${q.lv || 1}</span></span><span class="qc-face">${npcId != null ? `<img class="qc-npc" src="https://maplestory.io/api/MCW/1/npc/${npcId}/icon" alt="" loading="lazy" decoding="async">` : ''}</span></span>
+<span class="qc-title"><b>${questName(q, c.link, ' translate="no"')}${tags}</b><small>${who.map((w, i) => (i === 1 ? `<span translate="no">${esc(w)}</span>` : esc(w))).join(' · ')}</small></span>
+<span class="qc-meta"><span class="qc-need"><i class="qc-lab">${ko ? '조건' : 'Needs'}</i>${need}</span><span class="qc-pay"><i class="qc-lab">${money ? (ko ? '남는 메소' : 'Profit') : (ko ? '보상' : 'Reward')}</i>${pay}</span></span>
+<span class="qc-chev" aria-hidden="true"></span></summary>
+<div class="qc-body"><div><h3>${ko ? '해야 할 일' : 'What to do'}</h3>${todo}${q.starts.filter((i) => !q.bring.some((b) => b.id === i.id)).length ? `<h4>${ko ? '시작할 때 받는 아이템' : 'Given at the start'}</h4><ul class="qc-items">${q.starts.filter((i) => !q.bring.some((b) => b.id === i.id)).map((g) => itemLi(g, false)).join('')}</ul>` : ''}</div>
+<div><h3>${ko ? '보상' : 'Rewards'}</h3>${rewards}</div>
+<div><h3>${ko ? '퀘스트 정보' : 'Quest info'}</h3><dl class="qc-facts">${info.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>${chain}${guide ? `<p><a class="qc-guide" href="${c.link(guide)}">${ko ? '단계별 공략 보기' : 'Open the step-by-step guide'}</a></p>` : ''}</div></div>
+</details></li>`;
+}
+// The bar above the cards: how many are ticked, hide the ticked ones, open or close every card. The quest list page adds a
+// name search and a level box. Numbers are filled in by assets/quest-check.js; without JavaScript the bar stays hidden.
+function questBar({ ko, total, sum, filters = false }) {
+  return `<div class="qc-bar" data-qc-bar hidden>
+<div class="qc-prog"><span><b data-qc-d>0</b> / ${nf(total)} ${ko ? '완료' : 'done'}</span>${sum ? `<span class="qc-sum" data-qc-sum="${sum.key}" hidden>${sum.label} <b></b></span>` : ''}<i class="qc-meter"><i data-qc-meter></i></i></div>
+<div class="qc-tools">${filters ? `<input type="search" class="qc-search" data-qc-search placeholder="${ko ? '퀘스트·NPC·아이템 이름' : 'Quest, NPC or item name'}" aria-label="${ko ? '퀘스트 찾기' : 'Find a quest'}"><label class="qc-mylv">${ko ? '내 레벨' : 'My level'}<input type="number" min="1" max="200" inputmode="numeric" data-qc-lv placeholder="${ko ? '전체' : 'Any'}"></label>` : ''}<label class="qc-toggle"><input type="checkbox" data-qc-hide><span>${ko ? '완료한 퀘스트 숨기기' : 'Hide finished quests'}</span></label><button type="button" class="qc-all" data-qc-all><span class="qc-all-open">${ko ? '모두 펼치기' : 'Open all'}</span><span class="qc-all-close">${ko ? '모두 접기' : 'Close all'}</span></button></div>
+</div>
+<p class="qc-hint muted small">${ko ? '끝낸 퀘스트는 왼쪽 네모를 눌러 체크하고, 줄을 누르면 조건과 보상이 자세히 펼쳐져요. 체크는 이 브라우저에 저장되고, 디스코드로 로그인하면 다른 기기에서도 이어져요.' : 'Tick the box when a quest is done; tap a row to open its requirements and rewards. Ticks are saved in this browser, and follow you to other devices when you log in with Discord.'}</p>`;
+}
+const countTag = (n) => `<small class="qc-count" data-qc-count>0/${n}</small>`;
+const emptyNote = (ko) => `<p class="qc-empty" hidden>${ko ? '여기 퀘스트는 모두 완료했어요.' : 'Every quest here is done.'}</p>`;
+const listOf = (cards, ko) => `<ul class="qc-list">${cards.join('')}</ul>${emptyNote(ko)}`;
+
+export function questIndex({ c, quests, guides = [], promo = '' }) {
+  const { lang, link } = c;
   const ko = lang === 'ko';
   const order = ['Maple Island', 'Lith Harbor', 'Henesys', 'Ellinia', 'Perion', 'Kerning City', 'Sleepywood', 'Florina Beach', 'Victoria Island', 'Warrior', 'Magician', 'Bowman', 'Thief', 'Citizenship', 'Crafting', 'Forgotten Hollow', 'Event'];
   const areas = [...new Set([...order, ...quests.map((q) => q.area)])].filter((a) => quests.some((q) => q.area === a));
   const live = quests.filter((q) => !q.expired);
   return `<section class="page-head wrap"><h1>${ko ? '퀘스트' : 'Quests'}</h1>
-<p class="lead">${ko ? `글클메 퀘스트 ${live.length}개의 시작 레벨, 필요한 아이템과 몬스터, 보상 EXP·메소를 지역별로 정리했어요.` : `${live.length} Classic World quests by area: start level, what to bring or hunt, and the EXP and mesos they pay.`}</p>
+<p class="lead">${ko ? `글클메 퀘스트 ${live.length}개의 시작 레벨, 필요한 아이템과 몬스터, 보상 EXP·메소를 지역별 체크리스트로 정리했어요. 끝낸 퀘스트를 체크하면서 남은 것만 골라 보세요.` : `${live.length} Classic World quests by area as a checklist: start level, what to bring or hunt, and the EXP and mesos they pay. Tick off what you have done and see what is left.`}</p>
 <p class="char-links"><a href="${link('/quests/best-meso/')}">${ko ? '돈 버는 퀘스트 순위' : 'Quests that make the most mesos'}</a><a href="${link('/quests/best-exp/')}">${ko ? '레벨별 경험치 퀘스트' : 'Best EXP quests by level'}</a><a href="${link('/equipment/')}">${ko ? '장비 찾기' : 'Equipment finder'}</a></p>
 <nav class="band-nav" aria-label="${ko ? '지역' : 'Areas'}"><div>${guides.length ? `<a class="band-link" href="#guides">${ko ? '퀘스트 공략' : 'Quest guides'}</a>` : ''}${areas.map((a) => `<a class="band-link" href="#area-${encodeURIComponent(a)}">${esc(areaName(a, lang))}</a>`).join('')}</div></nav></section>
-<div class="wrap quest-page">
+<div class="wrap quest-page qc-page" data-qc>
 ${promo}
 ${guides.length ? questGuideCards({ lang, guides, link }) : ''}
+${questBar({ ko, total: quests.length, sum: { key: 'exp', label: ko ? '받은 경험치' : 'EXP earned' }, filters: true })}
 ${areas
   .map((a) => {
     const list = quests.filter((q) => q.area === a);
-    return `<section class="panel" id="area-${encodeURIComponent(a)}"><h2><span>${esc(areaName(a, lang))}</span><small class="muted">${list.length}</small></h2>
-<div class="table-wrap"><table class="data"><thead><tr><th>${ko ? '퀘스트' : 'Quest'}</th><th>${ko ? '레벨' : 'Level'}</th><th>EXP</th><th>${ko ? '메소' : 'Mesos'}</th></tr></thead><tbody>${list
-      .map((q) => `<tr${q.expired ? ' class="muted"' : ''}><th scope="row">${questName(q, link)}</th><td>${q.lv || '–'}</td><td>${q.exp ? nf(q.exp) : '–'}</td><td>${q.meso ? nf(q.meso) : '–'}</td></tr>`)
-      .join('')}</tbody></table></div></section>`;
+    return `<section class="panel qc-sec" id="area-${encodeURIComponent(a)}"><h2><span>${esc(areaName(a, lang))}</span> ${countTag(list.length)}</h2>
+${listOf(list.map((q) => questCard(c, q)), ko)}</section>`;
   })
   .join('\n')}
+<p class="qc-none muted" data-qc-none hidden>${ko ? '조건에 맞는 퀘스트가 없어요.' : 'No quest matches.'}</p>
 <p class="muted small">${ko ? '퀘스트 이름은 게임 클라이언트의 영어 이름이에요.' : 'Quest names are the game client’s own.'}</p>
 </div>`;
 }
@@ -167,109 +265,66 @@ export function questMoney(q, price) {
   const cost = mats.reduce((a, i) => a + (i.p || 0) * i.count, 0);
   return { reward, cost, net: q.meso + reward - cost, onePick, priced, mats, best: priced.slice().sort((a, b) => b.p * b.count - a.p * a.count)[0] || null };
 }
-export function questMoneyBody({ lang, quests, link, price, itemName, updated, mobPic = () => null, mobName = () => '' }) {
-  const ICON = (id, size) => `<img class="qm-icon" src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="${size}" height="${size}" loading="lazy" decoding="async">`;
+export function questMoneyBody({ c, quests, price, updated }) {
+  const { lang, link } = c;
   const ko = lang === 'ko';
-  const kmoney = (n) => (ko ? (Math.abs(n) >= 1e8 ? `${+(n / 1e8).toFixed(2)}억` : Math.abs(n) >= 1e4 ? `${+(n / 1e4).toFixed(Math.abs(n) >= 1e6 ? 0 : 1)}만` : nf(n)) : Math.abs(n) >= 1e6 ? `${+(n / 1e6).toFixed(2)}m` : Math.abs(n) >= 1e3 ? `${+(n / 1e3).toFixed(1)}k` : nf(n));
   const pool = quests.filter((q) => !q.expired && !q.repeat && q.area !== 'Forgotten Hollow')
     .map((q) => ({ q, m: questMoney(q, price) })).filter((x) => x.m.reward > 0 && x.m.net > 0)
     .sort((x, y) => y.m.net - x.m.net).filter((x, i, all) => all.findIndex((y) => y.q.name === x.q.name) === i);
-  const task = (q) => {
-    const parts = [];
-    if (q.hunt.length) parts.push(ko ? `몬스터 ${q.hunt.length}종 처치` : `hunt ${q.hunt.length} monster type${q.hunt.length > 1 ? 's' : ''}`);
-    if (q.bring.length) parts.push(ko ? `아이템 ${q.bring.length}종 모으기` : `bring ${q.bring.length} item type${q.bring.length > 1 ? 's' : ''}`);
-    if (!parts.length) parts.push(ko ? '전달·대화' : 'talk or deliver');
-    if (q.prereq.length) parts.push(ko ? '선행 퀘스트 있음' : 'needs an earlier quest');
-    const mobs = q.hunt.slice(0, 3).map((h) => { const src = mobPic(h.id); return src ? `<img class="qm-mob" src="${src}" alt="${esc(mobName(h.id, lang))}" title="${esc(mobName(h.id, lang))}${h.count ? ` ×${h.count}` : ''}" loading="lazy" decoding="async">` : ''; }).join('');
-    const mats = q.bring.slice(0, 3).map((i) => ICON(i.id, 26)).join('');
-    const pics = mobs || mats ? `<div class="qm-pics">${mobs}${mats}</div>` : '';
-    return `${pics}<ul class="quest-task">${parts.map((x) => `<li>${x}</li>`).join('')}</ul>`;
-  };
-  const row = ({ q, m }, rank) => {
-    const b = m.best, name = b ? itemName(b.id, lang) : '';
-    const rewardCell = `${b ? `<span class="qm-reward">${ICON(b.id, 36)}<span translate="no">${esc(name)}${b.count > 1 ? ` ×${b.count}` : ''}</span></span>` : ''}${m.onePick && m.priced.length > 1 ? `<small>${ko ? `${m.priced.length}개 중 하나 · 평균` : `one of ${m.priced.length} · average`}</small>` : m.priced.length > 1 ? `<small>${ko ? `외 ${m.priced.length - 1}종` : `+${m.priced.length - 1} more`}</small>` : ''}`;
-    const unpriced = m.mats.filter((i) => i.p == null);
-    const costCell = m.cost ? `−${kmoney(m.cost)}` : unpriced.length ? (ko ? '직접 모음' : 'farmed') : '0';
-    const npc = q.startNpc ? `<img class="qm-npc" src="https://maplestory.io/api/MCW/1/npc/${q.startNpc}/icon" alt="" loading="lazy" decoding="async">` : '';
-    const medal = rank && rank <= 3 ? `<span class="qm-medal m${rank}">${rank}</span>` : '';
-    return `<tr${rank ? ` class="qm-r${rank}"` : ''}><th scope="row"><div class="qm-quest">${medal}${npc}<div>${questName(q, link, ' translate="no"')}<small>${esc(areaName(q.area, lang))}</small></div></div></th><td class="num">Lv. ${q.lv || 1}</td><td>${rewardCell}</td><td class="num">${kmoney(q.meso + m.reward)}</td><td class="num">${costCell}</td><td class="num"><b>${kmoney(m.net)}</b></td><td>${task(q)}</td></tr>`;
-  };
-  const table = (list, ranked) => `<div class="table-wrap"><table class="data quest-best quest-money"><thead><tr><th scope="col">${ko ? '퀘스트' : 'Quest'}</th><th scope="col">${ko ? '시작' : 'Starts'}</th><th scope="col">${ko ? '주요 보상' : 'Main reward'}</th><th scope="col">${ko ? '보상 값' : 'Reward value'}</th><th scope="col">${ko ? '재료값' : 'Materials'}</th><th scope="col">${ko ? '남는 메소' : 'Profit'}</th><th scope="col">${ko ? '할 일' : 'What you do'}</th></tr></thead><tbody>${list.map((x, k) => row(x, ranked ? k + 1 : 0)).join('')}</tbody></table></div>`;
+  const cards = (list, ranked) => listOf(list.map(({ q, m }, k) => questCard(c, q, { rank: ranked ? k + 1 : 0, money: m })), ko);
   const top = pool.slice(0, 10);
-  const sections = QUEST_BANDS.map(([a, b]) => {
-    const list = pool.filter(({ q }) => Math.max(q.lv, 1) >= a && Math.max(q.lv, 1) <= b).slice(0, 10);
-    if (!list.length) return '';
+  const bands = QUEST_BANDS.map(([a, b]) => [a, b, pool.filter(({ q }) => Math.max(q.lv, 1) >= a && Math.max(q.lv, 1) <= b).slice(0, 10)]).filter(([, , list]) => list.length);
+  const sections = bands.map(([a, b, list]) => {
     const label = b >= 200 ? (ko ? `${a}레벨 이상` : `Level ${a}+`) : (ko ? `${a}~${b}레벨` : `Level ${a}–${b}`);
-    return `<section class="panel" id="lv-${a}"><h2>${label}</h2>${table(list)}</section>`;
+    return `<section class="panel qc-sec" id="lv-${a}"><h2>${label} ${countTag(list.length)}</h2>${cards(list)}</section>`;
   }).join('');
+  const total = new Set([...top, ...bands.flatMap(([, , list]) => list)].map(({ q }) => q.id)).size;
   const day = (updated || '').slice(0, 10);
   return `<section class="page-head wrap"><h1>${ko ? '돈 버는 퀘스트 순위' : 'Quests that make the most mesos'}</h1>
 <p class="lead">${ko ? `보상으로 받는 아이템을 지금 자유시장 시세로 바꿔서, 재료값을 빼고 메소가 가장 많이 남는 퀘스트부터 줄 세웠어요. 시세는 ${esc(day)} 기준이고 매일 다시 계산해요.` : `Quest rewards priced at today's Free Market value, minus what the materials would sell for, ranked by what is left. Prices are from ${esc(day)} and recalculated every day.`}</p>
 ${ko ? `<div class="yt-lite" data-yt-lite="PL1-KdtyMLY"><button type="button" aria-label="영상 재생: 글클메 돈 버는 퀘스트 TOP 10"><img src="https://i.ytimg.com/vi/PL1-KdtyMLY/hqdefault.jpg" alt="" width="480" height="360" fetchpriority="high" decoding="async"><span class="yt-play" aria-hidden="true"></span></button><p class="yt-cap"><b>영상으로 보기</b> 돈 버는 퀘스트 TOP 10 · 4분 30초 <a href="https://youtu.be/PL1-KdtyMLY" target="_blank" rel="noopener" data-yt-open="PL1-KdtyMLY">유튜브에서 보기</a></p></div>` : ''}
 ${rankTabs(ko, link, 'meso')}
 <nav class="band-nav" aria-label="${ko ? '레벨' : 'Level'}"><div><a class="band-link" href="#top">TOP 10</a>${QUEST_BANDS.map(([a, b]) => `<a class="band-link" href="#lv-${a}">${b >= 200 ? `${a}+` : `${a}–${b}`}</a>`).join('')}</div></nav></section>
-<div class="wrap quest-page"><section class="panel" id="top"><h2>${ko ? '전체 TOP 10' : 'Top 10 overall'}</h2>${table(top, true)}</section>
+<div class="wrap quest-page qc-page" data-qc>
+${questBar({ ko, total, sum: { key: 'net', label: ko ? '완료한 퀘스트로 남긴 메소' : 'Profit from finished quests' } })}
+<section class="panel qc-sec" id="top"><h2>${ko ? '전체 TOP 10' : 'Top 10 overall'} ${countTag(top.length)}</h2>${cards(top, true)}</section>
 ${sections}
 <section class="panel"><h2>${ko ? '이렇게 계산했어요' : 'How it is worked out'}</h2><ul>
 <li>${ko ? '남는 메소 = 보상 메소 + 보상 아이템 시세 − 재료 시세예요. 재료를 직접 사냥해서 모으면 재료값만큼 더 남아요.' : 'Profit = meso reward + reward items at market price − materials at market price. Farm the materials yourself and you keep that cost too.'}</li>
-<li>${ko ? '보상이 여러 개 중 하나로 나오는 퀘스트는 그 평균값으로 계산했어요. 표에 "N개 중 하나"로 표시돼요.' : 'When a quest gives one of several rewards, the average is used; the row says "one of N".'}</li>
+<li>${ko ? '보상이 여러 개 중 하나로 나오는 퀘스트는 그 평균값으로 계산했어요. 줄을 펼치면 "N개 중 하나"로 표시돼요.' : 'When a quest gives one of several rewards, the average is used; the opened row says "one of these N".'}</li>
 <li>${ko ? '아이템 값은 최근 판매 완료 가격을 쓰고, 없으면 매물 3건 이상인 판매가의 중앙값을 써요. 시세가 없는 보상과 재료는 0으로 계산했어요.' : 'Item values use recent sold prices, otherwise the median asking price when there are three or more listings. Rewards and materials with no price count as 0.'}</li>
 <li>${ko ? '반복 퀘스트, 끝난 이벤트, 포가튼 할로우 퀘스트는 뺐어요.' : 'Repeatable quests, ended events and Forgotten Hollow quests are left out.'}</li></ul></section></div>`;
 }
 
-export function questBestBody({ lang, quests, link, itemName = (id) => `#${id}`, mobPic = () => null, mobName = () => '' }) {
-  // Same look as the money ranking (owner 2026-11-19: "이미지가 부족해, 돈 되는 퀘스트 참고해서 꽉꽉"): NPC face, monster
-  // sprites and material icons, reward item icons, medals for the overall top 3. Forgotten Hollow opened on 11/18, so its
-  // quests count now.
+export function questBestBody({ c, quests }) {
+  // Forgotten Hollow opened on 11/18, so its quests count now.
+  const { lang, link } = c;
   const ko = lang === 'ko';
-  const ICON = (id, size) => `<img class="qm-icon" src="https://maplestory.io/api/MCW/1/item/${id}/icon" alt="" width="${size}" height="${size}" loading="lazy" decoding="async">`;
   const pool = quests.filter((q) => !q.expired && !q.repeat && q.exp > 0)
     .sort((x, y) => y.exp - x.exp)
     // Citizenship donations repeat one name across many variants; keep the best-paying one of each name.
     .filter((q, i, all) => all.findIndex((x) => x.name === q.name) === i);
-  const task = (q) => {
-    const parts = [];
-    if (q.hunt.length) parts.push(ko ? `몬스터 ${q.hunt.length}종 처치` : `hunt ${q.hunt.length} monster type${q.hunt.length > 1 ? 's' : ''}`);
-    if (q.bring.length) parts.push(ko ? `아이템 ${q.bring.length}종 모으기` : `bring ${q.bring.length} item type${q.bring.length > 1 ? 's' : ''}`);
-    if (!parts.length) parts.push(ko ? '전달·대화' : 'talk or deliver');
-    if (q.prereq.length) parts.push(ko ? '선행 퀘스트 있음' : 'needs an earlier quest');
-    const mobs = q.hunt.slice(0, 3).map((h) => { const src = mobPic(h.id); return src ? `<img class="qm-mob" src="${src}" alt="${esc(mobName(h.id, lang))}" title="${esc(mobName(h.id, lang))}${h.count ? ` ×${h.count}` : ''}" loading="lazy" decoding="async">` : ''; }).join('');
-    const mats = q.bring.slice(0, 3).map((i) => ICON(i.id, 26)).join('');
-    const pics = mobs || mats ? `<div class="qm-pics">${mobs}${mats}</div>` : '';
-    return `${pics}<ul class="quest-task">${parts.map((x) => `<li>${x}</li>`).join('')}</ul>`;
-  };
-  const reward = (q) => {
-    const gets = (q.gets || []).filter((g) => g.count > 0);
-    if (!gets.length) return '—';
-    const onePick = gets.length > 1 && (new Set(gets.map((g) => g.count)).size === 1 || gets.some((g) => g.job != null));
-    const shown = gets.slice(0, 3).map((g) => `<span class="qm-reward">${ICON(g.id, 30)}<span translate="no">${esc(itemName(g.id, lang))}${g.count > 1 ? ` ×${g.count}` : ''}</span></span>`).join('');
-    return `${shown}${gets.length > 3 ? `<small>${ko ? `외 ${gets.length - 3}종` : `+${gets.length - 3} more`}</small>` : ''}${onePick ? `<small>${ko ? `${gets.length}개 중 하나` : `one of ${gets.length}`}</small>` : ''}`;
-  };
-  const row = (q, rank) => {
-    const npc = q.startNpc ? `<img class="qm-npc" src="https://maplestory.io/api/MCW/1/npc/${q.startNpc}/icon" alt="" loading="lazy" decoding="async">` : '';
-    const medal = rank && rank <= 3 ? `<span class="qm-medal m${rank}">${rank}</span>` : '';
-    const jobs = jobsLabel(q.jobs, lang);
-    return `<tr${rank ? ` class="qm-r${rank}"` : ''}><th scope="row"><div class="qm-quest">${medal}${npc}<div>${questName(q, link, ' translate="no"')}<small>${esc(areaName(q.area, lang))}${jobs && jobs !== areaName(q.area, lang) ? ` · ${esc(jobs)}` : ''}</small></div></div></th><td class="num">Lv. ${q.lv || 1}</td><td class="num"><b>${nf(q.exp)}</b></td><td class="num">${q.meso ? nf(q.meso) : '—'}</td><td>${reward(q)}</td><td>${task(q)}</td></tr>`;
-  };
-  const table = (list, ranked) => `<div class="table-wrap"><table class="data quest-best quest-money quest-exp"><thead><tr><th scope="col">${ko ? '퀘스트' : 'Quest'}</th><th scope="col">${ko ? '시작' : 'Starts'}</th><th scope="col">EXP</th><th scope="col">${ko ? '메소' : 'Mesos'}</th><th scope="col">${ko ? '보상 아이템' : 'Reward items'}</th><th scope="col">${ko ? '할 일' : 'What you do'}</th></tr></thead><tbody>${list.map((q, k) => row(q, ranked ? k + 1 : 0)).join('')}</tbody></table></div>`;
-  const sections = QUEST_BANDS.map(([a, b]) => {
-    const list = pool.filter((q) => Math.max(q.lv, 1) >= a && Math.max(q.lv, 1) <= b).slice(0, 10);
-    if (!list.length) return '';
+  const cards = (list, ranked) => listOf(list.map((q, k) => questCard(c, q, { rank: ranked ? k + 1 : 0 })), ko);
+  const bands = QUEST_BANDS.map(([a, b]) => [a, b, pool.filter((q) => Math.max(q.lv, 1) >= a && Math.max(q.lv, 1) <= b).slice(0, 10)]).filter(([, , list]) => list.length);
+  const sections = bands.map(([a, b, list]) => {
     const label = b >= 200 ? (ko ? `${a}레벨 이상` : `Level ${a}+`) : (ko ? `${a}~${b}레벨` : `Level ${a}–${b}`);
     const bandTotal = list.reduce((t, q) => t + q.exp, 0);
-    return `<section class="panel" id="lv-${a}"><h2>${label} <small class="muted">${ko ? `10개 합계 경험치 ${nf(bandTotal)}` : `top 10 together: ${nf(bandTotal)} EXP`}</small></h2>${table(list)}</section>`;
+    return `<section class="panel qc-sec" id="lv-${a}"><h2>${label} <small class="muted">${ko ? `10개 합계 경험치 ${nf(bandTotal)}` : `top 10 together: ${nf(bandTotal)} EXP`}</small> ${countTag(list.length)}</h2>${cards(list)}</section>`;
   }).join('');
   const top = pool.slice(0, 10);
+  const total = new Set([...top, ...bands.flatMap(([, , list]) => list)].map((q) => q.id)).size;
   return `<section class="page-head wrap"><h1>${ko ? '레벨별 경험치 많이 주는 퀘스트' : 'Best EXP quests by level'}</h1>
-<p class="lead">${ko ? '레벨 구간마다 보상 경험치가 큰 퀘스트를 10개씩 골랐어요. 누구에게 받는지(NPC), 무엇을 잡고 모으는지(몬스터·재료), 경험치와 함께 주는 아이템까지 한 줄에 보여요. 사냥하다 지칠 때 끼워 넣기 좋아요.' : 'The ten biggest EXP rewards in each level band, from the game data: who gives it, what you hunt or bring, and the items that come with the EXP, on one row. Good to slot in between grinding sessions.'}</p>
+<p class="lead">${ko ? '레벨 구간마다 보상 경험치가 큰 퀘스트를 10개씩 골랐어요. 누구에게 받는지(NPC), 무엇을 잡고 모으는지(몬스터·재료), 경험치와 함께 주는 아이템까지 한 줄에 보여요. 끝낸 퀘스트는 체크해 두고, 사냥하다 지칠 때 남은 것을 끼워 넣기 좋아요.' : 'The ten biggest EXP rewards in each level band, from the game data: who gives it, what you hunt or bring, and the items that come with the EXP, on one row. Tick off what you have done and slot the rest in between grinding sessions.'}</p>
 ${rankTabs(ko, link, 'exp')}
 <nav class="band-nav" aria-label="${ko ? '레벨' : 'Level'}"><div><a class="band-link" href="#top">TOP 10</a>${QUEST_BANDS.map(([a, b]) => `<a class="band-link" href="#lv-${a}">${b >= 200 ? `${a}+` : `${a}–${b}`}</a>`).join('')}</div></nav></section>
-<div class="wrap quest-page"><section class="panel" id="top"><h2>${ko ? '전체 TOP 10' : 'Top 10 overall'}</h2>${table(top, true)}</section>
+<div class="wrap quest-page qc-page" data-qc>
+${questBar({ ko, total, sum: { key: 'exp', label: ko ? '받은 경험치' : 'EXP earned' } })}
+<section class="panel qc-sec" id="top"><h2>${ko ? '전체 TOP 10' : 'Top 10 overall'} ${countTag(top.length)}</h2>${cards(top, true)}</section>
 ${sections}
 <section class="panel"><h2>${ko ? '이렇게 골랐어요' : 'How these are picked'}</h2><ul>
 <li>${ko ? '경험치와 메소, 보상 아이템은 게임 클라이언트 데이터 그대로예요.' : 'EXP, mesos and reward items are the game client data as is.'}</li>
 <li>${ko ? '같은 이름의 퀘스트(시민권 기부처럼 여러 번 나오는 것)는 경험치가 가장 큰 하나만 남겼어요.' : 'Quests sharing one name (like the citizenship donations) keep only their best-paying one.'}</li>
-<li>${ko ? '보상이 여러 개 중 하나로 나오는 퀘스트는 "N개 중 하나"로 표시했어요.' : 'Quests that give one of several rewards say "one of N".'}</li>
+<li>${ko ? '보상이 여러 개 중 하나로 나오는 퀘스트는 줄을 펼치면 "N개 중 하나"로 표시돼요.' : 'Quests that give one of several rewards say "one of these N" when opened.'}</li>
 <li>${ko ? '반복 퀘스트와 끝난 이벤트는 뺐어요. 포가튼 할로우 퀘스트는 11월 18일 오픈 뒤 포함했어요.' : 'Repeatable quests and ended events are left out; Forgotten Hollow quests are in since it opened on Nov 18.'}</li></ul>
 <p>${ko ? '메소가 목적이면' : 'After mesos instead?'} <a href="${link('/quests/best-meso/')}">${ko ? '돈 버는 퀘스트 순위' : 'Quests that make the most mesos'}</a> · <a href="${link('/quests/')}">${ko ? '전체 퀘스트' : 'All quests'}</a></p></section></div>`;
 }
