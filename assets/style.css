@@ -3828,3 +3828,9 @@ dialog.info-note p { margin: 0 0 10px; line-height: 1.6; font-size: .95rem; }
 dialog.info-note .info-note-actions { text-align: right; margin: 6px 0 0; }
 .monster-glance h3 { font-size: 1rem; margin: 14px 0 4px; }
 .monster-glance p { margin: 0 0 6px; line-height: 1.6; }
+
+/* Meso farming spots: the static table and reading guide under the finder (2026-11-23). */
+.lab-static { max-width: 960px; padding-top: 8px; }
+.lab-static h3 { margin: 22px 0 8px; font-size: 1rem; }
+.lab-static td { vertical-align: top; }
+.lab-static td:first-child { word-break: keep-all; }

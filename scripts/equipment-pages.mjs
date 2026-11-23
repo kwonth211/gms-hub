@@ -51,7 +51,7 @@ function row(e, { lang, link, itemHref, mobHref, questHref, mobSprite }) {
   const from = [
     ...e.mobs.slice(0, 2).map((m) => `<a class="eq-mob" href="${mobHref(m)}" translate="no"><img class="mob-sprite" src="${mobSprite(m)}" width="28" height="28" alt="" loading="lazy">${esc(ko ? m.ko || m.en : m.en)}</a>`),
     ...(e.mobs.length > 2 ? [`<small>+${e.mobs.length - 2}</small>`] : []),
-    ...e.quests.slice(0, 1).map((q) => `<a class="eq-quest" href="${questHref(q)}" translate="no">${esc(q.name)}</a>`)
+    ...e.quests.slice(0, 1).map((q) => { const h = questHref(q); return h ? `<a class="eq-quest" href="${h}" translate="no">${esc(q.name)}</a>` : `<span class="eq-quest" translate="no">${esc(q.name)}</span>`; })
   ].join('');
   return `<tr data-lv="${e.lv}" data-sub="${esc(e.sub)}" data-job="${e.job}">
 <td class="num">${e.lv}</td>

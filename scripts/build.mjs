@@ -720,7 +720,7 @@ function shareImageTags(lang, pagePath) {
 <meta name="twitter:image:alt" content="${esc(SHARE_ALT[lang])}">`;
 }
 
-function head({ lang, title, desc, pagePath, noindex, ld = [], only, bare }) {
+function head({ lang, title, desc, pagePath, noindex, ld = [], only, bare, adsenseTag = true }) {
   const alternates = only
     ? ''
     : pagePath
@@ -730,7 +730,7 @@ function head({ lang, title, desc, pagePath, noindex, ld = [], only, bare }) {
   const canonical = pagePath ? absUrl(langPath(lang, pagePath)) : absUrl('/');
   // Pages kept out of search (thin detail pages, machine-translated zh/ja) carry no ad code at all: the AdSense crawler
   // reads every page that has the tag, noindex or not.
-  const adsense = config.adsenseClient && !noindex
+  const adsense = config.adsenseClient && !noindex && adsenseTag
     ? `<meta name="google-adsense-account" content="${esc(config.adsenseClient)}">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${esc(config.adsenseClient)}" crossorigin="anonymous"></script>`
     : '';
@@ -1067,11 +1067,15 @@ function withMidAd(body, ads) {
   return body.split(AD_MID).join(ads ? adfitSlot('mid') : '');
 }
 const NO_AD_PAGES = new Set(['about', 'bot', 'contact']);
+// Pages written by the build from game or price data (item and monster detail pages, the look-up-elsewhere page) carry no
+// AdSense tag: Google's approval help says ad code must not sit on automatically generated pages or pages with little
+// content of their own (2026-11-23, after four rejections for "insufficient or low-quality content"). They keep AdFit.
+const NO_ADSENSE_PAGES = new Set(['item', 'monster', 'price']);
 function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], modules = [], ld = [], only, noindex }) {
   // Indexed pages carry ads, except About, the Discord bot page and Contact/sponsorship. Pages kept out of search
   // (noindex: thin item/map detail pages) carry none since 2026-11-17, for the AdSense review ("must pass", owner).
   const ads = !noindex && !NO_AD_PAGES.has(pageKey) && Object.values(config.adfit || {}).some(Boolean);
-  return `${head({ lang, title, desc, pagePath, ld, only, noindex })}
+  return `${head({ lang, title, desc, pagePath, ld, only, noindex, adsenseTag: !NO_ADSENSE_PAGES.has(pageKey) })}
 <body data-page="${pageKey}"${ads && (config.adfit?.railLeft || config.adfit?.railRight) ? ' data-rails' : ''} data-price-api="${esc(config.voteApi)}"${config.discord ? ` data-discord-url="${esc(dcInvite(lang))}"` : ''} data-tips="${esc(href('/assets/item-tips.json'))}" data-sprites="${esc(href('/assets/monsters/'))}">
 ${header(lang, pagePath, only)}
 <main>${ads && pageKey !== 'home' ? adfitRails() : ''}${withMidAd(withTopAd(withDownload(body, lang, pageKey, pagePath), ads), ads)}${ads && !body.includes(AD_MID) ? adfitSlot() : ''}</main>
@@ -3782,11 +3786,50 @@ for (const lang of LANGS) {
         ko ? '메소 벌이 사냥터' : 'Meso farming spots',
         ko ? '메소 벌이에 좋은 몬스터를 찾는 페이지예요. 레벨을 넣으면 그 근처 몬스터가 떨어뜨리는 아이템 중 지금 시세가 높은 것부터 보여 줘요. 가격은 아이템 1개당 최근 판매 완료 가격(없으면 보통 판매 가격)이고, 드랍 확률은 알 수 없어서 "떨어지면 돈이 되는 것"만 알려 줘요.' : 'Enter a level to see the monsters around it, ranked by the market price of what they drop. Prices are per item (recent sold price, else the typical asking price). Drop rates are unknown, so this shows what is worth money if it drops.']
     ];
+    // What the page says without scripts (2026-11-23, AdSense: the built page had 200 characters of text). A table of the
+    // monsters whose drops sell for the most in each level band at build-time prices, then how to read the tool. The tool
+    // above it still ranks by the live price for the level the visitor types.
+    const farmBands = [[1, 20], [21, 35], [36, 50], [51, 70], [71, 200]];
+    // The sold median of the last 7 days, else the usual asking price, and only for items seen at least three times: one
+    // absurd listing (a 111m Blue Headband on 11/23) must not top the table.
+    const farmPrice = (id) => { const st = STATS[id]; return st && st[0] >= 3 ? st[3] ?? headline(itemPrices.prices[id])?.median ?? 0 : 0; };
+    const farmRows = MONSTERS.monsters.filter((m) => !m.boss && (m.locations || []).some((l) => l.availability === 'open')).map((m) => {
+      const best = m.drops.filter((d) => d.cat !== 'Quest').map((d) => ({ d, p: farmPrice(d.itemId) })).filter((x) => x.p > 0).sort((a, b) => b.p - a.p);
+      const open = m.locations.filter((l) => l.availability === 'open').sort((x, y) => y.count - x.count);
+      const map = (ko && open.find((l) => l.ko)) || open[0];
+      return best.length ? { m, best: best.slice(0, 2), map } : null;
+    }).filter(Boolean);
+    const farmTable = farmBands.map(([a, b]) => {
+      const seen = new Set(); // Fairy 2-4 share one Korean name and one best drop: one row is enough
+      const rows = farmRows.filter(({ m }) => m.lv >= a && m.lv <= b).sort((x, y) => y.best[0].p - x.best[0].p)
+        .filter(({ m, best }) => { const k = `${ko ? m.ko || m.en : m.en.replace(/ \d+$/, '')}|${best[0].d.itemId}`; return seen.has(k) ? false : seen.add(k); }).slice(0, 4);
+      if (!rows.length) return '';
+      return `<h3>${ko ? `Lv. ${a}${b >= 200 ? ' 이상' : `~${b}`} 몬스터` : `Level ${a}${b >= 200 ? '+' : `–${b}`} monsters`}</h3>
+<div class="table-wrap"><table class="data"><thead><tr><th>${ko ? '몬스터' : 'Monster'}</th><th>${ko ? '레벨' : 'Level'}</th><th>${ko ? '시세 높은 드랍' : 'Priciest drops'}</th><th>${ko ? '많이 나오는 맵' : 'Most common map'}</th></tr></thead><tbody>${rows.map(({ m, best, map }) => `<tr><td><a href="${href(langPath(lang, monsterPath(m)))}">${esc(monsterName(m, lang))}</a></td><td>${m.lv}</td><td>${best.map(({ d, p }) => `${esc(dropName(lang, d))} ${mesoText(lang, p)}`).join('<br>')}</td><td>${esc(ko ? map.ko || map.en : map.en)}</td></tr>`).join('')}</tbody></table></div>`;
+    }).join('');
+    const farmFaq = ko ? [
+      ['가격은 어떤 값이에요?', '아이템 1개가 자유시장에서 최근에 실제로 팔린 값이에요. 팔린 기록이 없는 아이템은 지금 올라와 있는 매물의 보통 값으로 대신해요. 부르는 값만 높고 안 팔리는 아이템도 있으니, 사냥터를 정하기 전에 실시간 시세에서 그 아이템의 판매 완료 기록을 같이 확인하세요.'],
+      ['비싼 드랍이 있는 몬스터가 무조건 돈이 돼요?', '아니에요. 이 표는 "떨어지면 얼마짜리인가"만 알려 줘요. 드랍 확률은 게임에서 공개하지 않아서 넣지 않았어요. 값이 높은 장비나 주문서는 드물게 나오는 편이라, 한 시간 사냥해서 실제로 버는 메소는 물약 값과 잡는 속도에 더 크게 좌우돼요.'],
+      ['그럼 사냥터는 어떻게 골라요?', '먼저 내 레벨에서 한두 방에 잡히는 몬스터를 고르고, 그중에서 드랍 시세가 높은 쪽을 고르는 순서가 안전해요. 몇 방에 잡히는지는 몇 방 컷 계산기로, 레벨에 맞는 사냥 동선은 사냥터 추천에서 볼 수 있어요.'],
+      ['시세가 표와 다르게 보여요.', '아래 표는 페이지를 만든 날의 시세로 뽑은 목록이에요. 위쪽 검색 도구는 페이지를 열 때마다 최신 시세를 다시 불러와서 순위를 매겨요. 둘이 다르면 위쪽 도구가 더 새 값이에요.']
+    ] : [
+      ['What price is shown?', 'What one item last sold for on the Free Market. An item with no recorded sale uses the typical asking price of the listings that are up now. Some items are listed high and never sell, so look the item up on the live price page and check its sold records before you commit to a spot.'],
+      ['Does a pricey drop mean the monster is good money?', 'No. The table only tells you what a drop is worth if it drops. Drop rates are not published by the game, so none are shown. Valuable equipment and scrolls tend to be rare, and what you really earn in an hour depends more on potion costs and how fast you kill.'],
+      ['So how do I choose a spot?', 'Pick monsters you can kill in one or two hits at your level first, then choose the one whose drops sell for more. The hits-to-kill calculator answers the first part, and the training routes page lists spots by level.'],
+      ['The prices differ from the table.', 'The table below was drawn from prices on the day the page was built. The finder at the top reloads the latest prices every time you open the page and ranks by them. When they disagree, the finder is the newer one.']
+    ];
+    const farmStatic = `<section class="wrap prose lab-static"><h2>${ko ? `레벨대별 시세 높은 드랍 (${BUILD_DATE} 기준)` : `Priciest drops by level band (as of ${BUILD_DATE})`}</h2>
+<p>${ko ? '지금 잡을 수 있는 일반 몬스터를 레벨대로 나누고, 드랍 중 자유시장 시세가 가장 높은 아이템 순으로 네 마리씩 골랐어요. 몬스터 이름을 누르면 전체 드랍과 출현 맵을 볼 수 있어요.' : 'Regular monsters on open maps, grouped by level, four per band ranked by their most valuable drop on the Free Market. Open a monster for its full drop list and maps.'}</p>
+${farmTable}
+<h2>${ko ? '이 페이지 읽는 법' : 'How to read this page'}</h2>
+${farmFaq.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')}
+<p>${ko ? `같이 보면 좋은 페이지: <a href="${href(langPath(lang, '/tools/market/'))}">실시간 시세</a> · <a href="${href(langPath(lang, '/tools/damage/'))}">몇 방 컷 계산기</a> · <a href="${href(langPath(lang, '/tools/training/'))}">사냥터 추천</a> · <a href="${href(langPath(lang, '/quests/best-meso/'))}">돈 되는 퀘스트</a>` : `Related: <a href="${href(langPath(lang, '/tools/market/'))}">live prices</a> · <a href="${href(langPath(lang, '/tools/damage/'))}">hits-to-kill calculator</a> · <a href="${href(langPath(lang, '/tools/training/'))}">training routes</a> · <a href="${href(langPath(lang, '/quests/best-meso/'))}">quests that pay</a>`}</p></section>`;
+    const farmLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: farmFaq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) };
     for (const [p, view, title, desc, h1, lead] of labPages) {
       write(path.join(lang, ...p.split('/').filter(Boolean), 'index.html'), page({
         lang, pageKey: view, pagePath: p, modules: ['lab.js'], title, desc,
-        body: `<section class="wrap lab" data-lab="${view}" data-lang="${lang}" data-h1="${esc(h1)}" data-lead="${esc(lead)}" data-api="${esc(config.voteApi)}" data-data="${esc(href(`/assets/lab-data.json?v=${BUILD_DATE}`))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-mobs="${esc(href(langPath(lang, '/monsters/')))}"><h1>${esc(h1)}</h1><p class="lab-sub">${esc(lead)}</p><div aria-busy="true" aria-label="${ko ? '불러오는 중…' : 'Loading…'}" class="lab-skel"></div></section>`,
-        ld: [breadcrumbLd(lang, h1, p)]
+        body: `<section class="wrap lab" data-lab="${view}" data-lang="${lang}" data-h1="${esc(h1)}" data-lead="${esc(lead)}" data-api="${esc(config.voteApi)}" data-data="${esc(href(`/assets/lab-data.json?v=${BUILD_DATE}`))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" data-mobs="${esc(href(langPath(lang, '/monsters/')))}"><h1>${esc(h1)}</h1><p class="lab-sub">${esc(lead)}</p><div aria-busy="true" aria-label="${ko ? '불러오는 중…' : 'Loading…'}" class="lab-skel"></div></section>${view === 'meso-farm' ? farmStatic : ''}`,
+        ld: [breadcrumbLd(lang, h1, p), ...(view === 'meso-farm' ? [farmLd] : [])]
       }));
     }
     write(path.join(lang, 'tools', 'forge', 'index.html'), page({
@@ -3825,7 +3868,7 @@ for (const lang of LANGS) {
       body: questBestBody({ lang, quests: QUESTS, link, itemName: (id, l) => { const i = itemsData.items.find((x) => x.id === id); return i ? (l === 'ko' && i.ko ? i.ko : i.en) : `#${id}`; }, mobPic: (id) => (MOB_GIF.has(id) ? href(`/assets/monsters/${id}.gif`) : null), mobName: (id, l) => { const m = MOB_BY_ID.get(id); return m ? (l === 'ko' && m.ko ? m.ko : m.en) : ''; } }),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '경험치 퀘스트' : 'Best EXP quests', '/quests/best-exp/')]
     }));
-    const eqCtx = { lang, link, mobHref, mobSprite, questHref: (q) => link(questPath(q)),
+    const eqCtx = { lang, link, mobHref, mobSprite, questHref: (q) => { const p = questPath(q); return p ? link(p) : ''; }, // quests without a guide page get no link (was href="/konull")
       itemHref: (e) => (ITEM_PAGE_IDS.has(e.id) ? link(itemPath(ITEM_PAGES.find((i) => i.id === e.id))) : link(`/tools/market/?item=${e.id}`)) };
     write(path.join(lang, 'equipment', 'index.html'), page({
       lang, pageKey: 'equipment', pagePath: '/equipment/', modules: ['equipment.js'],
