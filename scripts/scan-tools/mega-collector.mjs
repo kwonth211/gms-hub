@@ -10,6 +10,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { PNG } from 'pngjs';
 import { fileURLToPath } from 'node:url';
+import { Worker } from 'node:worker_threads';
 import Tesseract from 'tesseract.js';
 import { findChatBox, stableChatBox, findLines, isLineVisible, readLine, assemble, repeatFilter, continuousMessage, itemFixer, glyphReader, slotAnchor, windowTop, lineFingerprint, bandClass, textLeft, findBadge, similar, shape } from '../../assets/mega-reader.js';
 import { OptionReader, nameKey, inputLog, shopButtonVisible } from './mega-options.mjs';
@@ -379,8 +380,14 @@ if(DRY){const duration=Number(process.argv.find((a)=>a.startsWith('--duration=')
 for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{stopping=true;});
 process.on('exit',()=>{if(cam)cam.kill();if(DRY)fs.rmSync(shot,{force:true});});
 setInterval(flush, 5000);
+// Watchdog (2026-11-23: a bad glyph-table entry sent the reader into an endless loop and nothing was collected for
+// 11 minutes). A second thread ends the process when the main loop has not finished a tick for 60 s; the run loop
+// (mega.sh / mega-loop.cmd) starts it again.
+const beat=new Int32Array(new SharedArrayBuffer(4));
+new Worker("const {workerData:b}=require('node:worker_threads');let last=-1,since=Date.now();setInterval(()=>{const v=Atomics.load(b,0);if(v!==last){last=v;since=Date.now();}else if(Date.now()-since>60000){console.error(new Date().toISOString(),'watchdog: main loop stuck for 60 s, restarting');process.kill(process.pid);}},5000);",{eval:true,workerData:beat}).unref();
 while (!stopping) {
   const t0 = Date.now();
+  Atomics.add(beat,0,1);
   try { await tick(); } catch (e) { console.error(new Date().toISOString(), e.message, String(e.stack).split(String.fromCharCode(10)).slice(1,4).join(' | ')); }
   await new Promise((r) => setTimeout(r, Math.max(200, TICK_MS - (Date.now() - t0))));
 }
