@@ -297,8 +297,14 @@ async function tick() {
     pending.push({row,m});
     if(counts.get(key)===1&&i>=0)nextVisible.set(key,{row,lastVisible:now});
     if(optionReader && ['Y','C'].includes(row.color)) {
+      // A scroll's effect is fixed game data (catalog `inc`; Lesser 100%, Intermediate 60%, Greater 10%): its link need not be
+      // pressed. Tesseract kept failing on scroll panels (four tries each, ~25 s of the shared mouse, and no result).
+      const linked=row.text.split('[').slice(1).map(s=>s.split(']')[0]),linkName=linked.length===1?linked[0]:'';
+      const scrollItem=WIN&&linkName?optionReader.catalog.find(c=>nameKey(c.en)===nameKey(linkName)):null;
+      const tier=scrollItem&&/ Scroll: (Lesser|Intermediate|Greater)$/.exec(scrollItem.en)?.[1];
       const known=WIN&&optionCache.get(cacheKey(row));
-      if(known&&now-known.t<15*60000){row.opts=known.opts;console.log(`options reused ${row.nick} ${/[[^]]+]/.exec(row.text)?.[0]||''} ${JSON.stringify(row.opts)} seen=${row.seen}`);}
+      if(tier&&scrollItem.inc&&Object.keys(scrollItem.inc).length){row.opts={scroll:{chance:{Lesser:100,Intermediate:60,Greater:10}[tier],stats:scrollItem.inc}};console.log(`options ${row.nick} [${scrollItem.en}] ${JSON.stringify(row.opts)} (0ms ix=0 pre=0) mode=catalog seen=${row.seen}`);}
+      else if(known&&now-known.t<15*60000){row.opts=known.opts;console.log(`options reused ${row.nick} [${linkName}] ${JSON.stringify(row.opts)} seen=${row.seen}`);}
       else if(i>=0)optionJobs.set(messageKey(m),{row,m,fingerprint:fingerprints[i],attempts:0,lastAttempt:0,created:now,lastVisible:now});
     }
     console.log(`${new Date(now).toTimeString().slice(0, 8)} ${row.kind.padEnd(6)} CH${String(row.channel).padStart(2)} ${row.nick}: ${row.text}`);

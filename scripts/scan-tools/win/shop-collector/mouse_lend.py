@@ -21,6 +21,7 @@ from contextlib import contextmanager
 
 PORT = 47811
 PAD = 28                 # 확성기 수집기 화면의 제목 줄 높이(맥 창 캡처와 같게)
+NEAR = (700, 540)        # 채팅창 바로 위 빈 곳(게임 좌표) — hold 때 포인터를 두는 자리
 WAIT_TURN = 9.0          # 이만큼 안에 차례(상점 사이 틈)가 안 오면 바쁨으로 돌려보낸다
 BOUNDARY_ONLY = True     # 상점 하나를 다 보고 닫은 뒤에만 빌려준다(사용자 지시 2026-11-23: 상점 → 고확 → 상점)
 HOLD_IDLE = 3.0          # hold 중 다음 요청을 기다리는 시간
@@ -241,8 +242,8 @@ class Lender:
             def cut(bx, by):
                 return f[max(by, 0):max(by + 32, 0), max(bx, 0):max(bx + 28, 0)].copy()
             return cut(cx - 4, cy - 6), cut(cx - 48, cy - 6)
-        if act == 'hold':                                 # 포인터를 오른쪽 위 구석으로 치워 상점 설명창을 닫는다
-            g.move(1366 - 40, 40 - PAD)
+        if act == 'hold':                                 # 포인터를 채팅창 바로 위 빈 곳으로 옮겨 상점 설명창을 닫는다
+            g.move(*NEAR)                                 # (구석까지 가지 않는다 — 사용자 지시 2026-11-23: 살짝만 움직여도 닫힌다)
             emit({'phase': 'after', 'mode': 'foreground', 'hold': True})
             return 0
         if act == 'move':
@@ -275,14 +276,12 @@ class Lender:
         time.sleep(.25)
         emit({'phase': 'clicked', 'at': time.time() * 1000, 'mode': 'foreground'})
         time.sleep(.38)                                  # 확성기 수집기가 옵션 창 화면을 찍는 동안
-        g.move(1366 - 40, 40 - PAD)                       # 오른쪽 위 구석으로(옵션 창 닫힘). 돌아가지 않는다
-        time.sleep(.15)
-        # 옵션 창은 포인터가 게임 안에서 움직여야 닫힌다. 열린 채로 남으면 ↑ 키가 안 먹어 방에서 못 나간다
-        # (2026-11-23 12:46, 13:57 두 번: 클릭 직후 방 나가기 실패). 한 번 더 움직여 확실히 닫는다.
-        g.move(1366 - 90, 60)
-        time.sleep(.15)
-        g.move(1366 - 40, 40 - PAD)
-        time.sleep(.1)
+        # 옵션 창은 포인터가 조금만 움직여도 닫힌다(사용자 확인 2026-11-23). 구석까지 가지 않고 링크에서 비켜난다.
+        # 두 번 나눠 움직여 확실히 닫는다(열린 채 남으면 ↑ 키가 안 먹어 방에서 못 나갔다 — 12:46, 13:57).
+        g.move(min(1340, cx + 36), max(20, cy - 30))
+        time.sleep(.12)
+        g.move(min(1350, cx + 64), max(10, cy - 52))
+        time.sleep(.08)
         self.clicked_at = time.time()
         emit({'phase': 'after', 'mode': 'foreground'})
         return 0

@@ -350,6 +350,19 @@ export class OptionReader {
         }
       }
       const panel=isolated?.panel,rows=isolated?.rows||[];
+      if(!panel&&this.exact&&item.cat==='Equip'&&item.id) {
+        // Windows: the title could not be read by OCR, but the pixel-exact reader may still read the whole panel. The item is
+        // the one named by the pressed link; only a complete reading (title's +N included) is accepted.
+        try {
+          const tb=selectTooltipBox(boxes,point,image.width);
+          if(tb&&tb.w>=120) {
+            const shot=path.join(this.dir,'exact.png');fs.writeFileSync(shot,PNG.sync.write(after));
+            const {stdout}=await exec(this.exact,[shot,String(Math.round(tb.x)),String(item.id)],{timeout:4000,maxBuffer:1e5});
+            const ex=JSON.parse(stdout);
+            if(ex&&!ex.upsUnread){this.lastMissing=[];this.lastStatCount=Object.keys(ex.opts.stats||{}).length;this.lastReading={exact:true,untitled:true};return ex.opts;}
+          }
+        } catch {}
+      }
       if(!panel||panel.w<120||panel.title.x>box.x+link.x+100){
         fs.writeFileSync(path.join(this.dir,'panel-failure.png'),PNG.sync.write(after));
         fs.writeFileSync(path.join(this.dir,'panel-before.png'),PNG.sync.write(ready));
