@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "listing-ref-price",
+   "version": "0.7.66",
+   "level": "patch",
+   "date": "2026-11-23",
+   "path": "/tools/market/?view=listings",
+   "ko": "전체 매물 — 가격 옆에 시세 표시",
+   "en": "All listings — typical price beside each asking price",
+   "desc": {
+    "ko": "전체 매물 목록의 가격 옆에 그 아이템 시세가 연하게 나와요. 아이템 페이지를 열지 않고도 싼지 비싼지 바로 보여요.",
+    "en": "Each asking price in All listings now has the item's typical price next to it in a lighter tone, so you can tell cheap from dear without opening the item."
+   }
+  },
+  {
    "id": "price-24h",
    "version": "0.7.65",
    "level": "patch",

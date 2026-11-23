@@ -3084,6 +3084,7 @@ body.exp-running .exp-stop { display: inline-flex; }
 
 .mb-listings-table .mb-opts { display: flex; margin-top: 4px; }
 .mb-listings-table .mb-cell-price .mb-opts { justify-content: flex-end; }
+.mb-listings-table .mb-cell-price .mb-ref { display:inline-block; margin:0 0 0 8px; opacity:.6; font-weight:400; white-space:nowrap; }
 .profile-label .profile-opt { flex-basis: 100%; color: var(--accent); font-weight: 700; }
 .recent-list .name .opt { margin-left: 6px; flex: none; color: var(--accent); font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
 .recent-list .name .opt.mid { color: var(--text-2); }
