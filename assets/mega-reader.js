@@ -4,7 +4,9 @@
 
 // Background colour → band class. Pink bands are dithered between two tones, so the ranges are wide.
 export function bandClass(r, g, b) {
-  if (r > 170 && g > 120 && g < 200 && b < 90) return 'Y';
+  // The Windows capture draws the gold band with a vertical shade up to 255,203,0 (2026-11-23): with g < 200 its
+  // brightest row was not band, so the top pixel row of tall letters was dropped on some rows and not on others.
+  if (r > 170 && g > 120 && g < 215 && b < 90) return 'Y';
   // Windows capture (HDR desktop) shows the pink band brighter: 255,185,207 / 242,175,199 (2026-11-23). Greys are kept out by r - g.
   if (r > 160 && g > 120 && b > 140 && (g < 175 || (g < 195 && r - g > 40))) return 'P';
   if (b > 150 && g > 150 && r < 150) return 'C';
@@ -209,13 +211,19 @@ export function lineFingerprint(img, line) {
     // Compare nickname/message font pixels and the exact channel digits, never
     // that graphic. Duplicate matching rows still fail closed in locateFingerprint.
     const left=textLeft(img,line),badge=findBadge(img,line),channel=badge&&readChannel(img,line,badge);
-    const gs=glyphs(img,line,left,line.right,windowTop(line,anchor)).filter(g=>g.key.startsWith('D:')&&
+    // Letters near the right edge come and go with the wobbling band edge (a row whose text reaches the edge hashed
+    // differently as the newest row and one row up), so only letters clear of the edge count.
+    const edge=img.width-56;
+    const gs=glyphs(img,line,left,line.right,windowTop(line,anchor)).filter(g=>g.key.startsWith('D:')&&g.x+g.w<=edge&&
       (!badge||g.x+g.w<=badge.left||g.x>=badge.message));
     let hash=2166136261;
-    for(const g of gs)for(const ch of `${g.x-left}:${g.key};`)hash=Math.imul(hash^ch.charCodeAt(0),16777619)>>>0;
+    // Rows 0-2 and 15 of the 16-row window belong to the seams: they count as band only when the neighbouring row has
+    // the same colour, so a descender reaching row 15 is seen on one row position and not on another. Identity uses rows 3-14.
+    const core=key=>key.slice(0,2)+key.slice(2).split('/').map(c=>c.slice(3,15)).join('/');
+    for(const g of gs)for(const ch of `${g.x-left}:${core(g.key)};`)hash=Math.imul(hash^ch.charCodeAt(0),16777619)>>>0;
     // The band's right edge wobbles by a few pixels on the Windows capture (545/551 for the same row, 2026-11-23),
     // so the width is not part of the identity: colour, channel digits and every letter's position already are.
-    return `slot3:${line.color}:${channel??'?'}:${hash}`;
+    return `slot5:${line.color}:${channel??'?'}:${hash}`;
   }
   return `${line.bottom-line.top}:${line.right}:${lineBitmap(img,line,{x0:0,scale:1,pad:0}).sig}`;
 }

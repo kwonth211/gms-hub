@@ -269,11 +269,24 @@ async function tick() {
       const again=sureOf.some(s=>s.sure&&s.nick===m.nick&&s.channel===m.channel&&shape(s.text).length>=2&&shape(m.text).startsWith(shape(fixItems(s.text,['Y','C'].includes(m.color)))))||seenOnce.some(o=>o.t<=now-1200&&o.channel===m.channel&&alike(o.nick,m.nick)&&alike(o.text,m.text));
       seenOnce.push({t:now,channel:m.channel,nick:m.nick,text:m.text});if(seenOnce.length>400)seenOnce.shift();
       if(!again)continue;
+      // An item megaphone read without its "[item]" link: the link was under the pointer or a panel at that moment, and
+      // accepting it made the full reading that followed look like a repeat (15:26-15:34: every item megaphone went up
+      // link-less). Wait until the same link-less reading has stood for 3 s and no look in the last 12 s showed a link.
+      if(['Y','C'].includes(m.color)&&!m.text.includes('[')) {
+        const mine=o=>o.channel===m.channel&&alike(o.nick,m.nick);
+        if(!seenOnce.some(o=>o.t<=now-3000&&mine(o)&&alike(o.text,m.text))||seenOnce.some(o=>now-o.t<12000&&mine(o)&&o.text.includes('[')))continue;
+      }
       // Half-covered rows come out with a cut nick ("epyks" for "Xepyks"), an open "[" or OCR dashes. Such a reading is
       // not accepted, and a reading that is the same ad as one accepted in the last 3 minutes (same channel and band,
       // nick within two letters, text alike or the same start) is that ad again, not a new one.
       const open=m.text.split('[').length!==m.text.split(']').length;
       if(open||['——','===','___'].some(x=>m.text.includes(x))||['—','–','|','~'].some(x=>m.text.trimEnd().endsWith(x)))continue;
+      // A reading that needed OCR, from someone whose megaphone on the same channel and band was accepted in the last
+      // 90 s, is that megaphone seen half-covered ("CB TurkEy CR po EET" after "B> Turkey Eggs 600 each"), not a new one.
+      // Double megaphones are two rows from one sender at once, so they are left out of this rule. Two letters are no text.
+      const certain=sureOf.some(s=>s.sure&&s.nick===m.nick&&s.channel===m.channel);
+      if(shape(m.text).length<3)continue;
+      if(!certain&&m.color!=='C'&&accepted.some(o=>now-o.t<90000&&o.channel===m.channel&&o.color===m.color&&o.nick===m.nick&&o.text!==m.text))continue;
       const T=shape(m.text),nickNear=(a,b)=>{a=a.toLowerCase().replace(/l/g,'i');b=b.toLowerCase().replace(/l/g,'i');if(a===b||a.endsWith(b)&&b.length>=3||b.endsWith(a)&&a.length>=3)return true;if(Math.abs(a.length-b.length)>2)return false;let p=Array.from({length:b.length+1},(_,k)=>k);for(let x=1;x<=a.length;x++){const c=[x];for(let y=1;y<=b.length;y++)c[y]=Math.min(p[y]+1,c[y-1]+1,p[y-1]+(a[x-1]===b[y-1]?0:1));p=c;}return p[b.length]<=2;};
       if(accepted.some(o=>now-o.t<180000&&o.channel===m.channel&&o.color===m.color&&nickNear(o.nick,m.nick)&&(o.nick!==m.nick||o.text!==m.text)&&(alike(o.text,m.text)||shape(o.text).slice(0,6)===T.slice(0,6)||o.text.includes('[')&&!m.text.includes('[')&&shape(o.text).endsWith(T))))continue;
       accepted.push({t:now,channel:m.channel,color:m.color,nick:m.nick,text:m.text});if(accepted.length>200)accepted.shift(); }

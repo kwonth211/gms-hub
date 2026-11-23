@@ -80,7 +80,7 @@ class Lender:
                 if not a or len(a) != 4 or not (a[0] <= x <= a[0] + a[2] and a[1] <= y <= a[1] + a[3]):
                     self._send(conn, {'error': 'Click outside the allowed area (chat box only)', 'point': [x, y]}, {'exit': 7})
                     return
-            r = {'msg': msg, 'conn': conn, 'picked': False, 'done': threading.Event()}
+            r = {'msg': msg, 'conn': conn, 'picked': False, 'done': threading.Event(), 'at': time.time()}
             with self.lock:
                 self.q.append(r)
             t = time.time()
@@ -120,7 +120,7 @@ class Lender:
         finally:
             self.block -= 1
 
-    def window(self, max_s=7.0):
+    def window(self, max_s=7.0, min_wait=0.0):
         """상점 사이 틈(상점 창이 닫혀 있고 설명창도 없을 때)에 부른다. 기다리는 확성기 요청을 모두 처리한다.
 
         요청이 없으면 바로 돌아간다(상점 수집은 느려지지 않는다). 링크를 하나 누른 뒤에는 다음 링크 요청이
@@ -128,7 +128,9 @@ class Lender:
         if not self.ok or self.busy or self.block or getattr(self.g, '_held', None):
             return
         with self.lock:
-            if not self.q:
+            # min_wait: 상점 안(아이템 사이)에서 부를 때 — 요청이 이만큼 넘게 기다렸을 때만 끼워 준다.
+            # 장비가 많은 상점은 15초 넘게 걸려, 그동안 확성기 줄이 밀려 사라졌다(2026-11-23 40분 집계: 못 읽은 것의 절반).
+            if not self.q or time.time() - self.q[0]['at'] < min_wait:
                 return
         self.busy = True
         t0 = last = time.time()
@@ -147,7 +149,7 @@ class Lender:
                 last = time.time()
                 n += 1
                 # hold: 확성기 쪽이 화면을 읽고 누를 때까지 / click: 다음 링크가 이어서 올 때까지 / release: 끝
-                wait = HOLD_IDLE if act == 'hold' else 2.2 if act == 'click' else .25
+                wait = HOLD_IDLE if act == 'hold' else .4 if act == 'click' else .25
         finally:
             self.busy = False
 

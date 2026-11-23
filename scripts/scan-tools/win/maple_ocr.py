@@ -100,5 +100,15 @@ for key in sorted(rows, key=lambda k: min(w['y'] for w in rows[k])):
             if hit:
                 res['itemBounds'] = box(hit)
             res['itemInBrackets'] = text[:i].rstrip()[-1:] == '[' or text[j:].lstrip()[:1] == ']'
+            # 제목 줄: 앞뒤에 붙은 한두 글자 잡티("*\Olympus", "... Bat i")와 괄호 오독("{+1}")을 정리하고,
+            # 믿음값은 아이템 이름 낱말들만으로 다시 센다(잡티가 평균을 깎아 0.5 밑으로 떨어졌음).
+            import re
+            pre, post = text[:i].strip(), text[j:].strip()
+            m = re.match(r'^[({\[]\s*\+?\s*(\d{1,2})\s*[)}\]]', post)
+            rest = post[m.end():].strip() if m else post
+            if len(pre) <= 3 and '[' not in pre and len(rest) <= 2 and ']' not in rest:
+                res['text'] = text[i:j] + (f' (+{int(m.group(1))})' if m else '')
+                if hit:
+                    res['confidence'] = max(res['confidence'], sum(w['c'] for w in hit) / len(hit) / 100)
     out.append(res)
 print(json.dumps(out))
