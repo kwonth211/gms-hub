@@ -242,6 +242,29 @@
             "source": "Discord invite API",
             "date": "2026-11-04"
           }
+        },
+        {
+          "name": "Maple Classic Party Finder",
+          "url": "https://maple-party-hunter.fly.dev/",
+          "icon": "chat",
+          "tint": "#5865f2",
+          "langs": [
+            "en"
+          ],
+          "desc": {
+            "ko": "디스코드에서 파티를 구하는 봇. 직업·레벨·맵을 적어 파티를 올리고 버튼으로 들어가요. 이벤트 일정도 내 시간대로 보여 줘요.",
+            "en": "A Discord bot for finding parties. Post a party with job, level and map, join with a button, and see event times in your timezone."
+          },
+          "features": {
+            "ko": [
+              "파티 찾기 봇",
+              "이벤트 일정"
+            ],
+            "en": [
+              "Party finder bot",
+              "Event schedule"
+            ]
+          }
         }
       ]
     },
