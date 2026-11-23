@@ -121,7 +121,7 @@ globalThis.gmsAuth = () => { const x = session(); return x ? { Authorization: `B
 // A gentle login prompt for visitors who are not logged in: after they save something worth keeping, or after a scan
 // upload. Each kind at most once every three days (kept in a key that never syncs).
 const NUDGE = 'gms-sync-nudge';
-const WORTH = /^(gms-char|gms-char-img|gms-quest-|gms-market-wishlist|gmshub_favs|gms-exp-log|gmshub_dmg)/;
+const WORTH = /^(gms-char|gms-char-img|gms-quests?-|gms-market-wishlist|gmshub_favs|gms-exp-log|gmshub_dmg)/;
 function nudge(place) {
   if (!L || session() || !api || !document.body) return;
   const seen = readJson(NUDGE, {});

@@ -200,8 +200,9 @@ function questBar({ ko, total, sum, filters = false }) {
   return `<div class="qc-bar" data-qc-bar hidden>
 <div class="qc-prog"><span><b data-qc-d>0</b> / ${nf(total)} ${ko ? '완료' : 'done'}</span>${sum ? `<span class="qc-sum" data-qc-sum="${sum.key}" hidden>${sum.label} <b></b></span>` : ''}<i class="qc-meter"><i data-qc-meter></i></i></div>
 <div class="qc-tools">${filters ? `<input type="search" class="qc-search" data-qc-search placeholder="${ko ? '퀘스트·NPC·아이템 이름' : 'Quest, NPC or item name'}" aria-label="${ko ? '퀘스트 찾기' : 'Find a quest'}"><label class="qc-mylv">${ko ? '내 레벨' : 'My level'}<input type="number" min="1" max="200" inputmode="numeric" data-qc-lv placeholder="${ko ? '전체' : 'Any'}"></label>` : ''}<label class="qc-toggle"><input type="checkbox" data-qc-hide><span>${ko ? '완료한 퀘스트 숨기기' : 'Hide finished quests'}</span></label><button type="button" class="qc-all" data-qc-all><span class="qc-all-open">${ko ? '모두 펼치기' : 'Open all'}</span><span class="qc-all-close">${ko ? '모두 접기' : 'Close all'}</span></button></div>
+<button type="button" class="qc-sync" data-qc-sync hidden><span class="qc-sync-icon" aria-hidden="true"></span><span class="qc-sync-off">${ko ? '디스코드로 로그인하면 PC·휴대폰 어디서나 체크가 이어져요' : 'Log in with Discord to keep your ticks on every device'}</span><span class="qc-sync-on">${ko ? '디스코드 계정에 저장 중 · 어느 기기에서나 이어져요' : 'Saved to your Discord account · the same on every device'}</span></button>
 </div>
-<p class="qc-hint muted small">${ko ? '끝낸 퀘스트는 왼쪽 네모를 눌러 체크하고, 줄을 누르면 조건과 보상이 자세히 펼쳐져요. 체크는 이 브라우저에 저장되고, 디스코드로 로그인하면 다른 기기에서도 이어져요.' : 'Tick the box when a quest is done; tap a row to open its requirements and rewards. Ticks are saved in this browser, and follow you to other devices when you log in with Discord.'}</p>`;
+<p class="qc-hint muted small">${ko ? '끝낸 퀘스트는 왼쪽 네모를 눌러 체크하고, 줄을 누르면 조건과 보상이 자세히 펼쳐져요.' : 'Tick the box when a quest is done; tap a row to open its requirements and rewards.'}</p>`;
 }
 const countTag = (n) => `<small class="qc-count" data-qc-count>0/${n}</small>`;
 const emptyNote = (ko) => `<p class="qc-empty" hidden>${ko ? '여기 퀘스트는 모두 완료했어요.' : 'Every quest here is done.'}</p>`;

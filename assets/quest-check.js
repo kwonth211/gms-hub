@@ -85,6 +85,25 @@ all.addEventListener('click', () => {
 addEventListener('storage', (e) => { if (e.key === KEY || e.key === null) { load(); paint(); } });
 addEventListener('gms-account-sync', () => { load(); try { hide = localStorage.getItem(HIDE) === '1'; } catch (e) {} paint(); });
 
+// The login line: one sentence on what logging in does; it opens the header's login panel. Shown only where the login
+// button exists (assets/account.js fills it), and reworded once logged in.
+const sync = bar.querySelector('[data-qc-sync]'), acct = document.querySelector('[data-acct]');
+const paintSync = () => {
+  if (!sync || !acct) return;
+  let on = false;
+  try { on = !!JSON.parse(localStorage.getItem('gms-account') || 'null')?.token; } catch (e) {}
+  sync.classList.toggle('is-on', on);
+  sync.querySelector('.qc-sync-icon').innerHTML = acct.dataset.icon || '';
+  sync.hidden = false;
+};
+sync?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  if (!acct.classList.contains('open')) acct.querySelector('.acct-btn')?.click();
+});
+addEventListener('gms-account-sync', paintSync);
+paintSync();
+
 load();
 bar.hidden = false;
 root.classList.add('qc-js');
