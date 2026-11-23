@@ -126,6 +126,20 @@ function summarize(rows) {
   return { n: kept.length, median: primary.median, basis, low: Math.min(...prices), high: Math.max(...prices), last: kept[0].created_at, ...byKind };
 }
 
+// The headline price follows the market of the last 24 hours (owner 2026-11-23: scroll prices fell ~40% in a day and
+// a 14-day median still showed the old level). Wider windows are only a fallback for thinly traded items: 24 h when it
+// holds at least three sales or three asks, else 3 days, else the full 14. `window` says which one was used.
+const WINDOWS = [['24h', 1], ['3d', 3]];
+export function recentSummary(rows, now = Date.now()) {
+  for (const [name, days] of WINDOWS) {
+    const since = new Date(now - days * DAY).toISOString().slice(0, 19).replace('T', ' ');
+    const recent = rows.filter((r) => r.created_at >= since);
+    const count = (k) => recent.filter((r) => r.kind === k).length;
+    if (count('sold') >= SOLD_HEADLINE_MIN || count('selling') >= SOLD_HEADLINE_MIN) return { ...summarize(recent), window: name };
+  }
+  return { ...summarize(rows), window: '14d' };
+}
+
 // ---------- live ranking ----------
 const DAY = 86400000;
 const TOP_N = 10;
@@ -305,7 +319,7 @@ async function pricesFor(env, ids) {
     const t = ref.get(id);
     const typical = t ? { price: t.typical, day: t.day, week: t.week, sales: t.sales, at: t.at } : null;
     const mega = cats.get(id) !== 'Equip' && asks[id]?.n >= 5 && asks[id].p75 <= asks[id].p25 * 2 ? asks[id] : null;
-    if (rows.length) out[id] = { ...summarize(rows), typical, mega };
+    if (rows.length) out[id] = { ...recentSummary(rows), typical, mega };
     else if (mega) out[id] = { n: 0, median: mega.median, basis: 'mega', low: mega.p25, high: mega.p75, last: null, sold: null, selling: null, buying: null, typical, mega };
     else if (t) out[id] = { n: 0, median: t.typical, basis: 'typical', low: null, high: null, last: t.at, sold: null, selling: null, buying: null, typical, mega: null };
   }
@@ -315,7 +329,7 @@ async function pricesFor(env, ids) {
 // /prices is cached per item, not per id list: a page asking for 30 items and another asking for 3 of them share the
 // same entries, so database reads follow the number of distinct items looked at in five minutes, not the number of
 // visitors or of id combinations. Items with nothing to show are cached too (as null), so they are not re-read either.
-const PRICE_TTL = 1800; // 30 min: a 14-day summary barely moves in that time, and each miss re-reads hundreds of raw rows (was 5 min: ~4.5M reads/day)
+const PRICE_TTL = 1800; // 30 min (the headline is now a 24-hour median, still fine at this age; and each miss re-reads hundreds of raw rows (was 5 min: ~4.5M reads/day)
 // Item share card PNG: /og/item/<id>-<ko|en>.png (gms-hub.com route and workers.dev). Item pages point og:image here
 // with the build date in the query, so chat apps that cache previews still get a fresh card each day.
 async function itemCard(req, env, ctx) {
@@ -617,7 +631,7 @@ const api = {
       const byItem = new Map();
       for (const r of results) (byItem.get(r.item) || byItem.set(r.item, []).get(r.item)).push(r);
       const out = {};
-      for (const [item, rows] of byItem) out[item] = summarize(rows);
+      for (const [item, rows] of byItem) out[item] = recentSummary(rows);
       // Read by the site build only (item pages bake it); six hours of staleness is fine and keeps the 14-day scan rare.
       return json(out, cors, 200, 'public, max-age=21600');
     }

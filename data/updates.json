@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "price-24h",
+   "version": "0.7.65",
+   "level": "patch",
+   "date": "2026-11-23",
+   "path": "/market/",
+   "ko": "시세 — 최근 24시간 기준으로",
+   "en": "Prices — now based on the last 24 hours",
+   "desc": {
+    "ko": "아이템 시세가 최근 14일이 아니라 최근 24시간 거래로 계산돼요. 하루 사이 값이 크게 오르내려도 바로 반영돼요. 거래가 적은 아이템만 3일, 그래도 적으면 14일까지 넓혀서 봐요.",
+    "en": "Item prices now come from the last 24 hours of trades instead of 14 days, so a sharp move shows up the same day. Only rarely traded items widen to 3 days, then 14."
+   }
+  },
+  {
    "id": "quest-checklist",
    "version": "0.7.64",
    "level": "minor",

@@ -691,7 +691,7 @@ function shareImageTags(lang, pagePath) {
   }
   const item = pagePath && pagePath.match(/^\/items\/(\d{7})-/);
   if (item && (lang === 'ko' || lang === 'en')) {
-    const url = `https://gms-hub.com/og/item/${item[1]}-${lang}.png?d=${BUILD_DATE}`, alt = lang === 'ko' ? '아이템 시세 카드 — 현재 가격, 최근 14일 시세, 매물 수' : 'Item price card — current price, 14-day trend, listings';
+    const url = `https://gms-hub.com/og/item/${item[1]}-${lang}.png?d=${BUILD_DATE}`, alt = lang === 'ko' ? '아이템 시세 카드 — 현재 가격, 최근 시세, 매물 수' : 'Item price card — current price, 14-day trend, listings';
     return `<meta property="og:image" content="${url}">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
@@ -1204,7 +1204,7 @@ const LIVE = {
     preview: '미리보기 · 실제 시세가 아닌 예시 데이터예요',
     scan: '내 화면으로 상점 스캔',
     empty: '아직 올라온 매물이 없어요. PC 크롬에서 메이플 창을 공유하고 상점을 열면 여기에 바로 나와요.',
-    mine: '이어서 보기', mineWish: '관심 아이템', mineRecent: '최근 본 아이템', mineNote: '이 브라우저에 저장된 목록이에요 · 가격은 최근 14일 스캔·제보 기준', mineAll: '시세에서 전체 보기'
+    mine: '이어서 보기', mineWish: '관심 아이템', mineRecent: '최근 본 아이템', mineNote: '이 브라우저에 저장된 목록이에요 · 가격은 최근 24시간 스캔·제보 기준(거래가 적으면 최대 14일)', mineAll: '시세에서 전체 보기'
   },
   en: {
     title: 'Live Free Market',
@@ -1227,7 +1227,7 @@ const LIVE = {
     preview: 'Preview · sample data, not real prices',
     scan: 'Scan shops from my screen',
     empty: 'No listings yet. Share your MapleStory window in Chrome on a computer and open shops; they show up here right away.',
-    mine: 'Pick up where you left off', mineWish: 'Wishlist', mineRecent: 'Recently viewed', mineNote: 'Saved in this browser · prices from scans and reports in the last 14 days', mineAll: 'Open in the market'
+    mine: 'Pick up where you left off', mineWish: 'Wishlist', mineRecent: 'Recently viewed', mineNote: 'Saved in this browser · prices from scans and reports in the last 24 hours (up to 14 days for rarely traded items)', mineAll: 'Open in the market'
   }
 };
 
@@ -1669,7 +1669,7 @@ const PR = {
     moreItems: '{n}개 더 보기',
     hubLabel: 'GMS Hub 유저 시세',
     hubNone: '아직 제보가 없어요. 첫 시세를 올려 주세요.',
-    hubSummary: '최근 14일 {n}건 · {low}~{high}',
+    hubSummary: '최근 {n}건 · {low}~{high}',
     report: '시세 올리기',
     pricePh: '가격 (예: 58만, 580k)',
     submit: '올리기',
@@ -1693,7 +1693,7 @@ const PR = {
     howHeading: '이렇게 쓰면 돼요',
     how: [
       ...(config.priceReports
-        ? ['거래했거나 상점에서 본 가격이 있으면 "시세 올리기"로 10초 만에 올려 주세요. 가입은 필요 없어요. 올린 가격은 최근 14일 중앙값으로 묶여서 모두에게 보여요.']
+        ? ['거래했거나 상점에서 본 가격이 있으면 "시세 올리기"로 10초 만에 올려 주세요. 가입은 필요 없어요. 올린 가격은 최근 24시간 중앙값(거래가 적으면 최대 14일)으로 묶여서 모두에게 보여요.']
         : []),
       '아이템 이름을 한글로 입력하세요. 띄어쓰기는 달라도 찾아요. "주황포션"도 "주황 포션"으로 찾아요.',
       '주문서는 "장갑 공격력", "모자 민첩", "장공"처럼 부위와 능력치로 찾으면 돼요. 게임 안 이름에 영어가 섞여 있어도 한글 능력치로 찾을 수 있게 맞춰 뒀어요.',
@@ -1731,7 +1731,7 @@ const PR = {
     moreItems: '{n} more',
     hubLabel: 'GMS Hub player prices',
     hubNone: 'No reports yet. Be the first to add a price.',
-    hubSummary: '{n} reports in 14 days · {low}–{high}',
+    hubSummary: '{n} recent records · {low}–{high}',
     report: 'Add a price',
     pricePh: 'Price (e.g. 580k, 1.2m)',
     submit: 'Submit',
@@ -1747,7 +1747,7 @@ const PR = {
     howHeading: 'How it works',
     how: [
       ...(config.priceReports
-        ? ['Saw or paid a price? Use "Add a price" to share it in ten seconds, no sign-up. Reports are combined into a 14-day median everyone can see.']
+        ? ['Saw or paid a price? Use "Add a price" to share it in ten seconds, no sign-up. Reports are combined into a 24-hour median (up to 14 days for rarely traded items) everyone can see.']
         : []),
       'Type part of an item name. Results update as you type.',
       'Click a tracker. FreeMarketClassic opens the item page and MapleMarket opens a search for it.',
@@ -1937,7 +1937,7 @@ const SCAN = {
       edit: '이 줄 고치기', remove: '잘못 인식한 줄 지우기', removeFail: '이미 올라간 줄을 지우지 못했어요. 잠시 후 다시 지워 주세요.', edited: '수정함', pickItem: '아이템 고르기', unreadable: '읽지 못한 줄 · ✎로 직접 입력', qty: '묶음 개수', save: '저장', cancel: '취소',
       editInvalid: '아이템·채널·방을 선택하고 가격, 1~10,000의 정수 수량, 영문·숫자 판매자명을 확인해 주세요',
       colItem: '아이템', colPrice: '가격', colSeller: '판매자',
-      marketTip: '최근 14일 시세 중앙값', diffHigh: '시세보다 {p}% 비싸요', diffLow: '시세보다 {p}% 싸요', diffEven: '시세 수준', noMarket: '시세 기록 없음',
+      marketTip: '최근 24시간 시세 중앙값(거래가 적으면 최대 14일)', diffHigh: '시세보다 {p}% 비싸요', diffLow: '시세보다 {p}% 싸요', diffEven: '시세 수준', noMarket: '시세 기록 없음',
       summary: '이번 공유: 상점 {shops}곳 · 물건 {items}개 인식 · 그중 확인 필요 {check}개',
       skipped: '못 읽은 줄 {n}개는 건너뜀',
       wait: '대기 중',
@@ -1990,7 +1990,7 @@ const SCAN = {
       edit: 'Fix this line', remove: 'Remove this misread line', removeFail: 'Could not withdraw a line that was already sent. Try removing it again in a moment.', edited: 'Edited', pickItem: 'Pick the item', unreadable: 'Unreadable line · fix it with ✎', qty: 'Bundle size', save: 'Save', cancel: 'Cancel',
       editInvalid: 'Pick the item from the list, write the price like 580000 or 580k, and the seller in letters and digits',
       colItem: 'Item', colPrice: 'Price', colSeller: 'Seller',
-      marketTip: 'Median of the last 14 days', diffHigh: '{p}% above the market', diffLow: '{p}% below the market', diffEven: 'In line with the market', noMarket: 'No price record yet',
+      marketTip: 'Median of the last 24 hours (up to 14 days if rarely traded)', diffHigh: '{p}% above the market', diffLow: '{p}% below the market', diffEven: 'In line with the market', noMarket: 'No price record yet',
       summary: 'This session — shops: {shops} · items read: {items} · to check: {check}',
       skipped: 'skipped unreadable lines: {n}',
       wait: 'Waiting',
@@ -2910,8 +2910,8 @@ const IT = {
     titlePrice: '{name} 시세 {median} 메소 ({date}) · 글클메 자유시장 | GMS Hub',
     descNow: '{name} 글클메 자유시장 시세: 지금 판매 중 매물의 중앙값 {median} 메소 (판매 중 {open}건, 최저 {low}). 지금 파는 상점의 채널·방과 7일 추이도 보여 줘요.',
     nowHeadline: '판매 중 중앙값', nowSub: '판매 중 {open}건 · 최저 {low}', nowAsOf: '{date} 기준', nowAsOfLive: '방금 받은 실시간 시세예요', openN: '판매 {n}건', lastN: '최근 시세', lastHeadline: '최근 시세', lastSub: '지금은 판매 중인 매물이 없어요. 마지막으로 본 매물 기준이에요.',
-    desc: '{name} 글클메 자유시장 시세: {basis} 중앙값 {median} 메소 (최근 14일 매물 {n}건, {low}~{high}). 유저가 스캔한 상점 매물 기준이고, 7일 추이와 지금 파는 채널·방도 보여 줘요.',
-    descNone: '{name} 글로벌 메이플 클래식 월드 아이템 정보 ({info}). 최근 14일 스캔 시세가 아직 없어요. 상점을 스캔하면 시세가 바로 쌓여요.',
+    desc: '{name} 글클메 자유시장 시세: {basis} 중앙값 {median} 메소 (최근 매물 {n}건, {low}~{high}). 유저가 스캔한 상점 매물 기준이고, 7일 추이와 지금 파는 채널·방도 보여 줘요.',
+    descNone: '{name} 글로벌 메이플 클래식 월드 아이템 정보 ({info}). 최근 스캔 시세가 아직 없어요. 상점을 스캔하면 시세가 바로 쌓여요.',
     h1: '{name} 시세',
     lead: '글로벌 메이플스토리 클래식 월드 자유시장에서 유저들이 직접 스캔한 상점 매물로 계산한 시세예요.',
     basis: { sold: '거래가', selling: '판매가', buying: '구매가' },
@@ -2961,7 +2961,7 @@ const IT = {
     titlePrice: '{name} Price: {median} mesos ({date}) – MapleStory Classic World | GMS Hub',
     descNow: '{name} price in MapleStory Classic World: median of the listings for sale now {median} mesos ({open} for sale, lowest {low}). With the shops selling it now, their channels and rooms, and a 7-day trend.',
     nowHeadline: 'Median of listings for sale', nowSub: '{open} for sale · lowest {low}', nowAsOf: 'As of {date}', nowAsOfLive: 'Live price, just loaded', openN: '{n} for sale', lastN: 'recent price', lastHeadline: 'Recent price', lastSub: 'Nothing for sale right now; this is from the last listings seen.',
-    desc: '{name} price in MapleStory Classic World: {basis} median {median} mesos ({n} listings in 14 days, {low}–{high}). From Free Market shops players scanned, with a 7-day trend and where it is for sale now.',
+    desc: '{name} price in MapleStory Classic World: {basis} median {median} mesos ({n} recent listings, {low}–{high}). From Free Market shops players scanned, with a 7-day trend and where it is for sale now.',
     descNone: '{name} in MapleStory Classic World ({info}). No scanned price in the last 14 days yet; scanning a shop that sells it adds one right away.',
     h1: '{name} Price',
     lead: 'Prices from Free Market shops players scanned in Global MapleStory Classic World.',
