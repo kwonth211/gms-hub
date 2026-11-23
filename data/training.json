@@ -1647,8 +1647,8 @@
      "basis": "model",
      "src": "maplemath-class-spots",
      "note": {
-      "ko": "슬리피 던전 5, NiaMeowDB 모델 추정",
-      "en": "Sleepy Dungeon V, NiaMeowDB model estimate"
+      "ko": "슬리피 던전 5, 모델 추정",
+      "en": "Sleepy Dungeon V, model estimate"
      }
     }
    ]
@@ -1828,8 +1828,8 @@
      "basis": "model",
      "src": "maplemath-class-spots",
      "note": {
-      "ko": "NiaMeowDB 모델 추정, 게임 내 1위 메소 맵",
-      "en": "NiaMeowDB model estimate, top money map"
+      "ko": "모델 추정, 게임 내 1위 메소 맵",
+      "en": "Model estimate, top money map"
      }
     }
    ]

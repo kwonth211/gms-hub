@@ -143,7 +143,7 @@ const T = {
     colMap: '맵',
     colMonsters: '몬스터 (레벨)',
     colRecs: '출처별 추천 레벨',
-    colExp: '경험치/시간 (NiaMeowDB)',
+    colExp: '경험치/시간',
     caution: '주의',
     trSourcesHeading: '출처',
     trBandNav: "레벨별 사냥 동선",
@@ -370,7 +370,7 @@ const T = {
     colMap: 'Map',
     colMonsters: 'Monsters (level)',
     colRecs: 'Recommended levels by source',
-    colExp: 'EXP/hr (NiaMeowDB)',
+    colExp: 'EXP/hr',
     caution: 'Caution',
     trSourcesHeading: 'Sources',
     trBandNav: "Routes by level",
@@ -1530,7 +1530,7 @@ function ratesTable(lang) {
     const who = [x.level && `<div class="tr-rp" translate="no">Lv ${esc(x.level)}</div>`, x.job && `<div class="tr-rp">${esc(jobNames[lang][x.job])}</div>`, `<div class="tr-rp">${party[lang][x.party]}</div>`].filter(Boolean).join('');
     return `<tr class="tr-rate-${esc(x.basis)}"><td translate="no">${r.level.min}–${r.level.max}</td><td><a href="#route-${esc(r.id)}">${esc(r.title[lang])}</a></td><td translate="no">${x.exp != null ? rateNum(x.exp, lang) : '—'}</td><td translate="no">${x.mesos != null ? rateNum(x.mesos, lang) : '—'}</td><td><div class="tr-rate-who">${who}<div class="tr-rp tr-rp-basis">${basis[lang][x.basis]}</div></div>${x.note ? `<small>${esc(lang === 'ko' ? x.note.ko : x.note.en)}</small>` : ''}</td></tr>`;
   }).join('')}</tbody></table></div>
-<p class="muted small">${tr('실측 = 영상에서 10분 이상 직접 잰 값 · 계산 = 젠 수와 처치 속도로 계산한 값 · 모델 추정 = NiaMeowDB 상한 모델(실제는 더 낮음) · 커뮤니티 = 게시판 후기.', 'Measured = timed in the video for 10+ minutes · calculated = from spawn counts and kill speed · model = NiaMeowDB ceiling (real rates are lower) · community = forum posts.')}</p></section>`;
+<p class="muted small">${tr('실측 = 영상에서 10분 이상 직접 잰 값 · 계산 = 젠 수와 처치 속도로 계산한 값 · 모델 추정 = 최대로 잡았을 때의 계산값(실제는 더 낮음) · 커뮤니티 = 게시판 후기.', 'Measured = timed in the video for 10+ minutes · calculated = from spawn counts and kill speed · model = a best-case calculation (real rates are lower) · community = forum posts.')}</p></section>`;
 }
 function trainingBody(lang) {
   const t=T[lang]; const tr=(ko,en)=>lang==='ko'?ko:en;
@@ -2496,7 +2496,7 @@ function marketGuide(lang) {
   const tr = (ko,en) => lang === 'ko' ? ko : en;
   return `<section class="wrap prose guide"><details><summary>${tr('시세와 매물은 어떻게 집계하나요?','How are listings and prices calculated?')}</summary>
 <h3>${tr('아이템 시세와 전체 매물','Item prices and all listings')}</h3><p>${tr('아이템 시세는 최근 7일간 확인한 상점 매물을 아이템별로 모아 한 줄씩 보여 줘요. 아이템을 누르면 지금 파는 곳이 열려요. 판매자·채널·방으로 찾거나 이전 기록을 보려면 전체 매물을 쓰세요.','Item prices groups the shop listings seen in the last 7 days into one row per item; open an item to see where it is for sale now. Use All listings to search by seller, channel or room, or to see older records.')}</p>
-<h3>${tr('가격과 매물 수의 기준','Prices and listing counts')}</h3><p>${tr('목록의 중앙값과 최저가는 최근 판매 중 매물 기준이에요. 높은 가격도 실제 매물 목록에서 숨기지 않아요. ‘판매 완료’는 팔린 것으로 확인된 매물에 붙는 표시예요. 실제로 돈이 오갔는지까지는 알 수 없어요. 가격 제보를 판매 상점 수나 재고에 합산하지 않아요.','Directory medians and lowest asks use recent asking listings. High asking prices remain visible. Sold marks a listing confirmed as sold; whether money changed hands is not known. Anonymous reports are not counted as shop inventory.')}</p>
+<h3>${tr('가격과 매물 수의 기준','Prices and listing counts')}</h3><p>${tr('목록의 중앙값과 최저가는 최근 판매 중 매물 기준이에요. 높은 가격도 실제 매물 목록에서 숨기지 않아요. ‘판매 완료’는 팔린 것으로 확인된 매물에 붙는 표시예요. 가격 제보를 판매 상점 수나 재고에 합산하지 않아요.','Directory medians and lowest asks use recent asking listings. High asking prices remain visible. Sold marks a listing confirmed as sold. Anonymous reports are not counted as shop inventory.')}</p>
 <h3>${tr('가격 추이와 매물대','Price trends and depth')}</h3><p>${tr('가격 추이는 그동안 모은 매물 기록으로 그려요. 같은 매물을 다시 확인한 건 새 거래로 세지 않아요. 매물대는 지금 판매 중인 매물을 한 번씩만 세고, 묶음 수량이나 여러 번 확인한 횟수로 부풀리지 않아요. 기록이 없는 구간은 비워 둬요. 목록은 5분마다 확인하며 선택한 아이템과 필터는 유지해요.','Trends use retained observations. Seeing the same listing again is not a new trade. Depth counts each current asking listing once, rather than summing bundle quantities or repeat observations. Missing intervals remain empty. The directory checks for updates every 5 minutes while preserving your selection and filters.')}</p></details></section>`;
 }
 
