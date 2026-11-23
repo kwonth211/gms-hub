@@ -1050,6 +1050,7 @@ input.dm-filled { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset
   .mb-listings-table td,.mb-detail .mb-listings-table td { display:block; padding:0; border:0; }
   .mb-listings-table .mb-cell-item,.mb-listings-table .mb-cell-seen { grid-column:1 / -1; }
   .mb-listings-table .mb-cell-price { font-size:1rem; }
+  .mb-listings-table .mb-cell-ref { display:none !important; }
   .mb-listings-table .mb-cell-qty { color:var(--muted); text-align:right; }
   .mb-mobile-label { display:inline; font-size:.72rem; }
   .mb-listings-table .mb-cell-location { white-space:nowrap; font-size:.74rem; }
@@ -3084,7 +3085,10 @@ body.exp-running .exp-stop { display: inline-flex; }
 
 .mb-listings-table .mb-opts { display: flex; margin-top: 4px; }
 .mb-listings-table .mb-cell-price .mb-opts { justify-content: flex-end; }
-.mb-listings-table .mb-cell-price .mb-ref { display:inline-block; margin:0 0 0 8px; opacity:.6; font-weight:400; white-space:nowrap; }
+.mb-listings-table .mb-cell-price .mb-ref { display:none; margin:0 0 0 8px; font-weight:400; white-space:nowrap; }
+.mb-listings-table .mb-cell-ref { color:var(--muted); white-space:nowrap; }
+.mb-listings-table tr.is-gone .mb-cell-ref { text-decoration:none; }
+@media(max-width:600px){ .mb-listings-table .mb-cell-price .mb-ref { display:inline-block; } }
 .profile-label .profile-opt { flex-basis: 100%; color: var(--accent); font-weight: 700; }
 .recent-list .name .opt { margin-left: 6px; flex: none; color: var(--accent); font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
 .recent-list .name .opt.mid { color: var(--text-2); }
