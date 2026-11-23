@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "search-typos-scan-fullscreen",
+   "version": "0.7.67",
+   "level": "patch",
+   "date": "2026-11-23",
+   "path": "/tools/market/",
+   "ko": "시세 검색 — 오타·줄임말도 찾기, 상점 스캔 전체 화면 안내",
+   "en": "Price search — typos and shorthand, full-screen help for the shop scan",
+   "desc": {
+    "ko": "아대공, 장갑공, 전신민첩처럼 줄여 쓴 주문서와 귀거리, 스테프처럼 한 글자 틀린 이름도 찾아요. 상점 스캔은 게임이 전체 화면이어도 돼요. 공유 창에서 \"전체 화면\" 탭의 모니터를 고르세요. 화면이 검게 들어오면 바로 알려 줘요.",
+    "en": "Scroll shorthand and names with one wrong letter (shild, iceicle) now find the item. The shop scan works with a full-screen game: pick your monitor under \"Entire screen\" in the share dialog, and a black picture is called out at once."
+   }
+  },
+  {
    "id": "listing-ref-price",
    "version": "0.7.66",
    "level": "patch",

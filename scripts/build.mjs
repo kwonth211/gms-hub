@@ -1916,7 +1916,7 @@ const SCAN = {
     cardDesc: '메이플 창을 공유하면 열어 본 상점의 시세가 자동으로 올라가요. PC 크롬 전용.',
     lead: '메이플 창을 크롬으로 공유하고 자유시장을 돌면, 열어 본 상점의 물건과 가격을 자동으로 읽어 시세에 반영해요.',
     steps: [
-      ['창 모드로 실행', '메이플을 창 모드로 켜고 언어는 영어로 두세요. 창 크기와 화면 배율은 자동으로 맞춰요. 맥에서는 크롬과 메이플 둘 다 전체 화면이 아니어야 창을 공유할 수 있어요.'],
+      ['창 모드 추천', '메이플을 창 모드로 두면 가장 정확하게 읽어요. 전체 화면도 돼요. 공유 창에서 "전체 화면" 탭의 모니터를 고르세요. 게임 언어는 영어로 두세요. 창 크기와 화면 배율은 자동으로 맞춰요. 맥에서 창을 공유하려면 크롬과 메이플 둘 다 전체 화면이 아니어야 해요.'],
       ['채널·방 선택', '아래에서 현재 채널과 자유시장 방을 선택하세요. 자동 인식도 사용할 수 있어요. 직접 선택했다면 이동할 때 바꿔 주세요.'],
       ['자유시장에서 상점 열기', '공유를 시작하고 평소처럼 상점을 열어 보세요. 열어 본 상점이 아래 목록에 바로 나와요.']
     ],
@@ -1944,6 +1944,7 @@ const SCAN = {
       shareOn: '{w}×{h} 공유 중',
       shareRetina: '{w}×{h} 공유 중 (화면 배율 {k}배 → 게임 크기로 맞춰 읽어요)',
       shopNone: '상점 창이 안 보여요. 상점을 열어 주세요',
+      shopBlack: '화면이 검게 들어와요. 게임이 전체 화면이면 공유를 다시 눌러 "전체 화면" 탭에서 모니터를 고르세요',
       ocrLoading: '화면 배율에 맞는 글자 인식 엔진을 불러오는 중이에요 (처음 한 번, 약 10MB)',
       ocrFail: '글자 인식 엔진을 불러오지 못했어요. 새로고침 후 다시 시도해 주세요',
       readFail: '이 화면을 읽다가 문제가 생겼어요. 계속 공유하면 다음 화면에서 다시 읽어요',
@@ -1969,7 +1970,7 @@ const SCAN = {
     cardDesc: 'Share your game window and the shops you open become price data. Chrome on a computer.',
     lead: 'Share your MapleStory window in Chrome and walk the Free Market; the shops you open are read automatically and added to the prices.',
     steps: [
-      ['Run in windowed mode', 'Use windowed mode with the game in English. Window size and screen scaling are handled automatically. On a Mac, neither Chrome nor MapleStory can be full screen for window sharing to work.'],
+      ['Windowed mode works best', 'Windowed mode is read most accurately. Full screen works too: pick your monitor under "Entire screen" in the share dialog. Keep the game in English. Window size and screen scaling are handled automatically. On a Mac, sharing a window needs both Chrome and MapleStory out of full screen.'],
       ['Choose channel and room', 'Select your current channel and Free Market room below, or use automatic detection. Update manual selections when you move.'],
       ['Open shops in the Free Market', 'Start sharing and open shops as usual. Each shop you open shows up in the list below.']
     ],
@@ -1997,6 +1998,7 @@ const SCAN = {
       shareOn: 'Sharing {w}×{h}',
       shareRetina: 'Sharing {w}×{h} (screen scale {k}x, read at game size)',
       shopNone: 'No shop window. Open a shop',
+      shopBlack: 'The picture is black. If the game is full screen, share again and pick your monitor under "Entire screen"',
       ocrLoading: 'Loading the text reader for your screen scale (first time only, about 10MB)',
       ocrFail: "Couldn't load the text reader. Reload and try again",
       readFail: 'Something went wrong reading this screen. Keep sharing and the next one will be read',

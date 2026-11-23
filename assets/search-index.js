@@ -16,6 +16,8 @@ const synonyms = [
   ['두손검', '양손검'], ['두손도끼', '양손도끼'], ['두손둔기', '양손둔기'], ['공겨', 'attack'],
   // Everyday names players type for gear types and common misspellings seen in failed market searches.
   ['아대', '클로'], ['공격려', 'attack'], ['방어려', 'def'], ['글로브', '장갑'], ['글러브', '장갑'], ['귀걸이', '귀고리'], ['귀골', '귀고리'], ['전갑', '전신갑옷'], ['전신갑옷', '전신갑옷'], ['너크', '너클'],
+  // Spellings from failed market searches (2026-11-23).
+  ['이어링', '귀고리'], ['상의갑옷', '상의'], ['하의갑옷', '하의'], ['스피드', 'speed'], ['weaponattack', 'attack'], ['귀거리', '귀고리'], ['귀걸', '귀고리'], ['스테프', '스태프'], ['무지게', '무지개'], ['레인보우', '무지개'], ['luck', 'luk'], ['럭키', '럭키'],
 ].sort((a, b) => b[0].length - a[0].length);
 
 // Players type scrolls as gear + stat in two or three syllables (귀힘, 창공, 폴공, 망럭, 신이속). A query made only of such a
@@ -28,9 +30,16 @@ const STAT = { 공: 'attack', 마: 'magicattack', 힘: 'str', 민: 'dex', 덱: '
 const gearKeys = Object.keys(GEAR).sort((a, b) => b.length - a.length).join('|');
 const statKeys = Object.keys(STAT).sort((a, b) => b.length - a.length).join('|');
 const pairPattern = new RegExp(`^(${gearKeys})(${statKeys})(하급|중급|고급|상급|카오스|10|60|100)?$`);
+// The whole gear word with the short stat is typed just as often ("아대공", "장갑 공", "전신민첩", "양손둔기 공").
+const FULL_GEAR = { 전신: '전신갑옷', 전갑: '전신갑옷', 아대: '클로', 투구: '모자', 귀걸이: '귀고리', 글러브: '장갑', 글로브: '장갑',
+  두손검: '양손검', 두손도끼: '양손도끼', 두손둔기: '양손둔기', ...Object.fromEntries(Object.values(GEAR).map((g) => [g, g])) };
+const STAT_WORD = { ...STAT, 공격력: 'attack', 공격: 'attack', 마력: 'magicattack', 민첩: 'dex', 덱스: 'dex', 지력: 'int', 인트: 'int', 행운: 'luk', 명중: 'accuracy', 회피: 'evasion', 점프: 'jump', 방어: 'def', 체력: 'hp' };
+const fullPattern = new RegExp(`^(${Object.keys(FULL_GEAR).sort((a, b) => b.length - a.length).join('|')})(${Object.keys(STAT_WORD).sort((a, b) => b.length - a.length).join('|')})(하급|중급|고급|상급|카오스|10|60|100)?$`);
 function expandPair(query) {
-  const m = normalize(query).match(pairPattern);
-  return m ? `${GEAR[m[1]]}${STAT[m[2]]}${m[3] ? ` ${m[3]}` : ''}` : null;
+  const flat = normalize(query), m = flat.match(pairPattern);
+  if (m) return `${GEAR[m[1]]}${STAT[m[2]]}${m[3] ? ` ${m[3]}` : ''}`;
+  const f = flat.match(fullPattern);
+  return f ? `${FULL_GEAR[f[1]]}${STAT_WORD[f[2]]}${f[3] ? ` ${f[3]}` : ''}` : null;
 }
 const aliasPattern = new RegExp(synonyms.map(([key]) => key).join('|'), 'g');
 const aliasMap = new Map(synonyms);
@@ -63,7 +72,8 @@ const KO_EN = { 타니아: ['tania'], 토끼: ['bunny', 'rabbit'], 고양이: ['
   판다: ['panda'], 여우: ['fox'], 늑대: ['wolf'], 공룡: ['dino'], 마녀: ['witch'], 해적: ['pirate'], 산타: ['santa'], 눈사람: ['snowman'],
   우산: ['umbrella'], 풍선: ['balloon'], 의자: ['chair'], 반지: ['ring'], 귀: ['ears'], 모자: ['hat'], 망토: ['cape'], 신발: ['shoes'],
   가방: ['bag'], 날개옷: ['wing'], 검은: ['black'], 검정: ['black'], 하얀: ['white'], 흰: ['white'], 빨간: ['red'], 파란: ['blue'],
-  분홍: ['pink'], 노란: ['yellow'], 초록: ['green'], 보라: ['purple'], 쿠폰: ['coupon'], 시그니처: ['signature'], 펫: ['pet'] };
+  분홍: ['pink'], 노란: ['yellow'], 초록: ['green'], 보라: ['purple'], 파자마: ['pajama'], 마스크: ['mask'], 가면: ['mask'], 악어: ['alligator', 'croco'], 칠면조: ['turkey'], 미스테리: ['myster'], 미스터리: ['myster'],
+  버켓: ['bucket'], 버킷: ['bucket'], 남자: ['mans'], 니트: ['knit'], 쿠폰: ['coupon'], 시그니처: ['signature'], 펫: ['pet'] };
 
 export function indexEntry(entry) {
   const names = (entry.names || [entry.title]).filter(Boolean);
@@ -179,7 +189,38 @@ export function koreanScrollQuery(query) {
   return `${pair || name} ${{ 100: '하급', 60: '중급', 10: '상급' }[m[2]]}`;
 }
 
+// One slipped letter ("shild", "귀거리", "아다마티움", "draon skin"): only tried when nothing else matched. Every typed word must
+// sit in the name as written or be one edit (swap, drop, add, wrong letter) away from a name word or its start. Korean is
+// compared letter by letter, so a wrong vowel counts as one slip.
+function within1(a, b) {
+  if (a === b) return true;
+  const la = a.length, lb = b.length;
+  if (Math.abs(la - lb) > 1) return false;
+  let i = 0;
+  while (i < la && i < lb && a[i] === b[i]) i += 1;
+  if (la === lb) return a.slice(i + 1) === b.slice(i + 1) || (a[i] === b[i + 1] && a[i + 1] === b[i] && a.slice(i + 2) === b.slice(i + 2));
+  return la > lb ? a.slice(i + 1) === b.slice(i) : a.slice(i) === b.slice(i + 1);
+}
+function fuzzyEntries(entries, query) {
+  const ko = /[\uac00-\ud7a3]/.test(query);
+  const key = (w) => (ko ? jamo(w) : w);
+  const words = String(query).trim().split(/\s+/u).map(normalize).filter(Boolean);
+  if (!words.length || !words.some((w) => key(w).length >= (ko ? 5 : 4))) return [];
+  const near = (q, name) => {
+    if (q.length < (ko ? 5 : 4)) return false;
+    return [q.length - 1, q.length, q.length + 1].some((n) => n > 2 && n <= name.length && within1(q, name.slice(0, n)));
+  };
+  return entries.filter((entry) => entry.wordNames.some((line, i) => {
+    const parts = line.trim().split(' ').filter(Boolean).map(key), whole = key(entry.searchNames[i]);
+    return words.every((w) => entry.searchNames[i].includes(w) || near(key(w), whole) || parts.some((part) => near(key(w), part)));
+  })).map((entry) => ({ ...entry, score: 20 }));
+}
+
 export function searchEntries(entries, query) {
+  const found = searchExact(entries, query);
+  return found.length ? found : fuzzyEntries(entries, query);
+}
+function searchExact(entries, query) {
   const base = searchCore(entries, query);
   // Nothing found for Latin letters: maybe Korean typed in English keyboard mode. Rebuild the syllables and try that.
   if (!base.length) {

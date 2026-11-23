@@ -111,3 +111,23 @@ test('half-typed Korean and English-keyboard Korean still find items', async () 
   assert.equal(compose(keysToJamo('rnlrhf')), '귀골');
   assert.equal(first('rnlrhf'), 1);
 });
+
+test('failed market searches from 11/23: whole gear word + short stat, one slipped letter, loan words', () => {
+  const first = (q) => sourceItems.find((it) => it.id === ids(q)[0]);
+  const names = (q) => results(q).map((hit) => hit.title);
+  assert.ok(first('아대공').en.startsWith('Claw Attack'));
+  assert.ok(first('장갑공').en.startsWith('Gloves Attack'));
+  assert.ok(first('전신민첩').en.startsWith('Overall Armor DEX'));
+  assert.ok(names('양손둔기 공').some((n) => n.startsWith('양손둔기')));
+  assert.ok(first('상의 갑옷 DEF').en.startsWith('Topwear DEF'));
+  for (const q of ['귀거리', '귀걸', '에메랄드 이어링']) assert.ok(names(q).some((n) => n.includes('귀고리')), q);
+  assert.ok(names('스테프').some((n) => n.includes('스태프')));
+  assert.ok(names('아다마티움').every((n) => n.includes('아다만티움')) && names('아다마티움').length > 0);
+  assert.ok(names('저주바은').includes('저주받은 인형'));
+  assert.equal(first('iceicle').en, 'Icicle');
+  assert.equal(first('draon skin').en, 'Dragon Skin');
+  assert.ok(results('파자마').length > 0 && results('마스크').length > 0);
+  // A slip is only forgiven when nothing matched as typed, and short words are never guessed.
+  assert.ok(!names('귀환').some((n) => n.includes('귀고리')));
+  assert.equal(results('zzq').length, 0);
+});

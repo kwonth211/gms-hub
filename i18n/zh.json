@@ -5302,5 +5302,9 @@
  "● Scan shops from my screen": "● 從我的畫面掃描商店",
  "● Share your MapleStory window": "● 分享你的 MapleStory 視窗",
  "✅ Alert on. Check your Discord DMs; you are also in the GMS Hub Discord now.": "✅ 提醒已开启。请查看 Discord 私信；你也已加入 GMS Hub Discord。",
- "👍 {t0}Upvote": "👍 {t0}推薦"
+ "👍 {t0}Upvote": "👍 {t0}推薦",
+ "Windowed mode is read most accurately. Full screen works too: pick your monitor under \"Entire screen\" in the share dialog. Keep the game in English. Window size and screen scaling are handled automatically. On a Mac, sharing a window needs both Chrome and MapleStory out of full screen.": "視窗模式讀取最準。全螢幕也可以：在分享視窗的「整個畫面」選擇螢幕即可。遊戲語言請設為英文。視窗大小與畫面縮放會自動處理。在 Mac 上分享視窗時，Chrome 與 MapleStory 都不能是全螢幕。",
+ "Windowed mode is read most accurately. Full screen works too: pick your monitor under &quot;Entire screen&quot; in the share dialog. Keep the game in English. Window size and screen scaling are handled automatically. On a Mac, sharing a window needs both Chrome and MapleStory out of full screen.": "視窗模式讀取最準。全螢幕也可以：在分享視窗的「整個畫面」選擇螢幕即可。遊戲語言請設為英文。視窗大小與畫面縮放會自動處理。在 Mac 上分享視窗時，Chrome 與 MapleStory 都不能是全螢幕。",
+ "The picture is black. If the game is full screen, share again and pick your monitor under \"Entire screen\"": "畫面是黑的。如果遊戲是全螢幕，請重新分享並在「整個畫面」選擇螢幕",
+ "The picture is black. If the game is full screen, share again and pick your monitor under &quot;Entire screen&quot;": "畫面是黑的。如果遊戲是全螢幕，請重新分享並在「整個畫面」選擇螢幕"
 }

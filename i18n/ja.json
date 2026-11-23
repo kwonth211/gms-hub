@@ -5302,5 +5302,9 @@
  "● Scan shops from my screen": "● 自分の画面からショップをスキャン",
  "● Share your MapleStory window": "● MapleStoryのウィンドウを共有",
  "✅ Alert on. Check your Discord DMs; you are also in the GMS Hub Discord now.": "✅ 通知オン。DiscordのDMを確認してください。GMS HubのDiscordにも参加しました。",
- "👍 {t0}Upvote": "👍 {t0}おすすめ"
+ "👍 {t0}Upvote": "👍 {t0}おすすめ",
+ "Windowed mode is read most accurately. Full screen works too: pick your monitor under \"Entire screen\" in the share dialog. Keep the game in English. Window size and screen scaling are handled automatically. On a Mac, sharing a window needs both Chrome and MapleStory out of full screen.": "ウィンドウモードが最も正確に読めます。全画面でも使えます。共有ダイアログの「画面全体」でモニターを選んでください。ゲームの言語は英語にしてください。ウィンドウサイズと表示倍率は自動で合わせます。Macでウィンドウを共有するには、ChromeもMapleStoryも全画面を解除してください。",
+ "Windowed mode is read most accurately. Full screen works too: pick your monitor under &quot;Entire screen&quot; in the share dialog. Keep the game in English. Window size and screen scaling are handled automatically. On a Mac, sharing a window needs both Chrome and MapleStory out of full screen.": "ウィンドウモードが最も正確に読めます。全画面でも使えます。共有ダイアログの「画面全体」でモニターを選んでください。ゲームの言語は英語にしてください。ウィンドウサイズと表示倍率は自動で合わせます。Macでウィンドウを共有するには、ChromeもMapleStoryも全画面を解除してください。",
+ "The picture is black. If the game is full screen, share again and pick your monitor under \"Entire screen\"": "画面が黒く映っています。ゲームが全画面の場合は、もう一度共有して「画面全体」でモニターを選んでください",
+ "The picture is black. If the game is full screen, share again and pick your monitor under &quot;Entire screen&quot;": "画面が黒く映っています。ゲームが全画面の場合は、もう一度共有して「画面全体」でモニターを選んでください"
 }

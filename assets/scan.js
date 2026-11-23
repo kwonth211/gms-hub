@@ -270,7 +270,10 @@ async function recognize(canvas) {
   let rows = findShopRows(img);
   if (!rows.length) rows = findShopRowsLoose(img);
   if (!rows.length) {
-    check('shop', 'warn', i18n.shopNone);
+    // A full-screen game shared as a window arrives as a black picture on many PCs: say so instead of "open a shop".
+    const dark = signature().reduce((n, v) => n + (v < 14 ? 1 : 0), 0) / (64 * 36) > 0.97;
+    check('shop', 'warn', dark ? i18n.shopBlack : i18n.shopNone);
+    if (dark && Date.now() - scanStartedAt > 5000) issue('black_frame', { w: img.width, h: img.height, scale: +scale.toFixed(2) });
     if (!everRows && Date.now() - scanStartedAt > 20000) issue('no_shop', { w: img.width, h: img.height, scale: +scale.toFixed(2) });
     return [];
   }
