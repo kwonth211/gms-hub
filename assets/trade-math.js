@@ -160,14 +160,14 @@ export function scrollProfit({ item, scroll, odds, values }) {
   return { cost, full, ev: known ? ev : null, partial: ev, profit: known ? ev - cost : null, win, needs, missing, breakEven };
 }
 
-// Listings of a piece whose every slot was used on one kind of scroll with k passes: `gain` per pass on `stat`, on top
-// of a clean value between baseLo and baseHi (clean pieces of one name roll a little apart).
-export function finishedPieces(list, { stat, gain, k, baseLo, baseHi }) {
+// Listings of a piece that ended like this result: k scrolls passed, `add` gained on `stat` in total (on top of a
+// clean value between baseLo and baseHi; clean pieces of one name roll a little apart), `left` upgrade slots unused.
+export function finishedPieces(list, { stat, gain, k, add = k * gain, left = 0, baseLo, baseHi }) {
   return list.filter((r) => {
     const o = r.opts;
-    if (!o || o.slots !== 0 || (o.ups || 0) !== k) return false;
+    if (!o || o.slots !== left || (o.ups || 0) !== k) return false;
     const v = Number.isInteger(o.stats?.[stat]) ? o.stats[stat] : 0;
-    return v >= baseLo + k * gain && v <= baseHi + k * gain;
+    return v >= baseLo + add && v <= baseHi + add;
   });
 }
 // The clean value range of a stat among unscrolled pieces on the market; the catalogue value when none is listed.
@@ -251,4 +251,30 @@ export function batchSpread(cases, n, { trials = 4000, seed = 7 } = {}) {
   }
   totals.sort();
   return { mean: mean1 * n, win: wins / trials, lo: totals[Math.floor(trials * 0.1)], hi: totals[Math.floor(trials * 0.9)] };
+}
+
+// A plan of scrolls for one piece, slot by slot, each its own scroll: [{ success, destroy, gain }]. Returns
+//   outcomes: [{ k, add, p }] for a surviving piece (k passes, `add` gained in total), best first,
+//   booms: [{ used, p }] destroyed on the used-th scroll,
+//   reach: [chance the piece is still there when slot i comes up] (what share of scroll i is really spent).
+export function planCases(steps) {
+  let alive = new Map([['0|0', 1]]);
+  const booms = [], reach = [];
+  steps.forEach((st, i) => {
+    const p = st.success / 100, boomOnFail = (1 - p) * ((st.destroy || 0) / 100), keep = 1 - p - boomOnFail;
+    let live = 0;
+    for (const x of alive.values()) live += x;
+    reach.push(live);
+    if (boomOnFail > 0) booms.push({ used: i + 1, p: live * boomOnFail });
+    const next = new Map();
+    const put = (key, x) => { if (x > 0) next.set(key, (next.get(key) || 0) + x); };
+    for (const [key, x] of alive) {
+      const [k, g] = key.split('|').map(Number);
+      put(key, x * keep);
+      put(`${k + 1}|${g + st.gain}`, x * p);
+    }
+    alive = next;
+  });
+  const outcomes = [...alive].map(([key, p]) => { const [k, add] = key.split('|').map(Number); return { k, add, p }; }).sort((a, b) => b.add - a.add || b.k - a.k);
+  return { outcomes, booms, reach };
 }

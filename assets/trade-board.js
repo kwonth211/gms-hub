@@ -60,48 +60,70 @@ async function choose(it, wantPrice) {
   $('tb-picked').innerHTML = `${icon(it.id, 36)}<div><b>${esc(it.name)}</b><small>${s ? tr(`지금 매물 ${nf.format(s.open || 0)}개 · 7일 동안 팔린 매물 ${nf.format(s.sold || 0)}개`, `${nf.format(s.open || 0)} on sale · ${nf.format(s.sold || 0)} sold in 7 days`) : tr('최근 7일 매물 없음', 'no listings in 7 days')}</small></div><a href="${root.dataset.market}?item=${it.id}">${tr('시세 보기', 'Market')}</a>`;
   $('tb-meter').innerHTML = ''; $('tb-meter').setAttribute('aria-busy', 'true');
   let data = { rows: [], profile: [] };
-  try { data = await getJson(`${api}/market/history?id=${it.id}`); } catch {}
+  try { [data] = await Promise.all([getJson(`${api}/market/history?id=${it.id}`), loadRefs([{ item: it.id }])]); } catch {}
   if (item !== it) return;
   $('tb-meter').removeAttribute('aria-busy');
   list = uniqueListings(data.rows); open = uniqueListings(data.profile);
   // Gear of one name mixes clean and scrolled pieces: no sold share for it, only the plain market price.
   curve = it.cat === 'Equip' ? [] : sellCurve(list);
+  // The same market price the rows of the list are measured against (/prices); the week's listings when it has none.
   const sold = list.filter((r) => r.sold);
-  ref = (sold.length >= 3 ? medianPrice(sold) : medianPrice(list)) || s?.median || null;
+  ref = refs.get(it.id) || (sold.length >= 3 ? medianPrice(sold) : medianPrice(list)) || s?.median || null;
   slide.setRef(ref);
   $('tb-ref').textContent = ref ? money(ref) : '';
   setPrice(wantPrice || ref || null);
 }
 
-// ---------- the board ----------
+// ---------- the list ----------
 const mine = (id) => Object.hasOwn(myKeys(), id);
+const nameOf = (r) => byId.get(r.item)?.name || (ko ? r.ko || r.en : r.en) || '';
+const gap = (r) => { const m = refs.get(r.item); return r.price && m ? r.price / m - 1 : null; };
+const SORT = {
+  new: (a, b) => b.id - a.id,
+  low: (a, b) => (a.price ?? Infinity) - (b.price ?? Infinity) || b.id - a.id,
+  high: (a, b) => (b.price ?? -1) - (a.price ?? -1) || b.id - a.id,
+  deal: (a, b) => (gap(a) ?? Infinity) - (gap(b) ?? Infinity) || b.id - a.id,
+  item: (a, b) => nameOf(a).localeCompare(nameOf(b)) || (a.price ?? Infinity) - (b.price ?? Infinity),
+};
 function drawBoard() {
   const box = $('tb-list');
   box.removeAttribute('aria-busy');
+  for (const [key, n] of [['all', posts.length], ['sell', posts.filter((r) => r.intent === 'sell').length], ['buy', posts.filter((r) => r.intent === 'buy').length]]) { const el = $(`tb-stat-${key}`); el.removeAttribute('aria-busy'); el.textContent = nf.format(n); }
   const q = $('tb-search').value.trim().toLowerCase().replace(/\s+/g, '');
-  const name = (r) => byId.get(r.item)?.name || (ko ? r.ko || r.en : r.en) || '';
-  const rows = posts.filter((r) => (filter === 'all' || r.intent === filter) && (!q || `${name(r)}${r.nick}`.toLowerCase().replace(/\s+/g, '').includes(q)));
-  $('tb-count').textContent = posts.length ? tr(`24시간 동안 올라온 글 ${nf.format(posts.length)}개 · 팝니다 ${nf.format(posts.filter((r) => r.intent === 'sell').length)} · 삽니다 ${nf.format(posts.filter((r) => r.intent === 'buy').length)}`, `${nf.format(posts.length)} posts in 24 hours · ${nf.format(posts.filter((r) => r.intent === 'sell').length)} selling · ${nf.format(posts.filter((r) => r.intent === 'buy').length)} buying`) : '';
+  const rows = posts.filter((r) => (filter === 'all' || r.intent === filter) && (!q || `${nameOf(r)}${r.nick}`.toLowerCase().replace(/\s+/g, '').includes(q))).sort(SORT[$('tb-sort').value] || SORT.new);
+  $('tb-count').textContent = rows.length ? tr(`${nf.format(rows.length)}줄 · 글은 24시간 동안 떠요`, `${nf.format(rows.length)} rows · posts stay for 24 hours`) : '';
   $('tb-none').hidden = !!rows.length;
-  if (!rows.length) $('tb-none').textContent = posts.length ? tr('찾는 글이 없어요. 검색어를 지우거나 다른 종류를 누르세요.', 'Nothing matches. Clear the search or pick another kind.') : tr('아직 올라온 글이 없어요. 위에서 첫 글을 올려 보세요.', 'No posts yet. Be the first with the form above.');
+  if (!rows.length) $('tb-none').textContent = posts.length ? tr('찾는 글이 없어요. 검색어를 지우거나 다른 종류를 누르세요.', 'Nothing matches. Clear the search or pick another kind.') : tr('아직 올라온 글이 없어요. 올리기를 눌러 첫 글을 올려 보세요.', 'No posts yet. Press Post and be the first.');
   box.innerHTML = rows.map((r) => {
     const m = refs.get(r.item), v = r.price && m ? versus(r.price, m) : null;
     const risk = v && (r.intent === 'sell' ? v.side === 'dear' : v.side === 'cheap');
-    return `<li class="trd-post-card ${r.intent}${mine(r.id) ? ' mine' : ''}" id="p-${r.id}"><span class="trd-post-ico">${icon(r.item, 36)}</span>
-<div class="trd-post-body"><p class="trd-post-top"><span class="trd-kind ${r.intent}">${r.intent === 'sell' ? tr('팝니다', 'Selling') : tr('삽니다', 'Buying')}</span><a class="trd-post-item" href="${root.dataset.market}?item=${r.item}">${esc(name(r))}</a>${mine(r.id) ? `<span class="trd-mine">${tr('내 글', 'mine')}</span>` : ''}</p>
-<p class="trd-post-price">${r.price ? `<b>${mesos(r.price)}</b>` : `<b>${tr('값 협의', 'Price on request')}</b>`}${v ? `<span class="trd-vs ${v.side === 'same' ? 'same' : risk ? 'risk' : 'fair'}">${v.text}</span>` : ''}</p>
-${r.text ? `<p class="trd-post-note">${esc(r.text)}</p>` : ''}
-<p class="trd-post-meta"><b translate="no">${esc(r.nick)}</b>${r.channel ? ` · CH ${r.channel}` : ''} · <time datetime="${esc(r.at.replace(' ', 'T'))}Z">${ago(r.at)}</time></p></div>
-<div class="trd-post-acts"><button type="button" class="btn ghost small-btn" data-whisper="${esc(r.nick)}">${tr('귓말', 'Whisper')}</button>${mine(r.id) ? `<button type="button" class="btn ghost small-btn" data-del="${r.id}">${tr('지우기', 'Delete')}</button>` : `<button type="button" class="trd-report" data-report="${r.id}">${tr('신고', 'Report')}</button>`}</div></li>`;
+    const short = v ? (v.side === 'same' ? tr('시세', 'at market') : `${v.diff > 0 ? '+' : '−'}${Math.abs(v.diff) >= 10 ? Math.round(Math.abs(v.diff)) : Math.round(Math.abs(v.diff) * 10) / 10}%`) : '';
+    return `<div class="trd-line-row ${r.intent}${mine(r.id) ? ' mine' : ''}" id="p-${r.id}" role="row">
+<span class="trd-c-kind" role="cell"><span class="trd-kind ${r.intent}">${r.intent === 'sell' ? tr('팝니다', 'Selling') : tr('삽니다', 'Buying')}</span></span>
+<span class="trd-c-item" role="cell">${icon(r.item, 32)}<span><a class="trd-post-item" href="${root.dataset.market}?item=${r.item}">${esc(nameOf(r))}</a>${mine(r.id) ? `<em class="trd-mine">${tr('내 글', 'mine')}</em>` : ''}${r.text ? `<small>${esc(r.text)}</small>` : ''}</span></span>
+<span class="trd-c-price" role="cell">${r.price ? `<b>${money(r.price)}</b><small>${nf.format(r.price)}</small>` : `<b class="trd-ask">${tr('값 협의', 'on request')}</b>`}</span>
+<span class="trd-c-vs" role="cell">${v ? `<span class="trd-vs ${v.side === 'same' ? 'same' : risk ? 'risk' : 'fair'}" title="${esc(`${v.text} · ${tr('시세', 'market')} ${money(m)}`)}">${short}</span>` : '<span class="trd-vs none">–</span>'}</span>
+<span class="trd-c-who" role="cell"><b translate="no">${esc(r.nick)}</b>${r.channel ? `<small>CH ${r.channel}</small>` : ''}</span>
+<span class="trd-c-when" role="cell"><time datetime="${esc(r.at.replace(' ', 'T'))}Z">${ago(r.at)}</time></span>
+<span class="trd-c-act" role="cell"><button type="button" class="btn ghost small-btn" data-whisper="${esc(r.nick)}">${tr('귓말', 'Whisper')}</button>${mine(r.id) ? `<button type="button" class="trd-report" data-del="${r.id}">${tr('지우기', 'Delete')}</button>` : `<button type="button" class="trd-report" data-report="${r.id}">${tr('신고', 'Report')}</button>`}</span></div>`;
   }).join('');
+}
+// The composer opens above the list; the page starts as the list.
+function openForm(focus = true) {
+  $('tb-form').hidden = false;
+  $('tb-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (focus) (item ? $('tb-price') : $('trd-q')).focus({ preventScroll: true });
 }
 async function loadRefs(rows) {
   const ids = [...new Set(rows.map((r) => r.item))].filter((id) => !refs.has(id)).slice(0, 60);
   if (!ids.length) return;
   try { const d = await getJson(`${api}/prices?ids=${ids.join(',')}`); for (const id of ids) refs.set(id, d[id]?.median || null); } catch {}
 }
+// A post stays on the market for 24 hours (the rule the composer states); older ones drop off the list.
+const DAY_MS = 86400000;
+const freshEnough = (r) => Date.now() - Date.parse(`${r.at.replace(' ', 'T')}Z`) < DAY_MS;
 function addPosts(rows) {
-  const fresh = rows.filter((r) => (r.intent === 'sell' || r.intent === 'buy') && r.item && !posts.some((x) => x.id === r.id));
+  const fresh = rows.filter((r) => (r.intent === 'sell' || r.intent === 'buy') && r.item && freshEnough(r) && !posts.some((x) => x.id === r.id));
   lastId = Math.max(lastId, ...rows.map((r) => r.id));
   if (!fresh.length) return false;
   posts = fresh.concat(posts).sort((a, b) => b.id - a.id).slice(0, 200);
@@ -145,6 +167,7 @@ async function submit(e) {
     $('tb-note').value = '';
     status.textContent = tr('올렸어요! 아래 목록과 실시간 확성기에 떴어요.', 'Posted! It is on the list below and on the megaphone page.');
     status.classList.add('ok');
+    $('tb-sort').value = 'new'; filter = 'all'; for (const x of $('tb-filter').querySelectorAll('button')) x.setAttribute('aria-pressed', String(x.dataset.v === 'all')); drawBoard();
     document.getElementById(`p-${out.row.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     track('trade_post', { page_type: 'trade', intent, item_id: item.id });
   } catch { fail(tr('올리지 못했어요. 잠시 뒤 다시 올리세요.', 'Could not post. Please try again.')); } finally { $('tb-send').disabled = false; }
@@ -175,10 +198,13 @@ async function boot() {
   $('tb-form').addEventListener('submit', submit);
   $('tb-list').addEventListener('click', onBoardClick);
   $('tb-search').addEventListener('input', drawBoard);
+  $('tb-sort').addEventListener('change', drawBoard);
+  for (const b of document.querySelectorAll('[data-tb-open]')) b.addEventListener('click', () => openForm());
+  $('tb-close').addEventListener('click', () => { $('tb-form').hidden = true; });
   $('tb-filter').addEventListener('click', (e) => { const b = e.target.closest('[data-v]'); if (!b) return; filter = b.dataset.v; for (const x of $('tb-filter').querySelectorAll('button')) x.setAttribute('aria-pressed', String(x === b)); drawBoard(); });
   addEventListener('gms-free-gone', (e) => { posts = posts.filter((r) => r.id !== e.detail); drawBoard(); });
   poll(); setInterval(poll, 60000);
-  setInterval(() => { for (const t of document.querySelectorAll('#tb-list time')) { const r = posts.find((x) => `p-${x.id}` === t.closest('li')?.id); if (r) t.textContent = ago(r.at); } }, 60000);
+  setInterval(() => { if (posts.some((r) => !freshEnough(r))) { posts = posts.filter(freshEnough); drawBoard(); } for (const t of document.querySelectorAll('#tb-list time')) { const r = posts.find((x) => `p-${x.id}` === t.closest('.trd-line-row')?.id); if (r) t.textContent = ago(r.at); } }, 60000);
   let rows, catalog;
   try { [rows, catalog] = await Promise.all([getJson(root.dataset.items), getJson(`${api}/market/catalog`).catch(() => ({ items: [] }))]); } catch { return; }
   summary = new Map(catalog.items.map((r) => [r.item, r]));
@@ -189,6 +215,7 @@ async function boot() {
   drawBoard();
   const p = new URLSearchParams(location.search), first = byId.get(Number(p.get('item')));
   if (p.get('kind') === 'buy') setIntent('buy');
-  if (first) { $('trd-q').value = first.name; choose(first, Number(p.get('price')) > 0 ? Number(p.get('price')) : undefined); }
+  if (first) { $('trd-q').value = first.name; $('tb-form').hidden = false; choose(first, Number(p.get('price')) > 0 ? Number(p.get('price')) : undefined); }
+  else if (location.hash === '#post' || p.has('kind')) openForm(false);
 }
 boot();

@@ -61,12 +61,11 @@ function drawRank() {
   if (!open.length) { box.innerHTML = `<p class="trd-big-line">${tr('지금 팔고 있는 매물이 없어요', 'Nothing on sale right now')}</p><p>${list.some((r) => r.sold) ? tr('올리면 내 매물이 하나뿐이에요. 값은 최근에 팔린 값을 보고 정하세요.', 'Yours would be the only one. Price it from what sold recently.') : tr('올리면 내 매물이 하나뿐이에요.', 'Yours would be the only one.')}</p>`; return; }
   const cheap = [...open].sort((a, b) => a.price - b.price);
   if (!price) { box.innerHTML = `<p class="trd-big-line">${tr(`지금 매물 ${nf.format(open.length)}개`, `${nf.format(open.length)} on sale now`)}</p>`; return; }
-  const r = rankAmong(open, price), pos = Math.min(100, (r.cheaper / Math.max(1, r.total)) * 100);
+  const r = rankAmong(open, price);
   const top = cheap.slice(0, 3).map((x) => `<li><b>${money(x.price)}</b><span>${esc(x.seller || '')}</span></li>`).join('');
   box.innerHTML = `<p class="trd-big-line">${r.cheaper === 0 ? tr('지금 제일 싼 값이에요', 'The cheapest on sale') : tr(`${nf.format(r.total + 1)}개 중 ${nf.format(r.place)}번째로 싸요`, `${nf.format(r.place)}${ord(r.place)} cheapest of ${nf.format(r.total + 1)}`)}</p>
-<div class="trd-line" role="img" aria-label="${esc(tr(`나보다 싼 매물 ${r.cheaper}개, 비싼 매물 ${r.total - r.cheaper - r.same}개`, `${r.cheaper} cheaper, ${r.total - r.cheaper - r.same} dearer`))}"><span class="trd-line-fill" style="width:${pos}%"></span><span class="trd-line-me" style="left:${pos}%"></span></div>
-<p class="trd-line-ends"><span>${tr('싼 쪽', 'cheap')} ${money(cheap[0].price)}</span><span>${money(cheap[cheap.length - 1].price)} ${tr('비싼 쪽', 'dear')}</span></p>
 <p>${r.cheaper ? tr(`나보다 싼 매물이 <strong>${nf.format(r.cheaper)}개</strong> 있어요.`, `<strong>${nf.format(r.cheaper)}</strong> listings are cheaper than yours.`) : tr('나보다 싼 매물이 없어요.', 'No listing is cheaper than yours.')}${r.same ? tr(` 같은 값은 ${nf.format(r.same)}개예요.`, ` ${nf.format(r.same)} ask the same.`) : ''}</p>
+<p class="muted small">${tr(`지금 매물은 ${money(cheap[0].price)}부터 ${money(cheap[cheap.length - 1].price)}까지 있어요.`, `Listings now run from ${money(cheap[0].price)} to ${money(cheap[cheap.length - 1].price)}.`)}</p>
 <h3>${tr('지금 제일 싼 매물', 'Cheapest right now')}</h3><ol class="trd-cheap">${top}</ol>`;
 }
 const ord = (n) => (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');

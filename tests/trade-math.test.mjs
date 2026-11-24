@@ -193,3 +193,32 @@ test('batchSpread: exact for one piece, steady for a few, bell curve for many', 
   assert.ok(batchSpread(bad, 100).win < batchSpread(bad, 10).win + 0.05);
   assert.ok(batchSpread(bad, 500).win < 0.05);
 });
+
+test('planCases: a mixed plan slot by slot; a plain plan matches scrollOdds', async () => {
+  const { planCases, finishedPieces: fin } = await import('../assets/trade-math.js');
+  const plain = planCases(Array.from({ length: 5 }, () => ({ success: 60, destroy: 0, gain: 2 })));
+  assert.deepEqual(plain.outcomes.map((o) => [o.k, o.add]), [[5, 10], [4, 8], [3, 6], [2, 4], [1, 2], [0, 0]]);
+  const odds = scrollOdds(5, 60).passes;
+  for (const o of plain.outcomes) assert.ok(Math.abs(o.p - odds[o.k]) < 1e-12);
+  assert.deepEqual(plain.booms, []);
+  assert.deepEqual(plain.reach, [1, 1, 1, 1, 1]);
+  // 60% (+2) then 10% (+3): four endings.
+  const mix = planCases([{ success: 60, destroy: 0, gain: 2 }, { success: 10, destroy: 0, gain: 3 }]);
+  const by = Object.fromEntries(mix.outcomes.map((o) => [`${o.k}|${o.add}`, o.p]));
+  assert.ok(Math.abs(by['2|5'] - 0.06) < 1e-12 && Math.abs(by['1|2'] - 0.54) < 1e-12 && Math.abs(by['1|3'] - 0.04) < 1e-12 && Math.abs(by['0|0'] - 0.36) < 1e-12);
+  assert.equal(mix.outcomes[0].add, 5);
+  // Two routes to the same ending are one ending: +2 then +2 fails, or fails then +2.
+  const same = planCases([{ success: 50, destroy: 0, gain: 2 }, { success: 50, destroy: 0, gain: 2 }]);
+  assert.deepEqual(same.outcomes.map((o) => [o.k, o.add, o.p]), [[2, 4, 0.25], [1, 2, 0.5], [0, 0, 0.25]]);
+  // Chaos first: the second scroll is only spent on pieces that survived.
+  const chaos = planCases([{ success: 10, destroy: 50, gain: 4 }, { success: 60, destroy: 0, gain: 2 }]);
+  assert.ok(Math.abs(chaos.booms[0].p - 0.45) < 1e-12 && chaos.booms[0].used === 1);
+  assert.ok(Math.abs(chaos.reach[1] - 0.55) < 1e-12);
+  assert.ok(Math.abs(chaos.outcomes.reduce((s, o) => s + o.p, 0) + chaos.booms.reduce((s, b) => s + b.p, 0) - 1) < 1e-12);
+  assert.deepEqual(planCases([]), { outcomes: [{ k: 0, add: 0, p: 1 }], booms: [], reach: [] });
+  // Pieces with slots left over are another good: two slots used of five.
+  const piece = (pad, slots, ups, price) => row(price, 0, { opts: { stats: { PAD: pad }, slots, ups } });
+  const list = [piece(4, 3, 2, 100), piece(4, 0, 2, 200), piece(5, 3, 2, 300)];
+  assert.equal(fin(list, { stat: 'PAD', k: 2, add: 4, left: 3, baseLo: 0, baseHi: 0 }).length, 1);
+  assert.equal(fin(list, { stat: 'PAD', gain: 2, k: 2, baseLo: 0, baseHi: 0 }).length, 1);
+});
