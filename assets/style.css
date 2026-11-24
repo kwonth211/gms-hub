@@ -4262,14 +4262,14 @@ dialog.info-note .info-note-actions { text-align: right; margin: 6px 0 0; }
 /* The piece's upgrade slots: a tap on a scroll fills the next one, a tap on a filled slot empties it. */
 .trd-slots-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
 .trd-slots { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
-.trd-slot { display: grid; justify-items: center; align-content: center; gap: 0; width: 64px; height: 72px; padding: 4px; border: 2px dashed var(--line-strong); border-radius: 12px; background: var(--panel-2); color: var(--muted); font: inherit; }
+.trd-slot { display: grid; justify-items: center; align-content: center; gap: 0; width: 76px; height: 76px; padding: 4px; border: 2px dashed var(--line-strong); border-radius: 12px; background: var(--panel-2); color: var(--muted); font: inherit; }
 .trd-slot i { font-style: normal; font-weight: 800; font-size: 1.1rem; opacity: 0.6; }
 button.trd-slot { cursor: var(--cur-hand, pointer); }
 .trd-slot.on { border-style: solid; border-color: var(--accent-fill); background: var(--panel); color: var(--text); box-shadow: 0 var(--edge) 0 var(--accent-edge); }
 .trd-slot.on:hover { border-color: var(--danger); box-shadow: 0 var(--edge) 0 color-mix(in srgb, var(--danger) 55%, var(--line)); }
 .trd-slot img { image-rendering: pixelated; object-fit: contain; }
 .trd-slot b { font-size: 0.8rem; line-height: 1.1; }
-.trd-slot em { font-style: normal; font-size: 0.72rem; font-weight: 700; color: var(--ok); line-height: 1.1; }
+.trd-slot em { font-style: normal; font-size: 0.72rem; font-weight: 700; color: var(--ok); line-height: 1.1; white-space: nowrap; }
 .trd-slot.chaos b { color: var(--danger); }
 .trd-slots-acts { display: flex; flex-wrap: wrap; gap: 8px; }
 .trd-slots-acts .btn[disabled] { opacity: 0.45; cursor: default; }
@@ -4313,6 +4313,7 @@ button.trd-slot:focus-visible { outline: 2px solid var(--focus); outline-offset:
 .trd-eqn .gain { color: var(--ok); }
 .trd-eqn .loss { color: var(--danger); }
 .trd-outcomes .trd-row-head span:last-child { text-align: right; }
+.trd-table .trd-rare { margin: 4px 0 0; }
 .trd-val em { font-style: normal; font-size: 0.72rem; font-weight: 800; color: var(--muted); }
 .trd-val input.own { border-color: var(--accent-fill); box-shadow: inset 0 0 0 1px var(--accent-fill); }
 .trd-diff { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
@@ -4500,7 +4501,8 @@ button.trd-slot:focus-visible { outline: 2px solid var(--focus); outline-offset:
   .trd-bar-track { grid-column: 1 / -1; grid-row: 2; }
   .trd-bar-n { grid-column: 1 / -1; grid-row: 3; text-align: left; }
   .trd-scroll-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .trd-slot { width: 54px; height: 66px; }
+  .trd-slot { width: 62px; height: 70px; }
+  .trd-slot em { font-size: 0.66rem; }
   .trd-slots { gap: 6px; }
   .trd-scroll-stat { grid-column: 1 / -1; }
   .trd-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 12px; }

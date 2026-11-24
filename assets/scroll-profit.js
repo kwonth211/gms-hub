@@ -45,7 +45,7 @@ function drawPlan() {
   $('sp-slots').innerHTML = Array.from({ length: item.slots }, (_, i) => {
     const s = plan[i];
     return s
-      ? `<li><button type="button" class="trd-slot on${s.destroy ? ' chaos' : ''}" data-slot="${i}" title="${esc(tr(`${s.full} 빼기`, `Remove ${s.full}`))}">${icon(s.id, 26)}<b>${tier(s)}</b><em>+${s.inc[stat]}</em></button></li>`
+      ? `<li><button type="button" class="trd-slot on${s.destroy ? ' chaos' : ''}" data-slot="${i}" title="${esc(tr(`${s.full} 빼기`, `Remove ${s.full}`))}">${icon(s.id, 26)}<b>${tier(s)}</b><em>${esc(STAT[stat] || stat)} +${s.inc[stat]}</em></button></li>`
       : `<li><span class="trd-slot" aria-label="${esc(tr(`${i + 1}번 칸 비어 있음`, `Slot ${i + 1} empty`))}"><i>${i + 1}</i></span></li>`;
   }).join('');
   const full = plan.length >= item.slots;
@@ -62,7 +62,7 @@ function drawPlan() {
   const order = [...byStat.keys()].sort((a, b) => STAT_ORDER.indexOf(a) - STAT_ORDER.indexOf(b));
   box.innerHTML = order.map((k) => `<div class="trd-scroll-row${stat && stat !== k ? ' off' : ''}"><span class="trd-scroll-stat">${esc(STAT[k] || k)}</span>${byStat.get(k).sort((a, b) => b.success - a.success || a.destroy - b.destroy).map((s) => {
     const p = marketScroll(s), n = plan.filter((x) => x === s).length;
-    return `<button type="button" class="trd-scroll${s.destroy ? ' chaos' : ''}${n ? ' on' : ''}" data-scroll="${s.id}" title="${esc(s.full)}"${(stat && stat !== k) || full ? ' disabled' : ''}>${icon(s.id, 26)}<span><b>${tier(s)}</b><em>+${s.inc[k]}</em></span><small>${p ? money(p) : tr('시세 없음', 'no price')}</small>${n ? `<i class="trd-scroll-n">×${n}</i>` : ''}</button>`;
+    return `<button type="button" class="trd-scroll${s.destroy ? ' chaos' : ''}${n ? ' on' : ''}" data-scroll="${s.id}" title="${esc(s.full)}"${(stat && stat !== k) || full ? ' disabled' : ''}>${icon(s.id, 26)}<span><b>${tier(s)}</b><em>${esc(STAT[k] || k)} +${s.inc[k]}</em></span><small>${p ? money(p) : tr('시세 없음', 'no price')}</small>${n ? `<i class="trd-scroll-n">×${n}</i>` : ''}</button>`;
   }).join('')}</div>`).join('');
   $('sp-slots-note').textContent = full ? tr('칸을 다 채웠어요. 바꾸려면 채운 칸을 눌러 빼세요.', 'Every slot is filled. Tap a filled slot to change it.')
     : stat ? tr(`${STAT[stat] || stat} 주문서만 섞을 수 있어요. 다른 능력치로 바꾸려면 다 비우기를 누르세요.`, `Only ${STAT[stat] || stat} scrolls mix in. Press Clear to switch to another stat.`)
@@ -92,12 +92,25 @@ function draw() {
   // left whatever their number of passes (a buyer pays for the stat); else the price of the nearest lower result that
   // has one, a floor ("worth at least this"); else 0. So there is always an answer, and each row says where its price
   // came from.
-  const anyPasses = (o) => listings.filter((r) => r.opts && r.opts.slots === left && (r.opts.ups || 0) > 0 && (() => { const v = Number.isInteger(r.opts.stats?.[stat]) ? r.opts.stats[stat] : 0; return v >= cr.lo + o.add && v <= cr.hi + o.add; })());
+  const sameStat = (o, slots) => listings.filter((r) => r.opts && r.opts.slots === slots && (r.opts.ups || 0) > 0 && (() => { const v = Number.isInteger(r.opts.stats?.[stat]) ? r.opts.stats[stat] : 0; return v >= cr.lo + o.add && v <= cr.hi + o.add; })());
+  const anyPasses = (o) => sameStat(o, left);
   const found = new Map();
   for (const o of outcomes) {
     const exact = fairPrice(finishedPieces(listings, { stat, k: o.k, add: o.add, left, baseLo: cr.lo, baseHi: cr.hi }));
     const loose = exact || (o.k > 0 ? fairPrice(anyPasses(o)) : null);
-    if (loose) found.set(keyOf(o), { ...loose, how: exact ? 'exact' : 'stat' });
+    if (loose) { found.set(keyOf(o), { ...loose, how: exact ? 'exact' : 'stat' }); continue; }
+    // No piece with this stat and exactly this many slots left is listed. Slots left move the price a lot (a 7 LUK robe
+    // with 8 slots left sells for fifty times one with none), so look at the nearest listed pieces on both sides:
+    // between two of them, a point on the line between their prices; with only a lesser one (fewer slots left), its
+    // price, which is a floor.
+    if (o.k > 0) {
+      const at = (l) => fairPrice(sameStat(o, l));
+      let lo = null, hi = null;
+      for (let l = left - 1; l >= 0 && !lo; l--) { const f = at(l); if (f) lo = { ...f, slots: l }; }
+      for (let l = left + 1; l <= item.slots && !hi; l++) { const f = at(l); if (f) hi = { ...f, slots: l }; }
+      if (lo && hi) found.set(keyOf(o), { price: Math.round(lo.price + ((hi.price - lo.price) * (left - lo.slots)) / (hi.slots - lo.slots)), how: 'between', lo: lo.slots, hi: hi.slots });
+      else if (lo) found.set(keyOf(o), { ...lo, how: 'slots' });
+    }
   }
   for (const o of outcomes) {
     if (found.has(keyOf(o))) continue;
@@ -119,7 +132,7 @@ function draw() {
   // A piece on which every scroll failed has no buyers: 0 unless one is listed or the visitor says otherwise.
   const valueOf = (o) => typed.values[keyOf(o)] ?? found.get(keyOf(o)).price;
   const live1 = outcomes.filter((o) => o.p > 1e-12);
-  const floors = live1.filter((o) => typed.values[keyOf(o)] == null && found.get(keyOf(o)).how === 'floor').length;
+  const floors = live1.filter((o) => typed.values[keyOf(o)] == null && ['floor', 'slots', 'between'].includes(found.get(keyOf(o)).how)).length;
   const missing = live1.filter((o) => valueOf(o) == null && o.p > 1e-9);
   // Scrolls really spent per piece: a destroyed piece uses no more.
   const usedOf = (s) => plan.reduce((n, x, i) => n + (x === s ? reach[i] : 0), 0);
@@ -158,7 +171,7 @@ function draw() {
 <div><dt>${tr('운이 나쁘면', 'With bad luck')}</dt><dd class="${spread.lo >= 0 ? 'gain' : 'loss'}">${signed(spread.lo)}</dd></div>
 <div><dt>${tr('운이 좋으면', 'With good luck')}</dt><dd class="${spread.hi >= 0 ? 'gain' : 'loss'}">${signed(spread.hi)}</dd></div>
 <div><dt>${tr('본전 넘기는 결과', 'Result that pays one piece back')}</dt><dd>${needs ? tr(`${label(needs)}부터`, `${label(needs)} and up`) : tr('없어요', 'None')}</dd></div></dl>
-${floors ? `<p class="muted small">${tr(`매물이 없는 결과 ${floors}개는 바로 아래 결과의 값으로 쳤어요. 실제로는 더 받을 수 있어요. 아래 표에서 값을 고치세요.`, `${floors} results with no listing are priced as the next result down; they are worth more. Edit them in the table below.`)}</p>` : ''}
+${floors ? `<p class="muted small">${tr(`딱 맞는 매물이 없는 결과 ${floors}개는 비슷한 매물의 값으로 어림했어요. 위 표에서 내가 받을 값으로 고치세요.`, `${floors} results with no exact listing are priced from similar pieces. Edit them in the table above.`)}</p>` : ''}
 <p class="trd-sum-tip">${!needs ? tr('다 붙어도 한 개에 쓴 돈이 안 나와요. 주문서는 팔고 완성품을 사세요.', 'Even every pass does not pay one piece back. Sell the scrolls and buy a finished piece.') : gain ? tr('지금 시세면 많이 할수록 남아요. 운이 나쁠 때의 숫자를 버틸 수 있는 만큼만 하세요.', 'At today\'s prices more pieces leave more. Do as many as the bad-luck number lets you afford.') : tr('지금 시세면 많이 할수록 잃어요. 주문서 값이 내리거나 완성품 값이 오를 때 하세요.', 'At today\'s prices more pieces lose more. Wait for cheaper scrolls or dearer finished pieces.')}</p>`;
   }
 
@@ -177,19 +190,21 @@ ${kinds.map((s) => { const n = plan.filter((x) => x === s).length; return cost(s
   $('sp-reset').hidden = typed.item == null && !Object.keys(typed.scrolls).length && !Object.keys(typed.values).length;
 
   // ---- what comes out ----
-  $('sp-table-note').textContent = tr('장비 한 개를 작 했을 때 나올 수 있는 결과예요. 줄마다 팔 값 − 쓰는 돈 = 남는 돈이에요. 팔 값은 시세에서 가져왔고 직접 고칠 수 있어요.', 'What one piece can end as. Every row reads sale price − cost = left. Sale prices come from the market and can be edited.');
+  $('sp-table-note').textContent = tr(`장비 한 개에 주문서 ${plan.length}장을 다 발랐을 때 나올 수 있는 결과예요. 줄마다 팔 값 − 쓰는 돈 = 남는 돈이에요. 같은 능력치여도 남은 횟수가 적으면 팔 값이 싸요.`, `What one piece can end as after all ${plan.length} scrolls. Every row reads sale price − cost = left. The same stat sells for less with fewer slots left.`);
   const maxP = Math.max(...live1.map((o) => o.p), boom);
   const eqn = (v) => (ready && v != null ? `<span class="trd-eqn"><i>−</i><span>${money(one)}</span><i>=</i><strong class="${v - one >= 0 ? 'gain' : 'loss'}">${signed(v - one)}</strong></span>` : '<span class="trd-eqn"><strong>–</strong></span>');
-  table.innerHTML = `<div class="trd-row trd-row-head" aria-hidden="true"><span>${tr('결과', 'Result')}</span><span>${tr('나올 확률', 'Odds')}</span><span>${tr('팔 값', 'Sale price')}</span><span>${tr('− 쓰는 돈 = 남는 돈', '− cost = left')}</span></div>${live1.map((o) => {
+  // Results rarer than 1 in 1,000 are left out of the table; they still count in every total.
+  const shown = live1.filter((o) => o.p >= 0.001), rare = live1.length - shown.length;
+  table.innerHTML = `<div class="trd-row trd-row-head" aria-hidden="true"><span>${tr('결과', 'Result')}</span><span>${tr('나올 확률', 'Odds')}</span><span>${tr('팔 값', 'Sale price')}</span><span>${tr('− 쓰는 돈 = 남는 돈', '− cost = left')}</span></div>${shown.map((o) => {
     const f = found.get(keyOf(o)), v = valueOf(o), own = typed.values[keyOf(o)] != null;
-    const note = own ? tr('직접 적은 값', 'your own price') : f.how === 'zero' ? tr('매물 없음 · 0으로 계산', 'none listed · counted as 0') : f.how === 'floor' ? tr(`매물 없음 · ${label(f.from)} 값으로 계산`, `none listed · priced as ${label(f.from)}`) : f.basis === 'sold' ? tr(`팔린 값 · 매물 ${f.n}개 중 ${f.sold}개 팔림`, `sold price · ${f.sold} of ${f.n} sold`) : tr(`싼 쪽 매물 값 · 매물 ${f.n}개`, `cheap end of ${f.n} listed`);
+    const note = own ? tr('직접 적은 값', 'your own price') : f.how === 'zero' ? tr('매물 없음 · 0으로 계산', 'none listed · counted as 0') : f.how === 'floor' ? tr(`매물 없음 · ${label(f.from)} 값으로 계산`, `none listed · priced as ${label(f.from)}`) : f.how === 'slots' ? tr(`남은 횟수 ${f.slots}짜리 매물 값으로 계산 · 매물 ${f.n}개`, `priced as one with ${f.slots} slots left · ${f.n} listed`) : f.how === 'between' ? tr(`남은 횟수 ${f.lo}짜리와 ${f.hi}짜리 매물의 사이 값`, `between pieces with ${f.lo} and ${f.hi} slots left`) : f.basis === 'sold' ? tr(`팔린 값 · 매물 ${f.n}개 중 ${f.sold}개 팔림`, `sold price · ${f.sold} of ${f.n} sold`) : tr(`싼 쪽 매물 값 · 매물 ${f.n}개`, `cheap end of ${f.n} listed`);
     const even = needs && keyOf(needs) === keyOf(o);
-    return `<div class="trd-row${even ? ' is-even' : ''}"><span class="trd-res"><b>${esc(label(o))}</b><small>${o.k === plan.length ? tr('전부 성공', 'all passed') : o.k === 0 ? tr('전부 실패', 'all failed') : tr(`${o.k}번 성공`, `${o.k} passed`)}${span(o)}${even ? `<em class="trd-even">${tr('여기부터 본전', 'pays back from here')}</em>` : ''}</small></span>
+    return `<div class="trd-row${even ? ' is-even' : ''}"><span class="trd-res"><b>${esc(label(o))}</b><small>${o.k === plan.length ? tr('전부 성공', 'all passed') : o.k === 0 ? tr('전부 실패', 'all failed') : tr(`${o.k}번 성공`, `${o.k} passed`)}${span(o)}${tr(` · 남은 횟수 ${left}`, ` · ${left} slots left`)}${even ? `<em class="trd-even">${tr('여기부터 본전', 'pays back from here')}</em>` : ''}</small></span>
 <span class="trd-prob"><span class="trd-prob-track"><span class="trd-prob-fill" style="width:${Math.max(1, (o.p / maxP) * 100)}%"></span></span><span class="trd-many"><b>${pct(o.p)}</b></span></span>
 <label class="trd-val"><input data-k="${keyOf(o)}" inputmode="decimal" autocomplete="off" value="${v != null ? nf.format(v) : ''}" placeholder="${tr('팔 값', 'sale price')}" aria-label="${esc(`${label(o)} ${tr('팔 값', 'sale price')}`)}"${own ? ' class="own"' : ''}><small>${note}</small></label>
 ${eqn(v)}</div>`;
   }).join('')}
-${boom > 0 ? `<div class="trd-row trd-row-boom"><span class="trd-res"><b>${tr('장비 파괴', 'Destroyed')}</b><small>${tr('혼돈 주문서 실패', 'failed Chaos scroll')}</small></span><span class="trd-prob"><span class="trd-prob-track"><span class="trd-prob-fill" style="width:${(boom / maxP) * 100}%"></span></span><span class="trd-many"><b>${pct(boom)}</b></span></span><span class="trd-val"><b>0</b><small>${tr('장비가 사라져요', 'the piece is gone')}</small></span><span class="trd-eqn"><strong class="loss">${tr('쓴 만큼 잃어요', 'all spent is lost')}</strong></span></div>` : ''}`;
+${boom > 0 ? `<div class="trd-row trd-row-boom"><span class="trd-res"><b>${tr('장비 파괴', 'Destroyed')}</b><small>${tr('혼돈 주문서 실패', 'failed Chaos scroll')}</small></span><span class="trd-prob"><span class="trd-prob-track"><span class="trd-prob-fill" style="width:${(boom / maxP) * 100}%"></span></span><span class="trd-many"><b>${pct(boom)}</b></span></span><span class="trd-val"><b>0</b><small>${tr('장비가 사라져요', 'the piece is gone')}</small></span><span class="trd-eqn"><strong class="loss">${tr('쓴 만큼 잃어요', 'all spent is lost')}</strong></span></div>` : ''}${rare ? `<p class="muted small trd-rare">${tr(`1,000번에 한 번도 안 나오는 결과 ${rare}개는 뺐어요.`, `${rare} results rarer than 1 in 1,000 are left out.`)}</p>` : ''}`;
 }
 
 // Typing in a price box redraws everything, then puts the caret back where it was in that box.
