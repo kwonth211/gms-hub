@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scamAccusations, scamKinds, isPublic, postScamReport, postScamAppeal, handleScamAdmin } from '../worker/src/scam.js';
+import { scamAccusations, scamKinds, koInput, koOk, isPublic, postScamReport, postScamAppeal, handleScamAdmin } from '../worker/src/scam.js';
 
 const names = (text, caller = 'Caller') => scamAccusations(text, caller).map((a) => `${a.nick}${a.strong ? '' : '?'}`).sort().join(',');
 
@@ -122,4 +122,22 @@ test('the kind of scam is read from the line, never from the linked item name', 
   assert.deepEqual(scamKinds('BEWARE OF SPLINTERS. Dummy still tying bundle SCAMs'), ['bundle']);
   assert.deepEqual(scamKinds('[Gloves Attack Scroll: Intermediate] Jokr is a scammer'), []);
   assert.deepEqual(scamKinds('SooWoop ls a scammer EVERYONE BEWARE AND DEFAME'), []);
+});
+
+test('the Korean reading: the line is cleaned for the model, and a weak reading is thrown away', () => {
+  assert.equal(koInput('[Steely Throwing Knives] CUTEMARIAH = A 40 y/0 SCAMMING BAITER', 'CuteMariah'), 'CuteMariah = a 40 y/0 scamming baiter');
+  assert.equal(koInput('B> GFA 60% 1 .4M Report MasterAsian For tying to scam', 'MasterAsian'), 'Buying: GFA 60% 1.4M Report MasterAsian For tying to scam');
+  assert.equal(koInput('[Black Napoleon] @inkwell ---> cutemariah = baiting a 15 luk cape', 'CuteMariah'), 'CuteMariah = baiting a 15 luk cape');
+  assert.equal(koOk('inkwell과 CuteMariah가 15럭 망토로 바꿔치기 사기를 쳐요.', 'CuteMariah'), false, 'a bystander named');
+  assert.equal(koOk('EndGameMage와 CuteMariah가 15럭 망토로 사기 쳐요.', 'CuteMariah', ['CuteMariah', 'EndGameMage']), true);
+  assert.equal(koOk('JennaSin한테 인기도나 자리 사지 마세요. 사기 쳐요.', 'JennaSin'), true);
+  assert.equal(koOk('MasterAsian이 사기 치려고 했으니 신고해 주세요.', 'MasterAsian'), true);
+  assert.equal(koOk('LuckyDamage는 사기꾼이니 주의해', 'LuckyDamage'), false, '반말');
+  assert.equal(koOk('cutemariah는 40세 남성 사기꾼이다', 'CuteMariah'), false, '~다');
+  assert.equal(koOk('B> GFA 60% MasterAsian 사기꾼이에요', 'MasterAsian'), false, 'left-over trade mark');
+  assert.equal(koOk('제나신은 사기꾼이에요.', 'JennaSin'), false, 'name lost');
+  assert.equal(koOk('JennaSin is a scammer예요.', 'JennaSin'), false, 'English left in');
+  assert.equal(koOk('ThunderButz를 믿지 마세요. 그는 사기꾼이에요.', 'ThunderButz'), false, 'pronoun');
+  assert.equal(koOk('CuteMariah는 40살 남자로 바꿔치기 사기꾼이에요.', 'CuteMariah'), false, 'personal remark');
+  assert.equal(koOk('ChiefBandana(레벨 71)가 사기 치려고 해요. 장갑 공격력 주문서를 10%짜리로 바꿔치기해요.', 'ChiefBandana'), true);
 });

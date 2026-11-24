@@ -4028,6 +4028,8 @@ dialog.info-note .info-note-actions { text-align: right; margin: 6px 0 0; }
 .sc-site { color: var(--accent); }
 .sc-ch { font-weight: 700; color: var(--up); font-variant-numeric: tabular-nums; }
 .sc-q q { quotes: none; overflow-wrap: anywhere; font-size: 0.92rem; }
+.sc-ko { display: block; margin-top: 3px; padding-top: 4px; border-top: 1px dotted var(--line-strong); font-size: 0.88rem; color: var(--text-2, var(--text)); overflow-wrap: anywhere; }
+.sc-ko i { font-style: normal; font-size: 0.68rem; font-weight: 800; padding: 0 6px; margin-right: 6px; border-radius: 4px; background: var(--panel); border: 1px solid var(--line); color: var(--muted); vertical-align: 1px; }
 .sc-rest summary { font-size: 0.82rem; font-weight: 700; color: var(--muted); cursor: var(--cur-hand, pointer); padding: 2px 0; }
 .sc-rest[open] summary { margin-bottom: 6px; }
 .sc-more { margin: 6px 0 0; }

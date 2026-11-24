@@ -2,13 +2,86 @@
 // after 2 days, so those warnings are parsed at ingest and kept (tables in migrations/0028_scam.sql). The page
 // /scam/ lists the names with who shouted what and when. Visitors can add a report or ask for their name to be taken
 // down; both wait for the owner's review (POST /internal/scam with the owner key).
-//   GET  /scam                 -> { at, rows: [{ nick, n, by, first, last, quotes: [{ at, by, text, ch, src }] }] }
+//   GET  /scam                 -> { at, rows: [{ nick, n, by, first, last, kinds, level, job, photo, quotes: [{ at, by, text, ko?, ch, src }] }] }
 //   POST /scam/report {nick, text, me?}        -> { ok } (pending)
 //   POST /scam/appeal {nick, message, contact?} -> { ok } (pending)
 //   POST /internal/scam {token, action, ...}   -> owner review (list, report, nick, appeal, backfill)
 // A megaphone is one player's word, not a verdict: the page always shows the line and the caller, and a name goes up
 // by itself only when the character exists and either the wording is plain or two different players named it.
 import { sameSecret } from './secure.js';
+import { foreignScript } from './news.js';
+
+// A Korean reading of one warning, for the line under the original on the Korean page. Megaphones are English shorthand
+// read off the screen, so the model gets the game words spelled out and is told to keep names as written. A reading that
+// lost the reported name, came back in another script or ran long is thrown away (the original line is always shown).
+const KO_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
+const KO_SYSTEM = `You turn one in-game megaphone line from MapleStory Classic World into short, natural Korean for Korean players.
+Rules:
+- 해요체 only (end sentences with ~요). Never 반말, never ~다 endings.
+- Keep every character name exactly as written, in Latin letters.
+- Say only what the line says about the scam. Leave out insults, filler (lol, lmao, dog, rodent, loser) and personal remarks about the player (age, gender, nationality, looks).
+- Never use pronouns like 그, 그녀, 그들: use the name or leave the subject out.
+- Copy every number exactly (CH31 is 31채널, never another number).
+- The text was read by OCR, so fix obvious slips ("ls" = "is", "tying" = "trying", "y/0" = "y/o").
+- Game words: scam/scammer = 사기/사기꾼, fame = 인기도, defame = 인기도 내리기, spot = 자리, scroll = 주문서, smega = 고확, FM = 자유시장, CH30 or CC30 = 30채널, 30k = 3만 메소, 1.4m = 140만 메소, WG = 노가다 목장갑, GFA = 장갑 공격력 주문서, bait and switch / swap = 바꿔치기, bundle = 묶음, RMT = 현금 거래, report = 신고, Buying = 사요, Selling = 팔아요, LUK = 럭, DEX = 덱스, STR = 힘, INT = 인트, att = 공격력, cape = 망토, FM4 = 자유시장 4번 방, stars = 표창, kumbi = 금비 표창, steely = 뇌전 수리검, blacklist = 차단.
+Reply with the Korean only: no quotes, no notes, no English except names and item names.`;
+// Worked examples (real lines), so the tone and the game words come out the same every time.
+const KO_SHOTS = [
+  ['do not buy fame/spot from JennaSin she scams. little dog', 'JennaSin한테 인기도나 자리 사지 마세요. 사기 쳐요.'],
+  ['ChiefBandana = level 71 trying to scam, swaps out GFA 10 lol', 'ChiefBandana(레벨 71)가 사기 치려고 해요. 장갑 공격력 주문서를 10%짜리로 바꿔치기해요.'],
+  ['Buying: GFA 60% 1.4m. Report MasterAsian for trying to scam hes bad', '장갑 공격력 주문서 60%를 140만 메소에 사요. MasterAsian이 사기 치려고 했으니 신고해 주세요.'],
+  ['Terioth <<< fame scamer', 'Terioth는 인기도 사기꾼이에요.'],
+  ['LuckyDamage is a scammer beware (underpricing scam on people', 'LuckyDamage는 사기꾼이니 조심하세요. 값을 낮게 불러서 속여요.'],
+  ['Hiub is a fame scammer, if you see him defame him !', 'Hiub는 인기도 사기꾼이에요. 보이면 인기도를 내려 주세요.'],
+  ['CuteMariah is a 40 y/o male scamming rodent bait/switch', 'CuteMariah는 바꿔치기로 사기 치는 40살 남자예요.'],
+  ['dont buy spot from JennaSin. she scams 30k for a spot beggar', 'JennaSin한테 자리 사지 마세요. 자리값 3만 메소를 받고 사기 쳐요.'],
+  ['CH31 FM 10. IGN. NoFans = star scam ! defame', '31채널 자유시장 10번 방의 NoFans가 표창 사기를 쳐요. 인기도를 내려 주세요.'],
+  ['EndGameMage and CuteMariah scammers for 15luk cape, careful!', 'EndGameMage와 CuteMariah가 15럭 망토로 사기 쳐요. 조심하세요.'],
+  ["Don't trust ThunderButz, he's a scammer lmao", 'ThunderButz를 믿지 마세요. 사기꾼이에요.'],
+  ['Flamesmith << chinese scammer watch out', 'Flamesmith는 사기꾼이니 조심하세요.'],
+  ['beware of Splinters. dummy still trying bundle scams', 'Splinters를 조심하세요. 아직도 묶음 사기를 치려고 해요.']
+];
+// The line as the model should read it: no [item link], shouting lowered (names keep their spelling), trade marks spelled out.
+export function koInput(text, nick) {
+  // "@someone --->" calls a third player's attention; left in, the model reads them as a second scammer.
+  let t = String(text).replace(/\[[^\]]*\]/g, ' ').replace(/@\w+\s*[-=]*>*/g, ' ').replace(/\bls\b/g, 'is').replace(/(\d)\s+([.,]\d)/g, '$1$2').replace(/(^|\s)b\s?>+\s*/gi, '$1Buying: ').replace(/(^|\s)s\s?>+\s*/gi, '$1Selling: ').replace(/\s+/g, ' ').trim();
+  const letters = t.replace(/[^A-Za-z]/g, '');
+  if (letters.length > 6 && letters.replace(/[^A-Z]/g, '').length / letters.length > 0.6) t = t.toLowerCase();
+  return nick ? t.replace(new RegExp(`\\b${nick}\\b`, 'gi'), nick) : t;
+}
+// A reading is kept only when it is Korean in 해요체, still names the player and carries no leftover trade marks.
+// No player may be named in the reading except the ones the line warns about (names): a reading that pulls in anyone
+// else is dropped, since it would put a bystander next to the word scammer.
+const strangers = (ko, names) => (ko.match(/[A-Za-z][A-Za-z0-9]{3,}/g) || []).filter((w) => !names.some((n) => n.toLowerCase() === w.toLowerCase()));
+export const koOk = (ko, nick, names = [nick]) => !strangers(ko, names).length && /[가-힣]/.test(ko) && !foreignScript(ko) && ko.length <= 220 && ko.toLowerCase().includes(String(nick).toLowerCase()) &&
+  !/[\[\]>]|\b(?:is|the|scam\w*|buy\w*|sell\w*)\b/i.test(ko.replace(new RegExp(String(nick), 'gi'), '')) &&
+  !/(?:^|\s)(?:그는|그가|그와|그를|그의|그녀|그들)|실패자|중국|\d+\s?(?:살|세)/.test(ko) &&
+  ko.split(/(?<=[.!?])\s+/).every((x) => /요$/.test(x.replace(/[.!?~\s]+$/, '')));
+export async function koLine(env, text, nick) {
+  if (!env.AI || /[가-힣]/.test(text)) return null;
+  const messages = [{ role: 'system', content: KO_SYSTEM }, ...KO_SHOTS.flatMap(([u, a]) => [{ role: 'user', content: u }, { role: 'assistant', content: a }]), { role: 'user', content: koInput(text, nick).slice(0, 300) }];
+  const names = [...new Set([nick, ...scamAccusations(text, '').map((x) => x.nick)])];
+  const ask = async (m) => String((await env.AI.run(KO_MODEL, { max_tokens: 160, temperature: 0, messages: m }))?.response ?? '').replace(/^["'“”\s]+|["'“”\s]+$/g, '').replace(/\s+/g, ' ');
+  const first = await ask(messages);
+  if (koOk(first, nick, names)) return first;
+  // One more try, told what was wrong the first time.
+  const second = await ask([...messages, { role: 'assistant', content: first }, { role: 'user', content: '다시 써 주세요. 해요체로만, 대명사(그, 그녀)와 나이·성별·국적 이야기는 빼고, 캐릭터 이름 말고는 영어를 쓰지 마세요.' }]);
+  return koOk(second, nick, names) ? second : null;
+}
+// Fill the reading of shown reports that have none yet, a few at a time (each is one model call).
+export async function fillKo(env, limit = 6) {
+  if (!env.AI) return { filled: 0 };
+  const { results } = await env.DB.prepare(`SELECT r.id, r.text, n.nick FROM scam_reports r JOIN scam_nicks n ON n.key = r.key
+    WHERE r.status = 'shown' AND r.ko IS NULL ORDER BY r.id DESC LIMIT ?`).bind(limit).all();
+  let filled = 0;
+  for (const r of results) {
+    const ko = await koLine(env, r.text, r.nick).catch(() => null);
+    // '' marks a line that was tried and gave nothing usable, so it is not asked again every run.
+    await env.DB.prepare('UPDATE scam_reports SET ko = ? WHERE id = ?').bind(ko || '', r.id).run();
+    if (ko) filled++;
+  }
+  return { filled, tried: results.length };
+}
 
 const NAME = '[A-Za-z0-9]{4,12}';
 const TRIGGER = /scam|사기/i;
@@ -100,7 +173,7 @@ export async function recordScamMegaphones(env, rows, lookup) {
   const res = await env.DB.batch(stmts);
   const added = res.filter((x, i) => i % 2 === 0 && x.meta.changes > 0).length;
   await verifyNicks(env, lookup, [...keys.keys()]);
-  if (added) await buildScamList(env);
+  if (added) { await fillKo(env, Math.min(6, added)).catch(() => null); await buildScamList(env); }
   return { added };
 }
 
@@ -141,7 +214,7 @@ export async function refreshProfiles(env, lookup) {
 async function gather(env) {
   const [nicks, reports] = await env.DB.batch([
     env.DB.prepare('SELECT key, nick, verified, state, note, first_at, last_at, level, job, photo FROM scam_nicks'),
-    env.DB.prepare("SELECT key, source, accuser, text, strong, channel, at FROM scam_reports WHERE status = 'shown' ORDER BY at DESC, id DESC LIMIT 5000")
+    env.DB.prepare("SELECT key, source, accuser, text, ko, strong, channel, at FROM scam_reports WHERE status = 'shown' ORDER BY at DESC, id DESC LIMIT 5000")
   ]);
   const by = new Map(nicks.results.map((n) => [n.key, { ...n, n: 0, accusers: new Set(), kinds: new Set(), strong: false, quotes: [] }]));
   for (const r of reports.results) {
@@ -152,7 +225,7 @@ async function gather(env) {
     n.accusers.add(r.source === 'mega' ? r.accuser.toLowerCase() : `user:${r.accuser}`);
     if (r.strong || r.source === 'user') n.strong = true;
     for (const k of scamKinds(r.text)) n.kinds.add(k);
-    if (n.quotes.length < 6) n.quotes.push({ at: r.at, by: r.source === 'mega' ? r.accuser : null, text: r.text, ch: r.channel ?? null, src: r.source });
+    if (n.quotes.length < 6) n.quotes.push({ at: r.at, by: r.source === 'mega' ? r.accuser : null, text: r.text, ...(r.ko ? { ko: r.ko } : {}), ch: r.channel ?? null, src: r.source });
   }
   return [...by.values()].filter((n) => n.n > 0).map(({ accusers, kinds, ...n }) => ({ ...n, by: accusers.size, kinds: [...kinds] }));
 }
@@ -226,6 +299,7 @@ export async function handleScamAdmin(req, env, allowedOrigins, lookup) {
       await env.DB.prepare(`INSERT INTO scam_nicks (key, nick, first_at, last_at) VALUES (?, ?, datetime('now'), datetime('now'))
         ON CONFLICT(key) DO UPDATE SET last_at = datetime('now')`).bind(row.key, row.key).run();
       await verifyNicks(env, lookup, [row.key]);
+      await fillKo(env, 2).catch(() => null);
     }
   } else if (b.action === 'nick') {
     if (!['shown', 'hidden', 'auto'].includes(b.state) || !key) return reply({ error: 'bad' }, 400);
@@ -248,8 +322,9 @@ export async function handleScamAdmin(req, env, allowedOrigins, lookup) {
     const out = await recordScamMegaphones(env, results, lookup);
     const bare = await env.DB.prepare('SELECT key FROM scam_nicks WHERE verified = 1 AND photo IS NULL AND level IS NULL LIMIT 8').all();
     await verifyNicks(env, lookup, bare.results.map((x) => x.key));
+    const ko = await fillKo(env, 8).catch((e) => ({ error: String(e) }));
     await buildScamList(env);
-    return reply({ ok: true, read: results.length, dropped: gone.length, ...out });
+    return reply({ ok: true, read: results.length, dropped: gone.length, ...out, ko });
   } else if (b.action !== 'list') return reply({ error: 'action' }, 400);
   if (b.action !== 'list') await buildScamList(env);
   const [reports, appeals] = await env.DB.batch([

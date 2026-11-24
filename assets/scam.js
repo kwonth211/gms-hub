@@ -48,7 +48,7 @@ const who = (r) => [r.level ? `Lv. ${r.level}` : '', r.job ? jobName(r.job) : ''
 
 function quote(q) {
   const by = q.src === 'user' ? `<b class="sc-by sc-site">${tr('사이트 제보', 'Site report')}</b>` : `<b class="sc-by" translate="no">${esc(q.by)}</b>`;
-  return `<li class="sc-q"><span class="sc-q-meta">${by}${Number(q.ch) ? `<span class="sc-ch">CH${String(Number(q.ch)).padStart(2, '0')}</span>` : ''}<time datetime="${new Date(at(q.at)).toISOString()}">${stamp(q.at)}</time></span><q translate="no">${esc(q.text)}</q></li>`;
+  return `<li class="sc-q"><span class="sc-q-meta">${by}${Number(q.ch) ? `<span class="sc-ch">CH${String(Number(q.ch)).padStart(2, '0')}</span>` : ''}<time datetime="${new Date(at(q.at)).toISOString()}">${stamp(q.at)}</time></span><q translate="no">${esc(q.text)}</q>${ko && q.ko ? `<span class="sc-ko"><i>${tr('해석', 'Reading')}</i>${esc(q.ko)}</span>` : ''}</li>`;
 }
 function card(r) {
   const lv = tier(r), first = r.quotes.slice(0, 2), rest = r.quotes.slice(2), more = r.n - r.quotes.length;
