@@ -350,7 +350,7 @@ async function tick() {
   // being pressed the chat is not read (the panel covers it), and back-to-back presses made new megaphones go unseen.
   step='options';
   const reader=WIN?(!optionReaders.some(r=>r.busy)&&now-lastOptionEnd>=600?optionReaders[0]:null):optionReaders.find(r=>!r.busy);
-  if(reader) for(const [key,job] of [...optionJobs].sort((a,b)=>Math.min(a[1].attempts,2)-Math.min(b[1].attempts,2)||priority(a[1])-priority(b[1])||a[1].created-b[1].created||a[1].lastAttempt-b[1].lastAttempt)) {
+  if(reader) for(const [key,job] of [...optionJobs].sort((a,b)=>(WIN?0:Math.min(a[1].attempts,2)-Math.min(b[1].attempts,2))||priority(a[1])-priority(b[1])||a[1].created-b[1].created||a[1].lastAttempt-b[1].lastAttempt)) {
     const {row,m}=job;
     if(job.active||now-job.lastAttempt<1000)continue;
     const item=jobItem(job);

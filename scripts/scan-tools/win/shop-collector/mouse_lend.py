@@ -201,6 +201,7 @@ class Lender:
 
     def _serve_one(self, r):
         """요청 하나를 처리하고 응답을 보낸다 → 'hold' 요청이 성공했으면 True."""
+        r['t_run'] = time.time()
         code = 5
         try:
             code = self._run(r['msg'], lambda o: self._send(r['conn'], o))
@@ -219,7 +220,9 @@ class Lender:
             r['done'].set()
             self.count += 1
             m = r['msg']
-            print(f"{time.strftime('%H:%M:%S')}   [확성기] {m.get('action')} ({m.get('x')},{m.get('y')}) → {code}", flush=True)
+            took = time.time() - r.get('t_run', time.time())
+            print(f"{time.strftime('%H:%M:%S')}   [확성기] {m.get('action')} ({m.get('x')},{m.get('y')}) → {code}"
+                  f" (기다림 {r.get('t_run', time.time()) - r['at']:.1f}초, 걸림 {took:.1f}초)", flush=True)
         return r['msg'].get('action') == 'hold' and code == 0
 
     def _run(self, m, emit):
@@ -281,15 +284,15 @@ class Lender:
         emit({'phase': 'pressed', 'at': time.time() * 1000, 'mode': 'foreground'})
         time.sleep(.08)
         g.km.cmd('km.left(0)')
-        time.sleep(.25)
+        time.sleep(.2)                                   # 옵션 창이 다 그려질 때까지(2026-11-24: .25 → .2)
         emit({'phase': 'clicked', 'at': time.time() * 1000, 'mode': 'foreground'})
-        time.sleep(.38)                                  # 확성기 수집기가 옵션 창 화면을 찍는 동안
+        time.sleep(.3)                                   # 확성기 수집기가 옵션 창 화면을 찍는 동안(캡처를 초당 14장으로 올려 .38 → .3)
         # 옵션 창은 포인터가 조금만 움직여도 닫힌다(사용자 확인 2026-11-23). 구석까지 가지 않고 링크에서 비켜난다.
         # 두 번 나눠 움직여 확실히 닫는다(열린 채 남으면 ↑ 키가 안 먹어 방에서 못 나갔다 — 12:46, 13:57).
         g.move(min(1340, cx + 36), max(20, cy - 30))
-        time.sleep(.12)
+        time.sleep(.06)
         g.move(min(1350, cx + 64), max(10, cy - 52))
-        time.sleep(.08)
+        time.sleep(.04)
         self.clicked_at = time.time()
         emit({'phase': 'after', 'mode': 'foreground'})
         return 0

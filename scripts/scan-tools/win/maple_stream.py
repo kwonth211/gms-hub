@@ -12,7 +12,7 @@ import threading
 import time
 
 sys.path.insert(0, os.environ.get('GMS_GAME_AUTOMATION', r'C:\Users\PC\Desktop\game-automation'))
-os.environ.setdefault('MAPLE_CAPTURE_INTERVAL_MS', '125')
+os.environ.setdefault('MAPLE_CAPTURE_INTERVAL_MS', '70')
 import cv2
 import numpy as np
 from vision.capture import GameCapture, find_window
@@ -60,7 +60,7 @@ try:
                     break
                 except PermissionError:
                     time.sleep(.01)
-        time.sleep(max(.01, .125 - (time.time() - t0)))
+        time.sleep(max(.01, .07 - (time.time() - t0)))
 except SystemExit as e:
     code = e.code if isinstance(e.code, int) else 1
 finally:
