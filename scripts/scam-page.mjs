@@ -33,7 +33,7 @@ export function scamBody({ lang, megaphoneUrl }) {
 
 <section class="sc-list-panel" aria-label="${t('신고된 닉네임', 'Reported names')}">
 <div class="sc-tools"><div class="sc-chips-filter" id="sc-kinds" role="group" aria-label="${t('사기 종류', 'Kind of scam')}"></div>
-<div class="sc-seg" id="sc-sort" role="group" aria-label="${t('정렬', 'Sort')}"><button type="button" data-v="last" aria-pressed="true">${t('최근 신고 순', 'Latest')}</button><button type="button" data-v="by" aria-pressed="false">${t('많이 외친 순', 'Most callers')}</button></div>
+<div class="sc-seg" id="sc-sort" role="group" aria-label="${t('정렬', 'Sort')}"><button type="button" data-v="n" aria-pressed="true">${t('신고 많은 순', 'Most reports')}</button><button type="button" data-v="last" aria-pressed="false">${t('최근 신고 순', 'Latest')}</button></div>
 <a class="btn sc-report-btn" href="#sc-report">${t('사기꾼 제보하기', 'Report a scammer')}</a></div>
 <p class="muted small sc-count" id="sc-count" role="status"></p>
 <ol class="sc-list" id="sc-list" aria-busy="true"></ol>

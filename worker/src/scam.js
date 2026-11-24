@@ -113,10 +113,28 @@ export async function verifyNicks(env, lookup, keys) {
   for (const n of results) {
     const r = await lookup(n.nick).catch(() => null);
     const c = r?.body?.data;
-    if (r?.status === 200 && c?.name) await env.DB.prepare('UPDATE scam_nicks SET verified = 1, nick = ?, level = ?, job = ?, photo = ? WHERE key = ?')
+    if (r?.status === 200 && c?.name) await env.DB.prepare("UPDATE scam_nicks SET verified = 1, nick = ?, level = ?, job = ?, photo = ?, checked_at = datetime('now') WHERE key = ?")
       .bind(String(c.name).slice(0, 13), Number.isFinite(c.level) ? c.level : null, c.job ? String(c.job).slice(0, 40) : null, c.photo || null, n.key).run();
     else if (r?.status === 404) await env.DB.prepare('UPDATE scam_nicks SET verified = -1 WHERE key = ?').bind(n.key).run();
   }
+}
+
+// A reported character levels up and changes clothes: the level, job and picture are read again every 3 days, 5 names
+// an hour (the schedule calls this). A failed lookup changes nothing.
+export async function refreshProfiles(env, lookup) {
+  const { results } = await env.DB.prepare(`SELECT key, nick, level, job, photo FROM scam_nicks WHERE verified = 1 AND state != 'hidden'
+    AND (checked_at IS NULL OR checked_at < datetime('now', '-3 days')) ORDER BY checked_at LIMIT 5`).all();
+  let changed = 0;
+  for (const n of results) {
+    const r = await lookup(n.nick).catch(() => null);
+    const c = r?.status === 200 ? r.body?.data : null;
+    if (!c?.name) { if (r?.status === 404) await env.DB.prepare("UPDATE scam_nicks SET checked_at = datetime('now') WHERE key = ?").bind(n.key).run(); continue; }
+    const level = Number.isFinite(c.level) ? c.level : null, job = c.job ? String(c.job).slice(0, 40) : null, photo = c.photo || null;
+    await env.DB.prepare("UPDATE scam_nicks SET level = ?, job = ?, photo = ?, checked_at = datetime('now') WHERE key = ?").bind(level, job, photo, n.key).run();
+    if (level !== n.level || job !== n.job || photo !== n.photo) changed++;
+  }
+  if (changed) await buildScamList(env);
+  return { checked: results.length, changed };
 }
 
 // Names with their shown reports, newest first. Used for the public list (public only) and the owner's review (all).

@@ -37,7 +37,8 @@ const profile = (name) => `https://classicrank.com/user/${encodeURIComponent(nam
 const tier = (r) => (r.by >= 3 ? 3 : r.by >= 2 ? 2 : 1);
 
 let rows = [];
-const view = { kind: 'all', sort: 'last' };
+// Most reported first (owner, 2026-11-24); the other order is newest report first.
+const view = { kind: 'all', sort: 'n' };
 
 const avatar = (r, size) => `<a class="sc-ava" href="${esc(profile(r.nick))}" target="_blank" rel="noopener" title="${esc(tr('캐릭터 정보 보기', 'Open character profile'))}">${r.photo
   ? `<img src="${esc(r.photo)}" alt="" width="${size}" height="${size}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'sc-ava-none',textContent:'?'}))">`
@@ -80,7 +81,7 @@ function stats() {
 function render() {
   const q = $('sc-search').value.trim().toLowerCase();
   let list = rows.filter((r) => (view.kind === 'all' || (r.kinds || []).includes(view.kind)) && (!q || r.nick.toLowerCase().includes(q)));
-  list = [...list].sort(view.sort === 'by' ? (a, b) => b.by - a.by || b.n - a.n || at(b.last) - at(a.last) : (a, b) => at(b.last) - at(a.last));
+  list = [...list].sort(view.sort === 'n' ? (a, b) => b.n - a.n || b.by - a.by || at(b.last) - at(a.last) : (a, b) => at(b.last) - at(a.last));
   const el = $('sc-list'), none = $('sc-none'), verdict = $('sc-verdict');
   el.removeAttribute('aria-busy');
   el.innerHTML = list.slice(0, 200).map(card).join('');

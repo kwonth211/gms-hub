@@ -46,7 +46,7 @@ import { createAlert, listAlerts, deleteAlert, takeHits, checkAlerts } from './a
 import { bodyTooLarge, sameSecret } from './secure.js';
 import { handleAccount, handleAccountAlerts } from './account.js';
 import { recordContribution, handleContributors, priceBoardToDiscord, leaderboardToDiscord } from './contributors.js';
-import { recordScamMegaphones, scamList, postScamReport, postScamAppeal, handleScamAdmin } from './scam.js';
+import { recordScamMegaphones, scamList, postScamReport, postScamAppeal, handleScamAdmin, refreshProfiles } from './scam.js';
 export { Presence };
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
 
@@ -474,6 +474,8 @@ const api = {
       await priceBoardToDiscord(env, cat, await itemLabel());
     })().catch((e) => console.log('price board failed', String(e))));
     if (now.getUTCMinutes() < 15) ctx.waitUntil(leaderboardToDiscord(env).catch((e) => console.log('leaderboard failed', String(e))));
+    // Scam report cards: reported characters' level, job and picture, read again every few days (5 names an hour).
+    if (now.getUTCMinutes() < 15) ctx.waitUntil(refreshProfiles(env, lookupCharacter).catch((e) => console.log('scam profiles failed', String(e))));
     // Daily market summary in #시세-거래-market at 21:00 KST (12:00 UTC run), once a day (snapshot key per KST day).
     if (now.getUTCHours() === 12 && now.getUTCMinutes() < 15) ctx.waitUntil((async () => {
       const key = `discord-market:${new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10)}`;
