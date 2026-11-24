@@ -8,7 +8,7 @@ const parameters = new Map([
   ['/market/listings', ['days', 'limit', 'page', 'state', 'sort', 'since', 'channel', 'room', 'item', 'ids', 'seller', 'exact', 'min', 'max', 'stat', 'val', 'opts']],
   ['/market/reports', ['limit', 'page', 'days', 'item', 'kind', 'ids']],
   ['/market/history', ['id', 'opts', 'stat', 'val']], ['/market/status', []], ['/rank', []], ['/rank/lookup', ['name']],
-  ['/megaphones', ['after', 'limit', 'item']], ['/megaphones/stats', []],
+  ['/megaphones', ['after', 'limit', 'item']], ['/megaphones/stats', []], ['/scam', []],
   ['/free-megas', ['after', 'limit']], ['/report/raw', []], ['/news', []]
 ]);
 export async function cachedPublicResponse(req, load, ctx) {

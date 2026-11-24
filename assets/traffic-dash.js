@@ -15,7 +15,7 @@ const pct = (a, b) => (b ? `${a >= b ? '+' : ''}${Math.round((a / b - 1) * 100)}
 const COUNTRY = { CN: '중국', HK: '홍콩', IN: '인도', KR: '한국', US: '미국', IL: '이스라엘', CA: '캐나다', BR: '브라질', JP: '일본', AU: '호주', SG: '싱가포르', GB: '영국', DE: '독일', NL: '네덜란드', FR: '프랑스', TW: '대만', VN: '베트남', TH: '태국', PH: '필리핀', MY: '말레이시아', ID: '인도네시아', ES: '스페인', SE: '스웨덴', NZ: '뉴질랜드', MX: '멕시코' };
 const PAGE = [
   [/^\/$/, '홈'], [/^\/tools\/market\/today\//, '오늘의 시세'], [/^\/tools\/market\//, '실시간 시세'], [/^\/tools\/training\//, '사냥터 추천'],
-  [/^\/megaphone\//, '실시간 확성기'], [/^\/tools\/exp\//, '경험치 측정기'], [/^\/tools\/damage\//, '몇 방 컷 계산기'], [/^\/tools\/forge\//, '주문서 작 시뮬'],
+  [/^\/megaphone\//, '실시간 확성기'], [/^\/scam\//, '사기꾼 제보'], [/^\/tools\/exp\//, '경험치 측정기'], [/^\/tools\/damage\//, '몇 방 컷 계산기'], [/^\/tools\/forge\//, '주문서 작 시뮬'],
   [/^\/tools\/scroll\//, '주문서 계산기'], [/^\/tools\/scan\//, '상점 스캔'], [/^\/forgotten-hollow\//, '포가튼 할로우'], [/^\/report\//, '주간 리포트'],
   [/^\/quests\//, '퀘스트'], [/^\/guides\//, '가이드'], [/^\/monsters\//, '몬스터'], [/^\/maps\//, '맵'], [/^\/items\//, '아이템'], [/^\/skills\//, '스킬'],
   [/^\/equipment\//, '장비'], [/^\/rank\//, '랭킹'], [/^\/discord-bot\//, '디스코드 봇'], [/^\/sites\//, '사이트 모음'], [/^\/updates\//, '업데이트']

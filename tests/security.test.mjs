@@ -54,7 +54,8 @@ test('ranking rows from the other site are forced to numbers, short strings and 
 
 test('the owner pages load no third-party script', () => {
   const build = fs.readFileSync(new URL('../scripts/build.mjs', import.meta.url), 'utf8');
-  assert.equal((build.match(/noindex: true, bare: true/g) || []).length, 2);
+  // /admin/, /admin/traffic/ and /admin/scam/
+  assert.equal((build.match(/noindex: true, bare: true/g) || []).length, 3);
 });
 
 test('the collector watch and the budget meter answer only to the owner key and are never cached', async () => {

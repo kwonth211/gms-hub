@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "scam-reports",
+   "version": "0.7.69",
+   "level": "minor",
+   "date": "2026-11-24",
+   "path": "/scam/",
+   "ko": "사기꾼 제보 — 거래 전에 닉네임 검색",
+   "en": "Scam reports — search a name before you trade",
+   "desc": {
+    "ko": "게임 고확에서 사기꾼으로 불린 닉네임을 외친 말과 함께 모아요. 거래 전에 상대 닉네임을 쳐 보세요. 직접 제보할 수 있고, 내 닉네임이 잘못 올라왔으면 내려 달라고 할 수 있어요. 실시간 확성기에서도 신고된 닉네임에 표시가 붙어요.",
+    "en": "Names called scammers over megaphones, with the words as shouted. Type the other player's name before you trade. You can send a report, or ask for your own name to come down. Reported names are marked on the live megaphone page too."
+   }
+  },
+  {
    "id": "items-1-2",
    "version": "0.7.68",
    "level": "patch",

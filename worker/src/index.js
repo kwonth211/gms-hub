@@ -46,6 +46,7 @@ import { createAlert, listAlerts, deleteAlert, takeHits, checkAlerts } from './a
 import { bodyTooLarge, sameSecret } from './secure.js';
 import { handleAccount, handleAccountAlerts } from './account.js';
 import { recordContribution, handleContributors, priceBoardToDiscord, leaderboardToDiscord } from './contributors.js';
+import { recordScamMegaphones, scamList, postScamReport, postScamAppeal, handleScamAdmin } from './scam.js';
 export { Presence };
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
 
@@ -515,6 +516,7 @@ const api = {
     if (url.pathname === '/internal/mail/send' && req.method === 'POST') return handleSendMail(req, env);
     if (url.pathname === '/internal/presence-peak' && req.method === 'GET') return handlePresencePeak(req, env);
     if (url.pathname === '/internal/traffic') return handleTraffic(req, env, ctx, ALLOWED_ORIGINS);
+    if (url.pathname === '/internal/scam') return handleScamAdmin(req, env, ALLOWED_ORIGINS, lookupCharacter);
     // The collector page runs on gms-hub.com (or localhost while testing) and sends the admin key, so it needs CORS.
     // Discord slash commands (signed by Discord; see discord-bot.js). Prices come from this worker's own summary.
     // Price alerts set on the website through "Log in with Discord" (see discord-oauth.js).
@@ -545,6 +547,8 @@ const api = {
         // Every open page gets the new megaphones at once over its presence socket (ticker and megaphone page redraw).
         const push = env.PRESENCE ? env.PRESENCE.get(env.PRESENCE.idFromName('site')).fetch('https://presence/push', { method: 'POST', body: JSON.stringify({ type: 'megaphones', rows: rows.map((x) => ({ id: x.id, seen: x.seen, kind: x.kind, color: x.color ?? null, channel: x.channel ?? null, nick: x.nick, text: x.text, item: x.item ?? null, intent: x.intent ?? null, price: x.price ?? null, ...(x.opts ? { opts: x.opts } : {}) })) }) }).catch(() => null) : null;
         if (ctx?.waitUntil) { ctx.waitUntil(p); if (push) ctx.waitUntil(push); }
+        // Warnings about other players ("X is a scammer") are kept for the scam report page (scam.js).
+        if (!enriched && ctx?.waitUntil) ctx.waitUntil(recordScamMegaphones(env, rows, lookupCharacter).catch((e) => console.log('scam record failed', String(e))));
       });
       for (const [k, v] of Object.entries(allow)) r.headers.set(k, v);
       return r;
@@ -726,6 +730,16 @@ const api = {
         return json(out, cors, status, 'no-store');
       }
       return json({ error: 'method not allowed' }, cors, 405);
+    }
+
+    // Scam reports (scam.js): the list is one stored snapshot, rebuilt only when a report is added or reviewed.
+    if (url.pathname === '/scam' && req.method === 'GET') return json(await scamList(env), cors, 200, 'public, max-age=60');
+    if ((url.pathname === '/scam/report' || url.pathname === '/scam/appeal') && req.method === 'POST') {
+      if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
+      const who = await visitorHash(req.headers.get('CF-Connecting-IP') || '', 'scam', env.VOTE_SALT);
+      const body = await req.json().catch(() => null);
+      const [out, status] = url.pathname === '/scam/report' ? await postScamReport(env, body, who) : await postScamAppeal(env, body, who);
+      return json(out, cors, status, 'no-store');
     }
 
     if (url.pathname === '/megaphones' && req.method === 'GET') {

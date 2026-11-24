@@ -30,6 +30,26 @@ let rows = [], lastId = 0, lastFree = 0, names = [], byName = new Map(), byId = 
 const samePrices = new Map();
 // Which lines to show: source (all, free = site posts, game) and intent (all, sell, buy).
 const view = { src: 'all', intent: 'all' };
+// Names on the scam report list (/scam/, worker scam.js): a badge next to a listed caller, and a link where a warning
+// megaphone names a listed player.
+let scam = new Map();
+const scamHref = (nick) => `${root.dataset.scam}?n=${encodeURIComponent(nick)}`;
+async function loadScam() {
+  try {
+    const d = await fetch(`${api}/scam`).then((r) => r.json());
+    scam = new Map((d.rows || []).map((x) => [x.nick.toLowerCase(), x]));
+    const n = $('mg-scam-n');
+    if (n && scam.size) n.textContent = ` ${scam.size}`;
+    if (rows.length) render();
+  } catch (e) {}
+}
+// Escaped text in, with listed names turned into links; only warning lines are touched, and never inside the [item] link.
+const scamNames = (html) => (scam.size && /scam|사기/i.test(html)
+  ? html.replace(/(\[[^\]]*\])|([^\[]+)/g, (m, br, rest) => br || rest.replace(/(^|[^&\w])([A-Za-z0-9]{4,12})(?![\w;])/g, (x, pre, w) => {
+    const hit = scam.get(w.toLowerCase());
+    return hit ? `${pre}<a class="mg-scam-name" href="${esc(scamHref(hit.nick))}">${w}</a>` : x;
+  }))
+  : html);
 
 // ---------- reading a megaphone ----------
 // "[Shoes Speed Scroll: Intermediate]" is an exact item megaphone; otherwise the longest catalogue name in the text.
@@ -151,13 +171,15 @@ function card(r) {
   const diff = raw != null && raw <= 300 && raw >= -75 ? raw : null; // -99% is a misread or bundled price, not a bargain
   const itemHref = it && marketSharePath({marketPath:root.dataset.market,id:it.id,opts:r.opts});
   const itemAttrs = it ? megaphoneItemAttrs(it.id, r.opts) : '';
-  const text = esc(r.text).replace(/\[([^\]]+)\]/, (m, n) => (it ? `<a class="mg-item" href="${esc(itemHref)}"${itemAttrs}>[${esc(ko && it.ko ? it.ko : n)}]</a>` : m));
+  const text = scamNames(esc(r.text)).replace(/\[([^\]]+)\]/, (m, n) => (it ? `<a class="mg-item" href="${esc(itemHref)}"${itemAttrs}>[${esc(ko && it.ko ? it.ko : n)}]</a>` : m));
   const g = ko ? gloss(r.text, items) : '';
   const tag = r.intent ? `<span class="mg-intent ${r.intent}">${r.intent === 'sell' ? tr('팝니다', 'Selling') : tr('삽니다', 'Buying')}</span>` : '';
   const cmp = same && sp === null ? `<a class="mg-price" href="${esc(itemHref)}"${itemAttrs}>${tr('같은 옵션 매물 없음', 'No listing with this option')}</a>` : it && market?.median ? `<a class="mg-price" href="${esc(itemHref)}"${itemAttrs}>${same ? tr('같은 옵션 시세', 'Same-option price') : tr('시세', 'Market')} ${mesos(market.median)}${diff != null ? ` · <b class="${diff > 0 ? 'up' : diff < 0 ? 'down' : ''}">${diff > 0 ? '+' : ''}${diff}%</b>` : ''}</a>` : '';
+  const listed = scam.get(String(r.nick).toLowerCase());
+  const flag = listed ? `<a class="mg-scam" href="${esc(scamHref(listed.nick))}" title="${esc(tr('이 닉네임으로 사기 신고가 올라와 있어요', 'This name has scam reports'))}">${tr('사기 신고 {n}번', '{n} scam reports', { n: listed.n })}</a>` : '';
   // One compact row: who and where on the left, the message and its reading in the middle, the whisper copy on the right.
   return `<li class="mg-msg mg-${esc(r.color || 'Y')} mg-k-${esc(r.kind)}${r.id === focusId ? ` mg-focus${focused ? '' : ' mg-pulse'}` : ''}" id="m-${esc(r.id)}">
-<div class="mg-who"><strong class="mg-nick"${r.id === focusId ? ` data-pick="${esc(tr('선택한 고확', 'Selected'))}"` : ''}>${esc(r.nick)}</strong><span class="mg-meta">${Number(r.channel) ? `<span class="mg-ch">CH${String(Number(r.channel)).padStart(2, '0')}</span>` : ''}<time datetime="${new Date(seenAt(r.seen)).toISOString()}" title="${ago(r.seen)}">${clock(r.seen)}</time></span><span class="mg-kind">${KIND[r.kind]?.() || ''}</span></div>
+<div class="mg-who"><strong class="mg-nick"${r.id === focusId ? ` data-pick="${esc(tr('선택한 고확', 'Selected'))}"` : ''}>${esc(r.nick)}</strong>${flag}<span class="mg-meta">${Number(r.channel) ? `<span class="mg-ch">CH${String(Number(r.channel)).padStart(2, '0')}</span>` : ''}<time datetime="${new Date(seenAt(r.seen)).toISOString()}" title="${ago(r.seen)}">${clock(r.seen)}</time></span><span class="mg-kind">${KIND[r.kind]?.() || ''}</span></div>
 <div class="mg-body"><p class="mg-text">${tag}${text}</p>${optLine(r, it)}${translator && plain(r.text) ? `<p class="mg-ai" data-src="${esc(plain(r.text))}" data-prefix="${esc(itemPrefix(r.text, items))}" hidden></p>` : ''}${g ? `<p class="mg-gloss">${esc(g)}</p>` : ''}${cmp}</div>
 <button type="button" class="mg-copy" data-nick="${esc(r.nick)}" title="${esc(tr('귓말 명령어 복사', 'Copy whisper command'))}" aria-label="${esc(tr('귓말 명령어 복사', 'Copy whisper command'))}">${WHISPER}</button></li>`;
 }
@@ -342,6 +364,7 @@ $('mg-feed').addEventListener('click', async (e) => {
 });
 
 loadItems().then(() => { poll(); setInterval(poll, POLL_MS); setupAi(); });
+loadScam();
 // The "n minutes ago" tooltips tick over in place; the list itself is only redrawn when its contents change.
 setInterval(() => { for (const t of document.querySelectorAll('#mg-feed time')) { const r = rows.find((x) => `m-${x.id}` === t.closest('.mg-msg')?.id); if (r) t.title = ago(r.seen); } }, 30000);
 

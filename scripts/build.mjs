@@ -17,6 +17,7 @@ import { forgeBody } from './forge-page.mjs';
 import { EQ_CLASSES, equipPath, collectEquipment, equipmentIndexBody, equipmentClassBody } from './equipment-pages.mjs';
 import { rankBody } from './rank-page.mjs';
 import { megaphoneBody } from './megaphone-page.mjs';
+import { scamBody } from './scam-page.mjs';
 import { selectRoutes, routeCards, publicTrainingData, publicRates, rateNum, jobNames, validateTraining } from '../assets/training-evidence.js';
 import { loadLocales, loadMemory, entityMatcher, localizePage, clientKeys, TX_RUNTIME } from './i18n.mjs';
 import { SKILLS as DMG_SKILLS, windowRange as dmgWindow, hitRange as dmgHit, hitsToKill as dmgKill, accuracyNeeded as dmgAccNeed } from '../assets/damage-calc.js';
@@ -843,6 +844,11 @@ function header(lang, pagePath, only) {
     ['/forgotten-hollow/', 'tree', ko ? '포가튼 할로우' : 'Forgotten Hollow']
   ];
   // Quests open a dropdown the same way (owner, 2026-11-17): the full list plus the two rankings.
+  // Megaphones open a dropdown too (owner, 2026-11-24): the live feed and the scam reports gathered from it.
+  const megaItems = [
+    ['/megaphone/', 'megaphone', ko ? '실시간 확성기' : 'Live megaphones'],
+    ['/scam/', 'megaphone', ko ? '사기꾼 제보' : 'Scam reports']
+  ];
   const questItems = [
     ['/quests/', 'scroll', ko ? '전체 퀘스트·공략' : 'All quests and guides'],
     ['/quests/best-meso/', 'coin', ko ? '돈 버는 퀘스트' : 'Best meso quests'],
@@ -863,7 +869,7 @@ function header(lang, pagePath, only) {
   const sitesEntry = ['/sites/', 'star', lang === 'ko' ? '사이트 모음' : 'Other Classic World sites'];
   // English labels that would break mid-word on a phone ("Calcul/ator") get a one-word form there.
   // The newest tab carries a small N so returning visitors notice it.
-  const NEW_TAB = UPDATES.find((u) => [...tabs, ...huntItems, ...questItems, ...toolItems, ...guideItems].some(([p]) => p === u.path.split(/[?#]/)[0]))?.path.split(/[?#]/)[0] || '/quests/';
+  const NEW_TAB = UPDATES.find((u) => [...tabs, ...megaItems, ...huntItems, ...questItems, ...toolItems, ...guideItems].some(([p]) => p === u.path.split(/[?#]/)[0]))?.path.split(/[?#]/)[0] || '/quests/';
   const SHORT_EN = { '/': 'Home', '/monsters/': 'Mobs', '/tools/training/': 'Spots', '/tools/scroll/': 'Scrolls', '/tools/drop-rate/': 'Odds', '/tools/damage/': 'Hits', '/tools/market/': 'Market', '/megaphone/': 'Megas', '/tools/exp/': 'EXP', '/guides/': 'Guides', '/quests/': 'Quests' };
   const dropMenu = (items, icon, label, shortEn) => {
     const on = items.some(([p]) => p === '/guides/' ? pagePath?.startsWith('/guides/') : pagePath?.startsWith(p));
@@ -874,9 +880,10 @@ function header(lang, pagePath, only) {
   };
   const huntMenu = dropMenu(huntItems, 'sword', ko ? '사냥터' : 'Training', 'Spots');
   const questMenu = dropMenu(questItems, 'scroll', ko ? '퀘스트' : 'Quests', 'Quests');
+  const megaMenu = dropMenu(megaItems, 'megaphone', ko ? '실시간 확성기' : 'Megaphones', 'Megas');
   const tabHtml = tabs
     .map(
-      ([p, icon, label]) => p === '/tools/training/' ? huntMenu : p === '/quests/' ? questMenu :
+      ([p, icon, label]) => p === '/tools/training/' ? huntMenu : p === '/quests/' ? questMenu : p === '/megaphone/' ? megaMenu :
         `<a class="tab" href="${href(langPath(lang, p))}"${(p === pagePath || (p !== '/' && pagePath?.startsWith(p))) ? ' aria-current="page"' : ''}${lang === 'ko' ? '' : ` title="${esc(label)}"`}>${p === NEW_TAB ? `<span class="tab-ico">${spriteSvg(icon, 20)}<span class="tab-new" title="${lang === 'ko' ? '새 기능' : 'New'}">N</span></span>` : spriteSvg(icon, 20)}${lang === 'ko' ? `<span>${label}</span>` : `<span class="tab-full">${label}</span><span class="tab-short" aria-hidden="true">${SHORT_EN[p]}</span>`}</a>`
     )
     .join('');
@@ -886,7 +893,7 @@ function header(lang, pagePath, only) {
 <a class="brand" href="${href(langPath(lang, '/'))}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>${esc(t.gameName)}</small></span></a>
 <nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}${guideMenu}${toolMenu}</nav>
 ${presencePill(lang)}
-${headerSearch(lang, [...tabs, ...huntItems.slice(1), ...questItems.slice(1), ...guideItems, ...toolItems, ...moved, sitesEntry])}
+${headerSearch(lang, [...tabs, ...megaItems.slice(1), ...huntItems.slice(1), ...questItems.slice(1), ...guideItems, ...toolItems, ...moved, sitesEntry])}
 ${'' /* Site-wide "Log in with Discord" (assets/account.js, owner 2026-11-21): optional, the site works the same without it;
    logging in copies this browser's own settings to the account so they follow the visitor to other devices. Filled by JS. */}
 <div class="acct" data-acct hidden data-icon="${esc(DISCORD_ICON(18))}"><button type="button" class="acct-btn"></button><div class="acct-pop" role="dialog"></div></div>
@@ -1068,11 +1075,12 @@ function withTopAd(body, ads) {
 function withMidAd(body, ads) {
   return body.split(AD_MID).join(ads ? adfitSlot('mid') : '');
 }
-const NO_AD_PAGES = new Set(['about', 'bot', 'contact']);
+// The scam report page names players, so it carries no ad of any kind (2026-11-24).
+const NO_AD_PAGES = new Set(['about', 'bot', 'contact', 'scam']);
 // Pages written by the build from game or price data (item and monster detail pages, the look-up-elsewhere page) carry no
 // AdSense tag: Google's approval help says ad code must not sit on automatically generated pages or pages with little
 // content of their own (2026-11-23, after four rejections for "insufficient or low-quality content"). They keep AdFit.
-const NO_ADSENSE_PAGES = new Set(['item', 'monster', 'price']);
+const NO_ADSENSE_PAGES = new Set(['item', 'monster', 'price', 'scam']);
 function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], modules = [], ld = [], only, noindex }) {
   // Indexed pages carry ads, except About, the Discord bot page and Contact/sponsorship. Pages kept out of search
   // (noindex: thin item/map detail pages) carry none since 2026-11-17, for the AdSense review ("must pass", owner).
@@ -3716,10 +3724,18 @@ for (const lang of LANGS) {
       lang, pageKey: 'megaphone', pagePath: '/megaphone/', modules: ['megaphone.js', 'mega-trends.js'],
       title: lang === 'ko' ? '글클메 실시간 확성기: 고확·팝니다·삽니다 모아 보기 | GMS Hub' : 'MapleStory Classic World Live Megaphones: Super Megaphones, Buying & Selling | GMS Hub',
       desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드 게임 확성기를 실시간으로 모아 보여 줘요. 고확과 일반 확성기 구분, 팝니다·삽니다·채널 필터, 시세 비교, 귓말 복사까지.' : 'Live MapleStory Classic World megaphones: super and regular megaphones apart, buying and selling filters, market price comparison and a one-tap whisper command.',
-      body: megaphoneBody({ lang, discord: dcInvite(lang), discordIcon: DISCORD_ICON(15), itemsUrl: href(`/assets/items.json?v=${BUILD_DATE}-c`), marketUrl: href(langPath(lang, '/tools/market/')), snapshot: readJson('data/mega-snapshot.json'),
+      body: megaphoneBody({ lang, discord: dcInvite(lang), discordIcon: DISCORD_ICON(15), itemsUrl: href(`/assets/items.json?v=${BUILD_DATE}-c`), marketUrl: href(langPath(lang, '/tools/market/')), scamUrl: href(langPath(lang, '/scam/')), snapshot: readJson('data/mega-snapshot.json'),
         itemName: (id) => { const i = ITEMS_BY_ID.get(id); return i ? itemName(lang, i) : `#${id}`; },
         itemHref: (id) => (ITEM_PAGE_IDS.has(id) ? link(itemPath(ITEMS_BY_ID.get(id))) : href(langPath(lang, `/tools/market/?item=${id}`))) }),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '실시간 확성기' : 'Live megaphones', '/megaphone/')]
+    }));
+    // Names warned about over megaphones, with the reporting and take-down forms (scripts/scam-page.mjs, assets/scam.js).
+    write(path.join(lang, 'scam', 'index.html'), page({
+      lang, pageKey: 'scam', pagePath: '/scam/', modules: ['scam.js'],
+      title: lang === 'ko' ? '글클메 사기꾼 제보: 고확에 올라온 사기 신고 닉네임 검색 | GMS Hub' : 'MapleStory Classic World Scam Reports: Search a Name Before You Trade | GMS Hub',
+      desc: lang === 'ko' ? '글로벌 메이플스토리 클래식 월드에서 거래하기 전에 상대 닉네임을 검색하세요. 게임 고확에서 사기꾼으로 불린 닉네임과 외친 말, 자주 나오는 사기 수법과 막는 법을 모았어요.' : 'Search a player before you trade in MapleStory Classic World: names called scammers over megaphones with the words as shouted, the common scams and how to stop each one.',
+      body: scamBody({ lang, megaphoneUrl: href(langPath(lang, '/megaphone/')) }),
+      ld: [breadcrumbLd(lang, lang === 'ko' ? '사기꾼 제보' : 'Scam reports', '/scam/')]
     }));
     write(path.join(lang, 'rank', 'index.html'), page({
       lang, pageKey: 'rank', pagePath: '/rank/', modules: ['rank.js'],
@@ -4061,6 +4077,19 @@ ${jsonScript('traffic-config', { api: config.voteApi })}
 </body></html>`
 );
 
+// Owner-only review of scam reports and take-down requests (assets/scam-admin.js, worker /internal/scam). Same key as
+// the traffic dashboard.
+write(
+  'admin/scam/index.html',
+  `${head({ lang: 'ko', title: '사기 신고 관리 | GMS Hub', desc: 'GMS Hub 사기 신고 관리', noindex: true, bare: true })}
+<body data-page="scam-admin">
+<header class="site-header"><div class="wrap header-inner"><a class="brand" href="${href('/ko/')}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>사기 신고 관리</small></span></a></div></header>
+<main class="wrap sc-admin" id="scam-admin-root"></main>
+${jsonScript('scam-admin-config', { api: config.voteApi })}
+<script src="${scriptSrc('scam-admin.js')}" defer></script>
+</body></html>`
+);
+
 // Derived locales: translate every finished English page. Game names stay in English (the GMS client's own names)
 // and are masked so one memory entry covers every item and monster page.
 const ENTITIES = entityMatcher([
@@ -4107,7 +4136,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
   )
 ).concat(
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
-  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, {path:'/quests/best-meso/'}, {path:'/guides/newbie/'}, ...NEWBIE_PAGES.map((p)=>({path:newbiePath(p)})), ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/forgotten-hollow/'}, {path:'/skills/'}, {path:'/tools/forge/'}, {path:'/tools/meso-farm/'}, {path:'/updates/'}, ...(WEEKLY ? [{path:'/report/'}] : [])].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, {path:'/quests/best-meso/'}, {path:'/guides/newbie/'}, ...NEWBIE_PAGES.map((p)=>({path:newbiePath(p)})), ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/scam/'}, {path:'/forgotten-hollow/'}, {path:'/skills/'}, {path:'/tools/forge/'}, {path:'/tools/meso-farm/'}, {path:'/updates/'}, ...(WEEKLY ? [{path:'/report/'}] : [])].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/bosses/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/quests/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
   [{path:'/maps/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
