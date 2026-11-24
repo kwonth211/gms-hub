@@ -149,6 +149,25 @@ ${rows ? `<div class="table-wrap"><table class="data td-who-table td-blk-table">
 <p class="muted small">막힌 요청은 방문 숫자에 들어가지 않아요. 사이트 방화벽 기록은 Cloudflare가 보관하는 기간까지만 나와요. 우리 서버 기록은 11월 24일부터 쌓여요.</p></section>`;
 }
 
+// Runs of the screen-reading tools over the last 7 days: what share read, and every way the others failed.
+const TOOL_NAME = { exp: 'EXP 측정기', scan: '상점 스캔' };
+const OUTCOME = { ok: '읽음', no_bar: '상태바를 못 찾음', read_fail: '숫자를 못 읽음', black: '검은 화면', share_error: '화면 공유 오류', first_rows: '상점 읽음', black_frame: '검은 화면', no_shop: '상점을 못 찾음', unsure_rows: '이름이 불확실', read_error: '읽기 오류', video_play: '영상 재생 실패', upload_fail: '올리기 실패' };
+function toolPanel(d) {
+  const b = d.tools;
+  if (!b) return '';
+  if (b.error) return `<section class="panel"><h2>화면 읽는 도구 상태</h2><p class="td-err">기록을 못 읽었어요: ${esc(b.error)}</p></section>`;
+  const tot = (tool, f = () => true) => b.days.filter((r) => r.tool === tool && f(r)).reduce((a, r) => a + r.n, 0);
+  const all = tot('exp'), ok = tot('exp', (r) => r.outcome === 'ok'), rate = all ? Math.round((ok / all) * 100) : null;
+  const days = [...new Set(b.days.map((r) => r.day))].sort();
+  const daily = days.map((day) => { const n = tot('exp', (r) => r.day === day), k = tot('exp', (r) => r.day === day && r.outcome === 'ok'); return n ? `<li><span>${esc(day.slice(5))}</span><b>${nf(k)} / ${nf(n)} (${Math.round((k / n) * 100)}%)</b></li>` : ''; }).join('');
+  const bad = b.why.filter((r) => r.outcome !== 'ok' && r.outcome !== 'first_rows');
+  const rows = bad.map((r) => `<tr><td class="num"><b>${nf(r.n)}</b></td><td>${esc(TOOL_NAME[r.tool] || r.tool)}</td><td>${esc(OUTCOME[r.outcome] || r.outcome)}</td><td>${esc(r.size || '-')}<br><span class="muted">모니터 ${esc(r.screen)} · 배율 ${esc(r.dpr)}</span></td><td>${esc(r.os)} · ${esc(r.browser)}<br><span class="muted">${esc(r.surface || '')} ${esc(r.how || '')}</span></td></tr>`).join('');
+  return `<section class="panel"><h2>화면 읽는 도구 상태 <small class="muted">최근 7일</small></h2>
+${all ? `<p class="${rate < 80 && all >= 5 ? 'td-err' : ''}">EXP 측정기: ${nf(all)}번 중 ${nf(ok)}번 읽었어요 (${rate}%)${rate < 80 && all >= 5 ? ' · 80%보다 낮아요. 아래 실패를 확인하세요.' : ''} · 레벨까지 읽은 것 ${nf(b.days.filter((r) => r.tool === 'exp').reduce((a, r) => a + r.lv, 0))}번</p><ul class="td-botlist">${daily}</ul>` : '<p class="muted">아직 EXP 측정 기록이 없어요. 11월 24일 밤부터 쌓여요.</p>'}
+${rows ? `<div class="table-wrap"><table class="data td-who-table"><thead><tr><th class="num">횟수</th><th>도구</th><th>실패한 이유</th><th>공유한 화면</th><th>환경</th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}
+<p class="muted small">결과, 화면 크기, 브라우저만 남겨요. 화면이나 읽은 숫자, 닉네임은 남기지 않아요.</p></section>`;
+}
+
 // The last 7 days against the 7 before them, day by day (same weekday side by side). Today is still running, so its
 // last-week partner is cut at the same clock time.
 function weekChart(d, upto) {
@@ -226,6 +245,7 @@ ${nowPages}
 ${weekChart(d, upto)}
 ${botChart(d)}
 ${blockedPanel(d)}
+${toolPanel(d)}
 <div class="td-grid2">
 <section class="panel"><h2>나라별 방문</h2>${bars(d.countries.slice(0, 12), { label: (c) => esc(COUNTRY[c.country] || c.country), value: (c) => c.visits })}</section>
 <section class="panel"><h2>들어온 경로</h2>${bars(d.sources.slice(0, 12), { label: (s) => esc(SOURCE[s.source] || s.source), value: (s) => s.visits, accent: true })}

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseExp, sameReading, summarize, levelTotal, EXP_GLYPHS, readExpText, readSmeared, levelTiles, findGauges, expTextBox, levelBox, inkImage } from '../assets/exp-reader.js';
+import { parseExp, sameReading, summarize, levelTotal, EXP_GLYPHS, readExpText, readSmeared, levelTiles, findGauges, expTextBox, levelBox, inkImage, readExp, isBlack } from '../assets/exp-reader.js';
 
 test('parseExp reads the status bar text and rejects nonsense pairs', () => {
   assert.deepEqual(parseExp('83,631[68.13%]'), { exp: 83631, pct: 68.13 });
@@ -113,4 +113,26 @@ for (const [name, width, height] of [['exp-share-7099', 620, 106], ['exp-share-7
   assert.equal(tiles.length, 2);
   // Both digits leave ink on their own tile (the 7 vanished under the tinted edge before).
   for (const t of tiles) assert.ok(inkImage(img, t, 1, { onTile: true }).data.filter((v, i) => i % 4 === 0 && v === 0).length >= 10);
+});
+
+// A hunting character is rarely at full HP and MP. Until 2026-11-24 the bar was only found with HP above about 60% and MP
+// above about 25%; every combination must read, on a real shared frame with the fills cut short.
+test('the bar is found and read at any HP and MP', async () => {
+  const W = 620, H = 106, base = new Uint8ClampedArray(gunzipSync(readFileSync(new URL('./fixtures/exp-share-7099.rgba.gz', import.meta.url))));
+  const X = 503 - 280, Y = 690;
+  for (const hp of [100, 60, 30, 5]) for (const mp of [100, 40, 15, 0]) {
+    const data = new Uint8ClampedArray(base);
+    const copy = (x, from) => { for (let y = 777 - Y; y <= 791 - Y; y++) for (let k = 0; k < 3; k++) data[(y * W + x) * 4 + k] = base[(y * W + from) * 4 + k]; };
+    for (let i = 0; i < 106; i++) { if (i >= hp * 1.05) copy(X + i, 815 - 280 + (i % 10)); if (i >= mp * 1.05) copy(X + 108 + i, 815 - 280 + (i % 10)); }
+    const r = await readExp({ width: W, height: H, data });
+    assert.deepEqual(r?.how && parseExp(r.text), { exp: 7099, pct: 64.3 }, `HP ${hp}% MP ${mp}%`);
+  }
+});
+
+test('a frame without a status bar reads nothing, and a black one is told apart', async () => {
+  const W = 400, H = 240, noise = new Uint8ClampedArray(W * H * 4);
+  for (let i = 0, s = 5; i < noise.length; i++) { s = (s * 1103515245 + 12345) & 0x7fffffff; noise[i] = s >> 16; }
+  assert.ok(!(await readExp({ width: W, height: H, data: noise }))?.how);
+  assert.equal(isBlack({ width: W, height: H, data: noise }), false);
+  assert.equal(isBlack({ width: W, height: H, data: new Uint8ClampedArray(W * H * 4) }), true);
 });

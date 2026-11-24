@@ -2,6 +2,7 @@
 // itself is never shown back to the player. In local development (scripts/scan-dev.mjs) changed frames are also posted to the
 // dev server, which keeps them as samples for building the shop reader.
 import { SHARE_SIZE } from './exp-reader.js';
+import { toolReport } from './tool-report.js';
 import { detectScale, findChannel, findRoom, findShopRows, findShopRowsLoose, matchItem, parsePriceLine, priceFromLine, readLine, readOwner, scrollTier, ambiguousName, narrowByTier } from './shop-reader.js';
 
 import { KERNING, placeLabel } from './place.js';
@@ -254,7 +255,7 @@ async function keepSample(canvas) {
 let scanStartedAt = 0, everRows = 0, firstSureAt = 0, missLoc = 0;
 const issued = new Set();
 // ui_label / ui_value are registered GA dimensions, so the kind of problem and the capture size show up in reports.
-const issue = (kind, params = {}) => { if (issued.has(kind)) return; issued.add(kind); track('scan_issue', { issue: kind, ui_label: kind, ui_value: params.w ? `${params.w}x${params.h}@${params.scale}` : String(params.msg || ''), after_s: scanStartedAt ? Math.round((Date.now() - scanStartedAt) / 1000) : 0, ...params }); };
+const issue = (kind, params = {}) => { if (issued.has(kind)) return; issued.add(kind); if (kind !== 'upload_fail') toolReport('scan', kind, { size: params.w ? `${params.w}x${params.h}` : '' }); track('scan_issue', { issue: kind, ui_label: kind, ui_value: params.w ? `${params.w}x${params.h}@${params.scale}` : String(params.msg || ''), after_s: scanStartedAt ? Math.round((Date.now() - scanStartedAt) / 1000) : 0, ...params }); };
 
 async function recognize(canvas) {
   const img = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
@@ -278,6 +279,7 @@ async function recognize(canvas) {
     if (!everRows && Date.now() - scanStartedAt > 20000) issue('no_shop', { w: img.width, h: img.height, scale: +scale.toFixed(2) });
     return [];
   }
+  if (!everRows) toolReport('scan', 'first_rows', { size: `${img.width}x${img.height}` });
   if (!everRows++) track('scan_first_rows', { after_s: Math.round((Date.now() - scanStartedAt) / 1000), rows: rows.length });
   // A shop on screen whose channel or room stays unknown blocks every upload.
   if (!validLocation(channel) || !validLocation(room)) { if (++missLoc >= 3) issue(!validLocation(channel) ? 'no_channel' : 'no_room'); } else missLoc = 0;

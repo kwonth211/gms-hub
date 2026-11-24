@@ -55,6 +55,11 @@ binding = "AI"
 binding = "BLOCKS"
 dataset = "gms_hub_blocks"
 
+# How runs of the screen-reading tools end (POST /tool-report).
+[[analytics_engine_datasets]]
+binding = "TOOLS"
+dataset = "gms_hub_tools"
+
 [[send_email]]
 name = "EMAIL"
 

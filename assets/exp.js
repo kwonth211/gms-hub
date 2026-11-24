@@ -2,7 +2,8 @@
 // every few seconds (assets/exp-reader.js), then shows EXP per hour, percent per hour, time to the next level and the
 // session's gain. Nothing leaves this computer: frames are read in the page and only the numbers are kept, in this
 // browser (localStorage), so a reload keeps the session. Without screen sharing the two numbers can be typed by hand.
-import { findGauges, expTextBox, readExpText, readSmeared, SHARE_SIZE, parseExp, sameReading, summarize, levelTotal, levelBox, levelTiles, jobBox, inkImage, jobKey, parseLevel } from './exp-reader.js';
+import { readExp, isBlack, SHARE_SIZE, parseExp, sameReading, summarize, levelTotal, levelBox, levelTiles, jobBox, inkImage, jobKey, parseLevel } from './exp-reader.js';
+import { toolReport } from './tool-report.js';
 import { xlsx } from './xlsx.js';
 import { jobNames } from './training-evidence.js';
 import { loadChar, saveChar } from './my-char.js';
@@ -73,7 +74,7 @@ function frame() {
 }
 
 // Level and job from the status bar (owner 2026-11-19: read the level too). A line OCR worker reads the white text next
-// to the gauges every 30 seconds; two reads in a row must agree before the level and job fields are filled in.
+// to the gauges; two reads in a row must agree before a value counts.
 let lineWorker = null, lastLineAt = 0, lineVote = null;
 async function readLine(im, digits) {
   if (!lineWorker) lineWorker = (async () => {
@@ -87,7 +88,8 @@ async function readLine(im, digits) {
   return (await w.recognize(c)).data.text.trim();
 }
 async function readLevelJob(img, g) {
-  if (Date.now() - lastLineAt < 30000) return;
+  // Every 8 seconds until two reads agree, then once a minute.
+  if (Date.now() - lastLineAt < (levelSeen ? 60000 : 8000)) return;
   lastLineAt = Date.now();
   const lv = levelBox(img, g);
   if (!lv) return;
@@ -97,14 +99,28 @@ async function readLevelJob(img, g) {
   const level = parseLevel(lvText);
   const jb = jobBox(img, g, lv);
   const job = jb ? jobKey(await readLine(inkImage(img, jb), false).catch(() => '')) : null;
-  if (!level) return;
-  const vote = `${level}|${job || ''}`;
-  if (lineVote !== vote) { lineVote = vote; return; }
-  let changed = false;
-  if (Number($('exp-lv').value) !== level) { $('exp-lv').value = level; changed = true; }
-  // A first-job name (Rogue) only fills an empty field or replaces another family; a chosen second job stays.
-  if (job && $('exp-job').value !== job && (!$('exp-job').value || !families2[$('exp-job').value] || families2[$('exp-job').value] !== job)) { $('exp-job').value = job; changed = true; }
-  if (changed) { $('exp-lv').dispatchEvent(new Event('change')); check('lv', 'ok', fill(t.lvOk, { lv: level, job: job ? (ko ? jobNames.ko[job] : jobNames.en[job]) : '—' })); track('exp_level_read', { level, job: job || '' }); }
+  // Two reads in a row must agree, level and job each on its own.
+  const same = { level: level && level === lineVote?.level, job: job && job === lineVote?.job };
+  lineVote = { level, job };
+  if (!same.level && !same.job) return;
+  if (same.level) { if (!levelSeen) track('exp_level_read', { level, job: job || '' }); levelSeen = true; auto.level = level; }
+  // A first-job name (Rogue) does not replace a known second job of the same family.
+  if (same.job && !(auto.job && families2[auto.job] === job)) auto.job = job;
+  saveMe();
+}
+// What the screen shows and what the player picked: a pick comes first, "auto" falls back to the last reading.
+const auto = { level: null, job: null };
+const jobLabel = (k) => (k ? (ko ? jobNames.ko[k] : jobNames.en[k]) || '—' : '—');
+function showMe() {
+  const m = me(), picked = !!($('exp-lv').value || $('exp-job').value);
+  if (m.level || m.job) check('lv', 'ok', fill(picked ? t.lvPick : t.lvOk, { lv: m.level || '—', job: jobLabel(m.job) }));
+  else check('lv', stream ? 'warn' : 'wait', stream ? t.lvNone : t.wait);
+}
+function saveMe() {
+  const m = me();
+  try { localStorage.setItem(ME_KEY, JSON.stringify({ ...m, pickLevel: $('exp-lv').value, pickJob: $('exp-job').value, auto })); } catch {}
+  if (m.level && m.job) saveChar({ lv: m.level, job: m.job });
+  showMe();
 }
 const families2 = { fighter: 'warrior', page: 'warrior', spear: 'warrior', hunter: 'archer', crossbow: 'archer', fire: 'mage', ice: 'mage', cleric: 'mage', assassin: 'thief', bandit: 'thief' };
 
@@ -115,18 +131,39 @@ let runStartedAt = 0, everBar = false, everRead = false, failStreak = 0;
 const issuedExp = new Set();
 const expIssue = (kind, params = {}) => { if (issuedExp.has(kind)) return; issuedExp.add(kind); track('exp_issue', { issue: kind, after_s: runStartedAt ? Math.round((Date.now() - runStartedAt) / 1000) : 0, ...params }); };
 
+// One report per run: how it went after 40 seconds, or when it was stopped before that.
+let lastPlace = null, reported = false, sawBlack = 0, lastSize = '', howRead = '', levelSeen = false, firstReadS = -1;
+function reportRun(final) {
+  if (reported || !runStartedAt) return;
+  const s = Math.round((Date.now() - runStartedAt) / 1000);
+  if (!everRead && !final && s < 40) return;
+  if (final && !everRead && s < 8) return; // shared and closed at once: nothing was tried
+  reported = true;
+  const set = stream?.getVideoTracks()[0]?.getSettings?.() || {};
+  toolReport('exp', everRead ? 'ok' : sawBlack > 1 ? 'black' : everBar ? 'read_fail' : 'no_bar',
+    { first: firstReadS, size: lastSize, surface: String(set.displaySurface || ''), how: howRead, level: levelSeen ? 1 : 0, pitch: lastPlace?.g.pitch || 0 });
+}
+
 async function readOnce(img) {
-  const g = findGauges(img);
-  check('bar', g ? 'ok' : 'fail', g ? t.barOk : t.barFail);
-  if (!g) { if (!everBar && Date.now() - runStartedAt > 20000) expIssue('no_bar', { w: img.width, h: img.height }); return null; }
+  if (!img) return null;
+  lastSize = `${img.width}x${img.height}`;
+  // A full-screen game shared as a window can arrive black; say so instead of "status bar not found".
+  if (isBlack(img)) { sawBlack++; check('bar', 'fail', t.barBlack); expIssue('black_frame', { w: img.width, h: img.height }); reportRun(false); return null; }
+  const found = await readExp(img, { last: lastPlace, ocrGlyph: (k) => ocrGlyph(k).catch(() => ''), learned });
+  check('bar', found ? 'ok' : 'fail', found ? t.barOk : t.barFail);
+  if (!found) { if (!everBar && Date.now() - runStartedAt > 20000) expIssue('no_bar', { w: img.width, h: img.height }); reportRun(false); return null; }
   everBar = true;
-  readLevelJob(img, g).catch(() => {});
-  const text = await readExpText(img, expTextBox(g, img), g, { ocrGlyph: (k) => ocrGlyph(k).catch(() => ''), learned });
-  // Digits that came enlarged and blurred do not match the exact shapes; they are read by best fit instead.
-  const r = parseExp(text) || parseExp(readSmeared(img, g) || '');
-  if (r) { failStreak = 0; if (!everRead) { everRead = true; track('exp_first_read', { after_s: Math.round((Date.now() - runStartedAt) / 1000) }); } }
-  else if (++failStreak >= 6) expIssue('read_fail', { text: String(text).replace(/[^0-9,.\[\]%?]/g, '').slice(0, 30), h: g.barH });
-  check('read', r ? 'ok' : 'fail', r ? fill(t.readOk, { exp: nf.format(r.exp), pct: r.pct.toFixed(2) }) : fill(t.readFail, { text }));
+  const r = found.how ? parseExp(found.text) : null;
+  if (r) {
+    lastPlace = { W: img.width, H: img.height, g: found.g };
+    howRead = found.how;
+    failStreak = 0;
+    readLevelJob(img, found.g).catch(() => {});
+    if (!everRead) { everRead = true; firstReadS = Math.round((Date.now() - runStartedAt) / 1000); track('exp_first_read', { after_s: firstReadS }); }
+  } else if (++failStreak >= 6) expIssue('read_fail', { text: String(found.text).replace(/[^0-9,.\[\]%?]/g, '').slice(0, 30), h: found.g.barH });
+  // The level comes about a minute in, so a run that reads well is reported once that had its chance.
+  if (!everRead || Date.now() - runStartedAt > 75000) reportRun(false);
+  check('read', r ? 'ok' : 'fail', r ? fill(t.readOk, { exp: nf.format(r.exp), pct: r.pct.toFixed(2) }) : fill(t.readFail, { text: '' }));
   return r;
 }
 
@@ -147,7 +184,12 @@ function accept(r) {
     if (!changed && now - lastSampleAt < HEARTBEAT_MS) return;
   }
   if (last && (r.exp !== last.exp || r.pct !== last.pct)) { lastGainAt = now; stallWarned = false; }
-  if (last && r.exp < last.exp && r.pct < last.pct) say(t.levelUp);
+  if (last && r.exp < last.exp && r.pct < last.pct) {
+    say(t.levelUp);
+    if (Number($('exp-lv').value)) $('exp-lv').value = String(Math.min(200, Number($('exp-lv').value) + 1));
+    if (auto.level) auto.level = Math.min(200, auto.level + 1);
+    saveMe();
+  }
   session.samples.push({ t: now, exp: r.exp, pct: r.pct });
   if (!lastGainAt) lastGainAt = now;
   if (session.samples.length > 2000) session.samples.splice(0, session.samples.length - 2000);
@@ -195,15 +237,18 @@ async function start() {
   if (demoOn) toggleDemo();
   try {
     stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 5, ...SHARE_SIZE }, audio: false });
-  } catch (e) { track('exp_share_cancel', { reason: e?.name || 'error' }); return say(t.denied); }
+  } catch (e) { track('exp_share_cancel', { reason: e?.name || 'error' }); if (e?.name !== 'NotAllowedError') toolReport('exp', 'share_error', { how: String(e?.name || 'error').slice(0, 30) }); return say(t.denied); }
   video = document.createElement('video');
   video.muted = true; video.srcObject = stream;
   await video.play();
   stream.getVideoTracks()[0].addEventListener('ended', stop);
   check('share', 'ok', t.shareOk);
+  showMe();
   document.body.classList.add('exp-running');
   say(t.watching);
   runStartedAt = Date.now(); everBar = false; everRead = false; failStreak = 0; issuedExp.clear();
+  lastLineAt = 0; lineVote = null;
+  lastPlace = null; reported = false; sawBlack = 0; howRead = ''; levelSeen = false; firstReadS = -1; lastSize = '';
   track('exp_start');
   pending = null;
   lastGainAt = Date.now(); stallWarned = false;
@@ -212,6 +257,7 @@ async function start() {
 }
 
 function stop() {
+  reportRun(true); runStartedAt = 0;
   clearInterval(timer); timer = null;
   for (const tr of stream?.getTracks() || []) tr.stop();
   stream = null; video = null;
@@ -443,24 +489,24 @@ $('exp-log-xl').addEventListener('click', () => {
 // ---------- sharing a run with the spot rankings ----------
 // Level, class and party size are asked once and remembered (level and class also update the saved character).
 function me() {
-  const lv = Number($('exp-lv').value), job = $('exp-job').value, party = Number($('exp-party').value) || 1;
-  return { level: Number.isInteger(lv) && lv >= 1 && lv <= 200 ? lv : null, job: job || null, party };
+  const lv = Number($('exp-lv').value) || auto.level, party = Number($('exp-party').value) || 1;
+  return { level: Number.isInteger(lv) && lv >= 1 && lv <= 200 ? lv : null, job: $('exp-job').value || auto.job || null, party };
 }
 function clientId() {
   try { let id = localStorage.getItem(CLIENT_KEY); if (!id) { id = crypto.randomUUID(); localStorage.setItem(CLIENT_KEY, id); } return id; } catch { return 'no-storage-0000'; }
 }
 {
-  $('exp-job').innerHTML = `<option value=""></option>${Object.keys(jobNames.ko).map((k) => `<option value="${k}">${escHtml(ko ? jobNames.ko[k] : jobNames.en[k])}</option>`).join('')}`;
+  $('exp-job').insertAdjacentHTML('beforeend', Object.keys(jobNames.ko).map((k) => `<option value="${k}">${escHtml(ko ? jobNames.ko[k] : jobNames.en[k])}</option>`).join(''));
   let saved = null; try { saved = JSON.parse(localStorage.getItem(ME_KEY) || 'null'); } catch {}
   const ch = loadChar();
-  $('exp-lv').value = saved?.level || ch?.lv || '';
-  $('exp-job').value = saved?.job || ch?.job || '';
+  // Values kept from before picks were stored apart were readings; a level 1 among them was the old misread of 1x.
+  const old = saved?.auto || { level: saved?.level > 1 ? saved.level : ch?.lv > 1 ? ch.lv : null, job: saved?.job || ch?.job || null };
+  auto.level = old.level || null; auto.job = old.job || null;
+  $('exp-lv').value = saved?.pickLevel || '';
+  $('exp-job').value = saved?.pickJob || '';
   $('exp-party').value = String(saved?.party || 1);
-  for (const id of ['exp-lv', 'exp-job', 'exp-party']) $(id).addEventListener('change', () => {
-    const m = me();
-    try { localStorage.setItem(ME_KEY, JSON.stringify(m)); } catch {}
-    if (m.level && m.job) saveChar({ lv: m.level, job: m.job });
-  });
+  for (const id of ['exp-lv', 'exp-job', 'exp-party']) $(id).addEventListener('change', saveMe);
+  if (auto.level || auto.job || $('exp-lv').value || $('exp-job').value) showMe();
 }
 $('exp-log-body').addEventListener('click', async (e) => {
   const b = e.target.closest('.exp-share'); if (!b || demoOn) return;

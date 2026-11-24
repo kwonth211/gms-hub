@@ -29,6 +29,11 @@ jobs:
           node-version: 22
       - name: Verify API permissions, cache and private settings
         run: node --test tests/security.test.mjs tests/public-cache.test.mjs tests/worker.test.mjs tests/usage-guard.test.mjs tests/inbox.test.mjs tests/shop-scan.test.mjs tests/market-batch.test.mjs tests/item-options.test.mjs tests/item-tip.test.mjs tests/mega-options.test.mjs tests/mega-reader.test.mjs tests/option-filter.test.mjs tests/market-share.test.mjs tests/market-browser.test.mjs
+      # The screen readers (EXP, stat window) are checked on every deploy, with their image decoder so nothing is skipped.
+      - run: npm ci --ignore-scripts
+        working-directory: scripts/scan-tools
+      - name: Verify the screen readers
+        run: node --test tests/exp-reader.test.mjs tests/exp-runs.test.mjs tests/stat-reader.test.mjs
       - run: npm ci --ignore-scripts
         working-directory: scripts/market-batch
       - run: npm test

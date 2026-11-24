@@ -9,6 +9,8 @@ let PNG = null;
 try {
   PNG = createRequire(new URL('../scripts/scan-tools/package.json', import.meta.url))('pngjs').PNG;
 } catch {}
+// On the deploy machine the decoder must be there: a skipped image test once let a broken reader through (2026-11-24).
+if (process.env.CI && !PNG) throw new Error('pngjs missing: run npm ci in scripts/scan-tools');
 const fixture = () => PNG.sync.read(readFileSync(new URL('./fixtures/stat-window.png', import.meta.url)));
 const KEYS = ['str', 'dex', 'int', 'luk', 'level', 'job', 'attack', 'magic', 'acc'];
 

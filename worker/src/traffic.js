@@ -172,13 +172,14 @@ export async function trafficReport(env, dayParam, now = Date.now()) {
     () => hourly(env, day, isToday ? now : to, `,userAgentBrowser_in:${BOTS}`),
     () => fine(env, from, to, 'userAgentBrowser countryName requestPath', { limit: 12, where: `,userAgentBrowser_in:${BOTS}` }),
     () => blockedReport(env, from, to),
+    () => toolRuns(env, now),
     ...past.map((d) => () => pastDay(env, d).then((h) => [d, h]))
   ];
   // A few at a time: twenty queries in flight at once come back at a coarse sample rate (hours read as 0 or 100).
   const results = [];
   for (let k = 0; k < jobs.length; k += 3) results.push(...(await Promise.all(jobs.slice(k, k + 3).map((f) => f()))));
   // Busiest-hour record ignores coarse days, and the day record is only as good as each day's sample.
-  const [h0, krHours, countries, paths, refs, devices, botHours, botRows, blocked, ...days] = results;
+  const [h0, krHours, countries, paths, refs, devices, botHours, botRows, blocked, tools, ...days] = results;
   const dayMap = new Map(days);
   const h1 = dayMap.get(minus(day, 1)), h7 = dayMap.get(minus(day, 7));
   days.push([day, h0]);
@@ -223,6 +224,7 @@ export async function trafficReport(env, dayParam, now = Date.now()) {
       top: botRows.map((r) => ({ browser: r.dimensions.userAgentBrowser, country: r.dimensions.countryName || '??', path: r.dimensions.requestPath, visits: r.sum.visits, views: r.count }))
     },
     blocked,
+    tools,
     daily: [...daily.entries()].sort().map(([d, [visits, views]]) => ({ day: d, visits, views })),
     live
   };
@@ -267,5 +269,46 @@ export async function handleTraffic(req, env, ctx, allowedOrigins) {
     return reply({ ...data, you });
   } catch (e) {
     return reply({ error: String(e.message || e) }, 502);
+  }
+}
+
+// How runs of the screen-reading tools end (EXP tracker, shop scan): POST /tool-report from the site, one point per run.
+// Only the outcome, sizes and browser are kept, never the picture, the numbers read or an address.
+const TOOL_SET = 'gms_hub_tools';
+const TOOL_OK = { exp: ['ok', 'no_bar', 'read_fail', 'black', 'share_error'], scan: ['first_rows', 'black_frame', 'no_shop', 'unsure_rows', 'read_error', 'video_play', 'upload_fail', 'no_location', 'no_channel', 'no_room'] };
+const osOf = (ua) => (/Windows/.test(ua) ? 'Windows' : /Android/.test(ua) ? 'Android' : /iPhone|iPad/.test(ua) ? 'iOS' : /Mac OS/.test(ua) ? 'Mac' : /Linux|X11/.test(ua) ? 'Linux' : '?');
+const browserOf = (ua) => (/Whale/.test(ua) ? 'Whale' : /Edg\//.test(ua) ? 'Edge' : /OPR\//.test(ua) ? 'Opera' : /Firefox/.test(ua) ? 'Firefox' : /Chrome/.test(ua) ? 'Chrome' : /Safari/.test(ua) ? 'Safari' : '?');
+export async function handleToolReport(req, env) {
+  const b = await req.json().catch(() => null);
+  const word = (v, n) => String(v ?? '').replace(/[^\w.x-]/g, '').slice(0, n), num = (v, max) => Math.max(-1, Math.min(max, Number(v) || 0));
+  if (!b || !TOOL_OK[b.tool]?.includes(b.outcome)) return { error: 'bad report' };
+  try {
+    const ua = req.headers.get('User-Agent') || '';
+    env.TOOLS?.writeDataPoint({
+      indexes: [b.tool],
+      blobs: [b.tool, b.outcome, word(b.size, 12), osOf(ua), browserOf(ua), word(b.surface, 12), word(b.how, 30), req.cf?.country || '??', `${num(b.sw, 20000)}x${num(b.sh, 20000)}`, word(b.lang, 5)],
+      doubles: [num(b.first, 3600), num(b.dpr, 10), num(b.level, 1), num(b.pitch, 2000)]
+    });
+  } catch { /* recording only */ }
+  return { ok: true };
+}
+export async function toolRuns(env, now = Date.now()) {
+  const to = Math.floor(now / 1000), from = to - 7 * 86400;
+  const ask = async (q) => {
+    const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/analytics_engine/sql`, { method: 'POST', headers: { Authorization: `Bearer ${env.CF_ANALYTICS_TOKEN}` }, body: `${q} FORMAT JSON` });
+    const t = await r.text();
+    if (!r.ok) throw new Error(t.slice(0, 160) || `sql ${r.status}`);
+    return JSON.parse(t).data || [];
+  };
+  const range = `timestamp >= toDateTime(${from}) AND timestamp < toDateTime(${to})`;
+  try {
+    const [days, why] = await Promise.all([
+      ask(`SELECT blob1 AS tool, blob2 AS outcome, intDiv(toUInt32(timestamp) + 32400, 86400) AS d, sum(_sample_interval) AS n, sum(_sample_interval * double3) AS lv FROM ${TOOL_SET} WHERE ${range} GROUP BY tool, outcome, d ORDER BY d`),
+      ask(`SELECT blob1 AS tool, blob2 AS outcome, blob3 AS size, blob4 AS os, blob5 AS browser, blob6 AS surface, blob7 AS how, blob9 AS screen, double2 AS dpr, sum(_sample_interval) AS n FROM ${TOOL_SET} WHERE ${range} GROUP BY tool, outcome, size, os, browser, surface, how, screen, dpr ORDER BY n DESC LIMIT 200`)
+    ]);
+    return { days: days.map((r) => ({ tool: r.tool, outcome: r.outcome, day: new Date(Number(r.d) * 86400000).toISOString().slice(0, 10), n: Number(r.n), lv: Number(r.lv) })), why: why.map((r) => ({ ...r, n: Number(r.n), dpr: Number(r.dpr) })) };
+  } catch (e) {
+    if (/unable to find|does not exist|unknown table/i.test(String(e.message))) return { days: [], why: [] };
+    return { error: String(e.message || e) };
   }
 }

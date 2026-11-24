@@ -4,6 +4,7 @@
 // starting at the track's left edge. Only that text goes through OCR; the numbers are checked against each other
 // (exp ÷ percent must give a sensible level total) so a misread digit is dropped rather than charted.
 
+const NATIVE_PITCH = 108; // game pixels from one gauge's start to the next
 const isRed = (r, g, b) => r > 170 && g < 110 && b < 110 && r - g > 90;
 // The MP fill has a lighter highlight row and edge, so green may run high; blue well above red is what counts.
 const isBlue = (r, g, b) => b > 150 && r < 110 && g < 200 && b - r > 80;
@@ -27,8 +28,78 @@ function runsOn(img, y, test, x0 = 0, x1 = img.width, minLen = 12) {
   return runs;
 }
 
-// The HP and MP gauges: same row, similar width, blue starting shortly after red ends. Searched in the bottom quarter
-// of the frame, bottom-up, so a red cape or blue water higher up never wins. Returns the gauge row band and geometry.
+// The EXP fill: yellow-green.
+const isGreen = (r, g, b) => g > 140 && b < 110 && g > b + 70 && r < g + 40;
+
+// The three gauges start at fixed steps (HP, MP, EXP: 108 game pixels apart), so any two fills that can be seen fix where
+// the bar is. A hunting character is often low on HP or MP, so a fill may be a sliver or missing: while full gauges were
+// required, HP under about 60% or MP under about 25% meant "status bar not found" (found 2026-11-24). Every plausible
+// placement is returned, best first; the caller keeps the one whose text reads.
+export function gaugeCandidates(img, limit = 8) {
+  const { height: H, width: W, data: d } = img, minLen = Math.max(2, Math.round(W * 0.0015));
+  const hits = [];
+  // The EXP fill begins a few pixels after its step (measured on the game's own bar).
+  const kinds = [[isRed, 0], [isBlue, 1], [isGreen, 2.045]];
+  for (let y = H - 2; y >= Math.floor(H * 0.6); y--) {
+    const runs = [];
+    for (const [test, slot] of kinds) for (const q of runsOn(img, y, test, 0, W, minLen)) runs.push({ ...q, slot });
+    if (runs.length < 2) continue;
+    for (const a of runs) for (const b of runs) {
+      if (b.slot <= a.slot || b.x0 <= a.x0) continue;
+      const pitch = (b.x0 - a.x0) / (b.slot - a.slot), k = pitch / NATIVE_PITCH;
+      if (k < 0.5 || k > 5 || a.x1 - a.x0 > pitch * 1.03 || b.x1 - b.x0 > pitch * 1.03) continue;
+      const hpX0 = a.x0 - a.slot * pitch;
+      if (hpX0 < -2 || hpX0 + pitch * 3.3 > W + 2) continue;
+      hits.push({ y, pitch, hpX0, len: (a.x1 - a.x0 + b.x1 - b.x0) / pitch });
+    }
+    if (hits.length > 60000) break;
+  }
+  const groups = new Map();
+  for (const h of hits) {
+    const key = `${Math.round(h.pitch / 3)}|${Math.round(h.hpX0 / 4)}`;
+    const g = groups.get(key) || { rows: new Set(), pitch: [], hpX0: [], len: 0 };
+    g.rows.add(h.y); g.pitch.push(h.pitch); g.hpX0.push(h.hpX0); g.len += h.len; groups.set(key, g);
+  }
+  const median = (v) => v.sort((x, y) => x - y)[v.length >> 1];
+  const out = [];
+  for (const g of groups.values()) {
+    const pitch = median(g.pitch), k = pitch / NATIVE_PITCH, ys = [...g.rows].sort((x, y) => y - x);
+    // The gauge rows are one solid band about six game rows tall.
+    let top = ys[0], bottom = ys[0];
+    for (const y of ys.slice(1)) { if (top - y <= 1 + Math.round(k * 0.5)) top = y; else break; }
+    const barH = bottom - top + 1;
+    if (barH < Math.max(2, k * 3) || barH > k * 10 + 2) continue;
+    const hpX0 = Math.round(median(g.hpX0)), p = Math.round(pitch);
+    out.push({ top, bottom, barH, hpX0, mpX0: Math.round(hpX0 + pitch), pitch: p, expX0: Math.round(hpX0 + pitch * 2), width: p, score: Math.min(1, barH / (k * 6)) + g.len / g.pitch.length });
+  }
+  return out.sort((x, y) => y.score - x.score).slice(0, limit);
+}
+// The first placement whose numbers read, or the best placement with no reading. `last` is the placement that read
+// before in a frame of the same size: the bar does not move, so it is tried first and needs no gauge at all.
+export async function readExp(img, { last = null, ocrGlyph = null, learned = new Map() } = {}) {
+  const list = [];
+  if (last && last.W === img.width && last.H === img.height) list.push(last.g);
+  const full = findGauges(img);
+  if (full) list.push(full);
+  let first = null;
+  for (const g of list) {
+    const text = await readExpText(img, expTextBox(g, img), g, { ocrGlyph, learned });
+    if (parseExp(text)) return { g, text, how: 'exact' };
+    first ??= { g, text, how: null };
+  }
+  for (const g of list) { const soft = readSmeared(img, g); if (soft) return { g, text: soft, how: 'soft' }; }
+  // A placement guessed from slivers can be a few pixels off, where the exact reader could start mid-number, so only the
+  // whole-line fit counts here, searched a little wider.
+  for (const g of gaugeCandidates(img)) {
+    const r = readSmeared(img, g, { wide: true, info: true });
+    if (r?.ok) return { g: r.g, text: r.text, how: 'soft' };
+    first ??= { g, text: '', how: null };
+  }
+  return first;
+}
+
+// The quick search for full HP and MP gauges: same row, similar width, blue starting shortly after red ends. Searched
+// bottom-up, so a red cape or blue water higher up never wins. Returns the gauge row band and geometry.
 export function findGauges(img) {
   const { height: H, width: W } = img;
   const minW = Math.max(12, Math.round(W * 0.02));
@@ -366,7 +437,6 @@ export const parseLevel = (text) => { const m = /^\s*(\d{1,3})\s*$/.exec(String(
 // the exact table above no longer matches. Here the text line is sampled back onto the game's own pixel grid, at several
 // scales and sub-pixel shifts, and the sequence of glyphs whose softened shapes fit best is found by a shortest path. The
 // result only counts when it has the form "digits[digits.digits%]" and beats the best different text clearly.
-const NATIVE_PITCH = 108;
 // Game pixels from the EXP gauge's corner to the text strip (measured on the game's own bar).
 const TEXT_TOP = -14;
 const TEXT_LEFT = 25;
@@ -431,9 +501,9 @@ function decode(cells, cols, T) {
   return { text, cost: end.cost / TEXT_ROWS };
 }
 // The text of a smeared frame, or null when nothing fits well enough. `info` (tests) also returns the fit.
-export function readSmeared(img, g, { info = false, maxCost = 0.022, margin = 1.15 } = {}) {
+export function readSmeared(img, g, { info = false, maxCost = 0.022, margin = 1.15, wide = false } = {}) {
   const k0 = g.pitch / NATIVE_PITCH;
-  if (!(k0 > 0.97 && k0 < 4)) return null;
+  if (!(k0 > 0.84 && k0 < 5)) return null;
   const lum = (x, y) => { x = x < 0 ? 0 : x >= img.width ? img.width - 1 : x; y = y < 0 ? 0 : y >= img.height ? img.height - 1 : y; const i = (y * img.width + x) * 4; return (img.data[i] * 299 + img.data[i + 1] * 587 + img.data[i + 2] * 114) / 1000; };
   // Summed areas of the strip, so averaging a game pixel costs four lookups.
   const bx0 = Math.max(0, Math.floor(g.expX0 - 6 * k0)), bx1 = Math.min(img.width, Math.ceil(g.expX0 + 150 * k0)), by0 = Math.max(0, Math.floor(g.top - 26 * k0)), by1 = Math.min(img.height, g.top + 2);
@@ -459,6 +529,7 @@ export function readSmeared(img, g, { info = false, maxCost = 0.022, margin = 1.
     for (const T of Ts) {
       const r = decode(cells, cols, T);
       if (!r) continue;
+      r.k = k; r.oy = oy; r.ox = ox;
       best = Math.min(best, r.cost);
       // A comma is the faintest mark, so readings that differ only in commas count as one.
       const id = digits(r.text), old = found.get(id);
@@ -469,14 +540,24 @@ export function readSmeared(img, g, { info = false, maxCost = 0.022, margin = 1.
   // The gauge edges smear in a shared picture (a real share measured 106 for 108), so the scale is searched over two pixels.
   // Coarse: where the line sits. Fine: around the three best spots, at finer scales and shifts.
   const spots = [];
-  for (const f of [0, 0.9, 1.8, -0.9].map((px) => 1 + px / g.pitch)) for (let oy = -2; oy <= 2; oy += 0.5) for (const ox of [0, 0.5]) spots.push([tryAt(k0 * f, oy, ox, [TEMPLATES[1]]), k0 * f, oy, ox]);
+  for (const f of [0, 0.9, 1.8, -0.9].map((px) => 1 + px / g.pitch)) for (let oy = -2; oy <= 2; oy += 0.5) for (const ox of wide ? [-3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5] : [0, 0.5]) spots.push([tryAt(k0 * f, oy, ox, [TEMPLATES[1]]), k0 * f, oy, ox]);
   spots.sort((a, b) => a[0] - b[0]);
   for (const [, k, oy, ox] of spots.slice(0, 3)) for (const f of [1, 1.003, 0.997]) for (const dy of [-0.25, 0, 0.25]) for (const dx of [-0.25, 0, 0.25]) tryAt(k * f, oy + dy, ox + dx, TEMPLATES);
   const list = [...found.values()].sort((a, b) => a.cost - b.cost);
   const ok = list[0] && list[0].cost <= maxCost && (!list[1] || list[1].cost >= list[0].cost * margin) && parseExp(digits(list[0].text));
-  return info ? { ok: !!ok, text: list[0] && digits(list[0].text), cost: list[0]?.cost, next: list[1] } : ok ? digits(list[0].text) : null;
+  const b = list[0], p = b && b.k * NATIVE_PITCH, shift = b ? Math.round(b.ox * b.k) : 0;
+  // The placement as the text itself shows it, good for the frames that follow.
+  const fit = b && { ...g, pitch: Math.round(p), width: Math.round(p), expX0: g.expX0 + shift, top: g.top + Math.round(b.oy * b.k) };
+  return info ? { ok: !!ok, text: b && digits(b.text), cost: b?.cost, next: list[1], g: fit } : ok ? digits(list[0].text) : null;
 }
 
 // Chrome shrinks a shared window to the sharer's screen size in CSS pixels unless a bigger size is asked for: on a laptop
 // at 125-150% display scaling a 1366-wide game arrived 1234 wide and the 5-pixel digits were lost (measured 2026-11-24).
 export const SHARE_SIZE = { width: { ideal: 3840, max: 7680 }, height: { ideal: 2160, max: 4320 } };
+
+// A frame with nothing in it (a full-screen game shared as a window on some PCs).
+export function isBlack(img) {
+  let bright = 0, n = 0;
+  for (let i = 0; i < img.data.length; i += 4 * 997) { n++; if (img.data[i] + img.data[i + 1] + img.data[i + 2] > 60) bright++; }
+  return n > 20 && bright < n * 0.01;
+}

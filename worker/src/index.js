@@ -30,7 +30,7 @@ import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoint
 import { cachedPublicResponse } from './public-cache.js';
 import { refreshNews } from './news.js';
 import { Presence, handlePresence, handlePresencePeak } from './presence.js';
-import { handleTraffic, logBlock } from './traffic.js';
+import { handleToolReport, handleTraffic, logBlock } from './traffic.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
 import { validRoom } from '../../assets/place.js';
 import { handleShopLink } from './shop-preview.js';
@@ -517,6 +517,11 @@ const api = {
     if (url.pathname === '/internal/market-boost') return handleMarketBoost(req, env);
     if (url.pathname === '/internal/mail/send' && req.method === 'POST') return handleSendMail(req, env);
     if (url.pathname === '/internal/presence-peak' && req.method === 'GET') return handlePresencePeak(req, env);
+    if (url.pathname === '/tool-report' && req.method === 'POST') {
+      if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
+      const out = await handleToolReport(req, env);
+      return json(out, cors, out.error ? 400 : 200);
+    }
     if (url.pathname === '/internal/traffic') return handleTraffic(req, env, ctx, ALLOWED_ORIGINS);
     if (url.pathname === '/internal/scam') return handleScamAdmin(req, env, ALLOWED_ORIGINS, lookupCharacter);
     // The collector page runs on gms-hub.com (or localhost while testing) and sends the admin key, so it needs CORS.

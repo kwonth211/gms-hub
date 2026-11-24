@@ -4511,3 +4511,4 @@ button.trd-slot:focus-visible { outline: 2px solid var(--focus); outline-offset:
   .trd-item-ico { width: 52px; height: 52px; }
   .trd-item h2 { font-size: 1.2rem; }
 }
+.exp-me-box { margin: 0 0 14px; padding: 12px 14px; }

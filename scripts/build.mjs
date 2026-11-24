@@ -1817,7 +1817,7 @@ const EXP = {
     log: { heading: '사냥 기록', help: '정지하거나 새로 측정할 때 3분 넘게 잰 기록이 여기에 남아요. 같은 몬스터를 잰 기록 중 최고 기록과 나란히 보여 줘요. 이 브라우저에 저장되고, 디스코드로 로그인하면 다른 기기에서도 이어져요.',
       cols: ['날짜', '측정 시간', '시간당 경험치', '시간당 %', '얻은 경험치', '몬스터', '사냥터 메모', ''], empty: '아직 남은 기록이 없어요.', del: '삭제', excel: '엑셀로 받기', clear: '기록 전체 삭제', clearAsk: '사냥 기록을 모두 지울까요?',
       share: '사냥터 순위에 보태기', shared: '보탰어요 ✓', shareNeed: '레벨과 직업을 먼저 넣어 주세요.', shareOk: '보태 주셔서 고마워요! 같은 곳 기록이 3명 넘게 모이면 사냥터 추천에 유저 실측으로 나와요.', shareFail: '지금은 보낼 수 없어요. 잠시 뒤 다시 눌러 주세요.' },
-    me: { lv: '내 레벨', job: '직업', party: '파티 인원', solo: '솔로', people: '{n}명', help: '사냥터 순위에 보탤 때 같이 올라가요. 이 브라우저에 기억해요.' },
+    me: { heading: '레벨·직업', auto: '자동 인식', lv: '레벨', job: '직업', party: '파티 인원', solo: '솔로', people: '{n}명', help: '안 읽히면 직접 고르세요. 고른 값이 먼저예요. 레벨 업을 하면 고른 레벨도 1 올라가요. 사냥터 순위에 보탤 때 같이 올라가요.' },
     community: '다른 유저 {n}명 실측 중간값 {v}/시간',
     skipIdle: '쉬는 시간 빼기 (2분 넘게 EXP가 안 오르면 제외)',
     mobLabel: '사냥하는 몬스터', mobPh: '몬스터 이름 (예: 스티지)', mobHelp: '고르면 잡은 마릿수를 계산해요.',
@@ -1829,8 +1829,8 @@ const EXP = {
     i: {
       unsupported: '이 브라우저는 화면 공유가 안 돼요. PC 크롬이나 엣지에서 열어 주세요. 아래에서 직접 입력은 돼요.', denied: '공유가 취소됐어요. 다시 시작을 누르면 돼요.',
       watching: '읽는 중이에요. 사냥하세요!', stopped: '정지했어요. 기록은 그대로 있어요.', wait: '대기',
-      shareOk: '메이플 창 공유 중', barOk: '상태바를 찾았어요', barFail: '상태바를 못 찾았어요. 메이플 창을 골랐는지, 아래 HP·MP·EXP 막대가 가려지지 않았는지 보세요.',
-      readOk: 'EXP {exp} ({pct}%)', readFail: '숫자를 못 읽었어요. 잠시 뒤 다시 읽어요. {text}', lvOk: 'Lv {lv} · {job}',
+      shareOk: '메이플 창 공유 중', barOk: '상태바를 찾았어요', barBlack: '공유한 화면이 검게 나와요. 게임을 창 모드로 바꾸거나, 다시 공유하면서 전체 화면 탭에서 모니터를 고르세요.', barFail: '상태바를 못 찾았어요. 메이플 창을 골랐는지, 아래 HP·MP·EXP 막대가 가려지지 않았는지 보세요.',
+      readOk: 'EXP {exp} ({pct}%)', readFail: '숫자를 못 읽었어요. 잠시 뒤 다시 읽어요. {text}', lvOk: 'Lv {lv} · {job}', lvPick: '직접 선택 · Lv {lv} · {job}', lvNone: '아직 못 읽었어요. 위에서 직접 고르세요.',
       idle: '쉬는 시간 {m}분은 뺐어요', levelsUp: '레벨업 {n}번 포함',
       kills: '{mob} 약 {n}마리', killsPerHour: '시간당 약 {n}마리',
       resetAsk: '지금 기록을 지우고 새로 측정할까요?', manualOk: '기록했어요.', manualFirstOk: '시작값을 기록했어요. 사냥이 끝나면 그때 EXP를 넣고 다시 눌러 주세요.', manualFirst: '시작값 기록', manualNext: '지금 값 기록', manualBad: 'EXP와 퍼센트(소수점 두 자리)를 확인해 주세요.',
@@ -1852,7 +1852,7 @@ const EXP = {
     log: { heading: 'Training log', help: 'Sessions over 3 minutes are kept here when you stop or start a new one. Runs on the same monster are compared with your best. Saved in this browser; log in with Discord to keep it on your other devices too.',
       cols: ['Date', 'Time', 'EXP per hour', '% per hour', 'EXP gained', 'Monster', 'Spot note', ''], empty: 'No sessions kept yet.', del: 'Delete', excel: 'Download Excel', clear: 'Clear the log', clearAsk: 'Delete the whole training log?',
       share: 'Add to spot rankings', shared: 'Added ✓', shareNeed: 'Enter your level and class first.', shareOk: 'Thanks! Once 3 or more players share the same spot, the training finder shows the measured rate.', shareFail: 'Could not send right now. Try again shortly.' },
-    me: { lv: 'Your level', job: 'Class', party: 'Party size', solo: 'Solo', people: '{n} players', help: 'Sent along when you add a run to the rankings. Remembered in this browser.' },
+    me: { heading: 'Level and job', auto: 'Auto-detect', lv: 'Level', job: 'Class', party: 'Party size', solo: 'Solo', people: '{n} players', help: 'Pick them yourself if they are not read. Your choice comes first, and a level-up raises the chosen level by 1. Sent along when you add a run to the rankings.' },
     community: 'Measured by {n} other players: median {v}/h',
     skipIdle: 'Skip idle time (no EXP gain for over 2 minutes)',
     mobLabel: 'Monster you are training on', mobPh: 'Monster name (e.g. Stirge)', mobHelp: 'Pick one to count kills.',
@@ -1864,8 +1864,8 @@ const EXP = {
     i: {
       unsupported: 'This browser cannot share a screen. Use Chrome or Edge on a computer; typing EXP in below still works.', denied: 'Sharing was cancelled. Press start again.',
       watching: 'Reading. Go train!', stopped: 'Stopped. The session is kept.', wait: 'Waiting',
-      shareOk: 'Sharing the game window', barOk: 'Status bar found', barFail: 'Status bar not found. Check that the game window is shared and the HP/MP/EXP gauges are not covered.',
-      readOk: 'EXP {exp} ({pct}%)', readFail: 'Could not read the numbers; trying again shortly. {text}', lvOk: 'Lv {lv} · {job}',
+      shareOk: 'Sharing the game window', barOk: 'Status bar found', barBlack: 'The shared picture is black. Switch the game to windowed mode, or share again and pick your monitor under Entire screen.', barFail: 'Status bar not found. Check that the game window is shared and the HP/MP/EXP gauges are not covered.',
+      readOk: 'EXP {exp} ({pct}%)', readFail: 'Could not read the numbers; trying again shortly. {text}', lvOk: 'Lv {lv} · {job}', lvPick: 'Your choice · Lv {lv} · {job}', lvNone: 'Not read yet. Pick them above.',
       idle: '{m} idle minutes left out', levelsUp: 'includes {n} level-up(s)',
       kills: 'about {n} {mob}', killsPerHour: 'about {n} an hour',
       resetAsk: 'Clear this session and start a new one?', manualOk: 'Saved.', manualFirstOk: 'Starting value saved. When you finish training, enter the EXP again and press once more.', manualFirst: 'Save starting value', manualNext: 'Save current value', manualBad: 'Check the EXP and the percent (two decimals).',
@@ -1880,6 +1880,12 @@ function expBody(lang) {
   return `${pageHead(lang, 'clock', t.h1, t.lead)}
 <div class="wrap exp-page">
 <section class="panel exp-control">
+<fieldset class="scan-location exp-me-box"><legend>${esc(t.me.heading)}</legend>
+<label>${esc(t.me.lv)}<select id="exp-lv"><option value="">${esc(t.me.auto)}</option>${Array.from({ length: 200 }, (_, n) => `<option value="${n + 1}">Lv ${n + 1}</option>`).join('')}</select></label>
+<label>${esc(t.me.job)}<select id="exp-job"><option value="">${esc(t.me.auto)}</option></select></label>
+<label>${esc(t.me.party)}<select id="exp-party">${[1, 2, 3, 4, 5, 6].map((n) => `<option value="${n}">${n === 1 ? esc(t.me.solo) : esc(t.me.people.replace('{n}', n))}</option>`).join('')}</select></label>
+<p class="muted">${esc(t.me.help)}</p>
+</fieldset>
 <div class="exp-buttons"><button type="button" class="btn exp-start" id="exp-start">▶ ${esc(t.start)}</button><button type="button" class="btn ghost exp-stop" id="exp-stop">■ ${esc(t.stop)}</button><button type="button" class="btn ghost small-btn" id="exp-pip">${esc(t.pip)}</button><button type="button" class="btn ghost small-btn" id="exp-demo" data-on="${esc(t.demo)}" data-off="${esc(t.demoOff)}">${esc(t.demo)}</button></div>
 <p id="exp-demo-note" class="exp-demo-note" hidden>${esc(t.demoNote)}</p>
 <p id="exp-status" class="exp-status" role="status" aria-live="polite"></p>
@@ -1894,7 +1900,6 @@ function expBody(lang) {
 <div class="exp-options">
 <label class="exp-check"><input type="checkbox" id="exp-skip-idle" checked> ${esc(t.skipIdle)}</label>
 <label class="exp-check"><input type="checkbox" id="exp-alert"> ${esc(t.alertLabel)}</label>
-<div class="exp-me"><label>${esc(t.me.lv)} <input id="exp-lv" type="number" min="1" max="200" inputmode="numeric"></label><label>${esc(t.me.job)} <select id="exp-job"><option value=""></option></select></label><label>${esc(t.me.party)} <select id="exp-party">${[1, 2, 3, 4, 5, 6].map((n) => `<option value="${n}">${n === 1 ? esc(t.me.solo) : esc(t.me.people.replace('{n}', n))}</option>`).join('')}</select></label><small class="muted">${esc(t.me.help)}</small></div>
 <label class="exp-mob-label">${esc(t.spotLabel)} <input id="exp-spot" placeholder="${esc(t.spotPh)}" autocomplete="off" maxlength="60"></label>
 <label class="exp-mob-label">${esc(t.mobLabel)} <input id="exp-mob" list="exp-mob-list" placeholder="${esc(t.mobPh)}" autocomplete="off"><datalist id="exp-mob-list"></datalist><small class="muted">${esc(t.mobHelp)}</small></label>
 <p id="exp-mob-out" class="exp-mob-out"></p>
