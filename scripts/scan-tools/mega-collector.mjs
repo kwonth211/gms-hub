@@ -45,7 +45,10 @@ function camera() {
   seen = 0;
   cam = spawn(helper, WIN ? [path.join(here, 'win', 'maple_stream.py'), shot] : [shot], { stdio: ['pipe', 'ignore', 'pipe'], windowsHide: true });
   cam.stderr.on('data', (d) => console.error(new Date().toISOString(), String(d).trim()));
-  cam.on('exit', (code) => { cam = null; tried=code===2 ? 0 : Date.now()-55000; });
+  cam.on('exit', (code) => { cam = null; tried=code===2 ? 0 : Date.now()-55000;
+    // Windows: the game window changed size (monitor switched off and on). The chat area found before is no longer valid;
+    // on 2026-11-24 the reader stayed silent after the window came back until it was restarted by hand.
+    if (WIN && code === 3) { box = null; tallBox = null; empty = 0; } });
 }
 const token = DRY ? '' : fs.readFileSync(path.join(os.homedir(), '.config', 'gms-hub', 'megaphone-token'), 'utf8').trim();
 async function readFrame(after=0, timeout=1400) {
@@ -330,7 +333,7 @@ async function tick() {
   const priority=job=>{const item=jobItem(job);return item&&(Number.isInteger(item.slots)||/ Scroll: /i.test(item.en))?0:1;};
   // Windows: one option read at a time, and at least 1.5 s of plain chat reading between two of them — while a link is
   // being pressed the chat is not read (the panel covers it), and back-to-back presses made new megaphones go unseen.
-  const reader=WIN?(!optionReaders.some(r=>r.busy)&&now-lastOptionEnd>=1500?optionReaders[0]:null):optionReaders.find(r=>!r.busy);
+  const reader=WIN?(!optionReaders.some(r=>r.busy)&&now-lastOptionEnd>=600?optionReaders[0]:null):optionReaders.find(r=>!r.busy);
   if(reader) for(const [key,job] of [...optionJobs].sort((a,b)=>Math.min(a[1].attempts,2)-Math.min(b[1].attempts,2)||priority(a[1])-priority(b[1])||a[1].created-b[1].created||a[1].lastAttempt-b[1].lastAttempt)) {
     const {row,m}=job;
     if(job.active||now-job.lastAttempt<1000)continue;

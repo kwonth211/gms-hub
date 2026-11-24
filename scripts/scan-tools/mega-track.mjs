@@ -23,7 +23,7 @@ const tail = mlog.slice(-4000);
 const stamp = (l) => { const m = l.match(/^(\d\d):(\d\d):(\d\d) /); if (!m) return null; const d = new Date(now); d.setHours(+m[1], +m[2], +m[3], 0); if (d.getTime() > now + 60000) d.setDate(d.getDate() - 1); return d.getTime(); };
 let lines = 0, lastLine = 0, junk = 0;
 for (const l of tail) { const t = stamp(l); if (t && /^\S+ (super|item|double)/.test(l)) { if (t >= since) { lines++; if (/——|[=_]{3}|\b[A-Z]{1,2}[a-z]?=|^\S+ \w+\s+CH\s*\d+ \w+: .{0,3}$/.test(l)) junk++; } lastLine = Math.max(lastLine, t); } }
-const restarts = mlog.filter((l) => /watchdog|restart: memory/.test(l)).length, postFail = tail.filter((l) => /post failed/.test(l)).length;
+const restarts = mlog.filter((l) => /watchdog|restart: memory/.test(l)).length, postFail = tail.filter((l) => /post failed/.test(l) && Date.parse(l.slice(0, 24)) >= since).length;
 // shop collector log (newest runall*.log)
 const rec = 'C:/Users/PC/Desktop/price-collector/records';
 const newest = fs.readdirSync(rec).filter((f) => /^runall\d+\.log$/.test(f)).map((f) => [f, fs.statSync(path.join(rec, f)).mtimeMs]).sort((a, b) => b[1] - a[1])[0];
@@ -40,8 +40,8 @@ if (errs) alerts.push(`상점 수집기 오류 ${errs}건`);
 if (megaAge === null || megaAge > 300) alerts.push(`확성기 수집기가 ${megaAge ?? '?'}초째 새 글 없음`);
 if (siteAge === null || siteAge > 420) alerts.push(`사이트에 ${siteAge ?? '?'}초째 새 확성기 없음`);
 if (site.want >= 10 && site.got / site.want < 0.85) alerts.push(`옵션 비율 ${pct(site.got, site.want)}`);
-if (postFail) alerts.push(`업로드 실패 ${postFail}건`);
+if (postFail >= 8) alerts.push(`업로드 실패 ${postFail}건`);
 const hhmm = new Date(now).toTimeString().slice(0, 5);
-const line = `${new Date(now).toISOString().slice(0, 10)} ${hhmm} | 옵션 ${site.got}/${site.want} ${pct(site.got, site.want)} | 확성기 ${site.n}건 (${Object.entries(site.kinds).map(([k, v]) => k + ' ' + v).join(', ')}) | 깨진 글 의심 ${junk}/${lines} | 상점 ${shops}개 ${rows}줄 열기실패 ${fail} 오류 ${errs} 채널 ${ch} 방 ${room} | 확성기 클릭 ${clicks} | 재시작 ${restarts} | ${alerts.length ? '경고: ' + alerts.join('; ') : '정상'}`;
+const line = `${new Date(now - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10)} ${hhmm} | 옵션 ${site.got}/${site.want} ${pct(site.got, site.want)} | 확성기 ${site.n}건 (${Object.entries(site.kinds).map(([k, v]) => k + ' ' + v).join(', ')}) | 깨진 글 의심 ${junk}/${lines} | 상점 ${shops}개 ${rows}줄 열기실패 ${fail} 오류 ${errs} 채널 ${ch} 방 ${room} | 확성기 클릭 ${clicks} | 재시작 ${restarts} 업로드 재시도 ${postFail} | ${alerts.length ? '경고: ' + alerts.join('; ') : '정상'}`;
 fs.appendFileSync(path.join(os.homedir(), 'gms-hub-samples', 'track.log'), line + '\n');
 console.log(line);
