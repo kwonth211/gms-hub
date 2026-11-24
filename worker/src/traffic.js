@@ -77,6 +77,76 @@ const sourceOf = (host) => (!host ? 'Direct / app' : (SOURCES.find(([re]) => re.
 const BOTS = JSON.stringify(['ChromeHeadless', 'BingBot', 'Googlebot', 'YandexBot', 'Baiduspider', 'DuckDuckBot', 'AhrefsBot', 'SemrushBot', 'PetalBot', 'Bytespider']);
 const pageKey = (p) => p.replace(/^\/(ko|en|zh|ja)(?=\/|$)/, '') || '/';
 
+// Requests that were turned away, from two places: Cloudflare's firewall on gms-hub.com (zone firewall events: the
+// headless-browser rule, managed rules, browser integrity check) and this worker's own refusals on the API host (403 and
+// 429 answers, written to the Analytics Engine dataset by logBlock below). Either half can fail on its own (a token
+// without zone access, a dataset not created yet); the page then shows the reason instead of an empty list.
+const BLOCK_ACTIONS = '["block","challenge","jschallenge","managed_challenge","connection_close","challenge_failed","jschallenge_failed"]';
+async function firewallBlocks(env, from, to) {
+  if (!env.CF_ZONE_ID) return { error: 'zone id not set' };
+  const filter = `{datetime_geq:"${iso(from)}",datetime_leq:"${iso(to - 1000)}",action_in:${BLOCK_ACTIONS}}`;
+  const ask = async (body) => {
+    const query = `{viewer{zones(filter:{zoneTag:"${env.CF_ZONE_ID}"}){${body}}}}`;
+    const r = await fetch(GQL, { method: 'POST', headers: { Authorization: `Bearer ${env.CF_ANALYTICS_TOKEN}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
+    const j = await r.json().catch(() => null);
+    if (!r.ok || !j || j.errors?.length) throw new Error(j?.errors?.[0]?.message || `firewall ${r.status}`);
+    const z = j.data?.viewer?.zones?.[0];
+    if (!z) throw new Error('not authorized for this zone');
+    return z;
+  };
+  try {
+    const dims = 'action source ruleId clientIP clientAsn clientASNDescription clientCountryName userAgent clientRequestPath';
+    const z = await ask(`rows:firewallEventsAdaptiveGroups(limit:400,filter:${filter},orderBy:[count_DESC]){count dimensions{${dims}}} hours:firewallEventsAdaptiveGroups(limit:200,filter:${filter},orderBy:[datetimeHour_ASC]){count dimensions{datetimeHour}}`);
+    return {
+      rows: z.rows.map((r) => ({ n: r.count, action: r.dimensions.action, source: r.dimensions.source, rule: r.dimensions.ruleId, ip: r.dimensions.clientIP, org: r.dimensions.clientASNDescription || `AS${r.dimensions.clientAsn}`, country: r.dimensions.clientCountryName || '??', ua: (r.dimensions.userAgent || '').slice(0, 220), path: r.dimensions.clientRequestPath })),
+      hours: z.hours.map((r) => [Date.parse(r.dimensions.datetimeHour), r.count])
+    };
+  } catch (e) {
+    return { error: String(e.message || e) };
+  }
+}
+
+const AE_SET = 'gms_hub_blocks';
+async function workerBlocks(env, from, to) {
+  const sql = async (q) => {
+    const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/analytics_engine/sql`, { method: 'POST', headers: { Authorization: `Bearer ${env.CF_ANALYTICS_TOKEN}` }, body: `${q} FORMAT JSON` });
+    const t = await r.text();
+    if (!r.ok) throw new Error(t.slice(0, 160) || `sql ${r.status}`);
+    return JSON.parse(t).data || [];
+  };
+  const range = `timestamp >= toDateTime(${Math.floor(from / 1000)}) AND timestamp < toDateTime(${Math.floor(to / 1000)})`;
+  try {
+    const [rows, hours] = await Promise.all([
+      sql(`SELECT blob1 AS reason, blob2 AS path, blob3 AS country, blob4 AS org, blob5 AS ua, blob6 AS ip, sum(_sample_interval) AS n FROM ${AE_SET} WHERE ${range} GROUP BY reason, path, country, org, ua, ip ORDER BY n DESC LIMIT 400`),
+      sql(`SELECT intDiv(toUInt32(timestamp), 3600) AS h, sum(_sample_interval) AS n FROM ${AE_SET} WHERE ${range} GROUP BY h ORDER BY h`)
+    ]);
+    return { rows: rows.map((r) => ({ ...r, n: Number(r.n) })), hours: hours.map((r) => [Number(r.h) * HOUR, Number(r.n)]) };
+  } catch (e) {
+    // A dataset nothing has been written to yet does not exist; that is an empty list, not a failure.
+    if (/unable to find|does not exist|unknown table/i.test(String(e.message))) return { rows: [], hours: [] };
+    return { error: String(e.message || e) };
+  }
+}
+
+export async function blockedReport(env, from, to) {
+  const [fw, wk] = await Promise.all([firewallBlocks(env, from, to), workerBlocks(env, from, to)]);
+  const hourly = Array.from({ length: 24 }, () => [0, 0]); // [firewall, worker] per KST hour
+  for (const [i, part] of [fw, wk].entries()) for (const [ms, n] of part.hours || []) { const h = Math.floor((ms - from) / HOUR); if (h >= 0 && h < 24) hourly[h][i] += n; }
+  return { hourly, firewall: fw.error ? { error: fw.error } : { rows: fw.rows }, worker: wk.error ? { error: wk.error } : { rows: wk.rows } };
+}
+
+// One data point per refused API request. Never awaited and never allowed to throw: a refusal must cost nothing extra.
+export function logBlock(env, req, reason) {
+  try {
+    const cf = req.cf || {};
+    env.BLOCKS?.writeDataPoint({
+      indexes: [reason],
+      blobs: [reason, new URL(req.url).pathname.slice(0, 120), cf.country || '??', (cf.asOrganization || '').slice(0, 80), (req.headers.get('User-Agent') || '').slice(0, 220), req.headers.get('CF-Connecting-IP') || ''],
+      doubles: [1]
+    });
+  } catch { /* logging only */ }
+}
+
 export async function trafficReport(env, dayParam, now = Date.now()) {
   const today = kstDay(now);
   const day = /^\d{4}-\d{2}-\d{2}$/.test(dayParam || '') && dayParam <= today ? dayParam : today;
@@ -94,13 +164,14 @@ export async function trafficReport(env, dayParam, now = Date.now()) {
     () => fine(env, from, to, 'deviceType', { limit: 5 }),
     () => hourly(env, day, isToday ? now : to, `,userAgentBrowser_in:${BOTS}`),
     () => fine(env, from, to, 'userAgentBrowser countryName requestPath', { limit: 12, where: `,userAgentBrowser_in:${BOTS}` }),
+    () => blockedReport(env, from, to),
     ...past.map((d) => () => pastDay(env, d).then((h) => [d, h]))
   ];
   // A few at a time: twenty queries in flight at once come back at a coarse sample rate (hours read as 0 or 100).
   const results = [];
   for (let k = 0; k < jobs.length; k += 3) results.push(...(await Promise.all(jobs.slice(k, k + 3).map((f) => f()))));
   // Busiest-hour record ignores coarse days, and the day record is only as good as each day's sample.
-  const [h0, krHours, countries, paths, refs, devices, botHours, botRows, ...days] = results;
+  const [h0, krHours, countries, paths, refs, devices, botHours, botRows, blocked, ...days] = results;
   const dayMap = new Map(days);
   const h1 = dayMap.get(minus(day, 1)), h7 = dayMap.get(minus(day, 7));
   days.push([day, h0]);
@@ -144,6 +215,7 @@ export async function trafficReport(env, dayParam, now = Date.now()) {
       hourly: botHours.map(([v, p]) => [v, p]),
       top: botRows.map((r) => ({ browser: r.dimensions.userAgentBrowser, country: r.dimensions.countryName || '??', path: r.dimensions.requestPath, visits: r.sum.visits, views: r.count }))
     },
+    blocked,
     daily: [...daily.entries()].sort().map(([d, [visits, views]]) => ({ day: d, visits, views })),
     live
   };

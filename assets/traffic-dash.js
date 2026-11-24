@@ -101,6 +101,51 @@ ${top ? `<ul class="td-botlist">${top}</ul>` : ''}
 <p class="muted small">위 방문·나라·페이지 숫자에는 이 자동 접속이 포함돼 있어요. 브라우저 이름으로 가려낸 추정이라, 이름을 숨긴 봇은 빠져요.</p></section>`;
 }
 
+// Requests that were turned away: by Cloudflare's firewall on the site, and by our own API. Every row is listed (not a
+// top few) so nothing blocked goes unseen; a row from a search engine's network is flagged, since that would be a mistake.
+const FW_SOURCE = { firewallCustom: '직접 만든 규칙', firewallcustom: '직접 만든 규칙', firewallManaged: '관리 규칙', firewallmanaged: '관리 규칙', bic: '브라우저 무결성 검사', securitylevel: '보안 수준', securityLevel: '보안 수준', hot: '이미지 도용 방지', ratelimit: '요청 제한', l7ddos: '디도스 방어', botFight: '봇 파이트 모드', botfight: '봇 파이트 모드', validation: '잘못된 요청', waf: '웹 방화벽', uablock: '브라우저 이름 차단', ip: '주소 차단', country: '나라 차단', asn: '통신망 차단', zonelockdown: '구역 잠금' };
+const FW_ACTION = { block: '차단', challenge: '확인 요구', jschallenge: '확인 요구', managed_challenge: '확인 요구', connection_close: '연결 끊음', challenge_failed: '확인 실패', jschallenge_failed: '확인 실패' };
+const WK_REASON = { headless: '화면 없는 크롬', listings: '매물 목록 긁기', rate: '요청 너무 많음', key: '운영자 키 틀림', forbidden: '허용 안 된 요청' };
+const SEARCH_NET = /google|microsoft|naver|kakao|daum|yandex|apple|duckduckgo|baidu|openai/i;
+const uaShort = (ua) => {
+  if (!ua) return '(이름 없음)';
+  const m = ua.match(/HeadlessChrome\/[\d]+|python-requests\/[\d.]+|Python-urllib\/[\d.]+|aiohttp\/[\d.]+|Java\/[\d._]+|curl\/[\d.]+|Go-http-client\/[\d.]+|node-fetch|axios\/[\d.]+|okhttp\/[\d.]+|[A-Za-z]+[Bb]ot\/?[\d.]*|Edg\/\d+|Firefox\/\d+|Chrome\/\d+|Safari\/\d+/);
+  return m ? m[0] : ua.slice(0, 40);
+};
+function blockedPanel(d) {
+  const b = d.blocked;
+  if (!b) return '';
+  const fw = b.firewall?.rows || [], wk = b.worker?.rows || [];
+  const fwN = fw.reduce((a, r) => a + r.n, 0), wkN = wk.reduce((a, r) => a + r.n, 0);
+  const W = 720, H = 150, P = 30, bw = (W - P) / 24, base = H - 20;
+  const max = Math.max(5, ...b.hourly.map(([f, w]) => f + w)), ky = (v) => (v / max) * (H - 30);
+  const ticks = [0, 0.5, 1].map((f) => Math.round(max * f)).map((v) => `<text x="0" y="${base - ky(v) + 4}" class="td-ax">${v}</text><line x1="${P}" x2="${W}" y1="${base - ky(v)}" y2="${base - ky(v)}" class="td-grid"/>`).join('');
+  const bars = b.hourly.map(([f, w], i) => `<rect x="${P + i * bw + 2}" y="${base - ky(f)}" width="${bw - 4}" height="${ky(f)}" class="td-bot"/><rect x="${P + i * bw + 2}" y="${base - ky(f) - ky(w)}" width="${bw - 4}" height="${ky(w)}" class="td-blk2"/><rect x="${P + i * bw}" y="0" width="${bw}" height="${H}" class="td-hit" data-tip="${tipLines([`${i}시`, `사이트 방화벽 ${nf(f)} · 우리 서버 ${nf(w)}`])}"/>`).join('');
+  // By who: one network + country + browser name is one line, with the rules, pages and addresses it touched.
+  const groups = new Map();
+  const add = (r, where, why) => {
+    const k = `${r.org}|${r.country}|${uaShort(r.ua)}`;
+    const g = groups.get(k) || { org: r.org, country: r.country, ua: uaShort(r.ua), full: r.ua, n: 0, why: new Map(), paths: new Map(), ips: new Set(), where: new Set() };
+    g.n += r.n; g.where.add(where); if (r.ip) g.ips.add(r.ip);
+    g.why.set(why, (g.why.get(why) || 0) + r.n); g.paths.set(r.path, (g.paths.get(r.path) || 0) + r.n);
+    groups.set(k, g);
+  };
+  for (const r of fw) add(r, '방화벽', `${FW_SOURCE[r.source] || r.source} · ${FW_ACTION[r.action] || r.action}`);
+  for (const r of wk) add(r, '서버', WK_REASON[r.reason] || r.reason);
+  const top = (m, n) => [...m.entries()].sort((a, c) => c[1] - a[1]).slice(0, n);
+  const list = [...groups.values()].sort((a, c) => c.n - a.n);
+  const warn = list.filter((g) => SEARCH_NET.test(g.org || ''));
+  const rows = list.map((g) => `<tr${SEARCH_NET.test(g.org || '') ? ' class="td-warn"' : ''}><td class="num"><b>${nf(g.n)}</b></td><td>${esc(COUNTRY[g.country] || g.country)} · ${esc(g.org || '?')}${SEARCH_NET.test(g.org || '') ? ' <span class="td-flag">검색엔진 망</span>' : ''}<br><span class="muted">주소 ${nf(g.ips.size)}개${g.ips.size <= 3 ? ` (${esc([...g.ips].join(', '))})` : ''}</span></td><td title="${esc(g.full)}">${esc(g.ua)}</td><td>${top(g.why, 3).map(([w, n]) => `${esc(w)} ${nf(n)}`).join('<br>')}</td><td>${top(g.paths, 3).map(([pth, n]) => `<code>${esc(pth)}</code> ${nf(n)}`).join('<br>')}${g.paths.size > 3 ? `<br><span class="muted">외 ${nf(g.paths.size - 3)}곳</span>` : ''}</td></tr>`).join('');
+  const errs = [b.firewall?.error && `사이트 방화벽 기록을 못 읽었어요: ${b.firewall.error}`, b.worker?.error && `우리 서버 기록을 못 읽었어요: ${b.worker.error}`].filter(Boolean).map((t) => `<p class="td-err">${esc(t)}</p>`).join('');
+  return `<section class="panel"><h2>차단된 요청 <small class="muted">사이트 방화벽 ${nf(fwN)} · 우리 서버 ${nf(wkN)} · 묶음 ${nf(list.length)}개</small></h2>
+${errs}
+<svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="시간대별 차단">${ticks}${bars}${Array.from({ length: 12 }, (_, i) => i * 2).map((h) => `<text x="${P + h * bw + bw / 2}" y="${H - 4}" class="td-ax mid">${h}시</text>`).join('')}</svg>
+<p class="td-legend"><span class="k bot"></span>사이트 방화벽 ${nf(fwN)} <span class="k blk2"></span>우리 서버 ${nf(wkN)}</p>
+${warn.length ? `<p class="td-err">검색엔진 회사 망에서 온 요청이 ${nf(warn.reduce((a, g) => a + g.n, 0))}건 막혔어요. 아래 빨간 줄을 확인하세요.</p>` : ''}
+${rows ? `<div class="table-wrap"><table class="data td-who-table td-blk-table"><thead><tr><th class="num">횟수</th><th>나라 · 통신망</th><th>브라우저 이름</th><th>막은 이유</th><th>요청한 주소</th></tr></thead><tbody>${rows}</tbody></table></div>` : (errs ? '' : '<p class="muted">이 날 막힌 요청이 없어요.</p>')}
+<p class="muted small">막힌 요청은 방문 숫자에 들어가지 않아요. 사이트 방화벽 기록은 Cloudflare가 최근 며칠 치만 보관해요. 우리 서버 기록은 11월 24일부터 쌓여요.</p></section>`;
+}
+
 // The last 7 days against the 7 before them, day by day (same weekday side by side). Today is still running, so its
 // last-week partner is cut at the same clock time.
 function weekChart(d, upto) {
@@ -177,6 +222,7 @@ ${nowPages}
 <section class="panel"><h2>한국과 해외, 시간대별</h2>${koreaChart(d)}</section>
 ${weekChart(d, upto)}
 ${botChart(d)}
+${blockedPanel(d)}
 <div class="td-grid2">
 <section class="panel"><h2>나라별 방문</h2>${bars(d.countries.slice(0, 12), { label: (c) => esc(COUNTRY[c.country] || c.country), value: (c) => c.visits })}</section>
 <section class="panel"><h2>들어온 경로</h2>${bars(d.sources.slice(0, 12), { label: (s) => esc(SOURCE[s.source] || s.source), value: (s) => s.visits, accent: true })}

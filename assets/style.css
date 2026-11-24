@@ -3405,6 +3405,12 @@ body.exp-running .exp-stop { display: inline-flex; }
 .td-chart .td-dab { fill: var(--text-2); }
 
 .traffic-dash .td-bot{fill:#c2410c;opacity:.75}
+.traffic-dash .td-blk2{fill:#7c3aed;opacity:.75}
+.traffic-dash .td-legend .k.bot{background:#c2410c;height:10px}
+.traffic-dash .td-legend .k.blk2{background:#7c3aed;height:10px}
+.traffic-dash .td-blk-table code{font-size:12px}
+.traffic-dash .td-blk-table tr.td-warn td{background:rgba(220,38,38,.1)}
+.traffic-dash .td-flag{display:inline-block;padding:0 6px;border-radius:999px;background:#dc2626;color:#fff;font-size:11px}
 .traffic-dash .td-botlist{list-style:none;margin:10px 0 4px;padding:0;font-size:13px}
 .traffic-dash .td-botlist li{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-top:1px solid var(--line,#e5e7eb)}
 .traffic-dash .td-botlist li span{min-width:0;overflow-wrap:anywhere}

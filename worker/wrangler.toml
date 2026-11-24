@@ -10,6 +10,8 @@ workers_dev = true
 [vars]
 # Cloudflare account that holds the gms-hub.com Web Analytics site (read by src/traffic.js with the CF_ANALYTICS_TOKEN secret).
 CF_ACCOUNT_ID = "2d797e9348660f2d5a228739b19cd956"
+# The gms-hub.com zone: firewall events (blocked requests) on the owner dashboard are read from it.
+CF_ZONE_ID = "0ef56374a41063f2ee0749507667b960"
 # Daily market summary goes to #시세-거래-market in the GMS Hub Discord (src/discord.js marketToDiscord, bot token).
 DISCORD_MARKET_CHANNEL = "1570460864614633533"
 # Game notices (Korean summary cards, maintenance reminders) go to #공지-announcements; 무료 고확 to #한국어-거래.
@@ -47,6 +49,11 @@ DISCORD_NEWS_CHANNEL = "1570460197812572280"
 # Workers AI: Korean summaries for new official notices (news.js), a few calls a week.
 [ai]
 binding = "AI"
+
+# Refused API requests (403/429) are written here, one point each, and read back by the owner dashboard (src/traffic.js).
+[[analytics_engine_datasets]]
+binding = "BLOCKS"
+dataset = "gms_hub_blocks"
 
 [[send_email]]
 name = "EMAIL"

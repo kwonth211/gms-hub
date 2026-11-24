@@ -30,7 +30,7 @@ import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoint
 import { cachedPublicResponse } from './public-cache.js';
 import { refreshNews } from './news.js';
 import { Presence, handlePresence, handlePresencePeak } from './presence.js';
-import { handleTraffic } from './traffic.js';
+import { handleTraffic, logBlock } from './traffic.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
 import { validRoom } from '../../assets/place.js';
 import { handleShopLink } from './shop-preview.js';
@@ -1002,8 +1002,10 @@ export default {
     // Verified search-engine crawlers stay allowed: Bing renders pages with a HeadlessChrome user agent (seen blocked
     // from msnbot addresses on 2026-11-17), and a blocked renderer sees the pages without their live data.
     const goodBot = !!(req.cf && (req.cf.verifiedBotCategory || req.cf.botManagement?.verifiedBot));
-    if (!goodBot && !path.startsWith('/internal/') && !TRUSTED.has(path) && (req.headers.get('User-Agent') || '').includes('HeadlessChrome'))
+    if (!goodBot && !path.startsWith('/internal/') && !TRUSTED.has(path) && (req.headers.get('User-Agent') || '').includes('HeadlessChrome')) {
+      logBlock(env, req, 'headless');
       return new Response(JSON.stringify({ error: 'automated browsers are not allowed' }), { status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+    }
     // The listing feed is served to the site's own pages only (owner approved, 2026-11-18). A browser on gms-hub.com
     // always sends Origin to this host and, where it sends fetch metadata, marks the request cross-site + cors. Scripts
     // paging through every listing do not: one address in Israel asked every 2-3 seconds with a copied Referer, no
@@ -1012,8 +1014,10 @@ export default {
     // the inner handler). Every other read path stays open, and verified search crawlers pass.
     if (path === '/market/listings' && req.method === 'GET' && !goodBot) {
       const fs = req.headers.get('Sec-Fetch-Site'), fm = req.headers.get('Sec-Fetch-Mode');
-      if (!ALLOWED_ORIGINS.includes(req.headers.get('Origin') || '') || (fs && fs !== 'cross-site') || (fm && fm !== 'cors'))
+      if (!ALLOWED_ORIGINS.includes(req.headers.get('Origin') || '') || (fs && fs !== 'cross-site') || (fm && fm !== 'cors')) {
+        logBlock(env, req, 'listings');
         return new Response(JSON.stringify({ error: 'Listings are served to pages on gms-hub.com. Automated collection is not permitted: https://gms-hub.com/en/terms/' }), { status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+      }
     }
     // Site chat has no page any more, so its socket route is closed (the room code stays in presence.js).
     if (path === '/chat') return new Response('not found', { status: 404 });
@@ -1025,6 +1029,9 @@ export default {
     if (isOver('q') || (live && isOver('d'))) return paused();
     if (path === '/usage') return usageAnswer(req, env);
     const e = metered(env);
-    return live ? joinPresence(req, e) : cachedPublicResponse(req, () => api.fetch(req, e, ctx), ctx);
+    // Every other refusal (rate limits, wrong origin, wrong owner key) is recorded for the owner's dashboard by its status.
+    const noted = (res) => { if (res && (res.status === 403 || res.status === 429)) logBlock(env, req, res.status === 429 ? 'rate' : path.startsWith('/internal/') ? 'key' : 'forbidden'); return res; };
+    const out = live ? joinPresence(req, e) : cachedPublicResponse(req, () => api.fetch(req, e, ctx), ctx);
+    return out instanceof Promise ? out.then(noted) : noted(out);
   }
 };
