@@ -95,12 +95,19 @@ async function firewallBlocks(env, from, to) {
     return z;
   };
   try {
-    const dims = 'action source ruleId clientIP clientAsn clientASNDescription clientCountryName userAgent clientRequestPath';
-    const z = await ask(`rows:firewallEventsAdaptiveGroups(limit:400,filter:${filter},orderBy:[count_DESC]){count dimensions{${dims}}} hours:firewallEventsAdaptiveGroups(limit:200,filter:${filter},orderBy:[datetimeHour_ASC]){count dimensions{datetimeHour}}`);
-    return {
-      rows: z.rows.map((r) => ({ n: r.count, action: r.dimensions.action, source: r.dimensions.source, rule: r.dimensions.ruleId, ip: r.dimensions.clientIP, org: r.dimensions.clientASNDescription || `AS${r.dimensions.clientAsn}`, country: r.dimensions.clientCountryName || '??', ua: (r.dimensions.userAgent || '').slice(0, 220), path: r.dimensions.clientRequestPath })),
-      hours: z.hours.map((r) => [Date.parse(r.dimensions.datetimeHour), r.count])
-    };
+    // The free plan has no grouped firewall dataset ("does not have access to the path"), only the single events, newest
+    // first; they are counted here. A full page means there were more than `cap` in the day.
+    const cap = 5000;
+    const z = await ask(`rows:firewallEventsAdaptive(limit:${cap},filter:${filter},orderBy:[datetime_DESC]){action source ruleId clientIP clientAsn clientASNDescription clientCountryName userAgent clientRequestPath datetime}`);
+    const groups = new Map(), hours = new Map();
+    for (const e of z.rows) {
+      const r = { action: e.action, source: e.source, rule: e.ruleId, ip: e.clientIP, org: e.clientASNDescription || `AS${e.clientAsn}`, country: e.clientCountryName || '??', ua: (e.userAgent || '').slice(0, 220), path: (e.clientRequestPath || '').slice(0, 160) };
+      const k = Object.values(r).join('|'), g = groups.get(k) || { n: 0, ...r };
+      g.n++; groups.set(k, g);
+      const h = Math.floor(Date.parse(e.datetime) / HOUR) * HOUR;
+      hours.set(h, (hours.get(h) || 0) + 1);
+    }
+    return { rows: [...groups.values()].sort((a, b) => b.n - a.n).slice(0, 600), hours: [...hours], full: z.rows.length >= cap || undefined };
   } catch (e) {
     return { error: String(e.message || e) };
   }
@@ -132,7 +139,7 @@ export async function blockedReport(env, from, to) {
   const [fw, wk] = await Promise.all([firewallBlocks(env, from, to), workerBlocks(env, from, to)]);
   const hourly = Array.from({ length: 24 }, () => [0, 0]); // [firewall, worker] per KST hour
   for (const [i, part] of [fw, wk].entries()) for (const [ms, n] of part.hours || []) { const h = Math.floor((ms - from) / HOUR); if (h >= 0 && h < 24) hourly[h][i] += n; }
-  return { hourly, firewall: fw.error ? { error: fw.error } : { rows: fw.rows }, worker: wk.error ? { error: wk.error } : { rows: wk.rows } };
+  return { hourly, firewall: fw.error ? { error: fw.error } : { rows: fw.rows, full: fw.full }, worker: wk.error ? { error: wk.error } : { rows: wk.rows } };
 }
 
 // One data point per refused API request. Never awaited and never allowed to throw: a refusal must cost nothing extra.
@@ -251,11 +258,13 @@ export async function handleTraffic(req, env, ctx, allowedOrigins) {
   const key = new Request(`https://cache.gms-hub.internal/traffic/${body.day || 'today'}`);
   const cache = globalThis.caches?.default;
   const hit = cache && (await cache.match(key));
-  if (hit) { const data = await hit.json(); const live = await liveNow(); return reply(live ? { ...data, live } : data); }
+  // The viewer's own address, so the page can tag blocked rows that came from the owner's own connection.
+  const you = req.headers.get('CF-Connecting-IP') || '';
+  if (hit) { const data = await hit.json(); const live = await liveNow(); return reply(live ? { ...data, live, you } : { ...data, you }); }
   try {
     const data = await trafficReport(env, body.day);
     if (cache && !data.coarse) ctx?.waitUntil?.(cache.put(key, new Response(JSON.stringify(data), { headers: { 'Cache-Control': 'max-age=120' } })));
-    return reply(data);
+    return reply({ ...data, you });
   } catch (e) {
     return reply({ error: String(e.message || e) }, 502);
   }
