@@ -109,7 +109,13 @@ const WK_REASON = { headless: '화면 없는 크롬', listings: '매물 목록 �
 const SEARCH_NET = /google|microsoft|naver|kakao|daum|yandex|apple|duckduckgo|baidu|openai/i;
 // Cloud servers rented from the same companies also scan for leaked files; those rows are not search engines.
 const SCAN_PATH = /wp-|\.php|\.env|\.git|\.sql|\.bak/i;
-const isSearch = (g) => SEARCH_NET.test(g.org || '') && ![...g.paths.keys()].every((x) => SCAN_PATH.test(x));
+// Google and Microsoft rent servers to anyone under the same network name, so there the crawler's own name or Googlebot's
+// address block (66.249.64.0/19) has to match too.
+const RENTED_NET = /google|microsoft/i;
+const CRAWLER_UA = /bot\b|google|bing|lighthouse|spider|crawler|preview/i;
+const crawlerLike = (r) => SEARCH_NET.test(r.org || '') && (!RENTED_NET.test(r.org) || CRAWLER_UA.test(r.ua || '') || /^66\.249\.(6[4-9]|[78]\d|9[0-5])\./.test(r.ip || ''));
+const isSearch = (g) => g.crawler && ![...g.paths.keys()].every((x) => SCAN_PATH.test(x));
+const isRented = (g) => !g.crawler && RENTED_NET.test(g.org || '');
 const uaShort = (ua) => {
   if (!ua) return '(이름 없음)';
   const m = ua.match(/HeadlessChrome\/[\d]+|python-requests\/[\d.]+|Python-urllib\/[\d.]+|aiohttp\/[\d.]+|Java\/[\d._]+|curl\/[\d.]+|Go-http-client\/[\d.]+|node-fetch|axios\/[\d.]+|okhttp\/[\d.]+|[A-Za-z]+[Bb]ot\/?[\d.]*|Edg\/\d+|Firefox\/\d+|Chrome\/\d+|Safari\/\d+/);
@@ -127,8 +133,8 @@ function blockedPanel(d) {
   // By who: one network + country + browser name is one line, with the rules, pages and addresses it touched.
   const groups = new Map();
   const add = (r, where, why) => {
-    const k = `${r.org}|${r.country}|${uaShort(r.ua)}`;
-    const g = groups.get(k) || { org: r.org, country: r.country, ua: uaShort(r.ua), full: r.ua, n: 0, why: new Map(), paths: new Map(), ips: new Set(), where: new Set() };
+    const crawler = crawlerLike(r), k = `${r.org}|${r.country}|${uaShort(r.ua)}|${crawler}`;
+    const g = groups.get(k) || { crawler, org: r.org, country: r.country, ua: uaShort(r.ua), full: r.ua, n: 0, why: new Map(), paths: new Map(), ips: new Set(), where: new Set() };
     g.n += r.n; g.where.add(where); if (r.ip) g.ips.add(r.ip);
     g.why.set(why, (g.why.get(why) || 0) + r.n); g.paths.set(r.path, (g.paths.get(r.path) || 0) + r.n);
     groups.set(k, g);
@@ -138,13 +144,13 @@ function blockedPanel(d) {
   const top = (m, n) => [...m.entries()].sort((a, c) => c[1] - a[1]).slice(0, n);
   const list = [...groups.values()].sort((a, c) => c.n - a.n);
   const warn = list.filter(isSearch);
-  const rows = list.map((g) => `<tr${isSearch(g) ? ' class="td-warn"' : ''}><td class="num"><b>${nf(g.n)}</b></td><td>${esc(COUNTRY[g.country] || g.country)} · ${esc(g.org || '?')}${isSearch(g) ? ' <span class="td-flag">검색엔진 회사 망</span>' : ''}${d.you && g.ips.has(d.you) ? ' <span class="td-tag-me">내 인터넷</span>' : ''}<br><span class="muted">주소 ${nf(g.ips.size)}개${g.ips.size <= 3 ? ` (${esc([...g.ips].join(', '))})` : ''}</span></td><td title="${esc(g.full)}">${esc(g.ua)}</td><td>${top(g.why, 3).map(([w, n]) => `${esc(w)} ${nf(n)}`).join('<br>')}</td><td>${top(g.paths, 3).map(([pth, n]) => `<code>${esc(pth)}</code> ${nf(n)}`).join('<br>')}${g.paths.size > 3 ? `<br><span class="muted">외 ${nf(g.paths.size - 3)}곳</span>` : ''}</td></tr>`).join('');
+  const rows = list.map((g) => `<tr${isSearch(g) ? ' class="td-warn"' : ''}><td class="num"><b>${nf(g.n)}</b></td><td>${esc(COUNTRY[g.country] || g.country)} · ${esc(g.org || '?')}${isSearch(g) ? ' <span class="td-flag">검색 로봇</span>' : isRented(g) ? ' <span class="muted">(검색 로봇 이름 아님)</span>' : ''}${d.you && g.ips.has(d.you) ? ' <span class="td-tag-me">내 인터넷</span>' : ''}<br><span class="muted">주소 ${nf(g.ips.size)}개${g.ips.size <= 3 ? ` (${esc([...g.ips].join(', '))})` : ''}</span></td><td title="${esc(g.full)}">${esc(g.ua)}</td><td>${top(g.why, 3).map(([w, n]) => `${esc(w)} ${nf(n)}`).join('<br>')}</td><td>${top(g.paths, 3).map(([pth, n]) => `<code>${esc(pth)}</code> ${nf(n)}`).join('<br>')}${g.paths.size > 3 ? `<br><span class="muted">외 ${nf(g.paths.size - 3)}곳</span>` : ''}</td></tr>`).join('');
   const errs = [b.firewall?.error && `사이트 방화벽 기록을 못 읽었어요: ${b.firewall.error}`, b.worker?.error && `우리 서버 기록을 못 읽었어요: ${b.worker.error}`].filter(Boolean).map((t) => `<p class="td-err">${esc(t)}</p>`).join('');
   return `<section class="panel"><h2>차단된 요청 <small class="muted">사이트 방화벽 ${b.firewall?.error ? "못 읽음" : nf(fwN)} · 우리 서버 ${nf(wkN)} · 묶음 ${nf(list.length)}개</small></h2>
 ${errs}${b.firewall?.full ? '<p class="td-err">하루치가 너무 많아 최근 5,000건만 세었어요.</p>' : ''}
 <svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="시간대별 차단">${ticks}${bars}${Array.from({ length: 12 }, (_, i) => i * 2).map((h) => `<text x="${P + h * bw + bw / 2}" y="${H - 4}" class="td-ax mid">${h}시</text>`).join('')}</svg>
 <p class="td-legend"><span class="k bot"></span>사이트 방화벽 ${b.firewall?.error ? "못 읽음" : nf(fwN)} <span class="k blk2"></span>우리 서버 ${nf(wkN)}</p>
-${warn.length ? `<p class="td-err">검색엔진 회사 망에서 온 요청이 ${nf(warn.reduce((a, g) => a + g.n, 0))}건 막혔어요. 아래 빨간 줄을 확인하세요.</p>` : ''}
+${warn.length ? `<p class="td-err">검색 로봇으로 보이는 요청이 ${nf(warn.reduce((a, g) => a + g.n, 0))}건 막혔어요. 아래 빨간 줄을 확인하세요.</p>` : ''}
 ${rows ? `<div class="table-wrap"><table class="data td-who-table td-blk-table"><thead><tr><th class="num">횟수</th><th>나라 · 통신망</th><th>브라우저 이름</th><th>막은 이유</th><th>요청한 주소</th></tr></thead><tbody>${rows}</tbody></table></div>` : (errs ? '' : '<p class="muted">이 날 막힌 요청이 없어요.</p>')}
 <p class="muted small">막힌 요청은 방문 숫자에 들어가지 않아요. 사이트 방화벽 기록은 Cloudflare가 보관하는 기간까지만 나와요. 우리 서버 기록은 11월 24일부터 쌓여요.</p></section>`;
 }
