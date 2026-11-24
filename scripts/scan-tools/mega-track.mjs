@@ -26,7 +26,7 @@ for (const l of tail) { const t = stamp(l); if (t && /^\S+ (super|item|double)/.
 const restarts = mlog.filter((l) => /watchdog|restart: memory/.test(l)).length, postFail = tail.filter((l) => /post failed/.test(l) && Date.parse(l.slice(0, 24)) >= since).length;
 // shop collector log (newest runall*.log)
 const rec = 'C:/Users/PC/Desktop/price-collector/records';
-const newest = fs.readdirSync(rec).filter((f) => /^runall\d+\.log$/.test(f)).map((f) => [f, fs.statSync(path.join(rec, f)).mtimeMs]).sort((a, b) => b[1] - a[1])[0];
+const newest = fs.readdirSync(rec).filter((f) => f.startsWith('runall') && f.endsWith('.log')).map((f) => [f, fs.statSync(path.join(rec, f)).mtimeMs]).sort((a, b) => b[1] - a[1])[0];
 const slog = fs.readFileSync(path.join(rec, newest[0]), 'utf8').split(/\r?\n/);
 let shops = 0, fail = 0, errs = 0, clicks = 0, ch = '?', room = '?';
 for (const l of slog) { const t = stamp(l); const mc = l.match(/##### 채널 (\d+)/); if (mc) ch = mc[1]; const mr = l.match(/== (\d+)번 방 시작/); if (mr) room = mr[1]; if (!t || t < since) continue; if (/ {3}방\d+ "/.test(l)) shops++; if (/열리지 않음/.test(l)) fail++; if (/못 나감|나가지 못함|Traceback|입장이 연달아|건너뜀|화면 크기 이상/.test(l)) errs++; if (/확성기\] click/.test(l)) clicks++; }

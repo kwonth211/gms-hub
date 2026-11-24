@@ -150,7 +150,8 @@ let coveredSince=0,lastUnstick=0;
 // Windows (2026-11-23): the shop collector's item tooltips keep covering the chat. When a megaphone line shows up
 // that has not been read yet and is covered, ask the shop collector to move the pointer away and wait ('hold'),
 // so the line can be read and its item link pressed at once; 'release' hands the mouse back early.
-let tallBox=null,lastOptionEnd=0,lastFree=Date.now();
+let step='start',testTicks=0,tallAt=0;
+let tallBox=null,lastOptionEnd=0,lastFree=Date.now(),lastAccept=Date.now(),lastStatus=0;
 const optionCache=new Map();
 const cacheKey=row=>[row.channel,row.nick.toLowerCase(),shape(row.text)].join('|');
 const CHAT_X=Number(process.env.GMS_CHAT_X||278);
@@ -204,13 +205,14 @@ setInterval(()=>{ // its own timer: the main tick pauses during clicks, which is
 async function tick() {
   if (!cam) { if (Date.now() - tried > 60000) camera(); return; }
   if(optionReaders.some(r=>r.interacting))return; // Do not OCR chat through an open tooltip.
-  lastFree=Date.now();
+  lastFree=Date.now();step='frame';
   let at = 0;
   try { at = fs.statSync(shot).mtimeMs; } catch { /* no frame yet */ }
   // No new frame: nothing on the window changed. A minute without one means the stream is stuck, so start it over.
   if (at === seen) { if (Date.now() - fresh > 60000) cam.kill(); return; }
   seen = at; fresh = Date.now();
   const img = PNG.sync.read(fs.readFileSync(shot));
+  const now0 = Date.now();
   if (!box || ticks++ % 40 === 0 || empty > 20) { let found = findChatBox(img);
     // Windows: the chat sits at a fixed place (left edge x≈278, bottom above the status bar); shop signs and stalls in
     // the Free Market carry the same band colours, so a box found anywhere else is scenery and is ignored.
@@ -218,14 +220,16 @@ async function tick() {
     if (found) { box = stableChatBox(box,found,img); empty = 0; } }
     // Windows: a look that catches one megaphone gives a one-line box. The chat does not move, so keep the tallest
     // area ever seen (all rows from the highest band to the lowest), not just this look's.
+    if (WIN && now0-tallAt>300000) { tallBox=null; tallAt=now0; } // start the tall area over every 5 minutes
     if (WIN && box) { const y0=Math.min(tallBox?.y??box.y,box.y), y1=Math.max(tallBox?(tallBox.y+tallBox.h):0,box.y+box.h); tallBox={x:box.x,w:box.w,y:y0,h:Math.min(320,y1-y0)}; box={...tallBox}; }
   if (!box) return;
   const part = crop(img, box);
+  step='lines';
   const lines = findLines(part);
   empty = lines.length ? 0 : empty + 1;
   const read = [];
   const anchor = readGlyphs ? slotAnchor(part, lines) : null;
-  for (const l of lines) { usedOcr=false; read.push(isLineVisible(part,l)?{...await readLine(part, l, ocr, anchor ? { read: readGlyphs, wTop: windowTop(l, anchor) } : null),top:l.top}:{top:l.top,obscured:true}); if(!read.at(-1).obscured)read.at(-1).sure=!usedOcr; }
+  for (const l of lines) { step='read row '+l.color+l.top; usedOcr=false; read.push(isLineVisible(part,l)?{...await readLine(part, l, ocr, anchor ? { read: readGlyphs, wTop: windowTop(l, anchor) } : null),top:l.top}:{top:l.top,obscured:true}); if(!read.at(-1).obscured)read.at(-1).sure=!usedOcr; }
   const now = Date.now();
   // Watchdog: a panel left open over the chat (an interrupted click) hides every line from the reader.
   // If the chat stays covered or unreadable for 15 s, move the game's pointer to a corner to close it.
@@ -244,6 +248,7 @@ async function tick() {
   }
   const sureOf=[];{let cur=null;for(const l of read){if(!l.cont&&l.nick){cur={nick:l.nick,channel:l.channel,text:String(l.text||''),sure:!!l.sure};sureOf.push(cur);}else if(l.cont&&cur)cur.sure=cur.sure&&!!l.sure;else cur=null;}}
   if(process.env.GMS_DEBUG&&lines.length)console.log('dbg '+new Date().toTimeString().slice(0,8)+' '+read.map((r,i)=>`${lines[i].color}${lines[i].top}${r.obscured?' OBS':r.cont?' +'+String(r.text).slice(0,14):' '+r.nick+'/'+r.channel+(r.sure?'!':'?')+' '+String(r.text).slice(0,18)}`).join(' | '));
+  step='assemble';
   const all = assemble(read);
   if (ticks % 240 === 1 && lines.length) {
     const name = `${new Date(now).toISOString().replace(/[:.]/g, '-')}.png`;
@@ -314,6 +319,12 @@ async function tick() {
   }
   visibleMessages=nextVisible;
   // Publish text before slow option OCR. Later success enriches this exact row.
+  // Windows: megaphone rows are on screen and read, but none has been accepted for 5 minutes (2026-11-24 10:50: the
+  // process kept ticking and read rows, yet logged nothing for 7 minutes; cause unknown). Print what the reader sees
+  // once a minute while that lasts, and restart after 5 minutes.
+  if(pending.length)lastAccept=now;
+  if(WIN&&lines.length&&now-lastAccept>60000&&now-lastStatus>60000){lastStatus=now;console.error(new Date().toISOString(),`quiet ${Math.round((now-lastAccept)/1000)} s: rows ${lines.length}, covered ${read.filter(r=>r.obscured).length}, messages ${all.length} [${all.slice(0,3).map(m=>`${m.nick}/${m.channel}:${String(m.text).slice(0,18)}`).join(' | ')}], seenOnce ${seenOnce.length}, accepted ${accepted.length}, visible ${visibleMessages.size}, jobs ${optionJobs.size}, area ${JSON.stringify(box)}`);box=null;tallBox=null;tallAt=now;}
+  if(WIN&&lines.length&&now-lastAccept>300000){console.error(new Date().toISOString(),'no megaphone accepted for 5 minutes while rows are on screen, restarting');process.exit(1);}
   queue.push(...pending.map(({row})=>row));
   observations.push(...pending.map(({row,m})=>({...row,fingerprint:m.fingerprint})));
   if(pending.length)saveState();
@@ -333,6 +344,7 @@ async function tick() {
   const priority=job=>{const item=jobItem(job);return item&&(Number.isInteger(item.slots)||/ Scroll: /i.test(item.en))?0:1;};
   // Windows: one option read at a time, and at least 1.5 s of plain chat reading between two of them — while a link is
   // being pressed the chat is not read (the panel covers it), and back-to-back presses made new megaphones go unseen.
+  step='options';
   const reader=WIN?(!optionReaders.some(r=>r.busy)&&now-lastOptionEnd>=600?optionReaders[0]:null):optionReaders.find(r=>!r.busy);
   if(reader) for(const [key,job] of [...optionJobs].sort((a,b)=>Math.min(a[1].attempts,2)-Math.min(b[1].attempts,2)||priority(a[1])-priority(b[1])||a[1].created-b[1].created||a[1].lastAttempt-b[1].lastAttempt)) {
     const {row,m}=job;
@@ -394,14 +406,22 @@ setInterval(flush, 5000);
 // 11 minutes). A second thread ends the process when the main loop has not finished a tick for 60 s; the run loop
 // (mega.sh / mega-loop.cmd) starts it again.
 const beat=new Int32Array(new SharedArrayBuffer(4));
-new Worker("const {workerData:b}=require('node:worker_threads');let last=-1,since=Date.now();setInterval(()=>{const v=Atomics.load(b,0);if(v!==last){last=v;since=Date.now();}else if(Date.now()-since>60000){console.error(new Date().toISOString(),'watchdog: main loop stuck for 60 s, restarting');process.kill(process.pid);}},5000);",{eval:true,workerData:beat}).unref();
+new Worker("const {workerData:b}=require('node:worker_threads');let last=-1,since=Date.now();setInterval(()=>{const v=Atomics.load(b,0);if(v!==last){last=v;since=Date.now();}else if(Date.now()-since>60000){require('node:fs').writeSync(2,new Date().toISOString()+' watchdog: main loop stuck for 60 s, restarting'+String.fromCharCode(10));process.kill(process.pid);}},5000);",{eval:true,workerData:beat}).unref();
 while (!stopping) {
   const t0 = Date.now();
   Atomics.add(beat,0,1);
   // 2026-11-23 17:43: after one option read the chat was never read again for 43 minutes — the loop kept running but an
   // option reader stayed marked as pressing a link. No chat reading for 90 s ends the process; the run loop restarts it.
   if(Date.now()-lastFree>90000){console.error(new Date().toISOString(),`stuck: chat not read for ${Math.round((Date.now()-lastFree)/1000)} s (option reader busy=${optionReaders.map(r=>`${!!r.busy}/${!!r.interacting}`).join(',')}), restarting`);process.exit(1);}
-  try { await tick(); } catch (e) { console.error(new Date().toISOString(), e.message, String(e.stack).split(String.fromCharCode(10)).slice(1,4).join(' | ')); }
+  try {
+    // A tick that never finishes (an awaited helper or OCR worker that never answers) left the collector alive but
+    // silent. 45 s without finishing ends the process, naming the step it stopped at; the run loop restarts it.
+    step='start';
+    if(process.env.GMS_TEST_HANG==='await'&&++testTicks>6)await new Promise(()=>{});
+    if(process.env.GMS_TEST_HANG==='spin'&&++testTicks>6)for(;;){}
+    const done=await Promise.race([tick().then(()=>true),new Promise(r=>setTimeout(()=>r(false),45000).unref())]);
+    if(!done){console.error(new Date().toISOString(),`tick did not finish in 45 s (step: ${step}), restarting`);process.exit(1);}
+  } catch (e) { console.error(new Date().toISOString(), e.message, String(e.stack).split(String.fromCharCode(10)).slice(1,4).join(' | ')); }
   await new Promise((r) => setTimeout(r, Math.max(200, TICK_MS - (Date.now() - t0))));
 }
 await Promise.allSettled(optionTasks);
