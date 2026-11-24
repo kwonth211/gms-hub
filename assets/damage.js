@@ -1,5 +1,6 @@
 // Hits-to-kill calculator page. Fills the character from the player's stat window (screen share + OCR, read in this browser
 // only) or from typed numbers, then lists every monster with the chosen skill's damage, uses to kill and hit chance.
+import { SHARE_SIZE } from './exp-reader.js';
 import { INK_LEVELS, parseJob, parseValue, readLayout, rescale, valueImage, vote } from './stat-reader.js';
 import { accuracyNeeded, baseAccuracy, fromWindow, hitChance, hitRange, hitsToKill, masteryLevel, SECOND_JOBS, skillsFor, WEAPONS, windowRange } from './damage-calc.js';
 
@@ -240,7 +241,7 @@ async function ocr() {
 const say = (msg) => { $('dm-status').textContent = msg; };
 
 async function captureFrame() {
-  const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 5 }, audio: false });
+  const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 5, ...SHARE_SIZE }, audio: false });
   try {
     const video = document.createElement('video');
     video.muted = true;

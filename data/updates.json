@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "exp-read-any-screen",
+   "version": "0.7.75",
+   "level": "patch",
+   "date": "2026-11-24",
+   "path": "/tools/exp/",
+   "ko": "EXP 측정기가 전체 화면과 배율을 키운 화면도 읽어요",
+   "en": "The EXP tracker reads full-screen and scaled displays",
+   "desc": {
+    "ko": "노트북처럼 화면 배율을 키웠거나 게임을 전체 화면으로 켜도 EXP를 읽어요. 레벨 17을 1로 읽던 것도 고쳤어요.",
+    "en": "EXP is now read on laptops with display scaling and when the game runs full screen. A level 17 is no longer read as 1."
+   }
+  },
+  {
    "id": "scroll-profit-quantity",
    "version": "0.7.74",
    "level": "patch",

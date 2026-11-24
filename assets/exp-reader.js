@@ -11,14 +11,16 @@ const isBlue = (r, g, b) => b > 150 && r < 110 && g < 200 && b - r > 80;
 // Longest run of a colour on one row within [x0, x1).
 function runsOn(img, y, test, x0 = 0, x1 = img.width, minLen = 12) {
   const { width: W, data: d } = img;
-  const runs = [];
-  let start = -1;
+  const runs = [], gap = Math.round(W * 0.0025);
+  let start = -1, last = -1;
   for (let x = x0; x <= x1; x++) {
     const i = (y * W + x) * 4;
     const hit = x < x1 && test(d[i], d[i + 1], d[i + 2]);
     if (hit && start < 0) start = x;
-    if (!hit && start >= 0) {
-      if (x - start >= minLen) runs.push({ x0: start, x1: x });
+    // Colour smear in a shared picture breaks a gauge for a pixel or a few; such a break does not end the run.
+    if (hit) last = x;
+    if (start >= 0 && (x === x1 || x - last > gap)) {
+      if (last + 1 - start >= minLen) runs.push({ x0: start, x1: last + 1 });
       start = -1;
     }
   }
@@ -44,9 +46,15 @@ export function findGauges(img) {
       while (top > 0 && runsOn(img, top - 1, isRed, r.x0, r.x1 + 2, Math.min(minW, w * 0.6)).length) top--;
       while (bottom < H - 1 && runsOn(img, bottom + 1, isRed, r.x0, r.x1 + 2, Math.min(minW, w * 0.6)).length) bottom++;
       const barH = bottom - top + 1;
-      if (barH < 2 || barH > w) continue;
-      const pitch = b.x0 - r.x0;
-      return { top, bottom, barH, hpX0: r.x0, mpX0: b.x0, pitch, expX0: b.x0 + pitch, width: pitch };
+      // The first row found is the gauge's faint bottom edge, where part of the red can be missing; the start of each
+      // gauge is taken from its middle row.
+      const mid = (top + bottom) >> 1;
+      const red = runsOn(img, mid, isRed, 0, W, minW).find((q) => q.x0 < r.x1 && q.x1 > r.x0) || r;
+      const blue = runsOn(img, mid, isBlue, 0, W, minW).find((q) => q.x0 < b.x1 && q.x1 > b.x0) || b;
+      const pitch = blue.x0 - red.x0;
+      // The gauges are 6 rows for a pitch of 108; a two-row sliver of button border on an enlarged frame is not a gauge.
+      if (pitch <= 0 || barH < 2 || barH > pitch || barH < pitch * 0.025) continue;
+      return { top, bottom, barH, hpX0: red.x0, mpX0: blue.x0, pitch, expX0: blue.x0 + pitch, width: pitch };
     }
   }
   return null;
@@ -297,7 +305,7 @@ export async function readExpText(img, box, g, { ocrGlyph = null, learned = new 
 // (owner 2026-11-19: read the level too). Both are found from the gauges' position and size, at any screen scale.
 const isOrange = (d, i) => d[i] > 200 && d[i + 1] > 80 && d[i + 1] < 200 && d[i + 2] < 90;
 export function levelBox(img, g) {
-  const s = g.barH / 6, { width: W, data: d } = img;
+  const s = g.pitch / 108, { width: W, data: d } = img;
   const xa = Math.max(0, Math.round(g.hpX0 - 230 * s)), xb = Math.max(0, Math.round(g.hpX0 - 10 * s));
   let best = null;
   for (let y = Math.max(0, Math.round(g.top - 16 * s)); y <= Math.min(img.height - 1, Math.round(g.top + 6 * s)); y++) {
@@ -314,6 +322,20 @@ export function levelBox(img, g) {
   }
   return y0 == null ? null : { x0: best.x0, x1: best.x1 + 1, y0, y1: y1 + 1, s };
 }
+// The level's digits sit on one tile each, with a dark gap between tiles. The OCR once dropped one
+// ("17" came back as 1 on 2026-11-24), so a read only counts when it has as many digits as there are tiles.
+export function levelTiles(img, lv) {
+  const tiles = [];
+  let start = -1;
+  for (let x = lv.x0; x <= lv.x1; x++) {
+    let n = 0;
+    if (x < lv.x1) for (let y = lv.y0; y < lv.y1; y++) if (isOrange(img.data, (y * img.width + x) * 4)) n++;
+    const on = n >= (lv.y1 - lv.y0) * 0.2;
+    if (on && start < 0) start = x;
+    if (!on && start >= 0) { if (x - start >= 6 * lv.s) tiles.push({ x0: start, x1: x, y0: lv.y0, y1: lv.y1 }); start = -1; }
+  }
+  return tiles.length <= 3 ? tiles : [];
+}
 // The job line: from just right of the level tiles to well before the HP gauge, on the upper half of the tiles' height.
 export function jobBox(img, g, lv) {
   if (!lv) return null;
@@ -321,12 +343,13 @@ export function jobBox(img, g, lv) {
   return { x0: Math.round(lv.x1 + 8 * s), x1: Math.round(Math.min(g.hpX0 - 8 * s, lv.x1 + 120 * s)), y0: Math.max(0, Math.round(lv.y0 - 8 * s)), y1: Math.round(lv.y0 + (lv.y1 - lv.y0) * 0.45 + 2 * s) };
 }
 // Bright, unsaturated pixels (the white letters) as black on white, enlarged k times with a margin, for OCR.
-export function inkImage(img, box, k = 6) {
+// `onTile`: white on the orange tiles, told by brightness alone: in a shared picture the orange tints the thin strokes.
+export function inkImage(img, box, k = 6, { onTile = false } = {}) {
   const pad = 12, W = (box.x1 - box.x0) * k + pad * 2, H = (box.y1 - box.y0) * k + pad * 2;
   const data = new Uint8ClampedArray(W * H * 4).fill(255);
   for (let y = box.y0; y < box.y1; y++) for (let x = box.x0; x < box.x1; x++) {
     const i = (y * img.width + x) * 4, r = img.data[i], gg = img.data[i + 1], b = img.data[i + 2];
-    if (!(r + gg + b > 540 && Math.max(r, gg, b) - Math.min(r, gg, b) < 60)) continue;
+    if (onTile ? r * 0.299 + gg * 0.587 + b * 0.114 < 190 : !(r + gg + b > 540 && Math.max(r, gg, b) - Math.min(r, gg, b) < 60)) continue;
     for (let dy = 0; dy < k; dy++) for (let dx = 0; dx < k; dx++) { const o = (((y - box.y0) * k + dy + pad) * W + (x - box.x0) * k + dx + pad) * 4; data[o] = data[o + 1] = data[o + 2] = 0; }
   }
   return { width: W, height: H, data };
@@ -336,3 +359,124 @@ const JOBS = [[/fighter/i, 'fighter'], [/page/i, 'page'], [/spear/i, 'spear'], [
   [/warrior/i, 'warrior'], [/(bowman|archer)/i, 'archer'], [/(magician|wizard|mage)/i, 'mage'], [/(rogue|thief)/i, 'thief']];
 export const jobKey = (text) => (JOBS.find(([re]) => re.test(String(text || ''))) || [])[1] || null;
 export const parseLevel = (text) => { const m = /^\s*(\d{1,3})\s*$/.exec(String(text || '').replace(/[Oo]/g, '0').replace(/[Il|]/g, '1')); const n = m ? Number(m[1]) : NaN; return n >= 1 && n <= 200 ? n : null; };
+
+// ---------- reading a smeared frame ----------
+// The game draws its status bar at one size: the HP and MP gauges start 108 pixels apart whatever the window size. A share
+// can arrive enlarged or reduced (full screen on a bigger monitor, display scaling), and then the digits are blurred and
+// the exact table above no longer matches. Here the text line is sampled back onto the game's own pixel grid, at several
+// scales and sub-pixel shifts, and the sequence of glyphs whose softened shapes fit best is found by a shortest path. The
+// result only counts when it has the form "digits[digits.digits%]" and beats the best different text clearly.
+const NATIVE_PITCH = 108;
+// Game pixels from the EXP gauge's corner to the text strip (measured on the game's own bar).
+const TEXT_TOP = -14;
+const TEXT_LEFT = 25;
+const TEXT_ROWS = 9; // the 7 glyph rows with one row of margin above and below
+const SOFT = (() => {
+  const list = [];
+  for (const [key, ch] of Object.entries(EXP_GLYPHS)) {
+    const rows = key.split('/');
+    if (ch === '7' && rows[2][3] === '#') continue; // the unseen alternative 7
+    const w = rows[0].length, top = ch === ',' ? 6 : ch === '.' ? 6 : 0;
+    const grid = Array.from({ length: TEXT_ROWS }, () => new Array(w + 2).fill(0));
+    rows.forEach((r, y) => [...r].forEach((c, x) => { if (c === '#' && grid[y + top + 1]) grid[y + top + 1][x + 1] = 1; }));
+    list.push({ ch, w, grid });
+  }
+  return list;
+})();
+export function softTemplates(a) {
+  return SOFT.map(({ ch, w, grid }) => ({ ch, w, cells: grid.map((row, y) => row.map((_, x) => {
+    let v = 0;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) v += (grid[y + dy]?.[x + dx] || 0) * (dy ? a : 1 - 2 * a) * (dx ? a : 1 - 2 * a);
+    return v;
+  })) }));
+}
+const TEMPLATES = [0.04, 0.12, 0.2].map(softTemplates);
+// Digits, then "[", digits, ".", digits, "%", "]".
+const STEP = (state, ch) => {
+  const digit = ch >= '0' && ch <= '9';
+  if (state === 0) return digit ? 1 : -1;
+  if (state === 1) return digit || ch === ',' ? 1 : ch === '[' ? 2 : -1;
+  if (state === 2) return digit ? 3 : -1;
+  if (state === 3) return digit ? 3 : ch === '.' ? 4 : -1;
+  if (state === 4) return digit ? 5 : -1;
+  if (state === 5) return digit ? 6 : -1;
+  if (state === 6) return ch === '%' ? 7 : -1;
+  return state === 7 && ch === ']' ? 8 : -1;
+};
+function decode(cells, cols, T) {
+  // best[state][x]: cost so far per glyph column, each glyph being its width plus one empty column.
+  const INF = 1e9, best = Array.from({ length: 9 }, () => new Float64Array(cols + 12).fill(INF)), from = Array.from({ length: 9 }, () => new Array(cols + 12).fill(null));
+  const blank = Float64Array.from({ length: cols + 1 }, (_, x) => { let e = 0; for (let y = 0; y < TEXT_ROWS; y++) e += cells[y][x + 1] ** 2; return e; });
+  // Columns skipped before the first digit must be empty (from just past the EXP label), so a thin leading 1 is not lost.
+  for (let x = 0, skipped = 0; x < 11; x++) { best[0][x] = skipped; if (x >= 3) skipped += blank[x]; }
+  let end = null;
+  for (let x = 0; x < cols; x++) for (let st = 0; st < 8; st++) {
+    const c0 = best[st][x];
+    if (c0 >= INF) continue;
+    // One more empty column between glyphs (commas, dots and brackets have wider margins than digits).
+    if (st && blank[x] < 0.8 && c0 + blank[x] < best[st][x + 1]) { best[st][x + 1] = c0 + blank[x]; from[st][x + 1] = [st, x, '', (from[st][x]?.[3] ?? 0) + 1]; }
+    for (const t of T) {
+      const ns = STEP(st, t.ch);
+      if (ns < 0 || x + t.w + 1 > cols) continue;
+      let e = 0;
+      for (let y = 0; y < TEXT_ROWS; y++) { const row = cells[y], tr = t.cells[y]; for (let k = 1; k <= t.w + 1; k++) { const d = row[x + k] - tr[k]; e += d * d; } }
+      const nx = x + t.w + 1, c = c0 + e;
+      if (c < best[ns][nx]) { best[ns][nx] = c; from[ns][nx] = [st, x, t.ch, (from[st][x]?.[3] ?? 0) + t.w + 1]; }
+      if (ns === 8 && c === best[8][nx] && (!end || c / from[8][nx][3] < end.cost)) end = { x: nx, cost: c / from[8][nx][3] };
+    }
+  }
+  if (!end) return null;
+  let text = '', st = 8, x = end.x;
+  while (st > 0 || from[st][x]) { const f = from[st][x]; if (!f) break; text = f[2] + text; st = f[0]; x = f[1]; if (st === 0) break; }
+  return { text, cost: end.cost / TEXT_ROWS };
+}
+// The text of a smeared frame, or null when nothing fits well enough. `info` (tests) also returns the fit.
+export function readSmeared(img, g, { info = false, maxCost = 0.022, margin = 1.15 } = {}) {
+  const k0 = g.pitch / NATIVE_PITCH;
+  if (!(k0 > 0.97 && k0 < 4)) return null;
+  const lum = (x, y) => { x = x < 0 ? 0 : x >= img.width ? img.width - 1 : x; y = y < 0 ? 0 : y >= img.height ? img.height - 1 : y; const i = (y * img.width + x) * 4; return (img.data[i] * 299 + img.data[i + 1] * 587 + img.data[i + 2] * 114) / 1000; };
+  // Summed areas of the strip, so averaging a game pixel costs four lookups.
+  const bx0 = Math.max(0, Math.floor(g.expX0 - 6 * k0)), bx1 = Math.min(img.width, Math.ceil(g.expX0 + 150 * k0)), by0 = Math.max(0, Math.floor(g.top - 26 * k0)), by1 = Math.min(img.height, g.top + 2);
+  const W = bx1 - bx0, H = by1 - by0;
+  if (W < 20 || H < 6) return null;
+  const sat = new Float64Array((W + 1) * (H + 1));
+  for (let y = 0; y < H; y++) { let row = 0; for (let x = 0; x < W; x++) { row += lum(bx0 + x, by0 + y); sat[(y + 1) * (W + 1) + x + 1] = sat[y * (W + 1) + x + 1] + row; } }
+  const S = (x, y) => { // summed area at fractional coordinates
+    x = Math.max(0, Math.min(W, x)); y = Math.max(0, Math.min(H, y));
+    const xi = Math.min(W - 1, Math.floor(x)), yi = Math.min(H - 1, Math.floor(y)), fx = x - xi, fy = y - yi, n = W + 1;
+    return (sat[yi * n + xi] * (1 - fx) + sat[yi * n + xi + 1] * fx) * (1 - fy) + (sat[(yi + 1) * n + xi] * (1 - fx) + sat[(yi + 1) * n + xi + 1] * fx) * fy;
+  };
+  const cols = 104, found = new Map(), digits = (t) => t.replace(/,/g, '');
+  const tryAt = (k, oy, ox, Ts) => {
+    const top = g.top - by0 + (TEXT_TOP + oy) * k, left = g.expX0 - bx0 + (TEXT_LEFT + ox) * k;
+    const cells = [], vals = [];
+    for (let y = 0; y < TEXT_ROWS; y++) { const row = new Float64Array(cols + 12); for (let x = 0; x < cols; x++) { const X = left + x * k, Y = top + y * k; row[x] = (S(X + k, Y + k) - S(X, Y + k) - S(X + k, Y) + S(X, Y)) / (k * k); vals.push(row[x]); } cells.push(row); }
+    vals.sort((a, b) => a - b);
+    const lo = vals[Math.floor(vals.length * 0.3)], hi = vals[Math.floor(vals.length * 0.985)];
+    if (hi - lo < 40) return 9;
+    for (const row of cells) for (let x = 0; x < cols; x++) row[x] = Math.max(-0.2, Math.min(1.2, (row[x] - lo) / (hi - lo)));
+    let best = 9;
+    for (const T of Ts) {
+      const r = decode(cells, cols, T);
+      if (!r) continue;
+      best = Math.min(best, r.cost);
+      // A comma is the faintest mark, so readings that differ only in commas count as one.
+      const id = digits(r.text), old = found.get(id);
+      if (!old || r.cost < old.cost) found.set(id, r);
+    }
+    return best;
+  };
+  // The gauge edges smear in a shared picture (a real share measured 106 for 108), so the scale is searched over two pixels.
+  // Coarse: where the line sits. Fine: around the three best spots, at finer scales and shifts.
+  const spots = [];
+  for (const f of [0, 0.9, 1.8, -0.9].map((px) => 1 + px / g.pitch)) for (let oy = -2; oy <= 2; oy += 0.5) for (const ox of [0, 0.5]) spots.push([tryAt(k0 * f, oy, ox, [TEMPLATES[1]]), k0 * f, oy, ox]);
+  spots.sort((a, b) => a[0] - b[0]);
+  for (const [, k, oy, ox] of spots.slice(0, 3)) for (const f of [1, 1.003, 0.997]) for (const dy of [-0.25, 0, 0.25]) for (const dx of [-0.25, 0, 0.25]) tryAt(k * f, oy + dy, ox + dx, TEMPLATES);
+  const list = [...found.values()].sort((a, b) => a.cost - b.cost);
+  const ok = list[0] && list[0].cost <= maxCost && (!list[1] || list[1].cost >= list[0].cost * margin) && parseExp(digits(list[0].text));
+  return info ? { ok: !!ok, text: list[0] && digits(list[0].text), cost: list[0]?.cost, next: list[1] } : ok ? digits(list[0].text) : null;
+}
+
+// Chrome shrinks a shared window to the sharer's screen size in CSS pixels unless a bigger size is asked for: on a laptop
+// at 125-150% display scaling a 1366-wide game arrived 1234 wide and the 5-pixel digits were lost (measured 2026-11-24).
+export const SHARE_SIZE = { width: { ideal: 3840, max: 7680 }, height: { ideal: 2160, max: 4320 } };

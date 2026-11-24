@@ -2,7 +2,7 @@
 // every few seconds (assets/exp-reader.js), then shows EXP per hour, percent per hour, time to the next level and the
 // session's gain. Nothing leaves this computer: frames are read in the page and only the numbers are kept, in this
 // browser (localStorage), so a reload keeps the session. Without screen sharing the two numbers can be typed by hand.
-import { findGauges, expTextBox, readExpText, parseExp, sameReading, summarize, levelTotal, levelBox, jobBox, inkImage, jobKey, parseLevel } from './exp-reader.js';
+import { findGauges, expTextBox, readExpText, readSmeared, SHARE_SIZE, parseExp, sameReading, summarize, levelTotal, levelBox, levelTiles, jobBox, inkImage, jobKey, parseLevel } from './exp-reader.js';
 import { xlsx } from './xlsx.js';
 import { jobNames } from './training-evidence.js';
 import { loadChar, saveChar } from './my-char.js';
@@ -91,7 +91,10 @@ async function readLevelJob(img, g) {
   lastLineAt = Date.now();
   const lv = levelBox(img, g);
   if (!lv) return;
-  const level = parseLevel(await readLine(inkImage(img, lv), true).catch(() => ''));
+  // The number must have as many digits as there are tiles ("17" once came back as 1).
+  const digits = (await readLine(inkImage(img, lv, 4, { onTile: true }), true).catch(() => '')).replace(/\D/g, '');
+  const lvText = digits.length === levelTiles(img, lv).length ? digits : '';
+  const level = parseLevel(lvText);
   const jb = jobBox(img, g, lv);
   const job = jb ? jobKey(await readLine(inkImage(img, jb), false).catch(() => '')) : null;
   if (!level) return;
@@ -119,7 +122,8 @@ async function readOnce(img) {
   everBar = true;
   readLevelJob(img, g).catch(() => {});
   const text = await readExpText(img, expTextBox(g, img), g, { ocrGlyph: (k) => ocrGlyph(k).catch(() => ''), learned });
-  const r = parseExp(text);
+  // Digits that came enlarged and blurred do not match the exact shapes; they are read by best fit instead.
+  const r = parseExp(text) || parseExp(readSmeared(img, g) || '');
   if (r) { failStreak = 0; if (!everRead) { everRead = true; track('exp_first_read', { after_s: Math.round((Date.now() - runStartedAt) / 1000) }); } }
   else if (++failStreak >= 6) expIssue('read_fail', { text: String(text).replace(/[^0-9,.\[\]%?]/g, '').slice(0, 30), h: g.barH });
   check('read', r ? 'ok' : 'fail', r ? fill(t.readOk, { exp: nf.format(r.exp), pct: r.pct.toFixed(2) }) : fill(t.readFail, { text }));
@@ -190,7 +194,7 @@ async function start() {
   if (!navigator.mediaDevices?.getDisplayMedia) return say(t.unsupported);
   if (demoOn) toggleDemo();
   try {
-    stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 5 }, audio: false });
+    stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 5, ...SHARE_SIZE }, audio: false });
   } catch (e) { track('exp_share_cancel', { reason: e?.name || 'error' }); return say(t.denied); }
   video = document.createElement('video');
   video.muted = true; video.srcObject = stream;

@@ -1,6 +1,7 @@
 // Shop scanner. Players share the game window in Chrome; the page watches it and reports what it recognized. The game screen
 // itself is never shown back to the player. In local development (scripts/scan-dev.mjs) changed frames are also posted to the
 // dev server, which keeps them as samples for building the shop reader.
+import { SHARE_SIZE } from './exp-reader.js';
 import { detectScale, findChannel, findRoom, findShopRows, findShopRowsLoose, matchItem, parsePriceLine, priceFromLine, readLine, readOwner, scrollTier, ambiguousName, narrowByTier } from './shop-reader.js';
 
 import { KERNING, placeLabel } from './place.js';
@@ -802,7 +803,7 @@ async function start() {
   try {
     // The scan only needs the game window: the share dialog opens on the window list, and this tab itself is left out.
     // Entire screen stays allowed because a full-screen game can show up black as a window on some PCs.
-    stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 10, displaySurface: 'window' }, audio: false, selfBrowserSurface: 'exclude' });
+    stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 10, displaySurface: 'window', ...SHARE_SIZE }, audio: false, selfBrowserSurface: 'exclude' });
   } catch (e) {
     say(i18n.denied);
     $('scan-start').disabled = false;
