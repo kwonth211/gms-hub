@@ -217,11 +217,15 @@ async function tick() {
     // Windows: the chat sits at a fixed place (left edge x≈278, bottom above the status bar); shop signs and stalls in
     // the Free Market carry the same band colours, so a box found anywhere else is scenery and is ignored.
     if (WIN && found && (Math.abs(found.x - CHAT_X) > 16 || found.y + found.h < img.height - 110)) found = null;
+    // The chat is at the bottom of the window. A look that joins band-coloured scenery above it into the same box
+    // (2026-11-24 11:41: area y=0, h=320 — the top of the screen was read instead of the chat for 7 minutes) is cut
+    // to the lowest 380 rows, and the tall area keeps its bottom rows, not its top ones.
+    if (WIN && found) { const top=Math.max(found.y,img.height-380); found={...found,y:top,h:found.y+found.h-top}; }
     if (found) { box = stableChatBox(box,found,img); empty = 0; } }
     // Windows: a look that catches one megaphone gives a one-line box. The chat does not move, so keep the tallest
     // area ever seen (all rows from the highest band to the lowest), not just this look's.
     if (WIN && now0-tallAt>300000) { tallBox=null; tallAt=now0; } // start the tall area over every 5 minutes
-    if (WIN && box) { const y0=Math.min(tallBox?.y??box.y,box.y), y1=Math.max(tallBox?(tallBox.y+tallBox.h):0,box.y+box.h); tallBox={x:box.x,w:box.w,y:y0,h:Math.min(320,y1-y0)}; box={...tallBox}; }
+    if (WIN && box) { const y0=Math.min(tallBox?.y??box.y,box.y), y1=Math.max(tallBox?(tallBox.y+tallBox.h):0,box.y+box.h); tallBox={x:box.x,w:box.w,y:Math.max(y0,y1-320),h:y1-Math.max(y0,y1-320)}; box={...tallBox}; }
   if (!box) return;
   const part = crop(img, box);
   step='lines';
