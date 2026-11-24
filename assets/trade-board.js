@@ -91,7 +91,7 @@ function drawBoard() {
   for (const [key, n] of [['all', posts.length], ['sell', posts.filter((r) => r.intent === 'sell').length], ['buy', posts.filter((r) => r.intent === 'buy').length]]) { const el = $(`tb-stat-${key}`); el.removeAttribute('aria-busy'); el.textContent = nf.format(n); }
   const q = $('tb-search').value.trim().toLowerCase().replace(/\s+/g, '');
   const rows = posts.filter((r) => (filter === 'all' || r.intent === filter) && (!q || `${nameOf(r)}${r.nick}`.toLowerCase().replace(/\s+/g, '').includes(q))).sort(SORT[$('tb-sort').value] || SORT.new);
-  $('tb-count').textContent = rows.length ? tr(`${nf.format(rows.length)}줄 · 글은 24시간 동안 떠요`, `${nf.format(rows.length)} rows · posts stay for 24 hours`) : '';
+  $('tb-count').textContent = rows.length ? tr(`${nf.format(rows.length)}줄 · 팔렸으면 내 글의 지우기를 눌러 내려 주세요`, `${nf.format(rows.length)} rows · once it sells, press Delete on your post`) : '';
   $('tb-none').hidden = !!rows.length;
   if (!rows.length) $('tb-none').textContent = posts.length ? tr('찾는 글이 없어요. 검색어를 지우거나 다른 종류를 누르세요.', 'Nothing matches. Clear the search or pick another kind.') : tr('아직 올라온 글이 없어요. 올리기를 눌러 첫 글을 올려 보세요.', 'No posts yet. Press Post and be the first.');
   box.innerHTML = rows.map((r) => {
@@ -119,14 +119,12 @@ async function loadRefs(rows) {
   if (!ids.length) return;
   try { const d = await getJson(`${api}/prices?ids=${ids.join(',')}`); for (const id of ids) refs.set(id, d[id]?.median || null); } catch {}
 }
-// A post stays on the market for 24 hours (the rule the composer states); older ones drop off the list.
-const DAY_MS = 86400000;
-const freshEnough = (r) => Date.now() - Date.parse(`${r.at.replace(' ', 'T')}Z`) < DAY_MS;
+// A post stays on the market until its writer deletes it (owner, 2026-11-24); the list holds the newest 100.
 function addPosts(rows) {
-  const fresh = rows.filter((r) => (r.intent === 'sell' || r.intent === 'buy') && r.item && freshEnough(r) && !posts.some((x) => x.id === r.id));
+  const fresh = rows.filter((r) => (r.intent === 'sell' || r.intent === 'buy') && r.item && !posts.some((x) => x.id === r.id));
   lastId = Math.max(lastId, ...rows.map((r) => r.id));
   if (!fresh.length) return false;
-  posts = fresh.concat(posts).sort((a, b) => b.id - a.id).slice(0, 200);
+  posts = fresh.concat(posts).sort((a, b) => b.id - a.id).slice(0, 100);
   loadRefs(fresh).then(drawBoard);
   return true;
 }
@@ -204,7 +202,7 @@ async function boot() {
   $('tb-filter').addEventListener('click', (e) => { const b = e.target.closest('[data-v]'); if (!b) return; filter = b.dataset.v; for (const x of $('tb-filter').querySelectorAll('button')) x.setAttribute('aria-pressed', String(x === b)); drawBoard(); });
   addEventListener('gms-free-gone', (e) => { posts = posts.filter((r) => r.id !== e.detail); drawBoard(); });
   poll(); setInterval(poll, 60000);
-  setInterval(() => { if (posts.some((r) => !freshEnough(r))) { posts = posts.filter(freshEnough); drawBoard(); } for (const t of document.querySelectorAll('#tb-list time')) { const r = posts.find((x) => `p-${x.id}` === t.closest('.trd-line-row')?.id); if (r) t.textContent = ago(r.at); } }, 60000);
+  setInterval(() => { for (const t of document.querySelectorAll('#tb-list time')) { const r = posts.find((x) => `p-${x.id}` === t.closest('.trd-line-row')?.id); if (r) t.textContent = ago(r.at); } }, 60000);
   let rows, catalog;
   try { [rows, catalog] = await Promise.all([getJson(root.dataset.items), getJson(`${api}/market/catalog`).catch(() => ({ items: [] }))]); } catch { return; }
   summary = new Map(catalog.items.map((r) => [r.item, r]));

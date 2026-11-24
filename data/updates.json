@@ -36,8 +36,8 @@
    "ko": "작 손익 계산기: 주문서 눌러서 칸 채우기, 개수 넣기",
    "en": "Scroll profit: tap scrolls into the slots, set a quantity",
    "desc": {
-    "ko": "작 손익 계산기에서 주문서를 누를 때마다 한 칸씩 채워져요. 60%와 10%를 섞어 발라도 계산돼요. 몇 개 작 할지 넣으면 쓰는 돈, 나오는 장비 개수, 다 팔았을 때 남는 돈이 영수증처럼 나오고, 운이 나쁠 때와 좋을 때의 숫자도 같이 보여요. 넓은 화면에서 상단 메뉴가 잘리던 문제도 고쳤어요.",
-    "en": "In the scroll profit calculator each tap on a scroll fills one slot, and 60% and 10% scrolls can be mixed. Set how many pieces and it lays out what you spend, how many of each result come out and what is left after selling it all, with the bad-luck and good-luck numbers. The header menu no longer gets cut off on wide screens."
+    "ko": "작 손익 계산기에서 주문서를 누를 때마다 한 칸씩 채워져요. 60%와 10%를 섞어 발라도 계산돼요. 결과마다 팔 값 − 쓰는 돈 = 남는 돈이 한 줄씩 나오고, 개수를 넣으면 여러 개 했을 때 평균으로 남는 돈과 운이 나쁠 때·좋을 때의 숫자도 보여요. 넓은 화면에서 상단 메뉴가 잘리던 문제도 고쳤어요.",
+    "en": "In the scroll profit calculator each tap on a scroll fills one slot, and 60% and 10% scrolls can be mixed. Every result reads sale price − cost = left on its own row; set a number of pieces to see the average left and the bad-luck and good-luck totals. The header menu no longer gets cut off on wide screens."
    }
   },
   {
@@ -49,8 +49,8 @@
    "ko": "팝니다·삽니다 장터 — 한 줄 목록, 값 막대로 시세보다 얼마나 비싼지 확인",
    "en": "Buy and sell market — one row a post, slide the price to see how it stands",
    "desc": {
-    "ko": "팝니다·삽니다를 한 줄씩 모아 보는 장터가 생겼어요. 줄마다 값과 시세보다 몇 % 비싼지가 붙어 있고, 싼 순·시세보다 싼 순으로 정렬돼요. 올릴 때는 값 막대를 밀면 시세보다 얼마나 비싼지, 그 값대 매물이 몇 개나 팔렸는지 바로 나와요. 올린 글은 실시간 확성기에 무료 고확으로도 24시간 떠요. 팔릴 가격 계산기에도 같은 값 막대가 들어갔어요.",
-    "en": "Buy and sell posts now sit in a market list, one row each, with the price and how far it is from the market; sort by cheapest or furthest under market. When you post, slide the price to see how it stands and how many listings in that band sold. A post also shows on the live megaphone page as a free megaphone for 24 hours. The sell price check has the same slider."
+    "ko": "팝니다·삽니다를 한 줄씩 모아 보는 장터가 생겼어요. 줄마다 값과 시세보다 몇 % 비싼지가 붙어 있고, 싼 순·시세보다 싼 순으로 정렬돼요. 올릴 때는 값 막대를 밀면 시세보다 얼마나 비싼지, 그 값대 매물이 몇 개나 팔렸는지 바로 나와요. 올린 글은 내가 지울 때까지 장터에 떠 있고, 실시간 확성기에 무료 고확으로도 떠요. 팔릴 가격 계산기에도 같은 값 막대가 들어갔어요.",
+    "en": "Buy and sell posts now sit in a market list, one row each, with the price and how far it is from the market; sort by cheapest or furthest under market. When you post, slide the price to see how it stands and how many listings in that band sold. A post stays on the market until you delete it, and also shows on the live megaphone page as a free megaphone. The sell price check has the same slider."
    }
   },
   {
