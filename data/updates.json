@@ -2,6 +2,32 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "scroll-profit-quantity",
+   "version": "0.7.74",
+   "level": "patch",
+   "date": "2026-11-24",
+   "path": "/tools/scroll-profit/",
+   "ko": "작 손익 계산기에 개수 넣기, 상단 메뉴 잘림 수정",
+   "en": "Scroll profit takes a quantity; header menu no longer cut off",
+   "desc": {
+    "ko": "작 손익 계산기에 몇 개 작 할지 넣으면 쓰는 돈, 나오는 장비 개수, 다 팔았을 때 남는 돈이 영수증처럼 나와요. 운이 나쁠 때와 좋을 때의 숫자도 같이 보여요. 넓은 화면에서 상단 메뉴가 잘려서 옆으로 끌어야 보이던 문제도 고쳤어요.",
+    "en": "Tell the scroll profit calculator how many pieces you will scroll and it lays out what you spend, how many of each result come out and what is left after selling it all, with the bad-luck and good-luck numbers. The header menu no longer gets cut off on wide screens."
+   }
+  },
+  {
+   "id": "trade-board",
+   "version": "0.7.73",
+   "level": "minor",
+   "date": "2026-11-24",
+   "path": "/trade/",
+   "ko": "팝니다·삽니다 게시판 — 값 막대로 시세보다 얼마나 비싼지 확인",
+   "en": "Buy and sell board — slide the price, see how it stands",
+   "desc": {
+    "ko": "팝니다·삽니다를 올리는 전용 페이지가 생겼어요. 아이템을 고르고 값 막대를 밀면 시세보다 몇 % 비싼지, 그 값대 매물이 몇 개나 팔렸는지, 지금 더 싼 매물이 몇 개인지 바로 나와요. 올린 글은 실시간 확성기에도 24시간 떠요. 팔릴 가격 계산기에도 같은 값 막대가 들어갔어요.",
+    "en": "Buy and sell posts have their own page. Pick an item, slide the price and see how far it is from the market, how many listings in that band sold and how many cheaper ones are on sale now. A post also shows on the live megaphone page for 24 hours. The sell price check has the same slider."
+   }
+  },
+  {
    "id": "scroll-profit",
    "version": "0.7.72",
    "level": "minor",

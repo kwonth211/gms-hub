@@ -14,7 +14,7 @@ import { fhBody } from './forgotten-hollow.mjs';
 import { computeReport, reportBody, weeklyTeaser } from './weekly-report.mjs';
 import { skillsBody } from './skill-pages.mjs';
 import { forgeBody } from './forge-page.mjs';
-import { sellBody, scrollProfitBody } from './trade-pages.mjs';
+import { sellBody, scrollProfitBody, tradeBoardBody } from './trade-pages.mjs';
 import { EQ_CLASSES, equipPath, collectEquipment, equipmentIndexBody, equipmentClassBody } from './equipment-pages.mjs';
 import { rankBody } from './rank-page.mjs';
 import { megaphoneBody } from './megaphone-page.mjs';
@@ -821,7 +821,7 @@ function header(lang, pagePath, only) {
     ['/tools/market/today/', 'clock', ko ? '오늘의 시세 · 맥박' : "Today's prices & pulse"]
   ];
   const tradeItems = [
-    ['/megaphone/#fm-form', 'megaphone', ko ? '팝니다·삽니다 올리기' : 'Post a buy or sell line'],
+    ['/trade/', 'megaphone', ko ? '팝니다·삽니다' : 'Buy and sell board'],
     ['/tools/scan/', 'shop', ko ? '내 상점 스캔 올리기' : 'Upload my shop scan'],
     ['/tools/sell/', 'coin', ko ? '팔릴 가격' : 'Price that sells'],
     ['/tools/scroll-profit/', 'scroll', ko ? '작 손익' : 'Scroll profit'],
@@ -3871,6 +3871,13 @@ ${farmFaq.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')}
         desc: lang === 'ko' ? '글클메 자유시장에 아이템을 얼마에 올려야 팔릴까요? 아이템과 값을 넣으면 최근 7일 동안 그 값대 매물이 몇 개나 팔렸는지, 지금 올리면 몇 번째로 싼지, 빨리 팔 값은 얼마인지 알려 줘요.' : 'What price sells in the MapleStory Classic World Free Market? Enter an item and a price to see the share of listings that sold at that price over 7 days, your place among current listings and the quick-sale price.',
         body: sell, ld: [breadcrumbLd(lang, lang === 'ko' ? '팔릴 가격 계산기' : 'Sell price check', '/tools/sell/'), faqOf(sell)]
       }));
+      const board = tradeBoardBody({ lang, api: config.voteApi, itemsUrl, marketUrl, megaphoneUrl: href(langPath(lang, '/megaphone/')), sellUrl: href(langPath(lang, '/tools/sell/')), scamUrl: href(langPath(lang, '/scam/')) });
+      write(path.join(lang, 'trade', 'index.html'), page({
+        lang, pageKey: 'trade', pagePath: '/trade/', modules: ['trade-board.js'],
+        title: lang === 'ko' ? '글클메 팝니다·삽니다: 무료 거래 게시판, 시세보다 얼마나 비싼지 바로 확인 | GMS Hub' : 'MapleStory Classic World Buy and Sell Board: Post Free, See How Your Price Stands | GMS Hub',
+        desc: lang === 'ko' ? '글클메 아이템을 팝니다·삽니다로 무료로 올리는 거래 게시판이에요. 값을 정하면 시세보다 얼마나 비싼지, 그 값대 매물이 몇 개나 팔렸는지 바로 나오고, 올린 글은 실시간 확성기에도 24시간 떠요.' : 'A free buy and sell board for MapleStory Classic World. Set a price and see how far it is from the market and how many listings at that price sold; your post also shows on the live megaphone page for 24 hours.',
+        body: board, ld: [breadcrumbLd(lang, lang === 'ko' ? '팝니다·삽니다' : 'Buy and sell board', '/trade/'), faqOf(board)]
+      }));
       const sp = scrollProfitBody({ lang, api: config.voteApi, itemsUrl, dataUrl: href('/assets/forge-data.json'), marketUrl, forgeUrl: href(langPath(lang, '/tools/forge/')), scrollUrl: href(langPath(lang, '/tools/scroll/')) });
       write(path.join(lang, 'tools', 'scroll-profit', 'index.html'), page({
         lang, pageKey: 'scrollProfit', pagePath: '/tools/scroll-profit/', modules: ['scroll-profit.js'],
@@ -4153,7 +4160,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
   )
 ).concat(
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
-  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, {path:'/quests/best-meso/'}, {path:'/guides/newbie/'}, ...NEWBIE_PAGES.map((p)=>({path:newbiePath(p)})), ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/scam/'}, {path:'/forgotten-hollow/'}, {path:'/skills/'}, {path:'/tools/forge/'}, {path:'/tools/sell/'}, {path:'/tools/scroll-profit/'}, {path:'/tools/meso-farm/'}, {path:'/updates/'}, ...(WEEKLY ? [{path:'/report/'}] : [])].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, {path:'/quests/best-meso/'}, {path:'/guides/newbie/'}, ...NEWBIE_PAGES.map((p)=>({path:newbiePath(p)})), ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/scam/'}, {path:'/forgotten-hollow/'}, {path:'/skills/'}, {path:'/tools/forge/'}, {path:'/tools/sell/'}, {path:'/tools/scroll-profit/'}, {path:'/trade/'}, {path:'/tools/meso-farm/'}, {path:'/updates/'}, ...(WEEKLY ? [{path:'/report/'}] : [])].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/bosses/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/quests/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
   [{path:'/maps/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
@@ -4217,6 +4224,7 @@ Not affiliated with NEXON. Prices are medians of shops players scanned in the la
 - [Hits-to-kill calculator](${absUrl('/en/tools/damage/')}): hits to kill and accuracy per monster from your stats
 - [Scroll calculator](${absUrl('/en/tools/scroll/')}): Lesser, Intermediate, Greater and Chaos scroll odds
 - [Price that sells](${absUrl('/en/tools/sell/')}): the share of Free Market listings that sold at each price over 7 days, and where a price stands among current listings
+- [Buy and sell board](${absUrl('/en/trade/')}): free buy and sell posts from players, each with its distance from the market price
 - [Scroll profit calculator](${absUrl('/en/tools/scroll-profit/')}): cost of scrolling a piece at today's prices, odds and sale price of each result, average profit
 - [Drop-rate calculator](${absUrl('/en/tools/drop-rate/')}): chance after N kills or box opens, with Nexon's official box rates
 
@@ -4228,6 +4236,7 @@ ${publishedGuides.filter((g) => g.lang === 'en').map((g) => `- [${g.h1 || g.titl
 - [실시간 시세](${absUrl('/ko/tools/market/')})
 - [몬스터 도감](${absUrl('/ko/monsters/')})
 - [사냥터 추천](${absUrl('/ko/tools/training/')}): 레벨·직업별 사냥터
+- [팝니다·삽니다](${absUrl('/ko/trade/')}): 무료 거래 게시판, 시세보다 얼마나 비싼지 표시
 - [팔릴 가격 계산기](${absUrl('/ko/tools/sell/')}): 값대별 팔린 비율, 지금 올리면 몇 번째로 싼지
 - [작 손익 계산기](${absUrl('/ko/tools/scroll-profit/')}): 주문서 작에 드는 돈과 결과별 확률·팔 값
 `);

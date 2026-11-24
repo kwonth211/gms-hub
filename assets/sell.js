@@ -2,14 +2,14 @@
 // where the price would stand among what is on sale now. Rules live in trade-math.js; this file draws.
 import { makeMarketIndex } from './market-catalog.js';
 import { uniqueListings, sellCurve, bandAt, sellAdvice, rankAmong, optionGroups, inGroup, medianPrice } from './trade-math.js';
-import { ko, tr, esc, nf, icon, money, mesos, pct, pips, track, getJson, moneyInput, picker } from './trade-ui.js';
+import { ko, tr, esc, nf, icon, money, mesos, pct, pips, track, getJson, moneyInput, picker, priceSlider, versus } from './trade-ui.js';
 
 const root = document.getElementById('sl-page');
 const $ = (id) => document.getElementById(id);
 const api = root.dataset.api;
 const STAT = { PAD: tr('공격력', 'ATT'), MAD: tr('마력', 'M.ATT') };
 let byId = new Map(), summary = new Map();
-let item = null, all = [], openAll = [], groups = [], group = null, list = [], open = [], curve = [], price = null, priceBox;
+let item = null, all = [], openAll = [], groups = [], group = null, list = [], open = [], curve = [], price = null, priceBox, slide, ref = null;
 
 const groupLabel = (g) => {
   if (!g.ups) return tr(`노작 · 남은 횟수 ${g.slots}`, `Clean · ${g.slots} slots left`);
@@ -114,8 +114,14 @@ function drawPresets() {
   $('sl-presets').innerHTML = sets.map(([l, v]) => `<button type="button" class="trd-preset" data-price="${v}">${l} <b>${money(v)}</b></button>`).join('');
 }
 
-function draw() { drawVerdict(); drawRank(); drawBars(); drawAdvice(); drawRecent(); setUrl(); }
-function setPrice(n, fill = true) { price = n; if (fill) priceBox.set(n); draw(); }
+// Under the slider: how far the price is from the middle of what sold.
+function drawVersus() {
+  const v = versus(price, ref), el = $('sl-versus');
+  el.textContent = v ? v.text : '';
+  el.className = `trd-versus ${v ? (v.side === 'dear' ? (v.diff >= 15 ? 'bad' : 'mid') : v.side === 'cheap' ? 'good' : '') : ''}`;
+}
+function draw() { drawVerdict(); drawRank(); drawBars(); drawAdvice(); drawRecent(); drawVersus(); setUrl(); }
+function setPrice(n, fill = true, from) { price = n; if (fill) priceBox.set(n); if (from !== 'slide') slide.set(n); draw(); }
 
 function useGroup(key, keepPrice) {
   group = key;
@@ -126,7 +132,11 @@ function useGroup(key, keepPrice) {
   $('sl-groups').querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.g || '') === (key || ''))));
   drawPresets();
   const a = curve.length ? sellAdvice(curve, list) : null;
-  const start = keepPrice || a?.soldMedian || medianPrice(open) || medianPrice(list) || null;
+  const sold = list.filter((r) => r.sold);
+  ref = (sold.length >= 3 ? medianPrice(sold) : medianPrice(list)) || null;
+  slide.setRef(ref);
+  $('sl-ref').textContent = ref ? money(ref) : '';
+  const start = keepPrice || ref || medianPrice(open) || null;
   setPrice(start);
 }
 
@@ -165,6 +175,7 @@ async function choose(it, want = {}) {
 
 async function boot() {
   priceBox = moneyInput($('sl-price'), (n) => setPrice(n, false));
+  slide = priceSlider($('sl-slide'), (n) => setPrice(n, true, 'slide'));
   root.addEventListener('click', (e) => {
     const p = e.target.closest('[data-price]');
     if (p) return setPrice(Number(p.dataset.price));

@@ -152,3 +152,44 @@ test('parseMesos reads the ways players write prices', () => {
   assert.equal(parseMesos('1만5000'), 15000);
   for (const bad of ['', 'abc', '0', '-5', '5억x', '30억', null]) assert.equal(parseMesos(bad), null, String(bad));
 });
+
+test('scrollCases: every ending of one piece, adding up to one', async () => {
+  const { scrollCases } = await import('../assets/trade-math.js');
+  const plain = scrollCases(5, 60);
+  assert.equal(plain.length, 6);
+  assert.ok(plain.every((c) => !c.boom && c.used === 5));
+  assert.ok(Math.abs(plain.reduce((s, c) => s + c.p, 0) - 1) < 1e-12);
+  assert.deepEqual(plain.map((c) => c.p), scrollOdds(5, 60).passes);
+  const chaos = scrollCases(5, 10, 50);
+  assert.ok(Math.abs(chaos.reduce((s, c) => s + c.p, 0) - 1) < 1e-12);
+  assert.equal(chaos.filter((c) => c.boom).length, 5);
+  assert.ok(Math.abs(chaos.find((c) => c.boom && c.used === 1).p - 0.45) < 1e-12);
+  assert.ok(Math.abs(chaos.filter((c) => c.boom).reduce((s, c) => s + c.p, 0) - scrollOdds(5, 10, 50).boom) < 1e-12);
+  assert.ok(Math.abs(chaos.reduce((s, c) => s + c.p * c.used, 0) - scrollOdds(5, 10, 50).used) < 1e-12);
+  assert.deepEqual(scrollCases(3, 100).map((c) => [c.k, c.p]), [[3, 1]]);
+});
+
+test('batchSpread: exact for one piece, steady for a few, bell curve for many', async () => {
+  const { batchSpread } = await import('../assets/trade-math.js');
+  const cases = [{ p: 0.25, net: -200 }, { p: 0.5, net: -50 }, { p: 0.25, net: 300 }];
+  const one = batchSpread(cases, 1);
+  assert.equal(one.mean, 0);
+  assert.equal(one.win, 0.25);
+  assert.equal(one.lo, -200);
+  assert.equal(one.hi, 300);
+  const ten = batchSpread(cases, 10);
+  assert.equal(ten.mean, 0);
+  assert.deepEqual(batchSpread(cases, 10), ten, 'same inputs, same luck');
+  assert.ok(ten.lo < 0 && ten.hi > 0 && ten.lo < ten.hi);
+  assert.ok(ten.win > 0.3 && ten.win < 0.6);
+  const many = batchSpread(cases, 1000);
+  assert.ok(Math.abs(many.win - 0.5) < 0.01);
+  assert.ok(many.lo < 0 && many.hi > 0);
+  // A sure thing stays sure at every size.
+  for (const n of [1, 10, 500]) { const s = batchSpread([{ p: 1, net: 40 }], n); assert.equal(s.win, 1); assert.equal(s.mean, 40 * n); assert.equal(s.lo, 40 * n); }
+  assert.equal(batchSpread([{ p: 1, net: -40 }], 500).win, 0);
+  // A losing bet looks worse the more often it is made.
+  const bad = [{ p: 0.9, net: -100 }, { p: 0.1, net: 500 }];
+  assert.ok(batchSpread(bad, 100).win < batchSpread(bad, 10).win + 0.05);
+  assert.ok(batchSpread(bad, 500).win < 0.05);
+});

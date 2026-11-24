@@ -16,7 +16,7 @@ const COUNTRY = { CN: '중국', HK: '홍콩', IN: '인도', KR: '한국', US: '�
 const PAGE = [
   [/^\/$/, '홈'], [/^\/tools\/market\/today\//, '오늘의 시세'], [/^\/tools\/market\//, '실시간 시세'], [/^\/tools\/training\//, '사냥터 추천'],
   [/^\/megaphone\//, '실시간 확성기'], [/^\/scam\//, '사기꾼 제보'], [/^\/tools\/exp\//, '경험치 측정기'], [/^\/tools\/damage\//, '몇 방 컷 계산기'], [/^\/tools\/forge\//, '주문서 작 시뮬'],
-  [/^\/tools\/sell\//, '팔릴 가격'], [/^\/tools\/scroll-profit\//, '작 손익'], [/^\/tools\/scroll\//, '주문서 계산기'], [/^\/tools\/scan\//, '상점 스캔'], [/^\/forgotten-hollow\//, '포가튼 할로우'], [/^\/report\//, '주간 리포트'],
+  [/^\/trade\//, '팝니다·삽니다'], [/^\/tools\/sell\//, '팔릴 가격'], [/^\/tools\/scroll-profit\//, '작 손익'], [/^\/tools\/scroll\//, '주문서 계산기'], [/^\/tools\/scan\//, '상점 스캔'], [/^\/forgotten-hollow\//, '포가튼 할로우'], [/^\/report\//, '주간 리포트'],
   [/^\/quests\//, '퀘스트'], [/^\/guides\//, '가이드'], [/^\/monsters\//, '몬스터'], [/^\/maps\//, '맵'], [/^\/items\//, '아이템'], [/^\/skills\//, '스킬'],
   [/^\/equipment\//, '장비'], [/^\/rank\//, '랭킹'], [/^\/discord-bot\//, '디스코드 봇'], [/^\/sites\//, '사이트 모음'], [/^\/updates\//, '업데이트']
 ];

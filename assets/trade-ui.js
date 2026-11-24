@@ -81,3 +81,28 @@ export function picker({ input, list, index, allow, note, onPick, first, max = 8
   input.addEventListener('blur', () => setTimeout(close, 120));
   return { close };
 }
+
+// A price slider: half the market price on the left, double on the right, the market price in the middle (each step
+// to the right is the same percentage up). `range` is an <input type="range" min="0" max="1000">; the wrapper
+// (.trd-slide) stays hidden while there is no market price to centre on.
+export function priceSlider(range, onChange) {
+  let ref = null;
+  const wrap = range.closest('.trd-slide');
+  range.addEventListener('input', () => { if (ref) onChange(Math.max(1, Math.round(Number((ref * 2 ** ((Number(range.value) - 500) / 500)).toPrecision(3))))); });
+  return {
+    setRef(r) { ref = r > 0 ? r : null; wrap.hidden = !ref; },
+    set(p) { if (ref && p > 0) range.value = Math.min(1000, Math.max(0, Math.round(500 + 500 * Math.log2(p / ref)))); },
+  };
+}
+// How a price stands against the market price: { diff (percent, signed), text, side: 'dear' | 'cheap' | 'same' }.
+export function versus(price, ref) {
+  if (!(price > 0) || !(ref > 0)) return null;
+  const diff = (price / ref - 1) * 100, r = Math.abs(diff) >= 10 ? Math.round(Math.abs(diff)) : Math.round(Math.abs(diff) * 10) / 10;
+  if (Math.abs(diff) < 0.5) return { diff: 0, side: 'same', text: tr('시세와 같아요', 'Right at the market price') };
+  return diff > 0 ? { diff, side: 'dear', text: tr(`시세보다 ${r}% 비싸요`, `${r}% above the market price`) } : { diff, side: 'cheap', text: tr(`시세보다 ${r}% 싸요`, `${r}% below the market price`) };
+}
+// "3분 전", "2시간 전" from a UTC "YYYY-MM-DD HH:MM:SS".
+export function ago(at, now = Date.now()) {
+  const m = Math.max(0, Math.round((now - Date.parse(`${at.replace(' ', 'T')}Z`)) / 60000));
+  return m < 1 ? tr('방금', 'just now') : m < 60 ? tr(`${m}분 전`, `${m} min ago`) : m < 1440 ? tr(`${Math.floor(m / 60)}시간 전`, `${Math.floor(m / 60)} h ago`) : tr(`${Math.floor(m / 1440)}일 전`, `${Math.floor(m / 1440)} d ago`);
+}

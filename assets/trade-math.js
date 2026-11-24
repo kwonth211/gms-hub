@@ -203,3 +203,52 @@ export function parseMesos(text) {
   const n = Math.round(total);
   return hit && n > 0 && n <= 2147483647 ? n : null;
 }
+
+// ---------- scrolling many pieces ----------
+// Every way one piece can end: k passes on a surviving piece (all scrolls used), or destroyed on the j-th scroll.
+// [{ k, boom, p, used }]; the chances add up to 1.
+export function scrollCases(slots, success, destroy = 0) {
+  const p = success / 100, boomOnFail = (1 - p) * (destroy / 100), keep = 1 - p - boomOnFail;
+  let alive = [1];
+  const out = [];
+  for (let i = 0; i < slots; i++) {
+    const live = alive.reduce((s, x) => s + x, 0);
+    if (boomOnFail > 0) out.push({ k: null, boom: true, p: live * boomOnFail, used: i + 1 });
+    const next = new Array(alive.length + 1).fill(0);
+    alive.forEach((x, k) => { next[k] += x * keep; next[k + 1] += x * p; });
+    alive = next;
+  }
+  return [...alive.map((x, k) => ({ k, boom: false, p: x, used: slots })), ...out].filter((c) => c.p > 0);
+}
+
+// A small seeded generator, so the same inputs always draw the same luck (numbers do not flicker between redraws).
+const rng = (seed) => () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+
+// What scrolling n pieces leaves, given each case's net result (sale price minus what was spent on that piece):
+//   mean: the average total,  win: the chance the total ends above zero,
+//   lo / hi: the total you beat 9 times in 10, and the total you reach 1 time in 10.
+// One piece is exact; a few are played out many times; hundreds follow the bell curve.
+export function batchSpread(cases, n, { trials = 4000, seed = 7 } = {}) {
+  const mean1 = cases.reduce((s, c) => s + c.p * c.net, 0);
+  const var1 = cases.reduce((s, c) => s + c.p * (c.net - mean1) ** 2, 0);
+  const sorted = [...cases].sort((a, b) => a.net - b.net);
+  const at = (q) => { let acc = 0; for (const c of sorted) { acc += c.p; if (acc >= q - 1e-12) return c.net; } return sorted[sorted.length - 1].net; };
+  if (n <= 1) return { mean: mean1, win: cases.reduce((s, c) => s + (c.net > 0 ? c.p : 0), 0), lo: at(0.1), hi: at(0.9) };
+  if (n > 200 || var1 === 0) {
+    const sd = Math.sqrt(var1 * n), z = sd ? (mean1 * n) / sd : mean1 > 0 ? Infinity : -Infinity;
+    // Normal curve: chance of landing above zero, and the 10% / 90% points.
+    const phi = (x) => { if (!Number.isFinite(x)) return x > 0 ? 1 : 0; const t = 1 / (1 + 0.2316419 * Math.abs(x)); const d = 0.3989423 * Math.exp((-x * x) / 2); const pr = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return x > 0 ? 1 - pr : pr; };
+    return { mean: mean1 * n, win: phi(z), lo: mean1 * n - 1.2816 * sd, hi: mean1 * n + 1.2816 * sd };
+  }
+  const cum = []; let acc = 0;
+  for (const c of cases) { acc += c.p; cum.push(acc); }
+  const rand = rng(seed), totals = new Float64Array(trials);
+  let wins = 0;
+  for (let t = 0; t < trials; t++) {
+    let sum = 0;
+    for (let i = 0; i < n; i++) { const r = rand() * acc; let j = 0; while (j < cum.length - 1 && cum[j] < r) j++; sum += cases[j].net; }
+    totals[t] = sum; if (sum > 0) wins++;
+  }
+  totals.sort();
+  return { mean: mean1 * n, win: wins / trials, lo: totals[Math.floor(trials * 0.1)], hi: totals[Math.floor(trials * 0.9)] };
+}

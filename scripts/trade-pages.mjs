@@ -36,6 +36,9 @@ export function sellBody({ lang, api, itemsUrl, marketUrl, megaphoneUrl }) {
 <section class="panel trd-verdict" id="sl-verdict-panel"><h2>${t('이 값에 올리면', 'At this price')}</h2>
 <div class="trd-price-row"><label class="trd-money"><span>${t('올릴 값', 'Your price')}</span><input id="sl-price" inputmode="decimal" autocomplete="off" aria-describedby="sl-price-help"><em>${t('메소', 'mesos')}</em></label>
 <div class="trd-presets" id="sl-presets"></div></div>
+<div class="trd-slide" hidden><input type="range" id="sl-slide" min="0" max="1000" step="1" value="500" aria-label="${t('값 조절', 'Adjust the price')}">
+<div class="trd-slide-ends"><span>${t('시세의 절반', 'half')}</span><span>${t('시세', 'market')} <b id="sl-ref"></b></span><span>${t('시세의 2배', 'double')}</span></div>
+<p class="trd-versus" id="sl-versus"></p></div>
 <p class="muted small" id="sl-price-help">${t('한 개 값이에요. 150만, 1.5m처럼 적어도 돼요.', 'Price for one. 1.5m or 250k is fine.')}</p>
 <div id="sl-verdict" aria-busy="true"></div></section>
 <section class="panel trd-rank"><h2>${t('지금 올리면 몇 번째', 'Where you would stand now')}</h2><div id="sl-rank" aria-busy="true"></div></section>
@@ -70,45 +73,105 @@ export function scrollProfitBody({ lang, api, itemsUrl, dataUrl, marketUrl, forg
   const t = (k, e) => (ko ? k : e);
   return `${hero({
     key: 'scroll', tag: t('바르기 전에 10초', '10 seconds before you scroll'), h1: t('작 손익 계산기', 'Scroll profit calculator'),
-    lead: t('장비와 주문서를 고르세요. 지금 시세로 끝까지 발랐을 때 드는 돈, 결과마다의 확률과 팔 값, 평균 손익이 나와요.', 'Pick a piece and a scroll. You get what it costs to use every slot at today\'s prices, the odds and sale price of each result, and the average profit.'),
+    lead: t('장비, 주문서, 개수를 고르세요. 지금 시세로 쓰는 돈, 나오는 장비, 다 팔았을 때 남는 돈이 바로 나와요.', 'Pick a piece, a scroll and how many. You get what you spend at today\'s prices, what comes out, and what is left after selling it all.'),
     placeholder: t('장비 이름 (예: 노가다 목장갑)', 'Gear name (e.g. Work Gloves)'), pickLabel: t('장비 찾기', 'Find a piece of gear'), quickLabel: t('많이 거래되는 장비', 'Traded most'),
     steps: [['bag', t('장비 고르기', 'Pick the gear'), t('장갑, 무기, 방어구 다 돼요.', 'Gloves, weapons and armour.')],
       ['scroll', t('주문서 고르기', 'Pick the scroll'), t('100%, 60%, 10%, 혼돈.', '100%, 60%, 10% or Chaos.')],
-      ['coin', t('손익 보기', 'Read the profit'), t('시세 칸은 직접 고칠 수 있어요.', 'Every price can be edited.')]]
+      ['coin', t('개수 넣고 남는 돈 보기', 'Set the amount, read what is left'), t('값은 전부 직접 고칠 수 있어요.', 'Every price can be edited.')]]
   })}
 <div class="wrap trd-page" id="sp-page" data-api="${esc(api)}" data-items="${esc(itemsUrl)}" data-data="${esc(dataUrl)}" data-market="${esc(marketUrl)}">
 <section class="trd-result" id="sp-result" hidden aria-live="polite">
 <header class="trd-item" id="sp-item"></header>
-<section class="panel trd-scrolls"><h2>${t('바를 주문서', 'Scroll to use')}</h2><div class="trd-scroll-list" id="sp-scrolls" role="group" aria-label="${t('바를 주문서', 'Scroll to use')}" aria-busy="true"></div></section>
+<section class="panel trd-scrolls"><h2><i class="trd-num">1</i>${t('바를 주문서', 'Scroll to use')}</h2><div class="trd-scroll-list" id="sp-scrolls" role="group" aria-label="${t('바를 주문서', 'Scroll to use')}" aria-busy="true"></div></section>
+<section class="panel trd-batch"><h2><i class="trd-num">2</i>${t('몇 개 작 할까요', 'How many pieces')}</h2>
+<div class="trd-qty"><button type="button" class="trd-qty-step" data-step="-1" aria-label="${t('한 개 줄이기', 'One fewer')}">−</button><input id="sp-qty" inputmode="numeric" autocomplete="off" value="10" aria-label="${t('작 할 장비 개수', 'Number of pieces')}"><button type="button" class="trd-qty-step" data-step="1" aria-label="${t('한 개 늘리기', 'One more')}">+</button><span>${t('개', 'pieces')}</span>
+<div class="trd-qty-presets" role="group" aria-label="${t('개수 빠르게 고르기', 'Quick amounts')}">${[1, 5, 10, 50, 100].map((n) => `<button type="button" data-qty="${n}">${n}</button>`).join('')}</div></div>
+<p class="trd-need" id="sp-need"></p></section>
+<section class="trd-sum" id="sp-sum" aria-busy="true"></section>
 <div class="trd-cols trd-cols-sp">
-<section class="panel trd-costs"><h2>${t('드는 돈', 'What it costs')}</h2>
-<label class="trd-money"><span>${t('깨끗한 장비 값', 'Clean piece')}</span><input id="sp-item-price" inputmode="decimal" autocomplete="off"><em>${t('메소', 'mesos')}</em></label>
+<section class="panel trd-costs"><h2>${t('쓰는 돈', 'What you spend')}</h2>
+<div class="trd-table trd-spend" id="sp-spend"></div>
 <p class="muted small" id="sp-item-note"></p>
-<label class="trd-money"><span>${t('주문서 한 장 값', 'One scroll')}</span><input id="sp-scroll-price" inputmode="decimal" autocomplete="off"><em>${t('메소', 'mesos')}</em></label>
 <p class="muted small" id="sp-scroll-note"></p>
-<p class="trd-total" id="sp-total"></p>
-<button type="button" class="btn ghost small-btn" id="sp-reset">${t('시세로 되돌리기', 'Back to market prices')}</button></section>
-<section class="panel trd-verdict trd-verdict-sp"><h2>${t('지금 시세로 작 하면', 'Scrolling at today\'s prices')}</h2><div id="sp-verdict" aria-busy="true"></div></section>
-</div>
-<section class="panel trd-outcomes"><h2>${t('결과별 확률과 팔 값', 'Odds and sale price of each result')}</h2>
+<button type="button" class="btn ghost small-btn" id="sp-reset" hidden>${t('시세로 되돌리기', 'Back to market prices')}</button></section>
+<section class="panel trd-outcomes"><h2 id="sp-out-title">${t('나오는 장비', 'What comes out')}</h2>
 <p class="muted small" id="sp-table-note"></p>
 <div class="trd-table" id="sp-table" aria-busy="true"></div></section>
+</div>
 <p class="trd-next"><a class="btn" id="sp-forge" href="${esc(forgeUrl)}">${t('작 시뮬레이터에서 발라 보기', 'Try it in the scroll forge')}</a><a class="btn ghost" id="sp-market" href="${esc(marketUrl)}">${t('이 장비 시세·매물 보기', 'See this piece on the market')}</a></p>
 </section>
 <section class="panel trd-start" id="sp-start"><h2>${t('위에서 장비를 고르면 여기에 나와요', 'Pick a piece above and the answer shows here')}</h2>
-<ul class="trd-start-list"><li>${spriteSvg('coin', 26)}<p>${t('<strong>든 돈</strong>: 깨끗한 장비 한 개와 남은 횟수만큼의 주문서 값', '<strong>Cost</strong>: one clean piece plus a scroll for every slot')}</p></li>
-<li>${spriteSvg('star', 26)}<p>${t('<strong>본전 넘길 확률</strong>: 든 돈보다 비싸게 팔리는 결과가 나올 확률', '<strong>Chance to come out ahead</strong>: the odds of a result that sells for more than it cost')}</p></li>
-<li>${spriteSvg('hammer', 26)}<p>${t('<strong>평균 손익</strong>: 여러 번 했을 때 한 번에 남는 돈', '<strong>Average profit</strong>: what one run leaves you when you do it many times')}</p></li></ul></section>
+<ul class="trd-start-list"><li>${spriteSvg('coin', 26)}<p>${t('<strong>쓰는 돈</strong>: 깨끗한 장비와 주문서를 사는 값', '<strong>What you spend</strong>: the clean pieces and the scrolls')}</p></li>
+<li>${spriteSvg('bag', 26)}<p>${t('<strong>나오는 장비</strong>: 공격력별로 몇 개씩 나오는지와 개당 팔 값', '<strong>What comes out</strong>: how many of each result, and what each sells for')}</p></li>
+<li>${spriteSvg('star', 26)}<p>${t('<strong>남는 돈</strong>: 다 팔았을 때 평균으로 남는 돈과 이득으로 끝날 확률', '<strong>What is left</strong>: the average after selling it all, and the chance to end ahead')}</p></li></ul></section>
 <noscript><p class="panel">${t('계산기는 자바스크립트를 켜야 움직여요.', 'Turn on JavaScript to use the calculator.')}</p></noscript>
 
 <section class="panel trd-read"><h2>${t('읽는 법', 'How to read it')}</h2>
-<ul class="trd-read-list"><li><span class="trd-read-ico">${spriteSvg('coin', 26)}</span><p>${t('<strong>든 돈</strong>은 깨끗한 장비 한 개와 남은 횟수만큼의 주문서 값이에요. 두 값 다 직접 고칠 수 있어요.', '<strong>Cost</strong> is one clean piece plus one scroll per slot. Both prices can be edited.')}</p></li>
-<li><span class="trd-read-ico">${spriteSvg('hammer', 26)}</span><p>${t('<strong>평균으로 건지는 돈</strong>은 결과마다 확률과 팔 값을 곱해서 더한 값이에요. 든 돈보다 적으면 할수록 손해예요.', '<strong>Average return</strong> is every result\'s odds times its sale price, added up. Below the cost, every run loses on average.')}</p></li>
-<li><span class="trd-read-ico">${spriteSvg('star', 26)}</span><p>${t('<strong>본전 넘길 확률</strong>은 한 번 했을 때 든 돈보다 비싸게 팔리는 결과가 나올 확률이에요.', '<strong>Chance to come out ahead</strong> is the odds that one run ends on a result selling for more than it cost.')}</p></li>
-<li><span class="trd-read-ico">${spriteSvg('scroll', 26)}</span><p>${t('시세가 없는 결과는 <strong>내가 팔 값</strong>을 적으세요. 적는 대로 평균 손익이 다시 계산돼요.', 'Where a result has no market price, type <strong>what you would sell it for</strong>. The average updates as you type.')}</p></li></ul>
+<ul class="trd-read-list"><li><span class="trd-read-ico">${spriteSvg('coin', 26)}</span><p>${t('<strong>쓰는 돈</strong>은 깨끗한 장비와 주문서 값이에요. 장비 한 개에 남은 횟수만큼 주문서가 들어가요.', '<strong>What you spend</strong> is the clean pieces plus the scrolls: one scroll for every slot of every piece.')}</p></li>
+<li><span class="trd-read-ico">${spriteSvg('bag', 26)}</span><p>${t('<strong>나오는 장비</strong>는 그 개수만큼 작 했을 때 결과별로 평균 몇 개가 나오는지예요. 10개 중 0.8개는 열 번 하면 여덟 번 한 개가 나온다는 뜻이에요.', '<strong>What comes out</strong> is how many of each result you get on average. 0.8 out of 10 means one such piece in eight of every ten batches.')}</p></li>
+<li><span class="trd-read-ico">${spriteSvg('star', 26)}</span><p>${t('<strong>남는 돈</strong>은 나온 장비를 다 판 돈에서 쓴 돈을 뺀 값이에요. 빨간 숫자면 할수록 잃어요.', '<strong>What is left</strong> is the sale of everything that came out minus what you spent. A red number loses more the more you do.')}</p></li>
+<li><span class="trd-read-ico">${spriteSvg('clock', 26)}</span><p>${t('<strong>운이 나쁠 때와 좋을 때</strong>는 열 번 중 한 번꼴로 나오는 결과예요. 개수를 늘리면 운이 고르게 섞여서 평균에 가까워져요.', '<strong>Bad luck and good luck</strong> are the results you see about one time in ten. With more pieces the luck evens out and you land closer to the average.')}</p></li></ul>
 <div class="faq"><details><summary>${t('결과별 팔 값은 어떻게 정하나요?', 'Where does each sale price come from?')}</summary><p>${t('성공 횟수와 능력치가 같고 남은 횟수가 0인 장비를 최근 7일 매물에서 찾아요. 3개 넘게 팔렸으면 팔린 값의 중간을 쓰고, 덜 팔렸으면 올라온 매물 중 싼 쪽 값을 써요. 비싼 쪽 매물은 잘 안 팔려요.', 'From the last 7 days of listings with the same passes and stat and no slots left. When three or more sold, it is the middle of what they sold for; otherwise the cheap end of what is asked, because the dear half rarely sells.')}</p></details>
-<details><summary>${t('혼돈 주문서는 어떻게 계산하나요?', 'How are Chaos scrolls handled?')}</summary><p>${t('혼돈 주문서는 실패하면 절반 확률로 장비가 사라져요. 사라진 장비는 0 메소로 치고, 남은 주문서는 안 쓴 것으로 계산해요. 그래서 든 돈이 평균으로 나와요.', 'A failed Chaos scroll destroys the piece half the time. A destroyed piece counts as 0 mesos and the scrolls left over are not spent, so the cost shown is an average.')}</p></details>
+<details><summary>${t('혼돈 주문서는 어떻게 계산하나요?', 'How are Chaos scrolls handled?')}</summary><p>${t('혼돈 주문서는 실패하면 절반 확률로 장비가 사라져요. 사라진 장비는 0 메소로 치고, 남은 주문서는 안 쓴 것으로 계산해요. 그래서 쓰는 돈이 평균으로 나와요.', 'A failed Chaos scroll destroys the piece half the time. A destroyed piece counts as 0 mesos and the scrolls left over are not spent, so the cost shown is an average.')}</p></details>
 <details><summary>${t('전부 실패한 장비는 얼마로 치나요?', 'What is a piece worth when every scroll fails?')}</summary><p>${t('매물이 있으면 그 값을 쓰고, 없으면 0 메소로 쳐요. 능력치는 그대로인데 남은 횟수가 없어서 사는 사람이 드물어요.', 'Its market price when one is listed, else 0 mesos. Same stats and no slots left: few players buy it.')}</p></details>
 <details><summary>${t('먼저 발라 보고 싶어요.', 'Can I try it first?')}</summary><p>${t('<a href="{forge}">작 시뮬레이터</a>에서 같은 장비에 주문서를 끌어다 발라 보세요. 주문서 종류별 상승치는 <a href="{scroll}">주문서 계산기</a>에 있어요.', 'Drag scrolls onto the same piece in the <a href="{forge}">scroll forge</a>. Stat gains per scroll tier are in the <a href="{scroll}">scroll calculator</a>.').replace('{forge}', esc(forgeUrl)).replace('{scroll}', esc(scrollUrl))}</p></details></div></section>
+</div>`;
+}
+
+// /trade/: the buy and sell board (owner, 2026-11-24: its own counter, not the megaphone bar). A post is a 무료 고확
+// underneath (worker/src/free-mega.js), so it also shows on the megaphone page, the top strip and Discord. The
+// composer has a slider around the market price that says how dear the price is; assets/trade-board.js runs it.
+export function tradeBoardBody({ lang, api, itemsUrl, marketUrl, megaphoneUrl, sellUrl, scamUrl }) {
+  const ko = lang === 'ko';
+  const t = (k, e) => (ko ? k : e);
+  return `<section class="trd-hero trd-hero-board"><div class="wrap trd-hero-in">
+<div class="trd-hero-text"><span class="trd-tag">${spriteSvg('shop', 18)}${t('무료 · 로그인 없이', 'Free · no login')}</span>
+<h1>${t('팝니다·삽니다', 'Buy and sell board')}</h1>
+<p class="lead">${t('아이템을 고르고 값을 정해서 올리세요. 올린 글은 여기와 실시간 확성기, 사이트 맨 위 띠에 24시간 떠요.', 'Pick an item, set a price and post. Your line shows here, on the live megaphone page and in the strip on top of every page for 24 hours.')}</p></div>
+<ol class="trd-steps">${[['bag', t('아이템 고르기', 'Pick the item'), t('이름, 초성, 줄임말 다 돼요.', 'Names and common short forms work.')],
+    ['coin', t('값 정하기', 'Set the price'), t('막대를 밀면 시세보다 얼마나 비싼지 나와요.', 'Slide to see how far above the market you are.')],
+    ['megaphone', t('올리기', 'Post it'), t('닉네임만 적으면 돼요.', 'Only your game name is needed.')]].map(([icon, title, text], i) => `<li><span class="trd-step-ico">${spriteSvg(icon, 30)}</span><b><i>${i + 1}</i>${title}</b><span>${text}</span></li>`).join('')}</ol>
+</div></section>
+<div class="wrap trd-page" id="tb-page" data-api="${esc(api)}" data-items="${esc(itemsUrl)}" data-market="${esc(marketUrl)}">
+<form class="panel trd-post" id="tb-form" autocomplete="off" aria-label="${t('팝니다·삽니다 올리기', 'Post a buy or sell line')}">
+<h2>${t('올리기', 'Post')}</h2>
+<div class="trd-post-grid">
+<div class="trd-post-main">
+<div class="trd-intent" role="group" aria-label="${t('종류', 'Kind')}"><button type="button" data-intent="sell" aria-pressed="true">${t('팝니다', 'Selling')}</button><button type="button" data-intent="buy" aria-pressed="false">${t('삽니다', 'Buying')}</button></div>
+<div class="trd-pick"><label class="trd-search-box">${SEARCH}<input id="trd-q" class="trd-search" type="search" role="combobox" aria-expanded="false" aria-controls="trd-opts" aria-autocomplete="list" placeholder="${t('아이템 이름 (예: 장공 60%)', 'Item name (e.g. Gloves Attack 60%)')}" autocomplete="off" spellcheck="false" autocapitalize="off" aria-label="${t('아이템 찾기', 'Find an item')}"></label>
+<ul class="trd-opts" id="trd-opts" role="listbox" aria-label="${t('아이템 찾기', 'Find an item')}" hidden></ul></div>
+<div class="trd-picked" id="tb-picked" hidden></div>
+<label class="trd-money"><span id="tb-price-label">${t('팔 값 (한 개)', 'Price for one')}</span><input id="tb-price" inputmode="decimal" autocomplete="off"><em>${t('메소', 'mesos')}</em></label>
+<div class="trd-slide" hidden><input type="range" id="tb-slide" min="0" max="1000" step="1" value="500" aria-label="${t('값 조절', 'Adjust the price')}">
+<div class="trd-slide-ends"><span>${t('시세의 절반', 'half')}</span><span>${t('시세', 'market')} <b id="tb-ref"></b></span><span>${t('시세의 2배', 'double')}</span></div></div>
+<div class="trd-post-row"><label class="trd-field">${t('내 닉네임', 'My game name')}<input id="tb-nick" maxlength="20" spellcheck="false" autocapitalize="off" placeholder="${t('귓말 받을 이름', 'Name to whisper')}"></label>
+<label class="trd-field">${t('채널', 'Channel')}<select id="tb-ch"><option value="">${t('안 정함', 'Any')}</option>${Array.from({ length: 40 }, (_, i) => `<option value="${i + 1}">CH ${i + 1}</option>`).join('')}</select></label></div>
+<label class="trd-field">${t('한마디 (안 적어도 돼요)', 'A few words (optional)')}<input id="tb-note" maxlength="80" placeholder="${t('예: 자시 3번 방, 흥정 가능', 'e.g. FM room 3, open to offers')}"></label>
+</div>
+<aside class="trd-post-side" aria-live="polite"><h3>${t('이 값은', 'This price')}</h3><div id="tb-meter" class="trd-meter"><p class="muted">${t('아이템을 고르면 시세보다 얼마나 비싼지 나와요.', 'Pick an item to see how it stands against the market.')}</p></div></aside>
+</div>
+<div class="trd-post-foot"><button type="submit" class="btn" id="tb-send">${spriteSvg('megaphone', 18)}<span id="tb-send-label">${t('팝니다 올리기', 'Post selling line')}</span></button><span class="trd-post-status" id="tb-status" role="status" aria-live="polite"></span></div>
+<p class="muted small">${t('2분에 한 번, 하루 10번까지 올릴 수 있어요. 현금 거래, 링크, 연락처는 올릴 수 없어요. 신고가 3번 쌓이면 숨겨져요.', 'One post every 2 minutes, 10 a day. No real-money trades, links or contact handles. Three reports hide a post.')}</p>
+</form>
+
+<section class="trd-board" aria-label="${t('올라온 글', 'Posts')}">
+<div class="trd-board-head"><h2>${t('올라온 글', 'Posts')}</h2>
+<div class="trd-seg" id="tb-filter" role="group" aria-label="${t('종류', 'Kind')}"><button type="button" data-v="all" aria-pressed="true">${t('전체', 'All')}</button><button type="button" data-v="sell" aria-pressed="false">${t('팝니다', 'Selling')}</button><button type="button" data-v="buy" aria-pressed="false">${t('삽니다', 'Buying')}</button></div>
+<input id="tb-search" class="trd-board-search" type="search" placeholder="${t('아이템이나 닉네임', 'Item or name')}" aria-label="${t('올라온 글에서 찾기', 'Search the posts')}"></div>
+<p class="muted small" id="tb-count" role="status"></p>
+<ol class="trd-posts" id="tb-list" aria-busy="true"></ol>
+<p class="panel" id="tb-none" hidden></p>
+<noscript><p class="panel">${t('글은 자바스크립트를 켜야 보여요.', 'Turn on JavaScript to see the posts.')}</p></noscript>
+</section>
+
+<section class="panel trd-read"><h2>${t('거래하기 전에', 'Before you trade')}</h2>
+<ul class="trd-read-list"><li><span class="trd-read-ico">${spriteSvg('coin', 26)}</span><p>${t('값을 정하기 어려우면 <a href="{sell}">팔릴 가격 계산기</a>에서 그 값대 매물이 몇 개나 팔렸는지 보세요.', 'Not sure about the price? The <a href="{sell}">sell price check</a> shows how many listings in that band sold.').replace('{sell}', esc(sellUrl))}</p></li>
+<li><span class="trd-read-ico">${spriteSvg('megaphone', 26)}</span><p>${t('상대 닉네임은 <a href="{scam}">사기꾼 제보</a>에서 먼저 쳐 보세요. 10초면 돼요.', 'Type the other player\'s name into <a href="{scam}">scam reports</a> first. It takes 10 seconds.').replace('{scam}', esc(scamUrl))}</p></li>
+<li><span class="trd-read-ico">${spriteSvg('chat', 26)}</span><p>${t('글의 <strong>귓말</strong>을 누르면 <code>/w 닉네임</code>이 복사돼요. 게임 채팅창에 붙여 넣고 말을 거세요.', 'Tap <strong>Whisper</strong> on a post to copy <code>/w name</code>. Paste it into the game chat and say hello.')}</p></li>
+<li><span class="trd-read-ico">${spriteSvg('shop', 26)}</span><p>${t('교환창에서 아이템에 마우스를 올려 옵션과 개수를 다시 본 뒤에 확인을 누르세요.', 'In the trade window, hover the item and read its stats and count again before you press OK.')}</p></li></ul>
+<div class="faq"><details><summary>${t('글은 얼마나 떠 있나요?', 'How long does a post stay up?')}</summary><p>${t('24시간 떠 있어요. 팔렸으면 내 글의 지우기를 눌러 내리세요. 글을 올린 브라우저에서만 지울 수 있어요.', 'For 24 hours. Once it sells, press Delete on your post. Only the browser that posted it can delete it.')}</p></details>
+<details><summary>${t('실시간 확성기의 무료 고확과 다른가요?', 'Is this different from a free megaphone?')}</summary><p>${t('같은 글이에요. 여기서 올리면 <a href="{mega}">실시간 확성기</a>에도 뜨고, 확성기에서 올린 팝니다·삽니다도 여기에 떠요.', 'It is the same post. A line posted here shows on the <a href="{mega}">live megaphone page</a>, and buy and sell lines posted there show here.').replace('{mega}', esc(megaphoneUrl))}</p></details>
+<details><summary>${t('여기서 말하는 시세는 어떤 값인가요?', 'Which price is the market price here?')}</summary><p>${t('최근 7일 동안 팔린 매물의 한가운데 값이에요. 팔린 매물이 3개보다 적으면 올라온 매물의 한가운데 값을 써요.', 'The middle of what sold over the last 7 days. With fewer than three sold, the middle of what was listed.')}</p></details>
+<details><summary>${t('이상한 글을 봤어요.', 'I saw a bad post.')}</summary><p>${t('글의 신고를 누르세요. 신고가 3번 쌓이면 글이 숨겨져요.', 'Press Report on it. Three reports hide the post.')}</p></details></div></section>
 </div>`;
 }
