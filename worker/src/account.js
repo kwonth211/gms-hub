@@ -74,6 +74,9 @@ export async function handleAccount(req, env, cors) {
   if (req.method === 'DELETE') {
     await env.DB.prepare('DELETE FROM account_data WHERE id = ?').bind(s.u).run();
     await env.DB.prepare('DELETE FROM accounts WHERE id = ?').bind(s.u).run();
+    // Their support thread goes with the account (imported here: support.js reads sessions from this file).
+    const { forgetSupport } = await import('./support.js');
+    await forgetSupport(env, s.u);
     return reply({ ok: true }, headers);
   }
   if (req.method !== 'POST') return reply({ error: 'method' }, headers, 405);

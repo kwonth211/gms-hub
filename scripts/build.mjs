@@ -264,6 +264,8 @@ const T = {
 <p>언어 선택, 즐겨찾기, 추천한 사이트 목록은 사용자의 브라우저(localStorage)에만 저장되고 로그인하지 않으면 서버로 전송되지 않아요. 브라우저의 사이트 데이터를 지우면 함께 지워져요.</p>
 <h2>디스코드 로그인</h2>
 <p>로그인은 선택이에요. 디스코드로 로그인하면 디스코드가 알려 주는 사용자 ID, 표시 이름, 프로필 사진 주소를 Cloudflare에 저장하고, 이 브라우저에 저장된 사이트 설정(내 캐릭터와 사진, 계산기 설정, 퀘스트 체크, 관심 아이템, 화면 설정 등)의 사본을 계정에 함께 저장해 다른 기기에서 불러올 수 있게 해요. 로그인할 때 GMS Hub 디스코드 서버에 함께 가입돼요. 이메일이나 디스코드 비밀번호는 받지 않아요. 로그인 창의 '계정에 저장된 내 설정 지우기'로 언제든 계정의 사본을 지울 수 있고, 계정 정보 삭제도 아래 연락처로 요청할 수 있어요.</p>
+<h2>문의 창</h2>
+<p>오른쪽 아래 버섯 문의 창으로 보낸 글은 운영자에게 전달돼요. 보던 페이지 주소, 브라우저와 운영체제 종류, 화면 크기, 언어가 함께 가요. 로그인한 사람의 글과 답변은 디스코드 사용자 ID와 함께 Cloudflare에 저장하고, '계정에 저장된 내 설정 지우기'를 누르면 같이 지워져요. 비회원의 글은 운영자의 비공개 디스코드 채널로만 가고 보낸 사람의 기록으로 저장하지 않아요. 도배를 막으려고 IP 주소를 되돌릴 수 없는 해시로 바꿔 잠시 세지만 저장하지 않아요.</p>
 <h2>어린이</h2>
 <p>GMS Hub는 만 14세 미만 어린이의 개인정보를 의도적으로 수집하지 않아요.</p>
 <h2>변경</h2>
@@ -491,6 +493,8 @@ const T = {
 <p>Your language choice, favorites and the list of sites you recommended are stored only in your browser (localStorage) and are not sent to a server unless you log in. Clearing site data in your browser removes them.</p>
 <h2>Discord login</h2>
 <p>Logging in is optional. When you log in with Discord, the user ID, display name and avatar address that Discord shares are stored on Cloudflare, together with a copy of the site settings kept in this browser (your character and its picture, calculator settings, quest checklists, wishlist, display settings and so on) so you can load them on another device. Logging in also adds you to the GMS Hub Discord server. We never receive your email or Discord password. You can delete the copy on your account at any time with "Delete my settings from the account" in the login panel, or ask us to delete your account information at the contact below.</p>
+<h2>Help window</h2>
+<p>What you send from the mushroom at the bottom right goes to the site owner, with the page address, your browser and operating system type, screen size and language. If you are logged in, your messages and the answers are stored on Cloudflare with your Discord user ID and are removed together with your saved settings. Without a login the message only goes to the owner's private Discord channel and is not stored as your record. To prevent flooding, your IP address is turned into an irreversible hash and counted for a short time, not stored.</p>
 <h2>Children</h2>
 <p>GMS Hub does not knowingly collect personal information from children under 13.</p>
 <h2>Changes</h2>
@@ -1086,6 +1090,7 @@ function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], module
 ${header(lang, pagePath, only)}
 <main>${ads && pageKey !== 'home' ? adfitRails() : ''}${withMidAd(withTopAd(withDownload(body, lang, pageKey, pagePath), ads), ads)}${ads && !body.includes(AD_MID) ? adfitSlot() : ''}</main>
 ${footer(lang)}
+<div data-help-npc hidden>${spriteSvg('mushroom', 34)}</div>
 ${lateScripts([
   [scriptSrc('analytics.js')], [scriptSrc('common.js')], [href(`/assets/feature-discovery.js?v=${moduleVersion}`), 1], [href(`/assets/header-search.js?v=${moduleVersion}`), 1],
   ...(ads ? [[scriptSrc('adfit.js')]] : []),
@@ -1094,6 +1099,7 @@ ${lateScripts([
   ...(String(XL_BY_PAGE[pageKey] || '').startsWith('live:') || pageKey === 'questGuide' || XL_BY_PAGE[pageKey] ? [[href(`/assets/xlsx-live.js?v=${moduleVersion}`), 1]] : []),
   [href(`/assets/item-tip.js?v=${moduleVersion}`), 1],
   [href(`/assets/account.js?v=${moduleVersion}`), 1],
+  [href(`/assets/support.js?v=${moduleVersion}`), 1],
 ])}
 </body>
 </html>`;
@@ -4116,6 +4122,18 @@ write(
 <main class="wrap sc-admin" id="scam-admin-root"></main>
 ${jsonScript('scam-admin-config', { api: config.voteApi })}
 <script src="${scriptSrc('scam-admin.js')}" defer></script>
+</body></html>`
+);
+
+// Owner inbox for the help widget (assets/support-admin.js, worker /internal/support). Same key as the traffic dashboard.
+write(
+  'admin/support/index.html',
+  `${head({ lang: 'ko', title: '문의함 | GMS Hub', desc: 'GMS Hub 문의함', noindex: true, bare: true })}
+<body data-page="support-admin">
+<header class="site-header"><div class="wrap header-inner"><a class="brand" href="${href('/ko/')}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>문의함</small></span></a></div></header>
+<main class="wrap sc-admin" id="support-admin-root"></main>
+${jsonScript('support-admin-config', { api: config.voteApi })}
+<script src="${scriptSrc('support-admin.js')}" defer></script>
 </body></html>`
 );
 

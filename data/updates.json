@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "help-widget",
+   "version": "0.7.76",
+   "level": "minor",
+   "date": "2026-11-24",
+   "path": "/",
+   "ko": "버섯 도우미 — 오류 신고와 문의를 바로 보내요",
+   "en": "Mushroom Helper — report a bug or ask right away",
+   "desc": {
+    "ko": "오른쪽 아래 버섯을 누르면 오류 신고, 정보 제보, 건의, 문의를 보낼 수 있어요. 디스코드로 로그인하면 문의 기록이 남고 답변을 받아요. 비회원은 답변을 받을 수 없고 기록도 남지 않아요.",
+    "en": "Press the mushroom at the bottom right to report a bug, fix wrong data, suggest something or ask. Log in with Discord to keep your messages and get answers. Without a login there is no answer and no record."
+   }
+  },
+  {
    "id": "exp-read-any-screen",
    "version": "0.7.75",
    "level": "patch",

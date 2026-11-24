@@ -4524,3 +4524,65 @@ button.trd-slot:focus-visible { outline: 2px solid var(--focus); outline-offset:
   .trd-item h2 { font-size: 1.2rem; }
 }
 .exp-me-box { margin: 0 0 14px; padding: 12px 14px; }
+
+/* Help widget (assets/support.js): a mushroom at the bottom right and an NPC-style talk window. */
+.sp { position: fixed; right: 16px; bottom: 16px; z-index: 68; }
+.sp[hidden] { display: none; }
+.sp-btn { position: relative; display: grid; place-items: center; width: 52px; height: 52px; padding: 0; border: 2px solid var(--line-strong); border-radius: 14px; background: var(--panel); box-shadow: 0 3px 0 var(--line-strong), 0 8px 20px var(--shadow-c, rgb(0 0 0 / .16)); cursor: pointer; }
+.sp-btn:hover { transform: translateY(-2px); }
+.sp-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--line-strong); }
+.sp-btn:focus-visible, .sp-panel button:focus-visible, .sp-login:focus-visible { outline: 3px solid var(--accent-fill); outline-offset: 2px; }
+.sp-art svg, .sp-face svg { display: block; width: 34px; height: 34px; image-rendering: pixelated; }
+.sp-balloon { position: absolute; top: -8px; left: -8px; display: grid; place-items: center; width: 22px; height: 20px; border: 2px solid var(--line-strong); border-radius: 8px; background: #ffd84d; color: #4a2a00; font-size: 12px; font-weight: 900; line-height: 1; }
+.sp-balloon::after { content: ''; position: absolute; right: 2px; bottom: -6px; border: 4px solid transparent; border-top-color: var(--line-strong); border-bottom: 0; }
+.sp-dot { position: absolute; top: -7px; right: -7px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; background: #d92d20; color: #fff; font-size: 12px; font-weight: 800; line-height: 20px; text-align: center; }
+.sp-dot[hidden] { display: none; }
+.sp-panel { position: absolute; right: 0; bottom: 64px; display: flex; flex-direction: column; width: 340px; max-width: calc(100vw - 32px); max-height: min(540px, calc(100vh - 110px)); max-height: min(540px, calc(100dvh - 110px)); overflow: hidden; border: 2px solid var(--line-strong); border-radius: 14px; background: var(--panel); color: var(--text); box-shadow: inset 0 0 0 3px var(--panel-2), 0 12px 32px var(--shadow-c, rgb(0 0 0 / .22)); }
+.sp-panel[hidden] { display: none; }
+.sp-head { display: flex; align-items: center; gap: 10px; padding: 12px 12px 10px; border-bottom: 2px solid var(--line); background: var(--panel-2); }
+.sp-face { display: grid; place-items: center; flex: none; width: 46px; height: 46px; border: 2px solid var(--line-strong); border-radius: 10px; background: var(--panel); }
+.sp-head div { flex: 1; min-width: 0; }
+.sp-head strong { display: block; font-size: .98rem; }
+.sp-head small { color: var(--muted); font-size: .78rem; }
+.sp-x { flex: none; width: 36px; height: 36px; border: 0; border-radius: 8px; background: none; color: var(--text-2); font-size: 1.3rem; line-height: 1; cursor: pointer; }
+.sp-x:hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
+.sp-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 12px; }
+.sp-say { position: relative; margin: 0 0 10px; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: 4px 12px 12px 12px; background: var(--bg); font-size: .9rem; line-height: 1.5; }
+.sp-pick { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.sp-pick button { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid transparent; border-radius: 10px; background: none; color: var(--accent-2, var(--accent)); font: inherit; font-weight: 700; text-align: left; cursor: pointer; }
+.sp-pick button::before { content: '▸'; color: var(--accent-fill); }
+.sp-pick button:hover, .sp-pick button:focus-visible { border-color: var(--line); background: var(--panel-2); }
+.sp-form textarea { display: block; width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--bg); color: var(--text); font: inherit; font-size: 16px; line-height: 1.5; resize: vertical; }
+.sp-kind { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 6px; font-size: .88rem; }
+.sp-back { border: 0; background: none; padding: 6px; color: var(--muted); font: inherit; font-size: .8rem; text-decoration: underline; cursor: pointer; }
+.sp-tech { margin: 6px 0 8px; color: var(--muted); font-size: .76rem; line-height: 1.45; }
+.sp-err { margin: 0 0 8px; color: var(--danger, #c0392b); font-size: .84rem; font-weight: 700; }
+.sp-acts { display: flex; gap: 8px; justify-content: flex-end; }
+.sp-acts .btn { min-height: 40px; padding: 8px 14px; font-size: .88rem; }
+.sp-foot { padding: 10px 12px 12px; border-top: 2px solid var(--line); background: var(--panel-2); font-size: .8rem; line-height: 1.5; }
+.sp-foot p { margin: 0; }
+.sp-foot small { display: block; margin-top: 4px; color: var(--muted); font-size: .74rem; }
+.sp-warn { color: var(--text); }
+.sp-warn b { color: var(--danger, #c0392b); }
+.sp-login { display: block; margin-top: 8px; padding: 9px 12px; border-radius: 10px; background: #5865f2; color: #fff; font-weight: 700; text-align: center; text-decoration: none; }
+.sp-log { margin: 0 0 10px; padding: 0; list-style: none; display: grid; gap: 8px; }
+.sp-log li { max-width: 88%; justify-self: start; }
+.sp-log li.is-me { justify-self: end; text-align: right; }
+.sp-log small { color: var(--muted); font-size: .72rem; }
+.sp-log p { margin: 2px 0 0; padding: 8px 11px; border: 1px solid var(--line); border-radius: 4px 12px 12px 12px; background: var(--bg); font-size: .88rem; line-height: 1.5; text-align: left; white-space: pre-wrap; overflow-wrap: anywhere; }
+.sp-log li.is-me p { border-radius: 12px 4px 12px 12px; background: var(--accent-soft, var(--panel-2)); }
+/* The language hint and the login prompt use the bottom of the screen on phones: the mushroom steps up above them. */
+@media (max-width: 720px) {
+  .sp { right: 12px; bottom: 12px; }
+  .sp-btn { width: 46px; height: 46px; }
+  .sp-art svg { width: 30px; height: 30px; }
+  .sp-panel { bottom: 56px; width: calc(100vw - 24px); max-width: 380px; }
+  body:has(> .lang-hint:not([hidden])) .sp, body:has(> .acct-nudge) .sp { bottom: 110px; }
+}
+@media print { .sp { display: none; } }
+.su-grid { display: grid; grid-template-columns: minmax(200px, 280px) minmax(0, 1fr); gap: 14px; }
+@media (max-width: 760px) { .su-grid { grid-template-columns: minmax(0, 1fr); } }
+.su-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.su-list button { width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.su-list button[aria-current] { border-color: var(--accent-fill); background: var(--panel-2); }
+.su-list small { display: block; color: var(--muted); }

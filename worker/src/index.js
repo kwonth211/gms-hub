@@ -45,9 +45,10 @@ import { count, flushUsage, isOver, meterDb, usageView } from './usage-guard.js'
 import { createAlert, listAlerts, deleteAlert, takeHits, checkAlerts } from './alerts.js';
 import { bodyTooLarge, sameSecret } from './secure.js';
 import { handleAccount, handleAccountAlerts } from './account.js';
+import { Support, handleSupport, handleSupportAdmin } from './support.js';
 import { recordContribution, handleContributors, priceBoardToDiscord, leaderboardToDiscord } from './contributors.js';
 import { recordScamMegaphones, scamList, postScamReport, postScamAppeal, handleScamAdmin, refreshProfiles } from './scam.js';
-export { Presence };
+export { Presence, Support };
 const ALLOWED_ORIGINS = ['https://gms-hub.com', 'https://www.gms-hub.com', 'http://localhost:8790', 'http://127.0.0.1:8790'];
 
 // Paths that carry their own credential (collector tokens, Discord signatures) and are not rate limited per IP.
@@ -533,6 +534,11 @@ const api = {
       return oauthCallback(url, env, (id, lang) => (lang === 'ko' ? itemKo : itemLabels)?.get(id));
     }
     // Site-wide "Log in with Discord": the visitor's own settings, copied between their devices (see account.js).
+    if (url.pathname === '/support') {
+      if (req.method !== 'GET' && req.method !== 'OPTIONS' && !ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
+      return handleSupport(req, env, cors);
+    }
+    if (url.pathname === '/internal/support') return handleSupportAdmin(req, env, ALLOWED_ORIGINS);
     if (url.pathname === '/account/data') return handleAccount(req, env, cors);
     if (url.pathname === '/contributors' && (req.method === 'GET' || req.method === 'OPTIONS')) return handleContributors(req, env, cors);
     if (url.pathname === '/account/alerts') {

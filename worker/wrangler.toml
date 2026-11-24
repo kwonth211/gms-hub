@@ -38,6 +38,8 @@ DISCORD_PUBLIC_KEY = "d680698602135c2a47f7054d1ec72b69ab810f0b8965de527a74375a32
 DISCORD_INVITE = "https://discord.gg/nUKhUjKvRX"
 # /feedback posts into this channel of the GMS Hub server (needs the DISCORD_BOT_TOKEN secret, as do /alert DMs).
 DISCORD_FEEDBACK_CHANNEL = "1570460324203602010"
+# Help widget messages: a channel only the owner sees (src/support.js).
+DISCORD_SUPPORT_CHANNEL = "1574760881407926287"
 # Website price alerts log in with Discord (src/discord-oauth.js): the application (client) id and the server people join.
 # The client secret is the DISCORD_CLIENT_SECRET secret; the redirect URI <worker>/discord/oauth is set on the Developer Portal.
 DISCORD_APP_ID = "1570465541343150292"
@@ -77,9 +79,18 @@ crons = ["*/15 * * * *"]
 name = "PRESENCE"
 class_name = "Presence"
 
+# Help widget threads (src/support.js), kept in the object's own SQLite storage.
+[[durable_objects.bindings]]
+name = "SUPPORT"
+class_name = "Support"
+
 [[migrations]]
 tag = "presence-v1"
 new_sqlite_classes = ["Presence"]
+
+[[migrations]]
+tag = "support-v1"
+new_sqlite_classes = ["Support"]
 
 # Per-IP rate limits (src/index.js): public writes (votes, price reports, shop uploads, free megaphones, the dashboard
 # login) and reads. A flood from one address is answered 429 before any database work.
