@@ -2120,7 +2120,7 @@ html[data-charm='off'] .charm-leaves { display: none; }
 @media (max-width: 480px) {
   .header-inner { column-gap: 6px; }
   .brand strong { font-size: 1rem; }
-  .brand svg { width: 28px; height: 28px; }
+  .brand svg, .brand .logo { width: 32px; height: 32px; }
 }
 /* Narrow phones: the day/night switch moves from the header row into More, so the row still fits on one line. */
 .more-theme { display: none; font: inherit; font-size: 0.9rem; text-align: left; background: none; border: 0; cursor: var(--cur-hand, pointer); border-top: 1px solid var(--line); border-radius: 0 0 8px 8px; }
@@ -4537,7 +4537,7 @@ button.trd-slot:focus-visible { outline: 2px solid var(--focus); outline-offset:
 .sp-btn:active { transform: scale(.95); }
 .sp :is(button, a, textarea):focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .sp-btn-art, .sp-btn-down { grid-area: 1 / 1; position: relative; transition: transform .3s var(--ease-snap), opacity .2s; }
-.sp-btn-art svg { width: 30px; height: 30px; }
+.sp-btn-art :is(svg, img) { display: block; width: 36px; height: 36px; }
 .sp-btn-down { opacity: 0; transform: rotate(-60deg) scale(.6); }
 .sp-btn-down svg { width: 28px; height: 28px; }
 .sp.is-open .sp-btn::before { inset: 28px; opacity: 0; }
@@ -4562,7 +4562,7 @@ button.trd-slot:focus-visible { outline: 2px solid var(--focus); outline-offset:
 .sp-ic svg { width: 22px; height: 22px; }
 .sp-ic:hover { background: color-mix(in srgb, currentColor 12%, transparent); }
 .sp-ava { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 13px; background: var(--accent-wash); }
-.sp-ava svg { width: 23px; height: 23px; }
+.sp-ava :is(svg, img) { width: 28px; height: 28px; }
 .sp-ava.is-gap { background: none; height: 0; }
 
 .sp-hero { position: relative; padding: 24px 20px 64px; overflow: hidden; background: radial-gradient(120% 130% at 100% 0, #ffc37d 0, transparent 52%), linear-gradient(155deg, #f79334, #e8730f 62%, #cf5d0a); color: #fff; }
@@ -4570,8 +4570,8 @@ button.trd-slot:focus-visible { outline: 2px solid var(--focus); outline-offset:
 .sp-hero p { position: relative; display: inline-flex; align-items: center; gap: 7px; margin: 0; padding: 5px 11px; border-radius: 999px; background: rgb(120 48 0 / .34); font-size: .78rem; font-weight: 600; color: #fff; }
 .sp-hero p i, .sp-bar small i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: #58e08f; }
 .sp-hero .sp-x { position: absolute; top: 12px; right: 12px; z-index: 1; }
-.sp-hero-art { position: absolute; right: 22px; bottom: 34px; opacity: .96; filter: drop-shadow(0 6px 10px rgb(90 34 0 / .35)); animation: sp-bob 3.2s ease-in-out infinite; }
-.sp-hero-art svg { width: 82px; height: 82px; }
+.sp-hero-art { position: absolute; right: 18px; bottom: 38px; opacity: .96; filter: drop-shadow(0 6px 10px rgb(90 34 0 / .35)); animation: sp-bob 3.2s ease-in-out infinite; }
+.sp-hero-art :is(svg, img) { display: block; width: 100px; height: 100px; }
 @keyframes sp-bob { 50% { transform: translateY(-6px); } }
 .sp-cards { position: relative; display: grid; gap: 10px; margin-top: -42px; padding: 0 14px 16px; }
 .sp-card { padding: 14px 8px 8px; border-radius: 16px; background: var(--panel); box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 7%, transparent), 0 6px 20px rgb(60 44 20 / .09); }
@@ -4647,7 +4647,7 @@ button.trd-slot:focus-visible { outline: 2px solid var(--focus); outline-offset:
 @media (max-width: 720px) {
   .sp { right: 14px; bottom: 14px; }
   .sp-btn { width: 50px; height: 50px; }
-  .sp-btn-art svg { width: 26px; height: 26px; }
+  .sp-btn-art :is(svg, img) { width: 32px; height: 32px; }
   body:has(> .lang-hint:not([hidden])) .sp:not(.is-open), body:has(> .acct-nudge) .sp:not(.is-open) { bottom: 112px; }
 }
 /* On phones the open window is a sheet over the whole screen, so its own close and back buttons are the way out. */
@@ -4676,3 +4676,5 @@ button.trd-slot:focus-visible { outline: 2px solid var(--focus); outline-offset:
 .sc-admin .sp-form { display: block; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
 .sc-admin .sp-form textarea { width: 100%; max-height: none; padding: 10px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--bg); }
 .sc-admin .sp-acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+
+.brand .logo, .footer-brand .logo { flex: none; display: block; }

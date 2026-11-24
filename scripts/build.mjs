@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { spriteSvg, heroScene, spritePng, spriteDataPng } from './sprites.mjs';
+import { spriteSvg, heroScene, spriteDataPng } from './sprites.mjs';
 import { monsterIndex, monsterDetail, monsterPath, monsterName, mapPath, bossIndex } from './monster-pages.mjs';
 import { buildWorkbooks } from './workbooks.mjs';
 import { collectMaps, mapDetail, mapIndex, mapName } from './map-pages.mjs';
@@ -786,9 +786,9 @@ ${shareImageTags(lang, pagePath)}
 <script>${TX_RUNTIME}</script>
 ${verify}
 ${naverVerify}
-<link rel="icon" href="${href('/assets/favicon.svg')}" type="image/svg+xml">
+<link rel="icon" href="${href('/assets/favicon.svg?v=b1')}" type="image/svg+xml">
 <link rel="manifest" href="${href('/manifest.webmanifest')}">
-<link rel="apple-touch-icon" href="${href('/assets/icon-180.png')}">
+<link rel="apple-touch-icon" href="${href('/assets/icon-180.png?v=b1')}">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="preconnect" href="${esc(config.voteApi)}" crossorigin>
 ${pagePath === '/tools/market/' ? `<link rel="preload" as="fetch" href="${esc(config.voteApi)}/market/catalog" crossorigin>` : ''}
@@ -807,6 +807,10 @@ ${ld.map(ldScript).join('\n')}
 
 // Day or night before the first paint: a saved choice wins, otherwise the system setting. No script, no theme: day.
 // The theme follows the device (the header switch was removed 2026-11-14, user request); an old saved choice is dropped.
+// The logo (owner's pick, 2026-11-24): a 64-grid pixel mushroom with a meso coin, art in ~/gms-hub-discord/brand/logo-1124.
+// One 256 px file (1 KB) that the browser scales down smoothly for every size and screen density.
+const LOGO_V = 'b1';
+const logoImg = (size) => `<img class="logo" src="${href(`/assets/logo-256.webp?v=${LOGO_V}`)}" width="${size}" height="${size}" alt="">`;
 const THEME_BOOT = `(function(){try{localStorage.removeItem('gms-theme');var t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;if(localStorage.getItem('gms-charm')==='off')document.documentElement.dataset.charm='off';var m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='dark'?'#0f1420':'#f6f1e7';}catch(e){}})();`;
 const THEME_ICON = `<svg class="theme-icon" viewBox="0 0 16 16" width="18" height="18" shape-rendering="crispEdges" aria-hidden="true"><g class="sun"><rect x="6" y="6" width="4" height="4"/><rect x="7" y="1" width="2" height="3"/><rect x="7" y="12" width="2" height="3"/><rect x="1" y="7" width="3" height="2"/><rect x="12" y="7" width="3" height="2"/><rect x="3" y="3" width="2" height="2"/><rect x="11" y="3" width="2" height="2"/><rect x="3" y="11" width="2" height="2"/><rect x="11" y="11" width="2" height="2"/></g><g class="moon"><rect x="6" y="2" width="5" height="2"/><rect x="4" y="4" width="3" height="2"/><rect x="3" y="6" width="3" height="4"/><rect x="4" y="10" width="3" height="2"/><rect x="6" y="12" width="5" height="2"/><rect x="11" y="10" width="2" height="2"/></g></svg>`;
 
@@ -892,7 +896,7 @@ function header(lang, pagePath, only) {
   // One search entry per page: the first label a path appears with.
   const searchPages = [...new Map([...menus.flat(), sitesEntry].map((e) => [e[0], e])).values()];
   return `${megaTicker(lang)}<header class="site-header"><div class="wrap header-inner">
-<a class="brand" href="${href(langPath(lang, '/'))}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>${esc(t.gameName)}</small></span></a>
+<a class="brand" href="${href(langPath(lang, '/'))}">${logoImg(40)}<span><strong>GMS Hub</strong><small>${esc(t.gameName)}</small></span></a>
 <nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}</nav>
 ${presencePill(lang)}
 ${headerSearch(lang, searchPages)}
@@ -988,7 +992,7 @@ const DISCORD_ICON = (size = 18) => `<svg class="discord-ico" viewBox="0 0 24 24
 function footer(lang) {
   const t = T[lang];
   return `<footer class="site-footer"><div class="charm-walk" aria-hidden="true"><span class="walker w1">${spriteSvg('mushroom', 30)}</span><span class="walker w2">${spriteSvg('slime', 26)}</span></div><div class="wrap">
-<div class="footer-brand">${spriteSvg('mushroom', 24)}<strong>GMS Hub</strong></div>
+<div class="footer-brand">${logoImg(30)}<strong>GMS Hub</strong></div>
 <p>${esc(t.footerDisclaimer)}</p>
 ${'' /* No-scraping notice on every page (owner, 2026-11-18); the full clause is section 7 of the terms. */}<p class="footer-noscrape">${esc(t.footerNoScrape || T.en.footerNoScrape)} <a href="${href(langPath(lang, '/terms/'))}">${t.terms}</a></p>
 <p><button type="button" class="charm-toggle" data-charm-toggle><span class="charm-on-label">${lang === 'ko' ? '낙엽 효과 끄기' : 'Turn off falling leaves'}</span><span class="charm-off-label">${lang === 'ko' ? '낙엽 효과 켜기' : 'Turn on falling leaves'}</span></button></p>
@@ -4036,7 +4040,7 @@ ${shareImageTags('en')}
 ${ALL_LANGS.map((l) => `<link rel="alternate" hreflang="${HREFLANG[l]}" href="${absUrl(langPath(l, '/'))}">`).join('\n')}
 <link rel="alternate" hreflang="x-default" href="${absUrl(langPath('en', '/'))}">
 ${config.naverSiteVerification ? `<meta name="naver-site-verification" content="${esc(config.naverSiteVerification)}">` : ''}
-<link rel="icon" href="${href('/assets/favicon.svg')}" type="image/svg+xml">
+<link rel="icon" href="${href('/assets/favicon.svg?v=b1')}" type="image/svg+xml">
 <style>body{margin:0;font-family:system-ui,sans-serif;background:#f6f1e7;color:#1c2130}.root-choice{visibility:hidden}main{max-width:520px;margin:15vh auto;text-align:center;padding:0 16px}a{display:inline-block;margin:4px;padding:10px 16px;border-radius:999px;border:1px solid #c45f0b;color:#1c2130;text-decoration:none}</style>
 <noscript><style>.root-choice{visibility:visible}</style></noscript>
 </head>
@@ -4092,7 +4096,7 @@ write(
   'admin/index.html',
   `${head({ lang: 'ko', title: '관리자 | GMS Hub', desc: 'GMS Hub 데이터 관리', noindex: true, bare: true })}
 <body data-page="admin">
-<header class="site-header"><div class="wrap header-inner"><a class="brand" href="${href('/ko/')}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>관리자</small></span></a></div></header>
+<header class="site-header"><div class="wrap header-inner"><a class="brand" href="${href('/ko/')}">${logoImg(40)}<span><strong>GMS Hub</strong><small>관리자</small></span></a></div></header>
 <main class="wrap" id="admin-root"></main>
 ${jsonScript('admin-config', config.github)}
 <script src="${href('/assets/admin.js')}" defer></script>
@@ -4105,7 +4109,7 @@ write(
   'admin/traffic/index.html',
   `${head({ lang: 'ko', title: '트래픽 | GMS Hub', desc: 'GMS Hub 트래픽', noindex: true, bare: true })}
 <body data-page="traffic">
-<header class="site-header"><div class="wrap header-inner"><a class="brand" href="${href('/ko/')}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>트래픽</small></span></a></div></header>
+<header class="site-header"><div class="wrap header-inner"><a class="brand" href="${href('/ko/')}">${logoImg(40)}<span><strong>GMS Hub</strong><small>트래픽</small></span></a></div></header>
 <main class="wrap traffic-dash" id="traffic-root"></main>
 ${jsonScript('traffic-config', { api: config.voteApi })}
 <script src="${scriptSrc('traffic-dash.js')}" defer></script>
@@ -4118,7 +4122,7 @@ write(
   'admin/scam/index.html',
   `${head({ lang: 'ko', title: '사기 신고 관리 | GMS Hub', desc: 'GMS Hub 사기 신고 관리', noindex: true, bare: true })}
 <body data-page="scam-admin">
-<header class="site-header"><div class="wrap header-inner"><a class="brand" href="${href('/ko/')}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>사기 신고 관리</small></span></a></div></header>
+<header class="site-header"><div class="wrap header-inner"><a class="brand" href="${href('/ko/')}">${logoImg(40)}<span><strong>GMS Hub</strong><small>사기 신고 관리</small></span></a></div></header>
 <main class="wrap sc-admin" id="scam-admin-root"></main>
 ${jsonScript('scam-admin-config', { api: config.voteApi })}
 <script src="${scriptSrc('scam-admin.js')}" defer></script>
@@ -4130,7 +4134,7 @@ write(
   'admin/support/index.html',
   `${head({ lang: 'ko', title: '문의함 | GMS Hub', desc: 'GMS Hub 문의함', noindex: true, bare: true })}
 <body data-page="support-admin">
-<header class="site-header"><div class="wrap header-inner"><a class="brand" href="${href('/ko/')}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>문의함</small></span></a></div></header>
+<header class="site-header"><div class="wrap header-inner"><a class="brand" href="${href('/ko/')}">${logoImg(40)}<span><strong>GMS Hub</strong><small>문의함</small></span></a></div></header>
 <main class="wrap sc-admin" id="support-admin-root"></main>
 ${jsonScript('support-admin-config', { api: config.voteApi })}
 <script src="${scriptSrc('support-admin.js')}" defer></script>
@@ -4211,10 +4215,6 @@ ${sitemapUrls}
 );
 // Installable on phones ("Add to home screen"): a returning player opens GMS Hub like an app. No service worker,
 // so nothing is ever served from a stale cache.
-for (const size of [180, 192, 512]) {
-  fs.mkdirSync(path.join(out, 'assets'), { recursive: true });
-  fs.writeFileSync(path.join(out, 'assets', `icon-${size}.png`), spritePng('mushroom', size));
-}
 // Service worker for price alerts only: it handles pushes and notification clicks and caches nothing, so pages are
 // never served stale.
 write('sw.js', fs.readFileSync(path.join(root, 'assets', 'sw.js'), 'utf8').replace('__API__', config.voteApi));
@@ -4223,8 +4223,8 @@ write('manifest.webmanifest', JSON.stringify({
   description: 'MapleStory Classic World live prices, training routes, monster and item database',
   start_url: href('/?src=app'), scope: href('/'), display: 'standalone', background_color: '#f6f1e7', theme_color: '#f6f1e7',
   icons: [
-    { src: href('/assets/icon-192.png'), sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-    { src: href('/assets/icon-512.png'), sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+    { src: href('/assets/icon-192.png?v=b1'), sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+    { src: href('/assets/icon-512.png?v=b1'), sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
   ]
 }));
 // llms.txt: a plain map of the site for AI assistants (ChatGPT already sends engaged visitors to tool pages).

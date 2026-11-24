@@ -3,6 +3,8 @@
 // without a login the message only reaches the owner, and the widget says so before sending. Server: worker support.js.
 import ICON from './help-icons.js';
 
+// The site logo.
+const LOGO = '<img src="/assets/logo-256.webp?v=b1" alt="" width="256" height="256">';
 const box = document.querySelector('[data-help-npc]');
 const lang = document.documentElement.lang?.slice(0, 2) || 'en';
 const api = document.body.dataset.priceApi || '';
@@ -55,12 +57,12 @@ if (box && L && api) {
   }
   box.className = 'sp';
   box.innerHTML = `<section class="sp-panel" id="sp-panel" role="dialog" aria-label="${esc(L.open)}" hidden></section>
-<button type="button" class="sp-btn" aria-expanded="false" aria-controls="sp-panel" aria-label="${esc(L.open)}" title="${esc(L.open)}"><span class="sp-btn-art" aria-hidden="true">${ICON.mushroom}</span><span class="sp-btn-down" aria-hidden="true">${svg.down}</span><span class="sp-dot" hidden></span></button>`;
+<button type="button" class="sp-btn" aria-expanded="false" aria-controls="sp-panel" aria-label="${esc(L.open)}" title="${esc(L.open)}"><span class="sp-btn-art" aria-hidden="true">${LOGO}</span><span class="sp-btn-down" aria-hidden="true">${svg.down}</span><span class="sp-dot" hidden></span></button>`;
   box.hidden = false;
   const btn = box.querySelector('.sp-btn'), panel = box.querySelector('.sp-panel'), dot = box.querySelector('.sp-dot');
   const mark = () => { dot.hidden = !unread || open; dot.textContent = unread > 9 ? '9+' : unread || ''; };
 
-  const bot = (text, key = '') => `<li class="sp-m is-bot"${key}><span class="sp-ava" aria-hidden="true">${ICON.mushroom}</span><div><p>${esc(text)}</p></div></li>`;
+  const bot = (text, key = '') => `<li class="sp-m is-bot"${key}><span class="sp-ava" aria-hidden="true">${LOGO}</span><div><p>${esc(text)}</p></div></li>`;
   function bubbles(items) {
     let day = '', out = '', prev = '';
     for (const m of items) {
@@ -68,7 +70,7 @@ if (box && L && api) {
       if (d !== day) { out += `<li class="sp-day"><span>${esc(d)}</span></li>`; day = d; prev = ''; }
       const staff = m.who === 'staff';
       out += staff
-        ? `<li class="sp-m is-bot">${prev === 'staff' ? '<span class="sp-ava is-gap"></span>' : `<span class="sp-ava" aria-hidden="true">${ICON.mushroom}</span>`}<div>${prev === 'staff' ? '' : `<b>${esc(L.staff)}</b>`}<p>${esc(m.text)}</p><time>${clock(m.at)}</time></div></li>`
+        ? `<li class="sp-m is-bot">${prev === 'staff' ? '<span class="sp-ava is-gap"></span>' : `<span class="sp-ava" aria-hidden="true">${LOGO}</span>`}<div>${prev === 'staff' ? '' : `<b>${esc(L.staff)}</b>`}<p>${esc(m.text)}</p><time>${clock(m.at)}</time></div></li>`
         : `<li class="sp-m is-me"><div>${m.kind ? `<b>${esc(L.kinds[m.kind] || '')}</b>` : ''}<p>${esc(m.text)}</p><time>${clock(m.at)}</time></div></li>`;
       prev = m.who;
     }
@@ -77,10 +79,10 @@ if (box && L && api) {
   const guestCard = () => `<div class="sp-guest"><p>${L.guest}</p><a class="sp-login" href="${loginHref()}">${esc(L.login)}</a><small>${esc(L.loginNote)}</small></div>`;
   const tabs = (on) => `<nav class="sp-tabs">${['home', 'talks'].map((k) => `<button type="button" data-view="${k}"${on === k ? ' aria-current="page"' : ''}>${svg[k]}<span>${esc(L[k])}</span>${k === 'talks' && unread ? '<i></i>' : ''}</button>`).join('')}</nav>`;
   const last = () => list.at(-1);
-  const threadRow = () => { const m = last(); return `<button type="button" class="sp-row" data-view="chat"><span class="sp-ava" aria-hidden="true">${ICON.mushroom}</span><span class="sp-row-t"><b>${esc(m.who === 'staff' ? L.staff : L.you)}</b><small>${esc(m.text)}</small></span><span class="sp-row-s"><time>${short(m.at)}</time>${unread ? `<em>${unread}</em>` : ''}</span></button>`; };
+  const threadRow = () => { const m = last(); return `<button type="button" class="sp-row" data-view="chat"><span class="sp-ava" aria-hidden="true">${LOGO}</span><span class="sp-row-t"><b>${esc(m.who === 'staff' ? L.staff : L.you)}</b><small>${esc(m.text)}</small></span><span class="sp-row-s"><time>${short(m.at)}</time>${unread ? `<em>${unread}</em>` : ''}</span></button>`; };
 
   function home(s) {
-    return `<div class="sp-scroll"><header class="sp-hero"><button type="button" class="sp-ic sp-x" aria-label="${esc(L.close)}">${svg.x}</button><span class="sp-hero-art" aria-hidden="true">${ICON.mushroom}</span><h2>${esc(L.hello)}<br>${esc(L.hello2)}</h2><p><i></i>${esc(L.time)}</p></header>
+    return `<div class="sp-scroll"><header class="sp-hero"><button type="button" class="sp-ic sp-x" aria-label="${esc(L.close)}">${svg.x}</button><span class="sp-hero-art" aria-hidden="true"><img src="/assets/logo-256.webp?v=b1" alt="" width="256" height="256"></span><h2>${esc(L.hello)}<br>${esc(L.hello2)}</h2><p><i></i>${esc(L.time)}</p></header>
 <div class="sp-cards">
 ${s && list.length ? `<section class="sp-card"><h3>${esc(L.recent)}</h3>${threadRow()}</section>` : ''}
 <section class="sp-card"><h3>${esc(L.topics)}</h3><ul class="sp-topics">${Object.keys(L.kinds).map((k) => `<li><button type="button" data-kind="${k}"><span class="sp-t-ico" aria-hidden="true">${ICON[TOPIC[k]]}</span><span><b>${esc(L.kinds[k])}</b><small>${esc(L.topicSub[k])}</small></span>${svg.go}</button></li>`).join('')}</ul></section>
@@ -93,7 +95,7 @@ ${s ? '' : `<section class="sp-card">${guestCard()}</section>`}
   }
   function chat(s) {
     const d = readDraft();
-    return `<header class="sp-bar is-chat"><button type="button" class="sp-ic" data-back aria-label="${esc(L.backAria)}">${svg.back}</button><span class="sp-ava" aria-hidden="true">${ICON.mushroom}</span><div><h2>${esc(L.name)}</h2><small><i></i>${esc(L.time)}</small></div><button type="button" class="sp-ic sp-x" aria-label="${esc(L.close)}">${svg.x}</button></header>
+    return `<header class="sp-bar is-chat"><button type="button" class="sp-ic" data-back aria-label="${esc(L.backAria)}">${svg.back}</button><span class="sp-ava" aria-hidden="true">${LOGO}</span><div><h2>${esc(L.name)}</h2><small><i></i>${esc(L.time)}</small></div><button type="button" class="sp-ic sp-x" aria-label="${esc(L.close)}">${svg.x}</button></header>
 <div class="sp-scroll"><ol class="sp-log" role="log">${bubbles(s ? list : guestLog)}${bot(kind ? L[{ bug: 'hiBug', data: 'hiData', idea: 'hiIdea', ask: 'hiAsk' }[kind]] : L.hi)}</ol></div>
 <div class="sp-compose">
 ${s ? '' : `<p class="sp-strip"><span>${esc(L.guestShort)}</span><a class="sp-login-s" href="${loginHref()}">${esc(L.loginShort)}</a></p>`}

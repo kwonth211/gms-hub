@@ -114,7 +114,7 @@ function html(lang, c) {
 .bub:after{content:"";position:absolute;left:22px;bottom:-10px;border:10px solid transparent;border-bottom:0;border-top-color:inherit}
 .tag{position:absolute;padding:9px 16px;border-radius:14px;background:#fff7ed;border:2px solid #e9c48f;font-size:26px;font-weight:900;color:#5b3a1f;box-shadow:0 10px 24px #2919232e;letter-spacing:-.5px}
 html[lang=ja] .og-badge{font-size:13px}html[lang=ja] .og-sub{font-size:20px}html[lang=zh] .og-card h1{letter-spacing:0}
-</style></head><body><main class="og${c.key ? ` og-page og-${c.key}` : ''}">${heroScene()}${c.key ? `<div class="og-tint"></div>${art(c.key, lang)}` : crest}<section class="og-card"><div class="og-brand">${spriteSvg('mushroom',48)}GMS Hub</div><p class="og-badge">${c.badge}</p><h1>${c.title}</h1><p class="og-sub">${c.sub}</p><div class="og-bottom"><i></i>gms-hub.com</div></section></main></body></html>`;
+</style></head><body><main class="og${c.key ? ` og-page og-${c.key}` : ''}">${heroScene()}${c.key ? `<div class="og-tint"></div>${art(c.key, lang)}` : crest}<section class="og-card"><div class="og-brand"><img src="data:image/webp;base64,${fs.readFileSync(path.join(root,'assets/logo-256.webp')).toString('base64')}" width="54" height="54" alt="">GMS Hub</div><p class="og-badge">${c.badge}</p><h1>${c.title}</h1><p class="og-sub">${c.sub}</p><div class="og-bottom"><i></i>gms-hub.com</div></section></main></body></html>`;
 }
 if (process.argv.includes('--html-only')) {
   const destination = path.resolve(process.argv[process.argv.indexOf('--html-only') + 1] || '/tmp/gms-og-preview');
