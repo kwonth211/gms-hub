@@ -3948,48 +3948,135 @@ dialog.info-note .info-note-actions { text-align: right; margin: 6px 0 0; }
 .lab-static td:first-child { word-break: keep-all; }
 
 /* Scam reports (/scam/, 2026-11-24): names warned about over megaphones, with the line and the caller. */
-.sc-page { display: grid; gap: 18px; }
-.sc-page > * { max-width: 920px; min-width: 0; }
-.sc-tools { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
-.sc-search { flex: 1 1 220px; min-width: 0; font-size: 1rem; }
-.sc-count { margin: 8px 0 6px; }
-.sc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.sc-row { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--line-strong); border-radius: 12px; padding: 12px 14px; scroll-margin-top: calc(90px + var(--tk-h)); }
-.sc-row.sc-many { border-left-color: var(--danger); }
-.sc-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
-.sc-nick { font-size: 1.1rem; overflow-wrap: anywhere; }
-.sc-tally { color: var(--muted); font-size: 0.85rem; }
-.sc-tally b { color: var(--text); }
-.sc-many .sc-tally b { color: var(--danger); }
-.sc-mine { margin-left: auto; font: inherit; font-size: 0.78rem; color: var(--muted); background: none; border: 0; padding: 2px 0; text-decoration: underline; cursor: var(--cur-hand, pointer); }
-.sc-mine:hover { color: var(--text); }
-.sc-quotes { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
-.sc-quotes li { display: grid; gap: 1px; padding-top: 6px; border-top: 1px dashed var(--line); }
-.sc-q-meta { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; font-size: 0.78rem; color: var(--muted); }
-.sc-by { color: var(--text-2, var(--text)); }
+.sc-hero { position: relative; border-bottom: 1px solid var(--line); background: linear-gradient(180deg, color-mix(in srgb, var(--danger) 9%, var(--bg)), var(--bg) 85%); }
+.sc-hero::before { content: ''; display: block; height: 8px; background: repeating-linear-gradient(-45deg, var(--danger) 0 14px, #26202a 14px 28px); }
+.sc-hero-in { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; align-items: center; padding-top: 30px; padding-bottom: 30px; }
+.sc-hero-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 800; padding: 4px 12px 4px 8px; border-radius: 999px; background: color-mix(in srgb, var(--danger) 16%, var(--panel)); color: color-mix(in srgb, var(--danger) 75%, var(--text)); }
+.sc-hero h1 { font-size: clamp(1.8rem, 4.4vw, 2.6rem); margin: 12px 0 6px; }
+.sc-search-box { display: flex; align-items: center; gap: 10px; margin-top: 18px; padding: 4px 6px 4px 16px; background: var(--panel); border: 2px solid var(--line-strong); border-radius: 14px; box-shadow: 0 var(--edge) 0 var(--line-strong); color: var(--muted); cursor: text; }
+.sc-search-box:focus-within { border-color: var(--danger); box-shadow: 0 var(--edge) 0 color-mix(in srgb, var(--danger) 60%, var(--line-strong)); }
+.sc-search-box .sc-search { flex: 1; min-width: 0; border: 0; background: none; font-size: 1.15rem; font-weight: 700; padding: 12px 6px; outline: 0; box-shadow: none; }
+.sc-verdict { display: inline-block; margin: 12px 0 0; padding: 8px 14px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; }
+.sc-verdict.bad { background: var(--danger); color: var(--panel); }
+.sc-verdict.some { background: var(--warn-soft); color: var(--warn); }
+.sc-verdict.clear { background: color-mix(in srgb, var(--ok) 14%, var(--panel)); color: var(--ok); }
+.sc-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.sc-stat { display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: center; padding: 14px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 var(--edge) 0 var(--line); }
+.sc-stat-ico { grid-row: span 2; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 12px; background: var(--panel-2); }
+.sc-stat b { font-size: 1.7rem; line-height: 1.1; font-variant-numeric: tabular-nums; min-height: 1.1em; }
+.sc-stat b[aria-busy='true'] { min-height: 1.1em; width: 3ch; border-radius: 6px; }
+.sc-stat span:last-child { font-size: 0.8rem; color: var(--muted); font-weight: 700; }
+.sc-stat-many { border-color: color-mix(in srgb, var(--danger) 45%, var(--line)); box-shadow: 0 var(--edge) 0 color-mix(in srgb, var(--danger) 40%, var(--line)); }
+.sc-stat-many b { color: var(--danger); }
+.sc-stat-many .sc-stat-ico { background: color-mix(in srgb, var(--danger) 14%, var(--panel)); }
+.sc-page { display: grid; gap: 26px; padding-top: 26px; }
+.sc-page > * { min-width: 0; }
+.sc-page h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; }
+/* Names several players called out, side by side. */
+.sc-hot-list { list-style: none; margin: 12px 0 0; padding: 4px 2px 10px; display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x proximity; }
+.sc-hot-list li { flex: none; scroll-snap-align: start; }
+.sc-hot-card { display: grid; justify-items: center; gap: 4px; width: 148px; padding: 14px 10px 12px; text-decoration: none; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-top: 5px solid var(--danger); border-radius: var(--radius); box-shadow: 0 var(--edge) 0 var(--line); transition: transform 0.12s; }
+.sc-hot-card:hover { transform: translateY(-3px); }
+.sc-hot-card img, .sc-hot-card .sc-ava-none { width: 72px; height: 72px; image-rendering: pixelated; border-radius: 14px; background: var(--panel-2); }
+.sc-hot-card strong { font-size: 1rem; overflow-wrap: anywhere; text-align: center; }
+.sc-hot-n { font-size: 0.8rem; color: var(--muted); font-weight: 700; }
+.sc-hot-n b { font-size: 1.25rem; color: var(--danger); margin-right: 2px; }
+.sc-hot-card .sc-chips { justify-content: center; }
+/* Filter row. */
+.sc-tools { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; }
+.sc-chips-filter { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 320px; }
+.sc-chips-filter button { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 6px 12px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--k, var(--line-strong)) 40%, var(--line)); background: var(--panel); color: var(--text); cursor: var(--cur-hand, pointer); }
+.sc-chips-filter button i { font-style: normal; font-weight: 800; color: color-mix(in srgb, var(--k, var(--muted)) 70%, var(--text)); margin-left: 2px; }
+.sc-chips-filter button[aria-pressed='true'] { background: color-mix(in srgb, var(--k, var(--accent)) 82%, #000 0%); border-color: transparent; color: #fff; }
+.sc-chips-filter button[aria-pressed='true'] i { color: #fff; }
+.sc-seg { display: inline-flex; flex: none; border-radius: 999px; background: var(--panel-2); padding: 2px; }
+.sc-seg button { font: inherit; font-size: 0.82rem; font-weight: 700; padding: 5px 12px; border: 0; border-radius: 999px; background: none; color: var(--muted); cursor: var(--cur-hand, pointer); }
+.sc-seg button[aria-pressed='true'] { background: var(--panel); color: var(--text); box-shadow: 0 0 0 1px var(--line-strong); }
+.sc-report-btn { flex: none; }
+.sc-count { margin: 10px 0 8px; }
+/* Kind colours, shared by the filter chips, the chips on cards and the scam cards below. */
+.sc-k-spot { --k: #2f8f57; } .sc-k-fame { --k: #c0841a; } .sc-k-scroll { --k: #7c5cc4; } .sc-k-switch { --k: #c23a3a; }
+.sc-k-bundle { --k: #2b63c4; } .sc-k-price { --k: #cf6a14; } .sc-k-rmt { --k: #5b6274; }
+.sc-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.sc-chip { font-size: 0.7rem; font-weight: 800; padding: 1px 8px; border-radius: 999px; background: color-mix(in srgb, var(--k) 15%, var(--panel)); color: color-mix(in srgb, var(--k) 72%, var(--text)); border: 1px solid color-mix(in srgb, var(--k) 35%, transparent); white-space: nowrap; }
+/* Cards. */
+.sc-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+.sc-row { position: relative; display: grid; gap: 10px; background: var(--panel); border: 1px solid var(--line); border-top: 5px solid var(--warn); border-radius: var(--radius); padding: 14px 16px 12px; box-shadow: 0 var(--edge) 0 var(--line); scroll-margin-top: calc(110px + var(--tk-h)); }
+.sc-row.sc-t2, .sc-row.sc-t3 { border-top-color: var(--danger); }
+.sc-row.sc-t3 { background: linear-gradient(180deg, color-mix(in srgb, var(--danger) 7%, var(--panel)), var(--panel) 120px); }
+.sc-row.sc-flash { animation: sc-flash 1.6s ease-out; }
+@keyframes sc-flash { 0%, 40% { box-shadow: 0 0 0 4px var(--danger); } 100% { box-shadow: 0 var(--edge) 0 var(--line); } }
+.sc-top { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+.sc-ava { display: block; flex: none; line-height: 0; }
+.sc-ava img, .sc-ava-none { width: 56px; height: 56px; image-rendering: pixelated; border-radius: 12px; background: var(--panel-2); border: 1px solid var(--line); }
+.sc-ava-none { display: grid; place-items: center; font-weight: 800; font-size: 1.4rem; color: var(--muted); line-height: 1; }
+.sc-id { display: grid; gap: 3px; min-width: 0; }
+.sc-nick { font-size: 1.15rem; line-height: 1.2; overflow-wrap: anywhere; }
+.sc-char { font-size: 0.8rem; color: var(--muted); font-weight: 700; }
+.sc-meter { display: grid; justify-items: center; gap: 0; padding: 6px 10px; min-width: 74px; border-radius: 12px; background: var(--warn-soft); color: var(--warn); }
+.sc-meter b { font-size: 1.6rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.sc-meter span { font-size: 0.68rem; font-weight: 800; white-space: nowrap; }
+.sc-pips { display: flex; gap: 3px; margin-top: 4px; }
+.sc-pips u { width: 8px; height: 8px; border-radius: 2px; background: color-mix(in srgb, currentColor 22%, transparent); text-decoration: none; }
+.sc-pips u.on { background: currentColor; }
+.sc-t2 .sc-meter, .sc-t3 .sc-meter { background: color-mix(in srgb, var(--danger) 14%, var(--panel)); color: var(--danger); }
+.sc-t3 .sc-meter { background: var(--danger); color: var(--panel); }
+.sc-quotes { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.sc-q { display: grid; gap: 2px; padding: 8px 12px; border-radius: 4px 12px 12px 12px; background: var(--panel-2); border-left: 3px solid #e58fb7; }
+.sc-q-meta { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; font-size: 0.75rem; color: var(--muted); }
+.sc-by { color: var(--text); }
 .sc-site { color: var(--accent); }
-.sc-ch { font-weight: 700; font-variant-numeric: tabular-nums; }
-.sc-quotes q { quotes: none; overflow-wrap: anywhere; font-size: 0.95rem; }
+.sc-ch { font-weight: 700; color: var(--up); font-variant-numeric: tabular-nums; }
+.sc-q q { quotes: none; overflow-wrap: anywhere; font-size: 0.92rem; }
+.sc-rest summary { font-size: 0.82rem; font-weight: 700; color: var(--muted); cursor: var(--cur-hand, pointer); padding: 2px 0; }
+.sc-rest[open] summary { margin-bottom: 6px; }
 .sc-more { margin: 6px 0 0; }
-.sc-form-panel { scroll-margin-top: calc(90px + var(--tk-h)); }
-.sc-form-panel h2, .sc-guide h2 { margin-top: 0; }
-.sc-guide h2 + ul { margin-top: 0; }
-.sc-guide .table-wrap { margin-bottom: 16px; }
-.sc-form { display: grid; gap: 12px; max-width: 560px; }
+.sc-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; align-items: center; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 0.78rem; color: var(--muted); }
+.sc-mine { font: inherit; font-size: 0.78rem; color: var(--muted); background: none; border: 0; padding: 2px 0; text-decoration: underline; cursor: var(--cur-hand, pointer); }
+.sc-mine:hover { color: var(--text); }
+/* Forms, side by side. */
+.sc-forms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.sc-form-panel { scroll-margin-top: calc(90px + var(--tk-h)); border-top: 5px solid var(--danger); }
+.sc-form-appeal { border-top-color: var(--ok); }
+.sc-form { display: grid; gap: 12px; }
 .sc-form label { display: grid; gap: 4px; font-weight: 700; font-size: 0.9rem; }
 .sc-form input, .sc-form textarea { font: inherit; font-weight: 400; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; width: 100%; box-sizing: border-box; }
 .sc-form textarea { resize: vertical; min-height: 96px; }
 .sc-form-foot { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
-.sc-status { font-size: 0.9rem; }
+.sc-status { font-size: 0.9rem; font-weight: 700; }
+/* The common scams, one card each. */
+.sc-scams { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.sc-scam { display: grid; gap: 6px; align-content: start; padding: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 var(--edge) 0 var(--line); }
+.sc-scam-ico { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 14px; background: color-mix(in srgb, var(--k) 16%, var(--panel)); border: 1px solid color-mix(in srgb, var(--k) 35%, transparent); }
+.sc-scam h3 { margin: 4px 0 0; font-size: 1.05rem; color: color-mix(in srgb, var(--k) 72%, var(--text)); }
+.sc-scam p { margin: 0; font-size: 0.9rem; }
+.sc-stop { padding: 8px 10px; border-radius: 10px; background: color-mix(in srgb, var(--ok) 11%, var(--panel)); border-left: 3px solid var(--ok); }
+.sc-stop b { display: block; font-size: 0.72rem; color: var(--ok); margin-bottom: 2px; }
+.sc-read-list { list-style: none; margin: 10px 0 16px; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.sc-read-list li { display: grid; gap: 8px; align-content: start; }
+.sc-read-ico { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: var(--panel-2); }
+.sc-read-list p { margin: 0; font-size: 0.92rem; }
+@media (max-width: 860px) {
+  .sc-hero-in { grid-template-columns: 1fr; gap: 18px; padding-top: 22px; padding-bottom: 22px; }
+  .sc-list, .sc-forms { grid-template-columns: 1fr; }
+  .sc-read-list { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .sc-stat { padding: 10px 12px; column-gap: 10px; }
+  .sc-stat-ico { width: 38px; height: 38px; }
+  .sc-stat b { font-size: 1.35rem; }
+  .sc-report-btn { flex: 1 1 100%; text-align: center; }
+  .sc-top { gap: 10px; }
+  .sc-ava img, .sc-ava .sc-ava-none { width: 48px; height: 48px; }
+  .sc-meter { min-width: 62px; padding: 5px 8px; }
+  .sc-hot-card { width: 128px; }
+}
+@media (prefers-reduced-motion: reduce) { .sc-row.sc-flash { animation: none; } .sc-hot-card { transition: none; } }
 /* On the megaphone page: a badge beside a listed caller, a link on a name a warning calls out, and the way in. */
 .mg-scam { display: inline-block; width: fit-content; font-size: 0.68rem; font-weight: 700; padding: 0 6px; border-radius: 4px; background: var(--danger); color: var(--panel); text-decoration: none; white-space: nowrap; }
 .mg-scam-name { color: var(--danger); font-weight: 700; }
 .mg-scam-link { flex: none; font-size: 0.85rem; font-weight: 700; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--danger); color: var(--danger); text-decoration: none; white-space: nowrap; }
 .mg-scam-link:hover { background: var(--danger); color: var(--panel); }
-@media (max-width: 600px) {
-  .sc-mine { margin-left: 0; }
-  .sc-tools .btn { flex: 1 1 100%; text-align: center; }
-}
 /* Owner review (/admin/scam/). */
 .sc-admin { display: grid; gap: 16px; padding: 20px 0 60px; }
 .sc-admin h1 { margin: 0; }

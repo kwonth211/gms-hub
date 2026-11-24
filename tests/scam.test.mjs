@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scamAccusations, isPublic, postScamReport, postScamAppeal, handleScamAdmin } from '../worker/src/scam.js';
+import { scamAccusations, scamKinds, isPublic, postScamReport, postScamAppeal, handleScamAdmin } from '../worker/src/scam.js';
 
 const names = (text, caller = 'Caller') => scamAccusations(text, caller).map((a) => `${a.nick}${a.strong ? '' : '?'}`).sort().join(',');
 
@@ -113,4 +113,13 @@ test('the owner review answers only to the owner key', async () => {
   assert.equal((await ask('', { DASH_TOKEN: 'owner-key' })).status, 403);
   assert.equal((await ask('owner-key', {})).status, 403);
   assert.equal((await handleScamAdmin(new Request('https://test.invalid/internal/scam'), { DASH_TOKEN: 'owner-key' }, ['https://gms-hub.com'])).status, 405);
+});
+
+test('the kind of scam is read from the line, never from the linked item name', () => {
+  assert.deepEqual(scamKinds('dont buy spot from JennaSin she scams 30k'), ['spot']);
+  assert.deepEqual(scamKinds('Hiub is a fame scammer, if you see him DEFAME him !'), ['fame']);
+  assert.deepEqual(scamKinds('[Lemon] PSA Peprika tried to scroll swap scam'), ['scroll', 'switch']);
+  assert.deepEqual(scamKinds('BEWARE OF SPLINTERS. Dummy still tying bundle SCAMs'), ['bundle']);
+  assert.deepEqual(scamKinds('[Gloves Attack Scroll: Intermediate] Jokr is a scammer'), []);
+  assert.deepEqual(scamKinds('SooWoop ls a scammer EVERYONE BEWARE AND DEFAME'), []);
 });

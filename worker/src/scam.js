@@ -69,6 +69,10 @@ export function scamAccusations(text, caller) {
   return [...found.values()];
 }
 
+// What kind of scam a line talks about, for the chips on the page. A line can carry several.
+const KINDS = [['spot', /\bspots?\b/i], ['fame', /\bfame\b/i], ['scroll', /scroll|\bgfa\b|\b(?:10|60|100)\s?%/i], ['switch', /bait|switch|swap/i], ['bundle', /bundle/i], ['price', /underpric|overpric/i], ['rmt', /\brmt\b/i]];
+export const scamKinds = (text) => KINDS.filter(([, re]) => re.test(String(text).replace(/\[[^\]]*\]/g, ' '))).map(([k]) => k);
+
 // A name is listed by itself when the character exists and the wording was plain or two different players named it.
 // The owner can force either way (state 'shown' / 'hidden').
 export const isPublic = (n) => n.state === 'shown' || (n.state === 'auto' && n.verified === 1 && (n.strong || n.by >= 2));
@@ -104,10 +108,13 @@ export async function recordScamMegaphones(env, rows, lookup) {
 // leaves the name unchecked, to be tried again with its next report. At most 8 a run (the ranking allows 30 a minute).
 export async function verifyNicks(env, lookup, keys) {
   if (!lookup || !keys.length) return;
-  const { results } = await env.DB.prepare(`SELECT key, nick FROM scam_nicks WHERE verified = 0 AND key IN (SELECT value FROM json_each(?)) LIMIT 8`).bind(JSON.stringify(keys)).all();
+  // Names checked before the cards showed a picture (photo never asked for) are looked up once more.
+  const { results } = await env.DB.prepare(`SELECT key, nick FROM scam_nicks WHERE (verified = 0 OR (verified = 1 AND photo IS NULL AND level IS NULL)) AND key IN (SELECT value FROM json_each(?)) LIMIT 8`).bind(JSON.stringify(keys)).all();
   for (const n of results) {
     const r = await lookup(n.nick).catch(() => null);
-    if (r?.status === 200 && r.body?.data?.name) await env.DB.prepare('UPDATE scam_nicks SET verified = 1, nick = ? WHERE key = ?').bind(String(r.body.data.name).slice(0, 13), n.key).run();
+    const c = r?.body?.data;
+    if (r?.status === 200 && c?.name) await env.DB.prepare('UPDATE scam_nicks SET verified = 1, nick = ?, level = ?, job = ?, photo = ? WHERE key = ?')
+      .bind(String(c.name).slice(0, 13), Number.isFinite(c.level) ? c.level : null, c.job ? String(c.job).slice(0, 40) : null, c.photo || null, n.key).run();
     else if (r?.status === 404) await env.DB.prepare('UPDATE scam_nicks SET verified = -1 WHERE key = ?').bind(n.key).run();
   }
 }
@@ -115,10 +122,10 @@ export async function verifyNicks(env, lookup, keys) {
 // Names with their shown reports, newest first. Used for the public list (public only) and the owner's review (all).
 async function gather(env) {
   const [nicks, reports] = await env.DB.batch([
-    env.DB.prepare('SELECT key, nick, verified, state, note, first_at, last_at FROM scam_nicks'),
+    env.DB.prepare('SELECT key, nick, verified, state, note, first_at, last_at, level, job, photo FROM scam_nicks'),
     env.DB.prepare("SELECT key, source, accuser, text, strong, channel, at FROM scam_reports WHERE status = 'shown' ORDER BY at DESC, id DESC LIMIT 5000")
   ]);
-  const by = new Map(nicks.results.map((n) => [n.key, { ...n, n: 0, accusers: new Set(), strong: false, quotes: [] }]));
+  const by = new Map(nicks.results.map((n) => [n.key, { ...n, n: 0, accusers: new Set(), kinds: new Set(), strong: false, quotes: [] }]));
   for (const r of reports.results) {
     const n = by.get(r.key);
     if (!n) continue;
@@ -126,14 +133,15 @@ async function gather(env) {
     // A report written on the site was read by the owner before it was shown, so it counts as plain wording.
     n.accusers.add(r.source === 'mega' ? r.accuser.toLowerCase() : `user:${r.accuser}`);
     if (r.strong || r.source === 'user') n.strong = true;
+    for (const k of scamKinds(r.text)) n.kinds.add(k);
     if (n.quotes.length < 6) n.quotes.push({ at: r.at, by: r.source === 'mega' ? r.accuser : null, text: r.text, ch: r.channel ?? null, src: r.source });
   }
-  return [...by.values()].filter((n) => n.n > 0).map(({ accusers, ...n }) => ({ ...n, by: accusers.size }));
+  return [...by.values()].filter((n) => n.n > 0).map(({ accusers, kinds, ...n }) => ({ ...n, by: accusers.size, kinds: [...kinds] }));
 }
 
 export async function buildScamList(env) {
   const rows = (await gather(env)).filter(isPublic).sort((a, b) => (a.last_at < b.last_at ? 1 : -1)).slice(0, 500)
-    .map((n) => ({ nick: n.nick, n: n.n, by: n.by, first: n.first_at, last: n.last_at, quotes: n.quotes }));
+    .map((n) => ({ nick: n.nick, n: n.n, by: n.by, first: n.first_at, last: n.last_at, kinds: n.kinds, level: n.level ?? null, job: n.job ?? null, photo: n.photo ?? null, quotes: n.quotes }));
   const data = { at: new Date().toISOString(), rows };
   await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key, json, at) VALUES ('scam-list', ?, datetime('now'))").bind(JSON.stringify(data)).run();
   return data;
@@ -220,6 +228,8 @@ export async function handleScamAdmin(req, env, allowedOrigins, lookup) {
       await env.DB.prepare("DELETE FROM scam_nicks WHERE state = 'auto' AND key NOT IN (SELECT key FROM scam_reports)").run();
     }
     const out = await recordScamMegaphones(env, results, lookup);
+    const bare = await env.DB.prepare('SELECT key FROM scam_nicks WHERE verified = 1 AND photo IS NULL AND level IS NULL LIMIT 8').all();
+    await verifyNicks(env, lookup, bare.results.map((x) => x.key));
     await buildScamList(env);
     return reply({ ok: true, read: results.length, dropped: gone.length, ...out });
   } else if (b.action !== 'list') return reply({ error: 'action' }, 400);
