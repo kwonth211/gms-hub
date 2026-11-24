@@ -1487,7 +1487,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 /* Laptop widths: long tab names wrap to two lines instead of scrolling the menu sideways. */
 /* One header row from 1201px up. Tab sizes are fixed per tier (never stretched or wrapped), and everything fits with
    the live pill showing, so the header looks the same on every page. */
-@media (min-width: 1201px) and (max-width: 1340px) {
+@media (min-width: 1201px) {
   .header-inner { gap: 12px; }
   .tabs .tab { white-space: nowrap; font-size: .81rem; padding: 8px 8px; gap: 5px; }
   .brand small { display: none; }
@@ -2110,7 +2110,13 @@ html[data-charm='off'] .charm-leaves { display: none; }
 .more-label { display: none; }
 .more-btn { padding: 9px 10px; }
 @media (min-width: 761px) { .presence .pr-label { display: none; } }
-@media (min-width: 1341px) { .header-inner { gap: 12px; } .tabs .tab { font-size: .88rem; padding: 9px 10px; gap: 6px; } .brand small { display: none; } }
+/* Screens wider than 1340px used to get bigger tabs here; six menus then overflowed the 1200px header and the strip
+   had to be dragged sideways (visitor report, 2026-11-24). The tabs now keep the 1201px size at every wider width
+   (the min-width: 1201px block above). */
+/* Safety net set by assets/common.js when the tabs still do not fit (a long login name, a long language label):
+   first the carets go, then the tabs tighten. */
+.tabs.tight .tool-caret { display: none; }
+.tabs.tighter .tab { padding-left: 6px; padding-right: 6px; gap: 4px; font-size: 0.76rem; }
 @media (max-width: 480px) {
   .header-inner { column-gap: 6px; }
   .brand strong { font-size: 1rem; }

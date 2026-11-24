@@ -22,6 +22,29 @@ document.querySelectorAll('.tool-menu').forEach((menu) => {
   addEventListener('resize', close);
 });
 
+// The tab strip must never need sideways scrolling on a desktop: when the tabs do not fit the space the header leaves
+// them, drop the carets, then tighten the tabs (style.css .tabs.tight / .tighter). Checked again whenever the strip's
+// width changes (login button drawn, window resized). A mouse wheel over a strip that still overflows scrolls it.
+{
+  const strip = document.querySelector('nav.tabs');
+  if (strip && window.ResizeObserver) {
+    const fit = () => {
+      strip.classList.remove('tight', 'tighter');
+      if (strip.scrollWidth > strip.clientWidth + 1) strip.classList.add('tight');
+      if (strip.scrollWidth > strip.clientWidth + 1) strip.classList.add('tighter');
+    };
+    // Only a change of width matters: tightening changes the strip's height, which must not start another round.
+    let seen = -1;
+    new ResizeObserver(() => { const w = strip.clientWidth; if (w !== seen) { seen = w; fit(); } }).observe(strip);
+    document.fonts?.ready.then(fit);
+    strip.addEventListener('wheel', (e) => {
+      if (strip.scrollWidth <= strip.clientWidth + 1 || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+      e.preventDefault();
+      strip.scrollLeft += e.deltaY;
+    }, { passive: false });
+  }
+}
+
 // Remember the language a visitor picks so the root page sends them back to it.
 document.querySelectorAll('[data-lang]').forEach((a) => {
   a.addEventListener('click', () => {
