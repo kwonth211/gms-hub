@@ -2,6 +2,32 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "scroll-profit",
+   "version": "0.7.72",
+   "level": "minor",
+   "date": "2026-11-24",
+   "path": "/tools/scroll-profit/",
+   "ko": "작 손익 계산기 — 주문서 작, 지금 시세로 이득일까",
+   "en": "Scroll profit calculator — is scrolling worth it at today's prices",
+   "desc": {
+    "ko": "장비와 주문서를 고르면 끝까지 발랐을 때 드는 돈, 결과마다의 확률과 팔 값, 평균 손익, 본전 넘길 확률이 나와요. 팔 값은 최근 7일 매물에서 가져오고 직접 고칠 수 있어요. 혼돈 주문서의 파괴 확률도 계산해요.",
+    "en": "Pick a piece and a scroll to get the cost of using every slot, the odds and sale price of each result, the average profit and the chance to come out ahead. Sale prices come from the last 7 days of listings and can be edited. Chaos scroll destruction is counted."
+   }
+  },
+  {
+   "id": "sell-price",
+   "version": "0.7.71",
+   "level": "minor",
+   "date": "2026-11-24",
+   "path": "/tools/sell/",
+   "ko": "팔릴 가격 계산기 — 얼마에 올려야 팔릴까",
+   "en": "Price that sells — what share sold at your price",
+   "desc": {
+    "ko": "아이템과 값을 넣으면 최근 7일 동안 그 값대 매물이 몇 개나 팔렸는지, 지금 올리면 몇 번째로 싼지, 빨리 팔 값이 얼마인지 나와요. 장비는 내 옵션끼리만 계산해요. 메뉴도 바꿨어요. 시세는 보는 곳, 거래는 올리고 정하는 곳이고, 계산기들은 쓰는 메뉴 안으로 옮겼어요.",
+    "en": "Enter an item and a price to see how many listings in that band sold over 7 days, where you would stand among current listings and the quick-sale price. Gear is counted among pieces with your options. The menu changed too: Market is where you look, Trade is where you post and decide, and the calculators moved into the menus they are used with."
+   }
+  },
+  {
    "id": "phone-tables",
    "version": "0.7.70",
    "level": "patch",

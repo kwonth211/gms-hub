@@ -10,6 +10,8 @@ const PALETTES = {
   chat: { k: '#1c2340', w: '#f2f4ff', B: '#5865f2' },
   crown: { k: '#5a3d00', Y: '#ffcf3f', R: '#ff4f6d' },
   megaphone: { k: '#2a2f3a', R: '#ff6b4a', Y: '#ffe08a' },
+  // A market stall with a striped awning: the 거래 menu (owner, 2026-11-24: "a shop feel").
+  shop: { k: '#3b2a1f', R: '#ff6b4a', w: '#fff3e0', b: '#b0805a', B: '#8d6040', d: '#5a4030', Y: '#ffcf3f', h: '#fff1b3', G: '#5cc46a' },
   sword: { k: '#22303b', w: '#dfe9f1', Y: '#ffcf3f', b: '#8d6040' },
   bag: { k: '#3b2a1f', b: '#b0805a', Y: '#ffcf3f' },
   star: { k: '#7a4a00', Y: '#ffcf3f', h: '#fff1b3' },
@@ -179,6 +181,21 @@ const GRIDS = {
     'kYYYYYRRRYYYYYk.',
     'kYYYYYYRYYYYYYk.',
     'kkkkkkkkkkkkkkk.'
+  ],
+  shop: [
+    '.kkkkkkkkkkkkkk.',
+    'kRRwwRRwwRRwwRRk',
+    'kRRwwRRwwRRwwRRk',
+    'kRRwwRRwwRRwwRRk',
+    'kRkwwkRkwwkRkwwk',
+    '.k.kk.k.kk.k.kk.',
+    '..kbddddddddbk..',
+    '..kbddYYddGdbk..',
+    '..kbdYhhYdGGbk..',
+    '..kbbbbbbbbbbk..',
+    '..kBBBBBBBBBBk..',
+    '..kBBBBBBBBBBk..',
+    '..kkkkkkkkkkkk..'
   ],
   megaphone: [
     '...........kk...',

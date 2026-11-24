@@ -14,7 +14,7 @@ document.querySelectorAll('.tool-menu').forEach((menu) => {
     const r = menu.querySelector('summary').getBoundingClientRect();
     const w = Math.max(list.offsetWidth, 200);
     list.style.top = `${Math.round(r.bottom + 6)}px`;
-    list.style.left = `${Math.round(Math.max(8, Math.min(r.left, innerWidth - w - 8)))}px`;
+    list.style.left = `${Math.round(Math.max(8, Math.min(r.left, document.documentElement.clientWidth - w - 8)))}px`;
   };
   menu.addEventListener('toggle', () => { if (menu.open) place(); });
   const close = () => menu.open && menu.removeAttribute('open');

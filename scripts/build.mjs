@@ -14,6 +14,7 @@ import { fhBody } from './forgotten-hollow.mjs';
 import { computeReport, reportBody, weeklyTeaser } from './weekly-report.mjs';
 import { skillsBody } from './skill-pages.mjs';
 import { forgeBody } from './forge-page.mjs';
+import { sellBody, scrollProfitBody } from './trade-pages.mjs';
 import { EQ_CLASSES, equipPath, collectEquipment, equipmentIndexBody, equipmentClassBody } from './equipment-pages.mjs';
 import { rankBody } from './rank-page.mjs';
 import { megaphoneBody } from './megaphone-page.mjs';
@@ -810,20 +811,25 @@ const CHARM_VARS = `:root{--leaf:url("${spriteDataPng('leaf', 2)}")}`;
 
 function header(lang, pagePath, only) {
   const t = T[lang];
-  // Only the pages people actually open all day sit in the header (page views, 2026-11-12: market 34%, training 19%,
-  // monsters 14%, megaphones, guides 5%, and the new EXP tracker). The rest, the three calculators and the site directory, live in
-  // the "more" menu and in the header search, so nothing is lost, just out of the way.
-  const tabs = [
-    ['/tools/market/', 'coin', t.navMarket],
-    ['/megaphone/', 'megaphone', lang === 'ko' ? '실시간 확성기' : 'Megaphones'],
-    ['/tools/training/', 'sword', t.navTraining],
-    ['/quests/', 'scroll', lang === 'ko' ? '퀘스트' : 'Quests']
-  ].filter(Boolean);
-  // Calculators and the EXP tracker share one header tab that opens a dropdown (2026-11-13, user request), instead of
-  // one sitting in the tabs and three hidden in the "more" menu.
-  // Guides open a dropdown too (2026-11-14, user request): the guide index plus the guide-like pages that used to crowd
-  // the "more" menu (skill builds, Forgotten Hollow, best EXP quests, gear by class, bosses).
+  // Six header menus, every one a dropdown (owner, 2026-11-24). 시세 is where you look, 거래 is where you act: post a
+  // line, upload your shop, set a price, decide on a scroll. The old 계산기 menu is gone: its calculators moved to the
+  // menu they are used with (prices -> 시세, scrolls -> 거래, hunting tools -> 사냥터). No URL changed.
   const ko = lang === 'ko';
+  const marketItems = [
+    ['/tools/market/', 'coin', ko ? '실시간 시세' : 'Live prices'],
+    ['/tools/market/?view=listings', 'bag', ko ? '모든 매물' : 'All listings'],
+    ['/tools/market/today/', 'clock', ko ? '오늘의 시세 · 맥박' : "Today's prices & pulse"]
+  ];
+  const tradeItems = [
+    ['/megaphone/#fm-form', 'megaphone', ko ? '팝니다·삽니다 올리기' : 'Post a buy or sell line'],
+    ['/tools/scan/', 'shop', ko ? '내 상점 스캔 올리기' : 'Upload my shop scan'],
+    ['/tools/sell/', 'coin', ko ? '팔릴 가격' : 'Price that sells'],
+    ['/tools/scroll-profit/', 'scroll', ko ? '작 손익' : 'Scroll profit'],
+    ['/tools/scroll/', 'star', t.navScroll],
+    ['/tools/forge/', 'hammer', ko ? '작 시뮬레이터' : 'Scroll forge']
+  ];
+  // Guides open a dropdown too (2026-11-14, user request): the guide index plus the guide-like pages (skill builds,
+  // Forgotten Hollow, gear by class, bosses). Forgotten Hollow sits here only (owner, 2026-11-24).
   const guideItems = [
     guides.some((g) => g.lang === lang) && ['/guides/', 'book', ko ? '직업·육성 가이드' : 'Class and levelling guides'],
     ['/guides/newbie/', 'mushroom', ko ? '뉴비 가이드' : 'Beginner guide'],
@@ -832,19 +838,18 @@ function header(lang, pagePath, only) {
     ['/equipment/', 'bag', ko ? '직업별 장비' : 'Gear by class'],
     ['/bosses/', 'crown', ko ? '보스' : 'Bosses']
   ].filter(Boolean);
-  // Training spots open a dropdown with two kinds (owner, 2026-11-17): where to level and where to make mesos.
+  // Hunting: where to level, where to make mesos, the tools used while hunting, and the monster database.
   // The word 쌀먹 stays out of menus and page text (owner, 2026-11-17: it is officially banned); it may appear in
   // <title> and meta descriptions only, for search.
   const huntItems = [
     ['/tools/training/', 'sword', ko ? '경험치 사냥터' : 'EXP training spots'],
     ['/tools/meso-farm/', 'coin', ko ? '메소벌이 사냥터' : 'Meso farming spots'],
-    // The monster database joins the hunting menu (owner, 2026-11-18: no room for its own tab; it belongs with hunting).
-    ['/monsters/', 'slime', ko ? '몬스터 도감' : 'Monster database'],
-    // The new Lv 39+ area sits here as well as under Guides (owner, 2026-11-19).
-    ['/forgotten-hollow/', 'tree', ko ? '포가튼 할로우' : 'Forgotten Hollow']
+    ['/tools/damage/', 'hammer', DMG[lang].h1],
+    ['/tools/exp/', 'clock', EXP[lang].nav],
+    ['/tools/drop-rate/', 'bag', t.navDrop],
+    ['/monsters/', 'slime', ko ? '몬스터 도감' : 'Monster database']
   ];
-  // Quests open a dropdown the same way (owner, 2026-11-17): the full list plus the two rankings.
-  // Megaphones open a dropdown too (owner, 2026-11-24): the live feed and the scam reports gathered from it.
+  // Megaphones: the live feed and the scam reports gathered from it (owner, 2026-11-24).
   const megaItems = [
     ['/megaphone/', 'megaphone', ko ? '실시간 확성기' : 'Live megaphones'],
     ['/scam/', 'megaphone', ko ? '사기꾼 제보' : 'Scam reports']
@@ -854,46 +859,39 @@ function header(lang, pagePath, only) {
     ['/quests/best-meso/', 'coin', ko ? '돈 버는 퀘스트' : 'Best meso quests'],
     ['/quests/best-exp/', 'star', ko ? '경험치 퀘스트' : 'Best EXP quests']
   ];
-  const toolItems = [
-    ['/tools/market/today/', 'coin', ko ? '오늘의 시세 · 맥박' : "Today's prices & pulse"],
-    ['/tools/forge/', 'hammer', ko ? '작 시뮬레이터' : 'Scroll forge'],
-    ['/tools/exp/', 'clock', EXP[lang].nav],
-    ['/tools/scroll/', 'scroll', t.navScroll],
-    ['/tools/drop-rate/', 'bag', t.navDrop],
-    ['/tools/damage/', 'hammer', DMG[lang].h1]
-  ];
-  // Live megaphones are a main feature and keep a tab; the monster database moved to the "more" menu (2026-11-13, user
-  // request) so the tabs fit beside the live-viewer pill. Monsters stay one search away.
-  const moved = []; // the monster database now sits in the hunting menu (2026-11-18)
-  // The site directory left the menu (owner, 2026-11-15); the header search still finds it.
+  const menus = [marketItems, tradeItems, megaItems, huntItems, questItems, guideItems];
+  // The site directory left the tabs (owner, 2026-11-15); the header search and the "more" menu still find it.
   const sitesEntry = ['/sites/', 'star', lang === 'ko' ? '사이트 모음' : 'Other Classic World sites'];
-  // English labels that would break mid-word on a phone ("Calcul/ator") get a one-word form there.
-  // The newest tab carries a small N so returning visitors notice it.
-  const NEW_TAB = UPDATES.find((u) => [...tabs, ...megaItems, ...huntItems, ...questItems, ...toolItems, ...guideItems].some(([p]) => p === u.path.split(/[?#]/)[0]))?.path.split(/[?#]/)[0] || '/quests/';
-  const SHORT_EN = { '/': 'Home', '/monsters/': 'Mobs', '/tools/training/': 'Spots', '/tools/scroll/': 'Scrolls', '/tools/drop-rate/': 'Odds', '/tools/damage/': 'Hits', '/tools/market/': 'Market', '/megaphone/': 'Megas', '/tools/exp/': 'EXP', '/guides/': 'Guides', '/quests/': 'Quests' };
+  // The newest entries carry a small N so returning visitors notice them: every menu entry announced in the same
+  // release day as the newest announced one (two tools shipped together both get it).
+  const bare = (p) => p.split(/[?#]/)[0];
+  const inMenu = (u) => menus.flat().some(([p]) => p === bare(u.path));
+  const newest = UPDATES.find((u) => u.level !== 'patch' && inMenu(u)) || UPDATES.find(inMenu);
+  const NEW_TABS = new Set(newest ? UPDATES.filter((u) => u.date === newest.date && u.level !== 'patch' && inMenu(u)).map((u) => bare(u.path)).concat(bare(newest.path)) : ['/quests/']);
+  // English labels that would break mid-word on a phone get a one-word form there.
   const dropMenu = (items, icon, label, shortEn) => {
-    const on = items.some(([p]) => p === '/guides/' ? pagePath?.startsWith('/guides/') : pagePath?.startsWith(p));
-    const isNew = items.some(([p]) => p === NEW_TAB);
+    const paths = items.map(([p]) => p).filter((p) => p === bare(p));
+    const on = paths.some((p) => p === '/guides/' ? pagePath?.startsWith('/guides/') : pagePath?.startsWith(p));
+    const isNew = items.some(([p]) => NEW_TABS.has(p));
     // Only the closest entry is marked: on /quests/best-meso/ the list entry /quests/ is not the current page.
-    const here = items.map(([p]) => p).filter((p) => pagePath?.startsWith(p)).sort((x, y) => y.length - x.length)[0];
-    return `<details class="tool-menu"><summary class="tab"${on ? ' aria-current="page"' : ''}${ko ? '' : ` title="${esc(label)}"`}>${isNew ? `<span class="tab-ico">${spriteSvg(icon, 20)}<span class="tab-new">N</span></span>` : spriteSvg(icon, 20)}${ko ? `<span>${label}</span>` : `<span class="tab-full">${label}</span><span class="tab-short" aria-hidden="true">${shortEn}</span>`}<span class="tool-caret" aria-hidden="true"></span></summary><div class="tool-list">${items.map(([p, ic, l]) => `<a class="tool-opt" href="${href(langPath(lang, p))}"${p === here ? ' aria-current="page"' : ''}>${spriteSvg(ic, 20)}<span>${esc(l)}</span>${p === NEW_TAB ? '<span class="tab-new tool-new">N</span>' : ''}</a>`).join('')}</div></details>`;
+    const here = paths.filter((p) => pagePath?.startsWith(p)).sort((x, y) => y.length - x.length)[0];
+    return `<details class="tool-menu"><summary class="tab"${on ? ' aria-current="page"' : ''}${ko ? '' : ` title="${esc(label)}"`}>${isNew ? `<span class="tab-ico">${spriteSvg(icon, 20)}<span class="tab-new" title="${ko ? '새 기능' : 'New'}">N</span></span>` : spriteSvg(icon, 20)}${ko ? `<span>${label}</span>` : `<span class="tab-full">${label}</span><span class="tab-short" aria-hidden="true">${shortEn}</span>`}<span class="tool-caret" aria-hidden="true"></span></summary><div class="tool-list">${items.map(([p, ic, l]) => `<a class="tool-opt" href="${href(langPath(lang, p))}"${p === here ? ' aria-current="page"' : ''}>${spriteSvg(ic, 20)}<span>${esc(l)}</span>${NEW_TABS.has(p) ? '<span class="tab-new tool-new">N</span>' : ''}</a>`).join('')}</div></details>`;
   };
-  const huntMenu = dropMenu(huntItems, 'sword', ko ? '사냥터' : 'Training', 'Spots');
-  const questMenu = dropMenu(questItems, 'scroll', ko ? '퀘스트' : 'Quests', 'Quests');
-  const megaMenu = dropMenu(megaItems, 'megaphone', ko ? '실시간 확성기' : 'Megaphones', 'Megas');
-  const tabHtml = tabs
-    .map(
-      ([p, icon, label]) => p === '/tools/training/' ? huntMenu : p === '/quests/' ? questMenu : p === '/megaphone/' ? megaMenu :
-        `<a class="tab" href="${href(langPath(lang, p))}"${(p === pagePath || (p !== '/' && pagePath?.startsWith(p))) ? ' aria-current="page"' : ''}${lang === 'ko' ? '' : ` title="${esc(label)}"`}>${p === NEW_TAB ? `<span class="tab-ico">${spriteSvg(icon, 20)}<span class="tab-new" title="${lang === 'ko' ? '새 기능' : 'New'}">N</span></span>` : spriteSvg(icon, 20)}${lang === 'ko' ? `<span>${label}</span>` : `<span class="tab-full">${label}</span><span class="tab-short" aria-hidden="true">${SHORT_EN[p]}</span>`}</a>`
-    )
-    .join('');
-  const guideMenu = dropMenu(guideItems, 'book', ko ? '가이드' : t.navGuides, 'Guides');
-  const toolMenu = dropMenu(toolItems, 'hammer', ko ? '계산기' : 'Tools', 'Tools');
+  const tabHtml = [
+    dropMenu(marketItems, 'coin', ko ? '시세' : 'Market', 'Market'),
+    dropMenu(tradeItems, 'shop', ko ? '거래' : 'Trade', 'Trade'),
+    dropMenu(megaItems, 'megaphone', ko ? '확성기' : 'Megaphones', 'Megas'),
+    dropMenu(huntItems, 'sword', ko ? '사냥터' : 'Training', 'Spots'),
+    dropMenu(questItems, 'scroll', ko ? '퀘스트' : 'Quests', 'Quests'),
+    dropMenu(guideItems, 'book', ko ? '가이드' : t.navGuides, 'Guides')
+  ].join('');
+  // One search entry per page: the first label a path appears with.
+  const searchPages = [...new Map([...menus.flat(), sitesEntry].map((e) => [e[0], e])).values()];
   return `${megaTicker(lang)}<header class="site-header"><div class="wrap header-inner">
 <a class="brand" href="${href(langPath(lang, '/'))}">${spriteSvg('mushroom', 34)}<span><strong>GMS Hub</strong><small>${esc(t.gameName)}</small></span></a>
-<nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}${guideMenu}${toolMenu}</nav>
+<nav class="tabs" aria-label="${esc(t.navLinks)}">${tabHtml}</nav>
 ${presencePill(lang)}
-${headerSearch(lang, [...tabs, ...megaItems.slice(1), ...huntItems.slice(1), ...questItems.slice(1), ...guideItems, ...toolItems, ...moved, sitesEntry])}
+${headerSearch(lang, searchPages)}
 ${'' /* Site-wide "Log in with Discord" (assets/account.js, owner 2026-11-21): optional, the site works the same without it;
    logging in copies this browser's own settings to the account so they follow the visitor to other devices. Filled by JS. */}
 <div class="acct" data-acct hidden data-icon="${esc(DISCORD_ICON(18))}"><button type="button" class="acct-btn"></button><div class="acct-pop" role="dialog"></div></div>
@@ -901,7 +899,7 @@ ${'' /* Header Discord icon opens the Discord page first (owner, 2026-11-15/16):
    the community. Do not point it straight at the invite (tests/content.test.mjs checks this). */}
 ${config.discord ? `<a class="theme-toggle discord-link" href="${href(langPath(lang, config.discordBotInstall ? '/discord-bot/' : '/contact/'))}" data-discord="header" aria-label="${lang === 'ko' ? '디스코드 커뮤니티' : 'Discord community'}" title="${lang === 'ko' ? '디스코드 커뮤니티' : 'Discord community'}">${DISCORD_ICON(20)}</a>` : ''}
 <details class="lang-menu"><summary class="lang-current" aria-label="Language"><span class="lang-full" translate="no">${LANG_NAMES[lang]}</span><span class="lang-code" translate="no" aria-hidden="true">${lang.toUpperCase()}</span></summary><div class="lang-list">${(only ? [lang, ...ALL_LANGS.filter((l) => l !== lang)] : ALL_LANGS).map((l) => `<a class="lang-opt" href="${href(langPath(l, only && l !== lang ? '/' : pagePath || '/'))}" data-lang="${l}" hreflang="${HREFLANG[l]}" lang="${HREFLANG[l]}"${l === lang ? ' aria-current="true"' : ''}>${LANG_NAMES[l]}</a>`).join('')}</div></details>
-${moreMenu(lang, moved)}
+${moreMenu(lang)}
 </div></header>`;
 }
 
@@ -939,18 +937,16 @@ ${modal ? '<h2>' : '<h1>'}${ko ? '🏆 기여자 순위' : '🏆 Top contributor
 </section>`;
 }
 
-function moreMenu(lang, moved = []) {
+function moreMenu(lang) {
   const ko = lang === 'ko';
   const links = [
     ['/updates/', ko ? '패치노트' : 'Patch notes'],
     // The site directory is back in this menu at the owner's request (2026-11-17); keep it here.
     ['/sites/', ko ? '다른 사이트 모음' : 'Other Classic World sites'],
-    ...moved.map(([p, , label]) => [p, label]),
     ['/rank/', ko ? '캐릭터 랭킹' : 'Character ranking'],
     ['/contributors/', ko ? '기여자 순위' : 'Top contributors'],
     ['/items/', ko ? '아이템 도감' : 'Item database'],
     ['/maps/', ko ? '맵 도감' : 'Map database'],
-    ['/tools/scan/', ko ? '상점 스캔으로 올리기' : 'Upload a shop scan'],
     ['/about/', ko ? '사이트 소개' : 'About'],
     ['/contact/', ko ? '문의·협찬·후원' : 'Contact and support']
   ].filter(Boolean);
@@ -2308,11 +2304,11 @@ ${fixed ? '' : statusTabs}<div class="mb-workspace" id="mb-workspace">${fixed ? 
 ${fixed ? '' : ct}
 ${fixed ? `<template id="mb-offstage">${statusTabs}${browser}${ct}${foot}</template>` : foot}
 </div>
-${jsonScript('mk-data', { ...{ lang, api: config.voteApi, itemsUrl: href(`/assets/items.json?v=${BUILD_DATE}-c`), t, itemBase: href(langPath(lang, '/items/')), itemLink: IT[lang].pageLink, itemPages: PRICED.map((i) => i.id), itemPaths: Object.fromEntries(PRICED.map((i) => [i.id, href(langPath(lang, itemPath(i)))])), alerts: config.alerts && config.vapidPublic ? { key: config.vapidPublic, sw: href('/sw.js') } : null }, ...(fixed ? { fixed, itemPages: [], itemPaths: {} } : {}) })}`;
+${jsonScript('mk-data', { ...{ lang, api: config.voteApi, itemsUrl: href(`/assets/items.json?v=${BUILD_DATE}-c`), t, itemBase: href(langPath(lang, '/items/')), itemLink: IT[lang].pageLink, sellUrl: href(langPath(lang, '/tools/sell/')), itemPages: PRICED.map((i) => i.id), itemPaths: Object.fromEntries(PRICED.map((i) => [i.id, href(langPath(lang, itemPath(i)))])), alerts: config.alerts && config.vapidPublic ? { key: config.vapidPublic, sw: href('/sw.js') } : null }, ...(fixed ? { fixed, itemPages: [], itemPaths: {} } : {}) })}`;
 }
 function marketBody(lang) {
   const t = MK[lang], tr = (ko,en) => lang === 'ko' ? ko : en;
-  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 볼 수 있어요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="mb-head-actions"><a class="btn mb-scan-cta" href="${href(langPath(lang, '/tools/scan/'))}" data-scan-cta="market-head">● ${tr('내 상점 스캔', 'Scan my shop')}</a><a class="btn ghost" href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 리포트', "Today's price report")}</a><button type="button" class="btn ghost" data-ct-open>🏆 ${tr('기여자 순위', 'Top contributors')}</button></p></section>
+  return `<section class="wrap mb-page-head"><h1>${spriteSvg('coin',28)} ${t.h1}</h1><p>${tr('아이템별 가격과 판매자·채널·방을 한곳에서 볼 수 있어요.', 'Browse prices, sellers, channels and Free Market rooms in one place.')}</p><p class="mb-head-actions"><a class="btn mb-scan-cta" href="${href(langPath(lang, '/tools/scan/'))}" data-scan-cta="market-head">● ${tr('내 상점 스캔', 'Scan my shop')}</a><a class="btn ghost" href="${href(langPath(lang, '/tools/market/today/'))}">${tr('오늘의 시세 리포트', "Today's price report")}</a><a class="btn ghost" href="${href(langPath(lang, '/tools/sell/'))}">${tr('팔릴 가격 계산기', 'Price that sells')}</a><button type="button" class="btn ghost" data-ct-open>🏆 ${tr('기여자 순위', 'Top contributors')}</button></p></section>
 ${marketBrowser(lang, 0)}
 ${marketSnapshot(lang)}
 ${marketGuide(lang)}`;
@@ -3862,6 +3858,27 @@ ${farmFaq.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')}
       body: forgeBody({ lang, jsonScript, dataUrl: href('/assets/forge-data.json'), api: config.voteApi }).replace('__FG_CSS__', scriptSrc('forge.css')),
       ld: [breadcrumbLd(lang, lang === 'ko' ? '작 시뮬레이터' : 'Scroll forge', '/tools/forge/')]
     }));
+    // The two 거래 tools (scripts/trade-pages.mjs): the share of listings that sold at each price, and what scrolling a
+    // piece costs against what the results sell for.
+    {
+      const itemsUrl = href(`/assets/items.json?v=${BUILD_DATE}-c`), marketUrl = href(langPath(lang, '/tools/market/'));
+      const faq = (pairs) => ({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: pairs.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) });
+      const faqOf = (html) => faq([...html.matchAll(/<details><summary>(.*?)<\/summary><p>(.*?)<\/p><\/details>/g)].map(([, q, a]) => [q, a.replace(/<[^>]+>/g, '')]));
+      const sell = sellBody({ lang, api: config.voteApi, itemsUrl, marketUrl, megaphoneUrl: href(langPath(lang, '/megaphone/')) });
+      write(path.join(lang, 'tools', 'sell', 'index.html'), page({
+        lang, pageKey: 'sell', pagePath: '/tools/sell/', modules: ['sell.js'],
+        title: lang === 'ko' ? '글클메 팔릴 가격 계산기: 얼마에 올려야 팔릴까, 값대별 팔린 비율 | GMS Hub' : 'MapleStory Classic World Sell Price Check: What Price Actually Sells | GMS Hub',
+        desc: lang === 'ko' ? '글클메 자유시장에 아이템을 얼마에 올려야 팔릴까요? 아이템과 값을 넣으면 최근 7일 동안 그 값대 매물이 몇 개나 팔렸는지, 지금 올리면 몇 번째로 싼지, 빨리 팔 값은 얼마인지 알려 줘요.' : 'What price sells in the MapleStory Classic World Free Market? Enter an item and a price to see the share of listings that sold at that price over 7 days, your place among current listings and the quick-sale price.',
+        body: sell, ld: [breadcrumbLd(lang, lang === 'ko' ? '팔릴 가격 계산기' : 'Sell price check', '/tools/sell/'), faqOf(sell)]
+      }));
+      const sp = scrollProfitBody({ lang, api: config.voteApi, itemsUrl, dataUrl: href('/assets/forge-data.json'), marketUrl, forgeUrl: href(langPath(lang, '/tools/forge/')), scrollUrl: href(langPath(lang, '/tools/scroll/')) });
+      write(path.join(lang, 'tools', 'scroll-profit', 'index.html'), page({
+        lang, pageKey: 'scrollProfit', pagePath: '/tools/scroll-profit/', modules: ['scroll-profit.js'],
+        title: lang === 'ko' ? '글클메 작 손익 계산기: 주문서 작, 지금 시세로 이득일까 | GMS Hub' : 'MapleStory Classic World Scroll Profit Calculator: Is Scrolling Worth It Today | GMS Hub',
+        desc: lang === 'ko' ? '글클메 장비에 주문서를 다 발랐을 때 드는 돈과 결과별 확률·팔 값을 지금 시세로 계산해요. 장공 60%·10%·혼돈 주문서 작의 평균 손익, 본전 넘길 확률, 본전을 넘기는 결과를 보여 줘요.' : 'What scrolling a piece of MapleStory Classic World gear costs at today\'s prices, with the odds and sale price of every result: average profit, the chance to come out ahead and the result that pays it back.',
+        body: sp, ld: [breadcrumbLd(lang, lang === 'ko' ? '작 손익 계산기' : 'Scroll profit calculator', '/tools/scroll-profit/'), faqOf(sp)]
+      }));
+    }
     // /skills/: standard skill builds per job as an in-game skill window (scripts/skill-pages.mjs).
     write(path.join(lang, 'skills', 'index.html'), page({
       lang, pageKey: 'skills', pagePath: '/skills/', modules: ['skills.js'],
@@ -4136,7 +4153,7 @@ const sitemapUrls = PAGES.filter((p) => !p.band || bandSpots(p.band).length).fla
   )
 ).concat(
   [{path:'/monsters/'}, ...MONSTERS.monsters.filter(m=>m.status!=='unplaced').map(m=>({path:monsterPath(m)}))].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
-  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, {path:'/quests/best-meso/'}, {path:'/guides/newbie/'}, ...NEWBIE_PAGES.map((p)=>({path:newbiePath(p)})), ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/scam/'}, {path:'/forgotten-hollow/'}, {path:'/skills/'}, {path:'/tools/forge/'}, {path:'/tools/meso-farm/'}, {path:'/updates/'}, ...(WEEKLY ? [{path:'/report/'}] : [])].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
+  [{path:'/equipment/'}, ...EQ_CLASSES.map((c)=>({path:equipPath(c)})), {path:'/quests/best-exp/'}, {path:'/quests/best-meso/'}, {path:'/guides/newbie/'}, ...NEWBIE_PAGES.map((p)=>({path:newbiePath(p)})), ...QUEST_GUIDES.map(({ guide: g }) => ({ path: `/quests/${g.slug}/` })), {path:'/rank/'}, {path:'/megaphone/'}, {path:'/scam/'}, {path:'/forgotten-hollow/'}, {path:'/skills/'}, {path:'/tools/forge/'}, {path:'/tools/sell/'}, {path:'/tools/scroll-profit/'}, {path:'/tools/meso-farm/'}, {path:'/updates/'}, ...(WEEKLY ? [{path:'/report/'}] : [])].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/bosses/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
   [{path:'/quests/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc></url>`)),
   [{path:'/maps/'}].flatMap(p=>ALL_LANGS.map(lang=>`<url><loc>${absUrl(langPath(lang,p.path))}</loc><lastmod>${MONSTERS.updated}</lastmod></url>`)),
@@ -4199,6 +4216,8 @@ Not affiliated with NEXON. Prices are medians of shops players scanned in the la
 - [Training routes](${absUrl('/en/tools/training/')}): conditional routes by level, with entry requirements and supply costs
 - [Hits-to-kill calculator](${absUrl('/en/tools/damage/')}): hits to kill and accuracy per monster from your stats
 - [Scroll calculator](${absUrl('/en/tools/scroll/')}): Lesser, Intermediate, Greater and Chaos scroll odds
+- [Price that sells](${absUrl('/en/tools/sell/')}): the share of Free Market listings that sold at each price over 7 days, and where a price stands among current listings
+- [Scroll profit calculator](${absUrl('/en/tools/scroll-profit/')}): cost of scrolling a piece at today's prices, odds and sale price of each result, average profit
 - [Drop-rate calculator](${absUrl('/en/tools/drop-rate/')}): chance after N kills or box opens, with Nexon's official box rates
 
 ## Guides
@@ -4209,6 +4228,8 @@ ${publishedGuides.filter((g) => g.lang === 'en').map((g) => `- [${g.h1 || g.titl
 - [실시간 시세](${absUrl('/ko/tools/market/')})
 - [몬스터 도감](${absUrl('/ko/monsters/')})
 - [사냥터 추천](${absUrl('/ko/tools/training/')}): 레벨·직업별 사냥터
+- [팔릴 가격 계산기](${absUrl('/ko/tools/sell/')}): 값대별 팔린 비율, 지금 올리면 몇 번째로 싼지
+- [작 손익 계산기](${absUrl('/ko/tools/scroll-profit/')}): 주문서 작에 드는 돈과 결과별 확률·팔 값
 `);
 // Content hash per page, published with the site: CI compares it with the live copy and pings IndexNow only for pages
 // that really changed. Cache-busting query strings are dropped first so a JS release doesn't mark every page as changed.

@@ -402,6 +402,17 @@ document.querySelectorAll('[data-mg-view]').forEach((group) => group.addEventLis
   };
   setIntent('sell');
   form.addEventListener('click', (e) => { const b = e.target.closest('button[data-intent]'); if (b) { setIntent(b.dataset.intent); f.text.focus(); } });
+  // Arriving from the 거래 menu ("팝니다·삽니다 올리기", /megaphone/#fm-form): bring the bar into view, put the caret
+  // in the first empty box and flash the bar once.
+  const arrive = () => {
+    if (location.hash !== '#fm-form') return;
+    form.scrollIntoView({ block: 'center' });
+    (f.nick.value ? f.text : f.nick).focus({ preventScroll: true });
+    form.classList.add('fm-arrive');
+    setTimeout(() => form.classList.remove('fm-arrive'), 1800);
+  };
+  arrive();
+  addEventListener('hashchange', arrive);
 
   // Item search: the site search's matching (Korean shorthand, initials, English names); at most 8.
   let entries = null;
