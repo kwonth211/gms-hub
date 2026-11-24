@@ -137,10 +137,10 @@ function blockedPanel(d) {
   const warn = list.filter((g) => SEARCH_NET.test(g.org || ''));
   const rows = list.map((g) => `<tr${SEARCH_NET.test(g.org || '') ? ' class="td-warn"' : ''}><td class="num"><b>${nf(g.n)}</b></td><td>${esc(COUNTRY[g.country] || g.country)} · ${esc(g.org || '?')}${SEARCH_NET.test(g.org || '') ? ' <span class="td-flag">검색엔진 망</span>' : ''}<br><span class="muted">주소 ${nf(g.ips.size)}개${g.ips.size <= 3 ? ` (${esc([...g.ips].join(', '))})` : ''}</span></td><td title="${esc(g.full)}">${esc(g.ua)}</td><td>${top(g.why, 3).map(([w, n]) => `${esc(w)} ${nf(n)}`).join('<br>')}</td><td>${top(g.paths, 3).map(([pth, n]) => `<code>${esc(pth)}</code> ${nf(n)}`).join('<br>')}${g.paths.size > 3 ? `<br><span class="muted">외 ${nf(g.paths.size - 3)}곳</span>` : ''}</td></tr>`).join('');
   const errs = [b.firewall?.error && `사이트 방화벽 기록을 못 읽었어요: ${b.firewall.error}`, b.worker?.error && `우리 서버 기록을 못 읽었어요: ${b.worker.error}`].filter(Boolean).map((t) => `<p class="td-err">${esc(t)}</p>`).join('');
-  return `<section class="panel"><h2>차단된 요청 <small class="muted">사이트 방화벽 ${nf(fwN)} · 우리 서버 ${nf(wkN)} · 묶음 ${nf(list.length)}개</small></h2>
+  return `<section class="panel"><h2>차단된 요청 <small class="muted">사이트 방화벽 ${b.firewall?.error ? "못 읽음" : nf(fwN)} · 우리 서버 ${nf(wkN)} · 묶음 ${nf(list.length)}개</small></h2>
 ${errs}
 <svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="시간대별 차단">${ticks}${bars}${Array.from({ length: 12 }, (_, i) => i * 2).map((h) => `<text x="${P + h * bw + bw / 2}" y="${H - 4}" class="td-ax mid">${h}시</text>`).join('')}</svg>
-<p class="td-legend"><span class="k bot"></span>사이트 방화벽 ${nf(fwN)} <span class="k blk2"></span>우리 서버 ${nf(wkN)}</p>
+<p class="td-legend"><span class="k bot"></span>사이트 방화벽 ${b.firewall?.error ? "못 읽음" : nf(fwN)} <span class="k blk2"></span>우리 서버 ${nf(wkN)}</p>
 ${warn.length ? `<p class="td-err">검색엔진 회사 망에서 온 요청이 ${nf(warn.reduce((a, g) => a + g.n, 0))}건 막혔어요. 아래 빨간 줄을 확인하세요.</p>` : ''}
 ${rows ? `<div class="table-wrap"><table class="data td-who-table td-blk-table"><thead><tr><th class="num">횟수</th><th>나라 · 통신망</th><th>브라우저 이름</th><th>막은 이유</th><th>요청한 주소</th></tr></thead><tbody>${rows}</tbody></table></div>` : (errs ? '' : '<p class="muted">이 날 막힌 요청이 없어요.</p>')}
 <p class="muted small">막힌 요청은 방문 숫자에 들어가지 않아요. 사이트 방화벽 기록은 Cloudflare가 최근 며칠 치만 보관해요. 우리 서버 기록은 11월 24일부터 쌓여요.</p></section>`;
