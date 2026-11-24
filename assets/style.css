@@ -3592,7 +3592,9 @@ body.exp-running .exp-stop { display: inline-flex; }
 .nb-key b { display: block; font-size: 1.02rem; color: var(--accent-2); margin-bottom: 4px; }
 .nb-key span { font-size: 0.9rem; line-height: 1.55; }
 .nb-ico { width: 28px; height: 28px; object-fit: contain; image-rendering: pixelated; flex: none; }
-.nb-heal th[scope='row'] { display: flex; align-items: center; gap: 8px; background: none; color: var(--text); font-weight: 700; white-space: nowrap; }
+.nb-heal th[scope='row'] { background: none; color: var(--text); font-weight: 700; white-space: nowrap; }
+.nb-heal th .nb-ico { display: inline-block; vertical-align: middle; margin-right: 8px; }
+.nb-heal th, .nb-heal td { vertical-align: middle; }
 .nb-heal td small { display: block; color: var(--muted); font-size: 0.75rem; }
 .nb-note { color: var(--muted); font-size: 0.85rem; }
 .nb-quests { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 10px; }
@@ -4098,3 +4100,18 @@ dialog.info-note .info-note-actions { text-align: right; margin: 6px 0 0; }
 .sa-btns .btn { padding: 6px 12px; font-size: 0.85rem; }
 .sa-q { margin: 6px 0 0; padding-left: 18px; font-size: 0.9rem; }
 .sa-row p { margin: 6px 0 0; overflow-wrap: anywhere; }
+/* Tables (2026-11-24): a cell never shrinks below its longest word. The page-wide "anywhere" wrapping let phone columns
+   shrink to one letter a line; a table that needs more room scrolls sideways in its own box. Cells stay table cells:
+   display:flex on a th/td breaks the row height and the line under it, so put an icon inline instead. */
+:where(main) :where(th, td) { overflow-wrap: break-word; word-break: keep-all; }
+@media (max-width: 600px) {
+  .boss-table th[scope='row'] { min-width: 7.5em; }
+  .boss-table td:last-child { min-width: 15em; }
+  .tr-rate-table { min-width: 680px; }
+  .tr-rate-table td:nth-child(2) { min-width: 11em; }
+  .tr-rate-table td:last-child { min-width: 15em; }
+  .gq-shop-table { min-width: 520px; }
+  .gq-shop-table thead th { white-space: nowrap; }
+  .scan-table thead th { white-space: nowrap; }
+  .nb-heal td { white-space: nowrap; }
+}
