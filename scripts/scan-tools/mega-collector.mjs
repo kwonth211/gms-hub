@@ -364,8 +364,15 @@ async function tick() {
     job.active=true;reader.busy=true;
     const task=(async()=>{
     if(WIN){lastHold=Date.now();holdOpen=true;const t=Date.now(),code=await lend('hold');if(code)console.log(`hold failed (code ${code}, ${Date.now()-t}ms) before ${row.nick}`);} // pointer away first: the shop tooltip must not cover the row while it is found and pressed
-    const opts=await reader.collect({image:img,box:{...box},line:lines[i],message:row,item,glyph:anchor?{read:readGlyphs,wTop:windowTop(lines[i],anchor),expected:item.en}:null});
-    if(opts){
+    let opts=await reader.collect({image:img,box:{...box},line:lines[i],message:row,item,glyph:anchor?{read:readGlyphs,wTop:windowTop(lines[i],anchor),expected:item.en}:null});
+    // A double megaphone is two rows from one sender. When the panel shows the item of the sender's other row, the
+    // press landed on that row (2026-11-24: [Lion's Fang] row opened [The Rising]); it is not a misread link name.
+    // Those options belong to the other row, so this row is tried again.
+    if(opts&&reader.correctedItem&&observations.some(o=>o.seen===row.seen&&o.channel===row.channel&&o.nick===row.nick&&o.text!==row.text&&o.text.includes(`[${reader.correctedItem.en}]`))){
+      console.log(`options skipped ${row.nick} [${item.en}]: pressed the other row of a double megaphone ([${reader.correctedItem.en}]) (${Date.now()-now}ms) mode=${reader.lastMode||'?'} seen=${row.seen}`);
+      reader.lastSkip='moved after click (other row)';opts=null;reader.correctedItem=null;
+    }
+    else if(opts){
       // Preserve earlier verified values; a retry only adds previously missing fields.
       row.opts={...opts,...row.opts,stats:{...opts.stats,...row.opts?.stats}};
       if(!Object.keys(row.opts.stats).length)delete row.opts.stats;
@@ -392,7 +399,7 @@ async function tick() {
     job.lastReason=reader.lastSkip||(reader.lastMissing?.length?'missing '+reader.lastMissing.join(','):'');
     if(!/input\/OCR: [45]$|cooldown|paused|moved after click/.test(reader.lastSkip))job.attempts++;
     if(job.attempts>=4)job.created=0; // owner 2026-11-22: no long click series on one link (one got 18 clicks); expire next tick
-    if(/moved after click/.test(reader.lastSkip))job.lastAttempt=0; // the chat scrolled under the pointer: try again at once
+    if(/moved after click|target row no longer visible/.test(reader.lastSkip))job.lastAttempt=0; // the chat scrolled under us: try again at once while the mouse is still lent // the chat scrolled under the pointer: try again at once
     if(priority(job)>0&&reader.lastSkip==='no trusted numeric options')optionJobs.delete(key);
     })().catch(e=>console.error('option task failed:',e.message)).finally(()=>{lastOptionEnd=Date.now();job.active=false;reader.busy=false;optionTasks.delete(task);saveState();if(WIN&&!optionReaders.some(r=>r.busy)){holdOpen=false;lend('release');}});
     optionTasks.add(task);

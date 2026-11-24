@@ -150,9 +150,17 @@ class Lender:
                 last = time.time()
                 n += 1
                 # hold: 확성기 쪽이 화면을 읽고 누를 때까지 / click: 다음 링크가 이어서 올 때까지 / release: 끝
-                wait = HOLD_IDLE if act == 'hold' else .4 if act == 'click' else .25
+                wait = HOLD_IDLE if act == 'hold' else 1.2 if act == 'click' else .25
         finally:
             self.busy = False
+
+    def settle(self, within=6.0):
+        """최근에 확성기 링크를 눌렀으면 포인터를 한 번 더 움직여 옵션 창을 확실히 닫는다(키보드 이동 전에 부른다)."""
+        if time.time() - self.clicked_at < within:
+            self.g.move(683, 200)
+            time.sleep(.25)
+            self.g.move(1366 - 40, 12)
+            time.sleep(.35)
 
     def serve(self):
         """상점 수집기가 마우스를 움직이기 직전에 부른다. 기다리는 요청이 있으면 먼저 처리한다."""
