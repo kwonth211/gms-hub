@@ -1090,7 +1090,7 @@ function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], module
 ${header(lang, pagePath, only)}
 <main>${ads && pageKey !== 'home' ? adfitRails() : ''}${withMidAd(withTopAd(withDownload(body, lang, pageKey, pagePath), ads), ads)}${ads && !body.includes(AD_MID) ? adfitSlot() : ''}</main>
 ${footer(lang)}
-<div data-help-npc hidden>${spriteSvg('mushroom', 34)}</div>
+<div data-help-npc hidden></div>
 ${lateScripts([
   [scriptSrc('analytics.js')], [scriptSrc('common.js')], [href(`/assets/feature-discovery.js?v=${moduleVersion}`), 1], [href(`/assets/header-search.js?v=${moduleVersion}`), 1],
   ...(ads ? [[scriptSrc('adfit.js')]] : []),
