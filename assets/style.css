@@ -4304,6 +4304,15 @@ button.trd-slot:focus-visible { outline: 2px solid var(--focus); outline-offset:
 .trd-prob b { text-align: right; font-variant-numeric: tabular-nums; }
 .trd-val { display: grid; gap: 2px; min-width: 0; }
 .trd-val input { font: inherit; font-weight: 700; padding: 6px 8px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--panel); color: var(--text); width: 100%; min-width: 0; font-variant-numeric: tabular-nums; }
+/* Every result as a sum: sale price − cost = left. */
+.trd-outcomes .trd-row { grid-template-columns: minmax(96px, 0.9fr) minmax(96px, 1fr) minmax(130px, 1.1fr) minmax(190px, auto); }
+.trd-eqn { display: flex; align-items: baseline; justify-content: flex-end; gap: 8px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.trd-eqn i { font-style: normal; font-weight: 800; color: var(--muted); }
+.trd-eqn span { color: var(--text-2); font-weight: 700; }
+.trd-eqn strong { font-size: 1.15rem; min-width: 5.2em; text-align: right; }
+.trd-eqn .gain { color: var(--ok); }
+.trd-eqn .loss { color: var(--danger); }
+.trd-outcomes .trd-row-head span:last-child { text-align: right; }
 .trd-val em { font-style: normal; font-size: 0.72rem; font-weight: 800; color: var(--muted); }
 .trd-val input.own { border-color: var(--accent-fill); box-shadow: inset 0 0 0 1px var(--accent-fill); }
 .trd-diff { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
@@ -4495,6 +4504,9 @@ button.trd-slot:focus-visible { outline: 2px solid var(--focus); outline-offset:
   .trd-slots { gap: 6px; }
   .trd-scroll-stat { grid-column: 1 / -1; }
   .trd-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 12px; }
+  .trd-outcomes .trd-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .trd-outcomes .trd-row .trd-val, .trd-outcomes .trd-row .trd-eqn { grid-column: 1 / -1; }
+  .trd-eqn { justify-content: flex-start; }
   .trd-row-head { display: none; }
   .trd-diff { align-self: start; padding-top: 6px; }
   .trd-stats, .trd-sum .trd-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }

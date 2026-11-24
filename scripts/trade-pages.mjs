@@ -87,33 +87,33 @@ export function scrollProfitBody({ lang, api, itemsUrl, dataUrl, marketUrl, forg
 <div class="trd-slots-acts"><button type="button" class="btn ghost small-btn" id="sp-fill">${t('남은 칸 채우기', 'Fill the rest')}</button><button type="button" class="btn ghost small-btn" id="sp-clear">${t('다 비우기', 'Clear')}</button></div></div>
 <p class="muted small" id="sp-slots-note">${t('주문서를 누를 때마다 한 칸씩 채워져요. 채운 칸을 누르면 빠져요. 다른 % 주문서를 섞어도 돼요.', 'Each tap on a scroll fills one slot; tap a filled slot to empty it. Different % scrolls can be mixed.')}</p>
 <div class="trd-scroll-list" id="sp-scrolls" role="group" aria-label="${t('바를 주문서', 'Scroll to use')}" aria-busy="true"></div></section>
-<section class="panel trd-batch"><h2><i class="trd-num">2</i>${t('몇 개 작 할까요', 'How many pieces')}</h2>
-<div class="trd-qty"><button type="button" class="trd-qty-step" data-step="-1" aria-label="${t('한 개 줄이기', 'One fewer')}">−</button><input id="sp-qty" inputmode="numeric" autocomplete="off" value="10" aria-label="${t('작 할 장비 개수', 'Number of pieces')}"><button type="button" class="trd-qty-step" data-step="1" aria-label="${t('한 개 늘리기', 'One more')}">+</button><span>${t('개', 'pieces')}</span>
-<div class="trd-qty-presets" role="group" aria-label="${t('개수 빠르게 고르기', 'Quick amounts')}">${[1, 5, 10, 50, 100].map((n) => `<button type="button" data-qty="${n}">${n}</button>`).join('')}</div></div>
-<p class="trd-need" id="sp-need"></p></section>
-<section class="trd-sum" id="sp-sum" aria-busy="true"></section>
 <div class="trd-cols trd-cols-sp">
-<section class="panel trd-costs"><h2>${t('쓰는 돈', 'What you spend')}</h2>
+<section class="panel trd-costs"><h2><i class="trd-num">2</i>${t('한 개에 쓰는 돈', 'What one piece costs')}</h2>
 <div class="trd-table trd-spend" id="sp-spend"></div>
 <p class="muted small" id="sp-item-note"></p>
 <p class="muted small" id="sp-scroll-note"></p>
 <button type="button" class="btn ghost small-btn" id="sp-reset" hidden>${t('시세로 되돌리기', 'Back to market prices')}</button></section>
-<section class="panel trd-outcomes"><h2 id="sp-out-title">${t('나오는 장비', 'What comes out')}</h2>
+<section class="panel trd-outcomes"><h2 id="sp-out-title">${t('결과마다 남는 돈', 'What each result leaves')}</h2>
 <p class="muted small" id="sp-table-note"></p>
 <div class="trd-table" id="sp-table" aria-busy="true"></div></section>
 </div>
+<section class="panel trd-batch"><h2><i class="trd-num">3</i>${t('여러 개 작 하면', 'Scrolling several pieces')}</h2>
+<div class="trd-qty"><button type="button" class="trd-qty-step" data-step="-1" aria-label="${t('한 개 줄이기', 'One fewer')}">−</button><input id="sp-qty" inputmode="numeric" autocomplete="off" value="10" aria-label="${t('작 할 장비 개수', 'Number of pieces')}"><button type="button" class="trd-qty-step" data-step="1" aria-label="${t('한 개 늘리기', 'One more')}">+</button><span>${t('개', 'pieces')}</span>
+<div class="trd-qty-presets" role="group" aria-label="${t('개수 빠르게 고르기', 'Quick amounts')}">${[1, 5, 10, 50, 100].map((n) => `<button type="button" data-qty="${n}">${n}</button>`).join('')}</div></div>
+<p class="trd-need" id="sp-need"></p></section>
+<section class="trd-sum" id="sp-sum" aria-busy="true"></section>
 <p class="trd-next"><a class="btn" id="sp-forge" href="${esc(forgeUrl)}">${t('작 시뮬레이터에서 발라 보기', 'Try it in the scroll forge')}</a><a class="btn ghost" id="sp-market" href="${esc(marketUrl)}">${t('이 장비 시세·매물 보기', 'See this piece on the market')}</a></p>
 </section>
 <section class="panel trd-start" id="sp-start"><h2>${t('위에서 장비를 고르면 여기에 나와요', 'Pick a piece above and the answer shows here')}</h2>
 <ul class="trd-start-list"><li>${spriteSvg('coin', 26)}<p>${t('<strong>쓰는 돈</strong>: 깨끗한 장비와 주문서를 사는 값', '<strong>What you spend</strong>: the clean pieces and the scrolls')}</p></li>
-<li>${spriteSvg('bag', 26)}<p>${t('<strong>나오는 장비</strong>: 공격력별로 몇 개씩 나오는지와 개당 팔 값', '<strong>What comes out</strong>: how many of each result, and what each sells for')}</p></li>
-<li>${spriteSvg('star', 26)}<p>${t('<strong>남는 돈</strong>: 다 팔았을 때 평균으로 남는 돈과 이득으로 끝날 확률', '<strong>What is left</strong>: the average after selling it all, and the chance to end ahead')}</p></li></ul></section>
+<li>${spriteSvg('bag', 26)}<p>${t('<strong>결과마다 남는 돈</strong>: 공격력별로 팔 값 − 쓰는 돈 = 남는 돈', '<strong>What each result leaves</strong>: sale price − cost = left, for every result')}</p></li>
+<li>${spriteSvg('star', 26)}<p>${t('<strong>여러 개 작 하면</strong>: 개수를 넣으면 평균으로 남는 돈과 이득으로 끝날 확률', '<strong>Several pieces</strong>: set a number to see the average left and the chance to end ahead')}</p></li></ul></section>
 <noscript><p class="panel">${t('계산기는 자바스크립트를 켜야 움직여요.', 'Turn on JavaScript to use the calculator.')}</p></noscript>
 
 <section class="panel trd-read"><h2>${t('읽는 법', 'How to read it')}</h2>
 <ul class="trd-read-list"><li><span class="trd-read-ico">${spriteSvg('coin', 26)}</span><p>${t('<strong>쓰는 돈</strong>은 깨끗한 장비와 주문서 값이에요. 장비 한 개에 남은 횟수만큼 주문서가 들어가요.', '<strong>What you spend</strong> is the clean pieces plus the scrolls: one scroll for every slot of every piece.')}</p></li>
-<li><span class="trd-read-ico">${spriteSvg('bag', 26)}</span><p>${t('<strong>나오는 장비</strong>는 그 개수만큼 작 했을 때 결과별로 평균 몇 개가 나오는지예요. 10개 중 0.8개는 열 번 하면 여덟 번 한 개가 나온다는 뜻이에요.', '<strong>What comes out</strong> is how many of each result you get on average. 0.8 out of 10 means one such piece in eight of every ten batches.')}</p></li>
-<li><span class="trd-read-ico">${spriteSvg('star', 26)}</span><p>${t('<strong>남는 돈</strong>은 나온 장비를 다 판 돈에서 쓴 돈을 뺀 값이에요. 빨간 숫자면 할수록 잃어요.', '<strong>What is left</strong> is the sale of everything that came out minus what you spent. A red number loses more the more you do.')}</p></li>
+<li><span class="trd-read-ico">${spriteSvg('bag', 26)}</span><p>${t('<strong>결과마다 남는 돈</strong>은 그 결과가 나왔을 때 팔 값에서 쓴 돈을 뺀 값이에요. 줄마다 팔 값 − 쓰는 돈 = 남는 돈으로 적혀 있어요.', '<strong>What each result leaves</strong> is its sale price minus what the piece cost. Every row reads sale price − cost = left.')}</p></li>
+<li><span class="trd-read-ico">${spriteSvg('star', 26)}</span><p>${t('<strong>여러 개 작 하면</strong>은 그 개수만큼 했을 때 평균으로 남는 돈이에요. 빨간 숫자면 할수록 잃어요.', '<strong>Scrolling several pieces</strong> is what that many leave on average. A red number loses more the more you do.')}</p></li>
 <li><span class="trd-read-ico">${spriteSvg('clock', 26)}</span><p>${t('<strong>운이 나쁠 때와 좋을 때</strong>는 열 번 중 한 번꼴로 나오는 결과예요. 개수를 늘리면 운이 고르게 섞여서 평균에 가까워져요.', '<strong>Bad luck and good luck</strong> are the results you see about one time in ten. With more pieces the luck evens out and you land closer to the average.')}</p></li></ul>
 <div class="faq"><details><summary>${t('결과별 팔 값은 어떻게 정하나요?', 'Where does each sale price come from?')}</summary><p>${t('능력치와 남은 횟수가 같은 장비를 최근 7일 매물에서 찾아요. 3개 넘게 팔렸으면 팔린 값의 중간을 쓰고, 덜 팔렸으면 올라온 매물 중 싼 쪽 값을 써요. 매물이 아예 없는 결과는 바로 아래 결과의 값으로 쳐요. 실제로는 그보다 더 받으니 값을 직접 고치세요.', 'From the last 7 days of listings with the same stat and slots left. When three or more sold, it is the middle of what they sold for; otherwise the cheap end of what is asked. A result with no listing at all is priced as the next result down: it is worth more, so edit it.')}</p></details>
 <details><summary>${t('혼돈 주문서는 어떻게 계산하나요?', 'How are Chaos scrolls handled?')}</summary><p>${t('혼돈 주문서는 실패하면 절반 확률로 장비가 사라져요. 사라진 장비는 0 메소로 치고, 남은 주문서는 안 쓴 것으로 계산해요. 그래서 쓰는 돈이 평균으로 나와요.', 'A failed Chaos scroll destroys the piece half the time. A destroyed piece counts as 0 mesos and the scrolls left over are not spent, so the cost shown is an average.')}</p></details>

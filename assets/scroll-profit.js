@@ -140,7 +140,7 @@ function draw() {
   const box = (cls, labelText, value, sub) => `<div class="trd-sum-box ${cls}"><span>${labelText}</span><strong>${value}</strong>${sub ? `<small>${sub}</small>` : ''}</div>`;
   if (!ready) {
     sum.className = 'trd-sum thin';
-    sum.innerHTML = `<p class="trd-big-line">${tr('아래 쓰는 돈의 빈 칸에 값을 적으세요', 'Fill the empty prices under "What you spend"')}</p>`;
+    sum.innerHTML = `<p class="trd-big-line">${tr('위 쓰는 돈의 빈 칸에 값을 적으세요', 'Fill the empty prices under "What one piece costs"')}</p>`;
   } else if (!known) {
     // With one empty box: the price that result must reach for the batch to break even.
     const need1 = missing.length === 1 ? Math.max(0, (spend - back) / (missing[0].p * qty)) : null;
@@ -166,9 +166,10 @@ ${floors ? `<p class="muted small">${tr(`매물이 없는 결과 ${floors}개는
   const cost = (key, labelText, sub, amount, unit, own, per) => `<div class="trd-row trd-row-cost"><span class="trd-res"><b>${labelText}</b><small>${sub}</small></span>
 <label class="trd-val"><em>${per}</em><input data-cost="${key}" inputmode="decimal" autocomplete="off" value="${unit != null ? nf.format(unit) : ''}" placeholder="${tr('값', 'price')}" aria-label="${esc(labelText)}"${own ? ' class="own"' : ''}></label>
 <span class="trd-diff">${unit != null ? money(unit * amount) : '–'}</span></div>`;
-  $('sp-spend').innerHTML = `${cost('item', tr('깨끗한 장비', 'Clean piece'), tr(`${nf.format(qty)}개`, `× ${nf.format(qty)}`), qty, itemPrice, typed.item != null, tr('한 개 사는 값', 'Price of one'))}
-${kinds.map((s) => { const u = usedOf(s) * qty, n = plan.filter((x) => x === s).length * qty; return cost(s.id, esc(scrollName(s)), Math.abs(u - n) > 0.5 ? tr(`평균 ${nf.format(Math.round(u))}장`, `about ${nf.format(Math.round(u))}`) : tr(`${nf.format(n)}장`, `× ${nf.format(n)}`), u, priceOf(s), typed.scrolls[s.id] != null, tr('한 장 사는 값', 'Price of one scroll')); }).join('')}
-<div class="trd-row trd-row-total"><span class="trd-res"><b>${tr('쓰는 돈', 'You spend')}</b></span><span></span><span class="trd-diff">${ready ? money(spend) : '–'}</span></div>`;
+  // One piece: what the equation in every result row subtracts.
+  $('sp-spend').innerHTML = `${cost('item', tr('깨끗한 장비', 'Clean piece'), tr('1개', '× 1'), 1, itemPrice, typed.item != null, tr('한 개 사는 값', 'Price of one'))}
+${kinds.map((s) => { const n = plan.filter((x) => x === s).length; return cost(s.id, esc(scrollName(s)), tr(`${n}장`, `× ${n}`), n, priceOf(s), typed.scrolls[s.id] != null, tr('한 장 사는 값', 'Price of one scroll')); }).join('')}
+<div class="trd-row trd-row-total"><span class="trd-res"><b>${tr('한 개에 쓰는 돈', 'One piece costs')}</b></span><span></span><span class="trd-diff">${ready ? money(one) : '–'}</span></div>`;
   $('sp-item-note').textContent = typed.item != null ? tr('장비 값은 직접 적은 값이에요.', 'The piece price is your own.')
     : clean ? (clean.basis === 'now' ? (clean.n >= 3 ? tr(`장비 값: 지금 팔고 있는 노작 매물 ${nf.format(clean.n)}개 중 세 번째로 싼 값이에요.`, `Piece: third cheapest of ${nf.format(clean.n)} clean pieces on sale now.`) : tr(`장비 값: 지금 팔고 있는 노작 매물 ${nf.format(clean.n)}개 중 제일 싼 값이에요.`, `Piece: cheapest of ${nf.format(clean.n)} clean pieces on sale now.`)) : clean.basis === 'sold' ? tr(`장비 값: 노작 매물 ${nf.format(clean.n)}개 중 팔린 ${nf.format(clean.sold)}개의 중간 값이에요.`, `Piece: middle of ${nf.format(clean.sold)} sold out of ${nf.format(clean.n)} clean listings.`) : tr(`장비 값: 노작 매물 ${nf.format(clean.n)}개 중 싼 쪽 값이에요.`, `Piece: cheap end of ${nf.format(clean.n)} clean listings.`))
       : tr('노작 매물이 없어요. 장비 값에 내가 산 값을 적으세요.', 'No clean piece is listed. Type what you paid for the piece.');
@@ -176,21 +177,19 @@ ${kinds.map((s) => { const u = usedOf(s) * qty, n = plan.filter((x) => x === s).
   $('sp-reset').hidden = typed.item == null && !Object.keys(typed.scrolls).length && !Object.keys(typed.values).length;
 
   // ---- what comes out ----
-  $('sp-out-title').textContent = qty === 1 ? tr('나올 수 있는 결과', 'What can come out') : tr(`나오는 장비 (${nf.format(qty)}개 했을 때 평균)`, `What comes out (average of ${nf.format(qty)})`);
-  $('sp-table-note').textContent = qty === 1 ? tr('한 개를 작 하면 이 중 하나가 나와요. 칸에 적힌 숫자는 그 장비 한 개를 파는 값(메소)이에요. 시세에서 가져온 값이고, 내가 받을 값으로 고치면 위의 남는 돈이 바로 다시 계산돼요.', 'One piece ends as one of these. The number in each box is what one such piece sells for, in mesos. It comes from the market; change it to what you would get and the result above updates.') : tr('결과마다 평균 몇 개가 나오는지예요. 칸에 적힌 숫자는 그 장비 한 개를 파는 값(메소)이에요. 시세에서 가져온 값이고, 내가 받을 값으로 고치면 위의 남는 돈이 바로 다시 계산돼요.', 'How many of each result come out on average. The number in each box is what one such piece sells for, in mesos. It comes from the market; change it to what you would get and the result above updates.');
+  $('sp-table-note').textContent = tr('장비 한 개를 작 했을 때 나올 수 있는 결과예요. 줄마다 팔 값 − 쓰는 돈 = 남는 돈이에요. 팔 값은 시세에서 가져왔고 직접 고칠 수 있어요.', 'What one piece can end as. Every row reads sale price − cost = left. Sale prices come from the market and can be edited.');
   const maxP = Math.max(...live1.map((o) => o.p), boom);
-  const many = (pr) => (qty === 1 ? `<b>${pct(pr)}</b>` : `<b>${tr(`${count(pr * qty)}개`, `× ${count(pr * qty)}`)}</b><small>${pct(pr)}</small>`);
-  table.innerHTML = `<div class="trd-row trd-row-head" aria-hidden="true"><span>${tr('결과', 'Result')}</span><span>${qty === 1 ? tr('나올 확률', 'Odds') : tr('나오는 개수', 'How many')}</span><span>${tr('개당 팔 값 (고칠 수 있어요)', 'Sale price each (editable)')}</span><span>${qty === 1 ? tr('팔면 남는 돈', 'Left after selling') : tr('합계', 'Total')}</span></div>${live1.map((o) => {
+  const eqn = (v) => (ready && v != null ? `<span class="trd-eqn"><i>−</i><span>${money(one)}</span><i>=</i><strong class="${v - one >= 0 ? 'gain' : 'loss'}">${signed(v - one)}</strong></span>` : '<span class="trd-eqn"><strong>–</strong></span>');
+  table.innerHTML = `<div class="trd-row trd-row-head" aria-hidden="true"><span>${tr('결과', 'Result')}</span><span>${tr('나올 확률', 'Odds')}</span><span>${tr('팔 값', 'Sale price')}</span><span>${tr('− 쓰는 돈 = 남는 돈', '− cost = left')}</span></div>${live1.map((o) => {
     const f = found.get(keyOf(o)), v = valueOf(o), own = typed.values[keyOf(o)] != null;
     const note = own ? tr('직접 적은 값', 'your own price') : f.how === 'zero' ? tr('매물 없음 · 0으로 계산', 'none listed · counted as 0') : f.how === 'floor' ? tr(`매물 없음 · ${label(f.from)} 값으로 계산`, `none listed · priced as ${label(f.from)}`) : f.basis === 'sold' ? tr(`팔린 값 · 매물 ${f.n}개 중 ${f.sold}개 팔림`, `sold price · ${f.sold} of ${f.n} sold`) : tr(`싼 쪽 매물 값 · 매물 ${f.n}개`, `cheap end of ${f.n} listed`);
     const even = needs && keyOf(needs) === keyOf(o);
     return `<div class="trd-row${even ? ' is-even' : ''}"><span class="trd-res"><b>${esc(label(o))}</b><small>${o.k === plan.length ? tr('전부 성공', 'all passed') : o.k === 0 ? tr('전부 실패', 'all failed') : tr(`${o.k}번 성공`, `${o.k} passed`)}${span(o)}${even ? `<em class="trd-even">${tr('여기부터 본전', 'pays back from here')}</em>` : ''}</small></span>
-<span class="trd-prob"><span class="trd-prob-track"><span class="trd-prob-fill" style="width:${Math.max(1, (o.p / maxP) * 100)}%"></span></span><span class="trd-many">${many(o.p)}</span></span>
-<label class="trd-val"><em>${tr('이 장비 한 개를 파는 값', 'What one such piece sells for')}</em><input data-k="${keyOf(o)}" inputmode="decimal" autocomplete="off" value="${v != null ? nf.format(v) : ''}" placeholder="${tr('개당 팔 값', 'price each')}" aria-label="${esc(`${label(o)} ${tr('개당 팔 값', 'sale price each')}`)}"${own ? ' class="own"' : ''}><small>${note}</small></label>
-${qty === 1 ? `<span class="trd-diff ${v == null || !ready ? '' : v - one >= 0 ? 'gain' : 'loss'}">${v != null && ready ? signed(v - one) : '–'}</span>` : `<span class="trd-diff">${v != null ? money(v * o.p * qty) : '–'}</span>`}</div>`;
+<span class="trd-prob"><span class="trd-prob-track"><span class="trd-prob-fill" style="width:${Math.max(1, (o.p / maxP) * 100)}%"></span></span><span class="trd-many"><b>${pct(o.p)}</b></span></span>
+<label class="trd-val"><input data-k="${keyOf(o)}" inputmode="decimal" autocomplete="off" value="${v != null ? nf.format(v) : ''}" placeholder="${tr('팔 값', 'sale price')}" aria-label="${esc(`${label(o)} ${tr('팔 값', 'sale price')}`)}"${own ? ' class="own"' : ''}><small>${note}</small></label>
+${eqn(v)}</div>`;
   }).join('')}
-${boom > 0 ? `<div class="trd-row trd-row-boom"><span class="trd-res"><b>${tr('장비 파괴', 'Destroyed')}</b><small>${tr('혼돈 주문서 실패', 'failed Chaos scroll')}</small></span><span class="trd-prob"><span class="trd-prob-track"><span class="trd-prob-fill" style="width:${(boom / maxP) * 100}%"></span></span><span class="trd-many">${many(boom)}</span></span><span class="trd-val"><b>0</b><small>${tr('장비가 사라져요', 'the piece is gone')}</small></span><span class="trd-diff${qty === 1 ? ' loss' : ''}">${qty === 1 ? tr('쓴 만큼 잃어요', 'all spent is lost') : '0'}</span></div>` : ''}
-<div class="trd-row trd-row-total"><span class="trd-res"><b>${qty === 1 ? tr('팔면 평균', 'Sells for, on average') : tr('다 팔면', 'Sell it all')}</b></span><span></span><span></span><span class="trd-diff">${missing.length ? '?' : money(back)}</span></div>`;
+${boom > 0 ? `<div class="trd-row trd-row-boom"><span class="trd-res"><b>${tr('장비 파괴', 'Destroyed')}</b><small>${tr('혼돈 주문서 실패', 'failed Chaos scroll')}</small></span><span class="trd-prob"><span class="trd-prob-track"><span class="trd-prob-fill" style="width:${(boom / maxP) * 100}%"></span></span><span class="trd-many"><b>${pct(boom)}</b></span></span><span class="trd-val"><b>0</b><small>${tr('장비가 사라져요', 'the piece is gone')}</small></span><span class="trd-eqn"><strong class="loss">${tr('쓴 만큼 잃어요', 'all spent is lost')}</strong></span></div>` : ''}`;
 }
 
 // Typing in a price box redraws everything, then puts the caret back where it was in that box.
