@@ -311,9 +311,9 @@ export async function toolRuns(env, now = Date.now()) {
   try {
     const [days, why] = await Promise.all([
       ask(`SELECT blob1 AS tool, blob2 AS outcome, intDiv(toUInt32(timestamp) + 32400, 86400) AS d, sum(_sample_interval) AS n, sum(_sample_interval * double3) AS lv FROM ${TOOL_SET} WHERE ${range} GROUP BY tool, outcome, d ORDER BY d`),
-      ask(`SELECT blob1 AS tool, blob2 AS outcome, blob3 AS size, blob4 AS os, blob5 AS browser, blob6 AS surface, blob7 AS how, blob9 AS screen, double2 AS dpr, sum(_sample_interval) AS n FROM ${TOOL_SET} WHERE ${range} GROUP BY tool, outcome, size, os, browser, surface, how, screen, dpr ORDER BY n DESC LIMIT 200`)
+      ask(`SELECT blob1 AS tool, blob2 AS outcome, blob3 AS size, blob4 AS os, blob5 AS browser, blob6 AS surface, blob7 AS how, blob9 AS screen, double2 AS dpr, double4 AS pitch, sum(_sample_interval) AS n FROM ${TOOL_SET} WHERE ${range} GROUP BY tool, outcome, size, os, browser, surface, how, screen, dpr, pitch ORDER BY n DESC LIMIT 200`)
     ]);
-    return { days: days.map((r) => ({ tool: r.tool, outcome: r.outcome, day: new Date(Number(r.d) * 86400000).toISOString().slice(0, 10), n: Number(r.n), lv: Number(r.lv) })), why: why.map((r) => ({ ...r, n: Number(r.n), dpr: Number(r.dpr) })) };
+    return { days: days.map((r) => ({ tool: r.tool, outcome: r.outcome, day: new Date(Number(r.d) * 86400000).toISOString().slice(0, 10), n: Number(r.n), lv: Number(r.lv) })), why: why.map((r) => ({ ...r, n: Number(r.n), dpr: Number(r.dpr), pitch: Number(r.pitch) || 0 })) };
   } catch (e) {
     if (/unable to find|does not exist|unknown table/i.test(String(e.message))) return { days: [], why: [] };
     return { error: String(e.message || e) };

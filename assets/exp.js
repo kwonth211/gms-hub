@@ -132,7 +132,7 @@ const issuedExp = new Set();
 const expIssue = (kind, params = {}) => { if (issuedExp.has(kind)) return; issuedExp.add(kind); track('exp_issue', { issue: kind, after_s: runStartedAt ? Math.round((Date.now() - runStartedAt) / 1000) : 0, ...params }); };
 
 // One report per run: how it went after 40 seconds, or when it was stopped before that.
-let lastPlace = null, reported = false, sawBlack = 0, lastSize = '', howRead = '', levelSeen = false, firstReadS = -1;
+let lastPlace = null, reported = false, sawBlack = 0, lastSize = '', howRead = '', levelSeen = false, firstReadS = -1, failPlace = null, failNote = '';
 function reportRun(final) {
   if (reported || !runStartedAt) return;
   const s = Math.round((Date.now() - runStartedAt) / 1000);
@@ -141,7 +141,7 @@ function reportRun(final) {
   reported = true;
   const set = stream?.getVideoTracks()[0]?.getSettings?.() || {};
   toolReport('exp', everRead ? 'ok' : sawBlack > 1 ? 'black' : everBar ? 'read_fail' : 'no_bar',
-    { first: firstReadS, size: lastSize, surface: String(set.displaySurface || ''), how: howRead, level: levelSeen ? 1 : 0, pitch: lastPlace?.g.pitch || 0 });
+    { first: firstReadS, size: lastSize, surface: String(set.displaySurface || ''), how: everRead ? howRead : failNote, level: levelSeen ? 1 : 0, pitch: (everRead ? lastPlace?.g.pitch : failPlace?.pitch) || 0 });
 }
 
 async function readOnce(img) {
@@ -160,7 +160,14 @@ async function readOnce(img) {
     failStreak = 0;
     readLevelJob(img, found.g).catch(() => {});
     if (!everRead) { everRead = true; firstReadS = Math.round((Date.now() - runStartedAt) / 1000); track('exp_first_read', { after_s: firstReadS }); }
-  } else if (++failStreak >= 6) expIssue('read_fail', { text: String(found.text).replace(/[^0-9,.\[\]%?]/g, '').slice(0, 30), h: found.g.barH });
+  } else {
+    // What a failed run looked like, for the owner's dashboard: how large the game was drawn (gauge spacing) and how
+    // much of the line stayed unread. Sizes and counts only, never the numbers.
+    failPlace = found.g;
+    const txt = String(found.text || '');
+    failNote = `len${txt.length}unread${(txt.match(/\?/g) || []).length}`;
+    if (++failStreak >= 6) expIssue('read_fail', { text: txt.replace(/[^0-9,.\[\]%?]/g, '').slice(0, 30), h: found.g.barH });
+  }
   // The level comes about a minute in, so a run that reads well is reported once that had its chance.
   if (!everRead || Date.now() - runStartedAt > 75000) reportRun(false);
   check('read', r ? 'ok' : 'fail', r ? fill(t.readOk, { exp: nf.format(r.exp), pct: r.pct.toFixed(2) }) : fill(t.readFail, { text: '' }));
@@ -248,7 +255,7 @@ async function start() {
   say(t.watching);
   runStartedAt = Date.now(); everBar = false; everRead = false; failStreak = 0; issuedExp.clear();
   lastLineAt = 0; lineVote = null;
-  lastPlace = null; reported = false; sawBlack = 0; howRead = ''; levelSeen = false; firstReadS = -1; lastSize = '';
+  lastPlace = null; reported = false; sawBlack = 0; howRead = ''; levelSeen = false; firstReadS = -1; lastSize = ''; failPlace = null; failNote = '';
   track('exp_start');
   pending = null;
   lastGainAt = Date.now(); stallWarned = false;

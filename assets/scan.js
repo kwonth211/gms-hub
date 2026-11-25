@@ -257,13 +257,20 @@ const issued = new Set();
 // ui_label / ui_value are registered GA dimensions, so the kind of problem and the capture size show up in reports.
 const issue = (kind, params = {}) => { if (issued.has(kind)) return; issued.add(kind); if (kind !== 'upload_fail') toolReport('scan', kind, { size: params.w ? `${params.w}x${params.h}` : '' }); track('scan_issue', { issue: kind, ui_label: kind, ui_value: params.w ? `${params.w}x${params.h}@${params.scale}` : String(params.msg || ''), after_s: scanStartedAt ? Math.round((Date.now() - scanStartedAt) / 1000) : 0, ...params }); };
 
+const differed = new Set();
+const roomDiffers = (picked, seen) => { const k = `${picked}>${seen}`; if (differed.has(k)) return; differed.add(k); track('scan_room_differs', { ui_label: k, picked, seen }); };
+
 async function recognize(canvas) {
   const img = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
   const manualChannel = Number($('scan-channel').value);
   const manualRoom = Number($('scan-room').value);
   const ch = manualChannel || findChannel(img);
   if (validLocation(ch)) channel = ch;
-  const fm = manualRoom || findRoom(img, mapData, scale !== 1);
+  const seenRoom = findRoom(img, mapData, scale !== 1);
+  const fm = manualRoom || seenRoom;
+  // The room picked by hand still wins; how often the screen says another one tells whether the reader can be trusted
+  // over a pick that was left on while moving rooms.
+  if (validLocation(manualRoom) && validLocation(seenRoom) && manualRoom !== seenRoom) roomDiffers(manualRoom, seenRoom);
   // Only a new reading moves the room; a hidden or unreadable minimap keeps the last one (see LOC_KEY).
   if (validLocation(fm)) room = fm;
   if (validLocation(ch) || validLocation(fm)) keepLocation();

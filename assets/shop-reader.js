@@ -600,8 +600,115 @@ function roomFor(key, rooms, rescaled = false, skip = 0) {
   return close && clear ? best.room : 0;
 }
 
-// Free Market room number from the minimap title; null when no Free Market title is on screen.
+// ---------- room, any number ----------
+// The pattern table above knows only the rooms someone captured (room 10), so every other room came back as "unknown"
+// and the player had to pick it by hand (owner's dashboard 2026-11-25: 19 scans stuck on the room). The title is set in
+// Arial Bold 12 px, white with a drop shadow, so it is compared with the same words drawn in that font
+// (map.title, written by scripts/scan-tools/room-title.py): first "Free Market <" finds the line, then each 7-pixel
+// cell after it is told apart as one digit or the closing ">". Only the white strokes are compared (the bar's blue and
+// the shadow count as nothing), by correlation, so a frame the screen scaled and smoothed still reads; a cell whose
+// best fit is weak, or not clearly ahead of the next symbol, gives 0 (a Free Market room, number not read) rather
+// than a guess.
+const TITLE_FIT = 0.7;
+const CELL_FIT = 0.75;
+const CELL_LEAD = 0.1;
+let titleParsed = null;
+let titleAt = null;
+function titleOf(t) {
+  if (titleParsed?.src === t) return titleParsed;
+  // Zero-mean template and its length, so a correlation is one pass over the patch.
+  const piece = (hex, w) => {
+    const v = Float32Array.from(hex, (c) => parseInt(c, 16) / 15);
+    let mean = 0;
+    for (const x of v) mean += x;
+    mean /= v.length;
+    let norm = 0;
+    for (let i = 0; i < v.length; i++) { v[i] -= mean; norm += v[i] * v[i]; }
+    return { w, v, norm: Math.sqrt(norm) };
+  };
+  // Where the upright stroke of the "F" sits in the drawn title: its first column, top to bottom.
+  const stem = [];
+  for (let y = 0; y < t.h; y++) if (parseInt(t.prefix.px[y * t.prefix.w], 16) >= 8) stem.push(y);
+  titleParsed = { src: t, h: t.h, adv: t.adv, cell: t.cell, stemTop: stem[0] ?? 0, stemLen: stem.length || 9, pre: piece(t.prefix.px, t.prefix.w), glyphs: Object.entries(t.glyphs).map(([sym, hex]) => ({ sym, ...piece(hex, t.cell) })) };
+  return titleParsed;
+}
+function roomByTitle(img, t) {
+  const T = titleOf(t);
+  const W = Math.min(img.width, MAP_AREA_W), H = Math.min(img.height, MAP_AREA_H);
+  if (W < T.pre.w + 3 * T.cell || H < T.h) return null;
+  const L = new Float32Array(W * H);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) L[y * W + x] = lum(img, x, y);
+  // The bar's own brightness: the median of the patch (the letters cover well under half of it).
+  const barOf = (x, y, w) => {
+    const v = [];
+    for (let yy = 0; yy < T.h; yy += 2) for (let xx = (yy >> 1) % 3; xx < w; xx += 3) v.push(L[(y + yy) * W + x + xx]);
+    v.sort((a, b) => a - b);
+    return v[v.length >> 1];
+  };
+  // How well a drawn piece fits the white strokes at (x, y): 1 is the same picture, 0 is unrelated.
+  const fit = (piece, x, y, bar) => {
+    if (x < 0 || y < 0 || x + piece.w > W || y + T.h > H) return -1;
+    const span = Math.max(40, 255 - bar), n = piece.w * T.h;
+    let sum = 0, sq = 0, dot = 0;
+    for (let yy = 0, k = 0; yy < T.h; yy++) for (let xx = 0; xx < piece.w; xx++, k++) {
+      const a = Math.min(1, Math.max(0, (L[(y + yy) * W + x + xx] - bar) / span));
+      sum += a; sq += a * a; dot += a * piece.v[k];
+    }
+    const dev = Math.sqrt(Math.max(0, sq - (sum * sum) / n));
+    return dev > 1e-6 && piece.norm > 1e-6 ? dot / (dev * piece.norm) : 0;
+  };
+  const prefixAt = (x, y) => fit(T.pre, x, y, barOf(x, y, T.pre.w));
+  let best = { s: -1, x: 0, y: 0 };
+  // The title rarely moves: where it was last time is tried first.
+  if (titleAt && titleAt.W === W && titleAt.H === H) { const s = prefixAt(titleAt.x, titleAt.y); if (s >= 0.8) best = { s, x: titleAt.x, y: titleAt.y }; }
+  if (best.s < 0) {
+    // The "F" starts the line with an upright white stroke about nine pixels tall with nothing bright to its left:
+    // only strokes of that height are tried, so a bright scene costs little.
+    const run = new Uint8Array(W), tried = new Set();
+    for (let y = 0; y <= H; y++) for (let x = 1; x < W; x++) {
+      if (y < H && L[y * W + x] > 205) { if (run[x] < 60) run[x]++; continue; }
+      const len = run[x];
+      run[x] = 0;
+      if (len < T.stemLen - 2 || len > T.stemLen + 3) continue;
+      let lit = 0;
+      for (let k = 1; k <= len; k++) if (L[(y - k) * W + x - 1] > 205) lit++;
+      if (lit > 2) continue;
+      for (let top = y - len - T.stemTop - 1; top <= y - len - T.stemTop + 1; top++) for (let left = x - 1; left <= x + 1; left++) {
+        const key = top * W + left;
+        if (top < 0 || left < 0 || tried.has(key)) continue;
+        tried.add(key);
+        const s = prefixAt(left, top);
+        if (s > best.s) best = { s, x: left, y: top };
+      }
+    }
+  }
+  if (best.s < TITLE_FIT) { titleAt = null; return null; }
+  titleAt = { x: best.x, y: best.y, W, H };
+  const bar = barOf(best.x, best.y, T.pre.w);
+  let digits = '';
+  for (let i = 0; i < 3; i++) {
+    let top = { s: -1, sym: '' }, next = -1;
+    for (const g of T.glyphs) {
+      let s = -1;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) s = Math.max(s, fit(g, best.x + T.pre.w + i * T.adv + dx, best.y + dy, bar));
+      if (s > top.s) { next = top.s; top = { s, sym: g.sym }; } else if (s > next) next = s;
+    }
+    if (top.s < CELL_FIT || top.s - next < CELL_LEAD) return 0;
+    if (top.sym === '>') { const room = Number(digits); return room >= 1 && room <= 40 ? room : 0; }
+    digits += top.sym;
+  }
+  return 0;
+}
+
+// Free Market room number from the minimap title; null when no Free Market title is on screen, 0 when the title is
+// there but its number is not clear. The digit-by-digit reader goes first; the table of captured titles is the fallback.
 export function findRoom(img, map, rescaled = false) {
+  const read = map?.title ? roomByTitle(img, map.title) : null;
+  if (read) return read;
+  const known = knownRoom(img, map, rescaled);
+  return known || (read === 0 || known === 0 ? 0 : null);
+}
+function knownRoom(img, map, rescaled = false) {
   if (!map?.prefix?.length) return null;
   const w = Math.min(img.width, MAP_AREA_W);
   // A rescaled frame dims the title's white a little and moves a few pixels, so its cut-off and match budget are looser.

@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "scan-room-any",
+   "version": "0.7.79",
+   "level": "patch",
+   "date": "2026-11-25",
+   "path": "/tools/scan/",
+   "ko": "상점 스캔 — 자유시장 방 번호를 어느 방에서든 읽어요",
+   "en": "Shop scan — the Free Market room is read in every room",
+   "desc": {
+    "ko": "지금까지는 10번 방에서만 방 번호를 스스로 읽었고, 다른 방에서는 직접 골라야 했어요. 이제 미니맵에 적힌 방 번호를 어느 방에서든 읽어요. 윈도우 화면 배율이 125%나 150%여도 읽어요. 숫자가 또렷하지 않으면 틀린 번호를 넣지 않고 직접 고르게 둬요.",
+    "en": "Until now the room was read by itself only in room 10; in every other room you had to pick it. The scan now reads the room number on the minimap in any room, also when Windows scales the screen to 125% or 150%. When the number is not clear it leaves the choice to you rather than guess."
+   }
+  },
+  {
    "id": "trade-request",
    "version": "0.7.78",
    "level": "minor",

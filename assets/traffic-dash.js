@@ -215,7 +215,12 @@ ${rows ? `<div class="table-wrap"><table class="data td-who-table td-blk-table">
 
 // Runs of the screen-reading tools over the last 7 days: what share read, and every way the others failed.
 const TOOL_NAME = { exp: 'EXP 측정기', scan: '상점 스캔' };
-const OUTCOME = { ok: '읽음', no_bar: '상태바를 못 찾음', read_fail: '숫자를 못 읽음', black: '검은 화면', share_error: '화면 공유 오류', first_rows: '상점 읽음', black_frame: '검은 화면', no_shop: '상점을 못 찾음', unsure_rows: '이름이 불확실', read_error: '읽기 오류', video_play: '영상 재생 실패', upload_fail: '올리기 실패' };
+const OUTCOME = { ok: '읽음', no_bar: '상태바를 못 찾음', read_fail: '숫자를 못 읽음', black: '검은 화면', share_error: '화면 공유 오류', first_rows: '상점 읽음', black_frame: '검은 화면', no_shop: '상점을 못 찾음', unsure_rows: '이름이 불확실', read_error: '읽기 오류', video_play: '영상 재생 실패', upload_fail: '올리기 실패', no_room: '방 번호를 못 읽음', no_channel: '채널을 못 읽음', no_location: '채널·방을 못 읽음' };
+// What a run recorded about itself: how it read ("soft" = by best fit) or, for a failed EXP run, how much stayed unread.
+const HOW = { exact: '또렷하게 읽음', soft: '흐린 숫자를 맞춰 읽음' };
+const howText = (r) => { const m = /^len(\d+)unread(\d+)$/.exec(r.how || ''); return m ? (Number(m[1]) ? `글자 ${m[1]}개 중 ${m[2]}개 못 읽음` : '숫자 줄을 못 찾음') : HOW[r.how] || r.how || ''; };
+// The status bar's gauges sit 108 game pixels apart, so their spacing on the shared picture says how large the game was drawn.
+const drawn = (r) => (r.tool === 'exp' && r.pitch > 0 ? `게임 화면 ${(r.pitch / 108).toFixed(2)}배` : '');
 function toolPanel(d) {
   const b = d.tools;
   if (!b) return '';
@@ -225,7 +230,7 @@ function toolPanel(d) {
   const days = [...new Set(b.days.map((r) => r.day))].sort();
   const daily = days.map((day) => { const n = tot('exp', (r) => r.day === day), k = tot('exp', (r) => r.day === day && r.outcome === 'ok'); return n ? `<li><span>${esc(day.slice(5))}</span><b>${nf(k)} / ${nf(n)} (${Math.round((k / n) * 100)}%)</b></li>` : ''; }).join('');
   const bad = b.why.filter((r) => r.outcome !== 'ok' && r.outcome !== 'first_rows');
-  const rows = bad.map((r) => `<tr><td class="num"><b>${nf(r.n)}</b></td><td>${esc(TOOL_NAME[r.tool] || r.tool)}</td><td>${esc(OUTCOME[r.outcome] || r.outcome)}</td><td>${esc(r.size || '-')}<br><span class="muted">모니터 ${esc(r.screen)} · 배율 ${esc(r.dpr)}</span></td><td>${esc(r.os)} · ${esc(r.browser)}<br><span class="muted">${esc(r.surface || '')} ${esc(r.how || '')}</span></td></tr>`).join('');
+  const rows = bad.map((r) => `<tr><td class="num"><b>${nf(r.n)}</b></td><td>${esc(TOOL_NAME[r.tool] || r.tool)}</td><td>${esc(OUTCOME[r.outcome] || r.outcome)}</td><td>${esc(r.size || '-')}<br><span class="muted">모니터 ${esc(r.screen)} · 배율 ${esc(r.dpr)}</span></td><td>${esc(r.os)} · ${esc(r.browser)}<br><span class="muted">${esc([r.surface, drawn(r), howText(r)].filter(Boolean).join(' · '))}</span></td></tr>`).join('');
   return `<section class="panel"><h2>화면 읽는 도구 상태 <small class="muted">최근 7일</small></h2>
 ${all ? `<p class="${rate < 80 && all >= 5 ? 'td-err' : ''}">EXP 측정기: ${nf(all)}번 중 ${nf(ok)}번 읽었어요 (${rate}%)${rate < 80 && all >= 5 ? ' · 80%보다 낮아요. 아래 실패를 확인하세요.' : ''} · 레벨까지 읽은 것 ${nf(b.days.filter((r) => r.tool === 'exp').reduce((a, r) => a + r.lv, 0))}번</p><ul class="td-botlist">${daily}</ul>` : '<p class="muted">아직 EXP 측정 기록이 없어요. 11월 24일 밤부터 쌓여요.</p>'}
 ${rows ? `<div class="table-wrap"><table class="data td-who-table"><thead><tr><th class="num">횟수</th><th>도구</th><th>실패한 이유</th><th>공유한 화면</th><th>환경</th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}
