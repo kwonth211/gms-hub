@@ -308,6 +308,13 @@ test("public routes return validation errors and page metadata instead of silent
   Object.defineProperty(crawler, "cf", { value: { verifiedBotCategory: "Search Engine Crawler" } });
   for (const req of [new Request("https://test/market/catalog", SITE), new Request("https://test/market/catalog", { headers: { "X-Gms-Key": "build-key" } }), crawler, new Request("https://test/prices?ids=2040801", { headers: { "User-Agent": "shop-collector" } })])
     assert.equal((await worker.fetch(req, { ...gate, READ_KEY: "build-key" })).status, 200);
+  // The in-game shop collector reads with the token it uploads with; a wrong or empty key opens nothing.
+  const scan = { ...gate, SHOP_SCAN_TOKEN: "scan-token" };
+  for (const path of ["/prices?ids=2040801", "/megaphones?after=5", "/market/catalog"])
+    assert.equal((await worker.fetch(new Request("https://test" + path, { headers: { "X-Gms-Key": "scan-token" } }), scan)).status, 200, path);
+  const before = seen.length;
+  assert.equal((await worker.fetch(new Request("https://test/market/catalog", { headers: { "X-Gms-Key": "undefined" } }), gate)).status, 403);
+  seen.length = before;
   // A verified crawler is answered and counted as 'bot', so the owner's list shows everyone who called.
   assert.deepEqual(seen, ["bot /market/catalog"]);
   assert.equal((await worker.fetch(new Request("https://test/market/catalog", { headers: { "User-Agent": "shop-collector" } }), gate)).status, 403);

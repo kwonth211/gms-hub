@@ -1019,7 +1019,7 @@ export default {
   },
   email: (message, env, ctx) => handleEmail(message, metered(env), ctx),
   // The live viewer count is a WebSocket upgrade, so it skips the public response cache.
-  fetch: (req, env, ctx) => {
+  fetch: async (req, env, ctx) => {
     const path = new URL(req.url).pathname;
     // Headless Chrome is refused on the public API, the same as the Cloudflare rule on gms-hub.com ("Block headless
     // browsers", 2026-11-17): a scraper in Israel was opening the market page hundreds of times a day. Checked here, ahead
@@ -1044,7 +1044,9 @@ export default {
     if (!goodBot && req.method !== 'OPTIONS' && !openPath(path)) {
       const fs = req.headers.get('Sec-Fetch-Site'), key = req.headers.get('X-Gms-Key') || '';
       const fromSite = ALLOWED_ORIGINS.includes(req.headers.get('Origin') || '') && (!fs || fs === 'cross-site');
-      const ours = (key && env.READ_KEY && key === env.READ_KEY) || (path === '/prices' && req.headers.get('User-Agent') === 'shop-collector');
+      // The in-game shop collector may read with the token it already uploads with, sent as X-Gms-Key. Its name alone
+      // still opens /prices until the collector sends the key; then that exception goes.
+      const ours = (key && (await sameSecret(key, env.READ_KEY) || await sameSecret(key, env.SHOP_SCAN_TOKEN))) || (path === '/prices' && req.headers.get('User-Agent') === 'shop-collector');
       // The listing feed is refused as before. Every other path is only counted for now (reason 'watch', shown on the
       // owner's dashboard as calls from outside the site) and refused once API_GATE is "on".
       if (!fromSite && !ours && !SITE_ONLY.has(path) && env.API_GATE !== 'on') logBlock(env, req, 'watch');
