@@ -1003,6 +1003,10 @@ async function joinPresence(req, env) {
   if (verdict && !verdict.success) return new Response('too many requests', { status: 429, headers: { 'Retry-After': '60' } });
   return handlePresence(req, env);
 }
+// Refused already when the call does not come from a page of the site: the listing feed (2026-11-18) and the megaphone
+// feed (owner, 2026-11-25: one address read /megaphones?after= every 30 seconds, all day, without ever opening the site).
+// /megaphones/stats (a summary) stays open.
+const SITE_ONLY = new Set(['/market/listings', '/megaphones']);
 // Paths answered without coming from a page of the site: their own credentials, or links opened directly.
 const openPath = (path) => path.startsWith('/internal/') || TRUSTED.has(path) || path.startsWith('/discord/') || path.startsWith('/og/') || path.startsWith('/s/') || path === '/usage' || path === '/presence' || path === '/chat';
 const paused = () => new Response(JSON.stringify({ error: 'paused: monthly budget reached' }), { status: 503, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' } });
@@ -1043,7 +1047,7 @@ export default {
       const ours = (key && env.READ_KEY && key === env.READ_KEY) || (path === '/prices' && req.headers.get('User-Agent') === 'shop-collector');
       // The listing feed is refused as before. Every other path is only counted for now (reason 'watch', shown on the
       // owner's dashboard as calls from outside the site) and refused once API_GATE is "on".
-      if (!fromSite && !ours && path !== '/market/listings' && env.API_GATE !== 'on') logBlock(env, req, 'watch');
+      if (!fromSite && !ours && !SITE_ONLY.has(path) && env.API_GATE !== 'on') logBlock(env, req, 'watch');
       else if (!fromSite && !ours) {
         logBlock(env, req, path === '/market/listings' ? 'listings' : 'outside');
         return new Response(JSON.stringify({ error: 'This API is served to pages on gms-hub.com. Automated collection is not permitted: https://gms-hub.com/en/terms/' }), { status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });

@@ -289,7 +289,12 @@ test("public routes return validation errors and page metadata instead of silent
   // answered and counted as 'watch' for the dashboard; with API_GATE "on" it is refused. Pages of the site, verified
   // crawlers, the site build's key and the in-game shop collector's /prices lookups are neither counted nor refused.
   const seen = [], watch = { ...e, BLOCKS: { writeDataPoint: (p) => seen.push(`${p.blobs[0]} ${p.blobs[1]}`) } }, gate = { ...watch, API_GATE: "on" };
-  const paths = ["/market/catalog", "/market/history?id=2040801", "/prices?ids=2040801", "/megaphones", "/market/item?id=2040801", "/listings/recent"];
+  const paths = ["/market/catalog", "/market/history?id=2040801", "/prices?ids=2040801", "/market/item?id=2040801", "/listings/recent"];
+  // The megaphone feed is refused like the listing feed, even while the rest is only watched; its summary is not.
+  for (const headers of [{}, { "Sec-Fetch-Site": "none", "Sec-Fetch-Mode": "cors" }, { Origin: "https://example.com" }])
+    assert.equal((await worker.fetch(new Request("https://test/megaphones?after=5", { headers }), watch)).status, 403);
+  assert.equal((await worker.fetch(new Request("https://test/megaphones?after=5", SITE), watch)).status, 200);
+  seen.length = 0;
   for (const path of paths)
     for (const headers of [{}, { Referer: "https://gms-hub.com/" }, { Origin: "https://example.com" }, { "X-Gms-Key": "wrong" }]) {
       assert.notEqual((await worker.fetch(new Request("https://test" + path, { headers }), watch)).status, 403, path);

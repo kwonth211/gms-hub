@@ -12,20 +12,24 @@ const get = async (path) => {
 };
 
 try {
-  const [catalog, top, mega] = await Promise.all([get('/market/catalog'), get('/market/top'), get('/megaphones?limit=200')]);
+  // The megaphone feed answers pages of the site only (and this build once it carries the read key): without it the
+  // megaphone part of the committed file is kept and the rest is still refreshed.
+  const old = (() => { try { return JSON.parse(readFileSync(file, 'utf8')); } catch { return {}; } })();
+  const [catalog, top, mega] = await Promise.all([get('/market/catalog'), get('/market/top'), get('/megaphones?limit=200').catch(() => null)]);
   const listed = catalog.items.filter((r) => r.open > 0 && r.median).sort((a, b) => b.open - a.open).slice(0, 30)
     .map((r) => ({ item: r.item, open: r.open, median: r.median, low: r.low, shops: r.shops }));
   const movers = (top.items || []).filter((r) => r.change != null).map((r) => ({ item: r.item, change: r.change, median: r.median, spark: r.spark }));
   // Item megaphones name their item in brackets ("[Steel Slain] S> 1.5m"); counted by the bracketed name.
-  const said = {};
-  for (const m of mega.rows || []) {
+  let said = {};
+  for (const m of mega?.rows || []) {
     const b = /\[([^\]]{3,60})\]/.exec(m.text);
     if (b) said[b[1].toLowerCase()] = (said[b[1].toLowerCase()] || 0) + 1;
   }
-  const rows = mega.rows || [];
+  const rows = mega?.rows || [];
+  if (!mega) said = old.said || {};
   writeFileSync(file, `${JSON.stringify({
     updated: new Date().toISOString(), stats: top.stats || catalog.stats || {}, listed, movers, said,
-    megaSpan: rows.length ? [rows.at(-1).seen, rows[0].seen] : null
+    megaSpan: rows.length ? [rows.at(-1).seen, rows[0].seen] : (mega ? null : old.megaSpan || null)
   })}\n`);
   console.log(`market report: ${listed.length} listed, ${movers.length} movers, ${Object.keys(said).length} megaphone items`);
 } catch (e) {
