@@ -4729,3 +4729,13 @@ div.trd-req p { flex: 1 1 260px; }
 .td-chart .td-out { fill: none; stroke: #dc2626; stroke-width: 2.5; stroke-linejoin: round; }
 .td-out-dot { fill: #dc2626; }
 .td-legend .k.out { background: #dc2626; }
+
+/* Traffic dashboard: every API caller in one list (answered, search crawler, refused). */
+.td-chart .td-api { fill: none; stroke-width: 2.5; stroke-linejoin: round; }
+.td-api.pass { stroke: #dc2626; } .td-api.bot { stroke: #2563eb; } .td-api.stop { stroke: #6b7280; stroke-dasharray: 5 4; }
+.td-api-dot.pass { fill: #dc2626; } .td-api-dot.bot { fill: #2563eb; } .td-api-dot.stop { fill: #6b7280; }
+.td-legend .k.api-pass { background: #dc2626; } .td-legend .k.api-bot { background: #2563eb; } .td-legend .k.api-stop { background: #6b7280; }
+.td-st { display: inline-block; margin: 1px 0; padding: 1px 7px; border-radius: 6px; font-size: .74rem; font-weight: 800; white-space: nowrap; }
+.td-st.pass { color: #b91c1c; background: color-mix(in srgb, #dc2626 12%, transparent); }
+.td-st.bot { color: #1d4ed8; background: color-mix(in srgb, #2563eb 12%, transparent); }
+.td-st.stop { color: var(--text-2); background: color-mix(in srgb, #6b7280 16%, transparent); }

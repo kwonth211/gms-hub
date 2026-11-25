@@ -303,7 +303,8 @@ test("public routes return validation errors and page metadata instead of silent
   Object.defineProperty(crawler, "cf", { value: { verifiedBotCategory: "Search Engine Crawler" } });
   for (const req of [new Request("https://test/market/catalog", SITE), new Request("https://test/market/catalog", { headers: { "X-Gms-Key": "build-key" } }), crawler, new Request("https://test/prices?ids=2040801", { headers: { "User-Agent": "shop-collector" } })])
     assert.equal((await worker.fetch(req, { ...gate, READ_KEY: "build-key" })).status, 200);
-  assert.deepEqual(seen, []);
+  // A verified crawler is answered and counted as 'bot', so the owner's list shows everyone who called.
+  assert.deepEqual(seen, ["bot /market/catalog"]);
   assert.equal((await worker.fetch(new Request("https://test/market/catalog", { headers: { "User-Agent": "shop-collector" } }), gate)).status, 403);
   // Links opened directly and paths with their own credential are not behind the rule.
   assert.notEqual((await worker.fetch(new Request("https://test/internal/shop-scan", { method: "POST", body: "{}" }), e)).status, 403);

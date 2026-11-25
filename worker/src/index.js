@@ -1035,6 +1035,8 @@ export default {
     // links people and apps open directly (Discord login, share cards /s/ and /og/); the site build, which sends the
     // READ_KEY secret as X-Gms-Key; and the in-game shop collector's price lookups (it posts with its token, but reads
     // /prices by its name only: to be moved onto the token).
+    // Verified search crawlers are answered as always; their calls are counted too, so the owner's list shows everyone.
+    if (goodBot && req.method !== 'OPTIONS' && !openPath(path)) logBlock(env, req, 'bot');
     if (!goodBot && req.method !== 'OPTIONS' && !openPath(path)) {
       const fs = req.headers.get('Sec-Fetch-Site'), key = req.headers.get('X-Gms-Key') || '';
       const fromSite = ALLOWED_ORIGINS.includes(req.headers.get('Origin') || '') && (!fs || fs === 'cross-site');
