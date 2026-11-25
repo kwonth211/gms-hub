@@ -317,6 +317,11 @@ test("public routes return validation errors and page metadata instead of silent
   seen.length = before;
   // A verified crawler is answered and counted as 'bot', so the owner's list shows everyone who called.
   assert.deepEqual(seen, ["bot /market/catalog"]);
+  // A scanner trying paths we do not have gets the same 404 as before and is counted apart from calls that got data.
+  seen.length = 0;
+  for (const path of ["/user/reg.php", "/conf.js"]) assert.equal((await worker.fetch(new Request("https://test" + path), watch)).status, 404, path);
+  assert.deepEqual(seen, ["nopath /user/reg.php", "nopath /conf.js"]);
+  seen.length = 0;
   // A name opens nothing: anyone can type it.
   for (const path of ["/market/catalog", "/prices?ids=2040801"]) assert.equal((await worker.fetch(new Request("https://test" + path, { headers: { "User-Agent": "shop-collector" } }), gate)).status, 403, path);
   // Links opened directly and paths with their own credential are not behind the rule.

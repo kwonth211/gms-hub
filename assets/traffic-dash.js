@@ -105,7 +105,7 @@ ${top ? `<ul class="td-botlist">${top}</ul>` : ''}
 // top few) so nothing blocked goes unseen; a row from a search engine's network is flagged, since that would be a mistake.
 const FW_SOURCE = { firewallCustom: '직접 만든 규칙', firewallcustom: '직접 만든 규칙', firewallManaged: '관리 규칙', firewallmanaged: '관리 규칙', bic: '브라우저 무결성 검사', securitylevel: '보안 수준', securityLevel: '보안 수준', hot: '이미지 도용 방지', ratelimit: '요청 제한', l7ddos: '디도스 방어', botFight: '봇 파이트 모드', botfight: '봇 파이트 모드', validation: '잘못된 요청', waf: '웹 방화벽', uablock: '브라우저 이름 차단', ip: '주소 차단', country: '나라 차단', asn: '통신망 차단', zonelockdown: '구역 잠금' };
 const FW_ACTION = { block: '차단', challenge: '확인 요구', jschallenge: '확인 요구', managed_challenge: '확인 요구', connection_close: '연결 끊음', challenge_failed: '확인 실패', jschallenge_failed: '확인 실패' };
-const WK_REASON = { headless: '화면 없는 크롬', listings: '매물 목록 긁기', outside: '사이트 밖에서 API 호출', rate: '요청 너무 많음', key: '운영자 키 틀림', forbidden: '허용 안 된 요청' };
+const WK_REASON = { nopath: '없는 주소 찌르기 (받은 것 없음)', headless: '화면 없는 크롬', listings: '매물 목록 긁기', outside: '사이트 밖에서 API 호출', rate: '요청 너무 많음', key: '운영자 키 틀림', forbidden: '허용 안 된 요청' };
 const SEARCH_NET = /google|microsoft|naver|kakao|daum|yandex|apple|duckduckgo|baidu|openai/i;
 // Cloud servers rented from the same companies also scan for leaked files; those rows are not search engines.
 const SCAN_PATH = /wp-|\.php|\.env|\.git|\.sql|\.bak/i;
@@ -162,7 +162,7 @@ const apiName = (p) => (API_NAME.find(([re]) => re.test(p)) || [0, '그 밖'])[1
 // Everyone who called the API in one list: answered from outside the site, verified search crawlers and refused calls
 // together, each caller with how many went through and how many were turned away. The owner's own addresses (this
 // browser's, and every address this browser has had: kept in localStorage) are left out of the chart and the list.
-const API_STATE = { watch: ['pass', '통과'], bot: ['bot', '검색 로봇 통과'], outside: ['stop', '차단 · 사이트 밖'], listings: ['stop', '차단 · 매물 목록'], headless: ['stop', '차단 · 화면 없는 크롬'], rate: ['stop', '차단 · 요청 너무 많음'], key: ['stop', '차단 · 키 틀림'], forbidden: ['stop', '차단 · 허용 안 됨'] };
+const API_STATE = { watch: ['pass', '통과'], nopath: ['stop', '없는 주소 · 받은 것 없음'], bot: ['bot', '검색 로봇 통과'], outside: ['stop', '차단 · 사이트 밖'], listings: ['stop', '차단 · 매물 목록'], headless: ['stop', '차단 · 화면 없는 크롬'], rate: ['stop', '차단 · 요청 너무 많음'], key: ['stop', '차단 · 키 틀림'], forbidden: ['stop', '차단 · 허용 안 됨'] };
 const MY_IPS = 'gms-traffic-my-ips';
 function myIps(you) {
   let list = [];

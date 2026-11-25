@@ -1043,6 +1043,7 @@ export default {
     // READ_KEY secret as X-Gms-Key; and the in-game shop collector, which sends its upload token the same way.
     // Verified search crawlers are answered as always; their calls are counted too, so the owner's list shows everyone.
     if (goodBot && req.method !== 'OPTIONS' && !openPath(path)) logBlock(env, req, 'bot');
+    let outsideCall = false;
     if (!goodBot && req.method !== 'OPTIONS' && !openPath(path)) {
       const fs = req.headers.get('Sec-Fetch-Site'), key = req.headers.get('X-Gms-Key') || '';
       const fromSite = ALLOWED_ORIGINS.includes(req.headers.get('Origin') || '') && (!fs || fs === 'cross-site');
@@ -1051,7 +1052,9 @@ export default {
       const ours = Boolean(key) && (await sameSecret(key, env.READ_KEY) || await sameSecret(key, env.SHOP_SCAN_TOKEN));
       // The listing feed is refused as before. Every other path is only counted for now (reason 'watch', shown on the
       // owner's dashboard as calls from outside the site) and refused once API_GATE is "on".
-      if (!fromSite && !ours && !SITE_ONLY.has(path) && env.API_GATE !== 'on') logBlock(env, req, 'watch');
+      // Logged once the answer is known: a path we do not have (a scanner trying /user/reg.php, /conf.js…) is counted as
+      // 'nopath', so the owner's list does not show it as data that went out.
+      if (!fromSite && !ours && !SITE_ONLY.has(path) && env.API_GATE !== 'on') outsideCall = true;
       else if (!fromSite && !ours) {
         logBlock(env, req, path === '/market/listings' ? 'listings' : 'outside');
         return new Response(JSON.stringify({ error: 'This API is served to pages on gms-hub.com. Automated collection is not permitted: https://gms-hub.com/en/terms/' }), { status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
@@ -1068,7 +1071,11 @@ export default {
     if (path === '/usage') return usageAnswer(req, env);
     const e = metered(env);
     // Every other refusal (rate limits, wrong origin, wrong owner key) is recorded for the owner's dashboard by its status.
-    const noted = (res) => { if (res && (res.status === 403 || res.status === 429)) logBlock(env, req, res.status === 429 ? 'rate' : path.startsWith('/internal/') ? 'key' : 'forbidden'); return res; };
+    const noted = (res) => {
+      if (outsideCall) logBlock(env, req, res?.status === 404 ? 'nopath' : 'watch');
+      else if (res && (res.status === 403 || res.status === 429)) logBlock(env, req, res.status === 429 ? 'rate' : path.startsWith('/internal/') ? 'key' : 'forbidden');
+      return res;
+    };
     const out = live ? joinPresence(req, e) : cachedPublicResponse(req, () => api.fetch(req, e, ctx), ctx);
     return out instanceof Promise ? out.then(noted) : noted(out);
   }
