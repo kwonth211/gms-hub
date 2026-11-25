@@ -4678,3 +4678,49 @@ button.trd-slot:focus-visible { outline: 2px solid var(--focus); outline-offset:
 .sc-admin .sp-acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
 
 .brand .logo, .footer-brand .logo { flex: none; display: block; }
+
+/* 거래 신청 (/trade/): the Discord row in the post form, the "takes DMs" mark and the request form under a row. */
+.trd-page { --dc: #5865f2; --dc-deep: #3c45a5; --dc-soft: color-mix(in srgb, #5865f2 8%, var(--panel)); --dc-line: color-mix(in srgb, #5865f2 38%, var(--line)); --dc-ink: color-mix(in srgb, #5865f2 72%, var(--text)); }
+.trd-dm { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 14px; margin-top: 12px; padding: 12px 14px; border: 1.5px solid var(--dc-line); border-radius: 12px; background: var(--dc-soft); }
+/* The Discord button: the same chunky shape as every .btn, in Discord's colour. */
+.btn.trd-dc { display: inline-flex; align-items: center; gap: 6px; background: var(--dc); color: #fff; border: 0; box-shadow: 0 var(--edge) 0 var(--dc-deep); }
+.btn.trd-dc:hover { background: #6d79f6; box-shadow: 0 calc(var(--edge) + 1px) 0 var(--dc-deep); }
+.btn.trd-dc:active { box-shadow: 0 1px 0 var(--dc-deep); }
+.btn.trd-dc[disabled] { background: var(--panel-2); color: var(--muted); box-shadow: 0 var(--edge) 0 var(--line-strong); cursor: default; transform: none; }
+.btn.trd-dc .discord-ico { color: #fff; flex: none; }
+.btn.trd-dc:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.trd-dm[hidden] { display: none; }
+.trd-dm p { margin: 0; flex: 1 1 240px; min-width: 0; }
+.trd-dm b { display: block; font-size: 0.92rem; }
+.trd-dm small { display: block; margin-top: 2px; font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+.trd-dm label { display: flex; align-items: flex-start; gap: 10px; cursor: var(--cur-hand, pointer); }
+.trd-dm input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--dc); flex: none; }
+.trd-dm .btn { white-space: nowrap; }
+.trd-dm input:focus-visible, .trd-dm .btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.trd-list-head, .trd-line-row { grid-template-columns: 64px minmax(0, 2.2fr) minmax(86px, 0.9fr) 78px minmax(0, 1fr) 76px 190px; }
+.trd-dm-badge { display: inline-flex; align-items: center; gap: 3px; margin-top: 2px; padding: 1px 6px 1px 5px; border-radius: 6px; font-size: 0.68rem; font-weight: 800; font-style: normal; color: var(--dc-ink); background: var(--dc-soft); border: 1px solid var(--dc-line); white-space: nowrap; }
+.trd-dm-badge .discord-ico { width: 11px; height: 11px; color: var(--dc); flex: none; }
+.trd-line-row.hit { outline: 2px solid var(--dc); outline-offset: -2px; background: var(--dc-soft); }
+.trd-req { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 12px; padding: 12px 14px 14px; border-bottom: 1px solid var(--line); background: var(--dc-soft); box-shadow: inset 4px 0 0 var(--dc); }
+.trd-req p { margin: 0; flex: 1 1 100%; }
+.trd-req p b { display: block; font-size: 0.92rem; }
+.trd-req p small { display: block; margin-top: 2px; font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+.trd-req .trd-field { flex: 1 1 150px; max-width: 220px; }
+.trd-req .trd-field:nth-of-type(2) { flex: 0 0 110px; }
+.trd-req .btn { white-space: nowrap; padding: 9px 16px; }
+.trd-req .trd-post-status { flex: 1 1 100%; font-size: 0.85rem; }
+.trd-req .trd-post-status:empty { display: none; }
+.trd-req-done { color: var(--ok); }
+.trd-req.warn .trd-req-done { color: var(--text); }
+div.trd-req { align-items: center; }
+div.trd-req p { flex: 1 1 260px; }
+@media (max-width: 860px) {
+  /* Narrow screens: the buttons share the second line with the name of the writer and never squeeze the item name. */
+  .trd-line-row { grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: 'kind item item price' 'vs who act act'; }
+  /* A row that takes requests has three controls: they get a line of their own, so the writer's name stays whole. */
+  .trd-line-row.asks { grid-template-areas: 'kind item item price' 'vs who who who' 'act act act act'; }
+  .trd-c-act { flex-wrap: wrap; row-gap: 4px; }
+  .trd-c-who { flex-wrap: wrap; }
+  .trd-req .trd-field { max-width: none; }
+}
+.trd-c-who small + .trd-dm-badge { margin-left: 6px; }

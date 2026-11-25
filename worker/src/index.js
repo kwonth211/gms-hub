@@ -36,15 +36,15 @@ import { validRoom } from '../../assets/place.js';
 import { handleShopLink } from './shop-preview.js';
 import { trendsToDiscord, marketToDiscord, newsToDiscord, freeMegaToDiscord, freeMegaGoneFromDiscord } from './discord.js';
 import { discordInteractions } from './discord-bot.js';
-import { notifyMegaphones, notifyListings } from './discord-alerts.js';
+import { notifyMegaphones, notifyListings, notifyTradeRequest } from './discord-alerts.js';
 import { oauthStart, oauthCallback } from './discord-oauth.js';
 import { postMegaphones, listMegaphones, pruneMegaphones, megaphoneAsks, megaphoneStats } from './megaphone.js';
-import { listFreeMegas, postFreeMega, deleteFreeMega, reportFreeMega, pruneFreeMegas } from './free-mega.js';
+import { listFreeMegas, postFreeMega, deleteFreeMega, reportFreeMega, pruneFreeMegas, requestTrade } from './free-mega.js';
 import { storeDailyRollups, reportRaw } from './report.js';
 import { count, flushUsage, isOver, meterDb, usageView } from './usage-guard.js';
 import { createAlert, listAlerts, deleteAlert, takeHits, checkAlerts } from './alerts.js';
 import { bodyTooLarge, sameSecret } from './secure.js';
-import { handleAccount, handleAccountAlerts } from './account.js';
+import { handleAccount, handleAccountAlerts, readSession } from './account.js';
 import { Support, handleSupport, handleSupportAdmin } from './support.js';
 import { recordContribution, handleContributors, priceBoardToDiscord, leaderboardToDiscord } from './contributors.js';
 import { recordScamMegaphones, scamList, postScamReport, postScamAppeal, handleScamAdmin, refreshProfiles } from './scam.js';
@@ -713,7 +713,7 @@ const api = {
 
     // 무료 고확: site-written trade posts (free-mega.js). New and removed posts reach every open page over the presence
     // socket at once, like game megaphones; the list itself is edge-cached for 10 s.
-    if (url.pathname === '/free-megas' || url.pathname === '/free-megas/report') {
+    if (url.pathname === '/free-megas' || url.pathname === '/free-megas/report' || url.pathname === '/free-megas/request') {
       const push = (msg) => {
         const p = env.PRESENCE?.get(env.PRESENCE.idFromName('site')).fetch('https://presence/push', { method: 'POST', body: JSON.stringify(msg) }).catch(() => null);
         if (p && ctx?.waitUntil) ctx.waitUntil(p);
@@ -725,7 +725,10 @@ const api = {
       if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
       const who = await visitorHash(req.headers.get('CF-Connecting-IP') || '', 'free-mega', env.VOTE_SALT);
       if (req.method === 'POST' && url.pathname === '/free-megas') {
-        const [out, status] = await postFreeMega(env, await req.json().catch(() => null), who, await knownItems().catch(() => null));
+        // Logged in with Discord: the post remembers its writer, so a 거래 신청 can reach them by DM.
+        const bearer = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+        const writer = bearer ? (await readSession(env.DISCORD_CLIENT_SECRET, bearer).catch(() => null))?.u || null : null;
+        const [out, status] = await postFreeMega(env, await req.json().catch(() => null), who, await knownItems().catch(() => null), writer);
         if (out.row) { out.row = (await named([out.row]))[0]; push({ type: 'free', rows: [out.row] }); ctx?.waitUntil?.(freeMegaToDiscord(env, out.row).catch(() => null)); }
         return json(out, cors, status, 'no-store');
       }
@@ -734,6 +737,11 @@ const api = {
         const msg = (await env.DB.prepare('SELECT discord_msg FROM free_megaphones WHERE id = ?').bind(id).first().catch(() => null))?.discord_msg;
         const [out, status] = await deleteFreeMega(env, id, url.searchParams.get('key'));
         if (out.ok) { push({ type: 'free-gone', id }); ctx?.waitUntil?.(freeMegaGoneFromDiscord(env, msg)); }
+        return json(out, cors, status, 'no-store');
+      }
+      if (req.method === 'POST' && url.pathname === '/free-megas/request') {
+        const [out, status, send] = await requestTrade(env, await req.json().catch(() => null), who);
+        if (send) { const nameOf = await itemLabel().catch(() => null); out.dm = await notifyTradeRequest(env, send, send.post.item && nameOf ? nameOf(send.post.item, send.post.lang === 'en' ? 'en' : 'ko') || nameOf(send.post.item, 'en') : '').catch(() => false); }
         return json(out, cors, status, 'no-store');
       }
       if (req.method === 'POST' && url.pathname === '/free-megas/report') {

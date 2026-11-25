@@ -263,7 +263,7 @@ const T = {
 <h2>브라우저 저장소</h2>
 <p>언어 선택, 즐겨찾기, 추천한 사이트 목록은 사용자의 브라우저(localStorage)에만 저장되고 로그인하지 않으면 서버로 전송되지 않아요. 브라우저의 사이트 데이터를 지우면 함께 지워져요.</p>
 <h2>디스코드 로그인</h2>
-<p>로그인은 선택이에요. 디스코드로 로그인하면 디스코드가 알려 주는 사용자 ID, 표시 이름, 프로필 사진 주소를 Cloudflare에 저장하고, 이 브라우저에 저장된 사이트 설정(내 캐릭터와 사진, 계산기 설정, 퀘스트 체크, 관심 아이템, 화면 설정 등)의 사본을 계정에 함께 저장해 다른 기기에서 불러올 수 있게 해요. 로그인할 때 GMS Hub 디스코드 서버에 함께 가입돼요. 이메일이나 디스코드 비밀번호는 받지 않아요. 로그인 창의 '계정에 저장된 내 설정 지우기'로 언제든 계정의 사본을 지울 수 있고, 계정 정보 삭제도 아래 연락처로 요청할 수 있어요.</p>
+<p>로그인은 선택이에요. 디스코드로 로그인하면 디스코드가 알려 주는 사용자 ID, 표시 이름, 프로필 사진 주소를 Cloudflare에 저장하고, 이 브라우저에 저장된 사이트 설정(내 캐릭터와 사진, 계산기 설정, 퀘스트 체크, 관심 아이템, 화면 설정 등)의 사본을 계정에 함께 저장해 다른 기기에서 불러올 수 있게 해요. 로그인할 때 GMS Hub 디스코드 서버에 함께 가입돼요. 로그인한 채로 팝니다·삽니다 글을 올리고 'DM으로 받기'를 켜 두면 그 글에 디스코드 사용자 ID를 함께 저장하고, 누가 거래 신청을 누를 때 신청한 사람이 적은 게임 닉네임을 디스코드 DM으로 보내요. 이 ID는 다른 사람에게 보이지 않고 글을 지우면 같이 지워져요. 이메일이나 디스코드 비밀번호는 받지 않아요. 로그인 창의 '계정에 저장된 내 설정 지우기'로 언제든 계정의 사본을 지울 수 있고, 계정 정보 삭제도 아래 연락처로 요청할 수 있어요.</p>
 <h2>문의 창</h2>
 <p>오른쪽 아래 버섯 문의 창으로 보낸 글은 운영자에게 전달돼요. 보던 페이지 주소, 브라우저와 운영체제 종류, 화면 크기, 언어가 함께 가요. 로그인한 사람의 글과 답변은 디스코드 사용자 ID와 함께 Cloudflare에 저장하고, '계정에 저장된 내 설정 지우기'를 누르면 같이 지워져요. 비회원의 글은 운영자의 비공개 디스코드 채널로만 가고 보낸 사람의 기록으로 저장하지 않아요. 도배를 막으려고 IP 주소를 되돌릴 수 없는 해시로 바꿔 잠시 세지만 저장하지 않아요.</p>
 <h2>어린이</h2>
@@ -492,7 +492,7 @@ const T = {
 <h2>Browser storage</h2>
 <p>Your language choice, favorites and the list of sites you recommended are stored only in your browser (localStorage) and are not sent to a server unless you log in. Clearing site data in your browser removes them.</p>
 <h2>Discord login</h2>
-<p>Logging in is optional. When you log in with Discord, the user ID, display name and avatar address that Discord shares are stored on Cloudflare, together with a copy of the site settings kept in this browser (your character and its picture, calculator settings, quest checklists, wishlist, display settings and so on) so you can load them on another device. Logging in also adds you to the GMS Hub Discord server. We never receive your email or Discord password. You can delete the copy on your account at any time with "Delete my settings from the account" in the login panel, or ask us to delete your account information at the contact below.</p>
+<p>Logging in is optional. When you log in with Discord, the user ID, display name and avatar address that Discord shares are stored on Cloudflare, together with a copy of the site settings kept in this browser (your character and its picture, calculator settings, quest checklists, wishlist, display settings and so on) so you can load them on another device. Logging in also adds you to the GMS Hub Discord server. When you post a buy or sell line while logged in with "Get trade requests as a Discord DM" ticked, your Discord user ID is stored with that post, and the game name typed by anyone who asks to trade is sent to you as a Discord DM. Nobody else sees the ID, and it is deleted with the post. We never receive your email or Discord password. You can delete the copy on your account at any time with "Delete my settings from the account" in the login panel, or ask us to delete your account information at the contact below.</p>
 <h2>Help window</h2>
 <p>What you send from the mushroom at the bottom right goes to the site owner, with the page address, your browser and operating system type, screen size and language. If you are logged in, your messages and the answers are stored on Cloudflare with your Discord user ID and are removed together with your saved settings. Without a login the message only goes to the owner's private Discord channel and is not stored as your record. To prevent flooding, your IP address is turned into an irreversible hash and counted for a short time, not stored.</p>
 <h2>Children</h2>
@@ -3886,7 +3886,7 @@ ${farmFaq.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')}
         desc: lang === 'ko' ? '글클메 자유시장에 아이템을 얼마에 올려야 팔릴까요? 아이템과 값을 넣으면 최근 7일 동안 그 값대 매물이 몇 개나 팔렸는지, 지금 올리면 몇 번째로 싼지, 빨리 팔 값은 얼마인지 알려 줘요.' : 'What price sells in the MapleStory Classic World Free Market? Enter an item and a price to see the share of listings that sold at that price over 7 days, your place among current listings and the quick-sale price.',
         body: sell, ld: [breadcrumbLd(lang, lang === 'ko' ? '팔릴 가격 계산기' : 'Sell price check', '/tools/sell/'), faqOf(sell)]
       }));
-      const board = tradeBoardBody({ lang, api: config.voteApi, itemsUrl, marketUrl, megaphoneUrl: href(langPath(lang, '/megaphone/')), sellUrl: href(langPath(lang, '/tools/sell/')), scamUrl: href(langPath(lang, '/scam/')) });
+      const board = tradeBoardBody({ lang, api: config.voteApi, itemsUrl, marketUrl, megaphoneUrl: href(langPath(lang, '/megaphone/')), sellUrl: href(langPath(lang, '/tools/sell/')), scamUrl: href(langPath(lang, '/scam/')) , discordIcon: DISCORD_ICON(15) });
       write(path.join(lang, 'trade', 'index.html'), page({
         lang, pageKey: 'trade', pagePath: '/trade/', modules: ['trade-board.js'],
         title: lang === 'ko' ? '글클메 팝니다·삽니다: 무료 거래 게시판, 시세보다 얼마나 비싼지 바로 확인 | GMS Hub' : 'MapleStory Classic World Buy and Sell Board: Post Free, See How Your Price Stands | GMS Hub',

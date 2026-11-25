@@ -174,7 +174,7 @@ test('/거래 posts a free megaphone (site feed + #한국어-거래 card) and ch
 
 test('/거래 팝니다 stores a free megaphone from Discord and posts its card in the trade channel', async () => {
   const sqlite = new DatabaseSync(':memory:');
-  for (const f of ['0020_free_megaphones.sql', '0023_free_mega_discord.sql']) sqlite.exec(fs.readFileSync(new URL(`../worker/migrations/${f}`, import.meta.url), 'utf8'));
+  for (const f of ['0020_free_megaphones.sql', '0023_free_mega_discord.sql', '0032_trade_requests.sql']) sqlite.exec(fs.readFileSync(new URL(`../worker/migrations/${f}`, import.meta.url), 'utf8'));
   const DB = { prepare(sql, args = []) {
     return { bind: (...v) => DB.prepare(sql, v), first: async () => sqlite.prepare(sql).get(...args) ?? null, all: async () => ({ results: sqlite.prepare(sql).all(...args) }),
       run: async () => ({ meta: { changes: Number(sqlite.prepare(sql).run(...args).changes) } }) };
@@ -193,7 +193,7 @@ test('/거래 팝니다 stores a free megaphone from Discord and posts its card 
 
 test('/무료고확 sends a plain message as a free megaphone', async () => {
   const sqlite = new DatabaseSync(':memory:');
-  for (const f of ['0020_free_megaphones.sql', '0023_free_mega_discord.sql']) sqlite.exec(fs.readFileSync(new URL(`../worker/migrations/${f}`, import.meta.url), 'utf8'));
+  for (const f of ['0020_free_megaphones.sql', '0023_free_mega_discord.sql', '0032_trade_requests.sql']) sqlite.exec(fs.readFileSync(new URL(`../worker/migrations/${f}`, import.meta.url), 'utf8'));
   const DB = { prepare(sql, args = []) {
     return { bind: (...v) => DB.prepare(sql, v), first: async () => sqlite.prepare(sql).get(...args) ?? null, all: async () => ({ results: sqlite.prepare(sql).all(...args) }),
       run: async () => ({ meta: { changes: Number(sqlite.prepare(sql).run(...args).changes) } }) };

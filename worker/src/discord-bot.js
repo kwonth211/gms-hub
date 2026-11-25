@@ -287,7 +287,7 @@ export async function handleInteraction(i, { prices, get, discord, fetcher, env 
     const price = shout ? null : parseAmount(String(opt.price?.value ?? ''));
     if (!shout && price == null) return hidden(tr('가격을 알아보지 못했어요. 300만, 3m, 500k 처럼 적어 주세요.', 'Could not read that price. Write it like 3m, 500k or 1,200,000.'));
     const intent = shout ? 'talk' : sub?.name === 'buy' ? 'buy' : 'sell';
-    const [out] = await postFreeMega(env, { nick: String(opt.nick?.value || '').trim(), intent, item: item?.id ?? null, price, text: (shout ? opt.message?.value : opt.note?.value) || '', channel: opt.channel?.value ?? null }, `discord:${user.id}`, null);
+    const [out] = await postFreeMega(env, { nick: String(opt.nick?.value || '').trim(), intent, item: item?.id ?? null, price, text: (shout ? opt.message?.value : opt.note?.value) || '', channel: opt.channel?.value ?? null, lang }, `discord:${user.id}`, null, user.id);
     if (out.error) {
       const ERR = { nick: tr('닉네임은 2~20자로 적어 주세요. 링크와 @는 넣을 수 없어요.', 'Use 2 to 20 characters for the name, without links or @.'), slow: tr('조금 전에 올리셨어요. 2분 뒤에 다시 올려 주세요.', 'You just posted one. Try again in two minutes.'),
         daily: tr('오늘 올릴 수 있는 만큼 올리셨어요. 내일 다시 올려 주세요.', 'That is today\'s limit. Try again tomorrow.'), rmt: tr('현금 거래 글은 올릴 수 없어요.', 'Real-money trades are not allowed.'), empty: tr('할 말을 두 글자 이상 적어 주세요.', 'Write at least two characters.'), link: tr('메모에 링크나 연락처는 넣을 수 없어요.', 'No links or contact handles in the note.'), length: tr('메모는 80자까지예요.', 'The note can be up to 80 characters.') };

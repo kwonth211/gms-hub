@@ -17,6 +17,21 @@ export async function sendDm(env, channel, content) {
   return Boolean(r?.ok);
 }
 
+// 거래 신청 (free-mega.js requestTrade): what the writer of a buy or sell post reads when someone asks to trade.
+// Names go out as code (no mentions, no markup); the link opens the writer's own post on the market page.
+export function tradeRequestMessage({ post, nick, channel, name }, ko = post.lang !== 'en') {
+  const what = `${name ? `${code(name)} ` : ''}${post.price ? `${ko ? won(post.price) : short(post.price)} ` : ''}`;
+  const url = `<https://gms-hub.com/${ko ? 'ko' : 'en'}/trade/?utm_source=discord&utm_medium=trade-request#p-${post.id}>`;
+  const ch = channel ? ` (CH ${channel})` : '';
+  return ko
+    ? `🤝 **거래 신청이 왔어요**\n${what}${post.intent === 'buy' ? '삽니다' : '팝니다'} 글에 ${code(nick)} 님이 신청했어요${ch}.\n게임에서 \`/w ${String(nick).replace(/`/g, "'")}\` 로 귓말하세요.\n거래가 끝나면 글을 내려 주세요: ${url}`
+    : `🤝 **Someone wants to trade**\n${code(nick)} asked about your ${what}${post.intent === 'buy' ? 'buying' : 'selling'} post${ch}.\nWhisper them in game: \`/w ${String(nick).replace(/`/g, "'")}\`\nTake the post down once it is done: ${url}`;
+}
+export async function notifyTradeRequest(env, send, name) {
+  const channel = await dmChannel(env, send.owner);
+  return sendDm(env, channel, tradeRequestMessage({ ...send, name }));
+}
+
 export async function addAlert(env, userId, item, intent, locale, price = null) {
   const have = await env.DB.prepare('SELECT item FROM discord_alerts WHERE user_id = ?').bind(userId).all();
   if (!have.results.some((r) => r.item === item) && have.results.length >= MAX_ALERTS) return { full: true };
@@ -47,6 +62,7 @@ export function parseAmount(text) {
   n = Math.round(n);
   return n >= 1 && n <= 1e10 ? n : null;
 }
+const won = (n) => (n >= 1e8 ? `${+(n / 1e8).toFixed(2)}억` : n >= 1e4 ? `${+(n / 1e4).toFixed(n >= 1e6 ? 0 : 1)}만` : String(n));
 const short = (n) => (n >= 1e6 ? `${+(n / 1e6).toFixed(2)}M` : n >= 1e3 ? `${+(n / 1e3).toFixed(1)}K` : String(n));
 export const priceLabel = (price, intent, ko) => price == null ? '' : intent === 'buy' ? (ko ? `${short(price)} 이상` : `${short(price)} or more`) : (ko ? `${short(price)} 이하` : `${short(price)} or less`);
 // The asking price fits the alert: a seller at or below it, or (for buy alerts) a buyer offering at least it.

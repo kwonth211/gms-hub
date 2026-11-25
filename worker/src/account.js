@@ -74,6 +74,8 @@ export async function handleAccount(req, env, cors) {
   if (req.method === 'DELETE') {
     await env.DB.prepare('DELETE FROM account_data WHERE id = ?').bind(s.u).run();
     await env.DB.prepare('DELETE FROM accounts WHERE id = ?').bind(s.u).run();
+    // Their buy and sell posts stay up but no longer point at them: trade requests stop reaching this account.
+    await env.DB.prepare('UPDATE free_megaphones SET owner = NULL WHERE owner = ?').bind(s.u).run().catch(() => null);
     // Their support thread goes with the account (imported here: support.js reads sessions from this file).
     const { forgetSupport } = await import('./support.js');
     await forgetSupport(env, s.u);

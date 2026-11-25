@@ -18,7 +18,7 @@ test('secrets are compared by digest: equal only when identical, never for empty
 });
 
 test('free megaphone and price-alert writes are refused from any page that is not the site', async () => {
-  for (const [path, method] of [['/free-megas', 'POST'], ['/free-megas/report', 'POST'], ['/free-megas?id=1&key=k', 'DELETE'], ['/alerts', 'POST'], ['/alerts?endpoint=x&item=1', 'DELETE']]) {
+  for (const [path, method] of [['/free-megas', 'POST'], ['/free-megas/report', 'POST'], ['/free-megas/request', 'POST'], ['/free-megas?id=1&key=k', 'DELETE'], ['/alerts', 'POST'], ['/alerts?endpoint=x&item=1', 'DELETE']]) {
     for (const origin of [undefined, 'https://evil.example', 'https://gms-hub.com.evil.example']) {
       const r = await post(path, { origin, method });
       assert.equal(r.status, 403, `${method} ${path} from ${origin}`);
