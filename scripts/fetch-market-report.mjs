@@ -6,7 +6,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 const config = JSON.parse(readFileSync(new URL('../site.config.json', import.meta.url), 'utf8'));
 const file = new URL('../data/market-report.json', import.meta.url);
 const get = async (path) => {
-  const r = await fetch(`${config.voteApi}${path}`, { signal: AbortSignal.timeout(20000) });
+  const r = await fetch(`${config.voteApi}${path}`, { headers: process.env.GMS_READ_KEY ? { 'X-Gms-Key': process.env.GMS_READ_KEY } : {}, signal: AbortSignal.timeout(20000) });
   if (!r.ok) throw new Error(`${path}: HTTP ${r.status}`);
   return r.json();
 };

@@ -1003,6 +1003,8 @@ async function joinPresence(req, env) {
   if (verdict && !verdict.success) return new Response('too many requests', { status: 429, headers: { 'Retry-After': '60' } });
   return handlePresence(req, env);
 }
+// Paths answered without coming from a page of the site: their own credentials, or links opened directly.
+const openPath = (path) => path.startsWith('/internal/') || TRUSTED.has(path) || path.startsWith('/discord/') || path.startsWith('/og/') || path.startsWith('/s/') || path === '/usage' || path === '/presence' || path === '/chat';
 const paused = () => new Response(JSON.stringify({ error: 'paused: monthly budget reached' }), { status: 503, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' } });
 
 export default {
@@ -1025,17 +1027,21 @@ export default {
       logBlock(env, req, 'headless');
       return new Response(JSON.stringify({ error: 'automated browsers are not allowed' }), { status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
     }
-    // The listing feed is served to the site's own pages only (owner approved, 2026-11-18). A browser on gms-hub.com
-    // always sends Origin to this host and, where it sends fetch metadata, marks the request cross-site + cors. Scripts
-    // paging through every listing do not: one address in Israel asked every 2-3 seconds with a copied Referer, no
-    // Origin and "same-origin" metadata; one in New York sent no headers at all. None of our own tools read this path
-    // from outside the site (CI reads /prices/all and /market/catalog, collectors use /internal/, the Discord bot calls
-    // the inner handler). Every other read path stays open, and verified search crawlers pass.
-    if (path === '/market/listings' && req.method === 'GET' && !goodBot) {
-      const fs = req.headers.get('Sec-Fetch-Site'), fm = req.headers.get('Sec-Fetch-Mode');
-      if (!ALLOWED_ORIGINS.includes(req.headers.get('Origin') || '') || (fs && fs !== 'cross-site') || (fm && fm !== 'cors')) {
-        logBlock(env, req, 'listings');
-        return new Response(JSON.stringify({ error: 'Listings are served to pages on gms-hub.com. Automated collection is not permitted: https://gms-hub.com/en/terms/' }), { status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+    // Every public path answers the site's own pages only (owner, 2026-11-25: "모든 api는 우리 사이트 외의 요청은 막히게").
+    // A browser on gms-hub.com always sends Origin to this host and, where it sends fetch metadata, marks the request
+    // cross-site. A script that calls the API by its address does not. First applied to the listing feed (2026-11-18:
+    // one address in Israel paged through it every 2-3 seconds, one in New York sent no headers at all).
+    // Still answered without a page: verified search crawlers; paths with their own credential (/internal/, Discord);
+    // links people and apps open directly (Discord login, share cards /s/ and /og/); the site build, which sends the
+    // READ_KEY secret as X-Gms-Key; and the in-game shop collector's price lookups (it posts with its token, but reads
+    // /prices by its name only: to be moved onto the token).
+    if (!goodBot && req.method !== 'OPTIONS' && !openPath(path)) {
+      const fs = req.headers.get('Sec-Fetch-Site'), key = req.headers.get('X-Gms-Key') || '';
+      const fromSite = ALLOWED_ORIGINS.includes(req.headers.get('Origin') || '') && (!fs || fs === 'cross-site');
+      const ours = (key && env.READ_KEY && key === env.READ_KEY) || (path === '/prices' && req.headers.get('User-Agent') === 'shop-collector');
+      if (!fromSite && !ours) {
+        logBlock(env, req, path === '/market/listings' ? 'listings' : 'outside');
+        return new Response(JSON.stringify({ error: 'This API is served to pages on gms-hub.com. Automated collection is not permitted: https://gms-hub.com/en/terms/' }), { status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
       }
     }
     // Site chat has no page any more, so its socket route is closed (the room code stays in presence.js).

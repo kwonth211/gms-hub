@@ -74,7 +74,7 @@ test('usage: the Worker entry point uses its private baseline and pauses when it
   const { default: worker } = await import('../worker/src/index.js');
   const pending = [], ctx = { waitUntil: p => pending.push(p) };
   const unavailable = { prepare() { throw Error('must not reach the DB without the baseline'); } };
-  const r = await worker.fetch(new Request('https://test.invalid/votes'), { DB: unavailable }, ctx);
+  const r = await worker.fetch(new Request('https://test.invalid/votes', { headers: { Origin: 'https://gms-hub.com' } }), { DB: unavailable }, ctx);
   await Promise.all(pending);
   assert.equal(r.status, 503);
   const raw = fakeD1(new Map());

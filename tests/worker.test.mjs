@@ -120,7 +120,7 @@ test('price summaries do not discard sold prices merely because asking prices ar
   const env = environment();
   for (const [price, kind] of [[10, 'sold'], [12, 'sold'], [14, 'sold'], [1000, 'selling'], [1100, 'selling'], [1200, 'selling']])
     env.sqlite.prepare("INSERT INTO prices (item, price, kind, reporter) VALUES (4000000, ?, ?, 'test')").run(price, kind);
-  const r = await worker.fetch(new Request('https://test.invalid/prices?ids=4000000'), env);
+  const r = await worker.fetch(new Request('https://test.invalid/prices?ids=4000000', { headers: { Origin: 'https://gms-hub.com' } }), env);
   const summary = (await r.json())['4000000'];
   assert.equal(summary.sold.median, 12); assert.equal(summary.selling.median, 1100);
   assert.equal(summary.basis, 'sold'); assert.equal(summary.median, 12);
@@ -130,7 +130,7 @@ test('rankings publish a median with an explicit sold/asking basis and matching 
   const env = environment();
   await send(env, '/listings', { items: [row, { ...row, price: 10, sold: true }, { ...row, price: 14, sold: true }] });
   env.sqlite.exec('INSERT OR IGNORE INTO listing_history SELECT id,item,price,qty,sold,seller,channel,room,last_seen FROM listings');
-  const res = await worker.fetch(new Request('https://test.invalid/market/top'), env);
+  const res = await worker.fetch(new Request('https://test.invalid/market/top', { headers: { Origin: 'https://gms-hub.com' } }), env);
   const data = await res.json();
   assert.equal(data.items[0].median, 12);
   assert.equal(data.items[0].basis, 'sold');
@@ -142,7 +142,7 @@ test('item details disclose truncation and return the latest 400 observations de
   const env = environment();
   const insert = env.sqlite.prepare("INSERT INTO listings (item, price, seller, channel, room, reporter) VALUES (4000000, ?, 'Test', 1, 1, 'test')");
   for (let i = 1; i <= 401; i++) insert.run(i);
-  const get = async () => (await worker.fetch(new Request('https://test.invalid/market/item?id=4000000'), env)).json();
+  const get = async () => (await worker.fetch(new Request('https://test.invalid/market/item?id=4000000', { headers: { Origin: 'https://gms-hub.com' } }), env)).json();
   const data = await get();
   assert.equal(data.limit, 400);
   assert.equal(data.truncated, true);
@@ -172,7 +172,7 @@ test('one stray sale never outranks many asking prices in the headline', async (
   const env = environment();
   for (const [price, kind] of [[50, 'sold'], [200, 'selling'], [210, 'selling'], [220, 'selling'], [230, 'selling']])
     env.sqlite.prepare("INSERT INTO prices (item, price, kind, reporter) VALUES (4000000, ?, ?, 'test')").run(price, kind);
-  const summary = (await (await worker.fetch(new Request('https://test.invalid/prices?ids=4000000'), env)).json())['4000000'];
+  const summary = (await (await worker.fetch(new Request('https://test.invalid/prices?ids=4000000', { headers: { Origin: 'https://gms-hub.com' } }), env)).json())['4000000'];
   assert.equal(summary.basis, 'selling'); assert.equal(summary.median, 215); assert.equal(summary.sold.n, 1);
 });
 
@@ -182,7 +182,7 @@ test('the 7-day line counts a listing on every day between its first and last si
   // First seen two days ago, still listed now at the same price: on sale on all three days.
   env.sqlite.exec("UPDATE listings SET first_seen = datetime('now','-2 days','-1 hour')");
   await send(env, '/listings', { items: [{ ...row, seller: 'Other', price: 80 }] });
-  const data = await (await worker.fetch(new Request('https://test.invalid/market/top'), env)).json();
+  const data = await (await worker.fetch(new Request('https://test.invalid/market/top', { headers: { Origin: 'https://gms-hub.com' } }), env)).json();
   const spark = data.items[0].spark;
   assert.deepEqual(spark.slice(-3), [100, 100, 90]);
   // Hour by hour the first shop fills the whole day; the second only the last hour.
@@ -190,7 +190,7 @@ test('the 7-day line counts a listing on every day between its first and last si
   assert.equal(hours.length, 24);
   assert.equal(hours[0], 100);
   assert.equal(hours.at(-1), 90);
-  const hist = await (await worker.fetch(new Request('https://test.invalid/market/history?id=4000000'), env)).json();
+  const hist = await (await worker.fetch(new Request('https://test.invalid/market/history?id=4000000', { headers: { Origin: 'https://gms-hub.com' } }), env)).json();
   assert.equal(hist.rows.length, 4, 'three days of the first shop plus one of the second');
 });
 
@@ -224,7 +224,7 @@ test('prices fall back to the reference price for items with no scans or reports
   const env = environment();
   env.sqlite.exec("INSERT INTO item_summary (item, typical, day, week, sales, at) VALUES (4000000, 5000, 2, -3, 40, '2026-11-11 10:00:00'), (4000001, 7000, null, null, 3, '2026-11-11 10:00:00')");
   await send(env, '/listings', { items: [{ ...row, price: 6500 }] });
-  const out = await (await worker.fetch(new Request('https://test.invalid/prices?ids=4000000,4000001'), env)).json();
+  const out = await (await worker.fetch(new Request('https://test.invalid/prices?ids=4000000,4000001', { headers: { Origin: 'https://gms-hub.com' } }), env)).json();
   assert.equal(out['4000001'].basis, 'typical'); assert.equal(out['4000001'].median, 7000); assert.equal(out['4000001'].n, 0);
   assert.equal(out['4000000'].basis, 'selling'); assert.equal(out['4000000'].median, 6500); assert.equal(out['4000000'].typical.price, 5000);
 });
@@ -238,7 +238,7 @@ test('megaphones need the token, dedupe repeats within ten minutes and list newe
   assert.equal((await post([row, { ...row, nick: 'suinosora', color: 'P', text: 'S > earring crit dmg 60% 380k ea' }])).accepted, 2);
   assert.equal((await post([row])).accepted, 0);
   assert.equal((await post([{ ...row, nick: 'bad nick!' }])).accepted, 0);
-  const list = await (await worker.fetch(new Request('https://test.invalid/megaphones'), env)).json();
+  const list = await (await worker.fetch(new Request('https://test.invalid/megaphones', { headers: { Origin: 'https://gms-hub.com' } }), env)).json();
   assert.equal(list.rows.length, 2); assert.equal(list.rows[0].nick, 'suinosora'); assert.equal(list.rows[1].color, 'Y');
 });
 
@@ -248,7 +248,7 @@ test('megaphone tooltip options survive authenticated ingest and public reads wi
   const rows = [{ seen: new Date().toISOString(), kind: 'item', color: 'Y', nick: 'Seller', channel: 11, text: '[Vaulter 2000] S> offer', opts }, { seen: new Date().toISOString(), kind: 'item', nick: 'ScrollSeller', text: '[Claw Attack Scroll: Intermediate] S> 400k', opts: { scroll: { chance: 60, stats: { PAD: 2 } } } }];
   const response = await worker.fetch(new Request('https://test.invalid/internal/megaphone', { method: 'POST', headers: { Authorization: 'Bearer mega-test' }, body: JSON.stringify({ rows }) }), env);
   assert.equal((await response.json()).accepted, 2);
-  const list = await (await worker.fetch(new Request('https://test.invalid/megaphones'), env)).json();
+  const list = await (await worker.fetch(new Request('https://test.invalid/megaphones', { headers: { Origin: 'https://gms-hub.com' } }), env)).json();
   assert.deepEqual(list.rows.find((r) => r.nick === 'Seller').opts, opts);
   assert.deepEqual(list.rows.find((r) => r.nick === 'ScrollSeller').opts, { scroll: { chance: 60, stats: { PAD: 2 } } });
 });
@@ -266,7 +266,7 @@ test('price summaries are cached per item, so overlapping id lists only read the
     const listingReads = [];
     const prepare = env.DB.prepare.bind(env.DB);
     env.DB.prepare = (sql, args) => { if (args && sql.includes('FROM listings')) listingReads.push(sql); return prepare(sql, args); };
-    const get = async (ids) => (await worker.fetch(new Request('https://test.invalid/prices?ids=' + ids), env)).json();
+    const get = async (ids) => (await worker.fetch(new Request('https://test.invalid/prices?ids=' + ids, { headers: { Origin: 'https://gms-hub.com' } }), env)).json();
     const a = await get('4000000');
     assert.equal(a['4000000'].median, 110);
     assert.equal(listingReads.length, 1);
@@ -295,7 +295,7 @@ test('live megaphone pushes preserve the same validated options as public reads'
   assert.equal(res.status, 200);
   await Promise.all(pending);
   const live = pushes.find(p => p.type === 'megaphones').rows;
-  const saved = (await (await worker.fetch(new Request('https://test.invalid/megaphones'), env)).json()).rows;
+  const saved = (await (await worker.fetch(new Request('https://test.invalid/megaphones', { headers: { Origin: 'https://gms-hub.com' } }), env)).json()).rows;
   for (const row of live) {
     assert.deepEqual(row.opts, rows.find(r => r.nick === row.nick).opts);
     assert.deepEqual(row.opts, saved.find(r => r.id === row.id).opts);

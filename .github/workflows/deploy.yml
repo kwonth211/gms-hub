@@ -48,10 +48,20 @@ jobs:
         with:
           node-version: 22
       - run: node scripts/fetch-item-prices.mjs
+        env:
+          GMS_READ_KEY: ${{ secrets.GMS_READ_KEY }}
       - run: node scripts/fetch-market-report.mjs
+        env:
+          GMS_READ_KEY: ${{ secrets.GMS_READ_KEY }}
       - run: node scripts/fetch-weekly-report.mjs
+        env:
+          GMS_READ_KEY: ${{ secrets.GMS_READ_KEY }}
       - run: node scripts/fetch-official-news.mjs
+        env:
+          GMS_READ_KEY: ${{ secrets.GMS_READ_KEY }}
       - run: node scripts/fetch-page-snapshots.mjs
+        env:
+          GMS_READ_KEY: ${{ secrets.GMS_READ_KEY }}
       - name: Build and verify content publication rules
         run: node --test tests/content.test.mjs tests/monsters.test.mjs tests/collection-status.test.mjs tests/google-consent.test.mjs tests/product-analytics.test.mjs tests/hero-storm.test.mjs
       # Pages whose content differs from the live site, for IndexNow (Naver, Bing) once this deploy is live.

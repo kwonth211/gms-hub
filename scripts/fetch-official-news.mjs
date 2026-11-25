@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 const config = JSON.parse(readFileSync(new URL('../site.config.json', import.meta.url), 'utf8'));
 const file = new URL('../data/official-news.json', import.meta.url);
 try {
-  const r = await fetch(`${config.voteApi}/news`, { signal: AbortSignal.timeout(20000) });
+  const r = await fetch(`${config.voteApi}/news`, { headers: process.env.GMS_READ_KEY ? { 'X-Gms-Key': process.env.GMS_READ_KEY } : {}, signal: AbortSignal.timeout(20000) });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   const d = await r.json();
   if (!d.items?.length) throw new Error('empty list');

@@ -41,7 +41,9 @@ async function graphql(query) {
   if (d.errors?.length) throw new Error(d.errors.map((e) => e.message).join('; '));
   return d.data.viewer.accounts[0];
 }
-async function getJson(url) { try { const r = await fetch(url, { signal: AbortSignal.timeout(15000) }); return r.ok ? await r.json() : { error: r.status }; } catch (e) { return { error: e.message }; } }
+// The public API answers pages of the site only; our own tools send the read key (worker secret READ_KEY).
+const readKey = (() => { try { return fs.readFileSync(`${os.homedir()}/.config/gms-hub/read-key`, 'utf8').trim(); } catch { return ''; } })();
+async function getJson(url) { try { const r = await fetch(url, { headers: readKey ? { 'X-Gms-Key': readKey } : {}, signal: AbortSignal.timeout(15000) }); return r.ok ? await r.json() : { error: r.status }; } catch (e) { return { error: e.message }; } }
 
 // ---------- traffic (Cloudflare Web Analytics, sampled) ----------
 const kind = (p) => {

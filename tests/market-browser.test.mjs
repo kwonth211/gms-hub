@@ -285,7 +285,20 @@ test("public routes return validation errors and page metadata instead of silent
       (await worker.fetch(new Request("https://test/market/listings", { headers }), e)).status,
       403,
     );
-  assert.equal((await worker.fetch(new Request("https://test/market/catalog"), e)).status, 200);
+  // Every other public read follows the same rule (owner, 2026-11-25): pages of the site, verified crawlers and the
+  // site build's key pass; a script calling the address is refused. The in-game shop collector still reads /prices.
+  for (const path of ["/market/catalog", "/market/history?id=2040801", "/prices?ids=2040801", "/megaphones", "/market/item?id=2040801", "/listings/recent"])
+    for (const headers of [{}, { Referer: "https://gms-hub.com/" }, { Origin: "https://example.com" }, { "X-Gms-Key": "wrong" }])
+      assert.equal((await worker.fetch(new Request("https://test" + path, { headers }), e)).status, 403, path);
+  assert.equal((await worker.fetch(new Request("https://test/market/catalog", SITE), e)).status, 200);
+  assert.equal((await worker.fetch(new Request("https://test/market/catalog", { headers: { "X-Gms-Key": "build-key" } }), { ...e, READ_KEY: "build-key" })).status, 200);
+  const crawler = new Request("https://test/market/catalog");
+  Object.defineProperty(crawler, "cf", { value: { verifiedBotCategory: "Search Engine Crawler" } });
+  assert.equal((await worker.fetch(crawler, e)).status, 200);
+  assert.equal((await worker.fetch(new Request("https://test/prices?ids=2040801", { headers: { "User-Agent": "shop-collector" } }), e)).status, 200);
+  assert.equal((await worker.fetch(new Request("https://test/market/catalog", { headers: { "User-Agent": "shop-collector" } }), e)).status, 403);
+  // Links opened directly and paths with their own credential are not behind the rule.
+  assert.notEqual((await worker.fetch(new Request("https://test/internal/shop-scan", { method: "POST", body: "{}" }), e)).status, 403);
   assert.equal(
     (
       await worker.fetch(
@@ -296,7 +309,7 @@ test("public routes return validation errors and page metadata instead of silent
     400,
   );
   assert.equal(
-    (await worker.fetch(new Request("https://test/market/history?id=no"), e))
+    (await worker.fetch(new Request("https://test/market/history?id=no", SITE), e))
       .status,
     400,
   );

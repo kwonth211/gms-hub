@@ -6,7 +6,7 @@ const config = JSON.parse(readFileSync(new URL('../site.config.json', import.met
 const file = new URL('../data/item-prices.json', import.meta.url);
 
 try {
-  const r = await fetch(`${config.voteApi}/prices/all`, { signal: AbortSignal.timeout(20000) });
+  const r = await fetch(`${config.voteApi}/prices/all`, { headers: process.env.GMS_READ_KEY ? { 'X-Gms-Key': process.env.GMS_READ_KEY } : {}, signal: AbortSignal.timeout(20000) });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   const prices = await r.json();
   if (!prices || typeof prices !== 'object' || Array.isArray(prices)) throw new Error('unexpected body');
@@ -14,7 +14,7 @@ try {
   // stats: [records, shops, sold, soldMedian, typicalDay] over the catalog window (7 days), for each item's own sentences.
   let now = {}, recent = {}, stats = {};
   try {
-    const c = await fetch(`${config.voteApi}/market/catalog`, { signal: AbortSignal.timeout(20000) }).then((r) => (r.ok ? r.json() : null));
+    const c = await fetch(`${config.voteApi}/market/catalog`, { headers: process.env.GMS_READ_KEY ? { 'X-Gms-Key': process.env.GMS_READ_KEY } : {}, signal: AbortSignal.timeout(20000) }).then((r) => (r.ok ? r.json() : null));
     for (const r of c?.items || []) {
       if (r.records > 0) stats[r.item] = [r.records, r.shops || 0, r.sold || 0, r.soldMedian ?? null, r.typicalDay ?? null];
       if (r.open > 0 && r.median != null) now[r.item] = [r.median, r.low, r.open];
