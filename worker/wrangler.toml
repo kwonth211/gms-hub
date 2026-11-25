@@ -8,6 +8,10 @@ routes = [{ pattern = "gms-hub.com/s/*", zone_name = "gms-hub.com" }, { pattern 
 workers_dev = true
 
 [vars]
+# Every public API path answers pages of gms-hub.com only (owner 2026-11-25: "모든 api는 우리 사이트 외의 요청은 막히게").
+# Still open: verified crawlers, /internal/ and Discord paths, share cards, the build (X-Gms-Key = READ_KEY) and the shop
+# collector (X-Gms-Key = its upload token). Set to "off" to only count outside calls again.
+API_GATE = "on"
 # Cloudflare account that holds the gms-hub.com Web Analytics site (read by src/traffic.js with the CF_ANALYTICS_TOKEN secret).
 CF_ACCOUNT_ID = "2d797e9348660f2d5a228739b19cd956"
 # The gms-hub.com zone: firewall events (blocked requests) on the owner dashboard are read from it.
