@@ -1037,16 +1037,15 @@ export default {
     // one address in Israel paged through it every 2-3 seconds, one in New York sent no headers at all).
     // Still answered without a page: verified search crawlers; paths with their own credential (/internal/, Discord);
     // links people and apps open directly (Discord login, share cards /s/ and /og/); the site build, which sends the
-    // READ_KEY secret as X-Gms-Key; and the in-game shop collector's price lookups (it posts with its token, but reads
-    // /prices by its name only: to be moved onto the token).
+    // READ_KEY secret as X-Gms-Key; and the in-game shop collector, which sends its upload token the same way.
     // Verified search crawlers are answered as always; their calls are counted too, so the owner's list shows everyone.
     if (goodBot && req.method !== 'OPTIONS' && !openPath(path)) logBlock(env, req, 'bot');
     if (!goodBot && req.method !== 'OPTIONS' && !openPath(path)) {
       const fs = req.headers.get('Sec-Fetch-Site'), key = req.headers.get('X-Gms-Key') || '';
       const fromSite = ALLOWED_ORIGINS.includes(req.headers.get('Origin') || '') && (!fs || fs === 'cross-site');
-      // The in-game shop collector may read with the token it already uploads with, sent as X-Gms-Key. Its name alone
-      // still opens /prices until the collector sends the key; then that exception goes.
-      const ours = (key && (await sameSecret(key, env.READ_KEY) || await sameSecret(key, env.SHOP_SCAN_TOKEN))) || (path === '/prices' && req.headers.get('User-Agent') === 'shop-collector');
+      // The in-game shop collector reads with the token it already uploads with, sent as X-Gms-Key (its name alone
+      // opened /prices until 2026-11-25).
+      const ours = Boolean(key) && (await sameSecret(key, env.READ_KEY) || await sameSecret(key, env.SHOP_SCAN_TOKEN));
       // The listing feed is refused as before. Every other path is only counted for now (reason 'watch', shown on the
       // owner's dashboard as calls from outside the site) and refused once API_GATE is "on".
       if (!fromSite && !ours && !SITE_ONLY.has(path) && env.API_GATE !== 'on') logBlock(env, req, 'watch');

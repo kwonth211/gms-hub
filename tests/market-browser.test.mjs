@@ -306,7 +306,7 @@ test("public routes return validation errors and page metadata instead of silent
   seen.length = 0;
   const crawler = new Request("https://test/market/catalog");
   Object.defineProperty(crawler, "cf", { value: { verifiedBotCategory: "Search Engine Crawler" } });
-  for (const req of [new Request("https://test/market/catalog", SITE), new Request("https://test/market/catalog", { headers: { "X-Gms-Key": "build-key" } }), crawler, new Request("https://test/prices?ids=2040801", { headers: { "User-Agent": "shop-collector" } })])
+  for (const req of [new Request("https://test/market/catalog", SITE), new Request("https://test/market/catalog", { headers: { "X-Gms-Key": "build-key" } }), crawler])
     assert.equal((await worker.fetch(req, { ...gate, READ_KEY: "build-key" })).status, 200);
   // The in-game shop collector reads with the token it uploads with; a wrong or empty key opens nothing.
   const scan = { ...gate, SHOP_SCAN_TOKEN: "scan-token" };
@@ -317,7 +317,8 @@ test("public routes return validation errors and page metadata instead of silent
   seen.length = before;
   // A verified crawler is answered and counted as 'bot', so the owner's list shows everyone who called.
   assert.deepEqual(seen, ["bot /market/catalog"]);
-  assert.equal((await worker.fetch(new Request("https://test/market/catalog", { headers: { "User-Agent": "shop-collector" } }), gate)).status, 403);
+  // A name opens nothing: anyone can type it.
+  for (const path of ["/market/catalog", "/prices?ids=2040801"]) assert.equal((await worker.fetch(new Request("https://test" + path, { headers: { "User-Agent": "shop-collector" } }), gate)).status, 403, path);
   // Links opened directly and paths with their own credential are not behind the rule.
   assert.notEqual((await worker.fetch(new Request("https://test/internal/shop-scan", { method: "POST", body: "{}" }), e)).status, 403);
   assert.equal(
