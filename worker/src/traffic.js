@@ -125,11 +125,11 @@ async function workerBlocks(env, from, to) {
   try {
     // 'watch' rows are calls from outside the site that were answered, not refused: they are reported apart (outside).
     const [rows, hours, all] = await Promise.all([
-      sql(`SELECT blob1 AS reason, blob2 AS path, blob3 AS country, blob4 AS org, blob5 AS ua, blob6 AS ip, sum(_sample_interval) AS n FROM ${AE_SET} WHERE ${range} AND blob1 NOT IN ('watch', 'bot') GROUP BY reason, path, country, org, ua, ip ORDER BY n DESC LIMIT 400`),
-      sql(`SELECT intDiv(toUInt32(timestamp), 3600) AS h, sum(_sample_interval) AS n FROM ${AE_SET} WHERE ${range} AND blob1 NOT IN ('watch', 'bot') GROUP BY h ORDER BY h`),
+      sql(`SELECT blob1 AS reason, blob2 AS path, blob3 AS country, blob4 AS org, blob5 AS ua, blob6 AS ip, sum(_sample_interval) AS n FROM ${AE_SET} WHERE ${range} AND blob1 NOT IN ('watch', 'bot', 'adstxt') GROUP BY reason, path, country, org, ua, ip ORDER BY n DESC LIMIT 400`),
+      sql(`SELECT intDiv(toUInt32(timestamp), 3600) AS h, sum(_sample_interval) AS n FROM ${AE_SET} WHERE ${range} AND blob1 NOT IN ('watch', 'bot', 'adstxt') GROUP BY h ORDER BY h`),
       // Every counted API call with its hour: answered from outside the site (watch), verified crawlers (bot) and every
       // refusal. The page builds one list and one chart from these, leaving out the owner's own addresses.
-      sql(`SELECT intDiv(toUInt32(timestamp), 3600) AS h, blob1 AS reason, blob2 AS path, blob3 AS country, blob4 AS org, blob5 AS ua, blob6 AS ip, sum(_sample_interval) AS n FROM ${AE_SET} WHERE ${range} GROUP BY h, reason, path, country, org, ua, ip ORDER BY n DESC LIMIT 4000`)
+      sql(`SELECT intDiv(toUInt32(timestamp), 3600) AS h, blob1 AS reason, blob2 AS path, blob3 AS country, blob4 AS org, blob5 AS ua, blob6 AS ip, sum(_sample_interval) AS n FROM ${AE_SET} WHERE ${range} AND blob1 != 'adstxt' GROUP BY h, reason, path, country, org, ua, ip ORDER BY n DESC LIMIT 4000`)
     ]);
     const num = (list) => list.map((r) => ({ ...r, n: Number(r.n) })), byHour = (list) => list.map((r) => [Number(r.h) * HOUR, Number(r.n)]);
     return { rows: num(rows), hours: byHour(hours), all: all.map((r) => ({ ...r, n: Number(r.n), h: Number(r.h) * HOUR })) };
@@ -150,6 +150,16 @@ export async function blockedReport(env, from, to) {
 }
 
 // One data point per refused API request. Never awaited and never allowed to throw: a refusal must cost nothing extra.
+// Who reads /ads.txt (owner, 2026-11-26): AdSense listed it as "not found" for weeks while it served fine, so every fetch
+// is noted (reason 'adstxt', kept out of the refusal views) and GET /internal/adstxt lists the last 30 days.
+export async function adsTxtReads(env, now = Date.now()) {
+  const q = `SELECT toUInt32(timestamp) AS t, blob3 AS country, blob4 AS org, blob5 AS ua, blob6 AS ip FROM ${AE_SET} WHERE blob1 = 'adstxt' AND timestamp >= toDateTime(${Math.floor(now / 1000) - 30 * 86400}) ORDER BY t DESC LIMIT 500 FORMAT JSON`;
+  const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/analytics_engine/sql`, { method: 'POST', headers: { Authorization: `Bearer ${env.CF_ANALYTICS_TOKEN}` }, body: q });
+  const t = await r.text();
+  if (!r.ok) return /unable to find|does not exist|unknown table/i.test(t) ? [] : { error: t.slice(0, 160) };
+  return (JSON.parse(t).data || []).map((x) => ({ ...x, t: new Date(Number(x.t) * 1000).toISOString() }));
+}
+
 export function logBlock(env, req, reason) {
   try {
     const cf = req.cf || {};

@@ -30,7 +30,7 @@ import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoint
 import { cachedPublicResponse } from './public-cache.js';
 import { refreshNews } from './news.js';
 import { Presence, handlePresence, handlePresencePeak } from './presence.js';
-import { handleToolReport, handleTraffic, logBlock } from './traffic.js';
+import { adsTxtReads, handleToolReport, handleTraffic, logBlock } from './traffic.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
 import { validRoom } from '../../assets/place.js';
 import { handleShopLink } from './shop-preview.js';
@@ -491,6 +491,8 @@ const api = {
     // gms-hub.com/s/<name>: short shop link with a link preview (src/shop-preview.js, worker route on the site's zone).
     if (new URL(req.url).pathname.startsWith('/s/')) return handleShopLink(req, env, ctx, await itemLabel());
     if (new URL(req.url).pathname.startsWith('/og/item/')) return itemCard(req, env, ctx);
+    // gms-hub.com/ads.txt (worker route): note who read it, then hand the request to the site unchanged.
+    if (new URL(req.url).pathname === '/ads.txt' && new URL(req.url).hostname === 'gms-hub.com') { logBlock(env, req, 'adstxt'); return fetch(req); }
     if (/^\/og\/(monster|quest)\//.test(new URL(req.url).pathname)) return pageCard(req, ctx);
     const url = new URL(req.url);
     const origin = req.headers.get('Origin') || '';
@@ -518,6 +520,7 @@ const api = {
     if (url.pathname === '/internal/market-boost') return handleMarketBoost(req, env);
     if (url.pathname === '/internal/mail/send' && req.method === 'POST') return handleSendMail(req, env);
     if (url.pathname === '/internal/presence-peak' && req.method === 'GET') return handlePresencePeak(req, env);
+    if (url.pathname === '/internal/adstxt' && req.method === 'GET') return ownerOnly(req, env) ? Response.json(await adsTxtReads(env)) : new Response('forbidden', { status: 403 });
     if (url.pathname === '/tool-report' && req.method === 'POST') {
       if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
       const out = await handleToolReport(req, env);

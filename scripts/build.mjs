@@ -65,6 +65,9 @@ const LANGS = ['ko', 'en'];
 const LOCALES = loadLocales(root);
 const ALL_LANGS = [...LANGS, ...LOCALES.map((l) => l.code)];
 const HREFLANG = { ko: 'ko', en: 'en', ...Object.fromEntries(LOCALES.map((l) => [l.code, l.hreflang])) };
+// Korean and English pages offer only Korean and English in the language menu (owner, 2026-11-26, AdSense review): the
+// zh/ja copies are half-translated and noindex, so they are not linked from every page. zh/ja pages keep the full menu.
+const MENU_LANGS = (lang) => (lang === 'ko' || lang === 'en' ? ['ko', 'en'] : ALL_LANGS);
 // Search Console (28 days to 2026-11-12): the machine-translated zh/ja database pages (one per item, monster, map and
 // quest, about 2,600 of them) drew 2 impressions, and most sat in "crawled - currently not indexed", diluting the site.
 // They stay on the site for visitors but are noindex, out of the sitemap and out of hreflang; zh/ja keep the home,
@@ -906,7 +909,7 @@ ${'' /* Site-wide "Log in with Discord" (assets/account.js, owner 2026-11-21): o
 ${'' /* Header Discord icon opens the Discord page first (owner, 2026-11-15/16): it offers both adding the bot and joining
    the community. Do not point it straight at the invite (tests/content.test.mjs checks this). */}
 ${config.discord ? `<a class="theme-toggle discord-link" href="${href(langPath(lang, config.discordBotInstall ? '/discord-bot/' : '/contact/'))}" data-discord="header" aria-label="${lang === 'ko' ? '디스코드 커뮤니티' : 'Discord community'}" title="${lang === 'ko' ? '디스코드 커뮤니티' : 'Discord community'}">${DISCORD_ICON(20)}</a>` : ''}
-<details class="lang-menu"><summary class="lang-current" aria-label="Language"><span class="lang-full" translate="no">${LANG_NAMES[lang]}</span><span class="lang-code" translate="no" aria-hidden="true">${lang.toUpperCase()}</span></summary><div class="lang-list">${(only ? [lang, ...ALL_LANGS.filter((l) => l !== lang)] : ALL_LANGS).map((l) => `<a class="lang-opt" href="${href(langPath(l, only && l !== lang ? '/' : pagePath || '/'))}" data-lang="${l}" hreflang="${HREFLANG[l]}" lang="${HREFLANG[l]}"${l === lang ? ' aria-current="true"' : ''}>${LANG_NAMES[l]}</a>`).join('')}</div></details>
+<details class="lang-menu"><summary class="lang-current" aria-label="Language"><span class="lang-full" translate="no">${LANG_NAMES[lang]}</span><span class="lang-code" translate="no" aria-hidden="true">${lang.toUpperCase()}</span></summary><div class="lang-list">${(only ? [lang, ...ALL_LANGS.filter((l) => l !== lang)] : MENU_LANGS(lang)).map((l) => `<a class="lang-opt" href="${href(langPath(l, only && l !== lang ? '/' : pagePath || '/'))}" data-lang="${l}" hreflang="${HREFLANG[l]}" lang="${HREFLANG[l]}"${l === lang ? ' aria-current="true"' : ''}>${LANG_NAMES[l]}</a>`).join('')}</div></details>
 ${moreMenu(lang)}
 </div></header>`;
 }
@@ -4038,7 +4041,7 @@ location.replace('${config.basePath}/'+lang+'/'+q);})();
 <meta name="twitter:card" content="summary_large_image">
 ${shareImageTags('en')}
 <link rel="canonical" href="${absUrl(langPath('en', '/'))}">
-${ALL_LANGS.map((l) => `<link rel="alternate" hreflang="${HREFLANG[l]}" href="${absUrl(langPath(l, '/'))}">`).join('\n')}
+${['ko', 'en'].map((l) => `<link rel="alternate" hreflang="${HREFLANG[l]}" href="${absUrl(langPath(l, '/'))}">`).join('\n')}
 <link rel="alternate" hreflang="x-default" href="${absUrl(langPath('en', '/'))}">
 ${config.naverSiteVerification ? `<meta name="naver-site-verification" content="${esc(config.naverSiteVerification)}">` : ''}
 <link rel="icon" href="${href('/assets/favicon.svg?v=b1')}" type="image/svg+xml">
