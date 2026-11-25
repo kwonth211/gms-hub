@@ -248,7 +248,7 @@ const T = {
 <h2>쿠키와 광고</h2>
 <p>이 사이트는 Google AdSense 광고를 게재할 수 있어요. Google을 비롯한 제3자 광고 업체는 쿠키를 사용해 사용자가 이 사이트나 다른 사이트를 방문한 기록을 바탕으로 광고를 보여줘요. Google은 광고 쿠키로 사용자에게 맞춤 광고를 제공해요.</p>
 <p>맞춤 광고는 <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google 광고 설정</a>에서 끌 수 있고, 다른 광고 업체의 맞춤 광고는 <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener">aboutads.info</a>에서 끌 수 있어요. 맞춤 광고를 꺼도 일반 광고는 보일 수 있어요. 자세한 내용은 <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">Google이 파트너 사이트의 정보를 사용하는 방식</a>을 참고하세요.</p>
-<p>지금 사이트에 보이는 광고는 카카오의 광고 플랫폼 AdFit이 보내요. AdFit도 광고를 보여 주고 성과를 재기 위해 쿠키 같은 기술을 쓸 수 있어요. 자세한 내용은 <a href="https://www.kakao.com/policy/privacy" target="_blank" rel="noopener">카카오 개인정보처리방침</a>을 참고하세요.</p>
+${config.adfit ? `<p>지금 사이트에 보이는 광고는 카카오의 광고 플랫폼 AdFit이 보내요. AdFit도 광고를 보여 주고 성과를 재기 위해 쿠키 같은 기술을 쓸 수 있어요. 자세한 내용은 <a href="https://www.kakao.com/policy/privacy" target="_blank" rel="noopener">카카오 개인정보처리방침</a>을 참고하세요.</p>` : ''}
 <p>유럽경제지역(EEA), 영국, 스위스에서 접속하면 Google 인증 동의 관리 도구로 광고 쿠키 사용에 대한 동의를 먼저 받아요.</p>
 <h2>방문 통계</h2>
 <p>사이트 개선을 위해 Cloudflare Web Analytics, Google Analytics, Microsoft Clarity로 방문 통계를 수집해요. 방문한 페이지, 체류 시간, 클릭한 버튼과 링크, 스크롤 같은 사용 기록이 익명으로 집계되며, Clarity는 개선을 위해 화면 이용 과정을 기록할 수 있어요. 검색창 등 입력값은 기록에서 가려져요. 자세한 내용은 <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google 개인정보처리방침</a>과 <a href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener">Microsoft 개인정보처리방침</a>을 참고하세요.</p>
@@ -477,7 +477,7 @@ const T = {
 <h2>Cookies and advertising</h2>
 <p>This site may show Google AdSense ads. Third-party vendors, including Google, use cookies to serve ads based on your prior visits to this and other websites. Google's use of advertising cookies enables it and its partners to serve ads based on those visits.</p>
 <p>You can opt out of personalized advertising in <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google Ads Settings</a>, and out of other vendors' personalized ads at <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener">aboutads.info</a>. You may still see non-personalized ads. See <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">how Google uses information from sites that use its services</a>.</p>
-<p>The ads currently on the site are served by Kakao AdFit, Kakao's ad platform, which may also use cookies and similar technology to show ads and measure them. See the <a href="https://www.kakao.com/policy/privacy" target="_blank" rel="noopener">Kakao Privacy Policy</a>.</p>
+${config.adfit ? `<p>The ads currently on the site are served by Kakao AdFit, Kakao's ad platform, which may also use cookies and similar technology to show ads and measure them. See the <a href="https://www.kakao.com/policy/privacy" target="_blank" rel="noopener">Kakao Privacy Policy</a>.</p>` : ''}
 <p>Visitors from the EEA, the UK and Switzerland are asked for consent to advertising cookies through a Google-certified consent management platform first.</p>
 <h2>Analytics</h2>
 <p>To improve the site we use Cloudflare Web Analytics, Google Analytics and Microsoft Clarity. They record usage such as pages visited, time on page, buttons and links clicked, and scrolling, without identifying you; Clarity may record how the page is used for replay. Text typed into fields such as search is masked. See the <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a> and the <a href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener">Microsoft Privacy Statement</a>.</p>
@@ -1083,7 +1083,8 @@ function withMidAd(body, ads) {
 const NO_AD_PAGES = new Set(['about', 'bot', 'contact', 'scam']);
 // Pages written by the build from game or price data (item and monster detail pages, the look-up-elsewhere page) carry no
 // AdSense tag: Google's approval help says ad code must not sit on automatically generated pages or pages with little
-// content of their own (2026-11-23, after four rejections for "insufficient or low-quality content"). They keep AdFit.
+// content of their own (2026-11-23, after four rejections for "insufficient or low-quality content").
+// AdFit is off site-wide during the AdSense review (2026-11-26, owner): rename adfitOff back to adfit in site.config.json.
 const NO_ADSENSE_PAGES = new Set(['item', 'monster', 'price', 'scam']);
 function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], modules = [], ld = [], only, noindex }) {
   // Indexed pages carry ads, except About, the Discord bot page and Contact/sponsorship. Pages kept out of search
