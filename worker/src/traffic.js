@@ -123,11 +123,15 @@ async function workerBlocks(env, from, to) {
   };
   const range = `timestamp >= toDateTime(${Math.floor(from / 1000)}) AND timestamp < toDateTime(${Math.floor(to / 1000)})`;
   try {
-    const [rows, hours] = await Promise.all([
-      sql(`SELECT blob1 AS reason, blob2 AS path, blob3 AS country, blob4 AS org, blob5 AS ua, blob6 AS ip, sum(_sample_interval) AS n FROM ${AE_SET} WHERE ${range} GROUP BY reason, path, country, org, ua, ip ORDER BY n DESC LIMIT 400`),
-      sql(`SELECT intDiv(toUInt32(timestamp), 3600) AS h, sum(_sample_interval) AS n FROM ${AE_SET} WHERE ${range} GROUP BY h ORDER BY h`)
+    // 'watch' rows are calls from outside the site that were answered, not refused: they are reported apart (outside).
+    const [rows, hours, seen, seenHours] = await Promise.all([
+      sql(`SELECT blob1 AS reason, blob2 AS path, blob3 AS country, blob4 AS org, blob5 AS ua, blob6 AS ip, sum(_sample_interval) AS n FROM ${AE_SET} WHERE ${range} AND blob1 != 'watch' GROUP BY reason, path, country, org, ua, ip ORDER BY n DESC LIMIT 400`),
+      sql(`SELECT intDiv(toUInt32(timestamp), 3600) AS h, sum(_sample_interval) AS n FROM ${AE_SET} WHERE ${range} AND blob1 != 'watch' GROUP BY h ORDER BY h`),
+      sql(`SELECT blob2 AS path, blob3 AS country, blob4 AS org, blob5 AS ua, blob6 AS ip, sum(_sample_interval) AS n FROM ${AE_SET} WHERE ${range} AND blob1 = 'watch' GROUP BY path, country, org, ua, ip ORDER BY n DESC LIMIT 600`),
+      sql(`SELECT intDiv(toUInt32(timestamp), 3600) AS h, sum(_sample_interval) AS n FROM ${AE_SET} WHERE ${range} AND blob1 = 'watch' GROUP BY h ORDER BY h`)
     ]);
-    return { rows: rows.map((r) => ({ ...r, n: Number(r.n) })), hours: hours.map((r) => [Number(r.h) * HOUR, Number(r.n)]) };
+    const num = (list) => list.map((r) => ({ ...r, n: Number(r.n) })), byHour = (list) => list.map((r) => [Number(r.h) * HOUR, Number(r.n)]);
+    return { rows: num(rows), hours: byHour(hours), seen: num(seen), seenHours: byHour(seenHours) };
   } catch (e) {
     // A dataset nothing has been written to yet does not exist; that is an empty list, not a failure.
     if (/unable to find|does not exist|unknown table/i.test(String(e.message))) return { rows: [], hours: [] };
@@ -139,7 +143,11 @@ export async function blockedReport(env, from, to) {
   const [fw, wk] = await Promise.all([firewallBlocks(env, from, to), workerBlocks(env, from, to)]);
   const hourly = Array.from({ length: 24 }, () => [0, 0]); // [firewall, worker] per KST hour
   for (const [i, part] of [fw, wk].entries()) for (const [ms, n] of part.hours || []) { const h = Math.floor((ms - from) / HOUR); if (h >= 0 && h < 24) hourly[h][i] += n; }
-  return { hourly, firewall: fw.error ? { error: fw.error } : { rows: fw.rows, full: fw.full }, worker: wk.error ? { error: wk.error } : { rows: wk.rows } };
+  // Calls to the API that did not come from a page of the site (answered, only counted): per KST hour and by caller.
+  const outsideHours = Array(24).fill(0);
+  for (const [ms, n] of wk.seenHours || []) { const h = Math.floor((ms - from) / HOUR); if (h >= 0 && h < 24) outsideHours[h] += n; }
+  return { hourly, firewall: fw.error ? { error: fw.error } : { rows: fw.rows, full: fw.full }, worker: wk.error ? { error: wk.error } : { rows: wk.rows },
+    outside: wk.error ? { error: wk.error } : { hourly: outsideHours, rows: wk.seen || [] } };
 }
 
 // One data point per refused API request. Never awaited and never allowed to throw: a refusal must cost nothing extra.

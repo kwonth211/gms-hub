@@ -285,18 +285,26 @@ test("public routes return validation errors and page metadata instead of silent
       (await worker.fetch(new Request("https://test/market/listings", { headers }), e)).status,
       403,
     );
-  // Every other public read follows the same rule (owner, 2026-11-25): pages of the site, verified crawlers and the
-  // site build's key pass; a script calling the address is refused. The in-game shop collector still reads /prices.
-  for (const path of ["/market/catalog", "/market/history?id=2040801", "/prices?ids=2040801", "/megaphones", "/market/item?id=2040801", "/listings/recent"])
-    for (const headers of [{}, { Referer: "https://gms-hub.com/" }, { Origin: "https://example.com" }, { "X-Gms-Key": "wrong" }])
-      assert.equal((await worker.fetch(new Request("https://test" + path, { headers }), e)).status, 403, path);
-  assert.equal((await worker.fetch(new Request("https://test/market/catalog", SITE), e)).status, 200);
-  assert.equal((await worker.fetch(new Request("https://test/market/catalog", { headers: { "X-Gms-Key": "build-key" } }), { ...e, READ_KEY: "build-key" })).status, 200);
+  // Every other public read is watched (owner, 2026-11-25): a call that does not come from a page of the site is
+  // answered and counted as 'watch' for the dashboard; with API_GATE "on" it is refused. Pages of the site, verified
+  // crawlers, the site build's key and the in-game shop collector's /prices lookups are neither counted nor refused.
+  const seen = [], watch = { ...e, BLOCKS: { writeDataPoint: (p) => seen.push(`${p.blobs[0]} ${p.blobs[1]}`) } }, gate = { ...watch, API_GATE: "on" };
+  const paths = ["/market/catalog", "/market/history?id=2040801", "/prices?ids=2040801", "/megaphones", "/market/item?id=2040801", "/listings/recent"];
+  for (const path of paths)
+    for (const headers of [{}, { Referer: "https://gms-hub.com/" }, { Origin: "https://example.com" }, { "X-Gms-Key": "wrong" }]) {
+      assert.notEqual((await worker.fetch(new Request("https://test" + path, { headers }), watch)).status, 403, path);
+      assert.equal((await worker.fetch(new Request("https://test" + path, { headers }), gate)).status, 403, path);
+    }
+  assert.equal(seen.filter((x) => x.startsWith("watch ")).length, paths.length * 4);
+  assert.equal(seen.filter((x) => x.startsWith("outside ")).length, paths.length * 4);
+  assert.ok(seen.includes("watch /market/catalog"));
+  seen.length = 0;
   const crawler = new Request("https://test/market/catalog");
   Object.defineProperty(crawler, "cf", { value: { verifiedBotCategory: "Search Engine Crawler" } });
-  assert.equal((await worker.fetch(crawler, e)).status, 200);
-  assert.equal((await worker.fetch(new Request("https://test/prices?ids=2040801", { headers: { "User-Agent": "shop-collector" } }), e)).status, 200);
-  assert.equal((await worker.fetch(new Request("https://test/market/catalog", { headers: { "User-Agent": "shop-collector" } }), e)).status, 403);
+  for (const req of [new Request("https://test/market/catalog", SITE), new Request("https://test/market/catalog", { headers: { "X-Gms-Key": "build-key" } }), crawler, new Request("https://test/prices?ids=2040801", { headers: { "User-Agent": "shop-collector" } })])
+    assert.equal((await worker.fetch(req, { ...gate, READ_KEY: "build-key" })).status, 200);
+  assert.deepEqual(seen, []);
+  assert.equal((await worker.fetch(new Request("https://test/market/catalog", { headers: { "User-Agent": "shop-collector" } }), gate)).status, 403);
   // Links opened directly and paths with their own credential are not behind the rule.
   assert.notEqual((await worker.fetch(new Request("https://test/internal/shop-scan", { method: "POST", body: "{}" }), e)).status, 403);
   assert.equal(

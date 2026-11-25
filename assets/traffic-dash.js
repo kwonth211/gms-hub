@@ -155,6 +155,43 @@ ${rows ? `<div class="table-wrap"><table class="data td-who-table td-blk-table">
 <p class="muted small">막힌 요청은 방문 숫자에 들어가지 않아요. 사이트 방화벽 기록은 Cloudflare가 보관하는 기간까지만 나와요. 우리 서버 기록은 11월 24일부터 쌓여요.</p></section>`;
 }
 
+// Calls to the API that did not come from a page of the site: someone reading prices, listings or megaphones straight
+// from the address. They are answered for now and only counted (worker reason 'watch'); one line per caller.
+const API_NAME = [[/^\/prices/, '가격'], [/^\/market\/history/, '7일 매물 기록'], [/^\/market\/catalog/, '전체 시세 요약'], [/^\/market\/item/, '아이템 시세'], [/^\/market\//, '시세'], [/^\/listings/, '매물'], [/^\/megaphones/, '확성기'], [/^\/free-megas/, '팝니다·삽니다'], [/^\/rank/, '랭킹'], [/^\/scam/, '사기꾼 제보'], [/^\/news/, '게임 공지'], [/^\/report/, '주간 리포트']];
+const apiName = (p) => (API_NAME.find(([re]) => re.test(p)) || [0, '그 밖'])[1];
+function outsidePanel(d) {
+  const o = d.blocked?.outside;
+  if (!o) return '';
+  if (o.error) return `<section class="panel"><h2>사이트 밖에서 온 API 호출</h2><p class="td-err">기록을 못 읽었어요: ${esc(o.error)}</p></section>`;
+  const hours = o.hourly || [], total = hours.reduce((a, v) => a + v, 0), upto = d.isToday ? d.cutHour : 23;
+  const W = 720, H = 170, P = 36, bw = (W - P) / 24, base = H - 20;
+  const max = Math.max(5, ...hours), ky = (v) => (v / max) * (H - 40), x = (i) => P + i * bw + bw / 2;
+  const ticks = [0, 0.5, 1].map((f) => Math.round(max * f)).map((v) => `<text x="0" y="${base - ky(v) + 4}" class="td-ax">${nf(v)}</text><line x1="${P}" x2="${W}" y1="${base - ky(v)}" y2="${base - ky(v)}" class="td-grid"/>`).join('');
+  const shown = hours.slice(0, upto + 1);
+  const line = `<polyline class="td-out" points="${shown.map((v, i) => `${x(i)},${base - ky(v)}`).join(' ')}"/>`;
+  const dots = shown.map((v, i) => `<circle cx="${x(i)}" cy="${base - ky(v)}" r="3" class="td-out-dot"/>${v ? `<text x="${x(i)}" y="${base - ky(v) - 7}" class="td-ax mid">${nf(v)}</text>` : ''}<rect x="${P + i * bw}" y="0" width="${bw}" height="${H}" class="td-hit" data-tip="${tipLines([`${i}시`, `사이트 밖에서 온 호출 ${nf(v)}`])}"/>`).join('');
+  // By who: one network + country + program name is one line, with what it asked for.
+  const groups = new Map(), kinds = new Map();
+  for (const r of o.rows || []) {
+    const crawler = crawlerLike(r), k = `${r.org}|${r.country}|${uaShort(r.ua)}`;
+    const g = groups.get(k) || { crawler, org: r.org, country: r.country, ua: uaShort(r.ua), full: r.ua, n: 0, paths: new Map(), ips: new Set() };
+    g.n += r.n; if (r.ip) g.ips.add(r.ip);
+    g.paths.set(r.path, (g.paths.get(r.path) || 0) + r.n);
+    groups.set(k, g);
+    kinds.set(apiName(r.path), (kinds.get(apiName(r.path)) || 0) + r.n);
+  }
+  const top = (m, n) => [...m.entries()].sort((a, c) => c[1] - a[1]).slice(0, n);
+  const list = [...groups.values()].sort((a, c) => c.n - a.n);
+  const rows = list.map((g) => `<tr><td class="num"><b>${nf(g.n)}</b></td><td>${esc(COUNTRY[g.country] || g.country)} · ${esc(g.org || '?')}${d.you && g.ips.has(d.you) ? ' <span class="td-tag-me">내 인터넷</span>' : ''}${g.crawler ? ' <span class="muted">(검색 회사 통신망)</span>' : ''}${/microsoft/i.test(g.org || '') && /^node/i.test(g.ua) ? ' <span class="muted">(사이트 빌드일 수 있음)</span>' : ''}<br><span class="muted">주소 ${nf(g.ips.size)}개${g.ips.size <= 3 ? ` (${esc([...g.ips].join(', '))})` : ''}</span></td><td title="${esc(g.full)}">${esc(g.ua)}</td><td>${top(g.paths, 4).map(([p, n]) => `<code>${esc(p)}</code> ${nf(n)}`).join('<br>')}${g.paths.size > 4 ? `<br><span class="muted">외 ${nf(g.paths.size - 4)}곳</span>` : ''}</td></tr>`).join('');
+  const kindLine = top(kinds, 6).map(([k, n]) => `${esc(k)} ${nf(n)}`).join(' · ');
+  return `<section class="panel"><h2>사이트 밖에서 온 API 호출 <small class="muted">${nf(total)}번 · 부른 곳 ${nf(list.length)}군데</small></h2>
+<p class="muted small">우리 사이트 화면을 거치지 않고 API 주소를 직접 부른 요청이에요. 시세·매물·확성기를 긁어 가는 프로그램이 여기에 잡혀요. 지금은 세기만 하고 막지는 않아요.</p>
+<svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="시간대별 사이트 밖 API 호출">${ticks}${line}${dots}${Array.from({ length: 12 }, (_, i) => i * 2).map((h) => `<text x="${P + h * bw + bw / 2}" y="${H - 4}" class="td-ax mid">${h}시</text>`).join('')}</svg>
+${kindLine ? `<p class="td-legend"><span class="k out"></span>무엇을 읽어 갔나: ${kindLine}</p>` : ''}
+${rows ? `<div class="table-wrap"><table class="data td-who-table td-blk-table"><thead><tr><th class="num">횟수</th><th>나라 · 통신망</th><th>프로그램 이름</th><th>읽어 간 주소</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="muted">이 날 사이트 밖에서 온 호출이 없어요.</p>'}
+<p class="muted small">요청에 "gms-hub.com에서 왔다"고 적어 보내는 프로그램은 여기에 안 잡혀요. 검색 로봇, 토큰을 쓰는 우리 수집기, 디스코드 로그인과 공유 카드는 세지 않아요. 이 기록은 11월 25일부터 쌓여요.</p></section>`;
+}
+
 // Runs of the screen-reading tools over the last 7 days: what share read, and every way the others failed.
 const TOOL_NAME = { exp: 'EXP 측정기', scan: '상점 스캔' };
 const OUTCOME = { ok: '읽음', no_bar: '상태바를 못 찾음', read_fail: '숫자를 못 읽음', black: '검은 화면', share_error: '화면 공유 오류', first_rows: '상점 읽음', black_frame: '검은 화면', no_shop: '상점을 못 찾음', unsure_rows: '이름이 불확실', read_error: '읽기 오류', video_play: '영상 재생 실패', upload_fail: '올리기 실패' };
@@ -250,6 +287,7 @@ ${nowPages}
 <section class="panel"><h2>한국과 해외, 시간대별</h2>${koreaChart(d)}</section>
 ${weekChart(d, upto)}
 ${botChart(d)}
+${outsidePanel(d)}
 ${blockedPanel(d)}
 ${toolPanel(d)}
 <div class="td-grid2">

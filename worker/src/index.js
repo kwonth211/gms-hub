@@ -1039,7 +1039,10 @@ export default {
       const fs = req.headers.get('Sec-Fetch-Site'), key = req.headers.get('X-Gms-Key') || '';
       const fromSite = ALLOWED_ORIGINS.includes(req.headers.get('Origin') || '') && (!fs || fs === 'cross-site');
       const ours = (key && env.READ_KEY && key === env.READ_KEY) || (path === '/prices' && req.headers.get('User-Agent') === 'shop-collector');
-      if (!fromSite && !ours) {
+      // The listing feed is refused as before. Every other path is only counted for now (reason 'watch', shown on the
+      // owner's dashboard as calls from outside the site) and refused once API_GATE is "on".
+      if (!fromSite && !ours && path !== '/market/listings' && env.API_GATE !== 'on') logBlock(env, req, 'watch');
+      else if (!fromSite && !ours) {
         logBlock(env, req, path === '/market/listings' ? 'listings' : 'outside');
         return new Response(JSON.stringify({ error: 'This API is served to pages on gms-hub.com. Automated collection is not permitted: https://gms-hub.com/en/terms/' }), { status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
       }

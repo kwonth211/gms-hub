@@ -4724,3 +4724,8 @@ div.trd-req p { flex: 1 1 260px; }
   .trd-req .trd-field { max-width: none; }
 }
 .trd-c-who small + .trd-dm-badge { margin-left: 6px; }
+
+/* Traffic dashboard: calls to the API from outside the site (line per hour). */
+.td-chart .td-out { fill: none; stroke: #dc2626; stroke-width: 2.5; stroke-linejoin: round; }
+.td-out-dot { fill: #dc2626; }
+.td-legend .k.out { background: #dc2626; }
