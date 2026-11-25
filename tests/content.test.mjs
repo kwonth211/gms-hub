@@ -440,3 +440,11 @@ test('style.css braces are balanced and never close below zero',()=>{
   }
   assert.equal(depth,0,'style.css has an unclosed block');
 });
+
+test('Korean RSS lists the hand-written Korean pages, no item or monster pages', () => {
+  const rss = read('dist/rss.xml'), links = [...rss.matchAll(/<link>([^<]+)<\/link>/g)].map((m) => m[1]);
+  assert.ok(links.length > 50 && links.every((l) => l.startsWith('https://gms-hub.com/ko/')));
+  assert.ok(!links.some((l) => /\/ko\/(items|monsters)\//.test(l)));
+  assert.ok(links.some((l) => l.endsWith('/ko/tools/market/')));
+  assert.ok(!/&(?!amp;|lt;|gt;)/.test(rss));
+});

@@ -4288,6 +4288,24 @@ write('robots.txt', `User-agent: *\nAllow: /\nDisallow: ${config.basePath}/admin
 if (config.adsenseClient) {
   write('ads.txt', `google.com, ${config.adsenseClient.replace(/^ca-/, '')}, DIRECT, f08c47fec0942fa0\n`);
 }
+// Korean RSS for Naver Search Advisor (요청 > RSS 제출): Naver collects few of our pages from the sitemap alone, so the hand-written
+// Korean pages and tools are offered here too. Built from the finished pages; item and monster pages stay out.
+{
+  const x = (v) => String(v).replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;|&#x27;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+  const dates = new Map(publishedGuides.filter((g) => g.lang === 'ko').map((g) => [langPath('ko', guidePath(g)), g.updated]));
+  const items = [...fs.readFileSync(path.join(out, 'sitemap.xml'), 'utf8').matchAll(/<loc>([^<]+)<\/loc>/g)]
+    .map((m) => new URL(m[1]).pathname)
+    .filter((p) => /^\/ko\//.test(p) && !/^\/ko\/(items|monsters|terms|privacy|contact|updates)\//.test(p))
+    .map((p) => {
+      const html = fs.readFileSync(path.join(out, p, 'index.html'), 'utf8');
+      const at = dates.get(p);
+      return { p, at, title: html.match(/<title>([^<]*)<\/title>/)[1], desc: html.match(/<meta name="description" content="([^"]*)"/)[1] };
+    });
+  items.sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')));
+  write('rss.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel><title>글클메 허브 (GMS Hub)</title><link>${absUrl('/ko/')}</link><description>글클메 시세, 사냥터, 퀘스트 공략, 계산기</description><language>ko</language>\n${items
+    .map((i) => `<item><title>${x(i.title)}</title><link>${absUrl(i.p)}</link><guid isPermaLink="true">${absUrl(i.p)}</guid><description>${x(i.desc)}</description>${i.at ? `<pubDate>${new Date(`${i.at}T00:00:00Z`).toUTCString()}</pubDate>` : ''}</item>`)
+    .join('\n')}\n</channel></rss>\n`);
+}
 write('.nojekyll', '');
 // IndexNow key file: proves ownership when scripts/indexnow.mjs pings Bing, Naver and Yandex.
 if (config.indexNowKey) write(`${config.indexNowKey}.txt`, config.indexNowKey);
