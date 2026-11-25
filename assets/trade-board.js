@@ -54,10 +54,10 @@ const dropDraft = () => { try { sessionStorage.removeItem(DRAFT); } catch {} };
 const tone = (rate) => (rate >= 0.5 ? 'good' : rate >= 0.2 ? 'mid' : 'bad');
 function drawMeter() {
   const box = $('tb-meter');
-  if (!item) { box.innerHTML = `<p class="muted">${tr('아이템을 고르면 시세보다 얼마나 비싼지 나와요.', 'Pick an item to see how it stands against the market.')}</p>`; return; }
-  if (!ref) { box.innerHTML = `<p class="trd-big-line">${tr('시세 기록이 없어요', 'No market price yet')}</p><p>${tr('최근 7일 동안 올라온 매물이 없어요. 내가 받고 싶은 값을 적으세요.', 'Nothing was listed in the last 7 days. Type the price you want.')}</p>`; return; }
-  if (!price) { box.innerHTML = `<p class="trd-big-line">${tr('값을 적거나 막대를 미세요', 'Type a price or move the slider')}</p><p>${tr(`시세는 ${money(ref)} 메소예요.`, `The market price is ${money(ref)} mesos.`)}</p>`; return; }
-  const v = versus(price, ref);
+  if (!item) { box.innerHTML = `<p class="muted">${tr('아이템을 고르면 정가보다 얼마나 비싼지 나와요.', 'Pick an item to see how it stands against the market.')}</p>`; return; }
+  if (!ref) { box.innerHTML = `<p class="trd-big-line">${tr('정가가 아직 없어요', 'No market price yet')}</p><p>${tr('최근 7일 동안 올라온 매물이 없어요. 내가 받고 싶은 값을 적으세요.', 'Nothing was listed in the last 7 days. Type the price you want.')}</p>`; return; }
+  if (!price) { box.innerHTML = `<p class="trd-big-line">${tr('값을 적거나 막대를 미세요', 'Type a price or move the slider')}</p><p>${tr(`정가는 ${money(ref)} 메소예요.`, `The market price is ${money(ref)} mesos.`)}</p>`; return; }
+  const v = against(price, ref);
   // Selling dear is the risk; buying cheap is the risk.
   const risk = intent === 'sell' ? v.side === 'dear' : v.side === 'cheap';
   const cls = v.side === 'same' ? 'even' : risk ? (Math.abs(v.diff) >= 15 ? 'bad' : 'mid') : 'good';
@@ -70,9 +70,9 @@ function drawMeter() {
     lines.push(`<li><span>${can ? tr(`지금 자시에 이 값 이하 매물이 <b>${nf.format(can)}개</b> 있어요. 바로 사도 돼요.`, `<b>${nf.format(can)}</b> listings at or under this price are on sale now. You can buy right away.`) : tr(`지금 자시 최저가는 <b>${money(low)}</b> 메소예요. 이 값에 파는 사람을 기다려야 해요.`, `The cheapest on sale now is <b>${money(low)}</b> mesos. You wait for a seller at your price.`)}</span></li>`);
   }
   const tip = intent === 'sell'
-    ? (cls === 'bad' ? tr('이 값으로는 오래 걸려요. 막대를 왼쪽으로 미세요.', 'This will take long. Slide left.') : cls === 'good' ? tr('싸게 내놓는 값이에요. 금방 연락이 와요.', 'A low price. Expect whispers soon.') : tr('시세 근처예요. 그대로 올리세요.', 'Close to the market. Post it.'))
-    : (cls === 'bad' ? tr('이 값에는 잘 안 팔아요. 막대를 오른쪽으로 미세요.', 'Few sell at this price. Slide right.') : cls === 'good' ? tr('넉넉하게 부르는 값이에요. 금방 연락이 와요.', 'A generous price. Expect whispers soon.') : tr('시세 근처예요. 그대로 올리세요.', 'Close to the market. Post it.'));
-  box.innerHTML = `<p class="trd-meter-big ${cls}">${v.text}</p><p class="muted small">${tr(`시세 ${money(ref)} 메소 · 내 값 ${money(price)} 메소`, `Market ${money(ref)} · yours ${money(price)}`)}</p>${lines.length ? `<ul class="trd-meter-lines">${lines.join('')}</ul>` : ''}<p class="trd-meter-tip">${tip}</p>${item.cat === 'Equip' ? `<p class="muted small">${tr('장비는 옵션에 따라 값이 달라요. 시세는 옵션을 안 가린 값이에요.', 'Gear prices depend on the stats. This market price mixes every roll.')}</p>` : ''}`;
+    ? (cls === 'bad' ? tr('이 값으로는 오래 걸려요. 막대를 왼쪽으로 미세요.', 'This will take long. Slide left.') : cls === 'good' ? tr('싸게 내놓는 값이에요. 금방 연락이 와요.', 'A low price. Expect whispers soon.') : tr('정가 근처예요. 그대로 올리세요.', 'Close to the market. Post it.'))
+    : (cls === 'bad' ? tr('이 값에는 잘 안 팔아요. 막대를 오른쪽으로 미세요.', 'Few sell at this price. Slide right.') : cls === 'good' ? tr('넉넉하게 부르는 값이에요. 금방 연락이 와요.', 'A generous price. Expect whispers soon.') : tr('정가 근처예요. 그대로 올리세요.', 'Close to the market. Post it.'));
+  box.innerHTML = `<p class="trd-meter-big ${cls}">${v.text}</p><p class="muted small">${tr(`정가 ${money(ref)} 메소 · 내 값 ${money(price)} 메소`, `Market ${money(ref)} · yours ${money(price)}`)}</p>${lines.length ? `<ul class="trd-meter-lines">${lines.join('')}</ul>` : ''}<p class="trd-meter-tip">${tip}</p>${item.cat === 'Equip' ? `<p class="muted small">${tr('장비는 옵션에 따라 값이 달라요. 정가는 옵션을 안 가린 값이에요.', 'Gear prices depend on the stats. This market price mixes every roll.')}</p>` : ''}`;
 }
 function setPrice(n, from) {
   price = n;
@@ -110,6 +110,8 @@ async function choose(it, wantPrice) {
 }
 
 // ---------- the list ----------
+// On this page the price a post is measured against is called 정가 (owner 2026-11-25); other pages keep 시세.
+const against = (p, m) => { const v = versus(p, m); return v && ko ? { ...v, text: v.text.replace('시세', '정가') } : v; };
 const mine = (id) => Object.hasOwn(myKeys(), id);
 const nameOf = (r) => byId.get(r.item)?.name || (ko ? r.ko || r.en : r.en) || '';
 const gap = (r) => { const m = refs.get(r.item); return r.price && m ? r.price / m - 1 : null; };
@@ -133,14 +135,14 @@ function drawBoard() {
   // A redraw (new posts every minute) must not take the caret out of the request form.
   const active = document.activeElement, held = active?.closest?.('.trd-req') && active.name ? { name: active.name, at: active.selectionStart } : null;
   box.innerHTML = rows.map((r) => {
-    const m = refs.get(r.item), v = r.price && m ? versus(r.price, m) : null;
+    const m = refs.get(r.item), v = r.price && m ? against(r.price, m) : null;
     const risk = v && (r.intent === 'sell' ? v.side === 'dear' : v.side === 'cheap');
-    const short = v ? (v.side === 'same' ? tr('시세', 'at market') : `${v.diff > 0 ? '+' : '−'}${Math.abs(v.diff) >= 10 ? Math.round(Math.abs(v.diff)) : Math.round(Math.abs(v.diff) * 10) / 10}%`) : '';
+    const short = v ? (v.side === 'same' ? tr('정가', 'at market') : `${v.diff > 0 ? '+' : '−'}${Math.abs(v.diff) >= 10 ? Math.round(Math.abs(v.diff)) : Math.round(Math.abs(v.diff) * 10) / 10}%`) : '';
     return `<div class="trd-line-row ${r.intent}${mine(r.id) ? ' mine' : ''}${r.dm && !mine(r.id) ? ' asks' : ''}" id="p-${r.id}" role="row">
 <span class="trd-c-kind" role="cell"><span class="trd-kind ${r.intent}">${r.intent === 'sell' ? tr('팝니다', 'Selling') : tr('삽니다', 'Buying')}</span></span>
 <span class="trd-c-item" role="cell">${icon(r.item, 32)}<span><a class="trd-post-item" href="${root.dataset.market}?item=${r.item}">${esc(nameOf(r))}</a>${mine(r.id) ? `<em class="trd-mine">${tr('내 글', 'mine')}</em>` : ''}${r.text ? `<small>${esc(r.text)}</small>` : ''}</span></span>
 <span class="trd-c-price" role="cell">${r.price ? `<b>${money(r.price)}</b><small>${nf.format(r.price)}</small>` : `<b class="trd-ask">${tr('값 협의', 'on request')}</b>`}</span>
-<span class="trd-c-vs" role="cell">${v ? `<span class="trd-vs ${v.side === 'same' ? 'same' : risk ? 'risk' : 'fair'}" title="${esc(`${v.text} · ${tr('시세', 'market')} ${money(m)}`)}">${short}</span>` : '<span class="trd-vs none">–</span>'}</span>
+<span class="trd-c-vs" role="cell">${v ? `<span class="trd-vs ${v.side === 'same' ? 'same' : risk ? 'risk' : 'fair'}" title="${esc(`${v.text} · ${tr('정가', 'market')} ${money(m)}`)}">${short}</span>` : '<span class="trd-vs none">–</span>'}</span>
 <span class="trd-c-who" role="cell"><b translate="no">${esc(r.nick)}</b>${r.channel ? `<small>CH ${r.channel}</small>` : ''}${r.dm ? `<em class="trd-dm-badge" title="${tr('거래 신청을 누르면 글쓴이에게 디스코드 DM이 가요', 'Asking to trade sends the writer a Discord DM')}">${DC}${tr('DM 받음', 'takes DMs')}</em>` : ''}</span>
 <span class="trd-c-when" role="cell"><time datetime="${esc(r.at.replace(' ', 'T'))}Z">${ago(r.at)}</time></span>
 <span class="trd-c-act" role="cell">${r.dm && !mine(r.id) ? (did.has(r.id) ? `<button type="button" class="btn small-btn trd-dc" disabled>${tr('신청함', 'Asked')}</button>` : `<button type="button" class="btn small-btn trd-dc" data-ask="${r.id}" aria-expanded="${ask?.id === r.id}">${DC}${tr('거래 신청', 'Ask to trade')}</button>`) : ''}<button type="button" class="${r.dm && !mine(r.id) ? 'trd-report' : 'btn ghost small-btn'}" data-whisper="${esc(r.nick)}">${tr('귓말', 'Whisper')}</button>${mine(r.id) ? `<button type="button" class="trd-report" data-del="${r.id}">${tr('지우기', 'Delete')}</button>` : `<button type="button" class="trd-report" data-report="${r.id}">${tr('신고', 'Report')}</button>`}</span></div>${ask?.id === r.id ? askHtml(r) : ''}`;

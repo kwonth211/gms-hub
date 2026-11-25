@@ -133,7 +133,7 @@ export function tradeBoardBody({ lang, api, itemsUrl, marketUrl, megaphoneUrl, s
   return `<section class="trd-hero trd-hero-board"><div class="wrap trd-hero-in">
 <div class="trd-hero-text"><span class="trd-tag">${spriteSvg('shop', 18)}${t('무료 · 로그인 없이', 'Free · no login')}</span>
 <h1>${t('팝니다·삽니다 장터', 'Buy and sell market')}</h1>
-<p class="lead">${t('유저가 올린 팝니다·삽니다를 한 줄씩 모아 보는 장터예요. 값 옆에 시세보다 얼마나 비싼지 붙어 있어요.', 'Buy and sell lines from players, one row each. Every price says how far it is from the market.')}</p>
+<p class="lead">${t('유저가 올린 팝니다·삽니다를 한 줄씩 모아 보는 장터예요. 값 옆에 정가보다 얼마나 비싼지 붙어 있어요.', 'Buy and sell lines from players, one row each. Every price says how far it is from the market.')}</p>
 <p class="trd-hero-cta"><button type="button" class="btn" data-tb-open>${spriteSvg('megaphone', 18)}<span>${t('팝니다·삽니다 올리기', 'Post a line')}</span></button></p></div>
 <div class="trd-stats-row">${stat('all', 'shop', t('올라온 글', 'posts'))}${stat('sell', 'coin', t('팝니다', 'selling'))}${stat('buy', 'bag', t('삽니다', 'buying'))}</div>
 </div></section>
@@ -148,13 +148,13 @@ export function tradeBoardBody({ lang, api, itemsUrl, marketUrl, megaphoneUrl, s
 <div class="trd-picked" id="tb-picked" hidden></div>
 <label class="trd-money"><span id="tb-price-label">${t('팔 값 (한 개)', 'Price for one')}</span><input id="tb-price" inputmode="decimal" autocomplete="off"><em>${t('메소', 'mesos')}</em></label>
 <div class="trd-slide" hidden><input type="range" id="tb-slide" min="0" max="1000" step="1" value="500" aria-label="${t('값 조절', 'Adjust the price')}">
-<div class="trd-slide-ends"><span>${t('시세의 절반', 'half')}</span><span>${t('시세', 'market')} <b id="tb-ref"></b></span><span>${t('시세의 2배', 'double')}</span></div></div>
+<div class="trd-slide-ends"><span>${t('정가의 절반', 'half')}</span><span>${t('정가', 'market')} <b id="tb-ref"></b></span><span>${t('정가의 2배', 'double')}</span></div></div>
 <div class="trd-post-row"><label class="trd-field">${t('내 닉네임', 'My game name')}<input id="tb-nick" maxlength="20" spellcheck="false" autocapitalize="off" placeholder="${t('귓말 받을 이름', 'Name to whisper')}"></label>
 <label class="trd-field">${t('채널', 'Channel')}<select id="tb-ch"><option value="">${t('안 정함', 'Any')}</option>${Array.from({ length: 40 }, (_, i) => `<option value="${i + 1}">CH ${i + 1}</option>`).join('')}</select></label></div>
 <label class="trd-field">${t('한마디 (안 적어도 돼요)', 'A few words (optional)')}<input id="tb-note" maxlength="80" placeholder="${t('예: 자시 3번 방, 흥정 가능', 'e.g. FM room 3, open to offers')}"></label>
 <div class="trd-dm" id="tb-dm" hidden></div><template id="tb-dc">${discordIcon}</template>
 </div>
-<aside class="trd-post-side" aria-live="polite"><h3>${t('이 값은', 'This price')}</h3><div id="tb-meter" class="trd-meter"><p class="muted">${t('아이템을 고르면 시세보다 얼마나 비싼지 나와요.', 'Pick an item to see how it stands against the market.')}</p></div></aside>
+<aside class="trd-post-side" aria-live="polite"><h3>${t('이 값은', 'This price')}</h3><div id="tb-meter" class="trd-meter"><p class="muted">${t('아이템을 고르면 정가보다 얼마나 비싼지 나와요.', 'Pick an item to see how it stands against the market.')}</p></div></aside>
 </div>
 <div class="trd-post-foot"><button type="submit" class="btn" id="tb-send">${spriteSvg('megaphone', 18)}<span id="tb-send-label">${t('팝니다 올리기', 'Post selling line')}</span></button><span class="trd-post-status" id="tb-status" role="status" aria-live="polite"></span></div>
 <p class="muted small">${t('2분에 한 번, 하루 10번까지 올릴 수 있어요. 현금 거래, 링크, 연락처는 올릴 수 없어요. 신고가 3번 쌓이면 숨겨져요.', 'One post every 2 minutes, 10 a day. No real-money trades, links or contact handles. Three reports hide a post.')}</p>
@@ -164,10 +164,10 @@ export function tradeBoardBody({ lang, api, itemsUrl, marketUrl, megaphoneUrl, s
 <div class="trd-board-head">
 <div class="trd-seg" id="tb-filter" role="group" aria-label="${t('종류', 'Kind')}"><button type="button" data-v="all" aria-pressed="true">${t('전체', 'All')}</button><button type="button" data-v="sell" aria-pressed="false">${t('팝니다', 'Selling')}</button><button type="button" data-v="buy" aria-pressed="false">${t('삽니다', 'Buying')}</button></div>
 <input id="tb-search" class="trd-board-search" type="search" placeholder="${t('아이템이나 닉네임', 'Item or name')}" aria-label="${t('장터에서 찾기', 'Search the market')}">
-<label class="trd-sort">${t('정렬', 'Sort')}<select id="tb-sort"><option value="new">${t('최신순', 'Newest')}</option><option value="low">${t('값 싼 순', 'Cheapest')}</option><option value="high">${t('값 비싼 순', 'Dearest')}</option><option value="deal">${t('시세보다 싼 순', 'Furthest under market')}</option><option value="item">${t('아이템 이름순', 'Item name')}</option></select></label>
+<label class="trd-sort">${t('정렬', 'Sort')}<select id="tb-sort"><option value="new">${t('최신순', 'Newest')}</option><option value="low">${t('값 싼 순', 'Cheapest')}</option><option value="high">${t('값 비싼 순', 'Dearest')}</option><option value="deal">${t('정가보다 싼 순', 'Furthest under market')}</option><option value="item">${t('아이템 이름순', 'Item name')}</option></select></label>
 <button type="button" class="btn small-btn" data-tb-open>${t('올리기', 'Post')}</button></div>
 <div class="trd-list" role="table" aria-label="${t('장터 목록', 'Market list')}">
-<div class="trd-list-head" role="row"><span role="columnheader">${t('종류', 'Kind')}</span><span role="columnheader">${t('아이템', 'Item')}</span><span role="columnheader">${t('값', 'Price')}</span><span role="columnheader">${t('시세보다', 'vs market')}</span><span role="columnheader">${t('올린 사람', 'Posted by')}</span><span role="columnheader">${t('올린 때', 'When')}</span><span role="columnheader"></span></div>
+<div class="trd-list-head" role="row"><span role="columnheader">${t('종류', 'Kind')}</span><span role="columnheader">${t('아이템', 'Item')}</span><span role="columnheader">${t('값', 'Price')}</span><span role="columnheader">${t('정가보다', 'vs market')}</span><span role="columnheader">${t('올린 사람', 'Posted by')}</span><span role="columnheader">${t('올린 때', 'When')}</span><span role="columnheader"></span></div>
 <div class="trd-rows" id="tb-list" role="rowgroup" aria-busy="true"></div></div>
 <p class="trd-none" id="tb-none" hidden></p>
 <p class="muted small" id="tb-count" role="status"></p>
@@ -183,7 +183,7 @@ export function tradeBoardBody({ lang, api, itemsUrl, marketUrl, megaphoneUrl, s
 <details><summary>${t('거래 신청을 디스코드 DM으로 받으려면?', 'How do I get trade requests as a Discord DM?')}</summary><p>${t('올리기 창에서 <strong>디스코드 연결</strong>을 누르고 글을 올리세요. 누가 내 글에 거래 신청을 누르면 신청한 사람의 게임 닉네임이 DM으로 와요. 게임을 꺼 둔 동안에도 휴대폰으로 받아요. 연결하면 GMS Hub 디스코드 서버에 함께 들어가요.', 'Press <strong>Connect Discord</strong> in the post form, then post. When someone asks to trade, their game name arrives as a DM, on your phone too while the game is closed. Connecting also adds you to the GMS Hub Discord server.')}</p></details>
 <details><summary>${t('거래 신청하려면 로그인해야 하나요?', 'Do I need to log in to ask for a trade?')}</summary><p>${t('아니요. 내 게임 닉네임만 적으면 돼요. 글 하나에 한 번, 20초에 한 번 신청할 수 있어요. 거래 신청 버튼은 글쓴이가 디스코드를 연결한 글에만 있어요.', 'No. Your game name is enough. One request per post, one every 20 seconds. The button shows only on posts whose writer connected Discord.')}</p></details>
 <details><summary>${t('실시간 확성기의 무료 고확과 다른가요?', 'Is this different from a free megaphone?')}</summary><p>${t('같은 글이에요. 여기서 올리면 <a href="{mega}">실시간 확성기</a>에 무료 고확으로 뜨고, 무료 고확으로 올린 팝니다·삽니다도 여기에 떠요. 게임 안 고확은 여기에 안 떠요.', 'It is the same post. A line posted here shows on the <a href="{mega}">live megaphone page</a> as a free megaphone, and buy and sell lines posted as free megaphones show here. In-game megaphones do not.').replace('{mega}', esc(megaphoneUrl))}</p></details>
-<details><summary>${t('여기서 말하는 시세는 어떤 값인가요?', 'Which price is the market price here?')}</summary><p>${t('<a href="{market}">실시간 시세</a>에 나오는 값이에요. 최근 하루 동안 팔린 값의 한가운데이고, 팔린 기록이 없으면 올라온 매물의 한가운데 값을 써요.', 'The price on the <a href="{market}">live market</a> page: the middle of what sold over the last day, or of what is listed when nothing sold.').replace('{market}', esc(marketUrl))}</p></details>
+<details><summary>${t('여기서 말하는 정가는 어떤 값인가요?', 'Which price is the market price here?')}</summary><p>${t('<a href="{market}">실시간 시세</a>에 나오는 값이에요. 최근 하루 동안 팔린 값의 한가운데이고, 팔린 기록이 없으면 올라온 매물의 한가운데 값을 써요.', 'The price on the <a href="{market}">live market</a> page: the middle of what sold over the last day, or of what is listed when nothing sold.').replace('{market}', esc(marketUrl))}</p></details>
 <details><summary>${t('이상한 글을 봤어요.', 'I saw a bad post.')}</summary><p>${t('줄 끝의 신고를 누르세요. 신고가 3번 쌓이면 글이 숨겨져요.', 'Press Report at the end of the row. Three reports hide the post.')}</p></details></div></section>
 </div>`;
 }
