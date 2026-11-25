@@ -120,11 +120,13 @@ test('the writer reads who asked, how to whisper them and a link to the post, in
   const post = { id: 12, intent: 'sell', item: 1082000, price: 3900000, lang: 'ko' };
   const ko = tradeRequestMessage({ post, nick: 'Hyunoo', channel: 3, name: '노가다 목장갑' });
   assert.match(ko, /거래 신청이 왔어요/);
-  assert.match(ko, /`노가다 목장갑` 390만 팝니다 글에 `Hyunoo` 님이 신청했어요 \(CH 3\)/);
+  assert.match(ko, /`노가다 목장갑` 390만 메소 팝니다 글에 `Hyunoo` 님이 신청했어요 \(CH 3\)/);
   assert.match(ko, /`\/w Hyunoo`/);
   assert.match(ko, /<https:\/\/gms-hub\.com\/ko\/trade\/\?[^>]*#p-12>/);
   const en = tradeRequestMessage({ post: { ...post, intent: 'buy', lang: 'en' }, nick: 'Hy`unoo', channel: null, name: 'Work Gloves' });
-  assert.match(en, /`Hy'unoo` asked about your `Work Gloves` 3\.9M buying post\./);
+  assert.match(en, /`Hy'unoo` asked about your `Work Gloves` 3\.9M mesos buying post\./);
   assert.ok(!en.includes('Hy`unoo'));
+  // A small price still reads as money.
+  assert.match(tradeRequestMessage({ post: { ...post, price: 450 }, nick: 'Abc', channel: 2, name: '검은색 머리띠' }), /`검은색 머리띠` 450 메소 팝니다 글에/);
   assert.match(en, /gms-hub\.com\/en\/trade\//);
 });

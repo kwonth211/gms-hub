@@ -20,7 +20,7 @@ export async function sendDm(env, channel, content) {
 // 거래 신청 (free-mega.js requestTrade): what the writer of a buy or sell post reads when someone asks to trade.
 // Names go out as code (no mentions, no markup); the link opens the writer's own post on the market page.
 export function tradeRequestMessage({ post, nick, channel, name }, ko = post.lang !== 'en') {
-  const what = `${name ? `${code(name)} ` : ''}${post.price ? `${ko ? won(post.price) : short(post.price)} ` : ''}`;
+  const what = `${name ? `${code(name)} ` : ''}${post.price ? `${ko ? `${won(post.price)} 메소` : `${short(post.price)} mesos`} ` : ''}`;
   const url = `<https://gms-hub.com/${ko ? 'ko' : 'en'}/trade/?utm_source=discord&utm_medium=trade-request#p-${post.id}>`;
   const ch = channel ? ` (CH ${channel})` : '';
   return ko
