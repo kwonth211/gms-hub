@@ -444,7 +444,8 @@ let sending = false;
 // the last scan time is the shop's time). The server skips identical rows seen in the last 15 minutes except for that time.
 const BEAT_MS = 10 * 60 * 1000, ON_SCREEN_MS = 2 * 60 * 1000;
 const sentAt = new Map();
-const beatDue = (r, key, now) => now - (r.shop?.readAt || 0) < ON_SCREEN_MS && now - (sentAt.get(key) || 0) > BEAT_MS;
+// Per row, not per shop: an item taken out of the shop is no longer read, so it stops being sent and drops off /trade/.
+const beatDue = (r, key, now) => now - (r.at || 0) < ON_SCREEN_MS && now - (sentAt.get(key) || 0) > BEAT_MS;
 let retryAt = 0;
 let failures = 0;
 
