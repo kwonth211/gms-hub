@@ -117,11 +117,14 @@ const against = (p, m) => { const v = versus(p, m); return v && ko ? { ...v, tex
 const mine = (id) => Object.hasOwn(myKeys(), id);
 const nameOf = (r) => byId.get(r.item)?.name || (ko ? r.ko || r.en : r.en) || '';
 const gap = (r) => { const m = refs.get(r.item); return r.price && m ? r.price / m - 1 : null; };
+// Posts and Shop Scan items share the list, so "newest" goes by time (UTC 'YYYY-MM-DD HH:MM:SS' on both), then post id.
+const idNum = (r) => (typeof r.id === 'number' ? r.id : 0);
+const byNew = (a, b) => (b.at || '').localeCompare(a.at || '') || idNum(b) - idNum(a);
 const SORT = {
-  new: (a, b) => b.id - a.id,
-  low: (a, b) => (a.price ?? Infinity) - (b.price ?? Infinity) || b.id - a.id,
-  high: (a, b) => (b.price ?? -1) - (a.price ?? -1) || b.id - a.id,
-  deal: (a, b) => (gap(a) ?? Infinity) - (gap(b) ?? Infinity) || b.id - a.id,
+  new: byNew,
+  low: (a, b) => (a.price ?? Infinity) - (b.price ?? Infinity) || byNew(a, b),
+  high: (a, b) => (b.price ?? -1) - (a.price ?? -1) || byNew(a, b),
+  deal: (a, b) => (gap(a) ?? Infinity) - (gap(b) ?? Infinity) || byNew(a, b),
   item: (a, b) => nameOf(a).localeCompare(nameOf(b)) || (a.price ?? Infinity) - (b.price ?? Infinity),
 };
 function drawBoard() {
@@ -129,7 +132,8 @@ function drawBoard() {
   box.removeAttribute('aria-busy');
   for (const [key, n] of [['all', posts.length], ['sell', posts.filter((r) => r.intent === 'sell').length], ['buy', posts.filter((r) => r.intent === 'buy').length]]) { const el = $(`tb-stat-${key}`); el.removeAttribute('aria-busy'); el.textContent = nf.format(n); }
   const q = $('tb-search').value.trim().toLowerCase().replace(/\s+/g, '');
-  const rows = posts.filter((r) => (filter === 'all' || r.intent === filter) && (!q || `${nameOf(r)}${r.nick}`.toLowerCase().replace(/\s+/g, '').includes(q))).sort(SORT[$('tb-sort').value] || SORT.new);
+  // Items still on sale in Shop Scan shops are listed as selling rows too (owner 2026-11-26), marked 상점, time = last scan.
+  const rows = posts.concat(shopRows()).filter((r) => (filter === 'all' || (filter === 'shop' ? r.shop !== undefined : r.intent === filter)) && (!q || `${nameOf(r)}${r.nick}`.toLowerCase().replace(/\s+/g, '').includes(q))).sort(SORT[$('tb-sort').value] || SORT.new);
   $('tb-count').textContent = rows.length ? tr(`${nf.format(rows.length)}줄 · 팔렸으면 내 글의 지우기를 눌러 내려 주세요`, `${nf.format(rows.length)} rows · once it sells, press Delete on your post`) : '';
   $('tb-none').hidden = !!rows.length;
   if (!rows.length) $('tb-none').textContent = posts.length ? tr('찾는 글이 없어요. 검색어를 지우거나 다른 종류를 누르세요.', 'Nothing matches. Clear the search or pick another kind.') : tr('아직 올라온 글이 없어요. 올리기를 눌러 첫 글을 올려 보세요.', 'No posts yet. Press Post and be the first.');
@@ -137,6 +141,7 @@ function drawBoard() {
   // A redraw (new posts every minute) must not take the caret out of the request form.
   const active = document.activeElement, held = active?.closest?.('.trd-req') && active.name ? { name: active.name, at: active.selectionStart } : null;
   box.innerHTML = rows.map((r) => {
+    if (r.shop !== undefined) return shopRowHtml(r);
     const m = refs.get(r.item), v = r.price && m ? against(r.price, m) : null;
     const risk = v && (r.intent === 'sell' ? v.side === 'dear' : v.side === 'cheap');
     const short = v ? (v.side === 'same' ? tr('정가', 'at market') : `${v.diff > 0 ? '+' : '−'}${Math.abs(v.diff) >= 10 ? Math.round(Math.abs(v.diff)) : Math.round(Math.abs(v.diff) * 10) / 10}%`) : '';
@@ -152,6 +157,23 @@ function drawBoard() {
   if (held) { const el = box.querySelector(`.trd-req [name="${held.name}"]`); if (el) { el.focus({ preventScroll: true }); try { el.setSelectionRange(held.at, held.at); } catch {} } }
   // A link from the writer's DM (#p-<id>) lands on that row.
   if (!jumped && rows.length) { jumped = true; const hit = /^#p-\d+$/.test(location.hash) && document.getElementById(location.hash.slice(1)); if (hit) { hit.classList.add('hit'); hit.scrollIntoView({ block: 'center' }); } }
+}
+// Shop Scan items as board rows: kind 상점, the seller with channel and room, the time of the last scan, and a button
+// that opens the shop window. Gear gets no 정가 badge (its options decide the price).
+function shopRows() {
+  return shops.flatMap((s, i) => onSale(s).map(([id, price, qty], k) => ({ id: `s${i}-${k}`, shop: i, intent: 'sell', item: id, price, qty, nick: s.seller, channel: s.ch, room: s.room, at: s.at })));
+}
+function shopRowHtml(r) {
+  const m = refs.get(r.item), v = r.price && m && byId.get(r.item)?.cat !== 'Equip' ? against(r.price, m) : null;
+  const short = v ? (v.side === 'same' ? tr('정가', 'at market') : `${v.diff > 0 ? '+' : '−'}${Math.abs(v.diff) >= 10 ? Math.round(Math.abs(v.diff)) : Math.round(Math.abs(v.diff) * 10) / 10}%`) : '';
+  return `<div class="trd-line-row sell shoprow" id="p-${r.id}" role="row">
+<span class="trd-c-kind" role="cell"><span class="trd-kind shop">${tr('상점', 'Shop')}</span></span>
+<span class="trd-c-item" role="cell">${icon(r.item, 32)}<span><a class="trd-post-item" href="${root.dataset.market}?item=${r.item}">${esc(nameOf(r))}</a>${r.qty > 1 ? `<small>${tr(`${nf.format(r.qty)}개 · 개당 값`, `${nf.format(r.qty)} · price each`)}</small>` : ''}</span></span>
+<span class="trd-c-price" role="cell"><b>${money(r.price)}</b><small>${nf.format(r.price)}</small></span>
+<span class="trd-c-vs" role="cell">${v ? `<span class="trd-vs ${v.side === 'same' ? 'same' : v.side === 'dear' ? 'risk' : 'fair'}" title="${esc(`${v.text} · ${tr('정가', 'market')} ${money(m)}`)}">${short}</span>` : '<span class="trd-vs none">–</span>'}</span>
+<span class="trd-c-who" role="cell"><b translate="no">${esc(r.nick)}</b><small>CH ${r.channel} · ${tr(`자유시장 ${r.room}`, `FM ${r.room}`)}</small></span>
+<span class="trd-c-when" role="cell"><time datetime="${esc(String(r.at).replace(' ', 'T'))}Z">${ago(r.at)}</time></span>
+<span class="trd-c-act" role="cell"><button type="button" class="btn small-btn ghost" data-open-shop="${r.shop}">${tr('상점 보기', 'View shop')}</button></span></div>`;
 }
 // The request form under a row: the asker's game name (no login), sent on to the writer by DM.
 function askHtml(r) {
@@ -169,9 +191,12 @@ function openForm(focus = true) {
   if (focus) (item ? $('tb-price') : $('trd-q')).focus({ preventScroll: true });
 }
 async function loadRefs(rows) {
-  const ids = [...new Set(rows.map((r) => r.item))].filter((id) => !refs.has(id)).slice(0, 60);
-  if (!ids.length) return;
-  try { const d = await getJson(`${api}/prices?ids=${ids.join(',')}`); for (const id of ids) refs.set(id, d[id]?.median || null); } catch {}
+  const all = [...new Set(rows.map((r) => r.item))].filter((id) => !refs.has(id));
+  // /prices takes up to 60 ids a call.
+  for (let i = 0; i < all.length; i += 60) {
+    const ids = all.slice(i, i + 60);
+    try { const d = await getJson(`${api}/prices?ids=${ids.join(',')}`); for (const id of ids) refs.set(id, d[id]?.median || null); } catch {}
+  }
 }
 // A post stays on the market until its writer deletes it (owner, 2026-11-24); the list holds the newest 100.
 function addPosts(rows) {
@@ -220,7 +245,7 @@ function drawShops() {
 <span class="trd-booth-body">${face(s, 96)}<span class="trd-booth-counter" aria-hidden="true"></span></span></span>
 <span class="trd-booth-name">${esc(s.seller)}</span>
 <span class="trd-shop-where">${esc(where(s))}${s.face?.level ? ` · Lv.${s.face.level}` : ''}</span>
-<span class="trd-shop-foot">${tr(`${nf.format(items.length)}개 판매 중`, `${nf.format(items.length)} on sale`)} · ${ago(s.seen)}</span></button>`;
+<span class="trd-shop-foot">${tr(`${nf.format(items.length)}개 판매 중`, `${nf.format(items.length)} on sale`)} · ${tr(`${ago(s.at)} 확인`, `seen ${ago(s.at)}`)}</span></button>`;
   }).join('');
   const rest = shops.length - SHOW_SHOPS;
   $('tb-shops-more').hidden = rest <= 0;
@@ -242,7 +267,7 @@ async function openShop(s) {
     }).join('');
     dlg.className = `trd-shopdlg ${wood(s)}`;
     body.innerHTML = `<div class="trd-shopdlg-head">${face(s, 56)}<div><h2 id="tb-shopdlg-h">${esc(tr(`${s.seller}의 상점`, `${s.seller}'s shop`))}</h2>
-<p>${esc(where(s))}${s.face?.job ? ` · ${esc(s.face.job)}` : ''}${s.face?.level ? ` · Lv.${s.face.level}` : ''} · ${ago(s.seen)}</p></div>
+<p>${esc(where(s))}${s.face?.job ? ` · ${esc(s.face.job)}` : ''}${s.face?.level ? ` · Lv.${s.face.level}` : ''} · ${tr(`마지막 확인 ${ago(s.at)}`, `last seen ${ago(s.at)}`)}</p></div>
 <button type="button" class="trd-shopdlg-x" data-close aria-label="${tr('닫기', 'Close')}">×</button></div>
 <ul class="trd-silist">${rows}</ul>
 <div class="trd-shopdlg-foot"><button type="button" class="btn small-btn" data-whisper="${esc(s.seller)}">${tr('귓말 복사', 'Copy whisper')}</button>
@@ -260,7 +285,10 @@ async function loadShops() {
   // Open shops = checked with Shop Scan in the last 24 hours and still holding unsold items (the same list as the cards).
   const st = $('tb-stat-shops');
   if (st) { st.removeAttribute('aria-busy'); st.textContent = failed ? '–' : nf.format(shops.length); }
+  shops.sort((a, b) => String(b.at).localeCompare(String(a.at)));
   drawShops();
+  drawBoard();
+  loadRefs(shopRows()).then(drawBoard);
 }
 
 const ERR = {
@@ -376,6 +404,7 @@ async function boot() {
   $('tb-form').addEventListener('submit', submit);
   $('tb-list').addEventListener('click', onBoardClick);
   $('tb-shop-list').addEventListener('click', (e) => { const b = e.target.closest('[data-shop]'); if (b) openShop(shops[Number(b.dataset.shop)]); });
+  $('tb-list').addEventListener('click', (e) => { const b = e.target.closest('[data-open-shop]'); if (b) openShop(shops[Number(b.dataset.openShop)]); });
   $('tb-shops-more').addEventListener('click', () => { shopsAll = !shopsAll; drawShops(); });
   $('tb-shopdlg').addEventListener('click', (e) => {
     if (e.target === e.currentTarget || e.target.closest('[data-close]')) { e.currentTarget.close(); return; }
@@ -397,6 +426,8 @@ async function boot() {
   $('tb-filter').addEventListener('click', (e) => { const b = e.target.closest('[data-v]'); if (!b) return; filter = b.dataset.v; for (const x of $('tb-filter').querySelectorAll('button')) x.setAttribute('aria-pressed', String(x === b)); drawBoard(); });
   addEventListener('gms-free-gone', (e) => { posts = posts.filter((r) => r.id !== e.detail); drawBoard(); });
   poll(); setInterval(poll, 60000);
+  // Shops: the worker rebuilds the list every 5 minutes; a page left open follows it.
+  setInterval(loadShops, 5 * 60000);
   setInterval(() => { for (const t of document.querySelectorAll('#tb-list time')) { const r = posts.find((x) => `p-${x.id}` === t.closest('.trd-line-row')?.id); if (r) t.textContent = ago(r.at); } }, 60000);
   let rows, catalog;
   try { [rows, catalog] = await Promise.all([getJson(root.dataset.items), getJson(`${api}/market/catalog`).catch(() => ({ items: [] }))]); } catch { return; }

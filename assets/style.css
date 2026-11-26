@@ -4473,6 +4473,7 @@ button.trd-slot:focus-visible { outline: 2px solid var(--focus); outline-offset:
 .trd-c-act .btn { white-space: nowrap; padding: 6px 14px; }
 .trd-kind { display: inline-block; font-size: 0.72rem; font-weight: 800; padding: 3px 8px; border-radius: 999px; background: var(--accent-fill); color: var(--accent-ink); white-space: nowrap; }
 .trd-kind.buy { background: var(--ko); color: var(--panel); }
+.trd-kind.shop { background: var(--accent-soft); color: var(--accent-2); box-shadow: inset 0 0 0 1px var(--accent-fill); }
 .trd-post-item { font-weight: 800; color: var(--text); text-decoration: none; overflow-wrap: anywhere; }
 .trd-post-item:hover { text-decoration: underline; }
 .trd-mine { font-size: 0.72rem; font-weight: 800; color: var(--accent); }

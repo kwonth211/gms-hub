@@ -172,7 +172,7 @@ export function tradeBoardBody({ lang, api, itemsUrl, marketUrl, megaphoneUrl, s
 
 <section class="panel trd-board" aria-label="${t('장터 목록', 'Market list')}">
 <div class="trd-board-head">
-<div class="trd-seg" id="tb-filter" role="group" aria-label="${t('종류', 'Kind')}"><button type="button" data-v="all" aria-pressed="true">${t('전체', 'All')}</button><button type="button" data-v="sell" aria-pressed="false">${t('팝니다', 'Selling')}</button><button type="button" data-v="buy" aria-pressed="false">${t('삽니다', 'Buying')}</button></div>
+<div class="trd-seg" id="tb-filter" role="group" aria-label="${t('종류', 'Kind')}"><button type="button" data-v="all" aria-pressed="true">${t('전체', 'All')}</button><button type="button" data-v="sell" aria-pressed="false">${t('팝니다', 'Selling')}</button><button type="button" data-v="buy" aria-pressed="false">${t('삽니다', 'Buying')}</button><button type="button" data-v="shop" aria-pressed="false">${t('상점', 'Shops')}</button></div>
 <input id="tb-search" class="trd-board-search" type="search" placeholder="${t('아이템이나 닉네임', 'Item or name')}" aria-label="${t('장터에서 찾기', 'Search the market')}">
 <label class="trd-sort">${t('정렬', 'Sort')}<select id="tb-sort"><option value="new">${t('최신순', 'Newest')}</option><option value="low">${t('값 싼 순', 'Cheapest')}</option><option value="high">${t('값 비싼 순', 'Dearest')}</option><option value="deal">${t('정가보다 싼 순', 'Furthest under market')}</option><option value="item">${t('아이템 이름순', 'Item name')}</option></select></label>
 <button type="button" class="btn small-btn" data-tb-open>${t('올리기', 'Post')}</button></div>

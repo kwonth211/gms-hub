@@ -397,6 +397,7 @@ function shopFor(rows) {
     shops.push(shop);
   }
   currentShop = shop;
+  shop.readAt = Date.now();
   shop.signature = rows.map((r) => `${r.name}|${r.price}`).join(';');
   if (SELLER.test(read)) shop.votes.set(read, (shop.votes.get(read) || 0) + 1);
   return shop;
@@ -406,6 +407,11 @@ const leader = (shop) => shop.override ? [shop.override, Infinity] : [...shop.vo
 const shopReady = (shop) => SELLER.test(leader(shop)[0]) && leader(shop)[1] >= 2;
 let uploaded = 0;
 let sending = false;
+// A shop still on screen is sent again every 10 minutes, so /trade/ shows when it was last seen open (owner 2026-11-26:
+// the last scan time is the shop's time). The server skips identical rows seen in the last 15 minutes except for that time.
+const BEAT_MS = 10 * 60 * 1000, ON_SCREEN_MS = 2 * 60 * 1000;
+const sentAt = new Map();
+const beatDue = (r, key, now) => now - (r.shop?.readAt || 0) < ON_SCREEN_MS && now - (sentAt.get(key) || 0) > BEAT_MS;
 let retryAt = 0;
 let failures = 0;
 
@@ -413,8 +419,9 @@ async function upload() {
   if (!i18n.api || sending || Date.now() < retryAt) return;
   const ready = [...listings.values()].map((e) => e.r).filter((r) => canUpload(r) && (r.edited || shopReady(r.shop)));
   // Copy the payload before awaiting the network; later edits must not be marked as sent by an older response.
-  const fresh = ready.filter((r) => sent.get(listingKey(r)) !== fingerprint(r)).slice(0, 100)
-    .map((r) => ({ r, key: listingKey(r), body: payload(r), signature: fingerprint(r) }));
+  const now = Date.now();
+  const fresh = ready.filter((r) => sent.get(listingKey(r)) !== fingerprint(r) || beatDue(r, listingKey(r), now)).slice(0, 100)
+    .map((r) => ({ r, key: listingKey(r), body: payload(r), signature: fingerprint(r), beat: sent.get(listingKey(r)) === fingerprint(r) }));
   if (!fresh.length) {
     if (uploaded) check('upload', 'ok', fill(i18n.uploadOk, { n: uploaded }));
     else if (listings.size) check('upload', 'warn', i18n.uploadNeed);
@@ -432,7 +439,7 @@ async function upload() {
       delete entry.r.pendingCorrection;
       sent.set(entry.key, entry.signature);
     }
-    const inserts = fresh.filter((e) => sent.get(e.key) !== e.signature);
+    const inserts = fresh.filter((e) => e.beat || sent.get(e.key) !== e.signature);
     if (inserts.length) {
       // Logged in with Discord (assets/account.js), the upload counts for the contributor leaderboard under their name.
       const res = await fetch(`${i18n.api}/listings`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(globalThis.gmsAuth?.() || {}) },
@@ -442,10 +449,11 @@ async function upload() {
       for (const e of inserts) {
         if (!sent.has(e.key)) uploaded++;
         sent.set(e.key, e.signature);
+        sentAt.set(e.key, Date.now());
       }
     }
     check('upload', 'ok', fill(i18n.uploadOk, { n: uploaded }));
-    track('scan_upload', { items: fresh.length });
+    if (fresh.some((e) => !e.beat)) track('scan_upload', { items: fresh.length });
     showMyShop(fresh.map((e) => e.body.seller));
     globalThis.gmsLoginNudge?.('scan');
     failures = 0;
