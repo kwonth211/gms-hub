@@ -111,7 +111,10 @@ test('status distinguishes paused, never ingested and delayed data, not merely a
  const e=environment();e.MARKET_BATCH_MIN_INTERVAL_SECONDS='3600';
  assert.equal((await getCollectionStatus(e)).state,'waiting');
  await post(e,batch());assert.equal((await getCollectionStatus(e)).state,'recent');
- e.sqlite.exec("UPDATE market_batch_runs SET received_at=datetime('now','-3 hours')");assert.equal((await getCollectionStatus(e)).state,'delayed');
+ e.sqlite.exec("UPDATE market_batch_runs SET received_at=datetime('now','-3 hours')");
+ // the status follows the newest listing the server saved (any collector), so the batch run alone no longer makes it stale
+ assert.equal((await getCollectionStatus(e)).state,'recent');
+ e.sqlite.exec("UPDATE listings SET first_seen=datetime('now','-3 hours'), last_seen=datetime('now','-3 hours')");assert.equal((await getCollectionStatus(e)).state,'delayed');
  e.MARKET_BATCH_PAUSED='true';assert.equal((await getCollectionStatus(e)).state,'paused');
  const plan=e.sqlite.prepare("EXPLAIN QUERY PLAN SELECT SUM(accepted) FROM market_batch_runs WHERE received_at>=date('now')").all();
  assert.ok(plan.some(r=>r.detail.includes('market_batch_runs_received_at')));

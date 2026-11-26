@@ -22,6 +22,7 @@ const baseLimits = env => ({
 const usageSql = `SELECT
   (SELECT COALESCE(SUM(accepted),0) FROM market_batch_runs WHERE received_at >= date('now')) AS rows,
   (SELECT MAX(received_at) FROM market_batch_runs) AS lastAt,
+  (SELECT first_seen FROM listings ORDER BY id DESC LIMIT 1) AS shopAt,
   (SELECT json FROM snapshots WHERE key = 'market-boost') AS boost`;
 export function collectionPolicy(env, usage, now = Date.now(), requestedRows = 1) {
   const policy = limits(env, boosting(usage)), remaining = Math.max(0, policy.dailyRows - usage.rows);
@@ -37,7 +38,10 @@ export function collectionPolicy(env, usage, now = Date.now(), requestedRows = 1
 export async function getCollectionStatus(env) {
   const usage = await env.DB.prepare(usageSql).first();
   const result = collectionPolicy(env, usage);
-  const lastSuccessAt = usage.lastAt ? usage.lastAt.replace(' ', 'T') + 'Z' : null;
+  // Listings also arrive from the in-game shop collector (/internal/shop-scan); the browser batch collector has been off since
+  // 2026-11-23, so "last collection" is the newer of the two (newest listing row = one primary-key read).
+  const iso = (v) => (v ? v.replace(' ', 'T') + 'Z' : null), times = [iso(usage.lastAt), iso(usage.shopAt)].filter(Boolean);
+  const lastSuccessAt = times.length ? times.reduce((a, b) => (Date.parse(a) >= Date.parse(b) ? a : b)) : null;
   const age = lastSuccessAt ? Date.now() - Date.parse(lastSuccessAt) : Infinity;
   return { ...result, lastSuccessAt,
     state: result.reason === 'paused' ? 'paused' : result.reason === 'daily_budget' ? 'budget_wait' :
