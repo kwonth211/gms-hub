@@ -64,3 +64,20 @@ test('owner pictures come from the ranking a few at a time; a missing character 
   assert.deepEqual(await refreshFaces(e, async () => ({ status: 503 })), { asked: 2, found: 0 });
   assert.equal(e.sqlite.prepare('SELECT COUNT(*) n FROM seller_faces').get().n, 0);
 });
+
+test('a shop shows only what it held at its latest scan, not items from an earlier scan of the same shop', async () => {
+  const e = environment();
+  // Earlier today the owner sold a scroll and a candy here; now the shop holds one blue potion.
+  add(e, 'Hookstk', 2040801, 32222, { ago: 300 });
+  add(e, 'Hookstk', 2022179, 299, { ago: 300 });
+  add(e, 'Hookstk', 2000003, 220, { ago: 2 });
+  // Items sent together at the latest scan, a few minutes apart, all stay.
+  add(e, 'Juky', 1302004, 40000, { ch: 28, room: 8, ago: 20 });
+  add(e, 'Juky', 4031000, 7500, { ch: 28, room: 8, ago: 2 });
+  await noteScanShops(e, [{ seller: 'Hookstk', channel: 3, room: 7 }, { seller: 'Juky', channel: 28, room: 8 }]);
+  const { shops } = await scanShops(e);
+  const by = Object.fromEntries(shops.map((s) => [s.seller, s.items.map((i) => i[0])]));
+  assert.deepEqual(by.Hookstk, [2000003]);
+  assert.deepEqual(by.Juky.sort(), [1302004, 4031000]);
+  assert.equal(shops.find((s) => s.seller === 'Hookstk').items[0].length, 5);
+});

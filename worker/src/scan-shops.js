@@ -7,6 +7,7 @@
 export const WINDOW_H = 24;
 export const MAX_SHOPS = 60;
 export const FACE_DAYS = 7;
+export const LATEST_MIN = 30;
 
 // Remember the shops in one upload (rows already validated by POST /listings).
 export async function noteScanShops(env, rows) {
@@ -28,14 +29,21 @@ export async function scanShops(env) {
     AND l.room = json_extract(k.value, '$[2]') AND l.last_seen >= datetime('now', ?)`)
     .bind(JSON.stringify(shops.map((s) => [s.seller, s.channel, s.room])), since).all();
   const by = new Map(shops.map((s) => [`${s.seller}|${s.channel}|${s.room}`, {
-    seller: s.seller, ch: s.channel, room: s.room, at: s.at, seen: s.at, items: [],
+    seller: s.seller, ch: s.channel, room: s.room, at: s.at, seen: '', items: [],
     face: s.photo || s.level ? { photo: s.photo || null, level: s.level ?? null, job: s.job || null } : null,
   }]));
   for (const r of rows) {
     const shop = by.get(`${r.seller}|${r.channel}|${r.room}`);
     if (!shop) continue;
-    shop.items.push([r.item, r.price, r.qty || 1, r.sold ? 1 : 0, parse(r.opts)]);
+    shop.items.push([r.item, r.price, r.qty || 1, r.sold ? 1 : 0, parse(r.opts), r.seen]);
     if (r.seen > shop.seen) shop.seen = r.seen;
+  }
+  // Only what the shop held at its latest scan (owner 2026-11-26: "파란 포션 1개만 올렸는데 전꺼까지 같이 뜨네"). A scan
+  // sends every item on screen together, and a shop kept on screen is sent again every 10 minutes (the server skips
+  // identical rows for 15), so the items still there were seen within ~25 minutes of the newest one; older ones are gone.
+  for (const shop of by.values()) {
+    const cut = new Date(Date.parse(`${shop.seen.replace(' ', 'T')}Z`) - LATEST_MIN * 60000).toISOString().slice(0, 19).replace('T', ' ');
+    shop.items = shop.items.filter((i) => i[5] >= cut).map((i) => i.slice(0, 5));
   }
   // A shop with nothing left on sale is not listed; open items first, the dearest first.
   const list = [...by.values()].filter((s) => s.items.some((i) => !i[3]));
