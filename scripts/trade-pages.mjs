@@ -135,7 +135,7 @@ export function tradeBoardBody({ lang, api, itemsUrl, marketUrl, megaphoneUrl, s
 <h1>${t('팝니다·삽니다 장터', 'Buy and sell market')}</h1>
 <p class="lead">${t('유저가 올린 팝니다·삽니다를 한 줄씩 모아 보는 장터예요. 값 옆에 정가보다 얼마나 비싼지 붙어 있어요.', 'Buy and sell lines from players, one row each. Every price says how far it is from the market.')}</p>
 <p class="trd-hero-cta"><button type="button" class="btn" data-tb-open>${spriteSvg('megaphone', 18)}<span>${t('팝니다·삽니다 올리기', 'Post a line')}</span></button></p></div>
-<div class="trd-stats-row">${stat('all', 'shop', t('올라온 글', 'posts'))}${stat('sell', 'coin', t('팝니다', 'selling'))}${stat('buy', 'bag', t('삽니다', 'buying'))}</div>
+<div class="trd-stats-row">${stat('all', 'shop', t('올라온 글', 'posts'))}${stat('sell', 'coin', t('팝니다', 'selling'))}${stat('buy', 'bag', t('삽니다', 'buying'))}${stat('shops', 'shop', t('열린 상점', 'open shops'))}</div>
 </div></section>
 <div class="wrap trd-page" id="tb-page" data-api="${esc(api)}" data-items="${esc(itemsUrl)}" data-market="${esc(marketUrl)}">
 <form class="panel trd-post" id="tb-form" autocomplete="off" aria-label="${t('팝니다·삽니다 올리기', 'Post a buy or sell line')}" hidden>
@@ -163,7 +163,7 @@ export function tradeBoardBody({ lang, api, itemsUrl, marketUrl, megaphoneUrl, s
 <section class="panel trd-shops" id="tb-shops" aria-labelledby="tb-shops-h" hidden>
 <div class="trd-shops-head"><h2 id="tb-shops-h">${spriteSvg('shop', 22)}${t('상점 스캔으로 올라온 상점', 'Shops from Shop Scan')} <small id="tb-shops-n"></small></h2>
 <a class="trd-shops-add" href="${esc(scanUrl)}">${t('내 상점도 올리기', 'Add my shop')} →</a></div>
-<p class="muted small">${t('최근 24시간 안에 상점 스캔으로 올라온 상점이에요. 누르면 지금 파는 물건과 값이 나와요.', 'Shops people uploaded with Shop Scan in the last 24 hours. Tap one to see what it sells now.')}</p>
+<p class="muted small">${t('최근 24시간 안에 상점 스캔으로 확인됐고 안 팔린 물건이 남은 상점이에요. 누르면 파는 물건과 값이 나와요.', 'Shops checked with Shop Scan in the last 24 hours that still have unsold items. Tap one to see what it sells.')}</p>
 <div class="trd-shop-row" id="tb-shop-list" aria-busy="true"></div>
 <button type="button" class="trd-report trd-shops-more" id="tb-shops-more" hidden></button>
 <p class="muted small trd-shops-credit" id="tb-shops-credit" hidden>${t('캐릭터 모습: <a href="https://classicrank.com" target="_blank" rel="noopener">ClassicRank</a>', 'Character pictures: <a href="https://classicrank.com" target="_blank" rel="noopener">ClassicRank</a>')}</p>

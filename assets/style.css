@@ -4505,7 +4505,7 @@ button.trd-slot:focus-visible { outline: 2px solid var(--focus); outline-offset:
   .trd-hero-in { padding-top: 18px; padding-bottom: 20px; gap: 18px; }
   .trd-steps { display: none; }
   .trd-board .trd-board-search { flex-basis: 100%; order: 3; }
-  .trd-stats-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .trd-stats-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .trd-stat { grid-template-columns: minmax(0, 1fr); padding: 10px; }
   .trd-stat .trd-step-ico { display: none; }
   .trd-intent { justify-self: stretch; }

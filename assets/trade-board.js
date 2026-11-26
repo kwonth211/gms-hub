@@ -206,7 +206,7 @@ function drawShops() {
   box.removeAttribute('aria-busy');
   $('tb-shops').hidden = !shops.length;
   if (!shops.length) return;
-  $('tb-shops-n').textContent = tr(`${nf.format(shops.length)}곳`, `${nf.format(shops.length)}`);
+  $('tb-shops-n').textContent = tr(`열린 상점 ${nf.format(shops.length)}곳`, `${nf.format(shops.length)} open`);
   const list = shopsAll ? shops : shops.slice(0, SHOW_SHOPS);
   box.innerHTML = list.map((s) => {
     const items = onSale(s), more = items.length - 3;
@@ -255,7 +255,11 @@ async function openShop(s) {
   if (dlg.open) draw();
 }
 async function loadShops() {
-  try { shops = (await getJson(`${api}/market/scan-shops`)).shops || []; } catch { shops = []; }
+  let failed = false;
+  try { shops = (await getJson(`${api}/market/scan-shops`)).shops || []; } catch { shops = []; failed = true; }
+  // Open shops = checked with Shop Scan in the last 24 hours and still holding unsold items (the same list as the cards).
+  const st = $('tb-stat-shops');
+  if (st) { st.removeAttribute('aria-busy'); st.textContent = failed ? '–' : nf.format(shops.length); }
   drawShops();
 }
 
