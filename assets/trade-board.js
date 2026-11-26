@@ -6,6 +6,8 @@
 import { makeMarketIndex } from './market-catalog.js';
 import { uniqueListings, sellCurve, bandAt, sellAdvice, rankAmong, medianPrice } from './trade-math.js';
 import { ko, tr, esc, nf, icon, money, mesos, pct, pips, track, getJson, moneyInput, picker, priceSlider, versus, ago } from './trade-ui.js';
+import { optionSummary } from './mega-option-text.js';
+import { itemAttrs } from './item-attrs.js';
 
 const root = document.getElementById('tb-page');
 const $ = (id) => document.getElementById(id);
@@ -185,6 +187,67 @@ async function poll() {
   try { const d = await getJson(`${api}/free-megas?limit=100${lastId ? `&after=${lastId}` : ''}`); if (addPosts(d.rows || []) || $('tb-list').hasAttribute('aria-busy')) drawBoard(); } catch { if ($('tb-list').hasAttribute('aria-busy')) drawBoard(); }
 }
 
+// ---------- shops from Shop Scan (owner 2026-11-26) ----------
+// The shops people uploaded with Shop Scan in the last day (worker /market/scan-shops): a row of shop cards at the top,
+// each opening a window like the game's personal shop with what it sells, how many and for how much.
+let shops = [], shopsAll = false;
+const SHOW_SHOPS = 8;
+const onSale = (s) => s.items.filter((i) => !i[3]);
+const face = (s, size) => (s.face?.photo
+  ? `<img class="trd-shop-face" src="${esc(s.face.photo)}" alt="" width="${size}" height="${size}" loading="lazy" referrerpolicy="no-referrer">`
+  : `<span class="trd-shop-face none" aria-hidden="true">${esc((s.seller || '?').slice(0, 1).toUpperCase())}</span>`);
+const where = (s) => tr(`CH ${s.ch} · 자유시장 ${s.room}`, `CH ${s.ch} · FM ${s.room}`);
+function drawShops() {
+  const box = $('tb-shop-list');
+  box.removeAttribute('aria-busy');
+  $('tb-shops').hidden = !shops.length;
+  if (!shops.length) return;
+  $('tb-shops-n').textContent = tr(`${nf.format(shops.length)}곳`, `${nf.format(shops.length)}`);
+  const list = shopsAll ? shops : shops.slice(0, SHOW_SHOPS);
+  box.innerHTML = list.map((s, k) => {
+    const items = onSale(s), more = items.length - 4;
+    return `<button type="button" class="trd-shop" data-shop="${shops.indexOf(s)}" aria-label="${esc(tr(`${s.seller}의 상점, ${items.length}개 판매 중`, `${s.seller}'s shop, ${items.length} on sale`))}">
+<span class="trd-shop-sign">${esc(s.seller)}</span>${face(s, 64)}
+<span class="trd-shop-where">${esc(where(s))}${s.face?.level ? ` · Lv.${s.face.level}` : ''}</span>
+<span class="trd-shop-icons">${items.slice(0, 4).map((i) => icon(i[0], 26)).join('')}${more > 0 ? `<em>+${more}</em>` : ''}</span>
+<span class="trd-shop-foot">${tr(`${nf.format(items.length)}개 판매 중`, `${nf.format(items.length)} on sale`)} · ${ago(s.seen)}</span></button>`;
+  }).join('');
+  const rest = shops.length - SHOW_SHOPS;
+  $('tb-shops-more').hidden = rest <= 0;
+  $('tb-shops-more').textContent = shopsAll ? tr('접기', 'Show fewer') : tr(`상점 ${nf.format(rest)}곳 더 보기`, `Show ${nf.format(rest)} more`);
+  $('tb-shops-credit').hidden = !shops.some((s) => s.face?.photo);
+}
+async function openShop(s) {
+  const dlg = $('tb-shopdlg'), body = $('tb-shopdlg-body');
+  const draw = () => {
+    const rows = s.items.map(([id, price, qty, sold, opts]) => {
+      // Gear prices depend on the piece's options, so the plain market price says nothing about it: no badge for equipment.
+      const m = refs.get(id), v = !sold && m && byId.get(id)?.cat !== 'Equip' ? versus(price, m) : null;
+      const extra = opts ? optionSummary(opts, ko) : '';
+      const short = v ? (v.side === 'same' ? tr('시세', 'market') : `${v.diff > 0 ? '+' : '−'}${Math.round(Math.abs(v.diff))}%`) : '';
+      return `<li class="trd-si${sold ? ' sold' : ''}"><span class="trd-si-icon"${itemAttrs(id, opts, 'listing')}>${icon(id, 32)}${qty > 1 ? `<b>${nf.format(qty)}</b>` : ''}</span>
+<span class="trd-si-name"><a href="${root.dataset.market}?item=${id}"${itemAttrs(id, opts, 'listing')}>${esc(byId.get(id)?.name || `#${id}`)}</a>${extra ? `<small>${esc(extra)}</small>` : ''}</span>
+<span class="trd-si-price">${sold ? `<em>${tr('판매 완료', 'Sold')}</em>` : `<b>${money(price)}</b><small>${qty > 1 ? tr('개당', 'each') : mesos(price)}</small>`}</span>
+<span class="trd-si-vs">${v ? `<span class="trd-vs ${v.side === 'same' ? 'same' : v.side === 'dear' ? 'risk' : 'fair'}" title="${esc(`${v.text} · ${tr('시세', 'market')} ${money(m)}`)}">${short}</span>` : ''}</span></li>`;
+    }).join('');
+    body.innerHTML = `<div class="trd-shopdlg-head">${face(s, 56)}<div><h2 id="tb-shopdlg-h">${esc(tr(`${s.seller}의 상점`, `${s.seller}'s shop`))}</h2>
+<p>${esc(where(s))}${s.face?.job ? ` · ${esc(s.face.job)}` : ''}${s.face?.level ? ` · Lv.${s.face.level}` : ''} · ${ago(s.seen)}</p></div>
+<button type="button" class="trd-shopdlg-x" data-close aria-label="${tr('닫기', 'Close')}">×</button></div>
+<ul class="trd-silist">${rows}</ul>
+<div class="trd-shopdlg-foot"><button type="button" class="btn small-btn" data-whisper="${esc(s.seller)}">${tr('귓말 복사', 'Copy whisper')}</button>
+<span class="muted small">${tr('값 옆 %는 시세보다 얼마나 비싸고 싼지예요. 게임에서 사기 전에 다시 확인하세요.', 'The % is how far each price is from the market. Check again in game before you buy.')}</span></div>`;
+  };
+  draw();
+  if (!dlg.open) dlg.showModal();
+  track('trade_shop_open', { page_type: 'trade', items: onSale(s).length });
+  await loadRefs(s.items.map(([item]) => ({ item })));
+  if (dlg.open) draw();
+}
+async function loadShops() {
+  try { shops = (await getJson(`${api}/market/scan-shops`)).shops || []; } catch { shops = []; }
+  drawShops();
+}
+
 const ERR = {
   nick: () => tr('내 닉네임에 귓말 받을 이름을 2~20자로 적으세요. @와 링크는 안 돼요.', 'Enter the name to whisper (2 to 20 characters, no @ or links).'),
   item: () => tr('아이템을 목록에서 다시 고르세요.', 'Pick the item from the list again.'),
@@ -297,6 +360,13 @@ async function boot() {
   document.querySelector('.trd-intent').addEventListener('click', (e) => { const b = e.target.closest('[data-intent]'); if (b) setIntent(b.dataset.intent); });
   $('tb-form').addEventListener('submit', submit);
   $('tb-list').addEventListener('click', onBoardClick);
+  $('tb-shop-list').addEventListener('click', (e) => { const b = e.target.closest('[data-shop]'); if (b) openShop(shops[Number(b.dataset.shop)]); });
+  $('tb-shops-more').addEventListener('click', () => { shopsAll = !shopsAll; drawShops(); });
+  $('tb-shopdlg').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget || e.target.closest('[data-close]')) { e.currentTarget.close(); return; }
+    const w = e.target.closest('[data-whisper]');
+    if (w) navigator.clipboard?.writeText(`/w ${w.dataset.whisper} `).then(() => { const old = w.textContent; w.textContent = tr('복사됨', 'Copied'); setTimeout(() => (w.textContent = old), 1200); }).catch(() => {});
+  });
   $('tb-list').addEventListener('submit', (e) => { const f = e.target.closest('[data-ask-form]'); if (f) { e.preventDefault(); sendAsk(f); } });
   $('tb-list').addEventListener('input', (e) => { if (ask && e.target.closest('.trd-req')) { if (e.target.name === 'nick') ask.nick = e.target.value; if (e.target.name === 'ch') ask.ch = e.target.value; } });
   $('tb-dm').addEventListener('click', (e) => { if (e.target.closest('#tb-dm-login')) { saveDraft(); track('trade_dm_login', { page_type: 'trade' }); } });
@@ -321,6 +391,7 @@ async function boot() {
   picker({ input: $('trd-q'), list: $('trd-opts'), index, allow: () => true, onPick: (it) => choose(it), first: (it) => summary.has(it.id),
     note: (it) => { const s = summary.get(it.id); return s?.median ? money(s.median) : ''; } });
   drawBoard();
+  loadShops();
   const p = new URLSearchParams(location.search), first = byId.get(Number(p.get('item')));
   if (p.get('kind') === 'buy') setIntent('buy');
   // Back from connecting Discord: the form as it was left.

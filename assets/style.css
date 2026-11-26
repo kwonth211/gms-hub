@@ -116,6 +116,8 @@ img { max-width: 100%; }
 h1, h2, h3, h4 { line-height: 1.3; letter-spacing: -0.015em; }
 h2 { font-size: 1.35rem; margin: 48px 0 16px; }
 .sprite { flex: none; image-rendering: pixelated; }
+/* Menu icons are 4x pixel art scaled down: smooth sampling keeps their shading, pixelated would drop rows. */
+.sprite.nav-ico { image-rendering: auto; object-fit: contain; }
 
 /* header */
 .site-header { position: sticky; top: var(--tk-h); z-index: 20; background: var(--header-bg); border-bottom: 1px solid var(--line); }
@@ -4770,3 +4772,70 @@ div.trd-req p { flex: 1 1 260px; }
 .traffic-dash .td-c-pass { color: #b91c1c; }
 .traffic-dash .td-c-bot { color: #1d4ed8; }
 .traffic-dash .td-ok { color: var(--ok); }
+
+/* 상점 스캔으로 올라온 상점 (/trade/, 2026-11-26): a row of shop cards like characters standing with their shop sign,
+   and a window like the game's personal shop. */
+.trd-shops { margin-bottom: 16px; }
+.trd-shops[hidden] { display: none; }
+.trd-shops-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.trd-shops-head h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 1.1rem; }
+.trd-shops-head h2 small { font-size: .85rem; color: var(--muted); font-weight: 700; }
+.trd-shops-add { font-weight: 800; font-size: .9rem; color: var(--accent-2); text-decoration: none; }
+.trd-shops-add:hover { text-decoration: underline; }
+.trd-shop-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; margin-top: 10px; }
+.trd-shop-row[aria-busy="true"] { min-height: 150px; border-radius: 12px; background: var(--panel-2); }
+.trd-shop { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 30px 10px 10px; font: inherit; color: var(--text);
+  text-align: center; background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%); border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: 0 var(--edge) 0 var(--line-strong); cursor: var(--cur-hand, pointer); transition: transform .12s ease, box-shadow .12s ease; min-width: 0; }
+.trd-shop:hover { transform: translateY(-2px); border-color: var(--accent-fill); }
+.trd-shop:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* The shop sign over the owner's head, as in game: a small white balloon with a dark outline. */
+.trd-shop-sign { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); max-width: calc(100% - 16px); overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; padding: 2px 10px; font-size: .78rem; font-weight: 800; color: #2b2b2b; background: #fff; border: 2px solid #3d3326; border-radius: 8px; }
+.trd-shop-face { width: 64px; height: 64px; border-radius: 12px; object-fit: contain; image-rendering: pixelated; background: var(--panel-2); }
+.trd-shop-face.none { display: grid; place-items: center; font-size: 1.6rem; font-weight: 900; color: var(--accent-2); background: var(--accent-soft); border: 1px solid var(--accent-fill); }
+.trd-shop-where { font-size: .78rem; color: var(--muted); font-weight: 700; }
+.trd-shop-icons { display: flex; align-items: center; justify-content: center; gap: 2px; min-height: 28px; flex-wrap: nowrap; white-space: nowrap; }
+.trd-shop-icons img { width: 26px; height: 26px; image-rendering: pixelated; }
+.trd-shop-icons em { font-style: normal; font-size: .75rem; font-weight: 800; color: var(--muted); margin-left: 2px; }
+.trd-shop-foot { font-size: .78rem; font-weight: 700; color: var(--text-2); }
+.trd-shops-more { margin-top: 8px; font-size: .85rem; }
+.trd-shops-credit { margin: 6px 0 0; }
+
+dialog.trd-shopdlg { margin: auto; width: min(520px, calc(100vw - 24px)); max-height: calc(100vh - 40px); padding: 0; border: 2px solid #3d3326; border-radius: 14px;
+  background: var(--panel); color: var(--text); box-shadow: 0 18px 40px rgba(0, 0, 0, .35); }
+dialog.trd-shopdlg::backdrop { background: rgba(0, 0, 0, .45); }
+.trd-shopdlg-head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: linear-gradient(180deg, #8a6a46, #6b5034); color: #fff; }
+.trd-shopdlg-head .trd-shop-face { width: 56px; height: 56px; background: rgba(255, 255, 255, .15); }
+.trd-shopdlg-head h2 { margin: 0; font-size: 1.05rem; color: #fff; }
+.trd-shopdlg-head p { margin: 2px 0 0; font-size: .82rem; opacity: .9; }
+.trd-shopdlg-head > div { flex: 1; min-width: 0; }
+.trd-shopdlg-x { font: inherit; font-size: 1.4rem; line-height: 1; width: 34px; height: 34px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .5); background: rgba(0, 0, 0, .15); color: #fff; cursor: var(--cur-hand, pointer); }
+.trd-shopdlg-x:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.trd-silist { list-style: none; margin: 0; padding: 8px 10px; max-height: min(60vh, 520px); overflow: auto; background: #f4efe6; }
+:root[data-theme="dark"] .trd-silist { background: var(--panel-2); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .trd-silist { background: var(--panel-2); } }
+.trd-si { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto 56px; align-items: center; gap: 10px; padding: 6px 8px; margin: 4px 0;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+.trd-si.sold { opacity: .55; }
+.trd-si-icon { position: relative; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 8px; background: var(--panel-2); }
+.trd-si-icon img { image-rendering: pixelated; }
+.trd-si-icon b { position: absolute; right: -2px; bottom: -4px; font-size: .68rem; font-weight: 900; padding: 0 4px; border-radius: 6px; background: var(--text); color: var(--panel); }
+.trd-si-name { min-width: 0; }
+.trd-si-name a { display: block; font-weight: 800; color: var(--text); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.trd-si-name a:hover { text-decoration: underline; }
+.trd-si-name small { display: block; font-size: .76rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.trd-si-price { text-align: right; }
+.trd-si-price b { display: block; font-size: .95rem; }
+.trd-si-price small { display: block; font-size: .72rem; color: var(--muted); }
+.trd-si-price em { font-style: normal; font-size: .8rem; font-weight: 800; color: var(--muted); }
+.trd-si-vs { text-align: right; }
+.trd-shopdlg-foot { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 14px 12px; border-top: 1px solid var(--line); }
+.trd-shopdlg-foot .muted { flex: 1 1 220px; }
+@media (max-width: 520px) {
+  .trd-shop-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .trd-si { grid-template-columns: 36px minmax(0, 1fr) auto; }
+  .trd-shop-icons { gap: 1px; }
+  .trd-shop-icons img { width: 21px; height: 21px; }
+  .trd-si-vs { display: none; }
+}

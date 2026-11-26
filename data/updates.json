@@ -2,6 +2,32 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "nav-icons",
+   "version": "0.7.83",
+   "level": "patch",
+   "date": "2026-11-26",
+   "path": "/",
+   "ko": "메뉴 아이콘 새 단장",
+   "en": "New menu icons",
+   "desc": {
+    "ko": "위쪽 메뉴와 펼침 메뉴의 아이콘을 버섯 로고와 같은 그림체로 새로 그렸어요. 휴대폰에서도 또렷하게 보여요.",
+    "en": "The icons in the top menu and its dropdowns are redrawn in the same style as the mushroom logo, sharp on phones too."
+   }
+  },
+  {
+   "id": "scan-shops",
+   "version": "0.7.82",
+   "level": "minor",
+   "date": "2026-11-26",
+   "path": "/trade/",
+   "ko": "팝니다·삽니다 — 상점 스캔으로 올라온 상점을 한눈에",
+   "en": "Buy and sell — shops from Shop Scan at a glance",
+   "desc": {
+    "ko": "상점 스캔으로 올라온 상점이 장터 맨 위에 카드로 떠요. 카드를 누르면 게임 상점 창처럼 그 상점이 지금 파는 물건, 개수, 값이 나오고, 값 옆에는 시세보다 얼마나 비싼지가 붙어요. 귓말 복사도 바로 돼요. 최근 24시간 안에 올라온 상점만 보여요.",
+    "en": "Shops people uploaded with Shop Scan now show as cards at the top of the market. Tap one to see what it sells, how many and for how much, like the shop window in game, with how far each price is from the market and a whisper button. Only shops uploaded in the last 24 hours are shown."
+   }
+  },
+  {
    "id": "guides-rebuilt",
    "version": "0.7.81",
    "level": "minor",

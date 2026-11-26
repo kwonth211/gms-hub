@@ -32,6 +32,7 @@ import { refreshNews } from './news.js';
 import { Presence, handlePresence, handlePresencePeak } from './presence.js';
 import { adsTxtReads, handleToolReport, handleTraffic, logBlock } from './traffic.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
+import { noteScanShops, scanShops, refreshFaces, pruneScanShops } from './scan-shops.js';
 import { validRoom } from '../../assets/place.js';
 import { handleShopLink } from './shop-preview.js';
 import { trendsToDiscord, marketToDiscord, newsToDiscord, freeMegaToDiscord, freeMegaGoneFromDiscord } from './discord.js';
@@ -460,7 +461,7 @@ const api = {
     const now = new Date();
     // The weekly report's daily rollups (yesterday's megaphones, today's ranking) are written before the prune runs.
     if (now.getUTCHours() === 16 && now.getUTCMinutes() < 15)
-      ctx.waitUntil(storeDailyRollups(env).catch(() => null).then(() => pruneMegaphones(env)).then(() => pruneFreeMegas(env)).then(() => env.DB.prepare("DELETE FROM listing_gone WHERE at < datetime('now', '-31 days')").run()).catch(() => null));
+      ctx.waitUntil(storeDailyRollups(env).catch(() => null).then(() => pruneMegaphones(env)).then(() => pruneFreeMegas(env)).then(() => pruneScanShops(env)).then(() => env.DB.prepare("DELETE FROM listing_gone WHERE at < datetime('now', '-31 days')").run()).catch(() => null));
     // Retention first, then the safety-net re-summary of everything seen in the last day (one 1-day scan).
     if (now.getUTCHours() === 16 && now.getUTCMinutes() < 15)
       ctx.waitUntil(archiveListings(env).catch(() => null).then(() => reconcileItemMarket(env)).catch(() => null));
@@ -477,6 +478,8 @@ const api = {
     if (now.getUTCMinutes() < 15) ctx.waitUntil(leaderboardToDiscord(env).catch((e) => console.log('leaderboard failed', String(e))));
     // Scam report cards: reported characters' level, job and picture, read again every few days (5 names an hour).
     if (now.getUTCMinutes() < 15) ctx.waitUntil(refreshProfiles(env, lookupCharacter).catch((e) => console.log('scam profiles failed', String(e))));
+    // Scanned shops' owner pictures (/trade/): a few names on the other three ticks of the hour, kept for a week.
+    if (now.getUTCMinutes() >= 15) ctx.waitUntil(refreshFaces(env, lookupCharacter).catch((e) => console.log('shop faces failed', String(e))));
     // Daily market summary in #시세-거래-market at 21:00 KST (12:00 UTC run), once a day (snapshot key per KST day).
     if (now.getUTCHours() === 12 && now.getUTCMinutes() < 15) ctx.waitUntil((async () => {
       const key = `discord-market:${new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10)}`;
@@ -784,6 +787,18 @@ const api = {
       return json(r.body, cors, r.status, r.status === 200 || r.status === 404 ? 'public, max-age=3600' : 'no-store');
     }
 
+    // 상점 스캔으로 올라온 상점 for /trade/ (scan-shops.js): a 5-minute snapshot, edge-cached a minute.
+    if (url.pathname === '/market/scan-shops' && req.method === 'GET') {
+      try {
+        let data = await freshSnapshot(env, 'scan-shops', 5);
+        if (!data) {
+          data = await scanShops(env);
+          await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('scan-shops',?,datetime('now'))").bind(JSON.stringify(data)).run();
+        }
+        return json(data, cors, 200, 'public, max-age=60');
+      } catch (e) { return json({ error: 'shops unavailable' }, cors, 503); }
+    }
+
     if (url.pathname === '/market/top' && req.method === 'GET') {
       const data = (await freshSnapshot(env, 'market', 30)) || (await refreshSnapshot(env));
       return json(data, cors, 200, 'public, max-age=60');
@@ -942,6 +957,8 @@ const api = {
       const results = await env.DB.batch(ok.map((r) => stmt.bind(r.item, r.price, r.qty || 1, r.sold ? 1 : 0, r.seller, r.channel, r.room, reporter,
         r.seller,r.item,r.price,r.channel,r.room,reporter,r.qty || 1,r.sold ? 1 : 0)));
       const changed = ok.filter((_, i) => results[i].meta.changes > 0);
+      // The shops in this upload go on /trade/'s list of scanned shops (scan-shops.js), whoever's rows they are.
+      if (ctx?.waitUntil) ctx.waitUntil(noteScanShops(env, ok).catch(() => null));
       // Leaderboard points for the uploader (logged-in visitors under their Discord name, see contributors.js).
       if (changed.length && ctx?.waitUntil) ctx.waitUntil(recordContribution(env, req, 'scan', changed.length, reporter, changed.map((r) => r.seller)).catch(() => null));
       if (changed.length) {

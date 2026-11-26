@@ -126,7 +126,7 @@ export function scrollProfitBody({ lang, api, itemsUrl, dataUrl, marketUrl, forg
 // /trade/: the buy and sell board (owner, 2026-11-24: its own counter, not the megaphone bar). A post is a 무료 고확
 // underneath (worker/src/free-mega.js), so it also shows on the megaphone page, the top strip and Discord. The
 // composer has a slider around the market price that says how dear the price is; assets/trade-board.js runs it.
-export function tradeBoardBody({ lang, api, itemsUrl, marketUrl, megaphoneUrl, sellUrl, scamUrl, discordIcon = '' }) {
+export function tradeBoardBody({ lang, api, itemsUrl, marketUrl, megaphoneUrl, sellUrl, scamUrl, scanUrl = '', discordIcon = '' }) {
   const ko = lang === 'ko';
   const t = (k, e) => (ko ? k : e);
   const stat = (key, icon, label) => `<div class="trd-stat"><span class="trd-step-ico">${spriteSvg(icon, 28)}</span><b id="tb-stat-${key}" aria-busy="true"></b><span>${label}</span></div>`;
@@ -159,6 +159,16 @@ export function tradeBoardBody({ lang, api, itemsUrl, marketUrl, megaphoneUrl, s
 <div class="trd-post-foot"><button type="submit" class="btn" id="tb-send">${spriteSvg('megaphone', 18)}<span id="tb-send-label">${t('팝니다 올리기', 'Post selling line')}</span></button><span class="trd-post-status" id="tb-status" role="status" aria-live="polite"></span></div>
 <p class="muted small">${t('2분에 한 번, 하루 10번까지 올릴 수 있어요. 현금 거래, 링크, 연락처는 올릴 수 없어요. 신고가 3번 쌓이면 숨겨져요.', 'One post every 2 minutes, 10 a day. No real-money trades, links or contact handles. Three reports hide a post.')}</p>
 </form>
+
+<section class="panel trd-shops" id="tb-shops" aria-labelledby="tb-shops-h" hidden>
+<div class="trd-shops-head"><h2 id="tb-shops-h">${spriteSvg('shop', 22)}${t('상점 스캔으로 올라온 상점', 'Shops from Shop Scan')} <small id="tb-shops-n"></small></h2>
+<a class="trd-shops-add" href="${esc(scanUrl)}">${t('내 상점도 올리기', 'Add my shop')} →</a></div>
+<p class="muted small">${t('최근 24시간 안에 상점 스캔으로 올라온 상점이에요. 누르면 지금 파는 물건과 값이 나와요.', 'Shops people uploaded with Shop Scan in the last 24 hours. Tap one to see what it sells now.')}</p>
+<div class="trd-shop-row" id="tb-shop-list" aria-busy="true"></div>
+<button type="button" class="trd-report trd-shops-more" id="tb-shops-more" hidden></button>
+<p class="muted small trd-shops-credit" id="tb-shops-credit" hidden>${t('캐릭터 모습: <a href="https://classicrank.com" target="_blank" rel="noopener">ClassicRank</a>', 'Character pictures: <a href="https://classicrank.com" target="_blank" rel="noopener">ClassicRank</a>')}</p>
+</section>
+<dialog class="trd-shopdlg" id="tb-shopdlg" aria-labelledby="tb-shopdlg-h"><div id="tb-shopdlg-body"></div></dialog>
 
 <section class="panel trd-board" aria-label="${t('장터 목록', 'Market list')}">
 <div class="trd-board-head">

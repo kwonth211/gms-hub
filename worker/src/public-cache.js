@@ -9,7 +9,7 @@ const parameters = new Map([
   ['/market/reports', ['limit', 'page', 'days', 'item', 'kind', 'ids']],
   ['/market/history', ['id', 'opts', 'stat', 'val']], ['/market/status', []], ['/rank', []], ['/rank/lookup', ['name']],
   ['/megaphones', ['after', 'limit', 'item']], ['/megaphones/stats', []], ['/scam', []],
-  ['/free-megas', ['after', 'limit']], ['/report/raw', []], ['/news', []]
+  ['/free-megas', ['after', 'limit']], ['/market/scan-shops', []], ['/report/raw', []], ['/news', []]
 ]);
 export async function cachedPublicResponse(req, load, ctx) {
   const url = new URL(req.url);

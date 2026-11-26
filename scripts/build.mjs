@@ -813,6 +813,14 @@ ${ld.map(ldScript).join('\n')}
 // The logo (owner's pick, 2026-11-24): a 64-grid pixel mushroom with a meso coin, art in ~/gms-hub-discord/brand/logo-1124.
 // One 256 px file (1 KB) that the browser scales down smoothly for every size and screen density.
 const LOGO_V = 'b1';
+// Header menu icons (owner 2026-11-26: logo-grade quality): lit pixel art drawn by scripts/nav-icons.py into assets/nav/,
+// 4x size, scaled down smoothly by the browser like the logo. About 1 KB each, so they load at full quality at once.
+// Icons in the closed dropdowns load only when a menu opens.
+const NAV_V = 'n1';
+const NAV_ICONS = new Set(fs.readdirSync(path.join(root, 'assets', 'nav')).filter((f) => f.endsWith('.webp')).map((f) => f.slice(0, -5)));
+const navIcon = (name, size, lazy = false) => NAV_ICONS.has(name)
+  ? `<img class="sprite nav-ico" src="${href(`/assets/nav/${name}.webp?v=${NAV_V}`)}" width="${size}" height="${size}" alt=""${lazy ? ' loading="lazy"' : ''} decoding="async">`
+  : spriteSvg(name, size);
 const logoImg = (size) => `<img class="logo" src="${href(`/assets/logo-256.webp?v=${LOGO_V}`)}" width="${size}" height="${size}" alt="">`;
 const THEME_BOOT = `(function(){try{localStorage.removeItem('gms-theme');var t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;if(localStorage.getItem('gms-charm')==='off')document.documentElement.dataset.charm='off';var m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='dark'?'#0f1420':'#f6f1e7';}catch(e){}})();`;
 const THEME_ICON = `<svg class="theme-icon" viewBox="0 0 16 16" width="18" height="18" shape-rendering="crispEdges" aria-hidden="true"><g class="sun"><rect x="6" y="6" width="4" height="4"/><rect x="7" y="1" width="2" height="3"/><rect x="7" y="12" width="2" height="3"/><rect x="1" y="7" width="3" height="2"/><rect x="12" y="7" width="3" height="2"/><rect x="3" y="3" width="2" height="2"/><rect x="11" y="3" width="2" height="2"/><rect x="3" y="11" width="2" height="2"/><rect x="11" y="11" width="2" height="2"/></g><g class="moon"><rect x="6" y="2" width="5" height="2"/><rect x="4" y="4" width="3" height="2"/><rect x="3" y="6" width="3" height="4"/><rect x="4" y="10" width="3" height="2"/><rect x="6" y="12" width="5" height="2"/><rect x="11" y="10" width="2" height="2"/></g></svg>`;
@@ -886,7 +894,7 @@ function header(lang, pagePath, only) {
     const isNew = items.some(([p]) => NEW_TABS.has(p));
     // Only the closest entry is marked: on /quests/best-meso/ the list entry /quests/ is not the current page.
     const here = paths.filter((p) => pagePath?.startsWith(p)).sort((x, y) => y.length - x.length)[0];
-    return `<details class="tool-menu"><summary class="tab"${on ? ' aria-current="page"' : ''}${ko ? '' : ` title="${esc(label)}"`}>${isNew ? `<span class="tab-ico">${spriteSvg(icon, 20)}<span class="tab-new" title="${ko ? '새 기능' : 'New'}">N</span></span>` : spriteSvg(icon, 20)}${ko ? `<span>${label}</span>` : `<span class="tab-full">${label}</span><span class="tab-short" aria-hidden="true">${shortEn}</span>`}<span class="tool-caret" aria-hidden="true"></span></summary><div class="tool-list">${items.map(([p, ic, l]) => `<a class="tool-opt" href="${href(langPath(lang, p))}"${p === here ? ' aria-current="page"' : ''}>${spriteSvg(ic, 20)}<span>${esc(l)}</span>${NEW_TABS.has(p) ? '<span class="tab-new tool-new">N</span>' : ''}</a>`).join('')}</div></details>`;
+    return `<details class="tool-menu"><summary class="tab"${on ? ' aria-current="page"' : ''}${ko ? '' : ` title="${esc(label)}"`}>${isNew ? `<span class="tab-ico">${navIcon(icon, 22)}<span class="tab-new" title="${ko ? '새 기능' : 'New'}">N</span></span>` : navIcon(icon, 22)}${ko ? `<span>${label}</span>` : `<span class="tab-full">${label}</span><span class="tab-short" aria-hidden="true">${shortEn}</span>`}<span class="tool-caret" aria-hidden="true"></span></summary><div class="tool-list">${items.map(([p, ic, l]) => `<a class="tool-opt" href="${href(langPath(lang, p))}"${p === here ? ' aria-current="page"' : ''}>${navIcon(ic, 22, true)}<span>${esc(l)}</span>${NEW_TABS.has(p) ? '<span class="tab-new tool-new">N</span>' : ''}</a>`).join('')}</div></details>`;
   };
   const tabHtml = [
     dropMenu(marketItems, 'coin', ko ? '시세' : 'Market', 'Market'),
@@ -3899,7 +3907,7 @@ ${farmFaq.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')}
         desc: lang === 'ko' ? '글클메 자유시장에 아이템을 얼마에 올려야 팔릴까요? 아이템과 값을 넣으면 최근 7일 동안 그 값대 매물이 몇 개나 팔렸는지, 지금 올리면 몇 번째로 싼지, 빨리 팔 값은 얼마인지 알려 줘요.' : 'What price sells in the MapleStory Classic World Free Market? Enter an item and a price to see the share of listings that sold at that price over 7 days, your place among current listings and the quick-sale price.',
         body: sell, ld: [breadcrumbLd(lang, lang === 'ko' ? '팔릴 가격 계산기' : 'Sell price check', '/tools/sell/'), faqOf(sell)]
       }));
-      const board = tradeBoardBody({ lang, api: config.voteApi, itemsUrl, marketUrl, megaphoneUrl: href(langPath(lang, '/megaphone/')), sellUrl: href(langPath(lang, '/tools/sell/')), scamUrl: href(langPath(lang, '/scam/')) , discordIcon: DISCORD_ICON(15) });
+      const board = tradeBoardBody({ lang, api: config.voteApi, itemsUrl, marketUrl, megaphoneUrl: href(langPath(lang, '/megaphone/')), sellUrl: href(langPath(lang, '/tools/sell/')), scamUrl: href(langPath(lang, '/scam/')), scanUrl: href(langPath(lang, '/tools/scan/')), discordIcon: DISCORD_ICON(15) });
       write(path.join(lang, 'trade', 'index.html'), page({
         lang, pageKey: 'trade', pagePath: '/trade/', modules: ['trade-board.js'],
         title: lang === 'ko' ? '글클메 팝니다·삽니다: 무료 거래 게시판, 시세보다 얼마나 비싼지 바로 확인 | GMS Hub' : 'MapleStory Classic World Buy and Sell Board: Post Free, See How Your Price Stands | GMS Hub',
