@@ -96,3 +96,12 @@ test('a shop keeps the title read by Shop Scan; links and real-money words never
   assert.equal(cleanTitle('   '), null);
   assert.equal(cleanTitle('x'.repeat(60)).length, 40);
 });
+
+test('a seller scanned at a new channel or room is listed there only; the older place is closed', async () => {
+  const e = environment();
+  add(e, 'Hookstk', 2000003, 219, { ch: 15, room: 7, ago: 20 });
+  add(e, 'Hookstk', 4010004, 500, { ch: 15, room: 10, ago: 1 });
+  e.sqlite.prepare("INSERT INTO scan_shops (seller, channel, room, at) VALUES ('Hookstk', 15, 7, datetime('now', '-20 minutes')), ('Hookstk', 15, 10, datetime('now', '-1 minutes'))").run();
+  const { shops } = await scanShops(e);
+  assert.deepEqual(shops.map((s) => [s.seller, s.room]), [['Hookstk', 10]]);
+});

@@ -55,8 +55,11 @@ export async function scanShops(env) {
     const cut = new Date(Date.parse(`${shop.seen.replace(' ', 'T')}Z`) - LATEST_MIN * 60000).toISOString().slice(0, 19).replace('T', ' ');
     shop.items = shop.items.filter((i) => i[5] >= cut).map((i) => i.slice(0, 5));
   }
+  // A character runs one shop at a time: when the same seller was scanned somewhere newer, the older place is closed.
+  const newest = new Map();
+  for (const s of by.values()) { const k = s.seller.toLowerCase(), o = newest.get(k); if (!o || s.at > o.at) newest.set(k, s); }
   // A shop with nothing left on sale is not listed; open items first, the dearest first.
-  const list = [...by.values()].filter((s) => s.items.some((i) => !i[3]));
+  const list = [...by.values()].filter((s) => newest.get(s.seller.toLowerCase()) === s && s.items.some((i) => !i[3]));
   for (const s of list) s.items.sort((a, b) => a[3] - b[3] || b[1] - a[1]);
   list.sort((a, b) => (a.seen < b.seen ? 1 : a.seen > b.seen ? -1 : 0));
   return { at: new Date().toISOString(), shops: list };
