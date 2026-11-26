@@ -89,83 +89,22 @@ function koreaChart(d) {
 <p class="td-legend"><span class="k kr"></span>한국 ${nf(kSum)} <span class="k ab"></span>해외 ${nf(aSum)} <span class="muted">· 해외 ${kSum + aSum ? Math.round((aSum / (kSum + aSum)) * 100) : 0}%</span></p>`;
 }
 
-// Automated browsers (headless Chrome, crawlers) by hour: an estimate already included in every other number.
-function botChart(d) {
-  const b = d.bots;
-  if (!b) return '';
-  const W = 720, H = 150, P = 30, bw = (W - P) / 24;
-  const rows = b.hourly, all = d.hourly.day, max = Math.max(5, ...rows.map(([v]) => v));
-  const base = H - 20, ky = (v) => (v / max) * (H - 30);
-  const ticks = [0, 0.5, 1].map((f) => Math.round(max * f)).map((v) => `<text x="0" y="${base - ky(v) + 4}" class="td-ax">${v}</text><line x1="${P}" x2="${W}" y1="${base - ky(v)}" y2="${base - ky(v)}" class="td-grid"/>`).join('');
-  const bars = rows.map(([v, p], i) => {
-    const tot = all[i]?.[0] || 0;
-    const tip = tipLines([`${i}시`, `자동 접속 방문 ${nf(v)} · 페이지뷰 ${nf(p)}`, tot ? `이 시간 전체 방문 ${nf(tot)} 중 ${Math.round((v / tot) * 100)}%` : '']);
-    return `<rect x="${P + i * bw + 2}" y="${base - ky(v)}" width="${bw - 4}" height="${ky(v)}" class="td-bot"/><rect x="${P + i * bw}" y="0" width="${bw}" height="${H}" class="td-hit" data-tip="${tip}"/>`;
-  }).join('');
-  const total = sum(rows), share = sum(all) ? Math.round((total / sum(all)) * 100) : 0;
-  const top = b.top.filter((r) => r.visits > 0).slice(0, 6).map((r) => `<li><span>${esc(r.browser === 'ChromeHeadless' ? '화면 없는 크롬' : r.browser)} · ${esc(COUNTRY[r.country] || r.country)} · <code>${esc(r.path)}</code></span><b>${nf(r.visits)}</b></li>`).join('');
-  return `<section class="panel"><h2>자동 접속(봇) 추정 <small class="muted">방문 ${nf(total)} · 전체의 ${share}%</small></h2>
-<svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="시간대별 자동 접속 추정">${ticks}${bars}${Array.from({ length: 12 }, (_, i) => i * 2).map((h) => `<text x="${P + h * bw + bw / 2}" y="${H - 4}" class="td-ax mid">${h}시</text>`).join('')}</svg>
-${top ? `<ul class="td-botlist">${top}</ul>` : ''}
-<p class="muted small">위 방문·나라·페이지 숫자에는 이 자동 접속이 포함돼 있어요. 브라우저 이름으로 가려낸 추정이라, 이름을 숨긴 봇은 빠져요.</p></section>`;
-}
-
 // Requests that were turned away: by Cloudflare's firewall on the site, and by our own API. Every row is listed (not a
 // top few) so nothing blocked goes unseen; a row from a search engine's network is flagged, since that would be a mistake.
-const FW_SOURCE = { firewallCustom: '직접 만든 규칙', firewallcustom: '직접 만든 규칙', firewallManaged: '관리 규칙', firewallmanaged: '관리 규칙', bic: '브라우저 무결성 검사', securitylevel: '보안 수준', securityLevel: '보안 수준', hot: '이미지 도용 방지', ratelimit: '요청 제한', l7ddos: '디도스 방어', botFight: '봇 파이트 모드', botfight: '봇 파이트 모드', validation: '잘못된 요청', waf: '웹 방화벽', uablock: '브라우저 이름 차단', ip: '주소 차단', country: '나라 차단', asn: '통신망 차단', zonelockdown: '구역 잠금' };
-const FW_ACTION = { block: '차단', challenge: '확인 요구', jschallenge: '확인 요구', managed_challenge: '확인 요구', connection_close: '연결 끊음', challenge_failed: '확인 실패', jschallenge_failed: '확인 실패' };
-const WK_REASON = { nopath: '없는 주소 찌르기 (받은 것 없음)', headless: '화면 없는 크롬', listings: '매물 목록 긁기', outside: '사이트 밖에서 API 호출', rate: '요청 너무 많음', key: '운영자 키 틀림', forbidden: '허용 안 된 요청' };
 const SEARCH_NET = /google|microsoft|naver|kakao|daum|yandex|apple|duckduckgo|baidu|openai/i;
-// Cloud servers rented from the same companies also scan for leaked files; those rows are not search engines.
-const SCAN_PATH = /wp-|\.php|\.env|\.git|\.sql|\.bak/i;
 // Google and Microsoft rent servers to anyone under the same network name, so there the crawler's own name or Googlebot's
 // address block (66.249.64.0/19) has to match too.
 const RENTED_NET = /google|microsoft/i;
 const CRAWLER_UA = /bot\b|google|bing|lighthouse|spider|crawler|preview/i;
 const crawlerLike = (r) => SEARCH_NET.test(r.org || '') && (!RENTED_NET.test(r.org) || CRAWLER_UA.test(r.ua || '') || /^66\.249\.(6[4-9]|[78]\d|9[0-5])\./.test(r.ip || ''));
-const isSearch = (g) => g.crawler && ![...g.paths.keys()].every((x) => SCAN_PATH.test(x));
-const isRented = (g) => !g.crawler && RENTED_NET.test(g.org || '');
 const uaShort = (ua) => {
   if (!ua) return '(이름 없음)';
   const m = ua.match(/HeadlessChrome\/[\d]+|python-requests\/[\d.]+|Python-urllib\/[\d.]+|aiohttp\/[\d.]+|Java\/[\d._]+|curl\/[\d.]+|Go-http-client\/[\d.]+|node-fetch|axios\/[\d.]+|okhttp\/[\d.]+|[A-Za-z]+[Bb]ot\/?[\d.]*|Edg\/\d+|Firefox\/\d+|Chrome\/\d+|Safari\/\d+/);
   return m ? m[0] : ua.slice(0, 40);
 };
-function blockedPanel(d) {
-  const b = d.blocked;
-  if (!b) return '';
-  // Only what Cloudflare's firewall stopped on the site: our own API's refusals are listed in the API panel above.
-  const fw = b.firewall?.rows || [];
-  const fwN = fw.reduce((a, r) => a + r.n, 0);
-  const W = 720, H = 150, P = 30, bw = (W - P) / 24, base = H - 20;
-  const max = Math.max(5, ...b.hourly.map(([f]) => f)), ky = (v) => (v / max) * (H - 30);
-  const ticks = [0, 0.5, 1].map((f) => Math.round(max * f)).map((v) => `<text x="0" y="${base - ky(v) + 4}" class="td-ax">${v}</text><line x1="${P}" x2="${W}" y1="${base - ky(v)}" y2="${base - ky(v)}" class="td-grid"/>`).join('');
-  const bars = b.hourly.map(([f], i) => `<rect x="${P + i * bw + 2}" y="${base - ky(f)}" width="${bw - 4}" height="${ky(f)}" class="td-bot"/><rect x="${P + i * bw}" y="0" width="${bw}" height="${H}" class="td-hit" data-tip="${tipLines([`${i}시`, `방화벽이 막은 요청 ${nf(f)}`])}"/>`).join('');
-  // By who: one network + country + browser name is one line, with the rules, pages and addresses it touched.
-  const groups = new Map();
-  const add = (r, where, why) => {
-    const crawler = crawlerLike(r), k = `${r.org}|${r.country}|${uaShort(r.ua)}|${crawler}`;
-    const g = groups.get(k) || { crawler, org: r.org, country: r.country, ua: uaShort(r.ua), full: r.ua, n: 0, why: new Map(), paths: new Map(), ips: new Set(), where: new Set() };
-    g.n += r.n; g.where.add(where); if (r.ip) g.ips.add(r.ip);
-    g.why.set(why, (g.why.get(why) || 0) + r.n); g.paths.set(r.path, (g.paths.get(r.path) || 0) + r.n);
-    groups.set(k, g);
-  };
-  for (const r of fw) add(r, '방화벽', `${FW_SOURCE[r.source] || r.source} · ${FW_ACTION[r.action] || r.action}`);
-  const top = (m, n) => [...m.entries()].sort((a, c) => c[1] - a[1]).slice(0, n);
-  const list = [...groups.values()].sort((a, c) => c.n - a.n);
-  const warn = list.filter(isSearch);
-  const rows = list.map((g) => `<tr${isSearch(g) ? ' class="td-warn"' : ''}><td class="num"><b>${nf(g.n)}</b></td><td>${esc(COUNTRY[g.country] || g.country)} · ${esc(g.org || '?')}${isSearch(g) ? ' <span class="td-flag">검색 로봇</span>' : isRented(g) ? ' <span class="muted">(검색 로봇 이름 아님)</span>' : ''}${d.you && g.ips.has(d.you) ? ' <span class="td-tag-me">내 인터넷</span>' : ''}<br><span class="muted">주소 ${nf(g.ips.size)}개${g.ips.size <= 3 ? ` (${esc([...g.ips].join(', '))})` : ''}</span></td><td title="${esc(g.full)}">${esc(g.ua)}</td><td>${top(g.why, 3).map(([w, n]) => `${esc(w)} ${nf(n)}`).join('<br>')}</td><td>${top(g.paths, 3).map(([pth, n]) => `<code>${esc(pth)}</code> ${nf(n)}`).join('<br>')}${g.paths.size > 3 ? `<br><span class="muted">외 ${nf(g.paths.size - 3)}곳</span>` : ''}</td></tr>`);
-  const errs = [b.firewall?.error && `사이트 방화벽 기록을 못 읽었어요: ${b.firewall.error}`].filter(Boolean).map((t) => `<p class="td-err">${esc(t)}</p>`).join('');
-  return `<section class="panel"><h2>방화벽이 막은 요청 <small class="muted">${b.firewall?.error ? '못 읽음' : `${nf(fwN)}건 · ${nf(list.length)}군데`}</small></h2>
-${errs}${b.firewall?.full ? '<p class="td-err">하루치가 너무 많아 최근 5,000건만 세었어요.</p>' : ''}
-<svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="시간대별 차단">${ticks}${bars}${Array.from({ length: 12 }, (_, i) => i * 2).map((h) => `<text x="${P + h * bw + bw / 2}" y="${H - 4}" class="td-ax mid">${h}시</text>`).join('')}</svg>
-${warn.length ? `<p class="td-err">검색 로봇으로 보이는 요청이 ${nf(warn.reduce((a, g) => a + g.n, 0))}건 막혔어요. 아래 빨간 줄을 확인하세요.</p>` : ''}
-${rows.length ? foldTable('<tr><th class="num">횟수</th><th>나라 · 통신망</th><th>브라우저 이름</th><th>막은 이유</th><th>요청한 주소</th></tr>', rows, 'data td-who-table td-blk-table') : (errs ? '' : '<p class="muted">이 날 막힌 요청이 없어요.</p>')}
-<p class="muted small">사이트(gms-hub.com) 앞단에서 Cloudflare가 막은 요청이에요. 방문 숫자에 들어가지 않고, Cloudflare가 보관하는 사흘쯤까지만 나와요. 우리 서버(API)가 거절한 요청은 위 'API를 부른 곳 전체'에 있어요.</p></section>`;
-}
-
 // Calls to the API that did not come from a page of the site: someone reading prices, listings or megaphones straight
 // from the address. They are answered for now and only counted (worker reason 'watch'); one line per caller.
-const API_NAME = [[/^\/prices/, '가격'], [/^\/market\/history/, '7일 매물 기록'], [/^\/market\/catalog/, '전체 시세 요약'], [/^\/market\/item/, '아이템 시세'], [/^\/market\//, '시세'], [/^\/listings/, '매물'], [/^\/megaphones/, '확성기'], [/^\/free-megas/, '팝니다·삽니다'], [/^\/rank/, '랭킹'], [/^\/scam/, '사기꾼 제보'], [/^\/news/, '게임 공지'], [/^\/report/, '주간 리포트']];
+const API_NAME = [[/^\/prices/, '가격'], [/^\/market\/history/, '7일 매물 기록'], [/^\/market\/catalog/, '전체 시세 요약'], [/^\/market\/item/, '아이템 시세'], [/^\/market\//, '시세'], [/^\/listings/, '매물'], [/^\/megaphones/, '확성기'], [/^\/free-megas/, '팝니다·삽니다'], [/^\/rank/, '랭킹'], [/^\/scam/, '사기꾼 제보'], [/^\/news/, '게임 공지'], [/^\/report/, '주간 리포트'], [/^\/account/, '계정 설정 저장'], [/^\/tool-report/, '도구 기록']];
 const apiName = (p) => (API_NAME.find(([re]) => re.test(p)) || [0, '그 밖'])[1];
 // Everyone who called the API in one list: answered from outside the site, verified search crawlers and refused calls
 // together, each caller with how many went through and how many were turned away. The owner's own addresses (this
@@ -178,49 +117,64 @@ function myIps(you) {
   if (you && !list.includes(you)) { list = [...list, you].slice(-30); try { localStorage.setItem(MY_IPS, JSON.stringify(list)); } catch (e) {} }
   return new Set(list);
 }
-function outsidePanel(d) {
-  const o = d.blocked?.api;
-  if (!o) return '';
-  if (o.error) return `<section class="panel"><h2>API를 부른 곳 전체</h2><p class="td-err">기록을 못 읽었어요: ${esc(o.error)}</p></section>`;
+// Everything unusual in one panel (owner 2026-11-26: "한눈에 보기 쉽게, 뭐가 이렇게 세세하게 나눠놨어"): calls to the
+// API from outside the site, what the server and Cloudflare's firewall refused, and automated page visits. Four numbers,
+// one hourly chart and one list of who to look at; search robots and the rest fold away.
+function guardPanel(d) {
+  const o = d.blocked?.api, b = d.blocked;
+  if (!o && !b) return '';
   const mine = myIps(d.you);
-  const all = o.rows || [], rowsIn = all.filter((r) => !mine.has(r.ip)), hidden = all.reduce((a, r) => a + (mine.has(r.ip) ? r.n : 0), 0);
-  const kind = (r) => (API_STATE[r.reason] || ['stop', `차단 · ${r.reason}`])[0];
-  const hours = Array.from({ length: 24 }, () => ({ pass: 0, bot: 0, stop: 0 }));
-  for (const r of rowsIn) hours[r.hour][kind(r)] += r.n;
+  const api = (o?.rows || []).filter((r) => !mine.has(r.ip)), hidden = (o?.rows || []).reduce((a, r) => a + (mine.has(r.ip) ? r.n : 0), 0);
+  const fw = b?.firewall?.rows || [];
+  // A path we do not have got nothing (404): counted with what was refused, shown as 없는 주소. Older records ('watch'
+  // before 2026-11-26) are told apart by the path.
+  const ours = (pth) => apiName(pth) !== '그 밖' || /^\/(account|tool-report|alerts|votes|presence|support|contributors)/.test(pth);
+  const kind = (r) => (r.reason === 'nopath' || (r.reason === 'watch' && !ours(r.path)) ? 'none' : (API_STATE[r.reason] || ['stop'])[0]);
+  const hours = Array.from({ length: 24 }, (_, i) => ({ pass: 0, bot: 0, stop: b?.hourly?.[i]?.[0] || 0 }));
+  for (const r of api) hours[r.hour][kind(r) === 'none' ? 'stop' : kind(r)] += r.n;
   const tot = hours.reduce((a, h) => ({ pass: a.pass + h.pass, bot: a.bot + h.bot, stop: a.stop + h.stop }), { pass: 0, bot: 0, stop: 0 });
+  const botVisits = d.bots ? sum(d.bots.hourly) : 0;
+  // One line per caller (network + country), API calls and firewall blocks together.
+  const groups = new Map();
+  const add = (r, k, label, n) => {
+    const key = `${r.org}|${r.country}`;
+    const g = groups.get(key) || { org: r.org, country: r.country, n: 0, pass: 0, bot: 0, stop: 0, none: 0, ips: new Set(), paths: new Map(), uas: new Set(), crawler: false };
+    g.n += n; g[k] += n; if (r.ip) g.ips.add(r.ip); g.uas.add(uaShort(r.ua));
+    g.paths.set(r.path, (g.paths.get(r.path) || 0) + n);
+    if (k === 'bot' || crawlerLike(r)) g.crawler = true;
+    groups.set(key, g);
+  };
+  for (const r of api) add(r, kind(r), '', r.n);
+  for (const r of fw) add(r, 'stop', '', r.n);
+  const list = [...groups.values()].sort((a, c) => c.pass - a.pass || c.n - a.n);
+  const robots = list.filter((g) => g.crawler && !g.pass), people = list.filter((g) => !robots.includes(g));
+  const badge = (g) => [g.pass && `<span class="td-st pass">받아 감 ${nf(g.pass)}</span>`, g.stop && `<span class="td-st stop">막음 ${nf(g.stop)}</span>`, g.none && `<span class="td-st stop">없는 주소 ${nf(g.none)}</span>`, g.bot && `<span class="td-st bot">검색 로봇 ${nf(g.bot)}</span>`].filter(Boolean).join(' ');
+  const paths = (g) => { const t = [...g.paths.entries()].sort((a, c) => c[1] - a[1]); return `${t.slice(0, 2).map(([pth]) => esc(apiName(pth) === '그 밖' ? pth : apiName(pth))).join(', ')}${t.length > 2 ? ` <span class="muted">외 ${nf(t.length - 2)}곳</span>` : ''}`; };
+  const row = (g) => `<tr${g.pass ? ' class="td-warn"' : ''}><td class="num"><b>${nf(g.n)}</b></td><td>${badge(g)}</td><td>${esc(COUNTRY[g.country] || g.country)} · ${esc(g.org || '?')}<br><span class="muted">주소 ${nf(g.ips.size)}개${g.ips.size === 1 ? ` (${esc([...g.ips][0])})` : ''} · 프로그램 ${nf(g.uas.size)}가지</span></td><td>${paths(g)}</td></tr>`;
+  const head = '<tr><th class="num">횟수</th><th>결과</th><th>누구</th><th>부른 것</th></tr>';
+  // The chart: three lines by hour, the same as before but with the firewall's blocks inside "막음".
   const upto = d.isToday ? d.cutHour : 23, shown = hours.slice(0, upto + 1);
-  const W = 720, H = 180, P = 36, bw = (W - P) / 24, base = H - 20;
-  const max = Math.max(5, ...hours.map((h) => Math.max(h.pass, h.bot, h.stop))), ky = (v) => (v / max) * (H - 42), x = (i) => P + i * bw + bw / 2;
+  const W = 720, H = 170, P = 36, bw = (W - P) / 24, base = H - 20;
+  const max = Math.max(5, ...hours.map((h) => Math.max(h.pass, h.bot, h.stop))), ky = (v) => (v / max) * (H - 36), x = (i) => P + i * bw + bw / 2;
   const ticks = [0, 0.5, 1].map((f) => Math.round(max * f)).map((v) => `<text x="0" y="${base - ky(v) + 4}" class="td-ax">${nf(v)}</text><line x1="${P}" x2="${W}" y1="${base - ky(v)}" y2="${base - ky(v)}" class="td-grid"/>`).join('');
-  const line = (key, cls) => `<polyline class="td-api ${cls}" points="${shown.map((h, i) => `${x(i)},${base - ky(h[key])}`).join(' ')}"/>${shown.map((h, i) => (h[key] ? `<circle cx="${x(i)}" cy="${base - ky(h[key])}" r="3" class="td-api-dot ${cls}"/>` : '')).join('')}`;
-  const hits = shown.map((h, i) => `<rect x="${P + i * bw}" y="0" width="${bw}" height="${H}" class="td-hit" data-tip="${tipLines([`${i}시`, `통과 ${nf(h.pass)} · 검색 로봇 ${nf(h.bot)} · 차단 ${nf(h.stop)}`])}"/>`).join('');
-  // By who: one network + country is one line, whatever program names it sent (a scanner rotates through dozens).
-  const groups = new Map(), kinds = new Map();
-  for (const r of rowsIn) {
-    const k = `${r.org}|${r.country}`;
-    const g = groups.get(k) || { org: r.org, country: r.country, uas: new Map(), n: 0, pass: 0, bot: 0, stop: 0, why: new Map(), paths: new Map(), ips: new Set() };
-    g.n += r.n; g[kind(r)] += r.n; if (r.ip) g.ips.add(r.ip);
-    g.uas.set(uaShort(r.ua), (g.uas.get(uaShort(r.ua)) || 0) + r.n);
-    const label = (API_STATE[r.reason] || [0, `차단 · ${r.reason}`])[1];
-    g.why.set(label, (g.why.get(label) || 0) + r.n);
-    g.paths.set(r.path, (g.paths.get(r.path) || 0) + r.n);
-    groups.set(k, g);
-    if (kind(r) !== 'stop') kinds.set(apiName(r.path), (kinds.get(apiName(r.path)) || 0) + r.n);
-  }
-  const top = (m, n) => [...m.entries()].sort((a, c) => c[1] - a[1]).slice(0, n);
-  const list = [...groups.values()].sort((a, c) => c.n - a.n);
-  const cls = (label) => (label.startsWith('차단') ? 'stop' : label.startsWith('검색') ? 'bot' : 'pass');
-  const progs = (g) => { const t = top(g.uas, 2).map(([u]) => esc(u)).join(', '); return g.uas.size > 2 ? `${t} <span class="muted">외 ${nf(g.uas.size - 2)}가지</span>` : t; };
-  const rows = list.map((g) => `<tr><td class="num"><b>${nf(g.n)}</b></td><td>${[...g.why.entries()].sort((a, c) => c[1] - a[1]).map(([w, n]) => `<span class="td-st ${cls(w)}">${esc(w)} ${nf(n)}</span>`).join(' ')}</td><td>${esc(COUNTRY[g.country] || g.country)} · ${esc(g.org || '?')}<br><span class="muted">주소 ${nf(g.ips.size)}개${g.ips.size <= 3 ? ` (${esc([...g.ips].join(', '))})` : ''}</span></td><td>${progs(g)}</td><td>${top(g.paths, 4).map(([p, n]) => `<code>${esc(p)}</code> ${nf(n)}`).join('<br>')}${g.paths.size > 4 ? `<br><span class="muted">외 ${nf(g.paths.size - 4)}곳</span>` : ''}</td></tr>`);
-  const kindLine = top(kinds, 6).map(([k, n]) => `${esc(k)} ${nf(n)}`).join(' · ');
-  return `<section class="panel"><h2>API를 부른 곳 전체 <small class="muted">통과 ${nf(tot.pass)} · 검색 로봇 ${nf(tot.bot)} · 차단 ${nf(tot.stop)} · 부른 곳 ${nf(list.length)}군데</small></h2>
-<p class="muted small">사이트 화면이 아닌 곳에서 API를 부른 요청이에요. 11월 26일 오전 8시 40분부터는 열쇠 없는 호출을 모두 막아요. 내 인터넷 주소에서 온 ${nf(hidden)}번은 뺐어요.</p>
-${o.full ? '<p class="td-err">하루치가 너무 많아 많이 부른 순으로 4,000줄까지만 세었어요.</p>' : ''}
-<svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="시간대별 API 호출">${ticks}${line('pass', 'pass')}${line('bot', 'bot')}${line('stop', 'stop')}${hits}${Array.from({ length: 12 }, (_, i) => i * 2).map((h) => `<text x="${P + h * bw + bw / 2}" y="${H - 4}" class="td-ax mid">${h}시</text>`).join('')}</svg>
-<p class="td-legend"><span class="k api-pass"></span>통과 (데이터를 받아 감) ${nf(tot.pass)} <span class="k api-bot"></span>검색 로봇 ${nf(tot.bot)} <span class="k api-stop"></span>차단 ${nf(tot.stop)}</p>
-${kindLine ? `<p class="muted small">통과한 호출이 읽어 간 것: ${kindLine}</p>` : ''}
-${rows.length ? foldTable('<tr><th class="num">횟수</th><th>결과</th><th>나라 · 통신망</th><th>프로그램 이름</th><th>부른 주소</th></tr>', rows, 'data td-who-table td-blk-table') : '<p class="muted">이 날 기록된 호출이 없어요.</p>'}
-<p class="muted small">사이트 화면에서 부른 정상 요청, 열쇠를 쓰는 우리 빌드·수집기, 디스코드 로그인, 공유 카드는 세지 않아요. "gms-hub.com에서 왔다"고 꾸며 보내는 프로그램은 구분이 안 돼서 빠져요.</p></section>`;
+  const line = (key) => `<polyline class="td-api ${key}" points="${shown.map((h, i) => `${x(i)},${base - ky(h[key])}`).join(' ')}"/>${shown.map((h, i) => (h[key] ? `<circle cx="${x(i)}" cy="${base - ky(h[key])}" r="3" class="td-api-dot ${key}"/>` : '')).join('')}`;
+  const hits = shown.map((h, i) => `<rect x="${P + i * bw}" y="0" width="${bw}" height="${H}" class="td-hit" data-tip="${tipLines([`${i}시`, `받아 감 ${nf(h.pass)} · 막음 ${nf(h.stop)} · 검색 로봇 ${nf(h.bot)}`])}"/>`).join('');
+  const errs = [o?.error && `API 기록을 못 읽었어요: ${o.error}`, b?.firewall?.error && `방화벽 기록을 못 읽었어요: ${b.firewall.error}`].filter(Boolean).map((t) => `<p class="td-err">${esc(t)}</p>`).join('');
+  const verdict = tot.pass ? `사이트 밖에서 데이터를 받아 간 곳이 ${nf(people.filter((g) => g.pass).length)}군데 있어요. 빨간 줄을 보세요.` : '사이트 밖에서 데이터를 받아 간 곳은 없어요.';
+  return `<section class="panel td-guard"><h2>이상한 요청 <small class="muted">사이트 화면이 아닌 곳에서 온 요청</small></h2>
+${errs}<p class="${tot.pass ? 'td-err' : 'td-ok'}"><b>${esc(verdict)}</b></p>
+<div class="td-cards td-cards-sm">
+<div class="td-card"><span>받아 감</span><b class="td-c-pass">${nf(tot.pass)}</b><small>열쇠 없이 데이터를 가져간 호출</small></div>
+<div class="td-card"><span>막음</span><b>${nf(tot.stop)}</b><small>우리 서버·방화벽이 거절, 없는 주소 포함</small></div>
+<div class="td-card"><span>검색 로봇</span><b class="td-c-bot">${nf(tot.bot)}</b><small>구글·애플·빙 등 확인된 로봇 (정상)</small></div>
+<div class="td-card"><span>자동 접속 방문</span><b>${nf(botVisits)}</b><small>페이지를 연 봇 (방문 숫자에 포함)</small></div>
+</div>
+<svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="시간대별 이상한 요청">${ticks}${line('bot')}${line('stop')}${line('pass')}${hits}${Array.from({ length: 12 }, (_, i) => i * 2).map((h) => `<text x="${P + h * bw + bw / 2}" y="${H - 4}" class="td-ax mid">${h}시</text>`).join('')}</svg>
+<p class="td-legend"><span class="k api-pass"></span>받아 감 <span class="k api-stop"></span>막음 <span class="k api-bot"></span>검색 로봇</p>
+${people.length ? `<h3 class="td-sub">확인할 곳</h3>${foldTable(head, people.map(row), 'data td-who-table td-blk-table')}` : ''}
+${robots.length ? `<details class="td-more"><summary>검색 로봇 ${nf(robots.length)}곳 보기 (정상)</summary>${foldTable(head, robots.map(row), 'data td-who-table td-blk-table')}</details>` : ''}
+${d.bots?.top?.length ? `<details class="td-more"><summary>페이지를 연 봇 보기</summary><ul class="td-botlist">${d.bots.top.filter((r) => r.visits > 0).slice(0, 10).map((r) => `<li><span>${esc(r.browser === 'ChromeHeadless' ? '화면 없는 크롬' : r.browser)} · ${esc(COUNTRY[r.country] || r.country)} · <code>${esc(r.path)}</code></span><b>${nf(r.visits)}</b></li>`).join('')}</ul></details>` : ''}
+<p class="muted small">11월 26일 오전 8시 40분부터 열쇠 없는 API 호출은 모두 막아요. 사이트 화면, 열쇠를 쓰는 우리 빌드·수집기, 디스코드 로그인, 공유 카드는 세지 않아요. 내 인터넷 주소에서 온 ${nf(hidden)}번은 뺐어요. 방화벽 기록은 사흘쯤만 남아요.</p></section>`;
 }
 
 // Runs of the screen-reading tools over the last 7 days: what share read, and every way the others failed.
@@ -327,13 +281,9 @@ ${weekChart(d, upto)}
 <section class="panel"><h2>많이 본 페이지 <small class="muted">페이지뷰 · 언어 합산</small></h2>${bars(d.pages.slice(0, 15), { label: (p) => `${esc(pageName(p.page))}<small> ${Object.entries(p.langs).sort((a, b) => b[1] - a[1]).map(([l, n]) => `${l} ${nf(n)}`).join(' · ')}</small>`, value: (p) => p.views })}</section>
 <section class="panel"><h2>처음 들어온 페이지 <small class="muted">방문</small></h2>${bars(d.landings.slice(0, 15), { label: (p) => `${esc(pageName(p.path.replace(/^\/(ko|en|zh|ja)(?=\/)/, '')))}<small> ${esc((p.path.match(/^\/(ko|en|zh|ja)\//) || [, ''])[1])}</small>`, value: (p) => p.landings, accent: true })}</section>
 </div>
-<div class="td-grid2">
 <section class="panel"><h2>기기</h2>${bars(d.devices, { label: (x) => esc({ desktop: 'PC', mobile: '모바일', tablet: '태블릿' }[x.device] || x.device), value: (x) => x.visits })}</section>
-${botChart(d)}
-</div>
 <h2 class="td-part">요청 지키기</h2>
-${outsidePanel(d)}
-${blockedPanel(d)}
+${guardPanel(d)}
 <h2 class="td-part">화면 읽는 도구</h2>
 ${toolPanel(d)}
 </div>`;

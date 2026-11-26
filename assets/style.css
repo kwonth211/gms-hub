@@ -4752,3 +4752,10 @@ div.trd-req p { flex: 1 1 260px; }
 .traffic-dash .td-chips li { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel-2); font-size: .85rem; }
 .traffic-dash .td-chips b { font-variant-numeric: tabular-nums; }
 .traffic-dash .td-part { margin: 26px 0 10px; font-size: 1.05rem; color: var(--muted); }
+
+/* The single "이상한 요청" panel (2026-11-26). */
+.traffic-dash .td-guard .td-cards-sm { margin: 10px 0 12px; }
+.traffic-dash .td-guard .td-card b { font-size: 1.35rem; }
+.traffic-dash .td-c-pass { color: #b91c1c; }
+.traffic-dash .td-c-bot { color: #1d4ed8; }
+.traffic-dash .td-ok { color: var(--ok); }
