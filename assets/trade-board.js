@@ -216,7 +216,7 @@ async function poll() {
 // The shops people uploaded with Shop Scan in the last day (worker /market/scan-shops): a row of shop cards at the top,
 // each opening a window like the game's personal shop with what it sells, how many and for how much.
 let shops = [], shopsAll = false;
-const SHOW_SHOPS = 8;
+const SHOW_SHOPS = 12;
 const onSale = (s) => s.items.filter((i) => !i[3]);
 // The owner's character from ClassicRank; the site's mushroom stands in the booth when there is none yet or it fails to load
 // (owner 2026-11-26).
