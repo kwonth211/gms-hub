@@ -4739,3 +4739,16 @@ div.trd-req p { flex: 1 1 260px; }
 .td-st.pass { color: #b91c1c; background: color-mix(in srgb, #dc2626 12%, transparent); }
 .td-st.bot { color: #1d4ed8; background: color-mix(in srgb, #2563eb 12%, transparent); }
 .td-st.stop { color: var(--text-2); background: color-mix(in srgb, #6b7280 16%, transparent); }
+
+/* Traffic dashboard tidy-up (owner 2026-11-26): long tables fold, the live page tally as chips, part headings. */
+.traffic-dash .td-more { margin-top: 6px; }
+.traffic-dash .td-more > summary { cursor: var(--cur-hand, pointer); font-weight: 700; font-size: .9rem; color: var(--accent-2); padding: 8px 2px; list-style: none; }
+.traffic-dash .td-more > summary::-webkit-details-marker { display: none; }
+.traffic-dash .td-more > summary::before { content: '▸ '; }
+.traffic-dash .td-more[open] > summary::before { content: '▾ '; }
+.traffic-dash .td-more > summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.traffic-dash .td-sub { margin: 14px 0 6px; font-size: .95rem; }
+.traffic-dash .td-chips { list-style: none; margin: 0 0 6px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.traffic-dash .td-chips li { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel-2); font-size: .85rem; }
+.traffic-dash .td-chips b { font-variant-numeric: tabular-nums; }
+.traffic-dash .td-part { margin: 26px 0 10px; font-size: 1.05rem; color: var(--muted); }

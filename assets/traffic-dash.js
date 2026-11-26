@@ -30,6 +30,15 @@ function bars(rows, { max, label, value, fmt = nf, accent = false }) {
   return `<ul class="td-bars">${rows.map((r) => `<li><span class="td-bl">${label(r)}</span><span class="td-bt"><i style="width:${(value(r) / m) * 100}%" class="${accent ? 'acc' : ''}"></i></span><b>${fmt(value(r))}</b></li>`).join('')}</ul>`;
 }
 
+// Long lists: the first rows stay open, the rest fold behind one "더 보기" (owner 2026-11-26: easier to read).
+const SHOW = 10;
+function foldTable(head, rows, cls = 'data td-who-table') {
+  if (!rows.length) return '';
+  const table = (list) => `<div class="table-wrap"><table class="${cls}"><thead>${head}</thead><tbody>${list.join('')}</tbody></table></div>`;
+  if (rows.length <= SHOW + 2) return table(rows);
+  return `${table(rows.slice(0, SHOW))}<details class="td-more"><summary>나머지 ${nf(rows.length - SHOW)}줄 더 보기</summary>${table(rows.slice(SHOW))}</details>`;
+}
+
 // Hover tips: every chart column carries data-tip (plain lines joined with "\n"); one floating box follows the pointer.
 const tipLines = (rows) => esc(rows.filter(Boolean).join('\n'));
 const diff = (a, b) => (b ? ` (${a >= b ? '+' : ''}${nf(a - b)}, ${pct(a, b)})` : '');
@@ -124,12 +133,13 @@ const uaShort = (ua) => {
 function blockedPanel(d) {
   const b = d.blocked;
   if (!b) return '';
-  const fw = b.firewall?.rows || [], wk = b.worker?.rows || [];
-  const fwN = fw.reduce((a, r) => a + r.n, 0), wkN = wk.reduce((a, r) => a + r.n, 0);
+  // Only what Cloudflare's firewall stopped on the site: our own API's refusals are listed in the API panel above.
+  const fw = b.firewall?.rows || [];
+  const fwN = fw.reduce((a, r) => a + r.n, 0);
   const W = 720, H = 150, P = 30, bw = (W - P) / 24, base = H - 20;
-  const max = Math.max(5, ...b.hourly.map(([f, w]) => f + w)), ky = (v) => (v / max) * (H - 30);
+  const max = Math.max(5, ...b.hourly.map(([f]) => f)), ky = (v) => (v / max) * (H - 30);
   const ticks = [0, 0.5, 1].map((f) => Math.round(max * f)).map((v) => `<text x="0" y="${base - ky(v) + 4}" class="td-ax">${v}</text><line x1="${P}" x2="${W}" y1="${base - ky(v)}" y2="${base - ky(v)}" class="td-grid"/>`).join('');
-  const bars = b.hourly.map(([f, w], i) => `<rect x="${P + i * bw + 2}" y="${base - ky(f)}" width="${bw - 4}" height="${ky(f)}" class="td-bot"/><rect x="${P + i * bw + 2}" y="${base - ky(f) - ky(w)}" width="${bw - 4}" height="${ky(w)}" class="td-blk2"/><rect x="${P + i * bw}" y="0" width="${bw}" height="${H}" class="td-hit" data-tip="${tipLines([`${i}시`, `사이트 방화벽 ${nf(f)} · 우리 서버 ${nf(w)}`])}"/>`).join('');
+  const bars = b.hourly.map(([f], i) => `<rect x="${P + i * bw + 2}" y="${base - ky(f)}" width="${bw - 4}" height="${ky(f)}" class="td-bot"/><rect x="${P + i * bw}" y="0" width="${bw}" height="${H}" class="td-hit" data-tip="${tipLines([`${i}시`, `방화벽이 막은 요청 ${nf(f)}`])}"/>`).join('');
   // By who: one network + country + browser name is one line, with the rules, pages and addresses it touched.
   const groups = new Map();
   const add = (r, where, why) => {
@@ -140,19 +150,17 @@ function blockedPanel(d) {
     groups.set(k, g);
   };
   for (const r of fw) add(r, '방화벽', `${FW_SOURCE[r.source] || r.source} · ${FW_ACTION[r.action] || r.action}`);
-  for (const r of wk) add(r, '서버', WK_REASON[r.reason] || r.reason);
   const top = (m, n) => [...m.entries()].sort((a, c) => c[1] - a[1]).slice(0, n);
   const list = [...groups.values()].sort((a, c) => c.n - a.n);
   const warn = list.filter(isSearch);
-  const rows = list.map((g) => `<tr${isSearch(g) ? ' class="td-warn"' : ''}><td class="num"><b>${nf(g.n)}</b></td><td>${esc(COUNTRY[g.country] || g.country)} · ${esc(g.org || '?')}${isSearch(g) ? ' <span class="td-flag">검색 로봇</span>' : isRented(g) ? ' <span class="muted">(검색 로봇 이름 아님)</span>' : ''}${d.you && g.ips.has(d.you) ? ' <span class="td-tag-me">내 인터넷</span>' : ''}<br><span class="muted">주소 ${nf(g.ips.size)}개${g.ips.size <= 3 ? ` (${esc([...g.ips].join(', '))})` : ''}</span></td><td title="${esc(g.full)}">${esc(g.ua)}</td><td>${top(g.why, 3).map(([w, n]) => `${esc(w)} ${nf(n)}`).join('<br>')}</td><td>${top(g.paths, 3).map(([pth, n]) => `<code>${esc(pth)}</code> ${nf(n)}`).join('<br>')}${g.paths.size > 3 ? `<br><span class="muted">외 ${nf(g.paths.size - 3)}곳</span>` : ''}</td></tr>`).join('');
-  const errs = [b.firewall?.error && `사이트 방화벽 기록을 못 읽었어요: ${b.firewall.error}`, b.worker?.error && `우리 서버 기록을 못 읽었어요: ${b.worker.error}`].filter(Boolean).map((t) => `<p class="td-err">${esc(t)}</p>`).join('');
-  return `<section class="panel"><h2>차단된 요청 <small class="muted">사이트 방화벽 ${b.firewall?.error ? "못 읽음" : nf(fwN)} · 우리 서버 ${nf(wkN)} · 묶음 ${nf(list.length)}개</small></h2>
+  const rows = list.map((g) => `<tr${isSearch(g) ? ' class="td-warn"' : ''}><td class="num"><b>${nf(g.n)}</b></td><td>${esc(COUNTRY[g.country] || g.country)} · ${esc(g.org || '?')}${isSearch(g) ? ' <span class="td-flag">검색 로봇</span>' : isRented(g) ? ' <span class="muted">(검색 로봇 이름 아님)</span>' : ''}${d.you && g.ips.has(d.you) ? ' <span class="td-tag-me">내 인터넷</span>' : ''}<br><span class="muted">주소 ${nf(g.ips.size)}개${g.ips.size <= 3 ? ` (${esc([...g.ips].join(', '))})` : ''}</span></td><td title="${esc(g.full)}">${esc(g.ua)}</td><td>${top(g.why, 3).map(([w, n]) => `${esc(w)} ${nf(n)}`).join('<br>')}</td><td>${top(g.paths, 3).map(([pth, n]) => `<code>${esc(pth)}</code> ${nf(n)}`).join('<br>')}${g.paths.size > 3 ? `<br><span class="muted">외 ${nf(g.paths.size - 3)}곳</span>` : ''}</td></tr>`);
+  const errs = [b.firewall?.error && `사이트 방화벽 기록을 못 읽었어요: ${b.firewall.error}`].filter(Boolean).map((t) => `<p class="td-err">${esc(t)}</p>`).join('');
+  return `<section class="panel"><h2>방화벽이 막은 요청 <small class="muted">${b.firewall?.error ? '못 읽음' : `${nf(fwN)}건 · ${nf(list.length)}군데`}</small></h2>
 ${errs}${b.firewall?.full ? '<p class="td-err">하루치가 너무 많아 최근 5,000건만 세었어요.</p>' : ''}
 <svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="시간대별 차단">${ticks}${bars}${Array.from({ length: 12 }, (_, i) => i * 2).map((h) => `<text x="${P + h * bw + bw / 2}" y="${H - 4}" class="td-ax mid">${h}시</text>`).join('')}</svg>
-<p class="td-legend"><span class="k bot"></span>사이트 방화벽 ${b.firewall?.error ? "못 읽음" : nf(fwN)} <span class="k blk2"></span>우리 서버 ${nf(wkN)}</p>
 ${warn.length ? `<p class="td-err">검색 로봇으로 보이는 요청이 ${nf(warn.reduce((a, g) => a + g.n, 0))}건 막혔어요. 아래 빨간 줄을 확인하세요.</p>` : ''}
-${rows ? `<div class="table-wrap"><table class="data td-who-table td-blk-table"><thead><tr><th class="num">횟수</th><th>나라 · 통신망</th><th>브라우저 이름</th><th>막은 이유</th><th>요청한 주소</th></tr></thead><tbody>${rows}</tbody></table></div>` : (errs ? '' : '<p class="muted">이 날 막힌 요청이 없어요.</p>')}
-<p class="muted small">막힌 요청은 방문 숫자에 들어가지 않아요. 사이트 방화벽 기록은 Cloudflare가 보관하는 기간까지만 나와요. 우리 서버 기록은 11월 24일부터 쌓여요.</p></section>`;
+${rows.length ? foldTable('<tr><th class="num">횟수</th><th>나라 · 통신망</th><th>브라우저 이름</th><th>막은 이유</th><th>요청한 주소</th></tr>', rows, 'data td-who-table td-blk-table') : (errs ? '' : '<p class="muted">이 날 막힌 요청이 없어요.</p>')}
+<p class="muted small">사이트(gms-hub.com) 앞단에서 Cloudflare가 막은 요청이에요. 방문 숫자에 들어가지 않고, Cloudflare가 보관하는 사흘쯤까지만 나와요. 우리 서버(API)가 거절한 요청은 위 'API를 부른 곳 전체'에 있어요.</p></section>`;
 }
 
 // Calls to the API that did not come from a page of the site: someone reading prices, listings or megaphones straight
@@ -186,12 +194,13 @@ function outsidePanel(d) {
   const ticks = [0, 0.5, 1].map((f) => Math.round(max * f)).map((v) => `<text x="0" y="${base - ky(v) + 4}" class="td-ax">${nf(v)}</text><line x1="${P}" x2="${W}" y1="${base - ky(v)}" y2="${base - ky(v)}" class="td-grid"/>`).join('');
   const line = (key, cls) => `<polyline class="td-api ${cls}" points="${shown.map((h, i) => `${x(i)},${base - ky(h[key])}`).join(' ')}"/>${shown.map((h, i) => (h[key] ? `<circle cx="${x(i)}" cy="${base - ky(h[key])}" r="3" class="td-api-dot ${cls}"/>` : '')).join('')}`;
   const hits = shown.map((h, i) => `<rect x="${P + i * bw}" y="0" width="${bw}" height="${H}" class="td-hit" data-tip="${tipLines([`${i}시`, `통과 ${nf(h.pass)} · 검색 로봇 ${nf(h.bot)} · 차단 ${nf(h.stop)}`])}"/>`).join('');
-  // By who: one network + country + program name is one line.
+  // By who: one network + country is one line, whatever program names it sent (a scanner rotates through dozens).
   const groups = new Map(), kinds = new Map();
   for (const r of rowsIn) {
-    const k = `${r.org}|${r.country}|${uaShort(r.ua)}`;
-    const g = groups.get(k) || { org: r.org, country: r.country, ua: uaShort(r.ua), full: r.ua, n: 0, pass: 0, bot: 0, stop: 0, why: new Map(), paths: new Map(), ips: new Set() };
+    const k = `${r.org}|${r.country}`;
+    const g = groups.get(k) || { org: r.org, country: r.country, uas: new Map(), n: 0, pass: 0, bot: 0, stop: 0, why: new Map(), paths: new Map(), ips: new Set() };
     g.n += r.n; g[kind(r)] += r.n; if (r.ip) g.ips.add(r.ip);
+    g.uas.set(uaShort(r.ua), (g.uas.get(uaShort(r.ua)) || 0) + r.n);
     const label = (API_STATE[r.reason] || [0, `차단 · ${r.reason}`])[1];
     g.why.set(label, (g.why.get(label) || 0) + r.n);
     g.paths.set(r.path, (g.paths.get(r.path) || 0) + r.n);
@@ -201,16 +210,17 @@ function outsidePanel(d) {
   const top = (m, n) => [...m.entries()].sort((a, c) => c[1] - a[1]).slice(0, n);
   const list = [...groups.values()].sort((a, c) => c.n - a.n);
   const cls = (label) => (label.startsWith('차단') ? 'stop' : label.startsWith('검색') ? 'bot' : 'pass');
-  const rows = list.map((g) => `<tr><td class="num"><b>${nf(g.n)}</b></td><td>${[...g.why.entries()].sort((a, c) => c[1] - a[1]).map(([w, n]) => `<span class="td-st ${cls(w)}">${esc(w)} ${nf(n)}</span>`).join(' ')}</td><td>${esc(COUNTRY[g.country] || g.country)} · ${esc(g.org || '?')}${/microsoft/i.test(g.org || '') && /^node/i.test(g.ua) ? ' <span class="muted">(사이트 빌드일 수 있음)</span>' : ''}<br><span class="muted">주소 ${nf(g.ips.size)}개${g.ips.size <= 3 ? ` (${esc([...g.ips].join(', '))})` : ''}</span></td><td title="${esc(g.full)}">${esc(g.ua)}</td><td>${top(g.paths, 4).map(([p, n]) => `<code>${esc(p)}</code> ${nf(n)}`).join('<br>')}${g.paths.size > 4 ? `<br><span class="muted">외 ${nf(g.paths.size - 4)}곳</span>` : ''}</td></tr>`).join('');
+  const progs = (g) => { const t = top(g.uas, 2).map(([u]) => esc(u)).join(', '); return g.uas.size > 2 ? `${t} <span class="muted">외 ${nf(g.uas.size - 2)}가지</span>` : t; };
+  const rows = list.map((g) => `<tr><td class="num"><b>${nf(g.n)}</b></td><td>${[...g.why.entries()].sort((a, c) => c[1] - a[1]).map(([w, n]) => `<span class="td-st ${cls(w)}">${esc(w)} ${nf(n)}</span>`).join(' ')}</td><td>${esc(COUNTRY[g.country] || g.country)} · ${esc(g.org || '?')}<br><span class="muted">주소 ${nf(g.ips.size)}개${g.ips.size <= 3 ? ` (${esc([...g.ips].join(', '))})` : ''}</span></td><td>${progs(g)}</td><td>${top(g.paths, 4).map(([p, n]) => `<code>${esc(p)}</code> ${nf(n)}`).join('<br>')}${g.paths.size > 4 ? `<br><span class="muted">외 ${nf(g.paths.size - 4)}곳</span>` : ''}</td></tr>`);
   const kindLine = top(kinds, 6).map(([k, n]) => `${esc(k)} ${nf(n)}`).join(' · ');
   return `<section class="panel"><h2>API를 부른 곳 전체 <small class="muted">통과 ${nf(tot.pass)} · 검색 로봇 ${nf(tot.bot)} · 차단 ${nf(tot.stop)} · 부른 곳 ${nf(list.length)}군데</small></h2>
-<p class="muted small">우리 사이트 화면을 거치지 않고 API 주소를 직접 부른 요청, 검색 로봇의 요청, 우리가 거절한 요청을 한 표에 모았어요. 내 인터넷 주소에서 온 ${nf(hidden)}번은 뺐어요.</p>
+<p class="muted small">사이트 화면이 아닌 곳에서 API를 부른 요청이에요. 11월 26일 오전 8시 40분부터는 열쇠 없는 호출을 모두 막아요. 내 인터넷 주소에서 온 ${nf(hidden)}번은 뺐어요.</p>
 ${o.full ? '<p class="td-err">하루치가 너무 많아 많이 부른 순으로 4,000줄까지만 세었어요.</p>' : ''}
 <svg viewBox="0 0 ${W} ${H}" class="td-chart" role="img" aria-label="시간대별 API 호출">${ticks}${line('pass', 'pass')}${line('bot', 'bot')}${line('stop', 'stop')}${hits}${Array.from({ length: 12 }, (_, i) => i * 2).map((h) => `<text x="${P + h * bw + bw / 2}" y="${H - 4}" class="td-ax mid">${h}시</text>`).join('')}</svg>
-<p class="td-legend"><span class="k api-pass"></span>통과 (사이트 밖에서 직접 부름) ${nf(tot.pass)} <span class="k api-bot"></span>검색 로봇 ${nf(tot.bot)} <span class="k api-stop"></span>차단 ${nf(tot.stop)}</p>
+<p class="td-legend"><span class="k api-pass"></span>통과 (데이터를 받아 감) ${nf(tot.pass)} <span class="k api-bot"></span>검색 로봇 ${nf(tot.bot)} <span class="k api-stop"></span>차단 ${nf(tot.stop)}</p>
 ${kindLine ? `<p class="muted small">통과한 호출이 읽어 간 것: ${kindLine}</p>` : ''}
-${rows ? `<div class="table-wrap"><table class="data td-who-table td-blk-table"><thead><tr><th class="num">횟수</th><th>통과 · 차단</th><th>나라 · 통신망</th><th>프로그램 이름</th><th>부른 주소</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="muted">이 날 기록된 호출이 없어요.</p>'}
-<p class="muted small">우리 사이트 화면에서 정상으로 부른 요청은 여기에 없어요. 요청에 "gms-hub.com에서 왔다"고 적어 보내는 프로그램도 구분이 안 돼서 빠져요. 토큰을 쓰는 우리 수집기, 디스코드 로그인, 공유 카드는 세지 않아요. 통과·검색 로봇 기록은 11월 25일부터 쌓여요.</p></section>`;
+${rows.length ? foldTable('<tr><th class="num">횟수</th><th>결과</th><th>나라 · 통신망</th><th>프로그램 이름</th><th>부른 주소</th></tr>', rows, 'data td-who-table td-blk-table') : '<p class="muted">이 날 기록된 호출이 없어요.</p>'}
+<p class="muted small">사이트 화면에서 부른 정상 요청, 열쇠를 쓰는 우리 빌드·수집기, 디스코드 로그인, 공유 카드는 세지 않아요. "gms-hub.com에서 왔다"고 꾸며 보내는 프로그램은 구분이 안 돼서 빠져요.</p></section>`;
 }
 
 // Runs of the screen-reading tools over the last 7 days: what share read, and every way the others failed.
@@ -230,10 +240,10 @@ function toolPanel(d) {
   const days = [...new Set(b.days.map((r) => r.day))].sort();
   const daily = days.map((day) => { const n = tot('exp', (r) => r.day === day), k = tot('exp', (r) => r.day === day && r.outcome === 'ok'); return n ? `<li><span>${esc(day.slice(5))}</span><b>${nf(k)} / ${nf(n)} (${Math.round((k / n) * 100)}%)</b></li>` : ''; }).join('');
   const bad = b.why.filter((r) => r.outcome !== 'ok' && r.outcome !== 'first_rows');
-  const rows = bad.map((r) => `<tr><td class="num"><b>${nf(r.n)}</b></td><td>${esc(TOOL_NAME[r.tool] || r.tool)}</td><td>${esc(OUTCOME[r.outcome] || r.outcome)}</td><td>${esc(r.size || '-')}<br><span class="muted">모니터 ${esc(r.screen)} · 배율 ${esc(r.dpr)}</span></td><td>${esc(r.os)} · ${esc(r.browser)}<br><span class="muted">${esc([r.surface, drawn(r), howText(r)].filter(Boolean).join(' · '))}</span></td></tr>`).join('');
+  const rows = bad.map((r) => `<tr><td class="num"><b>${nf(r.n)}</b></td><td>${esc(TOOL_NAME[r.tool] || r.tool)}</td><td>${esc(OUTCOME[r.outcome] || r.outcome)}</td><td>${esc(r.size || '-')}<br><span class="muted">모니터 ${esc(r.screen)} · 배율 ${esc(r.dpr)}</span></td><td>${esc(r.os)} · ${esc(r.browser)}<br><span class="muted">${esc([r.surface, drawn(r), howText(r)].filter(Boolean).join(' · '))}</span></td></tr>`);
   return `<section class="panel"><h2>화면 읽는 도구 상태 <small class="muted">최근 7일</small></h2>
 ${all ? `<p class="${rate < 80 && all >= 5 ? 'td-err' : ''}">EXP 측정기: ${nf(all)}번 중 ${nf(ok)}번 읽었어요 (${rate}%)${rate < 80 && all >= 5 ? ' · 80%보다 낮아요. 아래 실패를 확인하세요.' : ''} · 레벨까지 읽은 것 ${nf(b.days.filter((r) => r.tool === 'exp').reduce((a, r) => a + r.lv, 0))}번</p><ul class="td-botlist">${daily}</ul>` : '<p class="muted">아직 EXP 측정 기록이 없어요. 11월 24일 밤부터 쌓여요.</p>'}
-${rows ? `<div class="table-wrap"><table class="data td-who-table"><thead><tr><th class="num">횟수</th><th>도구</th><th>실패한 이유</th><th>공유한 화면</th><th>환경</th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}
+${foldTable('<tr><th class="num">횟수</th><th>도구</th><th>실패한 이유</th><th>공유한 화면</th><th>환경</th></tr>', rows)}
 <p class="muted small">결과, 화면 크기, 브라우저만 남겨요. 화면이나 읽은 숫자, 닉네임은 남기지 않아요.</p></section>`;
 }
 
@@ -294,9 +304,6 @@ function render() {
   const kr = d.countries.find((c) => c.country === 'KR')?.visits || 0, abroad = d.countries.reduce((a, c) => a + c.visits, 0) - kr;
   const cutNote = d.isToday ? `오늘 ${d.cutHour}시 ${d.cutMinute}분까지 · 어제·지난주도 같은 시각까지 잘라 비교` : '하루 전체';
   const live = d.live ? `<div class="td-card"><span>지금 열린 페이지</span><b id="td-live-now">${nf(d.live.now)}</b><small>지금 이 순간 사이트를 열어 둔 탭 수</small></div><div class="td-card"><span>최대 동시 접속</span><b>${nf(d.live.peak)}</b><small>${esc(new Date(d.live.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }))} · 기록은 11/15 밤 9시 25분부터</small></div>` : '';
-  // Pages open at this moment, from the live presence room (tabs, all languages together).
-  const nowPages = d.live?.pages?.length ? `<section class="panel"><h2>지금 보고 있는 페이지 <small class="muted">열려 있는 탭 ${nf(d.live.now)}개 · 언어 합산</small></h2><ul class="td-botlist">${d.live.pages.map(([pg, n]) => `<li><span>${esc(pageName(pg))} <code>${esc(pg)}</code></span><b>${nf(n)}</b></li>`).join('')}</ul><p class="muted small">탭을 열어 둔 채 다른 창을 보고 있는 경우도 포함돼요.</p></section>` : '';
-  const dailyMax = Math.max(1, ...d.daily.map((x) => x.visits));
   root.innerHTML = `${head}
 <div class="td-body${state.loading ? ' busy' : ''}">
 <p class="muted small">${esc(cutNote)} · Cloudflare 표본 추정값 · ${esc(new Date(d.at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }))} 기준</p>
@@ -308,14 +315,9 @@ ${live}
 
 </div>
 <div id="td-who">${whoHtml(d.live)}</div>
-${nowPages}
 <section class="panel"><h2>시간대별 방문</h2>${hourChart(d)}</section>
 <section class="panel"><h2>한국과 해외, 시간대별</h2>${koreaChart(d)}</section>
 ${weekChart(d, upto)}
-${botChart(d)}
-${outsidePanel(d)}
-${blockedPanel(d)}
-${toolPanel(d)}
 <div class="td-grid2">
 <section class="panel"><h2>나라별 방문</h2>${bars(d.countries.slice(0, 12), { label: (c) => esc(COUNTRY[c.country] || c.country), value: (c) => c.visits })}</section>
 <section class="panel"><h2>들어온 경로</h2>${bars(d.sources.slice(0, 12), { label: (s) => esc(SOURCE[s.source] || s.source), value: (s) => s.visits, accent: true })}
@@ -326,9 +328,14 @@ ${toolPanel(d)}
 <section class="panel"><h2>처음 들어온 페이지 <small class="muted">방문</small></h2>${bars(d.landings.slice(0, 15), { label: (p) => `${esc(pageName(p.path.replace(/^\/(ko|en|zh|ja)(?=\/)/, '')))}<small> ${esc((p.path.match(/^\/(ko|en|zh|ja)\//) || [, ''])[1])}</small>`, value: (p) => p.landings, accent: true })}</section>
 </div>
 <div class="td-grid2">
-<section class="panel"><h2>최근 14일 방문</h2><ul class="td-bars">${d.daily.map((x) => `<li${x.day === d.day ? ' class="on"' : ''} data-tip="${tipLines([`${x.day} (${'일월화수목금토'[new Date(`${x.day}T00:00:00Z`).getUTCDay()]})`, `방문 ${nf(x.visits)} · 페이지뷰 ${nf(x.views)}`, x.visits ? `방문당 ${(x.views / x.visits).toFixed(1)}쪽` : ''])}"><span class="td-bl">${esc(x.day.slice(5))} ${'일월화수목금토'[new Date(`${x.day}T00:00:00Z`).getUTCDay()]}</span><span class="td-bt"><i style="width:${(x.visits / dailyMax) * 100}%"></i></span><b>${nf(x.visits)}</b></li>`).join('')}</ul></section>
 <section class="panel"><h2>기기</h2>${bars(d.devices, { label: (x) => esc({ desktop: 'PC', mobile: '모바일', tablet: '태블릿' }[x.device] || x.device), value: (x) => x.visits })}</section>
+${botChart(d)}
 </div>
+<h2 class="td-part">요청 지키기</h2>
+${outsidePanel(d)}
+${blockedPanel(d)}
+<h2 class="td-part">화면 읽는 도구</h2>
+${toolPanel(d)}
 </div>`;
   bind();
 }
@@ -380,9 +387,11 @@ function whoHtml(live) {
     const whoLabel = g.who === 'before-log' ? '기록 없는 연결 (서버 배포 전부터 열려 있던 탭)' : `${esc(COUNTRY[g.country] || g.country || '?')} · ${esc(g.org || '?')}`;
     return `<tr${g.tabs >= 5 ? ' class="td-who-many"' : ''}><td class="num"><b>${nf(g.tabs)}</b></td><td class="num">${nf(g.alive)}</td><td>${whoLabel}</td><td>${esc(g.ua || '')}</td><td>${pages}</td><td class="num">${g.oldestMin != null ? `${nf(g.oldestMin)}분` : ''}</td></tr>`;
   };
-  return `<section class="panel td-who"><h2>지금 누가 탭을 몇 개 열어 뒀나 <small class="muted">15초마다 새로 읽어요</small></h2>
+  return `<section class="panel td-who"><h2>지금 접속 중 <small class="muted">15초마다 새로 읽어요</small></h2>
 <p class="td-who-sum">열린 탭 <b>${nf(live.now)}</b>개 · 사람 <b>${nf(people)}</b>명${people ? ` · 한 사람당 평균 <b>${((live.now - (rows.find((g) => g.who === 'before-log')?.tabs || 0)) / people).toFixed(1)}</b>개` : ''} · 지금 응답 중인 탭 <b>${nf(aliveTabs)}</b>개 · 응답 없는 연결 ${nf(live.silent || 0)}개${many.length ? ` · 3개 이상 연 사람 ${nf(many.length)}명 (합 ${nf(many.reduce((a, g) => a + g.tabs, 0))}개)` : ''}${langSum ? `<br>${langSum}` : ''}</p>
-<div class="table-wrap"><table class="data td-who-table"><thead><tr><th scope="col">탭</th><th scope="col">응답 중</th><th scope="col">어디서</th><th scope="col">브라우저</th><th scope="col">열어 둔 페이지</th><th scope="col">열린 지</th></tr></thead><tbody>${rows.map(tr).join('')}</tbody></table></div>
+${live.pages?.length ? `<h3 class="td-sub">페이지별 탭</h3><ul class="td-chips">${live.pages.map(([pg, n]) => `<li><span>${esc(pageName(pg))}</span><b>${nf(n)}</b></li>`).join('')}</ul>` : ''}
+<h3 class="td-sub">사람별 탭</h3>
+${foldTable('<tr><th scope="col">탭</th><th scope="col">응답 중</th><th scope="col">어디서</th><th scope="col">브라우저</th><th scope="col">열어 둔 페이지</th><th scope="col">열린 지</th></tr>', rows.map(tr))}
 <p class="muted small">같은 주소·같은 브라우저를 한 사람으로 묶었어요. 주소는 저장하지 않고 연결돼 있는 동안만 구분값으로 써요. 많이 연 순서로 40명까지 보여요.</p></section>`;
 }
 async function loadLive() {
