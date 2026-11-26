@@ -196,6 +196,10 @@ const onSale = (s) => s.items.filter((i) => !i[3]);
 const face = (s, size) => (s.face?.photo
   ? `<img class="trd-shop-face" src="${esc(s.face.photo)}" alt="" width="${size}" height="${size}" loading="lazy" referrerpolicy="no-referrer">`
   : `<span class="trd-shop-face none" aria-hidden="true">${esc((s.seller || '?').slice(0, 1).toUpperCase())}</span>`);
+// Booth wood colour per seller, steady across visits (the game's booths come in several colours).
+const WOODS = ['wood-gold', 'wood-pink', 'wood-sky', 'wood-mint'];
+const wood = (s) => WOODS[[...String(s.seller)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % WOODS.length];
+const COIN = new URL('nav/coin.webp?v=n1', import.meta.url).href;
 const where = (s) => tr(`CH ${s.ch} · 자유시장 ${s.room}`, `CH ${s.ch} · FM ${s.room}`);
 function drawShops() {
   const box = $('tb-shop-list');
@@ -204,12 +208,17 @@ function drawShops() {
   if (!shops.length) return;
   $('tb-shops-n').textContent = tr(`${nf.format(shops.length)}곳`, `${nf.format(shops.length)}`);
   const list = shopsAll ? shops : shops.slice(0, SHOW_SHOPS);
-  box.innerHTML = list.map((s, k) => {
+  box.innerHTML = list.map((s) => {
     const items = onSale(s), more = items.length - 3;
-    return `<button type="button" class="trd-shop" data-shop="${shops.indexOf(s)}" aria-label="${esc(tr(`${s.seller}의 상점, ${items.length}개 판매 중`, `${s.seller}'s shop, ${items.length} on sale`))}">
-<span class="trd-shop-awning" aria-hidden="true"></span>
-<span class="trd-shop-stage"><span class="trd-shop-sign">${esc(s.seller)}</span>${face(s, 96)}
-<span class="trd-shop-cloth"><span class="trd-shop-icons">${items.slice(0, 3).map((i) => icon(i[0], 26)).join('')}${more > 0 ? `<em>+${more}</em>` : ''}</span></span></span>
+    const first = byId.get(items[0]?.[0])?.name || '';
+    const title = items.length > 1 ? tr(`${first} 외 ${nf.format(items.length - 1)}개`, `${first} +${nf.format(items.length - 1)} more`) : first;
+    // Built like the game's hired-merchant booth: thatched roof, the sign board with the shop's goods, the bar with a coin,
+    // the owner between two posts behind the counter, and the black name tag under it.
+    return `<button type="button" class="trd-shop ${wood(s)}" data-shop="${shops.indexOf(s)}" aria-label="${esc(tr(`${s.seller}의 상점, ${items.length}개 판매 중`, `${s.seller}'s shop, ${items.length} on sale`))}">
+<span class="trd-booth"><span class="trd-booth-roof" aria-hidden="true"></span><span class="trd-booth-board">${esc(title)}</span>
+<span class="trd-booth-bar"><img class="trd-booth-coin" src="${COIN}" width="16" height="16" alt=""><span class="trd-shop-icons">${items.slice(0, 3).map((i) => icon(i[0], 18)).join('')}${more > 0 ? `<em>+${more}</em>` : ''}</span></span>
+<span class="trd-booth-body">${face(s, 96)}<span class="trd-booth-counter" aria-hidden="true"></span></span></span>
+<span class="trd-booth-name">${esc(s.seller)}</span>
 <span class="trd-shop-where">${esc(where(s))}${s.face?.level ? ` · Lv.${s.face.level}` : ''}</span>
 <span class="trd-shop-foot">${tr(`${nf.format(items.length)}개 판매 중`, `${nf.format(items.length)} on sale`)} · ${ago(s.seen)}</span></button>`;
   }).join('');
@@ -231,7 +240,8 @@ async function openShop(s) {
 <span class="trd-si-price">${sold ? `<em>${tr('판매 완료', 'Sold')}</em>` : `<b>${money(price)}</b><small>${qty > 1 ? tr('개당', 'each') : mesos(price)}</small>`}</span>
 <span class="trd-si-vs">${v ? `<span class="trd-vs ${v.side === 'same' ? 'same' : v.side === 'dear' ? 'risk' : 'fair'}" title="${esc(`${v.text} · ${tr('시세', 'market')} ${money(m)}`)}">${short}</span>` : ''}</span></li>`;
     }).join('');
-    body.innerHTML = `<span class="trd-shop-awning trd-shopdlg-awning" aria-hidden="true"></span><div class="trd-shopdlg-head">${face(s, 56)}<div><h2 id="tb-shopdlg-h">${esc(tr(`${s.seller}의 상점`, `${s.seller}'s shop`))}</h2>
+    dlg.className = `trd-shopdlg ${wood(s)}`;
+    body.innerHTML = `<div class="trd-shopdlg-head">${face(s, 56)}<div><h2 id="tb-shopdlg-h">${esc(tr(`${s.seller}의 상점`, `${s.seller}'s shop`))}</h2>
 <p>${esc(where(s))}${s.face?.job ? ` · ${esc(s.face.job)}` : ''}${s.face?.level ? ` · Lv.${s.face.level}` : ''} · ${ago(s.seen)}</p></div>
 <button type="button" class="trd-shopdlg-x" data-close aria-label="${tr('닫기', 'Close')}">×</button></div>
 <ul class="trd-silist">${rows}</ul>

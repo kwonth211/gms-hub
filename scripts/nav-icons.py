@@ -409,57 +409,50 @@ ICONS.update({'bag': bag, 'clock': clock, 'star': star, 'hammer': hammer, 'slime
               'crown': crown, 'mushroom': mushroom})
 
 
-# Shop Scan cards (owner 2026-11-26: the card itself is the shop, "진짜 상점 보따리같이"): a striped awning tile that
-# repeats along the card's top edge, and a spread bundle cloth the owner stands behind with the goods laid on it.
-def awning_tile():
-    W, H = 16, 17
+# Hired-merchant booth roofs for the Shop Scan cards (owner 2026-11-26: "메이플 고상 이미지 보고 그대로"): a thatched gable
+# roof over a wooden wall, one per wood colour; the card builds the sign board, the bar, posts and counter in CSS around it.
+BOOTH_WOODS = {
+    'gold': hexs('#6b4300', '#b9780a', '#e39a12', '#f4b81c', '#ffd34a', '#ffe98f'),
+    'pink': hexs('#6e2c4c', '#b45a86', '#d784ac', '#f2a6c8', '#ffc6df', '#ffe4f0'),
+    'sky': hexs('#1f4466', '#3f78a8', '#5f9bd0', '#8cc8f0', '#b4ddf8', '#dcf0ff'),
+    'mint': hexs('#1f5434', '#3f8a5a', '#5fae78', '#8fd8a8', '#b6ecc6', '#dcf8e4'),
+}
+
+
+def booth_roof(wood):
+    W, H = 75, 30
     a = np.zeros((H, W, 4), np.uint8)
-    red, cream = RED[1:6], CREAM[1:6]
+    cx = (W - 1) / 2
+    slope = 0.66
+    rng = np.random.default_rng(7)
+    teeth = rng.integers(0, 3, W)
     for y in range(H):
         for x in range(W):
-            stripe = red if x < 8 else cream
-            cx = 3.5 if x < 8 else 11.5
-            # scalloped hem: each stripe ends in a half circle
-            if y >= 11 and ((x - cx) / 4.2) ** 2 + ((y - 10.5) / 6.0) ** 2 > 1:
+            d = abs(x - cx)
+            top = 2 + d * slope
+            if y < top:
                 continue
-            t = 4 - min(4, int(y / 3.6))
-            if x in (0, 8):
-                t = max(0, t - 1)
-            col = stripe[t]
-            if y < 2:
-                col = RED[0] if y == 0 else RED[3]
-            a[y, x] = (*col, 255)
+            band = y - top
+            if d < 29 and band > 7:
+                # wall inside the gable, behind the sign board: planks with dark seams
+                a[y, x] = (*wood[0], 255) if (x % 7 == 0) else (*wood[1], 255)
+                continue
+            if band > 7 + teeth[x]:
+                continue  # thatched fringe: uneven straw ends
+            t = 5 if band < 1.2 else 4 if band < 3 else 3 if band < 5.5 else 2
+            if (x * 3 + int(band * 2)) % 7 == 0:
+                t -= 1  # straw streaks
+            a[y, x] = (*wood[max(1, t)], 255)
+    for x in range(int(cx) - 2, int(cx) + 3):
+        for y in range(0, 3):
+            a[y, x] = (*wood[1 if y == 0 else 4], 255)
     al = a[..., 3] > 0
     out = a.copy()
-    for y in range(1, H):
+    for y in range(H):
         for x in range(W):
-            if not al[y, x] and al[y - 1, x]:
-                out[y, x] = (*OUT, 255)
+            if not al[y, x] and any(0 <= y + i < H and 0 <= x + j < W and al[y + i, x + j] for i, j in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                out[y, x] = (*wood[0], 255)
     return Image.fromarray(out)
-
-
-def bundle_cloth():
-    k = Canvas()
-    X, Y = k.X, k.Y
-    # a square wrapping cloth (bojagi) spread on the ground, seen at a low angle: a flat diamond with soft corners
-    cy = -0.10
-    ok = k.blob((0, cy, 0.0), (0.97, 0.36, 0.10), PURPLE, 1, q=1.45, qz=6)
-    s = np.abs(X / 0.97) ** 1.45 + np.abs((Y - cy) / 0.36) ** 1.45
-    k.px[ok & (s > 0.70) & (s < 0.84), :3] = GOLD[4]
-    k.px[ok & (s >= 0.84) & (s < 0.90), :3] = GOLD[2]
-    # small gold diamonds on the cloth
-    for dx, dy in ((0.0, 0.10), (-0.30, -0.16), (0.30, -0.16)):
-        k.px[ok & (np.abs(X - dx) / 0.05 + np.abs(Y - cy - dy) / 0.05 < 1), :3] = GOLD[5]
-    # the wrapped bundle at the back right: a round sack, the tied knot and two corner ends sticking out
-    bx, by = 0.66, 0.24
-    k.blob((bx, by, -0.2), (0.26, 0.22, 0.22), PURPLE, 2, q=2.2)
-    k.px[(k.part == 2) & (np.abs(Y - by + 0.02) < 0.025), :3] = GOLD[3]
-    k.blob((bx - 0.13, by + 0.30, -0.15), (0.045, 0.12, 0.05), PURPLE[1:], 3, q=2, rot=0.75)
-    k.blob((bx + 0.13, by + 0.30, -0.15), (0.045, 0.12, 0.05), PURPLE[1:], 3, q=2, rot=-0.75)
-    k.blob((bx, by + 0.20, 0.0), (0.075, 0.065, 0.06), PURPLE[1:], 4, q=2)
-    img = k.finish(rim_parts=(1, 2))
-    return img.crop(img.getbbox())
-
 
 if __name__ == '__main__':
     out = os.path.join(os.path.dirname(__file__), '..', 'assets', 'nav')
@@ -470,11 +463,8 @@ if __name__ == '__main__':
         big = im.resize((S * 4, S * 4), Image.NEAREST)
         big.save(os.path.join(out, f'{name}.webp'), 'WEBP', lossless=True, quality=100, method=6)
         tiles.append((name, im))
-    awning_tile().resize((32, 34), Image.NEAREST).save(os.path.join(out, 'awning.webp'), 'WEBP', lossless=True, quality=100, method=6)
-    S = 80
-    c = bundle_cloth()
-    c.resize((c.width * 2, c.height * 2), Image.NEAREST).save(os.path.join(out, 'bundle.webp'), 'WEBP', lossless=True, quality=100, method=6)
-    S = 48
+    for wname, wood in BOOTH_WOODS.items():
+        booth_roof(wood).resize((150, 60), Image.NEAREST).save(os.path.join(out, f'roof-{wname}.webp'), 'WEBP', lossless=True, quality=100, method=6)
     # contact sheet: each icon at 4x (nearest) and 20, 24, 32 px (smooth), on light and dark, 7 per row
     per = 7
     rows = (len(tiles) + per - 1) // per
