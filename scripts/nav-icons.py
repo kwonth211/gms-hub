@@ -408,6 +408,59 @@ def mushroom():
 ICONS.update({'bag': bag, 'clock': clock, 'star': star, 'hammer': hammer, 'slime': slime, 'tree': tree,
               'crown': crown, 'mushroom': mushroom})
 
+
+# Shop Scan cards (owner 2026-11-26: the card itself is the shop, "진짜 상점 보따리같이"): a striped awning tile that
+# repeats along the card's top edge, and a spread bundle cloth the owner stands behind with the goods laid on it.
+def awning_tile():
+    W, H = 16, 17
+    a = np.zeros((H, W, 4), np.uint8)
+    red, cream = RED[1:6], CREAM[1:6]
+    for y in range(H):
+        for x in range(W):
+            stripe = red if x < 8 else cream
+            cx = 3.5 if x < 8 else 11.5
+            # scalloped hem: each stripe ends in a half circle
+            if y >= 11 and ((x - cx) / 4.2) ** 2 + ((y - 10.5) / 6.0) ** 2 > 1:
+                continue
+            t = 4 - min(4, int(y / 3.6))
+            if x in (0, 8):
+                t = max(0, t - 1)
+            col = stripe[t]
+            if y < 2:
+                col = RED[0] if y == 0 else RED[3]
+            a[y, x] = (*col, 255)
+    al = a[..., 3] > 0
+    out = a.copy()
+    for y in range(1, H):
+        for x in range(W):
+            if not al[y, x] and al[y - 1, x]:
+                out[y, x] = (*OUT, 255)
+    return Image.fromarray(out)
+
+
+def bundle_cloth():
+    k = Canvas()
+    X, Y = k.X, k.Y
+    # a square wrapping cloth (bojagi) spread on the ground, seen at a low angle: a flat diamond with soft corners
+    cy = -0.10
+    ok = k.blob((0, cy, 0.0), (0.97, 0.36, 0.10), PURPLE, 1, q=1.45, qz=6)
+    s = np.abs(X / 0.97) ** 1.45 + np.abs((Y - cy) / 0.36) ** 1.45
+    k.px[ok & (s > 0.70) & (s < 0.84), :3] = GOLD[4]
+    k.px[ok & (s >= 0.84) & (s < 0.90), :3] = GOLD[2]
+    # small gold diamonds on the cloth
+    for dx, dy in ((0.0, 0.10), (-0.30, -0.16), (0.30, -0.16)):
+        k.px[ok & (np.abs(X - dx) / 0.05 + np.abs(Y - cy - dy) / 0.05 < 1), :3] = GOLD[5]
+    # the wrapped bundle at the back right: a round sack, the tied knot and two corner ends sticking out
+    bx, by = 0.66, 0.24
+    k.blob((bx, by, -0.2), (0.26, 0.22, 0.22), PURPLE, 2, q=2.2)
+    k.px[(k.part == 2) & (np.abs(Y - by + 0.02) < 0.025), :3] = GOLD[3]
+    k.blob((bx - 0.13, by + 0.30, -0.15), (0.045, 0.12, 0.05), PURPLE[1:], 3, q=2, rot=0.75)
+    k.blob((bx + 0.13, by + 0.30, -0.15), (0.045, 0.12, 0.05), PURPLE[1:], 3, q=2, rot=-0.75)
+    k.blob((bx, by + 0.20, 0.0), (0.075, 0.065, 0.06), PURPLE[1:], 4, q=2)
+    img = k.finish(rim_parts=(1, 2))
+    return img.crop(img.getbbox())
+
+
 if __name__ == '__main__':
     out = os.path.join(os.path.dirname(__file__), '..', 'assets', 'nav')
     os.makedirs(out, exist_ok=True)
@@ -417,6 +470,11 @@ if __name__ == '__main__':
         big = im.resize((S * 4, S * 4), Image.NEAREST)
         big.save(os.path.join(out, f'{name}.webp'), 'WEBP', lossless=True, quality=100, method=6)
         tiles.append((name, im))
+    awning_tile().resize((32, 34), Image.NEAREST).save(os.path.join(out, 'awning.webp'), 'WEBP', lossless=True, quality=100, method=6)
+    S = 80
+    c = bundle_cloth()
+    c.resize((c.width * 2, c.height * 2), Image.NEAREST).save(os.path.join(out, 'bundle.webp'), 'WEBP', lossless=True, quality=100, method=6)
+    S = 48
     # contact sheet: each icon at 4x (nearest) and 20, 24, 32 px (smooth), on light and dark, 7 per row
     per = 7
     rows = (len(tiles) + per - 1) // per

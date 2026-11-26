@@ -205,11 +205,12 @@ function drawShops() {
   $('tb-shops-n').textContent = tr(`${nf.format(shops.length)}곳`, `${nf.format(shops.length)}`);
   const list = shopsAll ? shops : shops.slice(0, SHOW_SHOPS);
   box.innerHTML = list.map((s, k) => {
-    const items = onSale(s), more = items.length - 4;
+    const items = onSale(s), more = items.length - 3;
     return `<button type="button" class="trd-shop" data-shop="${shops.indexOf(s)}" aria-label="${esc(tr(`${s.seller}의 상점, ${items.length}개 판매 중`, `${s.seller}'s shop, ${items.length} on sale`))}">
-<span class="trd-shop-sign">${esc(s.seller)}</span>${face(s, 64)}
+<span class="trd-shop-awning" aria-hidden="true"></span>
+<span class="trd-shop-stage"><span class="trd-shop-sign">${esc(s.seller)}</span>${face(s, 96)}
+<span class="trd-shop-cloth"><span class="trd-shop-icons">${items.slice(0, 3).map((i) => icon(i[0], 26)).join('')}${more > 0 ? `<em>+${more}</em>` : ''}</span></span></span>
 <span class="trd-shop-where">${esc(where(s))}${s.face?.level ? ` · Lv.${s.face.level}` : ''}</span>
-<span class="trd-shop-icons">${items.slice(0, 4).map((i) => icon(i[0], 26)).join('')}${more > 0 ? `<em>+${more}</em>` : ''}</span>
 <span class="trd-shop-foot">${tr(`${nf.format(items.length)}개 판매 중`, `${nf.format(items.length)} on sale`)} · ${ago(s.seen)}</span></button>`;
   }).join('');
   const rest = shops.length - SHOW_SHOPS;
@@ -230,7 +231,7 @@ async function openShop(s) {
 <span class="trd-si-price">${sold ? `<em>${tr('판매 완료', 'Sold')}</em>` : `<b>${money(price)}</b><small>${qty > 1 ? tr('개당', 'each') : mesos(price)}</small>`}</span>
 <span class="trd-si-vs">${v ? `<span class="trd-vs ${v.side === 'same' ? 'same' : v.side === 'dear' ? 'risk' : 'fair'}" title="${esc(`${v.text} · ${tr('시세', 'market')} ${money(m)}`)}">${short}</span>` : ''}</span></li>`;
     }).join('');
-    body.innerHTML = `<div class="trd-shopdlg-head">${face(s, 56)}<div><h2 id="tb-shopdlg-h">${esc(tr(`${s.seller}의 상점`, `${s.seller}'s shop`))}</h2>
+    body.innerHTML = `<span class="trd-shop-awning trd-shopdlg-awning" aria-hidden="true"></span><div class="trd-shopdlg-head">${face(s, 56)}<div><h2 id="tb-shopdlg-h">${esc(tr(`${s.seller}의 상점`, `${s.seller}'s shop`))}</h2>
 <p>${esc(where(s))}${s.face?.job ? ` · ${esc(s.face.job)}` : ''}${s.face?.level ? ` · Lv.${s.face.level}` : ''} · ${ago(s.seen)}</p></div>
 <button type="button" class="trd-shopdlg-x" data-close aria-label="${tr('닫기', 'Close')}">×</button></div>
 <ul class="trd-silist">${rows}</ul>

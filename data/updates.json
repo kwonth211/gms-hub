@@ -23,9 +23,10 @@
    "ko": "팝니다·삽니다 — 상점 스캔으로 올라온 상점을 한눈에",
    "en": "Buy and sell — shops from Shop Scan at a glance",
    "desc": {
-    "ko": "상점 스캔으로 올라온 상점이 장터 맨 위에 카드로 떠요. 카드를 누르면 게임 상점 창처럼 그 상점이 지금 파는 물건, 개수, 값이 나오고, 값 옆에는 시세보다 얼마나 비싼지가 붙어요. 귓말 복사도 바로 돼요. 최근 24시간 안에 올라온 상점만 보여요.",
-    "en": "Shops people uploaded with Shop Scan now show as cards at the top of the market. Tap one to see what it sells, how many and for how much, like the shop window in game, with how far each price is from the market and a whisper button. Only shops uploaded in the last 24 hours are shown."
-   }
+    "ko": "상점 스캔으로 올라온 상점이 장터 맨 위에 작은 가게로 떠요. 줄무늬 차양 아래 주인 캐릭터가 서 있고, 앞에 깔린 보따리 위에 파는 물건이 놓여 있어요. 가게를 누르면 게임 상점 창처럼 물건, 개수, 값이 나오고 값 옆에는 시세보다 얼마나 비싼지가 붙어요. 귓말 복사도 바로 돼요. 최근 24시간 안에 올라온 상점만 보여요.",
+    "en": "Shops people uploaded with Shop Scan now stand at the top of the market as little stalls: the owner's character under a striped awning, the goods laid out on a bundle cloth. Tap one to see what it sells, how many and for how much, like the shop window in game, with how far each price is from the market and a whisper button. Only shops uploaded in the last 24 hours are shown."
+   },
+   "highlight": true
   },
   {
    "id": "guides-rebuilt",

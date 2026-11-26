@@ -4784,20 +4784,30 @@ div.trd-req p { flex: 1 1 260px; }
 .trd-shops-add:hover { text-decoration: underline; }
 .trd-shop-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; margin-top: 10px; }
 .trd-shop-row[aria-busy="true"] { min-height: 150px; border-radius: 12px; background: var(--panel-2); }
-.trd-shop { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 30px 10px 10px; font: inherit; color: var(--text);
-  text-align: center; background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%); border: 1px solid var(--line); border-radius: 14px;
+.trd-shop { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 8px 10px; font: inherit; color: var(--text);
+  text-align: center; background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
   box-shadow: 0 var(--edge) 0 var(--line-strong); cursor: var(--cur-hand, pointer); transition: transform .12s ease, box-shadow .12s ease; min-width: 0; }
 .trd-shop:hover { transform: translateY(-2px); border-color: var(--accent-fill); }
 .trd-shop:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-/* The shop sign over the owner's head, as in game: a small white balloon with a dark outline. */
-.trd-shop-sign { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); max-width: calc(100% - 16px); overflow: hidden; text-overflow: ellipsis;
+/* The card is the shop (owner 2026-11-26): a striped awning along the top, the owner standing behind a bundle cloth
+   spread with the goods, and the shop sign over the head as in game. Art: scripts/nav-icons.py -> assets/nav/. */
+.trd-shop-awning { align-self: stretch; height: 34px; margin: 0 -8px; background: url("nav/awning.webp?v=n2") repeat-x left top / 32px 34px; image-rendering: pixelated; }
+.trd-shop-stage { position: relative; align-self: stretch; height: 150px; margin-top: -8px; }
+.trd-shop-sign { position: absolute; z-index: 3; top: 4px; left: 50%; transform: translateX(-50%); max-width: calc(100% - 8px); overflow: hidden; text-overflow: ellipsis;
   white-space: nowrap; padding: 2px 10px; font-size: .78rem; font-weight: 800; color: #2b2b2b; background: #fff; border: 2px solid #3d3326; border-radius: 8px; }
+.trd-shop-stage .trd-shop-face { position: absolute; z-index: 1; left: 50%; bottom: 42px; transform: translateX(-50%); width: 96px; height: 96px;
+  border-radius: 0; background: none; image-rendering: pixelated; }
+.trd-shop-stage .trd-shop-face.none { width: 52px; height: 52px; bottom: 58px; border-radius: 50%; }
+.trd-shop-cloth { position: absolute; z-index: 2; left: 50%; bottom: 0; transform: translateX(-50%); width: 160px; height: 90px;
+  background: url("nav/bundle.webp?v=n2") no-repeat center bottom / 160px 90px; image-rendering: pixelated; }
 .trd-shop-face { width: 64px; height: 64px; border-radius: 12px; object-fit: contain; image-rendering: pixelated; background: var(--panel-2); }
 .trd-shop-face.none { display: grid; place-items: center; font-size: 1.6rem; font-weight: 900; color: var(--accent-2); background: var(--accent-soft); border: 1px solid var(--accent-fill); }
 .trd-shop-where { font-size: .78rem; color: var(--muted); font-weight: 700; }
-.trd-shop-icons { display: flex; align-items: center; justify-content: center; gap: 2px; min-height: 28px; flex-wrap: nowrap; white-space: nowrap; }
-.trd-shop-icons img { width: 26px; height: 26px; image-rendering: pixelated; }
-.trd-shop-icons em { font-style: normal; font-size: .75rem; font-weight: 800; color: var(--muted); margin-left: 2px; }
+/* the goods lie on the cloth */
+.trd-shop-icons { position: absolute; left: 6px; right: 34px; bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 1px; min-height: 28px; white-space: nowrap; }
+.trd-shop-icons img { width: 26px; height: 26px; image-rendering: pixelated; filter: drop-shadow(0 1px 0 rgba(30, 10, 40, .45)); }
+.trd-shop-icons em { font-style: normal; font-size: .7rem; font-weight: 900; color: #fff; margin-left: 2px; padding: 0 5px; line-height: 16px; border-radius: 999px; background: rgba(28, 10, 40, .82); }
+.trd-shopdlg-awning { display: block; margin: 0; }
 .trd-shop-foot { font-size: .78rem; font-weight: 700; color: var(--text-2); }
 .trd-shops-more { margin-top: 8px; font-size: .85rem; }
 .trd-shops-credit { margin: 6px 0 0; }
@@ -4835,7 +4845,11 @@ dialog.trd-shopdlg::backdrop { background: rgba(0, 0, 0, .45); }
 @media (max-width: 520px) {
   .trd-shop-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .trd-si { grid-template-columns: 36px minmax(0, 1fr) auto; }
-  .trd-shop-icons { gap: 1px; }
-  .trd-shop-icons img { width: 21px; height: 21px; }
+  .trd-shop { padding-left: 4px; padding-right: 4px; }
+  .trd-shop-awning { margin: 0 -4px; }
+  .trd-shop-icons img { width: 22px; height: 22px; }
+  .trd-shop-cloth { width: 128px; height: 72px; background-size: 128px 72px; }
+  .trd-shop-icons { left: 4px; right: 24px; bottom: 12px; }
+  .trd-shop-stage .trd-shop-face { bottom: 34px; }
   .trd-si-vs { display: none; }
 }
