@@ -4865,3 +4865,4 @@ dialog.trd-shopdlg::backdrop { background: rgba(0, 0, 0, .45); }
   .trd-shop-icons img { width: 16px; height: 16px; }
   .trd-si-vs { display: none; }
 }
+.td-when { white-space: nowrap; font-variant-numeric: tabular-nums; }

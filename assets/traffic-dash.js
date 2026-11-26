@@ -185,6 +185,17 @@ const HOW = { exact: '또렷하게 읽음', soft: '흐린 숫자를 맞춰 읽�
 const howText = (r) => { const m = /^len(\d+)unread(\d+)$/.exec(r.how || ''); return m ? (Number(m[1]) ? `글자 ${m[1]}개 중 ${m[2]}개 못 읽음` : '숫자 줄을 못 찾음') : HOW[r.how] || r.how || ''; };
 // The status bar's gauges sit 108 game pixels apart, so their spacing on the shared picture says how large the game was drawn.
 const drawn = (r) => (r.tool === 'exp' && r.pitch > 0 ? `게임 화면 ${(r.pitch / 108).toFixed(2)}배` : '');
+// When a group of runs happened, in Korean time: "11/26 14:32", or the first and last time when there were several.
+const kst = (sec) => { const t = new Date(sec * 1000 + 9 * 3600000); return `${t.getUTCMonth() + 1}/${t.getUTCDate()} ${String(t.getUTCHours()).padStart(2, '0')}:${String(t.getUTCMinutes()).padStart(2, '0')}`; };
+const whenText = (r) => (!r.last ? '-' : r.n > 1 && r.first && kst(r.first) !== kst(r.last) ? `${kst(r.last)}<br><span class="muted">처음 ${kst(r.first)}</span>` : kst(r.last));
+// Shop Scan runs per day: how many runs read a shop, out of all runs.
+function scanLine(b, tot, days) {
+  const all = tot('scan');
+  if (!all) return '';
+  const ok = tot('scan', (r) => r.outcome === 'first_rows');
+  const daily = days.map((day) => { const n = tot('scan', (r) => r.day === day), k = tot('scan', (r) => r.day === day && r.outcome === 'first_rows'); return n ? `<li><span>${esc(day.slice(5))}</span><b>${nf(k)} / ${nf(n)}</b></li>` : ''; }).join('');
+  return `<p>상점 스캔: ${nf(all)}번 중 ${nf(ok)}번 상점을 읽었어요 (${Math.round((ok / all) * 100)}%)</p><ul class="td-botlist">${daily}</ul>`;
+}
 function toolPanel(d) {
   const b = d.tools;
   if (!b) return '';
@@ -193,11 +204,12 @@ function toolPanel(d) {
   const all = tot('exp'), ok = tot('exp', (r) => r.outcome === 'ok'), rate = all ? Math.round((ok / all) * 100) : null;
   const days = [...new Set(b.days.map((r) => r.day))].sort();
   const daily = days.map((day) => { const n = tot('exp', (r) => r.day === day), k = tot('exp', (r) => r.day === day && r.outcome === 'ok'); return n ? `<li><span>${esc(day.slice(5))}</span><b>${nf(k)} / ${nf(n)} (${Math.round((k / n) * 100)}%)</b></li>` : ''; }).join('');
-  const bad = b.why.filter((r) => r.outcome !== 'ok' && r.outcome !== 'first_rows');
-  const rows = bad.map((r) => `<tr><td class="num"><b>${nf(r.n)}</b></td><td>${esc(TOOL_NAME[r.tool] || r.tool)}</td><td>${esc(OUTCOME[r.outcome] || r.outcome)}</td><td>${esc(r.size || '-')}<br><span class="muted">모니터 ${esc(r.screen)} · 배율 ${esc(r.dpr)}</span></td><td>${esc(r.os)} · ${esc(r.browser)}<br><span class="muted">${esc([r.surface, drawn(r), howText(r)].filter(Boolean).join(' · '))}</span></td></tr>`);
+  const bad = b.why.filter((r) => r.outcome !== 'ok' && r.outcome !== 'first_rows').sort((x, y) => (y.last || 0) - (x.last || 0));
+  const rows = bad.map((r) => `<tr><td class="num"><b>${nf(r.n)}</b></td><td class="td-when">${whenText(r)}</td><td>${esc(TOOL_NAME[r.tool] || r.tool)}</td><td>${esc(OUTCOME[r.outcome] || r.outcome)}</td><td>${esc(r.size || '-')}<br><span class="muted">모니터 ${esc(r.screen)} · 배율 ${esc(r.dpr)}</span></td><td>${esc(r.os)} · ${esc(r.browser)}<br><span class="muted">${esc([r.surface, drawn(r), howText(r)].filter(Boolean).join(' · '))}</span></td></tr>`);
   return `<section class="panel"><h2>화면 읽는 도구 상태 <small class="muted">최근 7일</small></h2>
 ${all ? `<p class="${rate < 80 && all >= 5 ? 'td-err' : ''}">EXP 측정기: ${nf(all)}번 중 ${nf(ok)}번 읽었어요 (${rate}%)${rate < 80 && all >= 5 ? ' · 80%보다 낮아요. 아래 실패를 확인하세요.' : ''} · 레벨까지 읽은 것 ${nf(b.days.filter((r) => r.tool === 'exp').reduce((a, r) => a + r.lv, 0))}번</p><ul class="td-botlist">${daily}</ul>` : '<p class="muted">아직 EXP 측정 기록이 없어요. 11월 24일 밤부터 쌓여요.</p>'}
-${foldTable('<tr><th class="num">횟수</th><th>도구</th><th>실패한 이유</th><th>공유한 화면</th><th>환경</th></tr>', rows)}
+${scanLine(b, tot, days)}
+${foldTable('<tr><th class="num">횟수</th><th>언제</th><th>도구</th><th>실패한 이유</th><th>공유한 화면</th><th>환경</th></tr>', rows)}
 <p class="muted small">결과, 화면 크기, 브라우저만 남겨요. 화면이나 읽은 숫자, 닉네임은 남기지 않아요.</p></section>`;
 }
 
