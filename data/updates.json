@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "account-sync-fix",
+   "version": "0.7.80",
+   "level": "patch",
+   "date": "2026-11-26",
+   "path": "/",
+   "ko": "디스코드 로그인 — 설정 저장이 막히던 문제 수정",
+   "en": "Discord login — settings saves that were refused are fixed",
+   "desc": {
+    "ko": "디스코드로 로그인한 채 탭을 여러 개 열어 두면, 맨 위 확성기 띠가 바뀔 때마다 저장 요청이 나가서 설정 저장이 거절될 수 있었어요. 이제 확성기 띠처럼 저절로 바뀌는 값은 저장하지 않고, 저장은 20초에 한 번으로 모아서 보내요. 관심 아이템, 캐릭터, 퀘스트 체크 같은 설정은 그대로 이어져요.",
+    "en": "With several tabs open while logged in with Discord, every change of the megaphone strip at the top sent a save, and saves could be refused. Values that change by themselves, like that strip, are no longer saved, and saves go out together at most every 20 seconds. Your wishlist, character and quest checks carry over as before."
+   }
+  },
+  {
    "id": "scan-room-any",
    "version": "0.7.79",
    "level": "patch",
