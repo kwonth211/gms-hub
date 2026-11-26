@@ -771,3 +771,22 @@ export function scrollTier(img, row) {
   }
   return null;
 }
+
+// The shop's title sits in a white text field above the owner box (owner 2026-11-26: read the shop's own words too).
+// Look upward from the list for the band of near-white rows across the field's left part; returns its top and height in
+// game pixels, or null. Own-shop and visitor windows place the field at different heights, so it is searched, not fixed.
+export function findTitleBand(img, x0, listTop) {
+  const lum = (x, y) => { const i = (y * img.width + x) * 4; return (img.data[i] + img.data[i + 1] + img.data[i + 2]) / 3; };
+  const from = x0 + 12, to = Math.min(img.width - 1, x0 + 300);
+  const white = (y) => { let n = 0, all = 0; for (let x = from; x <= to; x += 2) { all++; if (lum(x, y) > 232) n++; } return n / all >= 0.8; };
+  let bottom = -1;
+  for (let y = Math.min(img.height - 1, listTop - 100); y >= Math.max(0, listTop - 230); y--) {
+    if (white(y)) { if (bottom < 0) bottom = y; }
+    else if (bottom >= 0) {
+      const top = y + 1, h = bottom - top + 1;
+      if (h >= 12 && h <= 34) return { top, h };
+      bottom = -1;
+    }
+  }
+  return null;
+}

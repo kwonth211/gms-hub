@@ -3,7 +3,7 @@
 // dev server, which keeps them as samples for building the shop reader.
 import { SHARE_SIZE } from './exp-reader.js';
 import { toolReport } from './tool-report.js';
-import { detectScale, findChannel, findRoom, findShopRows, findShopRowsLoose, matchItem, parsePriceLine, priceFromLine, readLine, readOwner, scrollTier, ambiguousName, narrowByTier } from './shop-reader.js';
+import { detectScale, findChannel, findRoom, findShopRows, findShopRowsLoose, findTitleBand, matchItem, parsePriceLine, priceFromLine, readLine, readOwner, scrollTier, ambiguousName, narrowByTier } from './shop-reader.js';
 
 import { KERNING, placeLabel } from './place.js';
 import { SELLER, validLocation, listingKey, payload, fingerprint, validListing, canUpload, sameShop, verifiedPrice } from './scan-state.js';
@@ -158,7 +158,7 @@ async function ocrEngine() {
 // Crop a rectangle given in game pixels out of the full capture, enlarge it k times, and binarise it with Otsu's threshold
 // (the blur of non-integer scaling leaves no fixed cut-off that works for every line), on a white margin Tesseract needs.
 const ALNUM = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-async function ocrRect(gx, gy, gw, gh, { light = false, k = 4, psm = '7', chars = '' } = {}) {
+async function ocrRect(gx, gy, gw, gh, { light = false, k = 4, psm = '7', chars = '', withConf = false } = {}) {
   const worker = await ocrEngine();
   const pad = 8;
   const w = Math.round(gw * k);
@@ -203,7 +203,8 @@ async function ocrRect(gx, gy, gw, gh, { light = false, k = 4, psm = '7', chars 
   g.fillRect(0, 0, c.width, c.height);
   g.putImageData(im, pad, pad);
   await worker.setParameters({ tessedit_pageseg_mode: psm, tessedit_char_whitelist: chars });
-  return (await worker.recognize(c)).data.text.trim();
+  const d = (await worker.recognize(c)).data;
+  return withConf ? { text: d.text.trim(), conf: d.confidence } : d.text.trim();
 }
 
 const majority = (reads) => {
@@ -297,6 +298,8 @@ async function recognize(canvas) {
     try { owner = await ownerByOcr(rows[0].x0, listTop); } catch { /* Keep the row available for manual correction. */ }
   }
   if (!SELLER.test(owner) && me()) owner = me();
+  // The shop's own title (the words on its sign), read a few times at most per shop and sent with its rows.
+  if (SELLER.test(owner) && validLocation(channel) && validLocation(room)) await noteTitle(img, rows[0].x0, listTop, owner);
   const out = [];
   for (const row of rows) {
     let name = readLine(img, row, 0, table);
@@ -345,6 +348,36 @@ async function recognize(canvas) {
   }
   return out;
 }
+
+// Shop titles (owner 2026-11-26): the white field at the top of the shop window holds the title players see on the booth.
+// Its font is not the list font, so OCR reads it; tried at 3x, then 2x, keeping the surer read. A shop whose title stays
+// unreadable after three tries is listed without one.
+const TITLE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 /-:!?.,&+%'()<>~*#@=[]";
+const titles = new Map();
+const titleKey = (owner, ch, rm) => `${owner}|${ch}|${rm}`;
+const titleFor = (r) => titles.get(titleKey(r.owner, r.channel, r.room))?.text || '';
+async function noteTitle(img, x0, listTop, owner) {
+  const key = titleKey(owner, channel, room), t = titles.get(key) || { text: '', tries: 0, at: 0 };
+  if (t.text || t.tries >= 3 || Date.now() - t.at < 4000) return;
+  t.tries++;
+  t.at = Date.now();
+  titles.set(key, t);
+  const band = findTitleBand(img, x0, listTop);
+  if (!band) return;
+  try {
+    let best = { text: '', conf: 0 };
+    for (const k of [3, 2]) {
+      const r = await ocrRect(x0 + 12, band.top + 1, Math.min(478, img.width - x0 - 13), band.h - 2, { k, psm: '7', chars: TITLE_CHARS, withConf: true });
+      if (r.conf > best.conf) best = r;
+      if (best.conf >= 60) break;
+    }
+    const text = best.text.replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (best.conf >= 45 && /[A-Za-z0-9]/.test(text)) t.text = text;
+  } catch { /* listed without a title */ }
+}
+// What decides a resend: the listing itself and the shop's title once it is read.
+const sigOf = (r) => `${fingerprint(r)}|${titleFor(r)}`;
+const bodyOf = (r) => (titleFor(r) ? { ...payload(r), title: titleFor(r) } : payload(r));
 
 // OCR fallbacks for a scaled capture, read from the full-resolution frame.
 async function ownerByOcr(x0, listTop) {
@@ -420,8 +453,8 @@ async function upload() {
   const ready = [...listings.values()].map((e) => e.r).filter((r) => canUpload(r) && (r.edited || shopReady(r.shop)));
   // Copy the payload before awaiting the network; later edits must not be marked as sent by an older response.
   const now = Date.now();
-  const fresh = ready.filter((r) => sent.get(listingKey(r)) !== fingerprint(r) || beatDue(r, listingKey(r), now)).slice(0, 100)
-    .map((r) => ({ r, key: listingKey(r), body: payload(r), signature: fingerprint(r), beat: sent.get(listingKey(r)) === fingerprint(r) }));
+  const fresh = ready.filter((r) => sent.get(listingKey(r)) !== sigOf(r) || beatDue(r, listingKey(r), now)).slice(0, 100)
+    .map((r) => ({ r, key: listingKey(r), body: bodyOf(r), signature: sigOf(r), beat: sent.get(listingKey(r)) === sigOf(r) }));
   if (!fresh.length) {
     if (uploaded) check('upload', 'ok', fill(i18n.uploadOk, { n: uploaded }));
     else if (listings.size) check('upload', 'warn', i18n.uploadNeed);
@@ -464,7 +497,7 @@ async function upload() {
     issue('upload_fail', { msg: String(e?.message || e).slice(0, 80) });
   } finally {
     sending = false;
-    $('scan-retry-upload').hidden = ![...listings.values()].some((e) => canUpload(e.r) && sent.get(listingKey(e.r)) !== fingerprint(e.r));
+    $('scan-retry-upload').hidden = ![...listings.values()].some((e) => canUpload(e.r) && sent.get(listingKey(e.r)) !== sigOf(e.r));
     if (succeeded && !$('scan-retry-upload').hidden) queueMicrotask(upload);
   }
 }

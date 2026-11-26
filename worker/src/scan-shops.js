@@ -10,18 +10,28 @@ export const FACE_DAYS = 7;
 export const LATEST_MIN = 30;
 
 // Remember the shops in one upload (rows already validated by POST /listings).
+// A shop's title goes on a public page: plain printable text, 40 characters at most, and never a link or a real-money offer.
+const LINK = /https?:|www\.|\.(?:com|net|org|gg|io|kr|me|xyz)\b|discord\s*\.?\s*gg/i;
+const RMT = /paypal|venmo|cash\s*app|zelle|usdt|crypto|\$\s?\d|\d\s?\$|\busd\b|real money|irl money/i;
+export function cleanTitle(t) {
+  const s = String(t ?? '').replace(/[^\x20-\x7E]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
+  return s && /[A-Za-z0-9]/.test(s) && !LINK.test(s) && !RMT.test(s) ? s : null;
+}
+
 export async function noteScanShops(env, rows) {
   const shops = [...new Map(rows.map((r) => [`${r.seller}|${r.channel}|${r.room}`, r])).values()];
   if (!shops.length) return;
-  const stmt = env.DB.prepare("INSERT INTO scan_shops (seller, channel, room, at) VALUES (?, ?, ?, datetime('now')) ON CONFLICT (seller, channel, room) DO UPDATE SET at = datetime('now')");
-  await env.DB.batch(shops.slice(0, 20).map((r) => stmt.bind(r.seller, r.channel, r.room)));
+  // A row without a title (not read yet, or unreadable) keeps the title already known.
+  const stmt = env.DB.prepare(`INSERT INTO scan_shops (seller, channel, room, at, title) VALUES (?, ?, ?, datetime('now'), ?)
+    ON CONFLICT (seller, channel, room) DO UPDATE SET at = datetime('now'), title = COALESCE(excluded.title, scan_shops.title)`);
+  await env.DB.batch(shops.slice(0, 20).map((r) => stmt.bind(r.seller, r.channel, r.room, cleanTitle(r.title))));
 }
 
 const parse = (s) => { try { return s ? JSON.parse(s) : null; } catch { return null; } };
 
 export async function scanShops(env) {
   const since = `-${WINDOW_H} hours`;
-  const { results: shops } = await env.DB.prepare(`SELECT s.seller, s.channel, s.room, s.at, f.photo, f.level, f.job FROM scan_shops s
+  const { results: shops } = await env.DB.prepare(`SELECT s.seller, s.channel, s.room, s.at, s.title, f.photo, f.level, f.job FROM scan_shops s
     LEFT JOIN seller_faces f ON f.key = lower(s.seller) WHERE s.at >= datetime('now', ?) ORDER BY s.at DESC LIMIT ?`).bind(since, MAX_SHOPS).all();
   if (!shops.length) return { at: new Date().toISOString(), shops: [] };
   const { results: rows } = await env.DB.prepare(`SELECT l.seller, l.channel, l.room, l.item, l.price, l.qty, l.sold, l.last_seen AS seen, l.opts
@@ -29,7 +39,7 @@ export async function scanShops(env) {
     AND l.room = json_extract(k.value, '$[2]') AND l.last_seen >= datetime('now', ?)`)
     .bind(JSON.stringify(shops.map((s) => [s.seller, s.channel, s.room])), since).all();
   const by = new Map(shops.map((s) => [`${s.seller}|${s.channel}|${s.room}`, {
-    seller: s.seller, ch: s.channel, room: s.room, at: s.at, seen: '', items: [],
+    seller: s.seller, ch: s.channel, room: s.room, at: s.at, seen: '', title: s.title || null, items: [],
     face: s.photo || s.level ? { photo: s.photo || null, level: s.level ?? null, job: s.job || null } : null,
   }]));
   for (const r of rows) {

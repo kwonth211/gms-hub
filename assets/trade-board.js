@@ -236,11 +236,12 @@ function drawShops() {
   box.innerHTML = list.map((s) => {
     const items = onSale(s), more = items.length - 3;
     const first = byId.get(items[0]?.[0])?.name || '';
-    const title = items.length > 1 ? tr(`${first} 외 ${nf.format(items.length - 1)}개`, `${first} +${nf.format(items.length - 1)} more`) : first;
+    // The sign shows the shop's own title when Shop Scan read it, as in game; otherwise what it sells.
+    const title = s.title || (items.length > 1 ? tr(`${first} 외 ${nf.format(items.length - 1)}개`, `${first} +${nf.format(items.length - 1)} more`) : first);
     // Built like the game's hired-merchant booth: thatched roof, the sign board with the shop's goods, the bar with a coin,
     // the owner between two posts behind the counter, and the black name tag under it.
     return `<button type="button" class="trd-shop ${wood(s)}" data-shop="${shops.indexOf(s)}" aria-label="${esc(tr(`${s.seller}의 상점, ${items.length}개 판매 중`, `${s.seller}'s shop, ${items.length} on sale`))}">
-<span class="trd-booth"><span class="trd-booth-roof" aria-hidden="true"></span><span class="trd-booth-board">${esc(title)}</span>
+<span class="trd-booth"><span class="trd-booth-roof" aria-hidden="true"></span><span class="trd-booth-board"${s.title ? ' translate="no"' : ''}>${esc(title)}</span>
 <span class="trd-booth-bar"><img class="trd-booth-coin" src="${COIN}" width="16" height="16" alt=""><span class="trd-shop-icons">${items.slice(0, 3).map((i) => icon(i[0], 18)).join('')}${more > 0 ? `<em>+${more}</em>` : ''}</span></span>
 <span class="trd-booth-body">${face(s, 96)}<span class="trd-booth-counter" aria-hidden="true"></span></span></span>
 <span class="trd-booth-name">${esc(s.seller)}</span>
@@ -267,7 +268,7 @@ async function openShop(s) {
     }).join('');
     dlg.className = `trd-shopdlg ${wood(s)}`;
     body.innerHTML = `<div class="trd-shopdlg-head">${face(s, 56)}<div><h2 id="tb-shopdlg-h">${esc(tr(`${s.seller}의 상점`, `${s.seller}'s shop`))}</h2>
-<p>${esc(where(s))}${s.face?.job ? ` · ${esc(s.face.job)}` : ''}${s.face?.level ? ` · Lv.${s.face.level}` : ''} · ${tr(`마지막 확인 ${ago(s.at)}`, `last seen ${ago(s.at)}`)}</p></div>
+${s.title ? `<p class="trd-shopdlg-sign" translate="no">“${esc(s.title)}”</p>` : ''}<p>${esc(where(s))}${s.face?.job ? ` · ${esc(s.face.job)}` : ''}${s.face?.level ? ` · Lv.${s.face.level}` : ''} · ${tr(`마지막 확인 ${ago(s.at)}`, `last seen ${ago(s.at)}`)}</p></div>
 <button type="button" class="trd-shopdlg-x" data-close aria-label="${tr('닫기', 'Close')}">×</button></div>
 <ul class="trd-silist">${rows}</ul>
 <div class="trd-shopdlg-foot"><button type="button" class="btn small-btn" data-whisper="${esc(s.seller)}">${tr('귓말 복사', 'Copy whisper')}</button>

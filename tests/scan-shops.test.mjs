@@ -2,13 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
-import { noteScanShops, scanShops, refreshFaces, pruneScanShops } from '../worker/src/scan-shops.js';
+import { noteScanShops, scanShops, refreshFaces, pruneScanShops, cleanTitle } from '../worker/src/scan-shops.js';
 
 // /trade/'s list of shops people scanned (owner 2026-11-26): scan_shops remembers the shops in each Shop Scan upload,
 // and the list shows each with what it still sells, read from listings.
 function environment() {
   const sqlite = new DatabaseSync(':memory:');
-  for (const file of ['schema.sql', 'migrations/0001_market_batch.sql', 'migrations/0002_listing_history.sql', 'migrations/0019_item_options.sql', 'migrations/0033_scan_shops.sql'])
+  for (const file of ['schema.sql', 'migrations/0001_market_batch.sql', 'migrations/0002_listing_history.sql', 'migrations/0019_item_options.sql', 'migrations/0033_scan_shops.sql', 'migrations/0034_scan_shop_title.sql'])
     sqlite.exec(fs.readFileSync(new URL('../worker/' + file, import.meta.url), 'utf8'));
   const DB = { prepare(sql, args = []) { return { bind(...a) { return DB.prepare(sql, a); }, async first() { return sqlite.prepare(sql).get(...args) || null; }, async all() { return { results: sqlite.prepare(sql).all(...args) }; }, async run() { const r = sqlite.prepare(sql).run(...args); return { meta: { changes: r.changes } }; } }; },
     async batch(stmts) { const out = []; for (const s of stmts) out.push(await s.run()); return out; } };
@@ -80,4 +80,19 @@ test('a shop shows only what it held at its latest scan, not items from an earli
   assert.deepEqual(by.Hookstk, [2000003]);
   assert.deepEqual(by.Juky.sort(), [1302004, 4031000]);
   assert.equal(shops.find((s) => s.seller === 'Hookstk').items[0].length, 5);
+});
+
+test('a shop keeps the title read by Shop Scan; links and real-money words never go on the page', async () => {
+  const e = environment();
+  add(e, 'Hookstk', 2000003, 220, { ago: 2 });
+  await noteScanShops(e, [{ seller: 'Hookstk', channel: 3, room: 7, title: '  222 ' }]);
+  await noteScanShops(e, [{ seller: 'Hookstk', channel: 3, room: 7 }]); // a later upload before the title is read again
+  const { shops } = await scanShops(e);
+  assert.equal(shops[0].title, '222');
+  assert.equal(cleanTitle('EQ/ETC ORE chip chip'), 'EQ/ETC ORE chip chip');
+  assert.equal(cleanTitle('selling mesos paypal'), null);
+  assert.equal(cleanTitle('visit www.cheap.com'), null);
+  assert.equal(cleanTitle('$5 for 10m'), null);
+  assert.equal(cleanTitle('   '), null);
+  assert.equal(cleanTitle('x'.repeat(60)).length, 40);
 });
