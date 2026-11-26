@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "guides-rebuilt",
+   "version": "0.7.81",
+   "level": "minor",
+   "date": "2026-11-26",
+   "path": "/guides/",
+   "ko": "공략 24편 전면 개편 — 첫 화면에 답, 레벨별 표, 실시간 시세",
+   "en": "All 24 guides rebuilt — the answer first, level-by-level tables, live prices",
+   "desc": {
+    "ko": "직업·육성·퀘스트·주문서·메소 공략 24편을 다시 썼어요. 들어오자마자 스킬 찍는 순서나 갈 사냥터가 첫 화면에 나오고, 레벨별 표에 몬스터 HP·경험치·필요 명중이 들어가요. 무기와 주문서 값은 사이트를 새로 만들 때마다 지금 시세로 바뀌고, 스킬·아이템 아이콘과 맵 사진, 자주 묻는 질문도 붙였어요.",
+    "en": "The 24 class, levelling, quest, scroll and meso guides were rewritten. The skill order or the place to train is on the first screen, and the level tables carry monster HP, EXP and the accuracy you need. Weapon and scroll prices follow the live market at every site update, with skill and item icons, map pictures and a FAQ on every guide."
+   }
+  },
+  {
    "id": "account-sync-fix",
    "version": "0.7.80",
    "level": "patch",

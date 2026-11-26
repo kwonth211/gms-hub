@@ -2806,7 +2806,16 @@ function guideBody(g) {
   const toc = [];
   const body = g.body.replace(/<h2>(.*?)<\/h2>/g, (_,title) => { const id = `section-${toc.length+1}`; toc.push({id,title}); return `<h2 id="${id}">${title}</h2>`; })
     .replace(/<table>/g, '<div class="table-wrap"><table class="data">')
-    .replace(/<\/table>/g, '</table></div>').replace('</p>', `</p>${AD_TOP}`);
+    .replace(/<\/table>/g, '</table></div>').replace('</p>', `</p>${AD_TOP}`)
+    // {{price:<item id>}} in a guide is that item's current Free Market price, baked in at every build (same rule as the
+    // quest money ranking: recent sold median, else the asking median with 3+ listings).
+    .replace(/\{\{price:(\d+)\}\}/g, (_, id) => {
+      const p = itemPrices.prices?.[id];
+      const v = !p ? null : p.sold?.n >= 2 && p.sold.median ? p.sold.median : (p.selling?.n ?? p.n) >= 3 ? (p.selling?.median ?? p.median) : null;
+      const day = String(itemPrices.updated || '').slice(5, 10).replace('-', '/');
+      if (v == null) return `<span class="g-price">${g.lang === 'ko' ? '매물 적음' : 'few listings'}</span>`;
+      return `<span class="g-price" title="${day}">${Math.round(v).toLocaleString(g.lang === 'ko' ? 'ko-KR' : 'en-US')}${g.lang === 'ko' ? ' 메소' : ' mesos'}</span>`;
+    });
   return `<article class="wrap prose guide-article">
 <p class="crumbs"><a href="${href(langPath(g.lang, '/guides/'))}">${T[g.lang].navGuides}</a></p>
 <h1>${esc(g.h1)}</h1>

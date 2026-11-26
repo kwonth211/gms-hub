@@ -1,6 +1,171 @@
-<p>The calculator assumes a fixed success probability and independent attempts. Mathematical output does not validate every current game mechanic. Check the preset against the item’s own tooltip.</p>
-<h2>Five attempts are not five slots</h2>
-<p>Exactly five independent attempts at 60% success have three expected successes and a 0.4⁵ = 1.024% chance of none. At 10%, the chance of none is 0.9⁵ = 59.049%.</p>
-<h2>Conditional destruction</h2>
-<p>Assuming 10% success and 50% destruction conditional on failure, destruction per attempt is 45%. Trying up to five times, stopping on destruction, gives 1 − 0.55⁵ ≈ 94.97% chance of destruction. Check whether the actual scroll uses these inputs.</p>
-<p>Value depends on equipment cost, slot behavior, retry costs and your objective. No tier is universally recommended.</p>
+<p>Classic World scrolls come in four tiers: Lesser 100%, Intermediate 60%, Greater 10% and Chaos 10%. Only a failed Chaos scroll can destroy the item (half of its failures do); the other three just use up one upgrade slot when they fail.</p>
+<p>The success rate is the same on every attempt, no matter how many failures came before. The numbers below are the same values the <a href="/en/tools/scroll/">scroll calculator</a> uses.</p>
+<h2>Scroll success rates and stat gains at a glance</h2>
+<table>
+<thead><tr><th>Tier</th><th>Success</th><th>On failure</th><th>Standard scrolls (glove ATT, earring STR…)</th><th>Weapon ATT</th><th>Wand / staff Magic ATT</th><th>Glove ATT price now</th></tr></thead>
+<tbody>
+<tr><td><img class="g-icon" src="https://maplestory.io/api/MCW/1.2/item/2040800/icon" alt="Gloves Attack Scroll: Lesser" width="32" height="32" loading="lazy"> Lesser</td><td>100%</td><td>Never fails</td><td>+1</td><td>+1</td><td>+2</td><td>{{price:2040800}}</td></tr>
+<tr><td><img class="g-icon" src="https://maplestory.io/api/MCW/1.2/item/2040801/icon" alt="Gloves Attack Scroll: Intermediate" width="32" height="32" loading="lazy"> Intermediate</td><td>60%</td><td>Nothing happens</td><td>+2</td><td>+2</td><td>+4</td><td>{{price:2040801}}</td></tr>
+<tr><td><img class="g-icon" src="https://maplestory.io/api/MCW/1.2/item/2040802/icon" alt="Gloves Attack Scroll: Greater" width="32" height="32" loading="lazy"> Greater</td><td>10%</td><td>Nothing happens</td><td>+3</td><td>+4</td><td>+8</td><td>{{price:2040802}}</td></tr>
+<tr><td><img class="g-icon" src="https://maplestory.io/api/MCW/1.2/item/2040803/icon" alt="Gloves Attack Scroll: Chaos" width="32" height="32" loading="lazy"> Chaos</td><td>10%</td><td>50% chance the item is destroyed</td><td>+4</td><td>+5</td><td>+10</td><td>{{price:2040803}}</td></tr>
+</tbody>
+</table>
+<ul>
+<li>Five 60% scrolls: three successes on average, and a 7.78% chance that all five pass.</li>
+<li>Five 10% scrolls: a 59.05% chance that none of them pass.</li>
+<li>One Chaos scroll: a 45% chance the item is gone.</li>
+<li>For HP and MP, Lesser (+10 a scroll) beats the Intermediate average (+9 a scroll).</li>
+</ul>
+<p>Defense, gloves Magic ATT and cape Magic DEF scrolls give +2 / +4 / +6 / +8 by tier. HP and MP scrolls for hats, tops and bottoms give +10 / +15 / +20 / +25.</p>
+<h2>How many 60% scrolls actually pass</h2>
+<p>Put five Intermediate scrolls into a 5-slot item (Work Gloves, earrings, shoes, capes) and you get three successes on average. The chance of exactly three, though, is only 34.56%. Before you buy, read the "or more" column for the result you actually want.</p>
+<table>
+<thead><tr><th>Successes</th><th>5 slots · exactly</th><th>5 slots · or more</th><th>7 slots · exactly</th><th>7 slots · or more</th></tr></thead>
+<tbody>
+<tr><td>0</td><td>1.02%</td><td>100%</td><td>0.16%</td><td>100%</td></tr>
+<tr><td>1</td><td>7.68%</td><td>98.98%</td><td>1.72%</td><td>99.84%</td></tr>
+<tr><td>2</td><td>23.04%</td><td>91.30%</td><td>7.74%</td><td>98.12%</td></tr>
+<tr><td>3</td><td>34.56%</td><td>68.26%</td><td>19.35%</td><td>90.37%</td></tr>
+<tr><td>4</td><td>25.92%</td><td>33.70%</td><td>29.03%</td><td>71.02%</td></tr>
+<tr><td>5</td><td>7.78%</td><td>7.78%</td><td>26.13%</td><td>41.99%</td></tr>
+<tr><td>6</td><td>—</td><td>—</td><td>13.06%</td><td>15.86%</td></tr>
+<tr><td>7</td><td>—</td><td>—</td><td>2.80%</td><td>2.80%</td></tr>
+</tbody>
+</table>
+<p>Weapons, hats, tops and bottoms have 7 slots. Scroll a weapon with seven 60% ATT scrolls and the chance that all seven pass is just 2.80%. Even five or more passes happen less than half the time (41.99%).</p>
+<table>
+<thead><tr><th>Slot</th><th>Upgrade slots</th><th>All Lesser</th><th>All Intermediate, average</th></tr></thead>
+<tbody>
+<tr><td>Gloves (ATT)</td><td>5</td><td>ATT +5</td><td>ATT +6</td></tr>
+<tr><td>Earrings, capes (stats)</td><td>5</td><td>+5</td><td>+6</td></tr>
+<tr><td>Shoes (Speed, Jump)</td><td>5</td><td>+5</td><td>+6</td></tr>
+<tr><td>Weapons (ATT)</td><td>7</td><td>ATT +7</td><td>ATT +8.4</td></tr>
+<tr><td>Wands, staffs (Magic ATT)</td><td>7</td><td>Magic ATT +14</td><td>Magic ATT +16.8</td></tr>
+<tr><td>Hats, tops, bottoms (HP)</td><td>7</td><td>HP +70</td><td>HP +63</td></tr>
+<tr><td>Overalls (stats)</td><td>10</td><td>+10</td><td>+12</td></tr>
+</tbody>
+</table>
+<h2>How many 10% scrolls until one passes</h2>
+<p>A Greater scroll passes once every ten tries on average. Even after seven of them, the chance of at least one success is 52.2%, so about half of all players get nothing. On a 5-slot item that chance drops to 41.0%.</p>
+<table>
+<thead><tr><th>Scrolls used</th><th>At least one success</th><th>No success at all</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>10.0%</td><td>90.0%</td></tr>
+<tr><td>2</td><td>19.0%</td><td>81.0%</td></tr>
+<tr><td>3</td><td>27.1%</td><td>72.9%</td></tr>
+<tr><td>4</td><td>34.4%</td><td>65.6%</td></tr>
+<tr><td>5</td><td>41.0%</td><td>59.0%</td></tr>
+<tr><td>6</td><td>46.9%</td><td>53.1%</td></tr>
+<tr><td>7</td><td>52.2%</td><td>47.8%</td></tr>
+<tr><td>10</td><td>65.1%</td><td>34.9%</td></tr>
+</tbody>
+</table>
+<p>When a Greater scroll does pass, it gives more than an Intermediate one: +3 against +2 on standard scrolls, +4 against +2 on weapon ATT. Its average gain per scroll, however, is about a quarter of the Intermediate average. Filling slots with Greater scrolls loses stats on average.</p>
+<h2>How often Chaos scrolls destroy items</h2>
+<p>Every Chaos scroll is a 10% success, a 45% "nothing happens" and a 45% destroyed item. A destroyed item ends the run, so the chance that a 5-slot item survives five Chaos scrolls is 5.03%. Keep Chaos away from gear you care about and use it only on cheap items you can afford to lose.</p>
+<table>
+<thead><tr><th>Chaos scrolls in a row</th><th>Item survives</th><th>Destroyed at some point</th><th>Survives with at least one success</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>55.00%</td><td>45.00%</td><td>10.00%</td></tr>
+<tr><td>2</td><td>30.25%</td><td>69.75%</td><td>10.00%</td></tr>
+<tr><td>3</td><td>16.64%</td><td>83.36%</td><td>7.53%</td></tr>
+<tr><td>5</td><td>5.03%</td><td>94.97%</td><td>3.19%</td></tr>
+<tr><td>7</td><td>1.52%</td><td>98.48%</td><td>1.15%</td></tr>
+</tbody>
+</table>
+<p>Chaos gains are fixed in this game: +4 on standard scrolls and +5 on weapon ATT. If you plan five Chaos scrolls on a 5-slot item, the run stops after 2.11 scrolls on average.</p>
+<h2>Which tier gives you the most</h2>
+<p>With a fixed number of slots, the Intermediate average is 20% higher than filling with Lesser. Three times in ten, though, Intermediate ends below the all-Lesser result. All Greater ends below it eight or nine times in ten.</p>
+<table>
+<thead><tr><th>Item (slots)</th><th>All Lesser</th><th>Intermediate average</th><th>Intermediate ends below Lesser</th><th>Greater average</th><th>Greater ends below Lesser</th></tr></thead>
+<tbody>
+<tr><td>Gloves, earrings, standard (5)</td><td>+5</td><td>+6</td><td>31.74%</td><td>+1.5</td><td>91.85%</td></tr>
+<tr><td>Weapon ATT (7)</td><td>+7</td><td>+8.4</td><td>28.98%</td><td>+2.8</td><td>85.03%</td></tr>
+<tr><td>Wand / staff Magic ATT (7)</td><td>+14</td><td>+16.8</td><td>28.98%</td><td>+5.6</td><td>85.03%</td></tr>
+<tr><td>Hat, top, bottom HP (7)</td><td>+70</td><td>+63</td><td>58.01%</td><td>+14</td><td>—</td></tr>
+</tbody>
+</table>
+<p>To put it in mesos, divide the price of one scroll by its average gain per scroll. The result is your average cost per point of ATT, and the lower it is the cheaper the stat.</p>
+<table>
+<thead><tr><th>Scroll</th><th>Price now</th><th>Average gain per scroll</th></tr></thead>
+<tbody>
+<tr><td>Glove ATT Lesser 100%</td><td>{{price:2040800}}</td><td>1</td></tr>
+<tr><td>Glove ATT Intermediate 60%</td><td>{{price:2040801}}</td><td>1.2</td></tr>
+<tr><td>Glove ATT Greater 10%</td><td>{{price:2040802}}</td><td>0.3</td></tr>
+<tr><td>Glove ATT Chaos 10%</td><td>{{price:2040803}}</td><td>0.4 (plus the 45% destruction risk)</td></tr>
+<tr><td>Claw ATT Lesser 100%</td><td>{{price:2044700}}</td><td>1</td></tr>
+<tr><td>Claw ATT Intermediate 60%</td><td>{{price:2044701}}</td><td>1.2</td></tr>
+<tr><td>Claw ATT Greater 10%</td><td>{{price:2044702}}</td><td>0.4</td></tr>
+</tbody>
+</table>
+<p>On 22 November, glove ATT scrolls sold for 666,666 (Lesser), 1,699,999 (Intermediate) and 499,999 mesos (Greater). That works out to about 670k, 1.42m and 1.67m mesos per point of ATT, so Lesser was the cheapest. Prices move every day, so redo the division with the live prices above before you buy.</p>
+<h2>How to scroll Work Gloves for ATT</h2>
+<p><img class="g-icon" src="https://maplestory.io/api/MCW/1.2/item/1082000/icon" alt="Work Gloves" width="32" height="32" loading="lazy"> <a href="/en/items/1082000-work-gloves/">Work Gloves</a> have 5 upgrade slots and 0 ATT. Five Lesser glove ATT scrolls give a guaranteed +5, and five Intermediate scrolls give +6 on average. Here is how five Intermediate scrolls split.</p>
+<table>
+<thead><tr><th>Passes</th><th>ATT</th><th>Exactly this</th><th>This or better</th></tr></thead>
+<tbody>
+<tr><td>5</td><td>+10</td><td>7.78%</td><td>7.78%</td></tr>
+<tr><td>4</td><td>+8</td><td>25.92%</td><td>33.70%</td></tr>
+<tr><td>3</td><td>+6</td><td>34.56%</td><td>68.26%</td></tr>
+<tr><td>2</td><td>+4</td><td>23.04%</td><td>91.30%</td></tr>
+<tr><td>1</td><td>+2</td><td>7.68%</td><td>98.98%</td></tr>
+<tr><td>0</td><td>+0</td><td>1.02%</td><td>100%</td></tr>
+</tbody>
+</table>
+<p>One Greater plus four Intermediate scrolls, all passing, makes +11 ATT. The chance of that is 0.1 × 0.6⁴ = 1.296%.</p>
+<p>Holding +4 ATT gloves with one slot left, you have three moves. Lesser makes it +5 for sure; Intermediate gives +6 at 60% and leaves +4 with no slots at 40%; Greater gives +7 at 10%. Enter the selling price of each result in the <a href="/en/tools/scroll-profit/">scroll profit calculator</a> and take the option that leaves the most mesos.</p>
+<h2>Where to get glove ATT scrolls</h2>
+<ul>
+<li>Quests: Rowen the Fairy's "Collecting 150 Cursed Dolls" in Ellinia gives your pick of a glove ATT or glove Magic ATT Intermediate scroll. Jane's Final Challenge in Lith Harbor gives one of glove ATT Intermediate or Greater, or glove Magic ATT Intermediate or Greater. Every step is in the <a href="/en/quests/glove-attack/">glove attack scroll quest guide</a>.</li>
+<li>Monsters: Mushmom (level 40 boss) drops glove ATT Intermediate and Chaos, and Tortie (level 46) drops glove ATT Greater. Rotten Mushrooms in Forgotten Hollow's Dilapidated Tomb and Another Sanctuary drop glove ATT Lesser.</li>
+<li>Free Market: search "glove att" in <a href="/en/tools/market/">Live Free Market prices</a> to see who sells one right now, with channel and room.</li>
+</ul>
+<ul class="g-mobs">
+<li><a href="/en/monsters/700000/"><img class="g-mob" src="/assets/monsters/700000.gif" alt="Mushmom" width="64" height="64" loading="lazy"></a>Mushmom Lv 40</li>
+<li><a href="/en/monsters/41/"><img class="g-mob" src="/assets/monsters/41.gif" alt="Tortie" width="64" height="64" loading="lazy"></a>Tortie Lv 46</li>
+<li><a href="/en/monsters/62/"><img class="g-mob" src="/assets/monsters/62.gif" alt="Rotten Mushroom" width="64" height="64" loading="lazy"></a>Rotten Mushroom Lv 56</li>
+</ul>
+<p>Tortie has 2,226 HP and 25 of them spawn in Hot Sand. Mushmom has 34,440 HP, so bring a party.</p>
+<h2>How to use the scroll calculator</h2>
+<ol>
+<li>Open the <a href="/en/tools/scroll/">scroll calculator</a> and pick your scroll. The tier and the stat gain fill in by themselves; choose custom input for anything not listed.</li>
+<li>Set the number of scrolls to the upgrade slots left on your item.</li>
+<li>Enter the price of one scroll in mesos and press calculate.</li>
+<li>You get the average gain, the chance that every scroll passes, the destruction chance, the average number of scrolls used, the average cost and a chart of every success count.</li>
+<li>The tier table below it keeps your slot count and swaps only the tier: average gain, chance of ending below all-Lesser and average cost per point.</li>
+</ol>
+<p>To include the item's price and what each result sells for, move to the <a href="/en/tools/scroll-profit/">scroll profit calculator</a>. To put an item on the workbench and drag scrolls onto it yourself, use the <a href="/en/tools/forge/">scroll simulator</a>.</p>
+<h2>Common mistakes and the fix</h2>
+<ul>
+<li>Buying on the average alone: five 60% scrolls average +6, but +8 or better happens only 33.70% of the time. Decide on the "or more" chance.</li>
+<li>Believing a streak of failures is due to end: a Greater scroll is still 10% after nine misses. Recalculate from the slots you have left.</li>
+<li>Using Intermediate for HP: Lesser has the higher HP and MP average. Fill those slots with Lesser.</li>
+<li>Putting Chaos on gear you value: each scroll destroys the item 45% of the time. Keep Chaos for gear you can lose.</li>
+<li>Accepting a 10% in a trade you thought was a 60%: both have the same icon. Hover over the scroll in the trade window right before you press confirm. The usual tricks are listed on <a href="/en/scam/">Scam reports</a>.</li>
+<li>Scrolling without knowing what each result sells for: a failed item with 0 slots left rarely finds a buyer. Check what every result leaves you in the scroll profit calculator first.</li>
+</ul>
+<h2>How the calculator does the math</h2>
+<p>The calculator assumes every scroll is independent and the success rate never changes. Under that model, the chance of exactly k passes from n scrolls at success rate p is C(n, k) × pᵏ × (1 − p)ⁿ⁻ᵏ. Average passes are n × p, and the average gain is n × p × the gain per success.</p>
+<p>For Chaos it uses a destruction chance of (1 − success rate) × 50% on every scroll. When the item is destroyed, the scrolls you had left count as unused, which is why the average number used comes out below the number you planned.</p>
+<ul>
+<li>Exactly five independent attempts at 60% have three expected successes and a 0.4⁵ = 1.024% chance of none.</li>
+<li>At 10%, the chance of none is 0.9⁵ = 59.049%.</li>
+<li>At 10% success with 50% destruction on failure, destruction per attempt is 45%. Trying up to five times, stopping on destruction, gives a 1 − 0.55⁵ ≈ 94.97% chance of destruction.</li>
+</ul>
+<h2>Frequently asked questions</h2>
+<h3>How much ATT do five 60% glove scrolls give?</h3>
+<p>+6 on average. About seven times in ten you get +6 or more (68.26%), and a perfect +10 happens 7.78% of the time. Five Lesser scrolls give a guaranteed +5.</p>
+<h3>I have +4 ATT Work Gloves with 1 slot left. Use a 60% or sell?</h3>
+<p>Go with whichever result leaves you more mesos once you enter the selling prices. A 60% scroll gives +6 at 60% and +4 with no slots at 40%. If you can find a Lesser 100% scroll, +5 is guaranteed.</p>
+<h3>Can a failed scroll destroy my item?</h3>
+<p>Only a Chaos scroll can. Lesser, Intermediate and Greater scrolls just use up one upgrade slot when they fail, and the item stays as it was. A failed Chaos scroll destroys the item half the time, which is 45% per scroll.</p>
+<h3>I failed several 10% scrolls in a row. Is the next one more likely to pass?</h3>
+<p>No, every scroll is 10%. A Greater scroll passes once in ten tries on average, yet ten of them still fail completely 34.9% of the time.</p>
+<h3>Is gear scrolled only with 100% scrolls good enough?</h3>
+<p>Yes, every slot adds +1 with no risk, so a 7-slot weapon ends at +7 ATT. That is 1.4 below the all-60% average (+8.4), but all-60% ends below +7 three times in ten.</p>
+<h3>Which glove ATT scroll do Rotten Mushrooms drop?</h3>
+<p>The Lesser (100%) one. Hunt the Rotten Mushrooms in Forgotten Hollow's Dilapidated Tomb and Another Sanctuary. The maps are in the <a href="/en/forgotten-hollow/">Forgotten Hollow guide</a>.</p>
+<h3>Which scroll should I use for HP?</h3>
+<p>Lesser 100%. It adds a sure +10 per scroll, so 7 slots give HP +70. Intermediate averages +9 per scroll, +63 over 7 slots, and ends below all-Lesser 58.01% of the time.</p>
+<h3>Are the calculator's odds the same as in the game?</h3>
+<p>Yes, the success rates, stat gains and Chaos destruction chance come straight from the game client's scroll data. Every attempt is random, so the same item comes out differently each time.</p>

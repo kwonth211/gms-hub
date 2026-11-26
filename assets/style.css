@@ -402,6 +402,17 @@ table.data { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 .prose h2 { font-size: 1.15rem; margin-top: 32px; }
 .prose p, .prose li { color: var(--text-2); }
 .prose .table-wrap { margin: 14px 0; }
+/* Guide pictures (data/guides/*.html): skill/item icons inline, monster sprites, map shots with a caption. */
+.prose img.g-icon { width: 32px; height: 32px; vertical-align: middle; margin-right: 6px; image-rendering: pixelated; }
+.prose td img.g-icon { width: 28px; height: 28px; }
+.prose img.g-mob { width: 64px; height: 64px; object-fit: contain; vertical-align: middle; margin-right: 8px; }
+.prose figure.g-fig { margin: 18px 0; }
+.prose figure.g-fig img { display: block; max-width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line, rgba(127,127,127,.25)); }
+.prose figure.g-fig figcaption { font-size: 0.85rem; color: var(--muted); margin-top: 6px; }
+.prose .g-mobs { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; padding: 0; list-style: none; }
+.prose .g-mobs li { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; }
+.prose .g-price { font-weight: 600; white-space: nowrap; }
+.prose h3 { font-size: 1rem; margin-top: 22px; }
 .guide-article { line-height: 1.8; }
 .guide-article h2 { margin-top: 40px; }
 .crumbs { margin: 0; font-size: 0.85rem; }

@@ -170,9 +170,11 @@ test('restored guides have detailed sections, search/sitemap access and no withh
     }
   }
   const quests=read('dist/ko/guides/best-early-quests/index.html');
-  assert.ok(quests.includes('전신 방어 주문서'));
+  // Guides rebuilt 2026-11-26 (answer-first, data-backed); the facts these lines guard stay: the Forest of Patience pays an
+  // overall-armour DEFENSE scroll (not DEX), and Heal damages undead only.
+  assert.ok(quests.includes('전신 갑옷 방어력') && quests.includes('인내의 숲 보상이 민첩 주문서인가요'));
   const mage=read('dist/ko/guides/mage-build/index.html');
-  assert.ok(mage.includes('힐로 피해가 아예 안 들어가는 것도 아니에요')); // reworded 2026-11-23 (docs/writing-rules.md); the fact stays
+  assert.ok(mage.includes('언데드에게만 피해'));
 });
 test('training form exposes costs and party setup without navigation or research metadata',()=>{
   for(const lang of ['ko','en']){
