@@ -79,6 +79,15 @@ test('browser and server agree on which keys sync; owner keys and live state nev
     assert.ok(!syncableKey(k) && !serverKey(k), k);
 });
 
+test('caches a page rewrites by itself never sync (they flooded a logged-in visitor\'s saves, 2026-11-26)', () => {
+  for (const k of ['gms-ticker-options-v1', 'gmshub_scan_loc']) { assert.equal(syncableKey(k), false, k); assert.equal(serverKey(k), false, k); }
+  for (const k of ['gms-market-wishlist', 'gmshub_scan_me', 'gms-free-nick']) { assert.equal(syncableKey(k), true, k); assert.equal(serverKey(k), true, k); }
+  // The page never sends more often than once every 20 seconds, whatever changes.
+  const src = fs.readFileSync(new URL('../assets/account.js', import.meta.url), 'utf8');
+  assert.match(src, /const GAP = 20000;/);
+  assert.match(src, /setTimeout\(flush, Math\.max\(2000, lastFlush \+ GAP - Date\.now\(\)\)\)/);
+});
+
 test('merge: the account wins on a new device, local-only settings go up, later edits win, removals travel', () => {
   // New device: it had its own theme before logging in (never timed), the account has another one.
   let p = plan({ 'gms-theme': 'light', 'gms-char': 'c1' }, {}, { 'gms-theme': { v: 'dark', t: 100 } }, 1000);

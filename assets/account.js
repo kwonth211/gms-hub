@@ -83,8 +83,10 @@ async function sync(first) {
   } finally { state.busy = false; render(); }
 }
 
-// Every later change on this page goes up a couple of seconds after it happens.
-let dirty = {}, timer = 0;
+// Every later change on this page goes up a couple of seconds after it happens, and at most once every 20 seconds, so
+// a value that changes often can never flood the account (the server refuses more than 40 writes a minute per address).
+const GAP = 20000;
+let dirty = {}, timer = 0, lastFlush = 0;
 function mark(k) {
   if (!session() && WORTH.test(k)) setTimeout(() => nudge('save'), 1500);
   if (!session() || !syncableKey(k)) return;
@@ -93,12 +95,13 @@ function mark(k) {
   write(META, JSON.stringify(meta));
   dirty[k] = { v, t: meta[k].t };
   clearTimeout(timer);
-  timer = setTimeout(flush, 2000);
+  timer = setTimeout(flush, Math.max(2000, lastFlush + GAP - Date.now()));
 }
 async function flush() {
   clearTimeout(timer);
   const push = dirty; dirty = {};
   if (!Object.keys(push).length || !session()) return;
+  lastFlush = Date.now();
   try { await pushAll(push); state.error = false; state.at = Date.now(); state.count = Object.values(readJson(META, {})).filter((m) => m.h).length; }
   catch (e) { if (e.message !== 'login') { state.error = true; Object.assign(dirty, push); timer = setTimeout(flush, 30000); } }
   render();
