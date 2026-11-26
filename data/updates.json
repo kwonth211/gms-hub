@@ -10,8 +10,8 @@
    "ko": "팝니다·삽니다 — 상점 물건도 목록에서 바로 찾기",
    "en": "Buy and sell — shop items in the list too",
    "desc": {
-    "ko": "상점 스캔으로 확인된 상점의 물건이 팝니다·삽니다 목록에 '상점' 줄로 함께 나와요. 검색하면 상점 물건도 같이 찾고, '상점' 버튼으로 상점 물건만 볼 수 있어요. 상점 스캔을 켜 두면 10분마다 그 상점이 아직 열려 있는지 다시 확인해서 '마지막 확인' 시간이 바뀌어요.",
-    "en": "Items from shops checked with Shop Scan now show in the buy and sell list as Shop rows. Search finds them too, and the Shops button shows only them. While Shop Scan stays on, a shop on screen is checked again every 10 minutes, so its last-seen time stays current."
+    "ko": "상점 스캔으로 확인된 상점의 물건이 팝니다·삽니다 목록에 '상점' 줄로 함께 나와요. 검색하면 상점 물건도 같이 찾고, '상점' 버튼으로 상점 물건만 볼 수 있어요. 상점 스캔을 켜 두면 10분마다 그 상점이 아직 열려 있는지 다시 확인해서 '마지막 확인' 시간이 바뀌어요. 상점 스캔이 상점 이름(게임에서 간판에 뜨는 글)도 읽어서 장터의 상점 간판에 그대로 보여 줘요.",
+    "en": "Items from shops checked with Shop Scan now show in the buy and sell list as Shop rows. Search finds them too, and the Shops button shows only them. While Shop Scan stays on, a shop on screen is checked again every 10 minutes, so its last-seen time stays current. Shop Scan also reads the shop's title, the words on its sign in game, and shows it on the booth sign."
    }
   },
   {
