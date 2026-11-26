@@ -67,10 +67,18 @@ export async function scanShops(env) {
 
 // A few shop owners' pictures per run from ClassicRank (lookup = rank.js lookupCharacter): the newest shops first,
 // each owner checked again after a week. A 404 is remembered too, so a name is not asked for again every run.
-export async function refreshFaces(env, lookup, limit = 4) {
-  const { results } = await env.DB.prepare(`SELECT s.seller FROM scan_shops s LEFT JOIN seller_faces f ON f.key = lower(s.seller)
+// With `only` (the sellers of one upload), just those not looked up yet, right away (owner 2026-11-26: a busy scanning hour
+// left most new shops without a picture for an hour). A name tried in the last 10 minutes by this worker is skipped, so a
+// ranking outage does not turn every upload into a lookup.
+const tried = new Map();
+export async function refreshFaces(env, lookup, limit = 10, only = null) {
+  const { results } = only
+    ? await env.DB.prepare(`SELECT k.value AS seller FROM json_each(?) AS k LEFT JOIN seller_faces f ON f.key = lower(k.value) WHERE f.key IS NULL LIMIT ?`)
+        .bind(JSON.stringify(only.filter((n) => Date.now() - (tried.get(n.toLowerCase()) || 0) > 600000)), limit).all()
+    : await env.DB.prepare(`SELECT s.seller FROM scan_shops s LEFT JOIN seller_faces f ON f.key = lower(s.seller)
     WHERE s.at >= datetime('now', ?) AND (f.key IS NULL OR f.checked_at < datetime('now', ?)) GROUP BY lower(s.seller) ORDER BY MAX(s.at) DESC LIMIT ?`)
-    .bind(`-${WINDOW_H} hours`, `-${FACE_DAYS} days`, limit).all();
+        .bind(`-${WINDOW_H} hours`, `-${FACE_DAYS} days`, limit).all();
+  for (const { seller } of results) tried.set(seller.toLowerCase(), Date.now());
   let found = 0;
   for (const { seller } of results) {
     const r = await lookup(seller).catch(() => null);

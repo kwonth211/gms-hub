@@ -105,3 +105,14 @@ test('a seller scanned at a new channel or room is listed there only; the older 
   const { shops } = await scanShops(e);
   assert.deepEqual(shops.map((s) => [s.seller, s.room]), [['Hookstk', 10]]);
 });
+
+test('a new seller in an upload gets a picture right away; one already looked up is not asked again', async () => {
+  const e = environment();
+  e.sqlite.prepare("INSERT INTO seller_faces (key, nick, photo, level, job, checked_at) VALUES ('known1', 'Known1', 'p.png', 30, 'Thief', datetime('now'))").run();
+  const asked = [];
+  const lookup = async (n) => { asked.push(n); return { status: 200, body: { data: { name: n, photo: `https://x/${n}.png`, level: 10, job: 'Mage' } } }; };
+  const r = await refreshFaces(e, lookup, 2, ['Known1', 'NewSeller1', 'NewSeller2', 'NewSeller3']);
+  assert.deepEqual(asked, ['NewSeller1', 'NewSeller2']);
+  assert.equal(r.found, 2);
+  assert.equal(e.sqlite.prepare("SELECT photo FROM seller_faces WHERE key='newseller1'").get().photo, 'https://x/NewSeller1.png');
+});

@@ -4816,7 +4816,7 @@ div.trd-req p { flex: 1 1 260px; }
 .trd-booth-body::after { right: 6px; }
 .trd-booth-body .trd-shop-face { position: absolute; z-index: 0; left: 50%; bottom: 2px; transform: translateX(-50%); width: 96px; height: 96px;
   border-radius: 0; background: none; image-rendering: pixelated; }
-.trd-booth-body .trd-shop-face.none { width: 44px; height: 44px; bottom: 26px; border-radius: 50%; }
+.trd-booth-body .trd-shop-face.dflt { width: 60px; height: 60px; bottom: 8px; image-rendering: auto; }
 .trd-booth-counter { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; height: 24px; border: 2px solid var(--w0);
   background: repeating-linear-gradient(90deg, transparent 0 13px, var(--w2) 13px 14px), var(--w3); box-shadow: inset 0 3px 0 var(--w5), inset 0 -3px 0 var(--w1); }
 .trd-booth-name { max-width: 100%; margin-top: -2px; padding: 1px 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .75rem; font-weight: 700;

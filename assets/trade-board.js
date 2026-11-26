@@ -218,9 +218,13 @@ async function poll() {
 let shops = [], shopsAll = false;
 const SHOW_SHOPS = 8;
 const onSale = (s) => s.items.filter((i) => !i[3]);
+// The owner's character from ClassicRank; the site's mushroom stands in the booth when there is none yet or it fails to load
+// (owner 2026-11-26).
+const FACE_DEFAULT = new URL('nav/mushroom.webp?v=n1', import.meta.url).href;
 const face = (s, size) => (s.face?.photo
   ? `<img class="trd-shop-face" src="${esc(s.face.photo)}" alt="" width="${size}" height="${size}" loading="lazy" referrerpolicy="no-referrer">`
-  : `<span class="trd-shop-face none" aria-hidden="true">${esc((s.seller || '?').slice(0, 1).toUpperCase())}</span>`);
+  : `<img class="trd-shop-face dflt" src="${FACE_DEFAULT}" alt="" width="${size}" height="${size}">`);
+addEventListener('error', (e) => { const t = e.target; if (t instanceof HTMLImageElement && t.classList.contains('trd-shop-face') && !t.classList.contains('dflt')) { t.classList.add('dflt'); t.src = FACE_DEFAULT; } }, true);
 // Booth wood colour per seller, steady across visits (the game's booths come in several colours).
 const WOODS = ['wood-gold', 'wood-pink', 'wood-sky', 'wood-mint'];
 const wood = (s) => WOODS[[...String(s.seller)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % WOODS.length];

@@ -479,7 +479,7 @@ const api = {
     // Scam report cards: reported characters' level, job and picture, read again every few days (5 names an hour).
     if (now.getUTCMinutes() < 15) ctx.waitUntil(refreshProfiles(env, lookupCharacter).catch((e) => console.log('scam profiles failed', String(e))));
     // Scanned shops' owner pictures (/trade/): a few names on the other three ticks of the hour, kept for a week.
-    if (now.getUTCMinutes() >= 15) ctx.waitUntil(refreshFaces(env, lookupCharacter).catch((e) => console.log('shop faces failed', String(e))));
+    if (now.getUTCMinutes() >= 15) ctx.waitUntil(refreshFaces(env, lookupCharacter, 10).catch((e) => console.log('shop faces failed', String(e))));
     // Daily market summary in #시세-거래-market at 21:00 KST (12:00 UTC run), once a day (snapshot key per KST day).
     if (now.getUTCHours() === 12 && now.getUTCMinutes() < 15) ctx.waitUntil((async () => {
       const key = `discord-market:${new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10)}`;
@@ -958,7 +958,7 @@ const api = {
         r.seller,r.item,r.price,r.channel,r.room,reporter,r.qty || 1,r.sold ? 1 : 0)));
       const changed = ok.filter((_, i) => results[i].meta.changes > 0);
       // The shops in this upload go on /trade/'s list of scanned shops (scan-shops.js), whoever's rows they are.
-      if (ctx?.waitUntil) ctx.waitUntil(noteScanShops(env, ok).catch(() => null));
+      if (ctx?.waitUntil) ctx.waitUntil(noteScanShops(env, ok).then(() => refreshFaces(env, lookupCharacter, 2, [...new Set(ok.map((r) => r.seller))])).catch(() => null));
       // Leaderboard points for the uploader (logged-in visitors under their Discord name, see contributors.js).
       if (changed.length && ctx?.waitUntil) ctx.waitUntil(recordContribution(env, req, 'scan', changed.length, reporter, changed.map((r) => r.seller)).catch(() => null));
       if (changed.length) {
