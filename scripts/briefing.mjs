@@ -17,7 +17,9 @@ import { execSync } from 'node:child_process';
 const ACCOUNT = '2d797e9348660f2d5a228739b19cd956';
 const HOST = 'gms-hub.com';
 const API = 'https://gms-hub-votes.kwonth211.workers.dev';
-const FREE_READS = 5_000_000, FREE_WRITES = 100_000; // D1 free-tier daily limits (UTC day)
+// Workers Paid included amounts per billing month (owner 2026-11-27: report only when these get close, not the free tier).
+const PAID = { r: ['D1 읽기', 25_000_000_000], w: ['D1 쓰기', 50_000_000], q: ['Worker 요청', 10_000_000], o: ['실시간 접속(DO) 요청', 1_000_000] };
+const PAID_WARN = 0.7; // flag when the last 31 days or the 7-day pace reach 70% of an included amount
 const JSON_OUT = process.argv.includes('--json');
 const HOME = os.homedir();
 
@@ -81,14 +83,24 @@ async function traffic() {
 
 // ---------- database (D1 analytics, UTC days) ----------
 async function d1() {
-  const since = new Date(Date.now() - 3 * 86400000).toISOString().slice(0, 10);
-  const a = await graphql(`{viewer{accounts(filter:{accountTag:"${ACCOUNT}"}){d1AnalyticsAdaptiveGroups(limit:20,filter:{date_geq:"${since}"}){dimensions{date}sum{readQueries writeQueries rowsRead rowsWritten}}}}}`);
+  const since = new Date(Date.now() - 31 * 86400000).toISOString().slice(0, 10);
+  const a = await graphql(`{viewer{accounts(filter:{accountTag:"${ACCOUNT}"}){d1AnalyticsAdaptiveGroups(limit:200,filter:{date_geq:"${since}"}){dimensions{date}sum{readQueries writeQueries rowsRead rowsWritten}} workersInvocationsAdaptive(limit:200,filter:{date_geq:"${since}"}){dimensions{date}sum{requests}} durableObjectsInvocationsAdaptiveGroups(limit:200,filter:{date_geq:"${since}"}){dimensions{date}sum{requests}}}}}`);
   const days = {};
-  for (const g of a.d1AnalyticsAdaptiveGroups) { const d = g.dimensions.date; days[d] = days[d] || { rowsRead: 0, rowsWritten: 0, readQueries: 0, writeQueries: 0 }; for (const k of Object.keys(days[d])) days[d][k] += g.sum[k]; }
+  const day = (d) => (days[d] = days[d] || { rowsRead: 0, rowsWritten: 0, readQueries: 0, writeQueries: 0, requests: 0, doRequests: 0 });
+  for (const g of a.d1AnalyticsAdaptiveGroups) { const v = day(g.dimensions.date); for (const k of ['rowsRead', 'rowsWritten', 'readQueries', 'writeQueries']) v[k] += g.sum[k]; }
+  for (const g of a.workersInvocationsAdaptive || []) day(g.dimensions.date).requests += g.sum.requests;
+  for (const g of a.durableObjectsInvocationsAdaptiveGroups || []) day(g.dimensions.date).doRequests += g.sum.requests;
   const todayUtc = new Date().toISOString().slice(0, 10);
-  const utcHour = new Date().getUTCHours() + new Date().getUTCMinutes() / 60;
-  const t = days[todayUtc] || { rowsRead: 0, rowsWritten: 0 };
-  return { days: Object.entries(days).sort(), todayUtc, utcHour: Math.round(utcHour * 10) / 10, projectedReads: Math.round((t.rowsRead / Math.max(utcHour, 0.5)) * 24), projectedWrites: Math.round((t.rowsWritten / Math.max(utcHour, 0.5)) * 24) };
+  const all = Object.entries(days).sort();
+  const pick = { r: 'rowsRead', w: 'rowsWritten', q: 'requests', o: 'doRequests' };
+  const full = all.filter(([d]) => d < todayUtc).slice(-7);
+  // used = last 31 UTC days (a billing month is at most 31 days, so this never undercounts); pace = 7 full days × 31/7.
+  const paid = Object.fromEntries(Object.entries(PAID).map(([k, [label, limit]]) => {
+    const used = all.reduce((s, [, v]) => s + v[pick[k]], 0);
+    const pace = full.length ? Math.round((full.reduce((s, [, v]) => s + v[pick[k]], 0) / full.length) * 31) : 0;
+    return [k, { label, limit, used, pace }];
+  }));
+  return { days: all.slice(-4), todayUtc, paid };
 }
 
 // ---------- collectors ----------
@@ -134,9 +146,8 @@ function machine() {
 // ---------- flags (rules a reader should act on) ----------
 function flags(T, D, C, S, M) {
   const f = [];
-  const t = D.days.find(([d]) => d === D.todayUtc)?.[1];
-  if (t && (t.rowsRead > FREE_READS * 0.7 || D.projectedReads > FREE_READS * 0.9)) f.push(`D1 읽기 ${n(t.rowsRead)}행 (하루 추정 ${n(D.projectedReads)}, 무료 한도 ${n(FREE_READS)}) — 70%를 넘었거나 넘을 전망`);
-  if (t && (t.rowsWritten > FREE_WRITES * 0.7 || D.projectedWrites > FREE_WRITES * 0.9)) f.push(`D1 쓰기 ${n(t.rowsWritten)}행 (하루 추정 ${n(D.projectedWrites)}, 무료 한도 ${n(FREE_WRITES)})`);
+  for (const { label, limit, used, pace } of Object.values(D.paid))
+    if (used >= limit * PAID_WARN || pace >= limit * PAID_WARN) f.push(`${label}: 최근 31일 ${n(used)} (${pct(used, limit)}) · 지금 속도면 31일 ${n(pace)} (${pct(pace, limit)}) — 유료 포함량 ${n(limit)}의 70%에 닿음. 넘으면 추가 요금`);
   const hb = C.market.heartbeat;
   if (C.market.error) f.push(`시세 수집 상태 API 오류: ${C.market.error}`);
   else {
@@ -162,8 +173,7 @@ function markdown(T, D, C, S, M, F) {
   const L = [];
   L.push(`# GMS Hub 운영 브리핑 — ${now.toISOString().slice(0, 16).replace('T', ' ')} KST`, '');
   L.push('## 한눈에', `- 오늘 방문 **${n(T.today.visits)}** (한국 ${n(T.today.kr)} · 해외 ${n(T.today.visits - T.today.kr)}) · 조회 ${n(T.today.views)} — 어제 같은 시각 방문 ${n(T.yesterdaySameTime.visits)} · 어제 하루 ${n(T.yesterday.visits)}`);
-  const t = D.days.find(([d]) => d === D.todayUtc)?.[1] || { rowsRead: 0, rowsWritten: 0 };
-  L.push(`- D1 오늘(UTC, ${D.utcHour}시간 경과) 읽기 ${n(t.rowsRead)} / 쓰기 ${n(t.rowsWritten)} 행 → 하루 추정 읽기 ${n(D.projectedReads)} (${pct(D.projectedReads, FREE_READS)} of 무료) · 쓰기 ${n(D.projectedWrites)} (${pct(D.projectedWrites, FREE_WRITES)})`);
+  L.push(`- 유료 포함량 대비 (지금 속도면 31일): ${Object.values(D.paid).map((v) => `${v.label} ${pct(v.pace, v.limit)}`).join(' · ')}`);
   const hb = C.market.heartbeat;
   L.push(`- 시세 수집: ${C.market.state || C.market.error} · 오늘 ${n(C.market.todayRows)}건 · ${hb ? `${hb.phase} (상점 ${hb.shops ?? 0}·매물 ${hb.rows ?? 0}, 보고 ${hb.ageSeconds}초 전${hb.hidden ? ', 창 가려짐' : ''})` : '상태 보고 없음'}`);
   L.push(`- 확성기 수집: ${C.megaRunning ? `실행 중 (pid ${C.megaPid})` : '멈춤'} · 마지막 확성기 ${C.megaLastAgeMin == null ? '—' : `${C.megaLastAgeMin}분 전`} · 오늘 ${C.megaToday ? `${n(C.megaToday.n)}개 / ${n(C.megaToday.nicks)}명` : '—'}`);
@@ -182,7 +192,9 @@ function markdown(T, D, C, S, M, F) {
   L.push(`시간대별 방문: ${T.hours.map(([h, v]) => `${h}시 ${v}`).join(' · ')}`, '');
   L.push('## 데이터베이스 (D1, UTC 하루 단위)', '| 날짜(UTC) | 읽기 행 | 쓰기 행 | 읽기 쿼리 | 쓰기 쿼리 |', '|---|---|---|---|---|');
   for (const [d, v] of D.days) L.push(`| ${d}${d === D.todayUtc ? ' (진행 중)' : ''} | ${n(v.rowsRead)} | ${n(v.rowsWritten)} | ${n(v.readQueries)} | ${n(v.writeQueries)} |`);
-  L.push(`무료 한도: 읽기 ${n(FREE_READS)} · 쓰기 ${n(FREE_WRITES)} / 일 (한국 시간 09:00 초기화). 현재 요금제: Workers Paid($5)지만 무료 한도 안에서 운영하는 것이 목표.`, '');
+  L.push('', '| 유료 포함량 (한 달) | 최근 31일 | 지금 속도면 31일 |', '|---|---|---|');
+  for (const v of Object.values(D.paid)) L.push(`| ${v.label} ${n(v.limit)} | ${n(v.used)} (${pct(v.used, v.limit)}) | ${n(v.pace)} (${pct(v.pace, v.limit)}) |`);
+  L.push('요금제: Workers Paid($5). 포함량을 넘으면 그만큼 추가 요금. 사이트 안전장치는 98%에서 쓰기를 멈춤.', '');
   L.push('## 수집기');
   L.push(`- 시세 수집 브라우저: launchd ${C.launchd}${C.browserPid ? ` · 브라우저 pid ${C.browserPid}` : ' · 브라우저 프로세스 없음'}`);
   if (hb) L.push(`- 마지막 상태 보고: ${hb.instance || '?'} v${hb.version} · ${hb.event} · ${hb.phase} · 자동 수집 ${hb.enabled ? '켜짐' : '꺼짐'} · 오류 ${hb.error || '없음'} · 다음 예약 ${hb.nextAt ? hhmm(new Date(hb.nextAt)) : '—'}`);
