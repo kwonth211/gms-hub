@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "market-chart-colors",
+   "version": "0.7.86",
+   "level": "patch",
+   "date": "2026-11-27",
+   "path": "/tools/market/",
+   "ko": "시세 가격 추이 — 호가와 중앙값을 색으로 나눔",
+   "en": "Market price chart — asks and the median in their own colors",
+   "desc": {
+    "ko": "가격 추이 그래프에서 매물 호가는 회색 동그라미, 팔린 값은 청록색 점, 하루 중앙값은 굵은 주황 선으로 나눴어요. 점이 많아도 시세 흐름이 한눈에 보여요.",
+    "en": "In the price chart, asking prices are grey rings, sales are teal dots and the daily median is a thick orange line, so the trend reads at a glance even with many listings."
+   }
+  },
+  {
    "id": "screen-tools-small-window",
    "version": "0.7.85",
    "level": "patch",

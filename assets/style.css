@@ -2254,16 +2254,18 @@ html:has(.mg-ticker) { --tk-h: 32px; }
 .mb-hist .grid { stroke: var(--line); stroke-width: 1; }
 .mb-hist .ax { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
 .mb-hist .band { fill: color-mix(in srgb, var(--accent-fill) 20%, transparent); }
-.mb-hist .med { fill: none; stroke: var(--accent-fill); stroke-width: 2.5; stroke-linejoin: round; }
+.mb-hist .med { fill: none; stroke: var(--accent-fill); stroke-width: 3; stroke-linejoin: round; }
 .mb-hist .dm { fill: var(--accent-fill); stroke: var(--panel); stroke-width: 2; }
-.mb-hist .ask { fill: none; stroke: color-mix(in srgb, var(--accent-fill) 70%, var(--text)); stroke-width: 1; opacity: 0.55; }
-.mb-hist .sale { fill: var(--accent-fill); opacity: 0.8; }
+/* Listings (asks) are grey rings and sales teal dots, so the orange median line and band stand out (owner 2026-11-27: asks and the line looked alike). */
+.mb-hist .ask { fill: none; stroke: var(--muted); stroke-width: 1; opacity: 0.5; }
+.mb-hist .sale { fill: var(--sold-color); opacity: 0.85; }
 .mb-hist .out { fill: var(--muted); }
 .mb-hist-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 0; font-size: 0.76rem; color: var(--muted); }
 .mb-hist-legend .k { display: inline-block; vertical-align: middle; margin-right: -6px; }
-.mb-hist-legend .k.ask { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--accent-fill); }
+.mb-hist-legend .k.ask { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--muted); }
+.mb-hist-legend .k.sale { width: 8px; height: 8px; border-radius: 50%; background: var(--sold-color); }
 .mb-hist-legend .k.band { width: 16px; height: 10px; border-radius: 3px; background: color-mix(in srgb, var(--accent-fill) 22%, transparent); }
-.mb-hist-legend .k.med { width: 16px; border-top: 2.5px solid var(--accent-fill); }
+.mb-hist-legend .k.med { width: 16px; border-top: 3px solid var(--accent-fill); }
 /* Where to buy: listing cards in the item panel, and channel/room chips everywhere listings show. */
 .mb-ch { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap;
   color: var(--accent-ink); background: color-mix(in srgb, var(--accent-fill) 16%, var(--panel)); border: 1px solid color-mix(in srgb, var(--accent-fill) 45%, var(--panel)); }
