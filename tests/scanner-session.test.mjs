@@ -90,3 +90,15 @@ test('manual location changes never relabel previously captured listings', async
   s.show([listing({ channel: 21, room: 4 })]);
   assert.equal(s.listings.size, 2);
 });
+
+test('a shop read before its channel was known uploads once the channel is recognised', async () => {
+  const s = await session();
+  s.setLocation(0, 9);
+  s.show([listing({ owner: 'hookstk', room: 9 })]); s.show([listing({ owner: 'hookstk', room: 9 })]); await flush();
+  assert.equal(s.requests.filter((r) => r.url === '/api/listings').length, 0);
+  s.setLocation(3, 9);
+  s.show([listing({ owner: 'hookstk', room: 9 })]); s.show([listing({ owner: 'hookstk', room: 9 })]); await flush();
+  const up = s.requests.filter((r) => r.url === '/api/listings');
+  assert.equal(up.length, 1);
+  assert.deepEqual((typeof up[0].body === "string" ? JSON.parse(up[0].body) : up[0].body).items.map((i) => [i.channel, i.room]), [[3, 9]]);
+});

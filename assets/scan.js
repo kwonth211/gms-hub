@@ -439,6 +439,11 @@ function shopFor(rows) {
     shop = { id: shops.length + 1, channel, room, votes: new Map() };
     shops.push(shop);
   }
+  // A shop first seen before the channel or room was known takes them once they are (owner 2026-11-27: his shop was read
+  // 384 times as "FM 9" with no channel after CH 3 was recognised, so nothing ever uploaded). Only an empty place is
+  // filled; a known one is never changed by a later read, and rows already captured keep the place they were read with.
+  if (!validLocation(shop.channel) && validLocation(channel)) shop.channel = channel;
+  if (!validLocation(shop.room) && validLocation(room)) shop.room = room;
   currentShop = shop;
   shop.readAt = Date.now();
   shop.signature = rows.map((r) => `${r.name}|${r.price}`).join(';');
