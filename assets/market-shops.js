@@ -34,7 +34,7 @@ if (box) {
 <span class="trd-shop-foot">${tr(`${items.length}개`, `${items.length} items`)} · ${ago(s.at)}</span></a>`;
   };
   // How many booths fit in one row of the grid right now (matches the CSS minmax width).
-  const perRow = () => { const grid = box.querySelector('.mks-grid'); const w = grid?.clientWidth || box.clientWidth || 360; return Math.max(2, Math.floor((w + 8) / (124 + 8))); };
+  const perRow = () => { const grid = box.querySelector('.mks-grid'); const cols = grid ? getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length : 0; return Math.max(2, cols || Math.floor(((grid?.clientWidth || 360) + 8) / 132)); };
   const draw = () => {
     const grid = box.querySelector('.mks-grid');
     grid.innerHTML = shops.slice(0, shown).map(booth).join('');
