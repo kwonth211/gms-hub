@@ -10,8 +10,8 @@
    "ko": "실시간 시세 — 지금 열린 상점 한 줄",
    "en": "Live prices — a row of open shops",
    "desc": {
-    "ko": "실시간 시세 맨 위에 상점 스캔으로 올라온 상점을 최신순으로 6곳 보여 줘요. 채널·자유시장 방·확인 시각과 파는 물건이 보이고, 누르면 그 상점의 물건과 값이 바로 열려요.",
-    "en": "The top of the live price page shows the six newest shops from Shop Scan with channel, room, when they were seen and what they sell. Tap one to open its items and prices."
+    "ko": "실시간 시세 맨 위에 상점 스캔으로 올라온 상점을 팝니다·삽니다와 같은 상점 모양으로 보여 줘요. 한 줄로 시작하고 더 보기를 누르면 더 나와요. 상점을 누르면 그 상점의 물건과 값이 바로 열려요.",
+    "en": "The top of the live price page shows the shops from Shop Scan as booths, like on the trade board. One row first, more with Show more. Tap a booth to open its items and prices."
    }
   },
   {
