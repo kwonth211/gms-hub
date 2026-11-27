@@ -653,16 +653,24 @@ const api = {
     if (url.pathname === '/prices/all' && req.method === 'GET') {
       // Item pages bake these into static HTML for search engines, so only player scans and reports count, never imported rows.
       const real = "reporter NOT LIKE 'initial:%' AND reporter NOT LIKE 'seed:%'";
-      const { results } = await env.DB.prepare(
-        `SELECT item, price, kind, created_at FROM prices WHERE created_at >= ${WINDOW} AND ${real}
-         UNION ALL
-         SELECT item, price, CASE WHEN sold THEN 'sold' ELSE 'selling' END, last_seen FROM listings WHERE last_seen >= ${WINDOW} AND ${real}
-         ORDER BY created_at DESC`
-      ).all();
-      const byItem = new Map();
-      for (const r of results) (byItem.get(r.item) || byItem.set(r.item, []).get(r.item)).push(r);
+      // Read in item ranges of ~120 known items each: 14 days of listings passed 1.1 million rows on 2026-11-27 and one
+      // query answered "D1 query result exceeded the maximum response size limit of 50 MB" (builds kept 11/22 prices).
+      // Each range is summarised and dropped before the next one, so the worker never holds every row at once.
+      const { results: known } = await env.DB.prepare('SELECT item FROM item_market ORDER BY item').all();
+      const ids = known.map((r) => r.item), edges = [0];
+      for (let i = 120; i < ids.length; i += 120) edges.push(ids[i]);
+      edges.push(Number.MAX_SAFE_INTEGER);
       const out = {};
-      for (const [item, rows] of byItem) out[item] = recentSummary(rows);
+      for (let k = 0; k + 1 < edges.length; k++) {
+        const { results } = await env.DB.prepare(
+          `SELECT item, price, kind, created_at FROM prices WHERE item >= ?1 AND item < ?2 AND created_at >= ${WINDOW} AND ${real}
+           UNION ALL
+           SELECT item, price, CASE WHEN sold THEN 'sold' ELSE 'selling' END, last_seen FROM listings WHERE item >= ?1 AND item < ?2 AND last_seen >= ${WINDOW} AND ${real}`
+        ).bind(edges[k], edges[k + 1]).all();
+        const byItem = new Map();
+        for (const r of results) (byItem.get(r.item) || byItem.set(r.item, []).get(r.item)).push(r);
+        for (const [item, rows] of byItem) out[item] = recentSummary(rows);
+      }
       // Read by the site build only (item pages bake it); six hours of staleness is fine and keeps the 14-day scan rare.
       return json(out, cors, 200, 'public, max-age=21600');
     }
