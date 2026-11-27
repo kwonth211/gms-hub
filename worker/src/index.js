@@ -802,7 +802,7 @@ const api = {
           await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('scan-shops',?,datetime('now'))").bind(JSON.stringify(data)).run();
         }
         return json(data, cors, 200, 'public, max-age=60');
-      } catch (e) { return json({ error: 'shops unavailable' }, cors, 503); }
+      } catch (e) { console.error('scan-shops', e?.stack || e); return json({ error: 'shops unavailable' }, cors, 503); }
     }
 
     if (url.pathname === '/market/top' && req.method === 'GET') {

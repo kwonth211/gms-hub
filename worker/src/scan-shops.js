@@ -51,6 +51,9 @@ export async function scanShops(env) {
   // Only what the shop held at its latest scan (owner 2026-11-26: "파란 포션 1개만 올렸는데 전꺼까지 같이 뜨네"). A scan
   // sends every item on screen together, and a shop kept on screen is sent again every 10 minutes (the server skips
   // identical rows for 15), so the items still there were seen within ~25 minutes of the newest one; older ones are gone.
+  // A shop whose rows are all gone (an empty seen) has nothing to show; without this guard its NaN date threw and the
+  // whole list answered 503 (2026-11-27).
+  for (const [k, shop] of by) if (!shop.seen) by.delete(k);
   for (const shop of by.values()) {
     const cut = new Date(Date.parse(`${shop.seen.replace(' ', 'T')}Z`) - LATEST_MIN * 60000).toISOString().slice(0, 19).replace('T', ' ');
     shop.items = shop.items.filter((i) => i[5] >= cut).map((i) => i.slice(0, 5));
