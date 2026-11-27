@@ -66,6 +66,11 @@ dataset = "gms_hub_blocks"
 binding = "TOOLS"
 dataset = "gms_hub_tools"
 
+# People and sessions counted the GA4 way (POST /hit from assets/analytics.js), for the owner's traffic dashboard.
+[[analytics_engine_datasets]]
+binding = "VISITS"
+dataset = "gms_hub_visits"
+
 [[send_email]]
 name = "EMAIL"
 

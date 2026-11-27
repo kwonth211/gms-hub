@@ -249,6 +249,27 @@ function weekChart(d, upto) {
 <p class="td-legend"><span class="k prev"></span>지난주 같은 요일 <span class="k day"></span>이번 주${d.isToday ? ' (오늘은 같은 시각까지)' : ''}</p></section>`;
 }
 
+// People and sessions counted the GA4 way by our own script (assets/analytics.js, from 2026-11-27): reloads and new tabs
+// do not add anything, unlike Cloudflare's visits below. Yesterday and last week are cut at the same clock time.
+function peoplePanel(d) {
+  const p = d.people;
+  if (!p) return '';
+  if (p.error) return `<section class="panel"><h2>사람 수</h2><p class="td-err">불러오지 못했어요 (${esc(p.error)}).</p></section>`;
+  if (p.empty || !p.today?.people) return `<section class="panel"><h2>사람 수 <small class="muted">GA와 같은 규칙</small></h2><p class="muted">아직 집계된 사람이 없어요. 11월 27일부터 세기 시작했어요.</p></section>`;
+  const t = p.today, y = p.yesterday, w = p.lastWeek, when = d.isToday ? '같은 시각 어제' : '전날';
+  const cmp = (a, b, c) => `${when} ${nf(b)}${b ? ` (${pct(a, b)})` : ''} · 지난주 같은 요일 ${nf(c)}${c ? ` (${pct(a, c)})` : ''}`;
+  const src = (p.sources || []).slice(0, 8);
+  return `<section class="panel td-people"><h2>사람 수 <small class="muted">GA와 같은 규칙으로 직접 센 숫자 · 새로고침·새 탭은 안 늘어요</small></h2>
+<div class="td-cards">
+<div class="td-card"><span>사람</span><b>${nf(t.people)}</b><small>${cmp(t.people, y.people, w.people)}</small></div>
+<div class="td-card"><span>세션</span><b>${nf(t.sessions)}</b><small>${cmp(t.sessions, y.sessions, w.sessions)} · 1명당 ${t.people ? (t.sessions / t.people).toFixed(1) : '–'}번</small></div>
+<div class="td-card"><span>처음 온 사람</span><b>${nf(t.newPeople)}</b><small>오늘 사람의 ${t.people ? Math.round((t.newPeople / t.people) * 100) : 0}% · ${when} ${nf(y.newPeople)}</small></div>
+<div class="td-card"><span>한국 / 해외 사람</span><b>${nf(t.kr)} / ${nf(t.people - t.kr)}</b><small>${when} ${nf(y.kr)} / ${nf(y.people - y.kr)}</small></div>
+</div>
+${src.length ? `<h3 class="td-sub">세션이 들어온 경로</h3>${bars(src, { label: (s) => esc(SOURCE[s.source] || s.source), value: (s) => s.n, accent: true })}` : ''}
+<p class="muted small">사람 = 이 브라우저에 남긴 익명 번호 하나 · 세션 = 30분 넘게 쉬었다 오면 1번 더 · 운영자 브라우저(?internal=1)와 자동 브라우저는 빼요 · 광고 차단기 쓰는 사람도 세져서 GA보다 조금 많을 수 있어요</p></section>`;
+}
+
 function render() {
   const key = store.get();
   if (!key) {
@@ -272,7 +293,9 @@ function render() {
   const live = d.live ? `<div class="td-card"><span>지금 열린 페이지</span><b id="td-live-now">${nf(d.live.now)}</b><small>지금 이 순간 사이트를 열어 둔 탭 수</small></div><div class="td-card"><span>최대 동시 접속</span><b>${nf(d.live.peak)}</b><small>${esc(new Date(d.live.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }))} · 기록은 11/15 밤 9시 25분부터</small></div>` : '';
   root.innerHTML = `${head}
 <div class="td-body${state.loading ? ' busy' : ''}">
-<p class="muted small">${esc(cutNote)} · Cloudflare 표본 추정값 · ${esc(new Date(d.at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }))} 기준</p>
+<p class="muted small">${esc(cutNote)} · ${esc(new Date(d.at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }))} 기준</p>
+${peoplePanel(d)}
+<h2 class="td-part">Cloudflare 방문 <small class="muted">표본 추정값 · 새로고침과 주소를 직접 친 새 탭도 방문 1번</small></h2>
 <div class="td-cards">
 <div class="td-card"><span>방문</span><b>${nf(v0)}</b><small>${d.isToday ? '같은 시각 어제' : '전날'} ${nf(v1)} (${pct(v0, v1)}) · 지난주 같은 요일 ${nf(v7)} (${pct(v0, v7)})</small></div>
 <div class="td-card"><span>페이지뷰</span><b>${nf(p0)}</b><small>${d.isToday ? '같은 시각 어제' : '전날'} ${nf(p1)} (${pct(p0, p1)}) · 방문당 ${v0 ? (p0 / v0).toFixed(1) : '–'}쪽</small></div>

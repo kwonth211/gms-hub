@@ -1,5 +1,6 @@
 // Product interactions must never overwrite GA campaign attribution.
-// Loaded before common.js and feature scripts; no storage or network work of its own (gtag/Clarity send).
+// Loaded before common.js and feature scripts. The first parts send through gtag/Clarity; the last part is our own
+// GA-style people count (see there).
 (() => {
   const send = (name, params) => {
     try { window.gtag?.('event', name, params); } catch (e) {}
@@ -82,4 +83,49 @@
   }, { capture: true, passive: true });
 
   document.addEventListener('submit', (e) => { const f = e.target; if (!f.closest?.('[data-no-track]')) send('ui_submit', { ...base(f), ui_label: clip(f.getAttribute('aria-label') || f.id || f.action, 60) }); }, { capture: true, passive: true });
+})();
+
+// People and sessions counted the way GA4 counts them (owner 2026-11-27, shown on the owner's traffic dashboard only):
+// a random id kept in this browser = one person; a session starts on the first page and again after 30 minutes without
+// any activity. Reloads and new tabs inside a session send nothing. Only two kinds of note go to the worker, at most once
+// each: "first time today" (u) and "new session" (s), with the page, language and where the session came from. No IP,
+// name or typed text. The owner's own browsers (?internal=1) and automated browsers are left out, as in GA.
+(() => {
+  if (typeof document === 'undefined') return;
+  const api = document.body?.dataset.priceApi;
+  if (!api || navigator.webdriver || /bot|crawl|spider|headless|lighthouse/i.test(navigator.userAgent)) return;
+  const IDLE = 30 * 60 * 1000;
+  const kstDay = (t) => new Date(t + 9 * 3600000).toISOString().slice(0, 10);
+  const rand = () => (crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`);
+  let ls;
+  try {
+    ls = localStorage;
+    if (['localhost', '127.0.0.1', '[::1]'].includes(location.hostname) || ls.getItem('gmshub_internal') === '1' || /[?&]internal=1(&|$)/.test(location.search)) return;
+  } catch (e) { return; } // without storage a person cannot be told apart from the next page load
+  const ref = () => { try { const h = new URL(document.referrer).hostname; return h && !h.endsWith('gms-hub.com') ? h.slice(0, 60) : ''; } catch (e) { return ''; } };
+  const post = (body) => {
+    const url = `${api}/hit`;
+    try { if (navigator.sendBeacon?.(url, body)) return; } catch (e) {}
+    fetch(url, { method: 'POST', body, keepalive: true, headers: { 'Content-Type': 'text/plain' } }).catch(() => {});
+  };
+  const check = (first) => {
+    try {
+      const now = Date.now(), kinds = [];
+      let id = ls.getItem('gms-cid'), fresh = 0;
+      if (!id) { id = rand(); ls.setItem('gms-cid', id); fresh = 1; }
+      const last = Number(ls.getItem('gms-last')) || 0;
+      if (now - last > IDLE) kinds.push('s');
+      const day = kstDay(now);
+      if (ls.getItem('gms-day') !== day) { ls.setItem('gms-day', day); kinds.push('u'); }
+      ls.setItem('gms-last', String(now));
+      if (!kinds.length) return;
+      post(JSON.stringify({ k: kinds, c: id, n: fresh, p: location.pathname.slice(0, 120), l: document.documentElement.lang || '', r: first ? ref() : '' }));
+    } catch (e) {}
+  };
+  check(true);
+  // Activity keeps the session open (GA4 extends it on every event); checked at most once a minute.
+  let lastTouch = Date.now();
+  const touch = () => { const t = Date.now(); if (t - lastTouch < 60000) return; lastTouch = t; check(false); };
+  for (const ev of ['pointerdown', 'keydown', 'scroll']) addEventListener(ev, touch, { passive: true, capture: true });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { lastTouch = 0; touch(); } });
 })();

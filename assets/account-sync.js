@@ -5,7 +5,7 @@
 // checklists, wishlist, favourites, EXP log, megaphone nickname and delete keys, theme, ticker options and so on.
 // Never synced: owner keys, the analytics "internal" flag, per-tab/live state and caches.
 const KEY_RE = /^(gms|gmshub|fg-|mk-|cb_lang)[A-Za-z0-9_.\-]{0,80}$/;
-const NEVER = new Set(['cb_admin_token', 'gms-traffic-key', 'gmshub_internal', 'gms-presence', 'gms-exp-session', 'gms-exp-client',
+const NEVER = new Set(['cb_admin_token', 'gms-traffic-key', 'gmshub_internal', 'gms-cid', 'gms-last', 'gms-day', 'gms-presence', 'gms-exp-session', 'gms-exp-client',
   'gms-market-catalog', 'gms-market-seen', 'gms-account', 'gms-sync-meta', 'gmshub_voted',
   // Caches the page rewrites by itself (owner 2026-11-26: a logged-in visitor's saves were refused): the header
   // megaphone ticker's last lines, rewritten on every megaphone, and the shop scan's place, rewritten every second.

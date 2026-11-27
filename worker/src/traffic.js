@@ -190,13 +190,14 @@ export async function trafficReport(env, dayParam, now = Date.now()) {
     () => fine(env, from, to, 'userAgentBrowser countryName requestPath', { limit: 12, where: `,userAgentBrowser_in:${BOTS}` }),
     () => blockedReport(env, from, to),
     () => toolRuns(env, now),
+    () => peopleReport(env, day, now),
     ...past.map((d) => () => pastDay(env, d).then((h) => [d, h]))
   ];
   // A few at a time: twenty queries in flight at once come back at a coarse sample rate (hours read as 0 or 100).
   const results = [];
   for (let k = 0; k < jobs.length; k += 3) results.push(...(await Promise.all(jobs.slice(k, k + 3).map((f) => f()))));
   // Busiest-hour record ignores coarse days, and the day record is only as good as each day's sample.
-  const [h0, krHours, countries, paths, refs, devices, botHours, botRows, blocked, tools, ...days] = results;
+  const [h0, krHours, countries, paths, refs, devices, botHours, botRows, blocked, tools, people, ...days] = results;
   const dayMap = new Map(days);
   const h1 = dayMap.get(minus(day, 1)), h7 = dayMap.get(minus(day, 7));
   days.push([day, h0]);
@@ -242,6 +243,7 @@ export async function trafficReport(env, dayParam, now = Date.now()) {
     },
     blocked,
     tools,
+    people,
     daily: [...daily.entries()].sort().map(([d, [visits, views]]) => ({ day: d, visits, views })),
     live
   };
@@ -286,6 +288,70 @@ export async function handleTraffic(req, env, ctx, allowedOrigins) {
     return reply({ ...data, you });
   } catch (e) {
     return reply({ error: String(e.message || e) }, 502);
+  }
+}
+
+// People and sessions, counted the GA4 way by assets/analytics.js (owner 2026-11-27): POST /hit with
+// { k: ['u' first time today, 's' new session], c: random browser id, n: 1 if the id is new, p: page, l: language,
+// r: referrer host of the session }. One data point per kind; nothing else about the person is kept.
+const VISIT_SET = 'gms_hub_visits';
+export async function handleHit(req, env) {
+  const ua = req.headers.get('User-Agent') || '';
+  if (/bot|crawl|spider|headless|lighthouse/i.test(ua)) return;
+  let b; try { b = JSON.parse((await req.text()).slice(0, 2000)); } catch { return; }
+  const id = String(b?.c || '').replace(/[^\w-]/g, '').slice(0, 40);
+  if (id.length < 8 || !Array.isArray(b.k)) return;
+  const clip = (v, n) => String(v ?? '').replace(/[^\w./:-]/g, '').slice(0, n);
+  const device = /iPad|Tablet/.test(ua) ? 'tablet' : /Mobi|Android|iPhone/.test(ua) ? 'mobile' : 'desktop';
+  for (const k of new Set(b.k.filter((x) => x === 'u' || x === 's'))) {
+    try {
+      env.VISITS?.writeDataPoint({ indexes: [id], blobs: [k, id, req.cf?.country || '??', device, clip(b.p, 120), clip(b.l, 5), k === 's' ? clip(b.r, 60) : '', b.n ? '1' : '0'], doubles: [1] });
+    } catch { /* counting only */ }
+  }
+}
+
+async function aeSql(env, q) {
+  const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/analytics_engine/sql`, { method: 'POST', headers: { Authorization: `Bearer ${env.CF_ANALYTICS_TOKEN}` }, body: `${q} FORMAT JSON` });
+  const t = await r.text();
+  if (!r.ok) throw new Error(t.slice(0, 160) || `sql ${r.status}`);
+  return JSON.parse(t).data || [];
+}
+
+// For one KST day: people, new people, sessions, Korea vs abroad, sessions by source and per hour, cut at the same clock
+// time for yesterday and last week when the day is today; plus people and sessions for the 14 days up to the day.
+export async function peopleReport(env, day, now = Date.now()) {
+  const from = utcStart(day), isToday = kstDay(now) === day;
+  const span = isToday ? now - from : 24 * HOUR;
+  const win = (back) => `timestamp >= toDateTime(${Math.floor((from - back) / 1000)}) AND timestamp < toDateTime(${Math.floor((from - back + span) / 1000)})`;
+  const sums = (back) => aeSql(env, `SELECT blob1 AS k, blob3 = 'KR' AS kr, blob8 AS nu, count(DISTINCT blob2) AS people, sum(_sample_interval) AS n FROM ${VISIT_SET} WHERE ${win(back)} GROUP BY k, kr, nu`);
+  const pack = (rows) => {
+    const o = { people: 0, kr: 0, newPeople: 0, sessions: 0, krSessions: 0 };
+    for (const r of rows) {
+      const people = Number(r.people), n = Number(r.n), kr = Number(r.kr) === 1;
+      if (r.k === 'u') { o.people += people; if (kr) o.kr += people; if (r.nu === '1') o.newPeople += people; }
+      if (r.k === 's') { o.sessions += n; if (kr) o.krSessions += n; }
+    }
+    return o;
+  };
+  try {
+    const [d0, d1, d7, hours, src, days] = await Promise.all([
+      sums(0), sums(24 * HOUR), sums(7 * 24 * HOUR),
+      aeSql(env, `SELECT intDiv(toUInt32(timestamp) + 32400, 3600) % 24 AS h, blob1 AS k, count(DISTINCT blob2) AS people, sum(_sample_interval) AS n FROM ${VISIT_SET} WHERE ${win(0)} GROUP BY h, k ORDER BY h`),
+      aeSql(env, `SELECT blob7 AS ref, sum(_sample_interval) AS n FROM ${VISIT_SET} WHERE ${win(0)} AND blob1 = 's' GROUP BY ref ORDER BY n DESC LIMIT 30`),
+      aeSql(env, `SELECT intDiv(toUInt32(timestamp) + 32400, 86400) AS d, blob1 AS k, count(DISTINCT blob2) AS people, sum(_sample_interval) AS n FROM ${VISIT_SET} WHERE timestamp >= toDateTime(${Math.floor((from - 13 * 24 * HOUR) / 1000)}) AND timestamp < toDateTime(${Math.floor((from + 24 * HOUR) / 1000)}) GROUP BY d, k ORDER BY d`)
+    ]);
+    const hourly = Array.from({ length: 24 }, () => [0, 0]); // [people first seen that hour, sessions started]
+    for (const r of hours) hourly[Number(r.h)][r.k === 'u' ? 0 : 1] += r.k === 'u' ? Number(r.people) : Number(r.n);
+    const daily = new Map();
+    for (const r of days) {
+      const d = new Date(Number(r.d) * 86400000).toISOString().slice(0, 10), v = daily.get(d) || { day: d, people: 0, sessions: 0 };
+      if (r.k === 'u') v.people += Number(r.people); else v.sessions += Number(r.n);
+      daily.set(d, v);
+    }
+    return { today: pack(d0), yesterday: pack(d1), lastWeek: pack(d7), hourly, sources: src.map((r) => ({ source: sourceOf(r.ref || ''), host: r.ref || '', n: Number(r.n) })), daily: [...daily.values()].sort((a, b) => a.day.localeCompare(b.day)) };
+  } catch (e) {
+    if (/unable to find|does not exist|unknown table/i.test(String(e.message))) return { empty: true };
+    return { error: String(e.message || e) };
   }
 }
 

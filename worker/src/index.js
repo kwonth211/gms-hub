@@ -30,7 +30,7 @@ import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoint
 import { cachedPublicResponse } from './public-cache.js';
 import { refreshNews } from './news.js';
 import { Presence, handlePresence, handlePresencePeak } from './presence.js';
-import { adsTxtReads, handleToolReport, handleTraffic, logBlock } from './traffic.js';
+import { adsTxtReads, handleHit, handleToolReport, handleTraffic, logBlock } from './traffic.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
 import { noteScanShops, scanShops, refreshFaces, pruneScanShops } from './scan-shops.js';
 import { validRoom } from '../../assets/place.js';
@@ -524,6 +524,12 @@ const api = {
     if (url.pathname === '/internal/mail/send' && req.method === 'POST') return handleSendMail(req, env);
     if (url.pathname === '/internal/presence-peak' && req.method === 'GET') return handlePresencePeak(req, env);
     if (url.pathname === '/internal/adstxt' && req.method === 'GET') return ownerOnly(req, env) ? Response.json(await adsTxtReads(env)) : new Response('forbidden', { status: 403 });
+    // GA-style people count from every page (assets/analytics.js); a beacon, so the answer carries nothing.
+    if (url.pathname === '/hit' && req.method === 'POST') {
+      if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
+      await handleHit(req, env);
+      return new Response(null, { status: 204, headers: cors });
+    }
     if (url.pathname === '/tool-report' && req.method === 'POST') {
       if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
       const out = await handleToolReport(req, env);
