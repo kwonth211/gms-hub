@@ -36,10 +36,15 @@ export async function contributorsData(env, me = null) {
   // Anonymous rows: the in-game name of the shop they uploaded most (owner, 2026-11-21: just use that name).
   const anonIds = [...new Set([...week, ...all].filter((r) => r.who.startsWith('a:')).map((r) => r.who))];
   if (anonIds.length) {
-    const { results } = await env.DB.prepare(`SELECT who, seller, n, (SELECT SUM(n) FROM contributor_sellers c2 WHERE c2.who = c1.who) AS total
-      FROM contributor_sellers c1 WHERE who IN (${anonIds.map(() => '?').join(',')}) ORDER BY n DESC`).bind(...anonIds).all();
-    const game = {};
-    for (const r of results || []) if (!game[r.who]) game[r.who] = r.seller;
+    // D1 allows 100 bound values per statement: ask in chunks (11/27 the list passed 100 and the hourly board failed).
+    const game = {}, rows = [];
+    for (let i = 0; i < anonIds.length; i += 90) {
+      const part = anonIds.slice(i, i + 90);
+      const { results } = await env.DB.prepare(`SELECT who, seller, n FROM contributor_sellers WHERE who IN (${part.map(() => '?').join(',')}) ORDER BY n DESC`).bind(...part).all();
+      rows.push(...(results || []));
+    }
+    rows.sort((a, b) => b.n - a.n);
+    for (const r of rows) if (!game[r.who]) game[r.who] = r.seller;
     for (const r of [...week, ...all]) if (game[r.who]) r.game = game[r.who];
   }
   // One person who uploaded from several connections shows up under the same in-game name more than once: those lines
