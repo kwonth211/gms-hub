@@ -136,3 +136,31 @@ test('a frame without a status bar reads nothing, and a black one is told apart'
   assert.equal(isBlack({ width: W, height: H, data: noise }), false);
   assert.equal(isBlack({ width: W, height: H, data: new Uint8ClampedArray(W * H * 4) }), true);
 });
+
+// A smaller game window makes the game draw its bar smaller (2026-11-27: runs failed at 0.57x and 0.67x). Reduced
+// copies of a real shared frame must read right down to 0.78x, and below SMALL_SCALE nothing may be read at all: a
+// wrong number is worse than asking for a bigger window.
+test('a reduced bar reads down to 0.78x and is never misread below that', async () => {
+  const W = 620, H = 106, base = new Uint8ClampedArray(gunzipSync(readFileSync(new URL('./fixtures/exp-share-7099.rgba.gz', import.meta.url))));
+  const shrink = (s, ox) => {
+    const nw = Math.floor(W * s), nh = Math.floor(H * s), out = new Uint8ClampedArray(nw * nh * 4);
+    for (let y = 0; y < nh; y++) for (let x = 0; x < nw; x++) {
+      const x0 = (x + ox) / s, x1 = (x + 1 + ox) / s, y0 = y / s, y1 = (y + 1) / s, acc = [0, 0, 0]; let n = 0;
+      for (let yy = Math.floor(y0); yy < Math.ceil(y1); yy++) for (let xx = Math.floor(x0); xx < Math.ceil(x1); xx++) {
+        if (xx >= W || yy >= H) continue;
+        const a = (Math.min(xx + 1, x1) - Math.max(xx, x0)) * (Math.min(yy + 1, y1) - Math.max(yy, y0)); if (a <= 0) continue;
+        const i = (yy * W + xx) * 4; for (let c = 0; c < 3; c++) acc[c] += base[i + c] * a; n += a;
+      }
+      const o = (y * nw + x) * 4; for (let c = 0; c < 3; c++) out[o + c] = acc[c] / n; out[o + 3] = 255;
+    }
+    return { width: nw, height: nh, data: out };
+  };
+  for (const s of [0.78, 0.8, 0.85]) for (const ox of [0, 0.33, 0.66]) {
+    const r = await readExp(shrink(s, ox));
+    assert.deepEqual(r?.how && parseExp(r.text), { exp: 7099, pct: 64.3 }, `scale ${s} shift ${ox}`);
+  }
+  for (const s of [0.5, 0.55, 0.6, 0.62]) for (const ox of [0, 0.33, 0.66]) {
+    const r = await readExp(shrink(s, ox)), p = r?.how && parseExp(r.text);
+    assert.ok(!p || (p.exp === 7099 && p.pct === 64.3), `scale ${s} shift ${ox} misread ${r?.text}`);
+  }
+});

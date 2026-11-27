@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "screen-tools-small-window",
+   "version": "0.7.85",
+   "level": "patch",
+   "date": "2026-11-27",
+   "path": "/tools/exp/",
+   "ko": "경험치 측정기·상점 스캔 — 작은 게임 창도 읽기",
+   "en": "EXP tracker and Shop Scan — small game windows read too",
+   "desc": {
+    "ko": "게임 창을 작게 띄우면 게임이 상태바와 미니맵 글자도 작게 그려서 숫자를 못 읽던 문제를 고쳤어요. 경험치 측정기는 0.78배 크기까지 읽고, 그보다 작으면 게임 창을 키워 달라고 알려 줘요. 상점 스캔은 작게 들어온 화면에서도 미니맵의 자유시장 방 번호를 읽어요.",
+    "en": "When the game window is small, the game draws the status bar and minimap text smaller too, and the numbers went unread. The EXP tracker now reads down to 0.78x and asks for a bigger game window below that. Shop Scan reads the Free Market room number from the minimap in reduced frames too."
+   }
+  },
+  {
    "id": "scan-shop-rows",
    "version": "0.7.84",
    "level": "patch",

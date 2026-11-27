@@ -629,13 +629,29 @@ function titleOf(t) {
   // Where the upright stroke of the "F" sits in the drawn title: its first column, top to bottom.
   const stem = [];
   for (let y = 0; y < t.h; y++) if (parseInt(t.prefix.px[y * t.prefix.w], 16) >= 8) stem.push(y);
-  titleParsed = { src: t, h: t.h, adv: t.adv, cell: t.cell, stemTop: stem[0] ?? 0, stemLen: stem.length || 9, pre: piece(t.prefix.px, t.prefix.w), glyphs: Object.entries(t.glyphs).map(([sym, hex]) => ({ sym, ...piece(hex, t.cell) })) };
+  // The same pieces softened by one pixel, for a frame the screen shrank and the page enlarged again (2026-11-27: at 0.67x and
+  // 0.8x the crisp pieces no longer found the title at all).
+  const soft = (hex, w) => {
+    const h = hex.length / w, v = [...hex].map((c) => parseInt(c, 16) / 15), out = [];
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      let a = 0, n = 0;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const yy = y + dy, xx = x + dx; if (yy < 0 || xx < 0 || yy >= h || xx >= w) continue; const k = (dy ? 0.25 : 0.5) * (dx ? 0.25 : 0.5); a += v[yy * w + xx] * k; n += k; }
+      out.push(Math.round((a / n) * 15).toString(16));
+    }
+    return out.join('');
+  };
+  titleParsed = { src: t, h: t.h, adv: t.adv, cell: t.cell, stemTop: stem[0] ?? 0, stemLen: stem.length || 9, pre: piece(t.prefix.px, t.prefix.w), glyphs: Object.entries(t.glyphs).map(([sym, hex]) => ({ sym, ...piece(hex, t.cell) })),
+    softPre: piece(soft(t.prefix.px, t.prefix.w), t.prefix.w), softGlyphs: Object.entries(t.glyphs).map(([sym, hex]) => ({ sym, ...piece(soft(hex, t.cell), t.cell) })) };
   return titleParsed;
 }
-function roomByTitle(img, t) {
+function roomByTitle(img, t, rescaled = false) {
   const T = titleOf(t);
+  // A rescaled frame: white strokes come back grey and a pixel wider, so the stroke cut-off is lower and the softened
+  // pieces are compared, with a little less fit asked of the line (cells keep their lead over the runner-up).
+  const pre = rescaled ? T.softPre : T.pre, glyphSet = rescaled ? T.softGlyphs : T.glyphs, white = rescaled ? 190 : 205;
+  const titleFit = rescaled ? 0.62 : TITLE_FIT, cellFit = rescaled ? 0.66 : CELL_FIT;
   const W = Math.min(img.width, MAP_AREA_W), H = Math.min(img.height, MAP_AREA_H);
-  if (W < T.pre.w + 3 * T.cell || H < T.h) return null;
+  if (W < pre.w + 3 * T.cell || H < T.h) return null;
   const L = new Float32Array(W * H);
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) L[y * W + x] = lum(img, x, y);
   // The bar's own brightness: the median of the patch (the letters cover well under half of it).
@@ -657,7 +673,7 @@ function roomByTitle(img, t) {
     const dev = Math.sqrt(Math.max(0, sq - (sum * sum) / n));
     return dev > 1e-6 && piece.norm > 1e-6 ? dot / (dev * piece.norm) : 0;
   };
-  const prefixAt = (x, y) => fit(T.pre, x, y, barOf(x, y, T.pre.w));
+  const prefixAt = (x, y) => fit(pre, x, y, barOf(x, y, pre.w));
   let best = { s: -1, x: 0, y: 0 };
   // The title rarely moves: where it was last time is tried first.
   if (titleAt && titleAt.W === W && titleAt.H === H) { const s = prefixAt(titleAt.x, titleAt.y); if (s >= 0.8) best = { s, x: titleAt.x, y: titleAt.y }; }
@@ -666,12 +682,12 @@ function roomByTitle(img, t) {
     // only strokes of that height are tried, so a bright scene costs little.
     const run = new Uint8Array(W), tried = new Set();
     for (let y = 0; y <= H; y++) for (let x = 1; x < W; x++) {
-      if (y < H && L[y * W + x] > 205) { if (run[x] < 60) run[x]++; continue; }
+      if (y < H && L[y * W + x] > white) { if (run[x] < 60) run[x]++; continue; }
       const len = run[x];
       run[x] = 0;
-      if (len < T.stemLen - 2 || len > T.stemLen + 3) continue;
+      if (len < T.stemLen - (rescaled ? 3 : 2) || len > T.stemLen + (rescaled ? 4 : 3)) continue;
       let lit = 0;
-      for (let k = 1; k <= len; k++) if (L[(y - k) * W + x - 1] > 205) lit++;
+      for (let k = 1; k <= len; k++) if (L[(y - k) * W + x - 1] > (rescaled ? 205 : white)) lit++;
       if (lit > 2) continue;
       for (let top = y - len - T.stemTop - 1; top <= y - len - T.stemTop + 1; top++) for (let left = x - 1; left <= x + 1; left++) {
         const key = top * W + left;
@@ -682,28 +698,51 @@ function roomByTitle(img, t) {
       }
     }
   }
-  if (best.s < TITLE_FIT) { titleAt = null; return null; }
+  if (best.s < titleFit) { titleAt = null; return null; }
   titleAt = { x: best.x, y: best.y, W, H };
-  const bar = barOf(best.x, best.y, T.pre.w);
+  const bar = barOf(best.x, best.y, pre.w);
+  // Every cell's fit for every symbol, then the room read cell by cell.
+  const fits = [];
+  for (let i = 0; i < 3; i++) {
+    const f = {};
+    for (const g of glyphSet) {
+      let s = -1;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) s = Math.max(s, fit(g, best.x + pre.w + i * T.adv + dx, best.y + dy, bar));
+      f[g.sym] = s;
+    }
+    fits.push(f);
+  }
   let digits = '';
   for (let i = 0; i < 3; i++) {
-    let top = { s: -1, sym: '' }, next = -1;
-    for (const g of T.glyphs) {
-      let s = -1;
-      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) s = Math.max(s, fit(g, best.x + T.pre.w + i * T.adv + dx, best.y + dy, bar));
-      if (s > top.s) { next = top.s; top = { s, sym: g.sym }; } else if (s > next) next = s;
-    }
-    if (top.s < CELL_FIT || top.s - next < CELL_LEAD) return 0;
-    if (top.sym === '>') { const room = Number(digits); return room >= 1 && room <= 40 ? room : 0; }
-    digits += top.sym;
+    const [top, next] = Object.entries(fits[i]).sort((a, b) => b[1] - a[1]);
+    if (top[1] < cellFit || top[1] - (next?.[1] ?? -1) < CELL_LEAD) return wholeRoom(fits, cellFit);
+    if (top[0] === '>') { const room = Number(digits); return room >= 1 && room <= 40 ? room : 0; }
+    digits += top[0];
   }
   return 0;
+}
+// When a cell is unclear on its own (a smoothed 8 sits close to 6, 9 and 0), the whole title is weighed instead: each
+// room 1-40 as "<n>" plus ">", by its mean fit over its cells. The closing ">" fits nothing else, so it pins how many
+// digits there are. The best room must fit well in every cell and clearly beat every other room.
+const ROOM_LEAD = 0.02; // tested on 650 shrunk/enlarged titles (rooms 7, 8, 10 real, 1-22 drawn): 0 wrong down to 0.015
+function wholeRoom(fits, cellFit) {
+  const scored = [];
+  for (let room = 1; room <= 40; room++) {
+    const str = `${room}>`;
+    const cells = [...str].map((ch, k) => fits[k][ch] ?? -1);
+    scored.push({ room, mean: cells.reduce((a, b) => a + b, 0) / cells.length, low: Math.min(...cells) });
+  }
+  scored.sort((a, b) => b.mean - a.mean);
+  const [a, b] = scored;
+  return a.low >= cellFit - 0.08 && a.mean >= cellFit && a.mean - b.mean >= ROOM_LEAD ? a.room : 0;
 }
 
 // Free Market room number from the minimap title; null when no Free Market title is on screen, 0 when the title is
 // there but its number is not clear. The digit-by-digit reader goes first; the table of captured titles is the fallback.
 export function findRoom(img, map, rescaled = false) {
-  const read = map?.title ? roomByTitle(img, map.title) : null;
+  // A rescaled frame is tried with the crisp pieces first (most enlarged frames still read that way), then the soft ones.
+  let read = map?.title ? roomByTitle(img, map.title) : null;
+  if (!read && rescaled && map?.title) { const soft = roomByTitle(img, map.title, true); if (soft || read === null) read = soft; }
   if (read) return read;
   const known = knownRoom(img, map, rescaled);
   return known || (read === 0 || known === 0 ? 0 : null);

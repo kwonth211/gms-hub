@@ -290,7 +290,7 @@ async function recognize(canvas) {
   if (!everRows) toolReport('scan', 'first_rows', { size: `${img.width}x${img.height}` });
   if (!everRows++) track('scan_first_rows', { after_s: Math.round((Date.now() - scanStartedAt) / 1000), rows: rows.length });
   // A shop on screen whose channel or room stays unknown blocks every upload.
-  if (!validLocation(channel) || !validLocation(room)) { if (++missLoc >= 3) issue(!validLocation(channel) ? 'no_channel' : 'no_room'); } else missLoc = 0;
+  if (!validLocation(channel) || !validLocation(room)) { if (++missLoc >= 3) issue(!validLocation(channel) ? 'no_channel' : 'no_room', { w: img.width, h: img.height, scale: +scale.toFixed(2) }); } else missLoc = 0;
   const loose = rows[0].loose;
   const listTop = Math.min(...rows.map((r) => r.top));
   let owner = readOwner(img, listTop, rows[0].x0, table, loose);

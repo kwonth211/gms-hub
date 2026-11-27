@@ -79,3 +79,28 @@ test('no Free Market title on screen reads as nothing', () => {
   for (let k = 0; k < 20; k++) for (let y = 30; y < 39; y++) for (let x = 20 + k * 24; x < 22 + k * 24; x++) { const i = (y * W + x) * 4; bars[i] = bars[i + 1] = bars[i + 2] = 255; }
   assert.equal(findRoom({ width: W, height: H, data: bars }, map), null);
 });
+
+// A game window the screen shrank (or a share Chrome reduced) comes back to game size smoothed: the white strokes turn grey
+// and touch the bar. From 2026-11-27 such titles are found with a lower stroke cut-off and softened pieces, and an
+// unclear cell is settled by weighing whole room numbers. Real and drawn titles at 13 scales: never another room.
+test('shrunk and enlarged titles read as their room or as unknown, never as another room', () => {
+  const t = map.title, cut = (hex, w) => ({ w, px: [...hex].map((c) => parseInt(c, 16) / 15) }), pre = cut(t.prefix.px, t.prefix.w);
+  const drawn = (room) => {
+    const W = 320, H = 120, data = new Uint8ClampedArray(W * H * 4);
+    for (let i = 0; i < data.length; i += 4) { data[i] = 149; data[i + 1] = 177; data[i + 2] = 196; data[i + 3] = 255; }
+    const put = (piece, x0, y0) => { for (let y = 0; y < t.h; y++) for (let x = 0; x < piece.w; x++) { const a = piece.px[y * piece.w + x], i = ((y0 + y) * W + x0 + x) * 4; for (const [c, bar] of [[0, 149], [1, 177], [2, 196]]) data[i + c] = Math.max(data[i + c], bar + (255 - bar) * a); } };
+    put(pre, 60, 40);
+    [...`${room}>`].forEach((ch, k) => put(cut(t.glyphs[ch], t.cell), 60 + pre.w + k * t.adv, 40));
+    return { width: W, height: H, data };
+  };
+  const cases = [...[7, 8, 10].map((r) => [r, frame(corner(r))]), ...Array.from({ length: 22 }, (_, i) => [i + 1, drawn(i + 1)])];
+  let read = 0, total = 0;
+  for (const [room, f] of cases) for (const z of [0.6, 0.67, 0.72, 0.75, 0.8, 0.85, 0.9, 0.95, 1.125, 1.25, 1.5, 1.75, 2]) for (const ph of [0, 1]) {
+    const back = resample(resample(f, Math.round(f.width * z) + ph, Math.round(f.height * z) + ph), f.width, f.height);
+    const got = findRoom(back, map, true);
+    assert.ok(got === room || got === 0, `room ${room} x${z} read as ${got}`);
+    total++; if (got === room) read++;
+  }
+  // 509 of 650 before this change; 639 after.
+  assert.ok(read >= 620, `${read} of ${total} read`);
+});

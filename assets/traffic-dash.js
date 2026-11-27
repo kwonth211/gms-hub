@@ -182,7 +182,7 @@ const TOOL_NAME = { exp: 'EXP 측정기', scan: '상점 스캔' };
 const OUTCOME = { ok: '읽음', no_bar: '상태바를 못 찾음', read_fail: '숫자를 못 읽음', black: '검은 화면', share_error: '화면 공유 오류', first_rows: '상점 읽음', black_frame: '검은 화면', no_shop: '상점을 못 찾음', unsure_rows: '이름이 불확실', read_error: '읽기 오류', video_play: '영상 재생 실패', upload_fail: '올리기 실패', no_room: '방 번호를 못 읽음', no_channel: '채널을 못 읽음', no_location: '채널·방을 못 읽음' };
 // What a run recorded about itself: how it read ("soft" = by best fit) or, for a failed EXP run, how much stayed unread.
 const HOW = { exact: '또렷하게 읽음', soft: '흐린 숫자를 맞춰 읽음' };
-const howText = (r) => { const m = /^len(\d+)unread(\d+)$/.exec(r.how || ''); return m ? (Number(m[1]) ? `글자 ${m[1]}개 중 ${m[2]}개 못 읽음` : '숫자 줄을 못 찾음') : HOW[r.how] || r.how || ''; };
+const howText = (r) => { const m = /^(small)?len(\d+)unread(\d+)$/.exec(r.how || ''); return m ? (m[1] ? '게임 창이 작아 글자가 너무 작음 (창을 키우라고 안내함)' : Number(m[2]) ? `글자 ${m[2]}개 중 ${m[3]}개 못 읽음` : '숫자 줄을 못 찾음') : HOW[r.how] || r.how || ''; };
 // The status bar's gauges sit 108 game pixels apart, so their spacing on the shared picture says how large the game was drawn.
 const drawn = (r) => (r.tool === 'exp' && r.pitch > 0 ? `게임 화면 ${(r.pitch / 108).toFixed(2)}배` : '');
 // When a group of runs happened, in Korean time: "11/26 14:32", or the first and last time when there were several.

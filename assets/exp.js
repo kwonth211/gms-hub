@@ -2,7 +2,7 @@
 // every few seconds (assets/exp-reader.js), then shows EXP per hour, percent per hour, time to the next level and the
 // session's gain. Nothing leaves this computer: frames are read in the page and only the numbers are kept, in this
 // browser (localStorage), so a reload keeps the session. Without screen sharing the two numbers can be typed by hand.
-import { readExp, isBlack, SHARE_SIZE, parseExp, sameReading, summarize, levelTotal, levelBox, levelTiles, jobBox, inkImage, jobKey, parseLevel } from './exp-reader.js';
+import { readExp, isBlack, SHARE_SIZE, parseExp, sameReading, summarize, levelTotal, levelBox, levelTiles, jobBox, inkImage, jobKey, parseLevel, SMALL_SCALE } from './exp-reader.js';
 import { toolReport } from './tool-report.js';
 import { xlsx } from './xlsx.js';
 import { jobNames } from './training-evidence.js';
@@ -170,7 +170,10 @@ async function readOnce(img) {
   }
   // The level comes about a minute in, so a run that reads well is reported once that had its chance.
   if (!everRead || Date.now() - runStartedAt > 75000) reportRun(false);
-  check('read', r ? 'ok' : 'fail', r ? fill(t.readOk, { exp: nf.format(r.exp), pct: r.pct.toFixed(2) }) : fill(t.readFail, { text: '' }));
+  // A bar drawn this small cannot be read (the game draws it smaller in a smaller window): say what to change.
+  const small = !r && found.g.pitch / 108 < SMALL_SCALE;
+  if (small) failNote = `small${failNote}`;
+  check('read', r ? 'ok' : 'fail', r ? fill(t.readOk, { exp: nf.format(r.exp), pct: r.pct.toFixed(2) }) : small ? fill(t.readSmall, { k: (found.g.pitch / 108).toFixed(2) }) : fill(t.readFail, { text: '' }));
   return r;
 }
 

@@ -5,6 +5,9 @@
 // (exp ÷ percent must give a sensible level total) so a misread digit is dropped rather than charted.
 
 const NATIVE_PITCH = 108; // game pixels from one gauge's start to the next
+// The game draws its bar smaller when its window is made smaller (2026-11-27: failures at 0.57x and 0.67x from players who
+// read fine at 1x minutes before). Readable down to this scale; below it the page asks for a bigger window.
+export const SMALL_SCALE = 0.65;
 const isRed = (r, g, b) => r > 170 && g < 110 && b < 110 && r - g > 90;
 // The MP fill has a lighter highlight row and edge, so green may run high; blue well above red is what counts.
 const isBlue = (r, g, b) => b > 150 && r < 110 && g < 200 && b - r > 80;
@@ -124,7 +127,8 @@ export function findGauges(img) {
       const blue = runsOn(img, mid, isBlue, 0, W, minW).find((q) => q.x0 < b.x1 && q.x1 > b.x0) || b;
       const pitch = blue.x0 - red.x0;
       // The gauges are 6 rows for a pitch of 108; a two-row sliver of button border on an enlarged frame is not a gauge.
-      if (pitch <= 0 || barH < 2 || barH > pitch || barH < pitch * 0.025) continue;
+      // A pitch far under half the game's own is not the bar (a 1026-wide window once gave 27 for a real 109).
+      if (pitch < NATIVE_PITCH * 0.5 || barH < 2 || barH > pitch || barH < pitch * 0.025) continue;
       return { top, bottom, barH, hpX0: red.x0, mpX0: blue.x0, pitch, expX0: blue.x0 + pitch, width: pitch };
     }
   }
@@ -461,6 +465,21 @@ export function softTemplates(a) {
   })) }));
 }
 const TEMPLATES = [0.04, 0.12, 0.2].map(softTemplates);
+// A reduced frame (the game window made smaller, so the game draws its bar smaller) blurs each game pixel over 1/k of a
+// source pixel and more; these shapes are the glyphs softened by a Gaussian of that width.
+export function gaussTemplates(sigma) {
+  const r = 2, wt = [];
+  for (let d = -r; d <= r; d++) wt.push(Math.exp(-(d * d) / (2 * sigma * sigma)));
+  const sum = wt.reduce((a, b) => a + b, 0); for (let i = 0; i < wt.length; i++) wt[i] /= sum;
+  return SOFT.map(({ ch, w, grid }) => ({ ch, w, cells: grid.map((row, y) => row.map((_, x) => {
+    let v = 0;
+    for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) v += (grid[y + dy]?.[x + dx] || 0) * wt[dy + r] * wt[dx + r];
+    return v;
+  })) }));
+}
+// k = game scale of the frame. Width from the source downscale (1/k) plus the sampling onto the game grid (1).
+const SMALL = new Map();
+const smallTemplates = (k) => { const key = Math.round(k * 20); if (!SMALL.has(key)) { const s0 = 0.29 * Math.sqrt(1 / (key / 20) ** 2 + 1); SMALL.set(key, [0.85, 1, 1.15].map((f) => gaussTemplates(s0 * f))); } return SMALL.get(key); };
 // Digits, then "[", digits, ".", digits, "%", "]".
 const STEP = (state, ch) => {
   const digit = ch >= '0' && ch <= '9';
@@ -503,7 +522,9 @@ function decode(cells, cols, T) {
 // The text of a smeared frame, or null when nothing fits well enough. `info` (tests) also returns the fit.
 export function readSmeared(img, g, { info = false, maxCost = 0.022, margin = 1.15, wide = false } = {}) {
   const k0 = g.pitch / NATIVE_PITCH;
-  if (!(k0 > 0.84 && k0 < 5)) return null;
+  // Below about 0.65 the digits blur into each other and wrong readings start to fit (a test at 0.62 read 64.90 for
+  // 64.30), so such a frame is not read; the page asks for a bigger game window instead (SMALL_SCALE).
+  if (!(k0 >= SMALL_SCALE && k0 < 5)) return null;
   const lum = (x, y) => { x = x < 0 ? 0 : x >= img.width ? img.width - 1 : x; y = y < 0 ? 0 : y >= img.height ? img.height - 1 : y; const i = (y * img.width + x) * 4; return (img.data[i] * 299 + img.data[i + 1] * 587 + img.data[i + 2] * 114) / 1000; };
   // Summed areas of the strip, so averaging a game pixel costs four lookups.
   const bx0 = Math.max(0, Math.floor(g.expX0 - 6 * k0)), bx1 = Math.min(img.width, Math.ceil(g.expX0 + 150 * k0)), by0 = Math.max(0, Math.floor(g.top - 26 * k0)), by1 = Math.min(img.height, g.top + 2);
@@ -539,12 +560,14 @@ export function readSmeared(img, g, { info = false, maxCost = 0.022, margin = 1.
   };
   // The gauge edges smear in a shared picture (a real share measured 106 for 108), so the scale is searched over two pixels.
   // Coarse: where the line sits. Fine: around the three best spots, at finer scales and shifts.
+  const small = k0 < 0.9, TS = small ? smallTemplates(k0) : TEMPLATES;
   const spots = [];
-  for (const f of [0, 0.9, 1.8, -0.9].map((px) => 1 + px / g.pitch)) for (let oy = -2; oy <= 2; oy += 0.5) for (const ox of wide ? [-3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5] : [0, 0.5]) spots.push([tryAt(k0 * f, oy, ox, [TEMPLATES[1]]), k0 * f, oy, ox]);
+  for (const f of [0, 0.9, 1.8, -0.9].map((px) => 1 + px / g.pitch)) for (let oy = -2; oy <= 2; oy += 0.5) for (const ox of wide ? [-3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5] : [0, 0.5]) spots.push([tryAt(k0 * f, oy, ox, [TS[1]]), k0 * f, oy, ox]);
   spots.sort((a, b) => a[0] - b[0]);
-  for (const [, k, oy, ox] of spots.slice(0, 3)) for (const f of [1, 1.003, 0.997]) for (const dy of [-0.25, 0, 0.25]) for (const dx of [-0.25, 0, 0.25]) tryAt(k * f, oy + dy, ox + dx, TEMPLATES);
+  for (const [, k, oy, ox] of spots.slice(0, 3)) for (const f of [1, 1.003, 0.997]) for (const dy of [-0.25, 0, 0.25]) for (const dx of [-0.25, 0, 0.25]) tryAt(k * f, oy + dy, ox + dx, TS);
   const list = [...found.values()].sort((a, b) => a.cost - b.cost);
-  const ok = list[0] && list[0].cost <= maxCost && (!list[1] || list[1].cost >= list[0].cost * margin) && parseExp(digits(list[0].text));
+  // A reduced frame never fits as tightly; the margin over the next reading still has to hold.
+  const ok = list[0] && list[0].cost <= (small ? Math.max(maxCost, 0.036) : maxCost) && (!list[1] || list[1].cost >= list[0].cost * margin) && parseExp(digits(list[0].text));
   const b = list[0], p = b && b.k * NATIVE_PITCH, shift = b ? Math.round(b.ox * b.k) : 0;
   // The placement as the text itself shows it, good for the frames that follow.
   const fit = b && { ...g, pitch: Math.round(p), width: Math.round(p), expX0: g.expX0 + shift, top: g.top + Math.round(b.oy * b.k) };
