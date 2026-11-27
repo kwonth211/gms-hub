@@ -6,7 +6,7 @@ const config = JSON.parse(readFileSync(new URL('../site.config.json', import.met
 const file = new URL('../data/item-prices.json', import.meta.url);
 
 try {
-  const r = await fetch(`${config.voteApi}/prices/all`, { headers: process.env.GMS_READ_KEY ? { 'X-Gms-Key': process.env.GMS_READ_KEY } : {}, signal: AbortSignal.timeout(20000) });
+  const r = await fetch(`${config.voteApi}/prices/all`, { headers: process.env.GMS_READ_KEY ? { 'X-Gms-Key': process.env.GMS_READ_KEY } : {}, signal: AbortSignal.timeout(60000) });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   const prices = await r.json();
   if (!prices || typeof prices !== 'object' || Array.isArray(prices)) throw new Error('unexpected body');

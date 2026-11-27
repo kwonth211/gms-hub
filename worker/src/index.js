@@ -661,7 +661,7 @@ const api = {
       for (let i = 120; i < ids.length; i += 120) edges.push(ids[i]);
       edges.push(Number.MAX_SAFE_INTEGER);
       const out = {};
-      for (let k = 0; k + 1 < edges.length; k++) {
+      const range = async (k) => {
         const { results } = await env.DB.prepare(
           `SELECT item, price, kind, created_at FROM prices WHERE item >= ?1 AND item < ?2 AND created_at >= ${WINDOW} AND ${real}
            UNION ALL
@@ -670,7 +670,9 @@ const api = {
         const byItem = new Map();
         for (const r of results) (byItem.get(r.item) || byItem.set(r.item, []).get(r.item)).push(r);
         for (const [item, rows] of byItem) out[item] = recentSummary(rows);
-      }
+      };
+      // Four ranges at a time: one after another took 11 s from Korea and passed the build's 20 s limit from GitHub.
+      for (let k = 0; k + 1 < edges.length; k += 4) await Promise.all([k, k + 1, k + 2, k + 3].filter((j) => j + 1 < edges.length).map(range));
       // Read by the site build only (item pages bake it); six hours of staleness is fine and keeps the 14-day scan rare.
       return json(out, cors, 200, 'public, max-age=21600');
     }
