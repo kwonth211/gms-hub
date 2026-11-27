@@ -270,6 +270,31 @@ ${src.length ? `<h3 class="td-sub">세션이 들어온 경로</h3>${bars(src, { 
 <p class="muted small">사람 = 이 브라우저에 남긴 익명 번호 하나 · 세션 = 30분 넘게 쉬었다 오면 1번 더 · 운영자 브라우저(?internal=1)와 자동 브라우저는 빼요 · 광고 차단기 쓰는 사람도 세져서 GA보다 조금 많을 수 있어요</p></section>`;
 }
 
+// API and cron errors of the last 7 days (worker traffic.js errorReport, from 2026-11-27): one row per endpoint or job and
+// status, newest first, with the newest error message, so a broken route is seen the same day.
+const CRON_NAME = { 'market-top': '홈 시세 TOP', rank: '랭킹', news: '게임 공지', 'daily-rollups': '하루 요약 저장', 'daily-prune': '오래된 기록 정리', 'archive-listings': '매물 보관', 'reconcile-market': '시세 다시 계산', 'megaphone-stats': '확성기 통계', 'discord-price-board': '디스코드 시세판', 'discord-leaderboard': '디스코드 순위', 'scam-profiles': '사기 제보 프로필', 'shop-faces': '상점 주인 사진', 'discord-market': '디스코드 시세 요약', 'price-alerts': '가격 알림' };
+const kstFull = (ms) => new Date(ms).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+function errorPanel(d) {
+  const x = d.errors;
+  if (!x) return '';
+  const title = '<h2>API 오류 <small class="muted">최근 7일 · 서버 오류(5xx)와 실패한 자동 작업</small></h2>';
+  if (x.error) return `<section class="panel">${title}<p class="td-err">기록을 못 읽었어요: ${esc(x.error)}</p></section>`;
+  if (!x.rows.length) return `<section class="panel">${title}<p class="muted">최근 7일 동안 오류가 없어요. 11월 27일 밤부터 기록해요.</p></section>`;
+  const recent = x.rows.filter((r) => Date.now() - r.last < 3600000);
+  const today = x.rows.reduce((a, r) => a + r.today, 0), week = x.rows.reduce((a, r) => a + r.week, 0);
+  const rows = x.rows.map((r) => {
+    const where = r.kind === 'cron' ? `<b>${esc(CRON_NAME[r.path] || r.path)}</b><br><span class="muted">자동 작업 · ${esc(r.path)}</span>` : `<code>${esc(r.path)}</code>`;
+    const code = r.kind === 'cron' || !r.status ? '실패' : r.status;
+    const when = r.week > 1 && r.first !== r.last ? `${kstFull(r.last)}<br><span class="muted">처음 ${kstFull(r.first)}</span>` : kstFull(r.last);
+    const hot = Date.now() - r.last < 3600000;
+    return `<tr${hot ? ' class="td-hot"' : ''}><td>${where}</td><td class="num">${esc(code)}</td><td class="num"><b>${nf(r.today)}</b></td><td class="num">${nf(r.week)}</td><td class="td-when">${when}</td><td class="td-msg">${esc(r.msg || '-')}${r.kinds > 1 ? `<br><span class="muted">다른 내용 ${nf(r.kinds - 1)}가지 더</span>` : ''}</td></tr>`;
+  });
+  return `<section class="panel">${title}
+<p class="${recent.length ? 'td-err' : ''}">오늘 ${nf(today)}번 · 7일 ${nf(week)}번${recent.length ? ` · 최근 1시간 안에 난 오류 ${nf(recent.length)}곳이 있어요` : ' · 최근 1시간 안에는 없어요'}</p>
+${foldTable('<tr><th>엔드포인트 / 작업</th><th class="num">코드</th><th class="num">오늘</th><th class="num">7일</th><th>마지막</th><th>마지막 오류 내용</th></tr>', rows, 'data td-who-table td-err-table')}
+<p class="muted small">4xx(잘못된 요청·차단)는 빼고 서버가 답을 못 한 경우만 세요. 오류 내용은 서버가 남긴 첫 줄이에요.</p></section>`;
+}
+
 function render() {
   const key = store.get();
   if (!key) {
@@ -317,6 +342,8 @@ ${weekChart(d, upto)}
 <section class="panel"><h2>처음 들어온 페이지 <small class="muted">방문</small></h2>${bars(d.landings.slice(0, 15), { label: (p) => `${esc(pageName(p.path.replace(/^\/(ko|en|zh|ja)(?=\/)/, '')))}<small> ${esc((p.path.match(/^\/(ko|en|zh|ja)\//) || [, ''])[1])}</small>`, value: (p) => p.landings, accent: true })}</section>
 </div>
 <section class="panel"><h2>기기</h2>${bars(d.devices, { label: (x) => esc({ desktop: 'PC', mobile: '모바일', tablet: '태블릿' }[x.device] || x.device), value: (x) => x.visits })}</section>
+<h2 class="td-part">서버 상태</h2>
+${errorPanel(d)}
 <h2 class="td-part">요청 지키기</h2>
 ${guardPanel(d)}
 <h2 class="td-part">화면 읽는 도구</h2>

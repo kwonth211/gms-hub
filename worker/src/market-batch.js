@@ -1,4 +1,5 @@
 import { normalizeOptions } from './item-options.js';
+import { noteError } from './traffic.js';
 import { refreshItemMarket } from './market-browser.js';
 // Authenticated, idempotent ingestion for the private deterministic collector.
 const reply = (body, status = 200, headers = {}) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store', ...headers } });
@@ -196,9 +197,10 @@ export async function handleMarketBatch(req, env, knownItems, onListings) {
       listingsChanged: changed, observationsAdded: changed, historyStorage: 'listing_history',
       rowsRead: results.reduce((n,r) => n + (r.meta.rows_read || 0), 0),
       rowsWritten: results.reduce((n,r) => n + (r.meta.rows_written || 0), 0) });
-  } catch {
+  } catch (e) {
     // A concurrent identical retry is harmless. Any other failed transaction has no partial writes.
     const raced = await previous().catch(() => null);
+    if (!raced) noteError(req, e);
     return raced ? replay(raced) : reply({ error: 'database transaction failed' }, 503);
   }
 }

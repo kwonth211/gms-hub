@@ -191,13 +191,14 @@ export async function trafficReport(env, dayParam, now = Date.now()) {
     () => blockedReport(env, from, to),
     () => toolRuns(env, now),
     () => peopleReport(env, day, now),
+    () => errorReport(env, now),
     ...past.map((d) => () => pastDay(env, d).then((h) => [d, h]))
   ];
   // A few at a time: twenty queries in flight at once come back at a coarse sample rate (hours read as 0 or 100).
   const results = [];
   for (let k = 0; k < jobs.length; k += 3) results.push(...(await Promise.all(jobs.slice(k, k + 3).map((f) => f()))));
   // Busiest-hour record ignores coarse days, and the day record is only as good as each day's sample.
-  const [h0, krHours, countries, paths, refs, devices, botHours, botRows, blocked, tools, people, ...days] = results;
+  const [h0, krHours, countries, paths, refs, devices, botHours, botRows, blocked, tools, people, errors, ...days] = results;
   const dayMap = new Map(days);
   const h1 = dayMap.get(minus(day, 1)), h7 = dayMap.get(minus(day, 7));
   days.push([day, h0]);
@@ -244,6 +245,7 @@ export async function trafficReport(env, dayParam, now = Date.now()) {
     blocked,
     tools,
     people,
+    errors,
     daily: [...daily.entries()].sort().map(([d, [visits, views]]) => ({ day: d, visits, views })),
     live
   };
@@ -392,6 +394,54 @@ export async function toolRuns(env, now = Date.now()) {
     return { days: days.map((r) => ({ tool: r.tool, outcome: r.outcome, day: new Date(Number(r.d) * 86400000).toISOString().slice(0, 10), n: Number(r.n), lv: Number(r.lv) })), why: why.map((r) => ({ ...r, n: Number(r.n), dpr: Number(r.dpr), pitch: Number(r.pitch) || 0, first: Number(r.first) || 0, last: Number(r.last) || 0 })) };
   } catch (e) {
     if (/unable to find|does not exist|unknown table/i.test(String(e.message))) return { days: [], why: [] };
+    return { error: String(e.message || e) };
+  }
+}
+
+// API and cron errors for the owner dashboard (owner 2026-11-27, after /market/scan-shops answered 503 for hours with
+// its error swallowed): one data point per 5xx answer, thrown error or failed cron job, in gms_hub_errors.
+// A route's catch block calls noteError(req, e) before answering 503, so the dashboard shows what actually broke.
+const ERR_SET = 'gms_hub_errors';
+const errNotes = new WeakMap();
+const errText = (e) => {
+  if (e == null) return '';
+  const s = String(e?.stack || e?.message || e), lines = s.split('\n');
+  const at = lines.find((l) => /^\s+at /.test(l) && !/<anonymous>|node:/.test(l));
+  return `${lines[0]}${at ? ` | ${at.trim()}` : ''}`.slice(0, 300);
+};
+export const noteText = (req) => (req && errNotes.get(req)) || '';
+export function noteError(req, e) {
+  try { if (req) errNotes.set(req, errText(e)); } catch { /* logging only */ }
+  try { console.error(new URL(req.url).pathname, e?.stack || e); } catch { /* logging only */ }
+}
+// kind: 'api' (path = request path) or 'cron' (path = job name). status 0 = the job or handler threw.
+export function logError(env, kind, path, status, { req = null, e = null } = {}) {
+  try {
+    env.ERRORS?.writeDataPoint({
+      indexes: [kind],
+      blobs: [kind, String(path).slice(0, 120), String(status), req?.method || '', e != null ? errText(e) : (req && errNotes.get(req)) || '', req?.cf?.country || '']
+    , doubles: [1] });
+  } catch { /* logging only */ }
+}
+
+// The last 7 days, one row per job or path and status: count today (KST) and in 7 days, first and last time, newest message.
+export async function errorReport(env, now = Date.now()) {
+  const since = now - 7 * 24 * HOUR, todayFrom = utcStart(kstDay(now));
+  try {
+    const rows = await aeSql(env, `SELECT toUInt32(timestamp) AS t, blob1 AS kind, blob2 AS path, blob3 AS status, blob5 AS msg, _sample_interval AS n FROM ${ERR_SET} WHERE timestamp >= toDateTime(${Math.floor(since / 1000)}) ORDER BY t DESC LIMIT 3000`);
+    const by = new Map();
+    for (const r of rows) {
+      const k = `${r.kind}|${r.path}|${r.status}`, t = Number(r.t) * 1000, n = Number(r.n) || 1;
+      const g = by.get(k) || { kind: r.kind, path: r.path, status: Number(r.status), week: 0, today: 0, first: t, last: t, msg: '', msgs: new Set() };
+      g.week += n; if (t >= todayFrom) g.today += n;
+      if (t < g.first) g.first = t; if (t > g.last) g.last = t;
+      if (r.msg) { if (!g.msg) g.msg = r.msg; g.msgs.add(r.msg); }
+      by.set(k, g);
+    }
+    const list = [...by.values()].map(({ msgs, ...g }) => ({ ...g, kinds: msgs.size })).sort((a, b) => b.last - a.last);
+    return { rows: list, full: rows.length >= 3000 || undefined };
+  } catch (e) {
+    if (/unable to find|does not exist|unknown table/i.test(String(e.message))) return { rows: [] };
     return { error: String(e.message || e) };
   }
 }

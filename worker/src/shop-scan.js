@@ -1,4 +1,5 @@
 import { normalizeOptions } from './item-options.js';
+import { noteError } from './traffic.js';
 import { refreshItemMarket } from './market-browser.js';
 import { validRoom } from '../../assets/place.js';
 // Authenticated ingestion for the in-game shop collector: it walks one Free Market room, opens every shop and sends
@@ -51,7 +52,8 @@ export async function handleShopScan(req, env, knownItems, onListings) {
     await refreshItemMarket(env, body.rows.map((r) => r.item)).catch(() => null);
     if (onListings) onListings(changedRows.filter((r) => !r.sold).map((r) => ({ ...r, channel: body.channel, room: body.room })));
     return reply({ ok: true, accepted: body.rows.length, listingsChanged: changedRows.length });
-  } catch {
+  } catch (e) {
+    noteError(req, e);
     return reply({ error: 'database transaction failed' }, 503);
   }
 }

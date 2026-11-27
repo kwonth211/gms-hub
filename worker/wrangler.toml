@@ -71,6 +71,11 @@ dataset = "gms_hub_tools"
 binding = "VISITS"
 dataset = "gms_hub_visits"
 
+# API 5xx answers, thrown errors and failed cron jobs (src/traffic.js logError), for the owner's dashboard.
+[[analytics_engine_datasets]]
+binding = "ERRORS"
+dataset = "gms_hub_errors"
+
 [[send_email]]
 name = "EMAIL"
 

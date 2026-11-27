@@ -4868,3 +4868,7 @@ dialog.trd-shopdlg::backdrop { background: rgba(0, 0, 0, .45); }
   .trd-si-vs { display: none; }
 }
 .td-when { white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* API error table (traffic dashboard): the message in a code face, rows from the last hour marked. */
+.traffic-dash .td-err-table .td-msg { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .78rem; min-width: 16rem; }
+.traffic-dash .td-err-table code { font-size: .8rem; }
+.traffic-dash .td-err-table tr.td-hot td { background: color-mix(in srgb, var(--danger, #d64545) 10%, transparent); }

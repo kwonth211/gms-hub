@@ -30,7 +30,7 @@ import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoint
 import { cachedPublicResponse } from './public-cache.js';
 import { refreshNews } from './news.js';
 import { Presence, handlePresence, handlePresencePeak } from './presence.js';
-import { adsTxtReads, handleHit, handleToolReport, handleTraffic, logBlock } from './traffic.js';
+import { adsTxtReads, handleHit, handleToolReport, handleTraffic, logBlock, logError, noteError, noteText } from './traffic.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
 import { noteScanShops, scanShops, refreshFaces, pruneScanShops } from './scan-shops.js';
 import { validRoom } from '../../assets/place.js';
@@ -451,43 +451,45 @@ async function cachedPrices(env, ids, origin, ctx) {
 
 const api = {
   async scheduled(event, env, ctx) {
+    // A failed job is written to the owner dashboard's error table (traffic.js logError) and the run goes on.
+    const fail = (job) => (err) => { console.log(`${job} failed`, String(err)); logError(env, 'cron', job, 0, { e: err }); return null; };
     // The home top-10 snapshot reads the whole 8-day listings window, so it is remade hourly, not every tick.
-    ctx.waitUntil(freshSnapshot(env, 'market', 50).then((data) => data || refreshSnapshot(env)));
-    ctx.waitUntil(refreshRank(env).catch(() => null));
+    ctx.waitUntil(freshSnapshot(env, 'market', 50).then((data) => data || refreshSnapshot(env)).catch(fail('market-top')));
+    ctx.waitUntil(refreshRank(env).catch(fail('rank')));
     // Official notices (site + followed Discord channel), with Korean for new ones: one row read, one or two writes.
-    ctx.waitUntil(refreshNews(env).then((d) => newsToDiscord(env, d)).catch((e) => console.log('news refresh failed', String(e))));
+    ctx.waitUntil(refreshNews(env).then((d) => newsToDiscord(env, d)).catch(fail('news')));
     // Once a day (the 16:00 UTC run, a quiet hour in Korea): old megaphones are dropped by a table scan. The megaphone
     // trend snapshot is refreshed once an hour. Both are read-heavy, so they are not run on every tick.
     const now = new Date();
     // The weekly report's daily rollups (yesterday's megaphones, today's ranking) are written before the prune runs.
     if (now.getUTCHours() === 16 && now.getUTCMinutes() < 15)
-      ctx.waitUntil(storeDailyRollups(env).catch(() => null).then(() => pruneMegaphones(env)).then(() => pruneFreeMegas(env)).then(() => pruneScanShops(env)).then(() => env.DB.prepare("DELETE FROM listing_gone WHERE at < datetime('now', '-31 days')").run()).catch(() => null));
+      ctx.waitUntil(storeDailyRollups(env).catch(fail('daily-rollups')).then(() => pruneMegaphones(env)).then(() => pruneFreeMegas(env)).then(() => pruneScanShops(env)).then(() => env.DB.prepare("DELETE FROM listing_gone WHERE at < datetime('now', '-31 days')").run()).catch(fail('daily-prune')));
     // Retention first, then the safety-net re-summary of everything seen in the last day (one 1-day scan).
     if (now.getUTCHours() === 16 && now.getUTCMinutes() < 15)
-      ctx.waitUntil(archiveListings(env).catch(() => null).then(() => reconcileItemMarket(env)).catch(() => null));
+      ctx.waitUntil(archiveListings(env).catch(fail('archive-listings')).then(() => reconcileItemMarket(env)).catch(fail('reconcile-market')));
     // Four times a day (00, 06, 12, 18 UTC) the same snapshot also goes to the Discord trends channel.
     if (now.getUTCMinutes() < 15) ctx.waitUntil(itemNames().catch(() => null).then((names) => megaphoneStats(env, Date.now(), names)).then(async (d) => {
       await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('mega-stats',?,datetime('now'))").bind(JSON.stringify(d)).run();
       if (now.getUTCHours() % 6 === 0) await trendsToDiscord(env, d, await itemLabel(), (await freshSnapshot(env, 'market-catalog', 60).catch(() => null)) || (await marketCatalog(env).catch(() => null)));
-    }).catch(() => null));
+    }).catch(fail('megaphone-stats')));
     // Live price board (pinned card edited twice an hour) and the contributor leaderboard (hourly) in #시세-거래-market.
     if (now.getUTCMinutes() % 30 < 15) ctx.waitUntil((async () => {
       const cat = (await freshSnapshot(env, 'market-catalog', 60)) || (await marketCatalog(env));
       await priceBoardToDiscord(env, cat, await itemLabel());
-    })().catch((e) => console.log('price board failed', String(e))));
-    if (now.getUTCMinutes() < 15) ctx.waitUntil(leaderboardToDiscord(env).catch((e) => console.log('leaderboard failed', String(e))));
+    })().catch(fail('discord-price-board')));
+    if (now.getUTCMinutes() < 15) ctx.waitUntil(leaderboardToDiscord(env).catch(fail('discord-leaderboard')));
     // Scam report cards: reported characters' level, job and picture, read again every few days (5 names an hour).
-    if (now.getUTCMinutes() < 15) ctx.waitUntil(refreshProfiles(env, lookupCharacter).catch((e) => console.log('scam profiles failed', String(e))));
+    if (now.getUTCMinutes() < 15) ctx.waitUntil(refreshProfiles(env, lookupCharacter).catch(fail('scam-profiles')));
     // Scanned shops' owner pictures (/trade/): a few names on the other three ticks of the hour, kept for a week.
-    if (now.getUTCMinutes() >= 15) ctx.waitUntil(refreshFaces(env, lookupCharacter, 10).catch((e) => console.log('shop faces failed', String(e))));
+    if (now.getUTCMinutes() >= 15) ctx.waitUntil(refreshFaces(env, lookupCharacter, 10).catch(fail('shop-faces')));
     // Daily market summary in #시세-거래-market at 21:00 KST (12:00 UTC run), once a day (snapshot key per KST day).
     if (now.getUTCHours() === 12 && now.getUTCMinutes() < 15) ctx.waitUntil((async () => {
       const key = `discord-market:${new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10)}`;
       if (await env.DB.prepare('SELECT 1 FROM snapshots WHERE key = ?').bind(key).first()) return;
       const cat = (await freshSnapshot(env, 'market-catalog', 60)) || (await marketCatalog(env));
       if (await marketToDiscord(env, cat, await itemLabel())) await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES (?,'1',datetime('now'))").bind(key).run();
-    })().catch((e) => console.log('discord market failed', String(e))));
-    ctx.waitUntil(checkAlerts(env).catch(() => null));
+    })().catch(fail('discord-market')));
+    ctx.waitUntil(checkAlerts(env).catch(fail('price-alerts')));
   },
 
   async fetch(req, env, ctx) {
@@ -588,7 +590,7 @@ const api = {
 
     // Collector watch (assets: none; for operators and the daily check): the extension's last heartbeat and last runs.
     if (url.pathname === '/report/raw' && req.method === 'GET') {
-      try { return json(await reportRaw(env), cors, 200, 'public, max-age=3600'); } catch { return json({ error: 'report unavailable' }, cors, 503); }
+      try { return json(await reportRaw(env), cors, 200, 'public, max-age=3600'); } catch (e) { noteError(req, e); return json({ error: 'report unavailable' }, cors, 503); }
     }
     if (url.pathname === '/market/collector' && req.method === 'GET') {
       if (!(await ownerOnly(req, env))) return json({ error: 'forbidden' }, cors, 403);
@@ -691,6 +693,7 @@ const api = {
         return json(data, cors, 200, ['/market/catalog', '/market/history'].includes(url.pathname) && !data.filtered ? 'public, max-age=300' : 'public, max-age=60');
       } catch (e) {
         const invalid = e.message?.startsWith('bad ');
+        if (!invalid) noteError(req, e);
         return json({error: invalid ? e.message : 'market unavailable'}, cors, invalid ? 400 : 503);
       }
     }
@@ -711,7 +714,7 @@ const api = {
     // when it is missing or stale), edge-cached.
     if (url.pathname === '/news' && req.method === 'GET') {
       try { return json((await freshSnapshot(env, 'news', 40)) || (await refreshNews(env)), cors, 200, 'public, max-age=600'); }
-      catch (e) { return json({ error: 'news unavailable' }, cors, 502); }
+      catch (e) { noteError(req, e); return json({ error: 'news unavailable' }, cors, 502); }
     }
 
     if (url.pathname === '/megaphones/stats' && req.method === 'GET') {
@@ -802,7 +805,7 @@ const api = {
           await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('scan-shops',?,datetime('now'))").bind(JSON.stringify(data)).run();
         }
         return json(data, cors, 200, 'public, max-age=60');
-      } catch (e) { console.error('scan-shops', e?.stack || e); return json({ error: 'shops unavailable' }, cors, 503); }
+      } catch (e) { noteError(req, e); return json({ error: 'shops unavailable' }, cors, 503); }
     }
 
     if (url.pathname === '/market/top' && req.method === 'GET') {
@@ -873,6 +876,7 @@ const api = {
         return json({ fixed: res.meta.changes }, cors);
       } catch (e) {
         // A database error must never erase the original observation.
+        noteError(req, e);
         return json({ error: 'correction failed' }, cors, 503);
       }
     }
@@ -1090,16 +1094,27 @@ export default {
     if (live) count('d');
     // Without an execution context (tests) there is nothing to flush into.
     ctx?.waitUntil?.(flushUsage(env.DB, Date.now(), false, env.USAGE_BASELINE).catch(() => null));
-    if (isOver('q') || (live && isOver('d'))) return paused();
+    if (isOver('q') || (live && isOver('d'))) { logError(env, 'api', path, 503, { req, e: 'paused: monthly budget reached' }); return paused(); }
     if (path === '/usage') return usageAnswer(req, env);
     const e = metered(env);
     // Every other refusal (rate limits, wrong origin, wrong owner key) is recorded for the owner's dashboard by its status.
+    // Every 5xx goes to the error table (traffic.js logError): the route's noted error, or else the answer's own error text.
     const noted = (res) => {
       if (outsideCall) logBlock(env, req, res?.status === 404 ? 'nopath' : 'watch');
       else if (res && (res.status === 403 || res.status === 429)) logBlock(env, req, res.status === 429 ? 'rate' : path.startsWith('/internal/') ? 'key' : 'forbidden');
+      if (res && res.status >= 500) {
+        const write = (text) => logError(env, 'api', path, res.status, { req, e: noteText(req) || text || '' });
+        const read = res.clone().text().then((t) => { let m = t; try { m = JSON.parse(t).error || t; } catch { /* plain text */ } write(String(m).slice(0, 200)); }).catch(() => write(''));
+        ctx?.waitUntil?.(read);
+      }
       return res;
     };
-    const out = live ? joinPresence(req, e) : cachedPublicResponse(req, () => api.fetch(req, e, ctx), ctx);
+    // A throw from a route answers a plain 500 that the error table records, instead of Cloudflare's error page.
+    const guarded = () => Promise.resolve().then(() => api.fetch(req, e, ctx)).catch((err) => {
+      noteError(req, err);
+      return new Response(JSON.stringify({ error: 'internal error' }), { status: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' } });
+    });
+    const out = live ? joinPresence(req, e) : cachedPublicResponse(req, guarded, ctx);
     return out instanceof Promise ? out.then(noted) : noted(out);
   }
 };
