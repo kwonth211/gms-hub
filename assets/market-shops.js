@@ -21,7 +21,7 @@ if (box) {
   const booth = (s) => {
     const items = s.items.filter((i) => !i[3]), more = items.length - 3;
     const first = names.get(items[0]?.[0]) || '';
-    const title = s.title || (items.length > 1 ? tr(`${first} 외 ${items.length - 1}개`, `${first} +${items.length - 1} more`) : first);
+    const title = s.title || (!first ? tr(`${items.length}개 판매`, `${items.length} for sale`) : items.length > 1 ? tr(`${first} 외 ${items.length - 1}개`, `${first} +${items.length - 1} more`) : first);
     const face = s.face?.photo
       ? `<img class="trd-shop-face" src="${esc(s.face.photo)}" alt="" width="96" height="96" loading="lazy" referrerpolicy="no-referrer">`
       : `<img class="trd-shop-face dflt" src="${FACE}" alt="" width="96" height="96">`;
@@ -53,7 +53,7 @@ if (box) {
     // Sign boards name the first item when the shop has no title: names come from the shared item list.
     if (shops.some((s) => !s.title)) {
       const url = document.getElementById('mk-data') && JSON.parse(document.getElementById('mk-data').textContent).itemsUrl;
-      if (url) fetch(url).then((r) => r.json()).then((j) => { for (const r of j) names.set(r[0], ko ? r[1] : r[2]); draw(); }).catch(() => {});
+      if (url) fetch(url).then((r) => r.json()).then((j) => { for (const r of j) names.set(r[0], (ko ? r[1] : r[2]) || r[2] || r[1]); draw(); }).catch(() => {});
     }
   };
   box.addEventListener('click', (e) => {
