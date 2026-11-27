@@ -2310,6 +2310,7 @@ function marketBrowser(lang, fixed, placeholder) {
   // On an item page the list, its filters, the market totals and the contributor board are never shown (CSS hid them),
   // so they wait in an inert <template>: market.js still finds its controls there, and the page text is the item's own.
   const statusTabs = `<div class="mb-status"><p id="mk-status" role="status" aria-label="${esc(t.loading)}"><span class="skel" style="display:inline-block;width:220px;max-width:60vw;height:12px;vertical-align:middle" aria-hidden="true"></span></p><button id="mk-retry" class="btn ghost small-btn" type="button">${tr('새로고침','Refresh')}</button></div>
+<section class="mk-shops" id="mk-shops" hidden data-api="${esc(config.voteApi)}" data-trade="${href(langPath(lang, '/trade/'))}" aria-label="${tr('지금 열린 상점','Open shops now')}"></section>
 <div class="mb-tabs" role="tablist" aria-label="${tr('시장 탐색','Browse market')}"><button id="mb-tab-items" role="tab" aria-selected="true" aria-controls="mb-browser" data-view="items">${tr('아이템 시세','Item prices')}</button><button id="mb-tab-listings" role="tab" aria-selected="false" tabindex="-1" aria-controls="mb-browser" data-view="listings">${tr('전체 매물','All listings')}</button></div>
 `;
   const browser = `<section class="panel mb-browser" id="mb-browser" role="tabpanel" aria-labelledby="mb-tab-items">
@@ -3473,7 +3474,7 @@ for (const lang of LANGS) {
       title: MK[lang].title,
       desc: MK[lang].desc,
       body: marketBody(lang),
-      modules: ['market.js', 'contributors.js'],
+      modules: ['market.js', 'contributors.js', 'market-shops.js'],
       ld: [appLd(MK[lang].h1, MK[lang].desc, '/tools/market/'), breadcrumbLd(lang, MK[lang].h1, '/tools/market/')]
     },
     damage: {

@@ -292,6 +292,10 @@ async function loadShops() {
   if (st) { st.removeAttribute('aria-busy'); st.textContent = failed ? '–' : nf.format(shops.length); }
   shops.sort((a, b) => String(b.at).localeCompare(String(a.at)));
   drawShops();
+  // A shop chip on the market page links here as ?shop=<name>: its window opens right away.
+  const want = new URLSearchParams(location.search).get('shop')?.toLowerCase();
+  const hit = want && shops.find((s) => String(s.seller).toLowerCase() === want);
+  if (hit) { $('tb-shops').scrollIntoView({ block: 'start' }); openShop(hit); }
   drawBoard();
   loadRefs(shopRows()).then(drawBoard);
 }

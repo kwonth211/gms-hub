@@ -4874,3 +4874,23 @@ dialog.trd-shopdlg::backdrop { background: rgba(0, 0, 0, .45); }
 .traffic-dash .td-err-table .td-msg { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .78rem; min-width: 16rem; }
 .traffic-dash .td-err-table code { font-size: .8rem; }
 .traffic-dash .td-err-table tr.td-hot td { background: color-mix(in srgb, var(--danger, #d64545) 10%, transparent); }
+
+/* "지금 열린 상점" strip above the market tabs (assets/market-shops.js): one scrolling row of small shop chips. */
+.mk-shops { margin: 2px 0 12px; }
+.mk-shops .mks-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.mk-shops h2 { margin: 0; font-size: .9rem; }
+.mk-shops h2 small { color: var(--muted); font-weight: 600; margin-left: 4px; }
+.mk-shops .mks-head a { font-size: .8rem; color: var(--accent-2); }
+.mk-shops .mks-list { list-style: none; margin: 0; padding: 0 0 4px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: thin; }
+.mk-shops .mks-list li { flex: none; }
+.mk-shops .mks-shop { display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 6px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--text); text-decoration: none; max-width: 300px; }
+.mk-shops .mks-shop:hover { border-color: var(--accent-line); background: var(--panel-2); }
+.mk-shops .mks-shop:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.mk-shops .mks-face { width: 34px; height: 34px; border-radius: 8px; object-fit: contain; image-rendering: pixelated; background: var(--panel-2); flex: none; }
+.mk-shops .mks-face.dflt { image-rendering: auto; padding: 4px; }
+.mk-shops .mks-txt { display: flex; flex-direction: column; min-width: 0; }
+.mk-shops .mks-txt b { font-size: .8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+.mk-shops .mks-txt small { font-size: .7rem; color: var(--muted); white-space: nowrap; }
+.mk-shops .mks-icons { display: flex; align-items: center; gap: 2px; flex: none; }
+.mk-shops .mks-icons img { image-rendering: pixelated; }
+.mk-shops .mks-icons em { font-style: normal; font-size: .7rem; color: var(--muted); margin-left: 2px; }
