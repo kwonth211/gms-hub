@@ -445,3 +445,37 @@ export async function errorReport(env, now = Date.now()) {
     return { error: String(e.message || e) };
   }
 }
+
+// Error mail (owner, 2026-11-27: "API 500에러가 나면 나의 지메일로"): every 15-minute cron run looks at the error table
+// for the window that just closed (shifted 5 minutes back so Analytics Engine has the rows) and mails a summary of API
+// 5xx answers and failed jobs to ALERT_TO (worker secret, the owner's address; not in this public repo). A group that
+// already appeared in the hour before the window is not mailed again, except in the first run of each hour, so a lasting
+// outage sends at most one reminder an hour.
+export async function mailNewErrors(env, scheduled = Date.now()) {
+  if (!env.ALERT_TO || !env.EMAIL) return { skipped: 'no ALERT_TO or EMAIL' };
+  const end = Math.floor((scheduled - 5 * 60000) / 900000) * 900000, start = end - 900000, prevFrom = start - HOUR;
+  const rows = await aeSql(env, `SELECT toUInt32(timestamp) AS t, blob1 AS kind, blob2 AS path, blob3 AS status, blob5 AS msg, _sample_interval AS n FROM ${ERR_SET} WHERE timestamp >= toDateTime(${Math.floor(prevFrom / 1000)}) AND timestamp < toDateTime(${Math.floor(end / 1000)}) ORDER BY t DESC LIMIT 2000`);
+  const bad = (r) => r.kind === 'cron' || Number(r.status) >= 500;
+  const now = new Map(), before = new Set();
+  for (const r of rows) {
+    if (!bad(r)) continue;
+    const k = `${r.kind}|${r.path}|${r.status}`, t = Number(r.t) * 1000;
+    if (t < start) { before.add(k); continue; }
+    const g = now.get(k) || { kind: r.kind, path: r.path, status: r.status, n: 0, last: t, msg: r.msg || '' };
+    g.n += Number(r.n) || 1; if (t > g.last) g.last = t; if (!g.msg && r.msg) g.msg = r.msg;
+    now.set(k, g);
+  }
+  const hourly = new Date(end).getUTCMinutes() === 0;
+  const fresh = [...now.entries()].filter(([k]) => !before.has(k)).map(([, g]) => g), ongoing = [...now.entries()].filter(([k]) => before.has(k)).map(([, g]) => g);
+  const send = [...fresh, ...(hourly ? ongoing : [])];
+  if (!send.length) return { sent: 0 };
+  const hm = (ms) => new Date(ms + KST).toISOString().slice(11, 16);
+  const line = (g) => `- ${g.kind === 'cron' ? '자동 작업' : 'API'} ${g.path} · ${g.kind === 'cron' ? '실패' : g.status} · ${g.n}번 · 마지막 ${hm(g.last)}\n  ${g.msg || '(오류 내용 없음)'}`;
+  const text = [`GMS Hub 오류 알림 (${hm(start)}~${hm(end)} KST)`, '',
+    ...(fresh.length ? ['새로 난 오류:', ...fresh.map(line), ''] : []),
+    ...(hourly && ongoing.length ? ['계속 나고 있는 오류 (한 시간에 한 번만 알려요):', ...ongoing.map(line), ''] : []),
+    '대시보드: https://gms-hub.com/admin/traffic/'].join('\n');
+  const subject = `[GMS Hub] 오류 ${send.length}건: ${send.slice(0, 2).map((g) => g.path).join(', ')}`.slice(0, 120);
+  await env.EMAIL.send({ to: env.ALERT_TO, from: { email: 'contact@gms-hub.com', name: 'GMS Hub 알림' }, subject, text });
+  return { sent: send.length };
+}

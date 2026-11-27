@@ -30,7 +30,7 @@ import { marketCatalog, browseListings, browseReports, marketHistory, dailyPoint
 import { cachedPublicResponse } from './public-cache.js';
 import { refreshNews } from './news.js';
 import { Presence, handlePresence, handlePresencePeak } from './presence.js';
-import { adsTxtReads, handleHit, handleToolReport, handleTraffic, logBlock, logError, noteError, noteText } from './traffic.js';
+import { adsTxtReads, handleHit, handleToolReport, handleTraffic, logBlock, logError, mailNewErrors, noteError, noteText } from './traffic.js';
 import { refreshRank, rankSnapshot, lookupCharacter } from './rank.js';
 import { noteScanShops, scanShops, refreshFaces, pruneScanShops } from './scan-shops.js';
 import { validRoom } from '../../assets/place.js';
@@ -453,6 +453,8 @@ const api = {
   async scheduled(event, env, ctx) {
     // A failed job is written to the owner dashboard's error table (traffic.js logError) and the run goes on.
     const fail = (job) => (err) => { console.log(`${job} failed`, String(err)); logError(env, 'cron', job, 0, { e: err }); return null; };
+    // Mail the owner about 5xx answers and failed jobs of the window that just closed (traffic.js mailNewErrors).
+    ctx.waitUntil(mailNewErrors(env, event?.scheduledTime || Date.now()).catch((err) => console.log('error mail failed', String(err))));
     // The home top-10 snapshot reads the whole 8-day listings window, so it is remade hourly, not every tick.
     ctx.waitUntil(freshSnapshot(env, 'market', 50).then((data) => data || refreshSnapshot(env)).catch(fail('market-top')));
     ctx.waitUntil(refreshRank(env).catch(fail('rank')));
