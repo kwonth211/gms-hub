@@ -265,7 +265,7 @@ async function keepSample(canvas) {
 let scanStartedAt = 0, everRows = 0, firstSureAt = 0, missLoc = 0;
 const issued = new Set();
 // ui_label / ui_value are registered GA dimensions, so the kind of problem and the capture size show up in reports.
-const issue = (kind, params = {}) => { if (issued.has(kind)) return; issued.add(kind); if (kind !== 'upload_fail') toolReport('scan', kind, { size: params.w ? `${params.w}x${params.h}` : '', pitch: params.scale ? Math.round(params.scale * 108) : 0 }); track('scan_issue', { issue: kind, ui_label: kind, ui_value: params.w ? `${params.w}x${params.h}@${params.scale}` : String(params.msg || ''), after_s: scanStartedAt ? Math.round((Date.now() - scanStartedAt) / 1000) : 0, ...params }); };
+const issue = (kind, params = {}) => { if (issued.has(kind)) return; issued.add(kind); toolReport('scan', kind, { size: params.w ? `${params.w}x${params.h}` : '', pitch: params.scale ? Math.round(params.scale * 108) : 0, how: kind === 'upload_fail' ? String(params.msg || '').replace(/[^\w/ -]/g, '').slice(0, 30) : undefined }); track('scan_issue', { issue: kind, ui_label: kind, ui_value: params.w ? `${params.w}x${params.h}@${params.scale}` : String(params.msg || ''), after_s: scanStartedAt ? Math.round((Date.now() - scanStartedAt) / 1000) : 0, ...params }); };
 
 const differed = new Set();
 const roomDiffers = (picked, seen) => { const k = `${picked}>${seen}`; if (differed.has(k)) return; differed.add(k); track('scan_room_differs', { ui_label: k, picked, seen }); };
@@ -489,7 +489,8 @@ async function upload() {
       const res = await fetch(`${i18n.api}/listings`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(globalThis.gmsAuth?.() || {}) },
         body: JSON.stringify({ items: inserts.map((e) => e.body) }) });
       const data = await res.json();
-      if (!res.ok || data.stored !== inserts.length) throw new Error('Incomplete upload');
+      // The server's reason goes into the failure report (owner 2026-11-27: a scan read the shop and nothing arrived).
+      if (!res.ok || data.stored !== inserts.length) throw new Error(res.ok ? `stored ${data.stored}/${inserts.length}` : `http${res.status} ${String(data.error || '').slice(0, 20)}`);
       for (const e of inserts) {
         if (!sent.has(e.key)) uploaded++;
         sent.set(e.key, e.signature);

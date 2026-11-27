@@ -1114,7 +1114,8 @@ export default {
     const noted = (res) => {
       if (outsideCall) logBlock(env, req, res?.status === 404 ? 'nopath' : 'watch');
       else if (res && (res.status === 403 || res.status === 429)) logBlock(env, req, res.status === 429 ? 'rate' : path.startsWith('/internal/') ? 'key' : 'forbidden');
-      if (res && res.status >= 500) {
+      // A refused Shop Scan upload (400 invalid, 409 another reporter's row) loses a player's scan, so it is listed too.
+      if (res && (res.status >= 500 || (path === '/listings' && (res.status === 400 || res.status === 409)))) {
         const write = (text) => logError(env, 'api', path, res.status, { req, e: noteText(req) || text || '' });
         const read = res.clone().text().then((t) => { let m = t; try { m = JSON.parse(t).error || t; } catch { /* plain text */ } write(String(m).slice(0, 200)); }).catch(() => write(''));
         ctx?.waitUntil?.(read);

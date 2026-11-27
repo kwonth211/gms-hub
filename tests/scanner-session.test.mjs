@@ -29,7 +29,7 @@ async function session() {
   const requests = [];
   const control = { accept: true, failFix: false };
   const sandbox = { ...place, ...reader, ...state, Intl, console, setInterval: () => 0, clearInterval() {}, queueMicrotask, Uint8Array, Date,
-    location: { hostname: 'test.invalid' }, window: { devicePixelRatio: 1 }, navigator: { mediaDevices: { getDisplayMedia() {} } }, track() {},
+    location: { hostname: 'test.invalid' }, window: { devicePixelRatio: 1 }, navigator: { mediaDevices: { getDisplayMedia() {} } }, track() {}, toolReport() {},
     document: { getElementById: get, createElement: () => new Element(), body: new Element() },
     fetch: async (url, options) => {
       if (url === '/items') return { ok: true, json: async () => [[4000000, '', 'Test item']] };
