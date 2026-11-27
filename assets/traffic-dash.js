@@ -184,7 +184,8 @@ const OUTCOME = { ok: '읽음', no_bar: '상태바를 못 찾음', read_fail: '�
 const HOW = { exact: '또렷하게 읽음', soft: '흐린 숫자를 맞춰 읽음' };
 const howText = (r) => { const m = /^(small)?len(\d+)unread(\d+)$/.exec(r.how || ''); return m ? (m[1] ? '게임 창이 작아 글자가 너무 작음 (창을 키우라고 안내함)' : Number(m[2]) ? `글자 ${m[2]}개 중 ${m[3]}개 못 읽음` : '숫자 줄을 못 찾음') : HOW[r.how] || r.how || ''; };
 // The status bar's gauges sit 108 game pixels apart, so their spacing on the shared picture says how large the game was drawn.
-const drawn = (r) => (r.tool === 'exp' && r.pitch > 0 ? `게임 화면 ${(r.pitch / 108).toFixed(2)}배` : '');
+// EXP sends the gauge pitch (108 = 1x); Shop Scan sends its own capture scale x 108 (from 2026-11-27).
+const drawn = (r) => (r.pitch > 0 ? `게임 화면 ${(r.pitch / 108).toFixed(2)}배` : '');
 // When a group of runs happened, in Korean time: "11/26 14:32", or the first and last time when there were several.
 const kst = (sec) => { const t = new Date(sec * 1000 + 9 * 3600000); return `${t.getUTCMonth() + 1}/${t.getUTCDate()} ${String(t.getUTCHours()).padStart(2, '0')}:${String(t.getUTCMinutes()).padStart(2, '0')}`; };
 const whenText = (r) => (!r.last ? '-' : r.n > 1 && r.first && kst(r.first) !== kst(r.last) ? `${kst(r.last)}<br><span class="muted">처음 ${kst(r.first)}</span>` : kst(r.last));

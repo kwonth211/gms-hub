@@ -81,6 +81,14 @@ async function loadData() {
 }
 $('scan-retry-data').addEventListener('click', loadData);
 
+// Shop rows read but the channel or room unknown: nothing can upload. The player is looking at the game, not this tab,
+// so the tab title says what is missing and the empty choice is outlined (owner 2026-11-27: runs read the shop and
+// stopped at "채널을 못 읽음" / "방 번호를 못 읽음" for minutes).
+const baseTitle = document.title;
+function askLocation(missing) {
+  for (const key of ['channel', 'room']) $(`scan-${key}`)?.closest?.('label')?.classList.toggle('scan-need', missing === key);
+  if (typeof document.title === 'string') document.title = missing ? `⚠ ${missing === 'channel' ? i18n.titleChannel : i18n.titleRoom} · ${baseTitle}` : baseTitle;
+}
 function locationStatus() {
   for (const [key, value] of [['channel', channel], ['room', room]]) {
     const manual = Number($(`scan-${key}`).value);
@@ -94,6 +102,7 @@ for (const key of ['channel', 'room']) $('scan-' + key).addEventListener('change
   channel = Number($('scan-channel').value) || channel;
   room = Number($('scan-room').value) || room;
   keepLocation();
+  if (validLocation(channel) && validLocation(room)) askLocation('');
   currentShop = null;
   lastSig = null;
   settling = true;
@@ -256,7 +265,7 @@ async function keepSample(canvas) {
 let scanStartedAt = 0, everRows = 0, firstSureAt = 0, missLoc = 0;
 const issued = new Set();
 // ui_label / ui_value are registered GA dimensions, so the kind of problem and the capture size show up in reports.
-const issue = (kind, params = {}) => { if (issued.has(kind)) return; issued.add(kind); if (kind !== 'upload_fail') toolReport('scan', kind, { size: params.w ? `${params.w}x${params.h}` : '' }); track('scan_issue', { issue: kind, ui_label: kind, ui_value: params.w ? `${params.w}x${params.h}@${params.scale}` : String(params.msg || ''), after_s: scanStartedAt ? Math.round((Date.now() - scanStartedAt) / 1000) : 0, ...params }); };
+const issue = (kind, params = {}) => { if (issued.has(kind)) return; issued.add(kind); if (kind !== 'upload_fail') toolReport('scan', kind, { size: params.w ? `${params.w}x${params.h}` : '', pitch: params.scale ? Math.round(params.scale * 108) : 0 }); track('scan_issue', { issue: kind, ui_label: kind, ui_value: params.w ? `${params.w}x${params.h}@${params.scale}` : String(params.msg || ''), after_s: scanStartedAt ? Math.round((Date.now() - scanStartedAt) / 1000) : 0, ...params }); };
 
 const differed = new Set();
 const roomDiffers = (picked, seen) => { const k = `${picked}>${seen}`; if (differed.has(k)) return; differed.add(k); track('scan_room_differs', { ui_label: k, picked, seen }); };
@@ -291,6 +300,7 @@ async function recognize(canvas) {
   if (!everRows++) track('scan_first_rows', { after_s: Math.round((Date.now() - scanStartedAt) / 1000), rows: rows.length });
   // A shop on screen whose channel or room stays unknown blocks every upload.
   if (!validLocation(channel) || !validLocation(room)) { if (++missLoc >= 3) issue(!validLocation(channel) ? 'no_channel' : 'no_room', { w: img.width, h: img.height, scale: +scale.toFixed(2) }); } else missLoc = 0;
+  askLocation(!validLocation(channel) ? 'channel' : !validLocation(room) ? 'room' : '');
   const loose = rows[0].loose;
   const listTop = Math.min(...rows.map((r) => r.top));
   let owner = readOwner(img, listTop, rows[0].x0, table, loose);
@@ -881,6 +891,7 @@ globalThis.addEventListener?.('beforeunload', (e) => {
   e.returnValue = '';
 });
 function stop() {
+  askLocation('');
   clearInterval(timer);
   timer = null;
   sessionRevision++;

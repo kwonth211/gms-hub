@@ -4900,3 +4900,7 @@ dialog.trd-shopdlg::backdrop { background: rgba(0, 0, 0, .45); }
 .mk-shops .mks-more:hover { border-color: var(--accent-line); color: var(--text); }
 .mk-shops .mks-more:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 @media (max-width: 520px) { .mk-shops .mks-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; } .mk-shops .trd-booth { width: 100%; } }
+
+/* Shop Scan: the channel or room choice that blocks the upload is outlined until it is picked (assets/scan.js askLocation). */
+.scan-location label.scan-need select { outline: 3px solid var(--danger); outline-offset: 1px; }
+.scan-location label.scan-need { color: var(--danger); font-weight: 700; }
