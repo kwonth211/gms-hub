@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "exp-small-window-read",
+   "version": "0.7.94",
+   "level": "patch",
+   "date": "2026-11-28",
+   "path": "/tools/exp/",
+   "ko": "경험치 측정기 — 게임 창을 줄여도 읽기",
+   "en": "EXP tracker — reads a shrunk game window",
+   "desc": {
+    "ko": "게임 창을 작게 줄이면 숫자가 뭉개져서 못 읽던 경우를 크게 줄였어요. 창을 줄일 때 생기는 글자 모양을 그대로 계산해서 맞춰 보기 때문에, 이제 원래 크기의 0.65~0.7배까지 읽어요. 확실하지 않으면 틀린 숫자를 적지 않고 다시 읽어요.",
+    "en": "A smaller game window blurs the numbers, and many of those frames went unread. The tracker now works out exactly how each digit looks after the window shrinks, so it reads down to about 0.65-0.7x of the normal size. When it is not sure, it reads again instead of writing a wrong number."
+   }
+  },
+  {
    "id": "original-economy-guides",
    "version": "0.7.93",
    "level": "minor",
