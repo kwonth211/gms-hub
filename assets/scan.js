@@ -138,6 +138,9 @@ function changed(a, b) {
 // window itself can be any size. The scale is measured from the shop list's separator lines in the raw frame (the screen's
 // pixel ratio is the first guess), and each frame is drawn back down to game pixels before reading: nearest-neighbour for
 // whole-number scales, which restores letters exactly, smoothed otherwise, where the reader's letter matching absorbs the rest.
+// What the room reader saw on the last frame: a number, 0 (a Free Market minimap title whose number did not read) or
+// null (no Free Market minimap title at all). Sent with a no_room report so the dashboard tells the two apart.
+let lastSeenRoom = null;
 const DEFAULT_SCALE = Math.round((window.devicePixelRatio || 1) * 4) / 4;
 let scale = DEFAULT_SCALE, scaleFrame = '';
 let lastFull = null;
@@ -269,7 +272,7 @@ async function keepSample(canvas) {
 let scanStartedAt = 0, everRows = 0, firstSureAt = 0, missLoc = 0;
 const issued = new Set();
 // ui_label / ui_value are registered GA dimensions, so the kind of problem and the capture size show up in reports.
-const issue = (kind, params = {}) => { if (issued.has(kind)) return; issued.add(kind); toolReport('scan', kind, { size: params.w ? `${params.w}x${params.h}` : '', pitch: params.scale ? Math.round(params.scale * 108) : 0, how: kind === 'upload_fail' ? String(params.msg || '').replace(/[^\w/ -]/g, '').slice(0, 30) : undefined }); track('scan_issue', { issue: kind, ui_label: kind, ui_value: params.w ? `${params.w}x${params.h}@${params.scale}` : String(params.msg || ''), after_s: scanStartedAt ? Math.round((Date.now() - scanStartedAt) / 1000) : 0, ...params }); };
+const issue = (kind, params = {}) => { if (issued.has(kind)) return; issued.add(kind); toolReport('scan', kind, { size: params.w ? `${params.w}x${params.h}` : '', pitch: params.scale ? Math.round(params.scale * 108) : 0, how: kind === 'upload_fail' ? String(params.msg || '').replace(/[^\w/ -]/g, '').slice(0, 30) : params.how }); track('scan_issue', { issue: kind, ui_label: kind, ui_value: params.w ? `${params.w}x${params.h}@${params.scale}` : String(params.msg || ''), after_s: scanStartedAt ? Math.round((Date.now() - scanStartedAt) / 1000) : 0, ...params }); };
 
 const differed = new Set();
 const roomDiffers = (picked, seen) => { const k = `${picked}>${seen}`; if (differed.has(k)) return; differed.add(k); track('scan_room_differs', { ui_label: k, picked, seen }); };
@@ -281,6 +284,7 @@ async function recognize(canvas) {
   const ch = manualChannel || findChannel(img);
   if (validLocation(ch)) channel = ch;
   const seenRoom = findRoom(img, mapData, scale !== 1);
+  lastSeenRoom = seenRoom;
   const fm = manualRoom || seenRoom;
   // The room picked by hand still wins; how often the screen says another one tells whether the reader can be trusted
   // over a pick that was left on while moving rooms.
@@ -303,7 +307,7 @@ async function recognize(canvas) {
   if (!everRows) toolReport('scan', 'first_rows', { size: `${img.width}x${img.height}` });
   if (!everRows++) track('scan_first_rows', { after_s: Math.round((Date.now() - scanStartedAt) / 1000), rows: rows.length });
   // A shop on screen whose channel or room stays unknown blocks every upload.
-  if (!validLocation(channel) || !validLocation(room)) { if (++missLoc >= 3) issue(!validLocation(channel) ? 'no_channel' : 'no_room', { w: img.width, h: img.height, scale: +scale.toFixed(2) }); } else missLoc = 0;
+  if (!validLocation(channel) || !validLocation(room)) { if (++missLoc >= 3) issue(!validLocation(channel) ? 'no_channel' : 'no_room', { w: img.width, h: img.height, scale: +scale.toFixed(2), how: lastSeenRoom === 0 ? 'fmtitle' : 'nominimap' }); } else missLoc = 0;
   askLocation(!validLocation(channel) ? 'channel' : !validLocation(room) ? 'room' : '');
   const loose = rows[0].loose;
   const listTop = Math.min(...rows.map((r) => r.top));
