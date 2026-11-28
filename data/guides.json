@@ -1,6 +1,54 @@
 {
   "guides": [
     {
+      "slug": "work-gloves-buy-or-scroll",
+      "lang": "en",
+      "title": "Buy 6 ATT Work Gloves: the real cost of five 60% scrolls",
+      "h1": "Buy 6 ATT Work Gloves: the real cost of five 60% scrolls",
+      "desc": "6 ATT Work Gloves from 4.20m versus 8.43m to scroll at the lowest asking prices. Matched-option listings, 4/6/8/10 ATT prices, success odds and what to do after a first failure.",
+      "published": "2026-11-28",
+      "updated": "2026-11-28",
+      "reviewed": "2026-11-28",
+      "status": "published",
+      "evidenceKind": "original-market-study",
+      "toc": false,
+      "sources": [
+        {
+          "title": "GMS Hub dated Work Gloves price study",
+          "url": "https://gms-hub.com/assets/research/work-gloves-2026-11-28.json"
+        }
+      ],
+      "tools": [
+        "scroll-profit",
+        "market",
+        "damage"
+      ]
+    },
+    {
+      "slug": "work-gloves-buy-or-scroll",
+      "lang": "ko",
+      "title": "공 6 목장갑은 사세요: 장공 중급 5장으로 따진 직작 손익",
+      "h1": "공 6 목장갑은 사세요: 장공 중급 5장으로 따진 직작 손익",
+      "desc": "공 6 목장갑 완제품 420만, 중급 5장 직작은 최저 843만. 같은 크리티컬·물방 옵션의 실제 매물로 공 4·6·8·10 가격과 성공 확률, 첫 실패 뒤 쓸 돈까지 계산했어요.",
+      "published": "2026-11-28",
+      "updated": "2026-11-28",
+      "reviewed": "2026-11-28",
+      "status": "published",
+      "evidenceKind": "original-market-study",
+      "toc": false,
+      "sources": [
+        {
+          "title": "GMS Hub dated Work Gloves price study",
+          "url": "https://gms-hub.com/assets/research/work-gloves-2026-11-28.json"
+        }
+      ],
+      "tools": [
+        "scroll-profit",
+        "market",
+        "damage"
+      ]
+    },
+    {
       "slug": "getting-started",
       "lang": "ko",
       "title": "글클메 시작하는 법: 첫날 준비와 육성 순서",

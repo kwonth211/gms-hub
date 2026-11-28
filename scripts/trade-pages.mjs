@@ -80,6 +80,7 @@ export function scrollProfitBody({ lang, api, itemsUrl, dataUrl, marketUrl, forg
       ['coin', t('개수 넣고 남는 돈 보기', 'Set the amount, read what is left'), t('값은 전부 직접 고칠 수 있어요.', 'Every price can be edited.')]]
   })}
 <div class="wrap trd-page" id="sp-page" data-api="${esc(api)}" data-items="${esc(itemsUrl)}" data-data="${esc(dataUrl)}" data-market="${esc(marketUrl)}">
+<p class="trd-next"><a href="/${lang}/guides/work-gloves-buy-or-scroll/" data-discover="glove_study_from_calc">${t('공 6 목장갑은 살까요, 직접 작할까요? 실제 가격으로 계산한 손익', 'Buy or scroll 6 ATT Work Gloves? A worked example with real prices')}</a></p>
 <section class="trd-result" id="sp-result" hidden aria-live="polite">
 <header class="trd-item" id="sp-item"></header>
 <section class="panel trd-scrolls"><h2><i class="trd-num">1</i>${t('주문서를 눌러 칸을 채우세요', 'Tap scrolls to fill the slots')}</h2>

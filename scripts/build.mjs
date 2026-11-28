@@ -2764,6 +2764,7 @@ const guideTool = (lang, key) => {
     training: ['/tools/training/', 'sword', t.navTraining, t.trCardDesc],
     damage: ['/tools/damage/', 'hammer', DMG[lang].h1, DMG[lang].cardDesc],
     scroll: ['/tools/scroll/', 'scroll', t.navScroll, t.scCardDesc],
+    'scroll-profit': ['/tools/scroll-profit/', 'scroll', lang === 'ko' ? '작 손익 계산기' : 'Scroll profit calculator', lang === 'ko' ? '장비와 주문서를 고르면 쓰는 돈과 결과별 확률, 팔 값을 보여 줘요.' : 'Pick your gear and scrolls to see the cost, outcome odds and selling prices.'],
     'drop-rate': ['/tools/drop-rate/', 'bag', t.navDrop, t.dropCardDesc],
     market: ['/tools/market/', 'coin', t.navMarket, MK[lang].lead],
     price: ['/tools/price/', 'coin', t.navPrice, PR[lang].cardDesc],
@@ -2835,7 +2836,7 @@ function guideBody(g) {
 <h1>${esc(g.h1)}</h1>
 <p class="byline">${GUIDE_T[g.lang].byline(g)}</p>
 ${guideToolChips(g)}
-${toc.length > 2 ? `<nav class="guide-toc" aria-label="${g.lang==='ko'?'이 글의 순서':'On this page'}"><strong>${g.lang==='ko'?'이 글에서':'On this page'}</strong><ol>${toc.map(t=>`<li><a href="#${t.id}">${t.title}</a></li>`).join('')}</ol></nav>` : ''}
+${g.toc !== false && toc.length > 2 ? `<nav class="guide-toc" aria-label="${g.lang==='ko'?'이 글의 순서':'On this page'}"><strong>${g.lang==='ko'?'이 글에서':'On this page'}</strong><ol>${toc.map(t=>`<li><a href="#${t.id}">${t.title}</a></li>`).join('')}</ol></nav>` : ''}
 ${body}
 ${guideToolCards(g)}
 ${related(g)}

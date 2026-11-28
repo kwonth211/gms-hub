@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "work-gloves-buy-or-scroll",
+   "version": "0.7.92",
+   "level": "minor",
+   "date": "2026-11-28",
+   "path": "/guides/work-gloves-buy-or-scroll/",
+   "ko": "목장갑 직작 손익 — 공 6은 사는 게 싸요",
+   "en": "Work Gloves — buying 6 ATT costs less than scrolling",
+   "desc": {
+    "ko": "같은 크리티컬·물방 옵션으로 목장갑 매물을 모아 직작 비용과 공 4·6·8·10 가격을 계산했어요. 중급 5장의 결과 확률, 첫 실패 뒤 남는 목표, 가격 집계표까지 볼 수 있어요.",
+    "en": "A dated study of matched-option Work Gloves: crafting cost, 4/6/8/10 ATT prices, five-scroll odds and what a first failure leaves. Includes a downloadable price table."
+   }
+  },
+  {
    "id": "scan-stale-scale",
    "version": "0.7.91",
    "level": "patch",

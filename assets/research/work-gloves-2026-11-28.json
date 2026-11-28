@@ -1,0 +1,158 @@
+{
+  "date": "2026-11-28",
+  "capturedFrom": "2026-11-28T04:59:39.076Z",
+  "capturedTo": "2026-11-28T05:01:00.032Z",
+  "groups": [
+    {
+      "attack": 0,
+      "slots": 5,
+      "open": {
+        "n": 99,
+        "sellers": 85,
+        "low": 679999,
+        "median": 739999
+      },
+      "sold": {
+        "n": 98,
+        "sellers": 94,
+        "low": 95000,
+        "median": 699999
+      }
+    },
+    {
+      "attack": 2,
+      "slots": 0,
+      "open": {
+        "n": 2,
+        "sellers": 1,
+        "low": 488000,
+        "median": 489000
+      },
+      "sold": {
+        "n": 1,
+        "sellers": 1,
+        "low": 489999,
+        "median": 489999
+      }
+    },
+    {
+      "attack": 4,
+      "slots": 0,
+      "open": {
+        "n": 5,
+        "sellers": 5,
+        "low": 2099999,
+        "median": 2333333
+      },
+      "sold": {
+        "n": 10,
+        "sellers": 10,
+        "low": 1399999,
+        "median": 1964500
+      }
+    },
+    {
+      "attack": 6,
+      "slots": 0,
+      "open": {
+        "n": 7,
+        "sellers": 7,
+        "low": 4199999,
+        "median": 4888888
+      },
+      "sold": {
+        "n": 24,
+        "sellers": 24,
+        "low": 3888888,
+        "median": 4194999
+      }
+    },
+    {
+      "attack": 8,
+      "slots": 0,
+      "open": {
+        "n": 9,
+        "sellers": 8,
+        "low": 12700000,
+        "median": 13999999
+      },
+      "sold": {
+        "n": 5,
+        "sellers": 5,
+        "low": 10500000,
+        "median": 11000000
+      }
+    },
+    {
+      "attack": 10,
+      "slots": 0,
+      "open": {
+        "n": 5,
+        "sellers": 4,
+        "low": 33999999,
+        "median": 34999999
+      },
+      "sold": {
+        "n": 4,
+        "sellers": 4,
+        "low": 26499999,
+        "median": 28399999.5
+      }
+    }
+  ],
+  "scrolls": [
+    {
+      "id": 2040800,
+      "n": 12,
+      "sellers": 12,
+      "low": 605000,
+      "median": 649999.5
+    },
+    {
+      "id": 2040801,
+      "n": 431,
+      "sellers": 402,
+      "low": 1550000,
+      "median": 1820000
+    }
+  ],
+  "cost": 9839999,
+  "lowCost": 8429999,
+  "lesserCost": 3989996.5,
+  "outcomes": [
+    {
+      "passes": 0,
+      "attack": 0,
+      "probability": 0.010240000000000004
+    },
+    {
+      "passes": 1,
+      "attack": 2,
+      "probability": 0.07680000000000002
+    },
+    {
+      "passes": 2,
+      "attack": 4,
+      "probability": 0.23040000000000002
+    },
+    {
+      "passes": 3,
+      "attack": 6,
+      "probability": 0.3456
+    },
+    {
+      "passes": 4,
+      "attack": 8,
+      "probability": 0.25919999999999993
+    },
+    {
+      "passes": 5,
+      "attack": 10,
+      "probability": 0.07776
+    }
+  ],
+  "atLeast6": 0.6825600000000001,
+  "atLeast8": 0.3369599999999999,
+  "fivePiecesCost": 49199995,
+  "tenAttackInFive": 0.3328557089525601
+}
