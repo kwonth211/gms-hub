@@ -259,14 +259,17 @@ export async function browseListings(env, p) {
     args.push(JSON.stringify(ids));
   }
   const seller = p.get("seller") || "";
+  // A clicked seller name arrives with the stored spelling, so "seller = ?" walks the (seller, …) unique index and reads a
+  // few rows; only when that finds nothing is it asked again ignoring case. COLLATE NOCASE and LIKE cannot use the index
+  // and read the whole window (2026-11-28 D1 insights: ~105k rows per click, 575k for a 7-day partial search), so a
+  // partial name search looks at the last two days only.
+  let sellerAt = -1;
   if (seller) {
     if (!/^[A-Za-z0-9]{1,13}$/.test(seller)) throw Error("bad seller");
-    where.push(
-      p.get("exact") === "1"
-        ? "seller = ? COLLATE NOCASE"
-        : "seller LIKE ? ESCAPE '\\'",
-    );
+    sellerAt = where.length;
+    where.push(p.get("exact") === "1" ? "seller = ?" : "seller LIKE ? ESCAPE '\\'");
     args.push(p.get("exact") === "1" ? seller : "%" + seller + "%");
+    if (p.get("exact") !== "1" && args[0] < stamp(now - 2 * DAY)) args[0] = stamp(now - 2 * DAY);
   }
   for (const [key, op] of [
     ["min", ">="],
@@ -294,7 +297,8 @@ export async function browseListings(env, p) {
       args.push(path, value);
     }
   }
-  const sqlWhere = where.join(" AND "),
+  let sqlWhere = where.join(" AND ");
+  const
     order =
       sort === "price"
         ? "price ASC, last_seen DESC, id DESC"
@@ -313,13 +317,18 @@ export async function browseListings(env, p) {
   }
   if (!count) {
     count = await env.DB.prepare("SELECT COUNT(*) AS n FROM listings WHERE " + sqlWhere).bind(...args).first();
+    if (!count.n && sellerAt >= 0 && p.get("exact") === "1") {
+      where[sellerAt] = "seller = ? COLLATE NOCASE";
+      sqlWhere = where.join(" AND ");
+      count = await env.DB.prepare("SELECT COUNT(*) AS n FROM listings WHERE " + sqlWhere).bind(...args).first();
+    }
     if (plain) await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES (?,?,datetime('now'))").bind(countKey, JSON.stringify({ n: count.n })).run().catch(() => {});
   }
   const rows = await all(
     env,
     "SELECT id,item,price,qty,sold,seller,channel,room,first_seen AS firstSeen,last_seen AS seen,opts,gone_n AS goneN,gone_at AS goneAt FROM listings " +
       // Newest first walks the first_seen index from the top and stops after one page; with an item filter the item index is cheaper.
-      (sort === "recent" && !p.get("item") && !p.get("ids") ? "INDEXED BY listings_first " : "") +
+      (sort === "recent" && !p.get("item") && !p.get("ids") && sellerAt < 0 ? "INDEXED BY listings_first " : "") +
       "WHERE " +
       sqlWhere +
       " ORDER BY " +
