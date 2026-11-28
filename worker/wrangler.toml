@@ -3,7 +3,7 @@ main = "src/index.js"
 compatibility_date = "2026-10-01"
 
 # Short shop links with link previews: gms-hub.com/s/<name> (src/shop-preview.js). The rest of the site stays on Pages.
-routes = [{ pattern = "gms-hub.com/s/*", zone_name = "gms-hub.com" }, { pattern = "gms-hub.com/og/*", zone_name = "gms-hub.com" }, { pattern = "gms-hub.com/ads.txt", zone_name = "gms-hub.com" }]
+routes = [{ pattern = "gms-hub.com/s/*", zone_name = "gms-hub.com" }, { pattern = "gms-hub.com/og/*", zone_name = "gms-hub.com" }, { pattern = "gms-hub.com/ads.txt", zone_name = "gms-hub.com" }, { pattern = "gms-hub.com/zh/*", zone_name = "gms-hub.com" }, { pattern = "gms-hub.com/ja/*", zone_name = "gms-hub.com" }, { pattern = "gms-hub.com/zh", zone_name = "gms-hub.com" }, { pattern = "gms-hub.com/ja", zone_name = "gms-hub.com" }]
 # The API itself stays on workers.dev (pages call gms-hub-votes.kwonth211.workers.dev).
 workers_dev = true
 

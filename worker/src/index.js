@@ -1063,6 +1063,9 @@ export default {
   // The live viewer count is a WebSocket upgrade, so it skips the public response cache.
   fetch: async (req, env, ctx) => {
     const path = new URL(req.url).pathname;
+    // The zh/ja copies of the site were removed (2026-11-28): every old address goes to the same English page.
+    const lang = /^\/(zh|ja)(\/.*)?$/.exec(path);
+    if (lang && new URL(req.url).hostname === 'gms-hub.com') return Response.redirect(`https://gms-hub.com/en${lang[2] || '/'}`, 301);
     // Headless Chrome is refused on the public API, the same as the Cloudflare rule on gms-hub.com ("Block headless
     // browsers", 2026-11-17): a scraper in Israel was opening the market page hundreds of times a day. Checked here, ahead
     // of the public response cache. Our own collectors use the /internal/ paths with a token and are never refused.

@@ -62,7 +62,10 @@ for (const g of guides) {
 }
 const LANGS = ['ko', 'en'];
 // zh, ja… are not templated: each is the finished English page run through i18n/<code>.json (see scripts/i18n.mjs).
-const LOCALES = loadLocales(root);
+// zh and ja are no longer built (owner 2026-11-28, after the AdSense rejection): their half-translated pages were a quarter of
+// the noindex pages near the home. The worker sends /zh/* and /ja/* to the same English page (worker/src/index.js).
+// loadLocales(root) brings them back.
+const LOCALES = [];
 const ALL_LANGS = [...LANGS, ...LOCALES.map((l) => l.code)];
 const HREFLANG = { ko: 'ko', en: 'en', ...Object.fromEntries(LOCALES.map((l) => [l.code, l.hreflang])) };
 // Korean and English pages offer only Korean and English in the language menu (owner, 2026-11-26, AdSense review): the

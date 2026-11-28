@@ -12,7 +12,7 @@ const guides = JSON.parse(read('data/guides.json')).guides;
 execFileSync(process.execPath,['scripts/build.mjs'],{cwd:root});
 
 test('consent initialization precedes both async Google tags and config on indexed and noindex pages', () => {
-  for (const lang of ['ko','en','ja','zh']) {
+  for (const lang of ['ko','en']) {
     const html=read(`dist/${lang}/index.html`);
     const consent=html.indexOf("w.gtag('consent', 'default'");
     assert.ok(consent>0 && consent<html.indexOf('https://www.googletagmanager.com/gtag/js'));
@@ -43,7 +43,7 @@ test('market discovery links reach item pages and compact price labels preserve 
 });
 
 test('versioned product telemetry loads before all feature scripts in every locale', () => {
-  for (const lang of ['ko', 'en', 'ja', 'zh']) {
+  for (const lang of ['ko', 'en']) {
     const html = read(`dist/${lang}/index.html`);
     const analytics = html.indexOf('/assets/analytics.js?v=');
     assert.ok(analytics > 0);
@@ -54,7 +54,7 @@ test('versioned product telemetry loads before all feature scripts in every loca
 });
 
 test('discovery shortcuts preserve locale, usable destinations and existing section order', () => {
-  for (const lang of ['ko', 'en', 'ja', 'zh']) {
+  for (const lang of ['ko', 'en']) {
     const html = read(`dist/${lang}/index.html`);
     assert.ok(html.includes('href="#my-char"'));
     assert.ok(html.includes(`href="/${lang}/tools/market/?fav=1"`));
@@ -256,7 +256,7 @@ test('site review fixes: localized route links, unique monster titles, honest pr
 test('one training page filters by class; old class URLs forward to it and leave the sitemap',()=>{
   const sitemap=read('dist/sitemap.xml');
   assert.ok(!sitemap.includes('/tools/training/class/'));
-  for(const lang of ['ko','en','zh','ja']) for(const [slug,job] of [['warrior','warrior'],['bowman','archer'],['hunter','hunter'],['ice-lightning','ice'],['spearman','spear'],['bandit','bandit']]){
+  for(const lang of ['ko','en']) for(const [slug,job] of [['warrior','warrior'],['bowman','archer'],['hunter','hunter'],['ice-lightning','ice'],['spearman','spear'],['bandit','bandit']]){
     const html=read(`dist/${lang}/tools/training/class/${slug}/index.html`);
     assert.ok(html.includes(`<link rel="canonical" href="https://gms-hub.com/${lang}/tools/training/">`),`${lang} ${slug} canonical`);
     assert.ok(html.includes(`/${lang}/tools/training/?job=${job}`),`${lang} ${slug} forward`);
@@ -294,7 +294,6 @@ test('monster drops get item database pages with droppers, farm maps and stats',
   const sm=read('dist/sitemap.xml'), inSm=(sm.match(/<loc>[^<]*\/en\/items\/\d+-/g)||[]).length;
   assert.ok(inSm<=keep.size,`sitemap lists ${inSm} English item pages`);
   // Map names are proper names: derived locales keep them as written instead of minting a translation key per map.
-  assert.ok(read('dist/ja/items/1002003-red-headband/index.html').includes('translate="no"'));
   const ko=read('dist/ko/items/1002003-red-headband/index.html');
   // Same as the English title: a live listing in CI puts the price first.
   assert.match(ko,/<title>[^<]*빨간색 머리띠[^<]*(드랍 몬스터|시세|메소)/);
@@ -387,7 +386,7 @@ test('my-shop was folded into the scan page: old links redirect there and nothin
 });
 
 test('root and localized share cards resolve to current, correctly sized artwork in every language', () => {
-  for (const lang of ['ko', 'en', 'zh', 'ja']) {
+  for (const lang of ['ko', 'en']) {
     for (const page of [`${lang}/index.html`, `${lang}/tools/market/index.html`, ...(lang === 'en' ? ['index.html'] : [])]) {
       const html = read(`dist/${page}`);
       const og = /<meta property="og:image" content="([^"]+)"/.exec(html)?.[1];
@@ -420,7 +419,7 @@ test('the More menu links the site directory (owner request)', () => {
 });
 
 test('every page has the optional Discord login button and loads the account script (owner, 2026-11-21)', () => {
-  for (const f of ['dist/ko/index.html', 'dist/en/tools/market/index.html', 'dist/ja/index.html', 'dist/zh/index.html', 'dist/ko/quests/pia/index.html']) {
+  for (const f of ['dist/ko/index.html', 'dist/en/tools/market/index.html', 'dist/ko/quests/pia/index.html']) {
     const html = read(f);
     assert.match(html, /<div class="acct" data-acct hidden/, f);
     assert.match(html, /\/assets\/account\.js\?v=/, f);
