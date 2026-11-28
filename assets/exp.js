@@ -7,6 +7,8 @@ import { toolReport } from './tool-report.js';
 import { xlsx } from './xlsx.js';
 import { jobNames } from './training-evidence.js';
 import { loadChar, saveChar } from './my-char.js';
+import { createHuntLedger } from './hunt-ledger-ui.js';
+import { savedSettlement } from './hunt-ledger.js';
 
 const D = JSON.parse(document.getElementById('exp-data').textContent);
 const t = D.t;
@@ -31,6 +33,7 @@ let stream = null, video = null, timer = null, reading = false, pending = null, 
 let mobs = null;
 let demoOn = false, realSession = null, pipWin = null, lastGainAt = 0, stallWarned = false;
 let log = loadLog();
+let huntLedger = null;
 // Glyphs learned by OCR before 2026-11-19 could be wrong guesses (the 7 was misread), so they start over once.
 const learned = new Map(session.learnedV === 2 ? Object.entries(session.learned || {}) : []);
 session.learnedV = 2;
@@ -38,8 +41,8 @@ session.learnedV = 2;
 function fresh() { return { samples: [], startedAt: null, mob: null, learned: {}, skipIdle: true }; }
 function load() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && Array.isArray(s.samples) ? s : null; } catch { return null; } }
 function loadLog() { try { const l = JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); return Array.isArray(l) ? l : []; } catch { return []; } }
-function saveLog() { try { localStorage.setItem(LOG_KEY, JSON.stringify(log.slice(0, 100))); } catch {} }
-function save() { if (demoOn) return; session.learned = Object.fromEntries(learned); try { localStorage.setItem(KEY, JSON.stringify(session)); } catch {} }
+function saveLog() { try { localStorage.setItem(LOG_KEY, JSON.stringify(log.slice(0, 100))); return true; } catch { return false; } }
+function save() { if (demoOn) return false; session.learned = Object.fromEntries(learned); try { localStorage.setItem(KEY, JSON.stringify(session)); return true; } catch { return false; } }
 
 // ---------- reading ----------
 let ocrWorker = null;
@@ -121,6 +124,7 @@ function saveMe() {
   try { localStorage.setItem(ME_KEY, JSON.stringify({ ...m, pickLevel: $('exp-lv').value, pickJob: $('exp-job').value, auto })); } catch {}
   if (m.level && m.job) saveChar({ lv: m.level, job: m.job });
   showMe();
+  huntLedger?.refresh();
 }
 const families2 = { fighter: 'warrior', page: 'warrior', spear: 'warrior', hunter: 'archer', crossbow: 'archer', fire: 'mage', ice: 'mage', cleric: 'mage', assassin: 'thief', bandit: 'thief' };
 
@@ -266,6 +270,7 @@ async function start() {
   lastGainAt = Date.now(); stallWarned = false;
   timer = setInterval(tick, TICK_MS);
   setTimeout(tick, 800);
+  huntLedger?.refresh();
 }
 
 function stop() {
@@ -286,16 +291,21 @@ function stop() {
 // ---------- training log ----------
 // A finished session (3+ active minutes with EXP gained) is kept: date, time, rates, monster and the spot note. Stopping
 // twice updates the same row instead of adding another.
+function currentHuntRow() {
+  const last = session.samples.at(-1);
+  const s = last && summarize(session.samples, { now: last.t, skipIdle: session.skipIdle });
+  if (!s) return null;
+  return { id: session.samples[0].t, at: last.t, mins: Math.round(s.active / 60000), perHour: Math.round(s.perHour || 0), pctPerHour: s.pctPerHour ? +s.pctPerHour.toFixed(1) : null,
+    gained: s.gained, mob: session.mob ? { id: session.mob.id, name: session.mob.name } : null, spot: session.spot || '', route: session.route || null,
+    durationMs: last.t - session.samples[0].t, activeMs: s.active, ...me() };
+}
 function keepInLog() {
   if (demoOn) return;
-  const s = summarize(session.samples, { skipIdle: session.skipIdle });
-  if (!s || s.active < 180000 || !s.gained || !s.perHour) return;
-  const row = { id: session.samples[0].t, at: s.last.t, mins: Math.round(s.active / 60000), perHour: Math.round(s.perHour), pctPerHour: s.pctPerHour ? +s.pctPerHour.toFixed(1) : null,
-    gained: s.gained, mob: session.mob ? { id: session.mob.id, name: session.mob.name } : null, spot: session.spot || '', route: session.route || null, ...me() };
+  const row = currentHuntRow();
+  if (!row || row.activeMs < 180000 || !row.gained || !row.perHour) return;
   const i = log.findIndex((x) => x.id === row.id);
-  if (i >= 0) log[i] = { ...row, spot: log[i].spot || row.spot, shared: log[i].shared }; else log.unshift(row);
-  saveLog();
-  say(t.logged);
+  if (i >= 0) log[i] = { ...row, spot: log[i].spot || row.spot, shared: log[i].shared, ...(log[i].at === row.at && log[i].settlement ? { settlement: log[i].settlement } : {}) }; else log.unshift(row);
+  say(saveLog() ? t.logged : ko ? '브라우저 저장 공간이 부족해 기록을 저장하지 못했어요.' : 'Browser storage is full; the run could not be saved.');
   renderLog();
 }
 function bestFor(mob, exceptId) {
@@ -307,21 +317,24 @@ function renderLog() {
   const body = $('exp-log-body');
   const rows = demoOn ? demoLog() : log;
   const when = (ms) => new Date(ms).toLocaleString(D.lang, { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-  body.innerHTML = rows.map((x) => `<tr data-id="${x.id}"><td>${when(x.at)}</td><td>${dur(x.mins * 60000)}</td><td><b>${big(x.perHour)}</b></td><td>${x.pctPerHour != null ? `${x.pctPerHour}%` : '—'}</td><td>${big(x.gained)}</td><td>${x.mob ? escHtml(x.mob.name) : '—'}</td>
-<td><input class="exp-log-spot" value="${escHtml(x.spot || '')}" maxlength="60" aria-label="${escHtml(t.log.cols[6])}"${demoOn ? ' disabled' : ''}></td><td><div class="exp-log-acts">${x.shared ? `<span class="exp-shared">${escHtml(t.log.shared)}</span>` : x.mins >= 10 && (x.mob || x.route) ? `<button type="button" class="btn small-btn exp-share"${demoOn ? ' disabled' : ''}>${escHtml(t.log.share)}</button>` : ''}<button type="button" class="btn ghost small-btn exp-log-del"${demoOn ? ' disabled' : ''}>${escHtml(t.log.del)}</button></div></td></tr>`).join('');
+  body.innerHTML = rows.map((x) => { const ledger = savedSettlement(x); return `<tr data-id="${x.id}"><td>${when(x.at)}</td><td>${dur(x.mins * 60000)}</td><td><b>${big(x.perHour)}</b></td><td>${x.pctPerHour != null ? `${x.pctPerHour}%` : '—'}</td><td>${big(x.gained)}</td><td>${x.mob ? escHtml(x.mob.name) : '—'}</td><td>${ledger ? `<b>${big(ledger.net)}</b><small class="hl-log-rate">${big(ledger.perHour)}${ko ? '/시간' : '/h'}</small>` : '—'}${x.durationMs > 0 && !demoOn ? `<button type="button" class="btn ghost small-btn" data-settle="${x.id}">${ko ? '정산' : 'Settle'}</button>` : ''}</td>
+<td><input class="exp-log-spot" value="${escHtml(x.spot || '')}" maxlength="60" aria-label="${ko ? '사냥터 메모' : 'Spot note'}"${demoOn ? ' disabled' : ''}></td><td><div class="exp-log-acts">${x.shared ? `<span class="exp-shared">${escHtml(t.log.shared)}</span>` : x.mins >= 10 && (x.mob || x.route) ? `<button type="button" class="btn small-btn exp-share"${demoOn ? ' disabled' : ''}>${escHtml(t.log.share)}</button>` : ''}<button type="button" class="btn ghost small-btn exp-log-del"${demoOn ? ' disabled' : ''}>${escHtml(t.log.del)}</button></div></td></tr>`; }).join('');
   $('exp-log-empty').hidden = rows.length > 0;
   $('exp-log-clear').hidden = demoOn || !rows.length;
+  huntLedger?.refresh();
 }
 const escHtml = (v) => String(v).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
 function logWorkbook() {
   const L = (k, e) => (ko ? k : e);
-  const rows = (demoOn ? demoLog() : log).map((x) => [new Date(x.at).toLocaleString('sv-SE').slice(0, 16), x.mins, x.perHour, x.pctPerHour, x.gained, x.mob?.name || '', x.spot || '']);
+  const rows = (demoOn ? demoLog() : log).map((x) => { const ledger = savedSettlement(x); return [new Date(x.at).toLocaleString('sv-SE').slice(0, 16), x.mins, x.perHour, x.pctPerHour, x.gained, x.mob?.name || '', x.spot || '',
+    ledger?.earned ?? null, ledger?.supplyCost ?? null, ledger?.net ?? null, ledger ? Math.round(ledger.perHour) : null, x.durationMs ? +(x.durationMs / 60000).toFixed(2) : null, x.settlement?.input?.gear || '']; });
   const byMob = new Map();
   for (const x of demoOn ? demoLog() : log) { if (!x.mob) continue; const e = byMob.get(x.mob.name) || byMob.set(x.mob.name, { n: 0, mins: 0, best: 0, sum: 0 }).get(x.mob.name); e.n++; e.mins += x.mins; e.best = Math.max(e.best, x.perHour); e.sum += x.perHour * x.mins; }
   return xlsx({ title: 'GMS Hub', sheets: [
     { name: L('사냥 기록', 'Training log'), title: L('내 사냥 기록', 'My training log'), note: `GMS Hub ${L('경험치 측정기', 'EXP tracker')} · ${new Date().toLocaleDateString('sv-SE')}`,
-      cols: [{ h: L('날짜', 'Date') }, { h: L('측정 시간(분)', 'Minutes'), t: 'int' }, { h: L('시간당 경험치', 'EXP per hour'), t: 'int' }, { h: L('시간당 %', '% per hour'), t: 'num' }, { h: L('얻은 경험치', 'EXP gained'), t: 'int' }, { h: L('몬스터', 'Monster') }, { h: L('사냥터 메모', 'Spot note'), t: 'wrap' }], rows },
+      cols: [{ h: L('날짜', 'Date') }, { h: L('측정 시간(분)', 'Minutes'), t: 'int' }, { h: L('시간당 경험치', 'EXP per hour'), t: 'int' }, { h: L('시간당 %', '% per hour'), t: 'num' }, { h: L('얻은 경험치', 'EXP gained'), t: 'int' }, { h: L('몬스터', 'Monster') }, { h: L('사냥터 메모', 'Spot note'), t: 'wrap' },
+        { h: L('사냥 수입', 'Hunt income'), t: 'int' }, { h: L('소모품값', 'Supply cost'), t: 'int' }, { h: L('순수익', 'Net mesos'), t: 'int' }, { h: L('시간당 순수익', 'Net mesos/h'), t: 'int' }, { h: L('휴식 포함 시간(분)', 'Elapsed minutes'), t: 'num' }, { h: L('장비·버프', 'Gear and buffs'), t: 'wrap' }], rows },
     { name: L('몬스터별 정리', 'By monster'), title: L('몬스터별 내 효율', 'My rates by monster'), note: L('평균은 측정 시간으로 가중한 값이에요.', 'Averages are weighted by time.'),
       cols: [{ h: L('몬스터', 'Monster') }, { h: L('측정 횟수', 'Sessions'), t: 'int' }, { h: L('총 시간(분)', 'Minutes'), t: 'int' }, { h: L('평균 시간당 경험치', 'Average EXP/h'), t: 'int' }, { h: L('최고 시간당 경험치', 'Best EXP/h'), t: 'int' }],
       rows: [...byMob].map(([name, e]) => [name, e.n, e.mins, Math.round(e.sum / Math.max(1, e.mins)), e.best]).sort((a, b) => b[4] - a[4]) }
@@ -369,6 +382,7 @@ function render() {
   renderMob(s);
   renderChart();
   $('exp-empty').hidden = session.samples.length > 0;
+  huntLedger?.refresh();
 }
 
 let community = null;
@@ -480,12 +494,16 @@ ${row(t.stats.recent, rs?.perHour != null ? big(rs.perHour) : '—')}${row(t.sta
 $('exp-pip').addEventListener('click', openPip);
 $('exp-demo').addEventListener('click', toggleDemo);
 $('exp-spot').value = session.spot || '';
-$('exp-spot').addEventListener('change', (e) => { session.spot = e.target.value.trim(); save(); });
+$('exp-spot').addEventListener('change', (e) => { session.spot = e.target.value.trim(); save(); huntLedger?.refresh(); });
 $('exp-alert').checked = !!session.alert;
 $('exp-alert').addEventListener('change', (e) => { session.alert = e.target.checked; save(); if (e.target.checked) beep(); });
 $('exp-log-body').addEventListener('change', (e) => {
   const inp = e.target.closest('.exp-log-spot'); if (!inp || demoOn) return;
-  const row = log.find((x) => String(x.id) === inp.closest('tr').dataset.id); if (row) { row.spot = inp.value.trim(); saveLog(); }
+  const row = log.find((x) => String(x.id) === inp.closest('tr').dataset.id); if (row) {
+    row.spot = inp.value.trim(); saveLog();
+    if (row.id === session.samples[0]?.t) { session.spot = row.spot; $('exp-spot').value = row.spot; save(); }
+    huntLedger?.refresh();
+  }
 });
 $('exp-log-body').addEventListener('click', (e) => {
   const b = e.target.closest('.exp-log-del'); if (!b || demoOn) return;
@@ -588,5 +606,10 @@ if (demo) {
   im.onload = () => { const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const g = c.getContext('2d'); g.drawImage(im, 0, 0); const img = g.getImageData(0, 0, c.width, c.height); readOnce(img).then((r) => { pending = r; accept(r); }); };
   im.src = demo;
 }
+huntLedger = createHuntLedger({ ko, session: () => session, currentRow: currentHuntRow, person: me, rows: () => log,
+  demo: () => demoOn, running: () => !!stream, persistSession: save, redrawLog: renderLog,
+  persistRows: next => { const previous = log; log = next.slice(0, 100); if (saveLog()) return true; log = previous; return false; } });
+addEventListener('storage', e => { if (e.key === LOG_KEY || e.key === null) { log = loadLog(); renderLog(); } });
+addEventListener('gms-account-sync', () => { log = loadLog(); renderLog(); });
 render();
 renderLog();

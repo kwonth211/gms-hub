@@ -24,6 +24,7 @@ import { loadLocales, loadMemory, entityMatcher, localizePage, clientKeys, TX_RU
 import { SKILLS as DMG_SKILLS, windowRange as dmgWindow, hitRange as dmgHit, hitsToKill as dmgKill, accuracyNeeded as dmgAccNeed } from '../assets/damage-calc.js';
 import { indexEntry } from '../assets/search-index.js';
 import { newsInner } from '../assets/official-news.js';
+import { huntLedgerBody, huntRecommendationsBody } from './hunt-ledger.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const out = path.join(root, 'dist');
@@ -1588,7 +1589,7 @@ ${''/* Class filter as visible chips at the top (owner 2026-11-22): one list fil
 <button class="btn" type="submit">${tr('사냥터 찾기','Find routes')}</button>
 <label class="tr-check"><input name="advanced" type="checkbox">${tr('장비·명중이 갖춰져야 하는 사냥터도 보기','Also show maps that need gear or accuracy')}</label>
 <p class="tr-filter-help">${tr('표시된 레벨은 이 사냥터로 옮길 만한 구간이에요. 카드의 진입 기준부터 보세요.','The level shown is when a move to this map becomes possible. Read the card’s entry conditions first.')}</p>
-</form><div class="tr-result-head"><h2 id="tr-status" role="status">${tr('20레벨 사냥터','Maps for level 20')} ${initial.length}${tr('곳','')}</h2><div class="tr-result-actions"><button type="button" class="btn ghost small-btn" id="tr-share" data-ok="${tr('조건 링크를 복사했어요','Link copied')}" data-fail="${tr('복사하지 못했어요. 주소창의 주소를 직접 복사해 주세요.','Could not copy. Copy the address from the address bar.')}">${tr('이 조건 링크 복사','Copy link to these filters')}</button><span id="tr-share-status" class="share-status" role="status" aria-live="polite"></span><a href="${href(langPath(lang,'/guides/choose-your-job/'))}">${tr('직업별 육성 가이드','Class guides')}</a></div></div>
+</form>${huntRecommendationsBody(lang, true)}<div class="tr-result-head"><h2 id="tr-status" role="status">${tr('20레벨 사냥터','Maps for level 20')} ${initial.length}${tr('곳','')}</h2><div class="tr-result-actions"><button type="button" class="btn ghost small-btn" id="tr-share" data-ok="${tr('조건 링크를 복사했어요','Link copied')}" data-fail="${tr('복사하지 못했어요. 주소창의 주소를 직접 복사해 주세요.','Could not copy. Copy the address from the address bar.')}">${tr('이 조건 링크 복사','Copy link to these filters')}</button><span id="tr-share-status" class="share-status" role="status" aria-live="polite"></span><a href="${href(langPath(lang,'/guides/choose-your-job/'))}">${tr('직업별 육성 가이드','Class guides')}</a></div></div>
 <section id="tr-result">${routeCards(initial,lang)}</section><noscript><p>${tr('조건 검색에는 JavaScript가 필요해요. 아래 레벨별 페이지에서 전체 경로를 볼 수 있어요.','Filters require JavaScript. Browse the level-band pages below for all routes.')}</p></noscript>
 ${ratesTable(lang)}${bandNav(lang)}${trainingMethod(lang)}</div>${jsonScript('training-data',publicTrainingData(training))}`;
 }
@@ -1853,7 +1854,7 @@ const EXP = {
     demo: '예시로 먼저 보기', demoOff: '예시 끄기', demoNote: '예시 화면이에요. 40분 동안 사냥한 기록을 넣어 봤어요. 실제로 재려면 위의 시작 버튼을 누르세요.',
     pip: '미니 창 띄우기', spotLabel: '사냥터 메모', spotPh: '예: 개미굴 2, 파티 3명', alertLabel: 'EXP가 3분 넘게 안 오르면 소리로 알리기',
     log: { heading: '사냥 기록', help: '정지하거나 새로 측정할 때 3분 넘게 잰 기록이 여기에 남아요. 같은 몬스터를 잰 기록 중 최고 기록과 나란히 보여 줘요. 이 브라우저에 저장되고, 디스코드로 로그인하면 다른 기기에서도 이어져요.',
-      cols: ['날짜', '측정 시간', '시간당 경험치', '시간당 %', '얻은 경험치', '몬스터', '사냥터 메모', ''], empty: '아직 남은 기록이 없어요.', del: '삭제', excel: '엑셀로 받기', clear: '기록 전체 삭제', clearAsk: '사냥 기록을 모두 지울까요?',
+      cols: ['날짜', '측정 시간', '시간당 경험치', '시간당 %', '얻은 경험치', '몬스터', '정산 메소', '사냥터 메모', ''], empty: '아직 남은 기록이 없어요.', del: '삭제', excel: '엑셀로 받기', clear: '기록 전체 삭제', clearAsk: '사냥 기록을 모두 지울까요?',
       share: '사냥터 순위에 보태기', shared: '보탰어요 ✓', shareNeed: '레벨과 직업을 먼저 넣어 주세요.', shareOk: '보태 주셔서 고마워요! 같은 곳 기록이 3명 넘게 모이면 사냥터 추천에 유저 실측으로 나와요.', shareFail: '지금은 보낼 수 없어요. 잠시 뒤 다시 눌러 주세요.' },
     me: { heading: '레벨·직업', auto: '자동 인식', lv: '레벨', job: '직업', party: '파티 인원', solo: '솔로', people: '{n}명', help: '안 읽히면 직접 고르세요. 고른 값이 먼저예요. 레벨 업을 하면 고른 레벨도 1 올라가요. 사냥터 순위에 보탤 때 같이 올라가요.' },
     community: '다른 유저 {n}명 실측 중간값 {v}/시간',
@@ -1888,7 +1889,7 @@ const EXP = {
     demo: 'See an example first', demoOff: 'Close the example', demoNote: 'This is an example: 40 minutes of training. To measure your own, press start above.',
     pip: 'Pop-out mini window', spotLabel: 'Spot note', spotPh: 'e.g. Ant Tunnel 2, party of 3', alertLabel: 'Beep when EXP stops for 3 minutes',
     log: { heading: 'Training log', help: 'Sessions over 3 minutes are kept here when you stop or start a new one. Runs on the same monster are compared with your best. Saved in this browser; log in with Discord to keep it on your other devices too.',
-      cols: ['Date', 'Time', 'EXP per hour', '% per hour', 'EXP gained', 'Monster', 'Spot note', ''], empty: 'No sessions kept yet.', del: 'Delete', excel: 'Download Excel', clear: 'Clear the log', clearAsk: 'Delete the whole training log?',
+      cols: ['Date', 'Time', 'EXP per hour', '% per hour', 'EXP gained', 'Monster', 'Net mesos', 'Spot note', ''], empty: 'No sessions kept yet.', del: 'Delete', excel: 'Download Excel', clear: 'Clear the log', clearAsk: 'Delete the whole training log?',
       share: 'Add to spot rankings', shared: 'Added ✓', shareNeed: 'Enter your level and class first.', shareOk: 'Thanks! Once 3 or more players share the same spot, the training finder shows the measured rate.', shareFail: 'Could not send right now. Try again shortly.' },
     me: { heading: 'Level and job', auto: 'Auto-detect', lv: 'Level', job: 'Class', party: 'Party size', solo: 'Solo', people: '{n} players', help: 'Pick them yourself if they are not read. Your choice comes first, and a level-up raises the chosen level by 1. Sent along when you add a run to the rankings.' },
     community: 'Measured by {n} other players: median {v}/h',
@@ -1944,6 +1945,7 @@ function expBody(lang) {
 <button type="button" class="btn ghost small-btn" id="exp-reset" hidden>${esc(t.reset)}</button>
 </div>
 </section>
+${huntLedgerBody(lang)}
 <section class="panel exp-log"><h2 class="dl-head">${esc(t.log.heading)}<button type="button" class="dl-btn dl-btn-inline" id="exp-log-xl"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M10 3v9m0 0l-4-4m4 4l4-4M4 15h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>${esc(t.log.excel)}</span></button></h2>
 <p class="muted small">${esc(t.log.help)}</p>
 <div class="table-wrap"><table class="data exp-log-table"><thead><tr>${t.log.cols.map((c) => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody id="exp-log-body"></tbody></table></div>
@@ -3473,7 +3475,7 @@ for (const lang of LANGS) {
       title: t.trTitle,
       desc: t.trDesc,
       body: trainingBody(lang),
-      modules: ['training.js', 'exp-community.js'],
+      modules: ['training.js', 'exp-community.js', 'hunt-personal.js'],
       ld: [appLd(t.trH1, t.trDesc, '/tools/training/'), breadcrumbLd(lang, t.trH1, '/tools/training/')]
     },
     scroll: {

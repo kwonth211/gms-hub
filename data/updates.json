@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "hunt-settlement",
+   "version": "0.7.97",
+   "level": "minor",
+   "date": "2026-11-28",
+   "path": "/tools/exp/#hunt-ledger",
+   "ko": "사냥 정산 — 포션값 빼고 남은 메소",
+   "en": "Hunt settlement — earnings after supply costs",
+   "desc": {
+    "ko": "경험치 측정 결과 아래에서 정산을 펼쳐 시작·종료 메소와 사용한 포션을 적으세요. 사냥 기록에 순수익을 저장하고, 같은 직업·비슷한 레벨의 내 기록에서 경험치와 메소가 잘 나오는 사냥터를 따로 보여 줘요.",
+    "en": "Expand the settlement below your EXP results, enter wallet balances and supplies used, and save net earnings. Your settled runs show the best EXP and meso spots for your class and nearby levels."
+   }
+  },
+  {
    "id": "market-stories-home",
    "version": "0.7.96",
    "level": "patch",

@@ -9,6 +9,8 @@ const sites = JSON.parse(fs.readFileSync(new URL('../data/sites.json', import.me
 const tools = [indexEntry({ type: 'tool', id: 'scroll', title: '주문서 계산기', keywords: '공격력 scroll calculator' })];
 const results = (q) => searchEntries(items, q);
 const ids = (q) => results(q).map((it) => it.id);
+// Search once per assertion; do not rerun the entire search inside each Array.find iteration.
+const firstSource = (q) => { const id = results(q)[0]?.id; return sourceItems.find(it => it.id === id); };
 
 test('a site or tool match never suppresses item results', () => {
   const hits = searchEntries([...sites, ...tools, ...items], '주문서');
@@ -30,7 +32,7 @@ test('Korean stat synonyms and common scroll abbreviations find mixed-language n
   const magic = sourceItems.find((it) => it.en === 'Gloves Magic Attack Scroll: Intermediate');
   for (const query of ['장갑 공격력', '장갑공격력', '장공', '장공 중급']) assert.ok(ids(query).includes(physical.id), query);
   for (const query of ['장갑 마력', '장갑마법공격력', '장마 중급']) assert.ok(ids(query).includes(magic.id), query);
-  assert.ok(sourceItems.find((it) => it.id === results('장갑 공격력')[0].id).en.startsWith('Gloves Attack'));
+  assert.ok(firstSource('장갑 공격력').en.startsWith('Gloves Attack'));
   assert.ok(!ids('장공').includes(magic.id));
 });
 
@@ -54,7 +56,7 @@ test('exact names outrank descriptions and aliases can find a named site', () =>
 });
 
 test('gear + stat abbreviations players type find the scroll (귀힘, 창공, 망럭, 신이속, 폴공 중급)', () => {
-  const en = (q) => sourceItems.find((it) => it.id === results(q)[0]?.id)?.en || '';
+  const en = (q) => firstSource(q)?.en || '';
   assert.match(en('귀힘'), /^Earring STR Scroll/);
   assert.match(en('창공'), /^Spear Attack Scroll/);
   assert.match(en('창 공'), /^Spear Attack Scroll/);
@@ -82,12 +84,12 @@ test('공격 and 고급 work like the words players use for attack and Greater',
 });
 
 test('a short Latin query inside another word ranks below real word matches', () => {
-  const top = sourceItems.find((s) => s.id === results('mp')[0].id).en;
+  const top = firstSource('mp').en;
   assert.match(top, /\bMP\b/);
 });
 
 test('English shorthand finds scrolls and common item nicknames', () => {
-  const name = (q) => results(q)[0]?.title && sourceItems.find((it) => it.id === results(q)[0].id)?.en;
+  const name = (q) => firstSource(q)?.en;
   assert.equal(name('glove att 60'), 'Gloves Attack Scroll: Intermediate');
   assert.equal(name('gfa60'), 'Gloves Attack Scroll: Intermediate');
   assert.equal(name('GFA 10%'), 'Gloves Attack Scroll: Greater');
@@ -113,7 +115,7 @@ test('half-typed Korean and English-keyboard Korean still find items', async () 
 });
 
 test('failed market searches from 11/23: whole gear word + short stat, one slipped letter, loan words', () => {
-  const first = (q) => sourceItems.find((it) => it.id === ids(q)[0]);
+  const first = firstSource;
   const names = (q) => results(q).map((hit) => hit.title);
   assert.ok(first('아대공').en.startsWith('Claw Attack'));
   assert.ok(first('장갑공').en.startsWith('Gloves Attack'));

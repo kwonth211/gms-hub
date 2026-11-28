@@ -32,8 +32,8 @@ jobs:
       # The screen readers (EXP, stat window) are checked on every deploy, with their image decoder so nothing is skipped.
       - run: npm ci --ignore-scripts
         working-directory: scripts/scan-tools
-      - name: Verify the screen readers
-        run: node --test tests/exp-reader.test.mjs tests/exp-runs.test.mjs tests/stat-reader.test.mjs
+      - name: Verify screen readers and hunt settlements
+        run: node --test tests/exp-reader.test.mjs tests/exp-runs.test.mjs tests/stat-reader.test.mjs tests/hunt-ledger.test.mjs
       - run: npm ci --ignore-scripts
         working-directory: scripts/market-batch
       - run: npm test
