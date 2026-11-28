@@ -142,8 +142,7 @@ function useGroup(key, keepPrice) {
 async function choose(it, want = {}) {
   item = it;
   $('sl-start').hidden = true; $('sl-result').hidden = false;
-  const s = summary.get(it.id);
-  $('sl-item').innerHTML = `<span class="trd-item-ico">${icon(it.id, 48)}</span><div><h2>${esc(it.name)}</h2><p class="muted small">${s ? tr(`지금 매물 ${nf.format(s.open || 0)}개 · 7일 동안 팔린 매물 ${nf.format(s.sold || 0)}개`, `${nf.format(s.open || 0)} on sale · ${nf.format(s.sold || 0)} sold in 7 days`) : ''}</p></div>`;
+  $('sl-item').innerHTML = `<span class="trd-item-ico">${icon(it.id, 48)}</span><div><h2>${esc(it.name)}</h2><p class="muted small" id="sl-item-counts"></p></div>`;
   $('sl-market').href = `${root.dataset.market}?item=${it.id}`;
   for (const id of ['sl-verdict', 'sl-rank', 'sl-bars']) { $(id).innerHTML = ''; $(id).setAttribute('aria-busy', 'true'); }
   $('sl-advice').innerHTML = ''; $('sl-groups').hidden = true; $('sl-recent-panel').hidden = true; $('sl-presets').innerHTML = '';
@@ -160,6 +159,10 @@ async function choose(it, want = {}) {
   if (item !== it) return;
   all = uniqueListings(data.rows);
   openAll = uniqueListings(data.profile);
+  // Match the same deduplicated records used by the price bands and ranking below.
+  // Catalog totals have a separate aggregation window and are not this seven-day sample.
+  const sold = all.filter(r => r.sold).length;
+  $('sl-item-counts').textContent = tr(`현재 매물 ${nf.format(openAll.length)}건 · 최근 7일 불러온 기록 중 판매 완료 ${nf.format(sold)}건`, `${nf.format(openAll.length)} current listings · ${nf.format(sold)} marked sold in the loaded 7-day records`);
   groups = it.cat === 'Equip' ? optionGroups(all, it.sub || '') : [];
   const box = $('sl-groups');
   box.hidden = !groups.length;
