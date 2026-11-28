@@ -164,14 +164,19 @@ export async function marketCatalog(env) {
     .sort((a, b) => b.open - a.open || a.item - b.item);
   // The 30-day "ever recorded" id list only grows and scans the whole window, so it is kept six hours in snapshots
   // instead of being recomputed with every catalog refresh.
+  // The refresh asks item by item through the (item, last_seen) index and adds to the stored list (2026-11-28: the old
+  // DISTINCT over 30 days of listings read 1.26 million rows inside a /market/catalog request; this reads about 3,400).
+  // Items are never dropped, so the two rare ones whose only listings predate item_market stay listed.
   const kept = await env.DB.prepare("SELECT json, at FROM snapshots WHERE key = 'market-recorded'").first();
   let recorded = kept && Date.now() - Date.parse(`${kept.at.replace(" ", "T")}Z`) < 6 * 3600000 ? JSON.parse(kept.json) : null;
   if (!recorded) {
-    recorded = await all(
+    const found = await all(
       env,
-      "SELECT DISTINCT item FROM listings WHERE last_seen>=? UNION SELECT DISTINCT item FROM prices WHERE created_at>=?",
+      "SELECT m.item FROM item_market m WHERE EXISTS (SELECT 1 FROM listings l WHERE l.item = m.item AND l.last_seen >= ?) UNION SELECT DISTINCT item FROM prices WHERE created_at >= ?",
       [stamp(now - 30 * DAY), stamp(now - 30 * DAY)],
     );
+    const ids = new Set([...(kept ? JSON.parse(kept.json) : []), ...found].map((r) => r.item));
+    recorded = [...ids].sort((a, b) => a - b).map((item) => ({ item }));
     await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('market-recorded',?,datetime('now'))").bind(JSON.stringify(recorded)).run();
   }
   const fresh = new Set(sums.map((m) => m.item));
