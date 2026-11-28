@@ -170,8 +170,10 @@ async function readOnce(img) {
   }
   // The level comes about a minute in, so a run that reads well is reported once that had its chance.
   if (!everRead || Date.now() - runStartedAt > 75000) reportRun(false);
-  // A bar drawn this small cannot be read (the game draws it smaller in a smaller window): say what to change.
-  const small = !r && found.g.pitch / 108 < SMALL_SCALE;
+  // A bar drawn this small cannot be read (the game draws it smaller in a smaller window): say what to change. Between
+  // SMALL_SCALE and 0.78x a read is still tried and works about half the time, so a failed one there gets the same advice
+  // (2026-11-28: runs at 0.67x and 0.69x failed with only "숫자를 못 읽음", which says nothing about the fix).
+  const small = !r && found.g.pitch / 108 < 0.78;
   if (small) failNote = `small${failNote}`;
   check('read', r ? 'ok' : 'fail', r ? fill(t.readOk, { exp: nf.format(r.exp), pct: r.pct.toFixed(2) }) : small ? fill(t.readSmall, { k: (found.g.pitch / 108).toFixed(2) }) : fill(t.readFail, { text: '' }));
   return r;
