@@ -1095,7 +1095,7 @@ const NO_AD_PAGES = new Set(['about', 'bot', 'contact', 'scam']);
 // Pages written by the build from game or price data (item and monster detail pages, the look-up-elsewhere page) carry no
 // AdSense tag: Google's approval help says ad code must not sit on automatically generated pages or pages with little
 // content of their own (2026-11-23, after four rejections for "insufficient or low-quality content").
-// AdFit is off site-wide during the AdSense review (2026-11-26, owner): rename adfitOff back to adfit in site.config.json.
+// AdFit was off 2026-11-26 to 11-28 for the AdSense review; back on after the rejection (owner, 11/28). To switch it off: rename adfit to adfitOff in site.config.json.
 const NO_ADSENSE_PAGES = new Set(['item', 'monster', 'price', 'scam']);
 function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], modules = [], ld = [], only, noindex }) {
   // Indexed pages carry ads, except About, the Discord bot page and Contact/sponsorship. Pages kept out of search
