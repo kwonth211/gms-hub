@@ -261,15 +261,14 @@ export async function browseListings(env, p) {
   const seller = p.get("seller") || "";
   // A clicked seller name arrives with the stored spelling, so "seller = ?" walks the (seller, …) unique index and reads a
   // few rows; only when that finds nothing is it asked again ignoring case. COLLATE NOCASE and LIKE cannot use the index
-  // and read the whole window (2026-11-28 D1 insights: ~105k rows per click, 575k for a 7-day partial search), so a
-  // partial name search looks at the last two days only.
+  // and read the whole window (2026-11-28 D1 insights: ~105k rows per click). A typed partial name keeps its full window
+  // (575k rows for 7 days, about twice a week): narrowing it hid older listings in the 전체 기록 / 24시간 경과 views.
   let sellerAt = -1;
   if (seller) {
     if (!/^[A-Za-z0-9]{1,13}$/.test(seller)) throw Error("bad seller");
     sellerAt = where.length;
     where.push(p.get("exact") === "1" ? "seller = ?" : "seller LIKE ? ESCAPE '\\'");
     args.push(p.get("exact") === "1" ? seller : "%" + seller + "%");
-    if (p.get("exact") !== "1" && args[0] < stamp(now - 2 * DAY)) args[0] = stamp(now - 2 * DAY);
   }
   for (const [key, op] of [
     ["min", ">="],
