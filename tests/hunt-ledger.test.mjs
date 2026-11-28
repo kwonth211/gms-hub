@@ -63,6 +63,31 @@ test('the settlement is optional and collapsed, with hidden empty recommendation
     assert.match(html, /<details class="panel hunt-ledger" id="hunt-ledger">/);
     assert.match(html, /id="hunt-personal" hidden/);
     assert.match(huntRecommendationsBody(lang, true), /data-hunt-finder/);
-    for (const id of ['start', 'end', 'noPotions', 'purchased', 'otherIn', 'otherOut', 'soldAfter', 'save']) assert.ok(html.includes(`id="hl-${id}"`));
+    for (const id of ['start', 'end', 'noPotions', 'purchased', 'otherIn', 'otherOut', 'soldAfter']) assert.ok(html.includes(`id="hl-${id}"`));
   }
+});
+
+test('supply prices reject missing data instead of silently charging zero', async () => {
+  const { supplyQuote } = await import('../assets/hunt-supplies.js');
+  assert.deepEqual(supplyQuote({ median: 210 }), { price: 210, basis: 'market' });
+  assert.equal(supplyQuote({ median: null }), null);
+  assert.equal(supplyQuote({ median: 0 }), null);
+  assert.equal(supplyQuote({ median: -10 }), null);
+  assert.equal(supplyQuote({ median: Infinity }), null);
+  assert.equal(supplyQuote({ median: 350, basis: 'typical' }).basis, 'typical');
+});
+test('automatic contributions contain catalog IDs and numeric rates, never wallets or notes', async () => {
+  const { contribution } = await import('../assets/hunt-contribution.js');
+  const r = row(123456, { route: 'tree-slime', spot: 'private spot note', durationMs: 1200000, gained: 20000 });
+  const body = contribution(r, 'client-12345', 'ko');
+  assert.equal(body.perHour, 60000); assert.equal(body.netPerHour, 90000);
+  for (const key of ['start','end','potions','gear','spot','input','settlement']) assert.equal(key in body, false);
+  assert.equal(contribution({ ...r, route: null }, 'client-12345', 'ko'), null);
+  assert.equal(contribution({ ...r, durationMs: 599999 }, 'client-12345', 'ko'), null);
+  assert.equal(contribution({ ...r, settlement: null }, 'client-12345', 'ko').netPerHour, null);
+});
+test('supply search shows the traded potion instead of duplicate event copies', async () => {
+  const { supplyRows } = await import('../assets/hunt-supplies.js');
+  const rows = supplyRows([[2000008,'파란 포션','Blue Potion','Use','Potion',0,0],[2000003,'파란 포션','Blue Potion','Use','Potion',0,210],[2040001,'주문서','Scroll','Use','Scroll',0,100],[2000000,'빨간 포션','Red Potion','Use','Potion',0,0]]);
+  assert.deepEqual(rows.map(r=>r[0]),[2000003,2000000]);
 });

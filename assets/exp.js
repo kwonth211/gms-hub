@@ -8,6 +8,8 @@ import { xlsx } from './xlsx.js';
 import { jobNames } from './training-evidence.js';
 import { loadChar, saveChar } from './my-char.js';
 import { createHuntLedger } from './hunt-ledger-ui.js';
+import { fingerprint } from './account-sync.js';
+import { contribution } from './hunt-contribution.js';
 import { savedSettlement } from './hunt-ledger.js';
 
 const D = JSON.parse(document.getElementById('exp-data').textContent);
@@ -300,13 +302,15 @@ function currentHuntRow() {
     durationMs: last.t - session.samples[0].t, activeMs: s.active, ...me() };
 }
 function keepInLog() {
+  huntLedger?.flush();
   if (demoOn) return;
   const row = currentHuntRow();
   if (!row || row.activeMs < 180000 || !row.gained || !row.perHour) return;
   const i = log.findIndex((x) => x.id === row.id);
-  if (i >= 0) log[i] = { ...row, spot: log[i].spot || row.spot, shared: log[i].shared, ...(log[i].at === row.at && log[i].settlement ? { settlement: log[i].settlement } : {}) }; else log.unshift(row);
+  if (i >= 0) log[i] = { ...log[i], ...row, settlement: null, spot: log[i].spot || row.spot, shared: log[i].shared, ...(log[i].at === row.at && log[i].settlement ? { settlement: log[i].settlement } : {}) }; else log.unshift(row);
   say(saveLog() ? t.logged : ko ? '브라우저 저장 공간이 부족해 기록을 저장하지 못했어요.' : 'Browser storage is full; the run could not be saved.');
   renderLog();
+  if (!stream) queueContribution(log.find(x => x.id === row.id));
 }
 function bestFor(mob, exceptId) {
   if (!mob) return null;
@@ -318,7 +322,7 @@ function renderLog() {
   const rows = demoOn ? demoLog() : log;
   const when = (ms) => new Date(ms).toLocaleString(D.lang, { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' });
   body.innerHTML = rows.map((x) => { const ledger = savedSettlement(x); return `<tr data-id="${x.id}"><td>${when(x.at)}</td><td>${dur(x.mins * 60000)}</td><td><b>${big(x.perHour)}</b></td><td>${x.pctPerHour != null ? `${x.pctPerHour}%` : '—'}</td><td>${big(x.gained)}</td><td>${x.mob ? escHtml(x.mob.name) : '—'}</td><td>${ledger ? `<b>${big(ledger.net)}</b><small class="hl-log-rate">${big(ledger.perHour)}${ko ? '/시간' : '/h'}</small>` : '—'}${x.durationMs > 0 && !demoOn ? `<button type="button" class="btn ghost small-btn" data-settle="${x.id}">${ko ? '정산' : 'Settle'}</button>` : ''}</td>
-<td><input class="exp-log-spot" value="${escHtml(x.spot || '')}" maxlength="60" aria-label="${ko ? '사냥터 메모' : 'Spot note'}"${demoOn ? ' disabled' : ''}></td><td><div class="exp-log-acts">${x.shared ? `<span class="exp-shared">${escHtml(t.log.shared)}</span>` : x.mins >= 10 && (x.mob || x.route) ? `<button type="button" class="btn small-btn exp-share"${demoOn ? ' disabled' : ''}>${escHtml(t.log.share)}</button>` : ''}<button type="button" class="btn ghost small-btn exp-log-del"${demoOn ? ' disabled' : ''}>${escHtml(t.log.del)}</button></div></td></tr>`; }).join('');
+<td><input class="exp-log-spot" value="${escHtml(x.spot || '')}" maxlength="60" aria-label="${ko ? '사냥터 메모' : 'Spot note'}"${demoOn ? ' disabled' : ''}></td><td><div class="exp-log-acts">${x.route && x.durationMs >= 600000 ? `<span class="exp-shared">${x.autoShared ? (ko ? '통계 반영 ✓' : 'Stats sent ✓') : (ko ? '자동 집계' : 'Automatic stats')}</span>` : ''}<button type="button" class="btn ghost small-btn exp-log-del"${demoOn ? ' disabled' : ''}>${escHtml(t.log.del)}</button></div></td></tr>`; }).join('');
   $('exp-log-empty').hidden = rows.length > 0;
   $('exp-log-clear').hidden = demoOn || !rows.length;
   huntLedger?.refresh();
@@ -538,38 +542,57 @@ function clientId() {
   for (const id of ['exp-lv', 'exp-job', 'exp-party']) $(id).addEventListener('change', saveMe);
   if (auto.level || auto.job || $('exp-lv').value || $('exp-job').value) showMe();
 }
-$('exp-log-body').addEventListener('click', async (e) => {
-  const b = e.target.closest('.exp-share'); if (!b || demoOn) return;
-  const row = log.find((x) => String(x.id) === b.closest('tr').dataset.id); if (!row) return;
-  const m = me();
-  const level = row.level || m.level, job = row.job || m.job, party = row.party || m.party;
-  if (!level || !job) { say(t.log.shareNeed); $(level ? 'exp-job' : 'exp-lv').focus(); return; }
-  b.disabled = true;
-  try {
-    const r = await fetch(`${API}/exp-runs`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ client: clientId(), run: `r${row.id}`, mob: row.mob?.id ?? null, route: row.route || null, level, job, party, minutes: row.mins, perHour: row.perHour, lang: D.lang }) });
-    if (!r.ok) throw new Error(String(r.status));
-    row.shared = true; row.level = level; row.job = job; row.party = party; saveLog(); renderLog();
-    say(t.log.shareOk);
-    track('exp_share', { minutes: row.mins });
-  } catch { b.disabled = false; say(t.log.shareFail); }
-});
+const contributionTimers = new Map();
+function queueContribution(row) {
+  if (demoOn || !row) return;
+  row.autoPending = true; saveLog();
+  clearTimeout(contributionTimers.get(row.id));
+  contributionTimers.set(row.id, setTimeout(async () => {
+    contributionTimers.delete(row.id);
+    const latest = log.find(r => r.id === row.id);
+    const body = contribution(latest, clientId(), D.lang);
+    if (!body) return;
+    const signature = JSON.stringify(body), digest = fingerprint(signature);
+    if (latest.autoShared === digest) { latest.autoPending = false; saveLog(); return; }
+    try {
+      const r = await fetch(`${API}/exp-runs`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(globalThis.gmsAuth?.() || {}) }, body: signature });
+      if (!r.ok) throw Error();
+      const current = log.find(r => r.id === row.id);
+      if (current && JSON.stringify(contribution(current, clientId(), D.lang)) === signature) { current.autoShared = digest; current.autoPending = false; saveLog(); renderLog(); }
+    } catch { /* Keep the local run; retry on the next edit or visit. */ }
+  }, 1200));
+}
 fetch(`${API}/exp-runs/summary`).then((r) => (r.ok ? r.json() : null)).then((d) => { community = d; render(); }).catch(() => {});
 
-// Arriving from a training spot (?route=<id>&mob=<id>&spot=<name>): that monster and spot are filled in for this session.
+// A route change closes the previous run first; a new link never relabels recorded EXP.
+function chooseRoute(route, spot) {
+  if (!D.routes.some(r => r.id === route)) return;
+  if (session.route !== route && session.samples.length) {
+    if (stream) stop(); else keepInLog();
+    session = { ...fresh(), alert: session.alert };
+  }
+  session.route = route;
+  session.spot = spot || D.routes.find(r => r.id === route).title[D.lang];
+  $('exp-route').value = route; $('exp-spot').value = session.spot;
+  save(); render();
+}
+$('exp-route').value = session.route || '';
+$('exp-route').addEventListener('change', e => {
+  if (demoOn) { e.target.value = session.route || ''; return; }
+  if (e.target.value) chooseRoute(e.target.value);
+  else { if (session.samples.length) { if (stream) stop(); else keepInLog(); session = { ...fresh(), alert: session.alert }; } session.route = null; $('exp-spot').value = session.spot || ''; save(); render(); }
+});
 const qs = new URLSearchParams(location.search);
-if (qs.get('mob') || qs.get('spot') || qs.get('route')) {
-  if (qs.get('spot')) { session.spot = qs.get('spot').slice(0, 60); $('exp-spot').value = session.spot; }
-  if (/^[a-z0-9-]{1,60}$/.test(qs.get('route') || '')) session.route = qs.get('route');
-  if (qs.get('mob')) loadMobs().then((list) => { const m = list.find((x) => String(x.id) === qs.get('mob')); if (m) { session.mob = m; $('exp-mob').value = m.name; } save(); render(); });
-  save();
+if (qs.get('route') && D.routes.some(r => r.id === qs.get('route'))) {
+  if (session.route !== qs.get('route') || !session.samples.length) chooseRoute(qs.get('route'), qs.get('spot')?.slice(0, 60));
+  if (!session.samples.length && qs.get('mob')) loadMobs().then(list => { const m = list.find(x => String(x.id) === qs.get('mob')); if (m && !session.samples.length) { session.mob = m; $('exp-mob').value = m.name; save(); render(); } });
 }
 $('exp-start').addEventListener('click', start);
 $('exp-stop').addEventListener('click', stop);
 $('exp-reset').addEventListener('click', () => {
   if (!confirm(t.resetAsk)) return;
   keepInLog();
-  const keep = { spot: session.spot, alert: session.alert, mob: session.mob };
+  const keep = { route: session.route, spot: session.spot, alert: session.alert, mob: session.mob };
   session = { ...fresh(), ...keep };
   pending = null;
   save();
@@ -597,6 +620,7 @@ $('exp-manual').addEventListener('submit', (e) => {
   say(first ? t.manualFirstOk : t.manualOk);
   $('exp-m-exp').value = ''; $('exp-m-pct').value = '';
   track('exp_manual');
+  keepInLog();
 });
 if (!navigator.mediaDevices?.getDisplayMedia) { $('exp-start').disabled = true; say(t.unsupported); }
 // Development: ?frame=<image url> on localhost reads that picture instead of the screen, to try the page without a game.
@@ -608,8 +632,12 @@ if (demo) {
 }
 huntLedger = createHuntLedger({ ko, session: () => session, currentRow: currentHuntRow, person: me, rows: () => log,
   demo: () => demoOn, running: () => !!stream, persistSession: save, redrawLog: renderLog,
+  onSaved: queueContribution, itemsUrl: D.itemsUrl, api: API,
   persistRows: next => { const previous = log; log = next.slice(0, 100); if (saveLog()) return true; log = previous; return false; } });
 addEventListener('storage', e => { if (e.key === LOG_KEY || e.key === null) { log = loadLog(); renderLog(); } });
 addEventListener('gms-account-sync', () => { log = loadLog(); renderLog(); });
 render();
 renderLog();
+
+for (const row of log) if (row.autoPending) queueContribution(row);
+addEventListener('online', () => { for (const row of log) if (row.autoPending) queueContribution(row); });

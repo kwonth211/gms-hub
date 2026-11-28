@@ -12,7 +12,7 @@ ${input('start', L('사냥 시작 메소', 'Starting wallet'), 'required')}${inp
 <label>${L('장비·버프 메모', 'Gear and buffs')}<input id="hl-gear" name="gear" type="text" maxlength="100" placeholder="${L('예: 공 6 장갑 · 공버프 없음', 'e.g. 6 ATT gloves, no attack buff')}"></label>
 </div>
 <h3>${L('사용한 포션·소모품', 'Supplies used')}</h3>
-<p class="muted small">${L('사용 개수 × 개당 가격을 비용으로 빼요. 충전비도 개수를 1로 적어 넣으세요.', 'Cost is quantity used × unit price. For a recharge fee, use a quantity of 1.')}</p>
+<p class="muted small">${L('아이템을 고르면 시세가 들어가요. 사용 개수만 적으세요. 실제 구매 가격으로 바꿔도 돼요.', 'Choose an item to fill its market price, then enter the quantity used. You can edit the price you paid.')}</p>
 <label class="exp-check"><input id="hl-noPotions" name="noPotions" type="checkbox"> ${L('포션·소모품을 쓰지 않았어요', 'No supplies used')}</label>
 <div id="hl-potions"></div>
 <button type="button" class="btn ghost small-btn" id="hl-add">+ ${L('소모품 추가', 'Add supplies')}</button>
@@ -25,7 +25,7 @@ ${input('soldAfter', L('종료 메소를 적은 뒤 받은 드랍 판매금', 'D
 </div><p class="muted small">${L('종료 메소에 이미 들어 있는 드랍 판매금은 다시 적지 마세요. 아직 안 팔린 드랍은 수익에 넣지 않아요.', 'Do not add drop sales already in the ending wallet. Unsold drops are left out.')}</p></details>
 <dl class="hl-totals"><div><dt>${L('사냥 수입', 'Hunt income')}</dt><dd id="hl-earned">—</dd></div><div><dt>${L('사용한 소모품값', 'Supplies consumed')}</dt><dd id="hl-cost">—</dd></div><div><dt>${L('남은 메소', 'Net mesos')}</dt><dd id="hl-net">—</dd></div><div><dt>${L('시간당 순수익', 'Net mesos / hour')}</dt><dd id="hl-rate">—</dd></div></dl>
 <p class="muted small">${L('시간당 순수익은 첫 EXP 기록부터 마지막 기록까지, 쉬는 시간을 포함해 계산해요.', 'Net mesos per hour uses the time between the first and last EXP readings, including breaks.')}</p>
-<button type="submit" class="btn" id="hl-save">${L('사냥 기록에 정산 저장', 'Save settlement to the log')}</button>
+<p class="muted small">${L('입력하면 바로 계산하고, 측정이 끝난 기록에 자동 저장해요.', 'Calculates as you type and saves automatically to your finished run.')}</p>
 </fieldset><p id="hl-status" role="status" aria-live="polite"></p>
 </form></details>${huntRecommendationsBody(lang)}`;
 }

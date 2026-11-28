@@ -1,17 +1,18 @@
+import { bindSupplySearch } from './hunt-supplies.js';
 import { settleHunt } from './hunt-ledger.js';
 import { renderPersonalHunts } from './hunt-personal.js';
 
-export function createHuntLedger({ ko, session, currentRow, person, rows, demo, running, persistSession, persistRows, redrawLog }) {
+export function createHuntLedger({ ko, session, currentRow, person, rows, demo, running, persistSession, persistRows, redrawLog, onSaved = () => {}, itemsUrl, api }) {
   const $ = id => document.getElementById(`hl-${id}`);
   const L = (k, e) => ko ? k : e;
   const nf = n => Math.round(n).toLocaleString(ko ? 'ko' : 'en');
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-  let selected = null, shown = null, dirty = false;
+  let selected = null, shown = null, dirty = false, saveTimer = null;
   const fields = ['start', 'end', 'gear', 'purchased', 'otherIn', 'otherOut', 'soldAfter'];
   const target = () => selected === null ? currentRow() : rows().find(r => r.id === selected);
-  const potionHtml = (p = {}) => `<div class="hl-potion"><label>${L('소모품 이름', 'Supply name')}<input data-p="name" maxlength="60" value="${esc(p.name)}" required></label><label>${L('사용 개수', 'Quantity used')}<input data-p="used" type="number" min="0" max="1000000000000" step="1" inputmode="numeric" value="${esc(p.used)}" required></label><label>${L('개당 가격', 'Unit price')}<input data-p="price" type="number" min="0" max="1000000000000" step="1" inputmode="numeric" value="${esc(p.price)}" required></label><button type="button" class="btn ghost small-btn" data-remove>${L('삭제', 'Remove')}</button></div>`;
+  const potionHtml = (p = {}) => `<div class="hl-potion" ${p.item ? `data-item="${esc(p.item)}" data-basis="${esc(p.basis || '')}"` : ''}><div class="hl-search"><label>${L('소모품 검색', 'Find supplies')}<input data-p="name" maxlength="60" autocomplete="off" value="${esc(p.name)}" placeholder="${L('예: 파란 포션', 'e.g. Blue Potion')}" required></label><div data-suggestions class="hl-suggestions" hidden></div></div><label>${L('사용 개수', 'Quantity used')}<input data-p="used" type="number" min="0" max="1000000000000" step="1" inputmode="numeric" value="${esc(p.used)}" required></label><label>${L('개당 가격', 'Unit price')}<input data-p="price" type="number" min="0" max="1000000000000" step="1" inputmode="numeric" value="${esc(p.price)}" required></label><button type="button" class="btn ghost small-btn" data-remove>${L('삭제', 'Remove')}</button><small data-price-note class="muted hl-price-note">${p.item && p.price !== '' ? L('저장된 개당 가격', 'Saved unit price') : ''}</small></div>`;
   const read = () => ({ ...Object.fromEntries(fields.map(k => [k, $(k).value.trim()])), noPotions: $('noPotions').checked,
-    potions: [...$('potions').children].map(el => Object.fromEntries([...el.querySelectorAll('[data-p]')].map(i => [i.dataset.p, i.value.trim()]))) });
+    potions: [...$('potions').children].map(el => ({ ...Object.fromEntries([...el.querySelectorAll('[data-p]')].map(i => [i.dataset.p, i.value.trim()])), ...(el.dataset.item ? { item: Number(el.dataset.item), basis: el.dataset.basis || '' } : {}) })) });
   function fill(input = {}) {
     for (const k of fields) $(k).value = input[k] ?? '';
     $('noPotions').checked = input.noPotions === true;
@@ -26,7 +27,7 @@ export function createHuntLedger({ ko, session, currentRow, person, rows, demo, 
     if (selected !== null && !target()) { selected = null; shown = null; }
     const key = selected === null ? `current:${session().samples[0]?.t || 'empty'}:${demo()}` : `log:${selected}`;
     const row = target();
-    if (shown !== key) { fill(selected === null ? session().huntDraft || row?.settlement?.input : row?.settlement?.input); shown = key; $('status').textContent = ''; }
+    if (shown !== key) { fill(selected === null ? session().huntDraft || row?.settlement?.input : row?.huntDraft || row?.settlement?.input); shown = key; dirty = !!(selected === null ? session().huntDraftDirty : row?.huntDraft); $('status').textContent = ''; }
     $('fields').disabled = demo();
     $('current').hidden = selected === null;
     const noSupplies = $('noPotions').checked;
@@ -37,19 +38,19 @@ export function createHuntLedger({ ko, session, currentRow, person, rows, demo, 
     for (const [id, k] of [['earned', 'earned'], ['cost', 'supplyCost'], ['net', 'net'], ['rate', 'perHour']]) $(id).textContent = result.ok && result[k] != null ? nf(result[k]) : '—';
     $('net').classList.toggle('hl-loss', result.ok && result.net < 0);
     const elapsed = row?.durationMs ? L(`${nf(row.durationMs / 60000)}분`, `${nf(row.durationMs / 60000)} min`) : L('EXP 기록 2개부터 시간을 계산해요.', 'Time starts with two EXP readings.');
-    $('context').textContent = `${selected === null ? L('현재 측정', 'Current session') : new Date(row.at).toLocaleString(ko ? 'ko' : 'en')} · ${row?.spot || L('위에서 사냥터 메모를 적으세요.', 'Name your spot above.')} · ${elapsed}`;
-    $('save').disabled = demo() || (selected === null && running());
+    $('context').textContent = `${selected === null ? L('현재 측정', 'Current session') : new Date(row.at).toLocaleString(ko ? 'ko' : 'en')} · ${row?.spot || (selected === null && session().spot) || L('위에서 사냥터 메모를 적으세요.', 'Name your spot above.')} · ${elapsed}`;
     if (demo()) $('status').textContent = L('예시 화면에서는 정산을 저장하지 않아요.', 'The example does not save settlements.');
-    else if (selected === null && running()) $('status').textContent = L('입력한 값은 보관해요. 측정을 정지한 뒤 종료 메소를 적고 저장하세요.', 'Your inputs are kept. Stop measuring, enter the ending wallet, then save.');
-    else if (dirty) $('status').textContent = L('정산을 고쳤어요. 저장 버튼을 눌러 기록에 반영하세요.', 'Settlement edited. Save to update the log.');
+    else if (selected === null && running()) $('status').textContent = L('입력하면 바로 계산해요. 측정을 정지하면 기록에 자동 저장해요.', 'Calculates as you type. Your finished run is saved automatically.');
+    else if (dirty) { clearTimeout(saveTimer); saveTimer = setTimeout(commit, 350); }
     renderPersonalHunts(document.getElementById('hp-results'), demo() ? [] : rows(), person(), ko);
   }
   function changed() {
     if (demo()) return;
     dirty = true;
     let kept = true;
-    if (selected === null) { session().huntDraft = read(); kept = persistSession(); }
+    if (selected === null) { session().huntDraft = read(); session().huntDraftDirty = true; kept = persistSession(); }
     refresh();
+    if (selected !== null) { const row = target(); const next = rows().map(r => r.id === row?.id ? { ...r, huntDraft: read(), settlement: null } : r); kept = persistRows(next); }
     if (kept === false) $('status').textContent = L('브라우저 저장 공간이 부족해 입력값을 보관하지 못했어요.', 'Browser storage is full; inputs were not kept.');
   }
   $('form').addEventListener('input', changed);
@@ -64,21 +65,28 @@ export function createHuntLedger({ ko, session, currentRow, person, rows, demo, 
     document.getElementById('hunt-ledger').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); $('start').focus({ preventScroll: true });
   });
   if (location.hash === '#hunt-ledger') document.getElementById('hunt-ledger').open = true;
-  $('form').addEventListener('submit', e => {
-    e.preventDefault();
-    if (demo() || (selected === null && running())) return;
+  $('form').addEventListener('submit', e => { e.preventDefault(); commit(); });
+  bindSupplySearch({ root: $('potions'), ko, itemsUrl, api, changed, disabled: demo });
+  function commit() {
+    clearTimeout(saveTimer);
+    if (!dirty || demo() || (selected === null && running())) return;
     const row = target(), input = read(), result = settleHunt(input, row?.durationMs);
-    if (!result.ok) { $('status').textContent = error(result.error); return; }
-    if (!row || !Number.isFinite(row.activeMs) || row.activeMs < 180000 || !(row.gained > 0) || !Number.isFinite(row.durationMs) || row.durationMs <= 0) { $('status').textContent = L('경험치가 오른 기록을 3분 이상 측정한 뒤 저장하세요.', 'Measure at least 3 active minutes with EXP gained before saving.'); return; }
-    if (!row.spot?.trim() || !row.job || !row.level) { $('status').textContent = L('사냥터 메모·레벨·직업을 먼저 적으세요.', 'Enter the spot, level and class first.'); return; }
+    if (!result.ok) {
+      const previous = rows().find(r => r.id === row?.id);
+      if (previous?.settlement) { const next = rows().map(r => r.id === row.id ? { ...r, settlement: null, huntDraft: input } : r); if (persistRows(next)) { onSaved(next.find(r => r.id === row.id)); } }
+      $('status').textContent = error(result.error); return;
+    }
+    if (!row || !Number.isFinite(row.activeMs) || row.activeMs < 180000 || !(row.gained > 0) || !Number.isFinite(row.durationMs) || row.durationMs <= 0) { $('status').textContent = L('계산 완료 · 경험치가 오른 기록을 3분 이상 측정하면 자동 저장돼요.', 'Calculated · saves automatically after 3 active minutes with EXP gained.'); return; }
+    if (!row.spot?.trim() || !row.job || !row.level) { $('status').textContent = L('계산 완료 · 사냥터·레벨·직업을 고르면 기록에 저장돼요.', 'Calculated · choose your spot, level and class to save the run.'); return; }
     const settlement = { version: 1, sampleEnd: row.at, input, savedAt: Date.now() };
     const next = [...rows()], i = next.findIndex(r => r.id === row.id);
-    if (i >= 0) next[i] = { ...next[i], ...row, settlement }; else next.unshift({ ...row, settlement });
+    if (i >= 0) next[i] = { ...next[i], ...row, settlement, huntDraft: null }; else next.unshift({ ...row, settlement, huntDraft: null });
     if (!persistRows(next)) { $('status').textContent = L('저장 공간이 부족해 정산을 저장하지 못했어요. 엑셀로 기록을 받은 뒤 오래된 기록을 정리하세요.', 'Storage is full. Download your log, then remove old records before saving.'); return; }
-    if (row.id === session().samples[0]?.t) { session().huntDraft = input; persistSession(); }
-    dirty = false; redrawLog(); refresh();
-    $('status').textContent = L('정산을 사냥 기록에 저장했어요.', 'Settlement saved to the training log.');
+    if (row.id === session().samples[0]?.t) { session().huntDraft = input; session().huntDraftDirty = false; persistSession(); }
+    dirty = false; redrawLog(); refresh(); onSaved(next.find(r => r.id === row.id));
+    $('status').textContent = L('자동 저장됐어요.', 'Saved automatically.');
     window.gtag?.('event', 'hunt_settlement_save', { page_type: 'exp', minutes: Math.round(row.durationMs / 60000), updated: i >= 0 });
-  });
-  return { refresh };
+  }
+  addEventListener('pagehide', commit);
+  return { refresh, flush: commit };
 }

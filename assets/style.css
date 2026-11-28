@@ -4933,3 +4933,11 @@ dialog.trd-shopdlg::backdrop { background: rgba(0, 0, 0, .45); }
 /* Shop Scan: the channel or room choice that blocks the upload is outlined until it is picked (assets/scan.js askLocation). */
 .scan-location label.scan-need select { outline: 3px solid var(--danger); outline-offset: 1px; }
 .scan-location label.scan-need { color: var(--danger); font-weight: 700; }
+
+.hl-search { position: relative; min-width: 0; }
+.hl-suggestions { position: absolute; top: 100%; left: 0; right: 0; z-index: 10; max-height: 260px; overflow: auto; background: var(--panel); border: 1px solid var(--line-strong); border-radius: 8px; box-shadow: 0 5px 16px #0002; }
+.hl-suggestions button { display: block; width: 100%; border: 0; background: none; color: var(--text); text-align: left; padding: 10px; font: inherit; cursor: pointer; }
+.hl-suggestions button:hover,.hl-suggestions button:focus-visible { background: var(--panel-2); }
+.hl-suggestions small { display: block; padding: 10px; }
+.hl-price-note { grid-column: 1 / -1; min-height: 1em; }
+@media(max-width:600px) { .hl-potion .hl-search { grid-column: 1 / -1; } .hl-potion label:first-child { grid-column: auto; } }

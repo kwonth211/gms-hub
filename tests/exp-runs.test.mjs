@@ -29,3 +29,22 @@ test('runs that are too short or missing class are refused', async () => {
   assert.equal((await addExpRun(req({ ...ok, job: 'king' }), envWith([]))).status, 400);
   assert.equal((await addExpRun(req({ ...ok, mob: null, route: null }), envWith([]))).status, 400);
 });
+
+test('public table keeps conditions separate and requires three players for net mesos too', async () => {
+  const rows = ['a','b','c'].map((v,i) => run(v, 50000+i*1000, { route: 'tree-slime', elapsed: 1, net_per_hour: [0,-10000,20000][i] }));
+  const s = await expRunsSummary(envWith([...rows, run('d', 60000, { elapsed: 1, job: 'mage' }), run('e', 60000, { elapsed: 1, party: 2 }), run('f', 60000, { elapsed: 1, level: 28 })]));
+  assert.equal(s.groups.length, 1); assert.equal(s.groups[0].netPerHour, 0); assert.equal(s.groups[0].perHour, 51000);
+  rows[2].net_per_hour = null;
+  assert.equal((await expRunsSummary(envWith(rows))).groups[0].netPerHour, null);
+});
+test('old active-time runs are not mixed into the elapsed-time public table', async () => {
+  const s = await expRunsSummary(envWith(['a','b','c'].map(v => run(v, 50000))));
+  assert.equal(s.groups.length, 0); assert.ok(s.routes['kerning-subway']);
+});
+test('invalid settlement values and unknown route IDs are refused', async () => {
+  const req = body => ({ json: async () => body, headers: { get: () => '1.2.3.4' } });
+  const base = { client:'abcdef12-3456',run:'r123456',route:'tree-slime',level:22,job:'thief',party:1,minutes:20,perHour:50000,elapsed:true };
+  for (const netPerHour of [NaN, Infinity, '5', 1.5, -1000000001, 1000000001]) assert.equal((await addExpRun(req({ ...base, netPerHour }), envWith([]))).status,400);
+  assert.equal((await addExpRun(req({ ...base, route:'invented-place' }), envWith([]))).status,400);
+  assert.equal((await addExpRun(req({ ...base, netPerHour:-10000 }), envWith([]))).status,200);
+});

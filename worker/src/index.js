@@ -645,7 +645,7 @@ const api = {
     }
     if (url.pathname === '/forge/count' && req.method === 'GET') return json(await forgeCounts(env), cors, 200, 'public, max-age=30');
 
-    // Shared EXP tracker runs (exp-runs.js): stored only when a player presses the share button; read as per-spot medians.
+    // Anonymous EXP tracker runs: automatically submitted after measuring; public per-condition medians.
     if (url.pathname === '/exp-runs' && req.method === 'POST') {
       if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: 'forbidden origin' }, cors, 403);
       const r = await addExpRun(req, env);

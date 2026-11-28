@@ -1568,11 +1568,12 @@ function ratesTable(lang) {
   const rows = training.routes.flatMap((r) => (r.rates || []).map((x) => ({ r, x }))).sort((a, b) => a.r.level.min - b.r.level.min || order[a.x.basis] - order[b.x.basis]);
   const cell = (x) => [x.x.exp != null && `${rateNum(x.x.exp, lang)}`, x.x.mesos != null && `${tr('메소 ', 'mesos ')}${rateNum(x.x.mesos, lang)}`];
   return `<section class="panel tr-rate-table-wrap" id="rates"><h2>${tr('사냥터별 시간당 경험치·메소', 'EXP and mesos an hour by map')}</h2>
-<p class="muted">${tr('유튜브 실측 영상과 커뮤니티 후기에서 직접 재거나 계산한 수치만 모았어요. 직업·레벨·파티 인원·장비에 따라 달라지니 조건을 꼭 같이 보세요. 참고로 출시 첫 주 전체 유저 평균은 시간당 메소 약 2.1만이었어요(Maple Math, 962시간 트래커 집계).', 'Only figures measured or calculated in YouTube videos and community posts. They depend on class, level, party size and gear, so read the conditions. For scale, launch-week trackers averaged about 21k mesos an hour across all players (Maple Math, 962 tracked hours).')}</p>
-<div class="tr-rate-scroll"><table class="tr-rate-table"><thead><tr><th>${tr('레벨', 'Level')}</th><th>${tr('사냥터', 'Map')}</th><th>${tr('경험치/시간', 'EXP/h')}</th><th>${tr('메소/시간', 'Mesos/h')}</th><th>${tr('조건', 'Conditions')}</th></tr></thead><tbody>${rows.map(({ r, x }) => {
+<p class="muted">${tr('유저 측정 기록과 공략의 실측·계산 수치를 함께 보여 줘요. 직업·레벨·파티 인원·장비에 따라 달라지니 조건을 꼭 같이 보세요. 참고로 출시 첫 주 전체 유저 평균은 시간당 메소 약 2.1만이었어요(Maple Math, 962시간 트래커 집계).', 'Player tracker records appear alongside figures measured or calculated in guides. They depend on class, level, party size and gear, so read the conditions. For scale, launch-week trackers averaged about 21k mesos an hour across all players (Maple Math, 962 tracked hours).')}</p>
+<div class="tr-rate-scroll"><table class="tr-rate-table"><thead><tr><th>${tr('레벨', 'Level')}</th><th>${tr('사냥터', 'Map')}</th><th>${tr('경험치/시간', 'EXP/h')}</th><th>${tr('메소/시간', 'Mesos/h')}</th><th>${tr('조건', 'Conditions')}</th></tr></thead><tbody id="tr-live-rates"></tbody><tbody>${rows.map(({ r, x }) => {
     const who = [x.level && `<div class="tr-rp" translate="no">Lv ${esc(x.level)}</div>`, x.job && `<div class="tr-rp">${esc(jobNames[lang][x.job])}</div>`, `<div class="tr-rp">${party[lang][x.party]}</div>`].filter(Boolean).join('');
     return `<tr class="tr-rate-${esc(x.basis)}"><td translate="no">${r.level.min}–${r.level.max}</td><td><a href="#route-${esc(r.id)}">${esc(r.title[lang])}</a></td><td translate="no">${x.exp != null ? rateNum(x.exp, lang) : '—'}</td><td translate="no">${x.mesos != null ? rateNum(x.mesos, lang) : '—'}</td><td><div class="tr-rate-who">${who}<div class="tr-rp tr-rp-basis">${basis[lang][x.basis]}</div></div>${x.note ? `<small>${esc(lang === 'ko' ? x.note.ko : x.note.en)}</small>` : ''}</td></tr>`;
   }).join('')}</tbody></table></div>
+<p class="muted small">${tr('유저 측정 기록은 같은 사냥터·직업·레벨 구간·파티 인원별로 자동 집계해요. 3명 이상 모이면 표시하며, 유저 기록의 메소는 소모품값을 뺀 순수익이에요.', 'Player runs are grouped by spot, class, level band and party size. Groups appear after 3 players; player meso rates are net of supplies.')}</p>
 <p class="muted small">${tr('실측 = 영상에서 10분 이상 직접 잰 값 · 계산 = 젠 수와 처치 속도로 계산한 값 · 모델 추정 = 최대로 잡았을 때의 계산값(실제는 더 낮음) · 커뮤니티 = 게시판 후기.', 'Measured = timed in the video for 10+ minutes · calculated = from spawn counts and kill speed · model = a best-case calculation (real rates are lower) · community = forum posts.')}</p></section>`;
 }
 function trainingBody(lang) {
@@ -1589,7 +1590,7 @@ ${''/* Class filter as visible chips at the top (owner 2026-11-22): one list fil
 <button class="btn" type="submit">${tr('사냥터 찾기','Find routes')}</button>
 <label class="tr-check"><input name="advanced" type="checkbox">${tr('장비·명중이 갖춰져야 하는 사냥터도 보기','Also show maps that need gear or accuracy')}</label>
 <p class="tr-filter-help">${tr('표시된 레벨은 이 사냥터로 옮길 만한 구간이에요. 카드의 진입 기준부터 보세요.','The level shown is when a move to this map becomes possible. Read the card’s entry conditions first.')}</p>
-</form>${huntRecommendationsBody(lang, true)}<div class="tr-result-head"><h2 id="tr-status" role="status">${tr('20레벨 사냥터','Maps for level 20')} ${initial.length}${tr('곳','')}</h2><div class="tr-result-actions"><button type="button" class="btn ghost small-btn" id="tr-share" data-ok="${tr('조건 링크를 복사했어요','Link copied')}" data-fail="${tr('복사하지 못했어요. 주소창의 주소를 직접 복사해 주세요.','Could not copy. Copy the address from the address bar.')}">${tr('이 조건 링크 복사','Copy link to these filters')}</button><span id="tr-share-status" class="share-status" role="status" aria-live="polite"></span><a href="${href(langPath(lang,'/guides/choose-your-job/'))}">${tr('직업별 육성 가이드','Class guides')}</a></div></div>
+</form><div class="tr-result-head"><h2 id="tr-status" role="status">${tr('20레벨 사냥터','Maps for level 20')} ${initial.length}${tr('곳','')}</h2><div class="tr-result-actions"><button type="button" class="btn ghost small-btn" id="tr-share" data-ok="${tr('조건 링크를 복사했어요','Link copied')}" data-fail="${tr('복사하지 못했어요. 주소창의 주소를 직접 복사해 주세요.','Could not copy. Copy the address from the address bar.')}">${tr('이 조건 링크 복사','Copy link to these filters')}</button><span id="tr-share-status" class="share-status" role="status" aria-live="polite"></span><a href="${href(langPath(lang,'/guides/choose-your-job/'))}">${tr('직업별 육성 가이드','Class guides')}</a></div></div>
 <section id="tr-result">${routeCards(initial,lang)}</section><noscript><p>${tr('조건 검색에는 JavaScript가 필요해요. 아래 레벨별 페이지에서 전체 경로를 볼 수 있어요.','Filters require JavaScript. Browse the level-band pages below for all routes.')}</p></noscript>
 ${ratesTable(lang)}${bandNav(lang)}${trainingMethod(lang)}</div>${jsonScript('training-data',publicTrainingData(training))}`;
 }
@@ -1864,7 +1865,7 @@ const EXP = {
     manualExp: 'EXP', manualPct: '퍼센트', manualSave: '기록',
     empty: '아직 기록이 없어요. 위에서 시작을 누르거나 EXP를 직접 넣어 보세요.',
     how: [['창 모드 추천', '창 모드가 가장 잘 돼요. 전체 화면이면 공유 창에서 "전체 화면"을 고르면 되고, 검게 보이면 창 모드로 바꿔 주세요. 해상도·화면 배율은 자동으로 맞춰요.'], ['시작', '위 버튼을 누르고 메이플 창을 고르면 5초마다 EXP를 읽어요. 레벨업도 자동으로 이어서 계산해요.'], ['정지', '자리를 옮기거나 끝나면 정지를 누르세요. 기록은 이 브라우저에 남아서 다시 열어도 이어져요.']],
-    privacy: '공유한 화면은 이 컴퓨터 안에서만 읽어요. 측정 기록은 이 브라우저에 저장되고, 디스코드로 로그인하면 다른 기기에서도 이어져요. "사냥터 순위에 보태기"를 누른 기록만 레벨·직업·파티 인원·몬스터·사냥터·측정 시간·시간당 경험치가 이름 없이 올라가요.',
+    privacy: '공유한 화면은 이 컴퓨터 안에서만 읽어요. 측정 기록은 이 브라우저에 저장되고, 디스코드로 로그인하면 다른 기기에서도 이어져요. 10분 이상 측정한 기록은 사냥터·레벨·직업·파티 인원·몬스터·시간당 경험치와 정산 순수익이 익명으로 집계돼 사냥터 표에 자동 반영돼요. 지갑 금액과 메모는 공개하지 않아요.',
     i: {
       unsupported: '이 브라우저는 화면 공유가 안 돼요. PC 크롬이나 엣지에서 열어 주세요. 아래에서 직접 입력은 돼요.', denied: '공유가 취소됐어요. 다시 시작을 누르면 돼요.',
       watching: '읽는 중이에요. 사냥하세요!', stopped: '정지했어요. 기록은 그대로 있어요.', wait: '대기',
@@ -1899,7 +1900,7 @@ const EXP = {
     manualExp: 'EXP', manualPct: 'Percent', manualSave: 'Save',
     empty: 'Nothing recorded yet. Press start above or type your EXP in.',
     how: [['Windowed mode works best', 'A window is read best. In full screen pick "Entire screen" in the share dialog; if it shows black, switch to a window. Any resolution and display scale is fine.'], ['Start', 'Press the button and pick the game window; EXP is read every 5 seconds, level-ups included.'], ['Stop', 'Press stop when you move or finish. The session stays in this browser, so reopening the page continues it.']],
-    privacy: 'The shared screen is read only on this computer, and your sessions stay in this browser. Only a run you add to the spot rankings is sent: level, class, party size, monster, spot, minutes and EXP per hour, with no name.',
+    privacy: 'The shared screen is read only on this computer, and your sessions stay in this browser. Runs of 10+ minutes automatically contribute anonymous spot, level, class, party, monster, EXP and net meso rates to the training table. Wallet balances and notes are not published.',
     i: {
       unsupported: 'This browser cannot share a screen. Use Chrome or Edge on a computer; typing EXP in below still works.', denied: 'Sharing was cancelled. Press start again.',
       watching: 'Reading. Go train!', stopped: 'Stopped. The session is kept.', wait: 'Waiting',
@@ -1939,6 +1940,7 @@ function expBody(lang) {
 <div class="exp-options">
 <label class="exp-check"><input type="checkbox" id="exp-skip-idle" checked> ${esc(t.skipIdle)}</label>
 <label class="exp-check"><input type="checkbox" id="exp-alert"> ${esc(t.alertLabel)}</label>
+<label class="exp-mob-label">${lang === 'ko' ? '사냥터 선택' : 'Training spot'}<select id="exp-route"><option value="">${lang === 'ko' ? '사냥터 고르기' : 'Choose a spot'}</option>${training.routes.map(r => `<option value="${esc(r.id)}">Lv ${r.level.min}–${r.level.max} · ${esc(r.title[lang])}</option>`).join('')}</select></label>
 <label class="exp-mob-label">${esc(t.spotLabel)} <input id="exp-spot" placeholder="${esc(t.spotPh)}" autocomplete="off" maxlength="60"></label>
 <label class="exp-mob-label">${esc(t.mobLabel)} <input id="exp-mob" list="exp-mob-list" placeholder="${esc(t.mobPh)}" autocomplete="off"><datalist id="exp-mob-list"></datalist><small class="muted">${esc(t.mobHelp)}</small></label>
 <p id="exp-mob-out" class="exp-mob-out"></p>
@@ -1955,7 +1957,7 @@ ${huntLedgerBody(lang)}
 <ol class="scan-steps">${t.how.map(([h, d], n) => `<li><b>${n + 1}</b><strong>${esc(h)}</strong><span>${esc(d)}</span></li>`).join('')}</ol>
 <p class="muted small">${esc(t.privacy)}</p>
 </div>
-${jsonScript('exp-data', { lang, t: { ...t.i, stats: t.stats, log: t.log, me: t.me, community: t.community }, mobsUrl: href('/assets/mobs.json') })}`;
+${jsonScript('exp-data', { lang, t: { ...t.i, stats: t.stats, log: t.log, me: t.me, community: t.community }, mobsUrl: href('/assets/mobs.json'), itemsUrl: href('/assets/items.json'), routes: training.routes.map(r => ({ id: r.id, title: r.title, level: r.level })) })}`;
 }
 
 const SCAN = {
@@ -3475,7 +3477,7 @@ for (const lang of LANGS) {
       title: t.trTitle,
       desc: t.trDesc,
       body: trainingBody(lang),
-      modules: ['training.js', 'exp-community.js', 'hunt-personal.js'],
+      modules: ['training.js', 'exp-community.js'],
       ld: [appLd(t.trH1, t.trDesc, '/tools/training/'), breadcrumbLd(lang, t.trH1, '/tools/training/')]
     },
     scroll: {
