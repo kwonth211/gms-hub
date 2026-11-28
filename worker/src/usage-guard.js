@@ -57,21 +57,25 @@ export class BudgetError extends Error {}
 function guard(sql) {
   if (state.over.r || (state.over.w && WRITE.test(sql))) throw new BudgetError('monthly budget reached');
 }
-const add = (meta) => { if (meta) { pending.w += meta.rows_written || 0; pending.r += meta.rows_read || 0; } };
+const addMeta = (meta) => { if (meta) { pending.w += meta.rows_written || 0; pending.r += meta.rows_read || 0; } };
 
 // A D1 binding that counts and, past the fuse, refuses. Same surface the worker uses: prepare/bind/run/all/first, batch.
-export function meterDb(db) {
+// onHeavy(sql, rowsRead) is told about any single statement that read HEAVY_ROWS or more (2026-11-28: a 1.1 million row
+// read in a request overloaded D1 and failed other routes; such a statement now shows on the owner's error table first).
+export const HEAVY_ROWS = 800000;
+export function meterDb(db, onHeavy = null) {
+  const add = (meta, sql) => { addMeta(meta); if (onHeavy && meta?.rows_read >= HEAVY_ROWS) { try { onHeavy(sql, meta.rows_read); } catch { /* logging only */ } } };
   const wrap = (stmt, sql) => ({
     __stmt: stmt,
     __sql: sql,
     bind: (...args) => wrap(stmt.bind(...args), sql),
-    run: async () => { guard(sql); const r = await stmt.run(); add(r?.meta); return r; },
-    all: async () => { guard(sql); const r = await stmt.all(); add(r?.meta); return r; },
+    run: async () => { guard(sql); const r = await stmt.run(); add(r?.meta, sql); return r; },
+    all: async () => { guard(sql); const r = await stmt.all(); add(r?.meta, sql); return r; },
     // first() has no meta in D1, so it runs as all() and picks the first row (D1's first() reads the same rows).
     first: async (col) => {
       guard(sql);
       const r = await stmt.all();
-      add(r?.meta);
+      add(r?.meta, sql);
       const row = r?.results?.[0] ?? null;
       return col == null ? row : (row?.[col] ?? null);
     },
@@ -82,7 +86,7 @@ export function meterDb(db) {
     batch: async (stmts) => {
       for (const s of stmts) guard(s.__sql || '');
       const rs = await db.batch(stmts.map((s) => s.__stmt || s));
-      for (const r of rs || []) add(r?.meta);
+      (rs || []).forEach((r, i) => add(r?.meta, stmts[i]?.__sql || ''));
       return rs;
     },
     exec: async (sql) => { guard(sql); return db.exec(sql); },

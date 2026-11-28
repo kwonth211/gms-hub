@@ -300,6 +300,12 @@ async function refreshPricesAll(env) {
   return out;
 }
 
+// The last stored copy of a snapshot whatever its age: served when making a fresh one fails (D1 overloaded, 2026-11-28),
+// so a visitor gets slightly older prices instead of an error page.
+async function staleSnapshot(env, key) {
+  const row = await env.DB.prepare('SELECT json FROM snapshots WHERE key = ?').bind(key).first().catch(() => null);
+  return row ? JSON.parse(row.json) : null;
+}
 async function freshSnapshot(env, key, minutes) {
   const row = await env.DB.prepare('SELECT json, at FROM snapshots WHERE key = ?').bind(key).first();
   if (!row) return null;
@@ -716,6 +722,8 @@ const api = {
       } catch (e) {
         const invalid = e.message?.startsWith('bad ');
         if (!invalid) noteError(req, e);
+        const stale = !invalid && url.pathname === '/market/catalog' ? await staleSnapshot(env, 'market-catalog') : null;
+        if (stale) { logError(env, 'api', url.pathname, 0, { e: `served the stored copy: ${String(e?.message || e).slice(0, 150)}` }); return json(stale, cors, 200, 'public, max-age=60'); }
         return json({error: invalid ? e.message : 'market unavailable'}, cors, invalid ? 400 : 503);
       }
     }
@@ -831,8 +839,15 @@ const api = {
     }
 
     if (url.pathname === '/market/top' && req.method === 'GET') {
-      const data = (await freshSnapshot(env, 'market', 30)) || (await refreshSnapshot(env));
-      return json(data, cors, 200, 'public, max-age=60');
+      try {
+        const data = (await freshSnapshot(env, 'market', 30)) || (await refreshSnapshot(env));
+        return json(data, cors, 200, 'public, max-age=60');
+      } catch (e) {
+        const stale = await staleSnapshot(env, 'market');
+        if (!stale) throw e;
+        logError(env, 'api', url.pathname, 0, { e: `served the stored copy: ${String(e?.message || e).slice(0, 150)}` });
+        return json(stale, cors, 200, 'public, max-age=60');
+      }
     }
 
     if (url.pathname === '/market/item' && req.method === 'GET') {
@@ -1046,7 +1061,14 @@ async function usageAnswer(req, env) {
 
 // Every entry point runs on a metered D1 binding (src/usage-guard.js): it counts rows read and written and, past 98% of
 // the plan's monthly included amounts, refuses (owner's call 2026-11-15: never pay more than the $5 plan).
-const metered = (env) => ({ ...env, DB: meterDb(env.DB) });
+// A statement reading HEAVY_ROWS or more goes on the owner's error table once an hour per statement (kind 'heavy').
+const heavySeen = new Map();
+const metered = (env) => ({ ...env, DB: meterDb(env.DB, (sql, rows) => {
+  const key = sql.replace(/\s+/g, ' ').trim().slice(0, 110);
+  if (Date.now() - (heavySeen.get(key) || 0) < 3600000) return;
+  heavySeen.set(key, Date.now());
+  logError(env, 'heavy', key, rows, { e: `read ${rows} rows in one statement` });
+}) });
 // One address opening live-count sockets in a flood is refused before it reaches the room (each join wakes the room and
 // messages every open page). 400 joins a minute per address is far above any real visitor, shared VPN exits included.
 async function joinPresence(req, env) {

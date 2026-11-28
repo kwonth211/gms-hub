@@ -284,8 +284,8 @@ function errorPanel(d) {
   const recent = x.rows.filter((r) => Date.now() - r.last < 3600000);
   const today = x.rows.reduce((a, r) => a + r.today, 0), week = x.rows.reduce((a, r) => a + r.week, 0);
   const rows = x.rows.map((r) => {
-    const where = r.kind === 'cron' ? `<b>${esc(CRON_NAME[r.path] || r.path)}</b><br><span class="muted">자동 작업 · ${esc(r.path)}</span>` : `<code>${esc(r.path)}</code>`;
-    const code = r.kind === 'cron' || !r.status ? '실패' : r.status;
+    const where = r.kind === 'cron' ? `<b>${esc(CRON_NAME[r.path] || r.path)}</b><br><span class="muted">자동 작업 · ${esc(r.path)}</span>` : r.kind === 'heavy' ? `<b>무거운 쿼리</b> <span class="muted">(한 번에 80만 줄 넘게 읽음 · 터지기 전 경고)</span><br><code>${esc(r.path)}</code>` : `<code>${esc(r.path)}</code>`;
+    const code = r.kind === 'heavy' ? `${nf(r.status)}줄` : r.kind === 'cron' || !r.status ? (/served the stored copy/.test(r.msg) ? '저장본으로 응답' : '실패') : r.status;
     const when = r.week > 1 && r.first !== r.last ? `${kstFull(r.last)}<br><span class="muted">처음 ${kstFull(r.first)}</span>` : kstFull(r.last);
     const hot = Date.now() - r.last < 3600000;
     return `<tr${hot ? ' class="td-hot"' : ''}><td>${where}</td><td class="num">${esc(code)}</td><td class="num"><b>${nf(r.today)}</b></td><td class="num">${nf(r.week)}</td><td class="td-when">${when}</td><td class="td-msg">${esc(r.msg || '-')}${r.kinds > 1 ? `<br><span class="muted">다른 내용 ${nf(r.kinds - 1)}가지 더</span>` : ''}</td></tr>`;

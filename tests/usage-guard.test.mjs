@@ -81,3 +81,14 @@ test('usage: the Worker entry point uses its private baseline and pauses when it
   // Restore the shared module state for subsequent tests.
   await flushUsage(raw, now, true, '{}');
 });
+
+test('a statement reading 800,000 rows or more is reported, a normal one is not', async () => {
+  const { meterDb, HEAVY_ROWS } = await import('../worker/src/usage-guard.js');
+  const reads = [10, HEAVY_ROWS];
+  const db = { prepare: () => ({ bind() { return this; }, all: async () => ({ results: [], meta: { rows_read: reads.shift(), rows_written: 0 } }) }) };
+  const seen = [];
+  const m = meterDb(db, (sql, rows) => seen.push([sql, rows]));
+  await m.prepare('SELECT small').all();
+  await m.prepare('SELECT big').all();
+  assert.deepEqual(seen, [['SELECT big', HEAVY_ROWS]]);
+});
