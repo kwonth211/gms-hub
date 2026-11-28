@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "economy-guide-stories",
+   "version": "0.7.95",
+   "level": "patch",
+   "date": "2026-11-28",
+   "path": "/guides/",
+   "ko": "장갑·표창·포션·판매 가이드 — 사냥과 거래 이야기로 읽기",
+   "en": "Equipment and market guides — stories behind the spending decisions",
+   "desc": {
+    "ko": "첫 주문서가 실패했을 때, 새 표창을 다 썼을 때, 포션을 채우고 돈이 남지 않을 때의 선택으로 4편을 다시 썼어요. 자세한 가격표와 계산은 글 끝에서 펼쳐 볼 수 있어요.",
+    "en": "Four guides now follow the choices after a failed scroll, an empty star set, a costly restock or an unsold listing. Expand the detailed price tables and calculations at the end."
+   }
+  },
+  {
    "id": "exp-small-window-read",
    "version": "0.7.94",
    "level": "patch",
