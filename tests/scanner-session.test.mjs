@@ -102,3 +102,21 @@ test('a shop read before its channel was known uploads once the channel is recog
   assert.equal(up.length, 1);
   assert.deepEqual((typeof up[0].body === "string" ? JSON.parse(up[0].body) : up[0].body).items.map((i) => [i.channel, i.room]), [[3, 9]]);
 });
+
+test('a refused correction does not hold back the other rows of the shop', async () => {
+  const s = await session();
+  s.show([listing(), listing({ item: { id: 4000001, en: 'Other' }, name: 'Other', price: 50 })]);
+  s.show([listing(), listing({ item: { id: 4000001, en: 'Other' }, name: 'Other', price: 50 })]); await flush();
+  const before = s.requests.filter((r) => r.url === '/api/listings').length;
+  const e = [...s.listings.values()].find((x) => x.r.price === 100);
+  s.control.failFix = true;
+  s.applyEdit(e.r, e.tr, { price: 120 });
+  s.show([listing({ item: { id: 4000002, en: 'New' }, name: 'New', price: 70 })]);
+  s.show([listing({ item: { id: 4000002, en: 'New' }, name: 'New', price: 70 })]); await flush();
+  s.get('scan-retry-upload').listeners.click(); await flush(); // the next retry, as the 2-second backoff would
+  const after = s.requests.filter((r) => r.url === '/api/listings');
+  assert.ok(after.length > before, 'the new row still uploads');
+  const last = after.at(-1).body; const items = (typeof last === 'string' ? JSON.parse(last) : last).items;
+  assert.ok(items.some((i) => i.item === 4000002));
+  assert.ok(!items.some((i) => i.price === 120), 'the corrected row waits for its correction');
+});

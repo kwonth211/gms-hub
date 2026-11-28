@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "scan-correction-no-block",
+   "version": "0.7.90",
+   "level": "patch",
+   "date": "2026-11-28",
+   "path": "/tools/scan/",
+   "ko": "상점 스캔 — 고친 줄이 거절돼도 나머지는 올라감",
+   "en": "Shop Scan — a refused fix no longer stops the other rows",
+   "desc": {
+    "ko": "인식한 줄을 직접 고쳤는데 서버가 그 수정을 받지 못하면 그 뒤 스캔이 하나도 올라가지 않던 문제를 고쳤어요. 이제 다른 줄은 바로 올라가고, 고친 줄은 새 매물로 올리거나 이미 있는 매물에 맞춰 정리해요.",
+    "en": "When a row you fixed by hand was refused, nothing else from the scan went up. Now the other rows upload right away, and the fixed row is sent as new or matched to the listing already stored."
+   }
+  },
+  {
    "id": "scan-late-channel",
    "version": "0.7.89",
    "level": "patch",

@@ -480,15 +480,29 @@ async function upload() {
   let succeeded = false;
   try {
     // Corrections are retried as corrections, never inserted as duplicate new prices.
+    // One refused correction no longer holds back the rest of the shop (2026-11-28: "Correction not acknowledged" stopped
+    // every upload of a run). 404 = the original is not this connection's (its address changed): the corrected row is sent
+    // as a new one. 409 = the corrected listing is already stored: our mistaken original is withdrawn and nothing is sent.
+    // Anything else (network, server) is retried later, after the other rows went up.
+    let correctionFailed = '';
     for (const entry of fresh.filter((e) => e.r.pendingCorrection)) {
-      const res = await fetch(`${i18n.api}/listings/fix`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: entry.r.pendingCorrection, to: entry.body }) });
-      const data = await res.json();
-      if (!res.ok || data.fixed !== 1) throw new Error('Correction not acknowledged');
-      delete entry.r.pendingCorrection;
-      sent.set(entry.key, entry.signature);
+      let res = null, data = {};
+      try {
+        res = await fetch(`${i18n.api}/listings/fix`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from: entry.r.pendingCorrection, to: entry.body }) });
+        data = await res.json().catch(() => ({}));
+      } catch { /* retried below */ }
+      if (res?.ok && data.fixed === 1) { delete entry.r.pendingCorrection; sent.set(entry.key, entry.signature); continue; }
+      if (res?.status === 404) { delete entry.r.pendingCorrection; continue; }
+      if (res?.status === 409) {
+        await fetch(`${i18n.api}/listings/remove`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ listing: entry.r.pendingCorrection }) }).catch(() => null);
+        delete entry.r.pendingCorrection;
+        sent.set(entry.key, entry.signature);
+        continue;
+      }
+      correctionFailed = `fix ${res?.status || 'network'}`;
     }
-    const inserts = fresh.filter((e) => e.beat || sent.get(e.key) !== e.signature);
+    const inserts = fresh.filter((e) => !e.r.pendingCorrection && (e.beat || sent.get(e.key) !== e.signature));
     if (inserts.length) {
       // Logged in with Discord (assets/account.js), the upload counts for the contributor leaderboard under their name.
       const res = await fetch(`${i18n.api}/listings`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(globalThis.gmsAuth?.() || {}) },
@@ -502,6 +516,7 @@ async function upload() {
         sentAt.set(e.key, Date.now());
       }
     }
+    if (correctionFailed) throw new Error(correctionFailed);
     check('upload', 'ok', fill(i18n.uploadOk, { n: uploaded }));
     if (fresh.some((e) => !e.beat)) track('scan_upload', { items: fresh.length });
     showMyShop(fresh.map((e) => e.body.seller));
