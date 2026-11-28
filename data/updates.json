@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "market-stories-home",
+   "version": "0.7.96",
+   "level": "patch",
+   "date": "2026-11-28",
+   "path": "/#market-stories-title",
+   "ko": "홈에서 시세와 메소 이야기 먼저 보기",
+   "en": "Live prices and spending stories first on the home page",
+   "desc": {
+    "ko": "실시간 자유시장을 공지보다 먼저 보여 주고, 장갑·표창·포션·판매 이야기 4편을 바로 열 수 있게 했어요. 매물 수와 판매량을 구분하고 메소 공략의 판매 사례를 저장한 기록에 연결했어요.",
+    "en": "Live market data now comes before announcements, followed by four spending stories. Listing counts are labeled clearly, and the meso guide links its selling example to the saved records."
+   }
+  },
+  {
    "id": "economy-guide-stories",
    "version": "0.7.95",
    "level": "patch",
@@ -397,7 +410,7 @@
    "version": "0.7.65",
    "level": "patch",
    "date": "2026-11-23",
-   "path": "/market/",
+   "path": "/tools/market/",
    "ko": "시세 — 최근 24시간 기준으로",
    "en": "Prices — now based on the last 24 hours",
    "desc": {

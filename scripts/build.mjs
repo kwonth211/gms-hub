@@ -1099,7 +1099,7 @@ const NO_AD_PAGES = new Set(['about', 'bot', 'contact', 'scam']);
 // AdSense tag: Google's approval help says ad code must not sit on automatically generated pages or pages with little
 // content of their own (2026-11-23, after four rejections for "insufficient or low-quality content").
 // AdFit was off 2026-11-26 to 11-28 for the AdSense review; back on after the rejection (owner, 11/28). To switch it off: rename adfit to adfitOff in site.config.json.
-const NO_ADSENSE_PAGES = new Set(['item', 'monster', 'price', 'scam']);
+const NO_ADSENSE_PAGES = new Set(['item', 'monster', 'price', 'scam', 'marketToday']);
 function page({ lang, pageKey, pagePath, title, desc, body, scripts = [], modules = [], ld = [], only, noindex }) {
   // Indexed pages carry ads, except About, the Discord bot page and Contact/sponsorship. Pages kept out of search
   // (noindex: thin item/map detail pages) carry none since 2026-11-17, for the AdSense review ("must pass", owner).
@@ -1166,7 +1166,7 @@ function marketTodayBody(lang) {
   const median = new Map(R.listed.map((r) => [r.item, r.median]));
   const movers = (R.movers || []).filter((r) => Math.abs(r.change) >= 3 && byId.has(r.item));
   const stats = R.stats || {};
-  return `${pageHead(lang, 'coin', `${tr('오늘의 글클메 시세', "Today's MapleStory Classic prices")} <small class="mt-date" translate="no">${esc(dayText)}</small>`, tr('자유시장에서 지금 가장 많이 팔리는 아이템과 최근 고확에 자주 나온 아이템을 매일 정리해요. 모든 숫자는 플레이어 상점 스캔과 게임 확성기에서 모은 실제 기록이에요.', 'Every day: the most listed items in the Free Market and the items named most in recent megaphones. Every number comes from scanned player shops and in-game megaphones.'))}
+  return `${pageHead(lang, 'coin', `${tr('오늘의 글클메 시세', "Today's MapleStory Classic prices")} <small class="mt-date" translate="no">${esc(dayText)}</small>`, tr('자유시장에서 지금 매물이 많은 아이템과 최근 고확에 자주 나온 아이템을 매일 정리해요. 모든 숫자는 플레이어 상점 스캔과 게임 확성기에서 모은 실제 기록이에요.', 'Every day: the most listed items in the Free Market and the items named most in recent megaphones. Every number comes from scanned player shops and in-game megaphones.'))}
 <section class="wrap lab lab-embed" data-lab="market-pulse" data-embed="1" data-lang="${lang}" data-h1="${esc(tr('지금 시세 맥박', 'Live market pulse'))}" data-lead="${esc(tr('하루 전보다 많이 오르고 내린 아이템, 최근 24시간에 많이 팔린 아이템, 방금 판매 완료된 매물이에요. 1분마다 새로 불러오고, 매물이 10건 안 되는 아이템은 오르내림에서 빼요.', 'Biggest moves against a day ago, best sellers of the last 24 hours and the listings just marked sold. Refreshed every minute; items with under 10 open listings are left out of the movers.'))}" data-api="${esc(config.voteApi)}" data-market="${market}"><h2>${tr('지금 시세 맥박', 'Live market pulse')}</h2><div aria-busy="true" aria-label="${tr('불러오는 중…', 'Loading…')}"></div></section>
 <div class="wrap market-today">
 <dl class="mt-stats">${[[tr('판매 중 매물', 'Open listings'), stats.listings], [tr('아이템 종류', 'Items'), stats.items], [tr('상점', 'Shops'), stats.shops]].filter(([, v]) => v).map(([k, v]) => `<div><dt>${k}</dt><dd>${nf(v)}</dd></div>`).join('')}</dl>
@@ -1378,6 +1378,18 @@ ${sections}
 </div>`;
 }
 
+function marketStories(lang) {
+  const ko = lang === 'ko';
+  const picks = [
+    ['work-gloves-buy-or-scroll', '장갑을 직접 만들기 전에', 'Before scrolling gloves', '노작은 싸게 샀는데 주문서에서 돈이 나가요. 첫 장이 실패했을 때 멈출 자리까지 짚었어요.', 'The clean gloves look cheap, then the scroll bill grows. Know where to stop after the first failure.'],
+    ['throwing-star-budget', '토비 한 통을 사고 남은 돈', 'After buying one set of Tobi', '새 표창을 다 써도 사냥은 이어져요. 아대와 장갑 살 돈을 남기면서 표창을 채우세요.', 'Hunting continues when the new stars run out. Fill your supply while keeping claw and glove money aside.'],
+    ['potion-mp-cost', '사냥했는데 포션값만 나간다면', 'When restocking eats your earnings', 'MP통이 커졌다면 포션 단축키도 바꿀 때예요. 어떤 포션을 언제 눌러야 덜 쓰는지 풀었어요.', 'A bigger MP pool changes which potion pays off. Choose what to use and when to use it.'],
+    ['glove-scroll-selling-price', '옆 상점 가격인데 왜 안 팔릴까요', 'Why matching the next shop falls short', '같은 금액을 깎아도 내 앞의 매물이 줄어드는 폭은 달라요. 덜 깎고 팔 자리를 찾으세요.', 'The same price cut can move you past very different amounts of stock. Find a place to sell without giving up more than needed.']
+  ];
+  const cards = picks.filter(([slug]) => publishedGuides.some(g => g.slug === slug && g.lang === lang)).map(([slug, kt, et, kd, ed]) => `<a class="tool-card" href="${href(langPath(lang, `/guides/${slug}/`))}" data-discover="home_market_story" data-discover-place="home-stories"><strong>${esc(ko ? kt : et)}</strong><p>${esc(ko ? kd : ed)}</p><span>${ko ? '이야기 읽기 →' : 'Read the story →'}</span></a>`).join('');
+  return `<section class="wrap home-market-stories" aria-labelledby="market-stories-title"><h2 id="market-stories-title">${ko ? '메소 쓰기 전에 읽어보세요' : 'Before you spend your mesos'}</h2><p>${ko ? '우리 자유시장 기록에서 찾은 장갑·표창·포션·판매 이야기예요. 살 때 아낄 돈과 팔 때 놓치기 쉬운 차이를 짚었어요.' : 'Stories drawn from our Free Market records: what costs you when buying gloves, stars and potions, and what holds up a sale.'}</p><div class="tool-cards">${cards}</div></section>`;
+}
+
 function homeBody(lang) {
   const t = T[lang];
   const cats = sites.categories;
@@ -1513,11 +1525,12 @@ ${jsonScript('home-routes', training.routes.map((r) => ({ id: r.id, title: r.tit
   mobs: r.mobs.flatMap((m) => [m.ko, m.en]), href: href(langPath(lang, `/tools/training/?lv=${r.level.min}#route-${r.id}`)) })))}
 ${jsonScript('home-classes', TR_CLASSES.map((c) => ({ slug: c.slug, job: c.job, title: lang === 'ko' ? `${c.ko} 사냥터` : `${c.en} training routes`, n: classRoutes(c).length,
   href: href(langPath(lang, classFinder(c))), keywords: `${c.ko} ${c.en} ${jobNames.ko[c.job]} ${jobNames.en[c.job]}` })))}
-${gameNews(lang)}
-${updatesSection(lang)}
 ${body[0]}
 ${AD_MID}
 <section class="wrap my-char" id="my-char" data-finder="${esc(href(langPath(lang, '/tools/training/')))}" data-hub="${esc(href(`/assets/char-hub.json?v=${moduleVersion}-${BUILD_DATE}`))}" data-skills="${esc(href(langPath(lang, '/skills/')))}" data-skill-icons="${esc(href('/assets/skills/'))}" data-avatars="${esc(href('/assets/char/'))}" data-equip="${esc(href(langPath(lang, '/equipment/')))}" data-quests="${esc(href(langPath(lang, '/quests/')))}" data-market="${esc(href(langPath(lang, '/tools/market/')))}" hidden></section>
+${marketStories(lang)}
+${gameNews(lang)}
+${updatesSection(lang)}
 ${body.slice(1).join('\n')}
 <section class="wrap faq">
 <h2>${t.faqHeading}</h2>

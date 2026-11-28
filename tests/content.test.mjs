@@ -30,6 +30,18 @@ test('home and market fetch the current collection-status module even for return
   }
 });
 
+test('automated market rankings keep their content without an AdSense tag, while editorial guides retain theirs', () => {
+  for (const lang of ['ko', 'en']) {
+    const today = read(`dist/${lang}/tools/market/today/index.html`);
+    assert.ok(!today.includes('pagead/js/adsbygoogle.js'));
+    assert.ok(!today.includes('name="google-adsense-account"'));
+    assert.ok(today.includes('class="mt-rank"'));
+    const guide = read(`dist/${lang}/guides/glove-scroll-selling-price/index.html`);
+    assert.ok(guide.includes('pagead/js/adsbygoogle.js'));
+    assert.ok(guide.includes('/assets/research/selling-2026-11-28.csv'));
+  }
+});
+
 test('market discovery links reach item pages and compact price labels preserve the market workspace', () => {
   for (const lang of ['ko', 'en']) {
     const market = read(`dist/${lang}/tools/market/index.html`);

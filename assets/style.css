@@ -315,6 +315,8 @@ h2 { font-size: 1.35rem; margin: 48px 0 16px; }
 .tool-card strong { font-size: 1.1rem; }
 .tool-card p { margin: 0; color: var(--muted); font-size: 0.9rem; flex: 1; }
 .tool-card span { color: var(--accent); font-weight: 800; font-size: 0.9rem; }
+.home-market-stories { margin-top: 28px; margin-bottom: 28px; }
+.home-market-stories > p { color: var(--muted); }
 .prose .guide-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--muted); font-size: 0.9rem; }
 .guide-tools a { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); color: var(--text); font-weight: 700; text-decoration: none; }
 .guide-tools a:hover { border-color: var(--accent); }
