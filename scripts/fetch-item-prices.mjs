@@ -14,7 +14,10 @@ try {
   // stats: [records, shops, sold, soldMedian, typicalDay] over the catalog window (7 days), for each item's own sentences.
   let now = {}, recent = {}, stats = {};
   try {
-    const c = await fetch(`${config.voteApi}/market/catalog`, { headers: process.env.GMS_READ_KEY ? { 'X-Gms-Key': process.env.GMS_READ_KEY } : {}, signal: AbortSignal.timeout(20000) }).then((r) => (r.ok ? r.json() : null));
+    // Asked twice, five seconds apart: a single 503 on 2026-11-28 baked "0 for sale now" into every item page.
+    const ask = () => fetch(`${config.voteApi}/market/catalog`, { headers: process.env.GMS_READ_KEY ? { 'X-Gms-Key': process.env.GMS_READ_KEY } : {}, signal: AbortSignal.timeout(20000) }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    const c = (await ask()) || (await new Promise((r) => setTimeout(r, 5000)).then(ask));
+    if (!c?.items?.length) throw new Error('catalog unavailable');
     for (const r of c?.items || []) {
       if (r.records > 0) stats[r.item] = [r.records, r.shops || 0, r.sold || 0, r.soldMedian ?? null, r.typicalDay ?? null];
       if (r.open > 0 && r.median != null) now[r.item] = [r.median, r.low, r.open];
@@ -22,7 +25,9 @@ try {
       else if (r.typical) recent[r.item] = r.typical;
     }
   } catch (e) {
-    console.warn(`item prices: no live catalog (${e.message})`);
+    // Keep the last good live numbers rather than writing none, when they are at most two days old.
+    try { const old = JSON.parse(readFileSync(file, 'utf8')); if (Date.now() - Date.parse(old.updated) < 2 * 86400000) ({ now = {}, recent = {}, stats = {} } = old); } catch { /* no earlier file */ }
+    console.warn(`item prices: no live catalog (${e.message}); kept ${Object.keys(now).length} earlier "for sale now" numbers`);
   }
   writeFileSync(file, `${JSON.stringify({ updated: new Date().toISOString(), prices, now, recent, stats })}\n`);
   console.log(`item prices: ${Object.keys(prices).length} items, ${Object.keys(now).length} for sale now`);

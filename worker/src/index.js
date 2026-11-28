@@ -274,6 +274,32 @@ async function dataVersion(env) {
   const r = await env.DB.prepare('SELECT (SELECT MAX(last_seen) FROM listings) AS l, (SELECT MAX(id) FROM prices) AS p').first();
   return `${r?.l || ''}|${r?.p || ''}`;
 }
+// The 14-day price summary of every item for the item pages (GET /prices/all), stored as the 'prices-all' snapshot.
+// Only player scans and reports count, never imported rows. Read in item ranges of ~120 known items, one after another
+// with a short pause: one query passed D1's 50 MB result limit on 2026-11-27, and ranges run four at a time overloaded
+// D1 on 2026-11-28. Each range is summarised and dropped before the next one, so the worker never holds every row.
+async function refreshPricesAll(env) {
+  const real = "reporter NOT LIKE 'initial:%' AND reporter NOT LIKE 'seed:%'";
+  const { results: known } = await env.DB.prepare('SELECT item FROM item_market ORDER BY item').all();
+  const ids = known.map((r) => r.item), edges = [0];
+  for (let i = 120; i < ids.length; i += 120) edges.push(ids[i]);
+  edges.push(Number.MAX_SAFE_INTEGER);
+  const out = {};
+  for (let k = 0; k + 1 < edges.length; k++) {
+    const { results } = await env.DB.prepare(
+      `SELECT item, price, kind, created_at FROM prices WHERE item >= ?1 AND item < ?2 AND created_at >= ${WINDOW} AND ${real}
+       UNION ALL
+       SELECT item, price, CASE WHEN sold THEN 'sold' ELSE 'selling' END, last_seen FROM listings WHERE item >= ?1 AND item < ?2 AND last_seen >= ${WINDOW} AND ${real}`
+    ).bind(edges[k], edges[k + 1]).all();
+    const byItem = new Map();
+    for (const r of results) (byItem.get(r.item) || byItem.set(r.item, []).get(r.item)).push(r);
+    for (const [item, rows] of byItem) out[item] = recentSummary(rows);
+    await new Promise((r) => setTimeout(r, 300));
+  }
+  await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES ('prices-all',?,datetime('now'))").bind(JSON.stringify(out)).run();
+  return out;
+}
+
 async function freshSnapshot(env, key, minutes) {
   const row = await env.DB.prepare('SELECT json, at FROM snapshots WHERE key = ?').bind(key).first();
   if (!row) return null;
@@ -492,6 +518,8 @@ const api = {
       if (await marketToDiscord(env, cat, await itemLabel())) await env.DB.prepare("INSERT OR REPLACE INTO snapshots (key,json,at) VALUES (?,'1',datetime('now'))").bind(key).run();
     })().catch(fail('discord-market')));
     ctx.waitUntil(checkAlerts(env).catch(fail('price-alerts')));
+    // The item pages' price snapshot (/prices/all), four times a day on a tick nothing else heavy runs on.
+    if (now.getUTCHours() % 6 === 1 && now.getUTCMinutes() >= 30 && now.getUTCMinutes() < 45) ctx.waitUntil(refreshPricesAll(env).catch(fail('prices-all')));
   },
 
   async fetch(req, env, ctx) {
@@ -651,30 +679,14 @@ const api = {
     }
 
     if (url.pathname === '/prices/all' && req.method === 'GET') {
-      // Item pages bake these into static HTML for search engines, so only player scans and reports count, never imported rows.
-      const real = "reporter NOT LIKE 'initial:%' AND reporter NOT LIKE 'seed:%'";
-      // Read in item ranges of ~120 known items each: 14 days of listings passed 1.1 million rows on 2026-11-27 and one
-      // query answered "D1 query result exceeded the maximum response size limit of 50 MB" (builds kept 11/22 prices).
-      // Each range is summarised and dropped before the next one, so the worker never holds every row at once.
-      const { results: known } = await env.DB.prepare('SELECT item FROM item_market ORDER BY item').all();
-      const ids = known.map((r) => r.item), edges = [0];
-      for (let i = 120; i < ids.length; i += 120) edges.push(ids[i]);
-      edges.push(Number.MAX_SAFE_INTEGER);
-      const out = {};
-      const range = async (k) => {
-        const { results } = await env.DB.prepare(
-          `SELECT item, price, kind, created_at FROM prices WHERE item >= ?1 AND item < ?2 AND created_at >= ${WINDOW} AND ${real}
-           UNION ALL
-           SELECT item, price, CASE WHEN sold THEN 'sold' ELSE 'selling' END, last_seen FROM listings WHERE item >= ?1 AND item < ?2 AND last_seen >= ${WINDOW} AND ${real}`
-        ).bind(edges[k], edges[k + 1]).all();
-        const byItem = new Map();
-        for (const r of results) (byItem.get(r.item) || byItem.set(r.item, []).get(r.item)).push(r);
-        for (const [item, rows] of byItem) out[item] = recentSummary(rows);
-      };
-      // Four ranges at a time: one after another took 11 s from Korea and passed the build's 20 s limit from GitHub.
-      for (let k = 0; k + 1 < edges.length; k += 4) await Promise.all([k, k + 1, k + 2, k + 3].filter((j) => j + 1 < edges.length).map(range));
-      // Read by the site build only (item pages bake it); six hours of staleness is fine and keeps the 14-day scan rare.
-      return json(out, cors, 200, 'public, max-age=21600');
+      // Read by the site build only (item pages bake it). Served from a snapshot the cron remakes every six hours
+      // (refreshPricesAll): computing it per request read 1.1 million rows in parallel and overloaded D1 at 14:20 and
+      // 14:40 on 2026-11-28, failing /market/top and /market/catalog with it. Only the very first request computes.
+      const row = await env.DB.prepare("SELECT json, at FROM snapshots WHERE key = 'prices-all'").first();
+      if (!row) return json(await refreshPricesAll(env), cors, 200, 'public, max-age=3600');
+      const age = (Date.now() - Date.parse(`${row.at.replace(' ', 'T')}Z`)) / 3600000;
+      if (age > 12) ctx?.waitUntil?.(refreshPricesAll(env).catch((e) => logError(env, 'cron', 'prices-all', 0, { e })));
+      return new Response(row.json, { headers: { ...cors, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' } });
     }
 
     if (url.pathname === '/prices/recent' && req.method === 'GET') {
