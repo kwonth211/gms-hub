@@ -1,0 +1,139 @@
+{
+  "date": "2026-11-28",
+  "capturedFrom": "2026-11-28T05:37:15.243Z",
+  "capturedTo": "2026-11-28T05:37:16.952Z",
+  "stars": [
+    {
+      "id": 2070001,
+      "name": "Wolbi Throwing Stars",
+      "attack": 17,
+      "baseCapacity": 500,
+      "listings": 289,
+      "sellers": 259,
+      "low": 1099,
+      "median": 1699
+    },
+    {
+      "id": 2070002,
+      "name": "Mokbi Throwing Stars",
+      "attack": 19,
+      "baseCapacity": 700,
+      "listings": 183,
+      "sellers": 168,
+      "low": 239999,
+      "median": 299999
+    },
+    {
+      "id": 2070009,
+      "name": "Wooden Top",
+      "attack": 19,
+      "baseCapacity": 800,
+      "listings": 128,
+      "sellers": 119,
+      "low": 260000,
+      "median": 300000
+    },
+    {
+      "id": 2070003,
+      "name": "Kumbi Throwing Stars",
+      "attack": 21,
+      "baseCapacity": 700,
+      "listings": 231,
+      "sellers": 207,
+      "low": 777777,
+      "median": 890000
+    },
+    {
+      "id": 2070010,
+      "name": "Icicle",
+      "attack": 21,
+      "baseCapacity": 800,
+      "listings": 102,
+      "sellers": 99,
+      "low": 1090000,
+      "median": 1294443.5
+    },
+    {
+      "id": 2070004,
+      "name": "Tobi Throwing Stars",
+      "attack": 23,
+      "baseCapacity": 1000,
+      "listings": 43,
+      "sellers": 41,
+      "low": 4000000,
+      "median": 4300000
+    },
+    {
+      "id": 2070005,
+      "name": "Steely Throwing Knives",
+      "attack": 25,
+      "baseCapacity": 1000,
+      "listings": 20,
+      "sellers": 17,
+      "low": 18999999,
+      "median": 19999999
+    }
+  ],
+  "upgrades": [
+    {
+      "from": 2070001,
+      "to": 2070002,
+      "attackGain": 2,
+      "oneSetDifference": 298300,
+      "fiveSetsDifference": 1491500
+    },
+    {
+      "from": 2070002,
+      "to": 2070003,
+      "attackGain": 2,
+      "oneSetDifference": 590001,
+      "fiveSetsDifference": 2950005
+    },
+    {
+      "from": 2070003,
+      "to": 2070004,
+      "attackGain": 2,
+      "oneSetDifference": 3410000,
+      "fiveSetsDifference": 17050000
+    },
+    {
+      "from": 2070004,
+      "to": 2070005,
+      "attackGain": 2,
+      "oneSetDifference": 15699999,
+      "fiveSetsDifference": 78499995
+    }
+  ],
+  "budgets": [
+    {
+      "id": 2070003,
+      "sets": 5,
+      "cost": 4450000,
+      "baseCapacity": 3500
+    },
+    {
+      "id": 2070004,
+      "sets": 2,
+      "cost": 8600000,
+      "baseCapacity": 2000
+    },
+    {
+      "id": 2070004,
+      "sets": 5,
+      "cost": 21500000,
+      "baseCapacity": 5000
+    },
+    {
+      "id": 2070005,
+      "sets": 1,
+      "cost": 19999999,
+      "baseCapacity": 1000
+    }
+  ],
+  "mixedBasket": {
+    "tobi": 1,
+    "kumbi": 4,
+    "cost": 7860000,
+    "baseCapacity": 3800
+  }
+}

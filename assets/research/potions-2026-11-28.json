@@ -1,0 +1,191 @@
+{
+  "date": "2026-11-28",
+  "capturedFrom": "2026-11-28T05:37:15.243Z",
+  "capturedTo": "2026-11-28T05:37:16.952Z",
+  "potions": [
+    {
+      "id": 2000003,
+      "name": "Blue Potion",
+      "spec": {
+        "mp": 200
+      },
+      "listings": 141,
+      "sellers": 133,
+      "low": 180,
+      "median": 210
+    },
+    {
+      "id": 2000004,
+      "name": "Elixir",
+      "spec": {
+        "hpR": 35,
+        "mpR": 35
+      },
+      "listings": 156,
+      "sellers": 154,
+      "low": 700,
+      "median": 888
+    },
+    {
+      "id": 2000006,
+      "name": "Mana Elixir",
+      "spec": {
+        "mpR": 50
+      },
+      "listings": 41,
+      "sellers": 39,
+      "low": 1000,
+      "median": 1399
+    },
+    {
+      "id": 2000005,
+      "name": "Power Elixir",
+      "spec": {
+        "hpR": 100,
+        "mpR": 100
+      },
+      "listings": 30,
+      "sellers": 29,
+      "low": 2399,
+      "median": 2555
+    }
+  ],
+  "mpCosts": [
+    {
+      "maxMP": 1500,
+      "potions": [
+        {
+          "id": 2000003,
+          "restored": 200,
+          "costPer1000": 1050
+        },
+        {
+          "id": 2000004,
+          "restored": 525,
+          "costPer1000": 1691.4285714285713
+        },
+        {
+          "id": 2000006,
+          "restored": 750,
+          "costPer1000": 1865.3333333333333
+        },
+        {
+          "id": 2000005,
+          "restored": 1500,
+          "costPer1000": 1703.3333333333333
+        }
+      ]
+    },
+    {
+      "maxMP": 2500,
+      "potions": [
+        {
+          "id": 2000003,
+          "restored": 200,
+          "costPer1000": 1050
+        },
+        {
+          "id": 2000004,
+          "restored": 875,
+          "costPer1000": 1014.8571428571429
+        },
+        {
+          "id": 2000006,
+          "restored": 1250,
+          "costPer1000": 1119.2
+        },
+        {
+          "id": 2000005,
+          "restored": 2500,
+          "costPer1000": 1022
+        }
+      ]
+    },
+    {
+      "maxMP": 4000,
+      "potions": [
+        {
+          "id": 2000003,
+          "restored": 200,
+          "costPer1000": 1050
+        },
+        {
+          "id": 2000004,
+          "restored": 1400,
+          "costPer1000": 634.2857142857143
+        },
+        {
+          "id": 2000006,
+          "restored": 2000,
+          "costPer1000": 699.5
+        },
+        {
+          "id": 2000005,
+          "restored": 4000,
+          "costPer1000": 638.75
+        }
+      ]
+    },
+    {
+      "maxMP": 6000,
+      "potions": [
+        {
+          "id": 2000003,
+          "restored": 200,
+          "costPer1000": 1050
+        },
+        {
+          "id": 2000004,
+          "restored": 2100,
+          "costPer1000": 422.85714285714283
+        },
+        {
+          "id": 2000006,
+          "restored": 3000,
+          "costPer1000": 466.3333333333333
+        },
+        {
+          "id": 2000005,
+          "restored": 6000,
+          "costPer1000": 425.8333333333333
+        }
+      ]
+    }
+  ],
+  "thresholds": [
+    {
+      "id": 2000004,
+      "maxMP": 2418
+    },
+    {
+      "id": 2000006,
+      "maxMP": 2666
+    },
+    {
+      "id": 2000005,
+      "maxMP": 2434
+    }
+  ],
+  "partial": [
+    {
+      "id": 2000003,
+      "restored": 200,
+      "costPer1000": 1050
+    },
+    {
+      "id": 2000004,
+      "restored": 500,
+      "costPer1000": 1776
+    },
+    {
+      "id": 2000006,
+      "restored": 500,
+      "costPer1000": 2798
+    },
+    {
+      "id": 2000005,
+      "restored": 500,
+      "costPer1000": 5110
+    }
+  ]
+}

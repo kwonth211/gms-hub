@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "original-economy-guides",
+   "version": "0.7.93",
+   "level": "minor",
+   "date": "2026-11-28",
+   "path": "/guides/",
+   "ko": "실제 시세로 푼 표창·포션·판매 가격 가이드 3편",
+   "en": "Three market studies: stars, potion costs and scroll selling prices",
+   "desc": {
+    "ko": "표창 예산별 구성, MP별 포션 회복 비용, 장공 중급 3,363건의 판매 완료 비율을 계산했어요. 각 글에 가격 집계표와 실시간 시세·도구 연결을 넣었어요.",
+    "en": "Plan star purchases, price MP recovery and read sold-mark shares across 3,363 scroll listings. Each study includes downloadable tables and links to live prices and tools."
+   }
+  },
+  {
    "id": "work-gloves-buy-or-scroll",
    "version": "0.7.92",
    "level": "minor",

@@ -29,6 +29,7 @@ export function sellBody({ lang, api, itemsUrl, marketUrl, megaphoneUrl }) {
       ['star', t('팔린 비율 보기', 'Read the share sold'), t('막대를 누르면 그 값대로 바뀌어요.', 'Tap a bar to jump to that price.')]]
   })}
 <div class="wrap trd-page" id="sl-page" data-api="${esc(api)}" data-items="${esc(itemsUrl)}" data-market="${esc(marketUrl)}">
+<p class="trd-next"><a href="/${lang}/guides/glove-scroll-selling-price/" data-discover="selling_from_calc">${t('장공 중급 3,363건으로 본 판매 가격: 10만을 내리면 몇 건 앞으로 갈까요?', 'Pricing 3,363 Gloves Attack listings: what does a 100k cut change?')}</a></p>
 <section class="trd-result" id="sl-result" hidden aria-live="polite">
 <header class="trd-item" id="sl-item"></header>
 <div class="trd-groups" id="sl-groups" role="group" aria-label="${t('옵션 고르기', 'Pick the options')}" hidden></div>

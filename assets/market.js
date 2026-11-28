@@ -769,7 +769,12 @@ async function loadItem(id, { reset = true, source = "list" } = {}) {
     stats = detailPriceStats(s);
   // The item's own page (full view: chart, megaphones, listings, drops, quests) sits in the header, beside "copy link".
   const pageLink = !FIXED && D.itemPaths?.[id] ? `<a class="btn ghost small-btn mb-item-page" href="${esc(marketSharePath({ itemPath: D.itemPaths[id], opt: detailState.opt, opts: exactFor(id)?.filter }))}">${esc(D.itemLink)}</a>` : "";
-  const studyLink = [1082000, 2040800, 2040801].includes(id) ? `<p class="muted note"><a href="/${ko ? 'ko' : 'en'}/guides/work-gloves-buy-or-scroll/" data-discover="glove_study_from_market">${tr("목장갑 직작 vs 완제품: 같은 옵션으로 계산한 손익", "Work Gloves: buy or scroll? Costs for matching options")}</a></p>` : "";
+  const studies = [];
+  if ([1082000, 2040800, 2040801].includes(id)) studies.push(['work-gloves-buy-or-scroll', 'glove_study_from_market', tr('목장갑 직작 vs 완제품: 같은 옵션으로 계산한 손익', 'Work Gloves: buy or scroll? Costs for matching options')]);
+  if ([2070001, 2070002, 2070003, 2070004, 2070005, 2070009, 2070010].includes(id)) studies.push(['throwing-star-budget', 'stars_from_market', tr('표창 예산표: 금비·토비·뇌전 몇 묶음을 살까요?', 'Star budget: how many Kumbi, Tobi or Steely sets?')]);
+  if ([2000003, 2000004, 2000005, 2000006].includes(id)) studies.push(['potion-mp-cost', 'potions_from_market', tr('포션값 줄이기: 내 최대 MP에 맞는 회복 비용', 'Potion costs for your maximum MP')]);
+  if (id === 2040801) studies.push(['glove-scroll-selling-price', 'selling_from_market', tr('장공 중급 판매 가격: 3,363건의 완료 비율과 경쟁 매물', 'Gloves Attack pricing: sold shares and competing listings')]);
+  const studyLink = studies.length ? `<p class="muted note">${studies.map(([slug, feature, title]) => `<a href="/${ko ? 'ko' : 'en'}/guides/${slug}/" data-discover="${feature}">${title}</a>`).join(' · ')}</p>` : '';
   priceData = null;
   if ($("mb-alert")) $("mb-alert").hidden = true;
   fillItemInfo(id);

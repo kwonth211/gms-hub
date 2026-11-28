@@ -2765,6 +2765,7 @@ const guideTool = (lang, key) => {
     damage: ['/tools/damage/', 'hammer', DMG[lang].h1, DMG[lang].cardDesc],
     scroll: ['/tools/scroll/', 'scroll', t.navScroll, t.scCardDesc],
     'scroll-profit': ['/tools/scroll-profit/', 'scroll', lang === 'ko' ? '작 손익 계산기' : 'Scroll profit calculator', lang === 'ko' ? '장비와 주문서를 고르면 쓰는 돈과 결과별 확률, 팔 값을 보여 줘요.' : 'Pick your gear and scrolls to see the cost, outcome odds and selling prices.'],
+    sell: ['/tools/sell/', 'coin', lang === 'ko' ? '얼마에 올려야 팔릴까' : 'What price sells?', lang === 'ko' ? '올릴 가격을 넣으면 더 싼 매물 수와 가격대별 판매 완료 비율이 나와요.' : 'Enter a price to see cheaper listings and sold-mark shares by price band.'],
     'drop-rate': ['/tools/drop-rate/', 'bag', t.navDrop, t.dropCardDesc],
     market: ['/tools/market/', 'coin', t.navMarket, MK[lang].lead],
     price: ['/tools/price/', 'coin', t.navPrice, PR[lang].cardDesc],

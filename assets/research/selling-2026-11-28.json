@@ -1,0 +1,76 @@
+{
+  "date": "2026-11-28",
+  "capturedFrom": "2026-11-28T05:37:15.243Z",
+  "capturedTo": "2026-11-28T05:37:16.952Z",
+  "item": 2040801,
+  "open": {
+    "listings": 434,
+    "sellers": 405,
+    "low": 1550000,
+    "median": 1819999.5
+  },
+  "historyListings": 3363,
+  "markedSold": 686,
+  "bands": [
+    {
+      "lo": 0,
+      "hi": 1600000,
+      "listings": 1588,
+      "sold": 389,
+      "share": 0.24496221662468515
+    },
+    {
+      "lo": 1600000,
+      "hi": 1800000,
+      "listings": 1154,
+      "sold": 289,
+      "share": 0.25043327556325823
+    },
+    {
+      "lo": 1800000,
+      "hi": 2000000,
+      "listings": 554,
+      "sold": 8,
+      "share": 0.01444043321299639
+    },
+    {
+      "lo": 2000000,
+      "hi": null,
+      "listings": 67,
+      "sold": 0,
+      "share": 0
+    }
+  ],
+  "ranks": [
+    {
+      "price": 1550000,
+      "cheaper": 0,
+      "samePrice": 1
+    },
+    {
+      "price": 1600000,
+      "cheaper": 1,
+      "samePrice": 0
+    },
+    {
+      "price": 1700000,
+      "cheaper": 4,
+      "samePrice": 3
+    },
+    {
+      "price": 1800000,
+      "cheaper": 161,
+      "samePrice": 50
+    },
+    {
+      "price": 1900000,
+      "cheaper": 338,
+      "samePrice": 23
+    },
+    {
+      "price": 2000000,
+      "cheaper": 406,
+      "samePrice": 15
+    }
+  ]
+}

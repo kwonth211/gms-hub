@@ -1,6 +1,142 @@
 {
   "guides": [
     {
+      "slug": "throwing-star-budget",
+      "lang": "ko",
+      "title": "글클메 표창 구매 순서: 1,000만 메소로 금비·토비 몇 통을 살까",
+      "h1": "글클메 표창 구매 순서: 1,000만 메소로 금비·토비 몇 통을 살까",
+      "desc": "월비부터 뇌전까지 공격력 2의 가격, 같은 공격력인 표창의 충전량, 500만·1,000만 예산 구성을 실제 자유시장 가격으로 계산했어요.",
+      "published": "2026-11-28",
+      "updated": "2026-11-28",
+      "reviewed": "2026-11-28",
+      "status": "published",
+      "evidenceKind": "original-market-study",
+      "toc": false,
+      "sources": [
+        {
+          "title": "GMS Hub stars study — November 28, 2026",
+          "url": "https://gms-hub.com/assets/research/stars-2026-11-28.json"
+        }
+      ],
+      "tools": [
+        "market",
+        "damage"
+      ]
+    },
+    {
+      "slug": "throwing-star-budget",
+      "lang": "en",
+      "title": "Throwing star budget: Kumbi, Tobi or Steely with 10m mesos?",
+      "h1": "Throwing star budget: Kumbi, Tobi or Steely with 10m mesos?",
+      "desc": "Actual market prices for star upgrades, base capacity and 5m/10m baskets. See where another 2 ATT becomes expensive and when to save for gloves or a claw.",
+      "published": "2026-11-28",
+      "updated": "2026-11-28",
+      "reviewed": "2026-11-28",
+      "status": "published",
+      "evidenceKind": "original-market-study",
+      "toc": false,
+      "sources": [
+        {
+          "title": "GMS Hub stars study — November 28, 2026",
+          "url": "https://gms-hub.com/assets/research/stars-2026-11-28.json"
+        }
+      ],
+      "tools": [
+        "market",
+        "damage"
+      ]
+    },
+    {
+      "slug": "potion-mp-cost",
+      "lang": "ko",
+      "title": "글클메 포션값 줄이기: 최대 MP별 엘릭서·파란 포션 구매선",
+      "h1": "글클메 포션값 줄이기: 최대 MP별 엘릭서·파란 포션 구매선",
+      "desc": "엘릭서 35%·마나 엘릭서 50% 회복에 실제 가격을 넣었어요. 최대 MP별 1,000 회복 비용, 넘치는 회복량, 마나 엘릭서 구매선을 계산해요.",
+      "published": "2026-11-28",
+      "updated": "2026-11-28",
+      "reviewed": "2026-11-28",
+      "status": "published",
+      "evidenceKind": "original-market-study",
+      "toc": false,
+      "sources": [
+        {
+          "title": "GMS Hub potions study — November 28, 2026",
+          "url": "https://gms-hub.com/assets/research/potions-2026-11-28.json"
+        }
+      ],
+      "tools": [
+        "market"
+      ]
+    },
+    {
+      "slug": "potion-mp-cost",
+      "lang": "en",
+      "title": "Spend less on potions: Elixir and Blue Potion costs by maximum MP",
+      "h1": "Spend less on potions: Elixir and Blue Potion costs by maximum MP",
+      "desc": "MP recovery costs from actual asking prices: 35% Elixir, 50% Mana Elixir, Blue Potion and Power Elixir. Includes maximum-MP thresholds and wasted recovery.",
+      "published": "2026-11-28",
+      "updated": "2026-11-28",
+      "reviewed": "2026-11-28",
+      "status": "published",
+      "evidenceKind": "original-market-study",
+      "toc": false,
+      "sources": [
+        {
+          "title": "GMS Hub potions study — November 28, 2026",
+          "url": "https://gms-hub.com/assets/research/potions-2026-11-28.json"
+        }
+      ],
+      "tools": [
+        "market"
+      ]
+    },
+    {
+      "slug": "glove-scroll-selling-price",
+      "lang": "ko",
+      "title": "장공 중급 얼마에 팔까: 3,363건으로 본 170만·180만의 차이",
+      "h1": "장공 중급 얼마에 팔까: 3,363건으로 본 170만·180만의 차이",
+      "desc": "장공 중급의 최근 7일 매물 3,363건을 가격대로 나눴어요. 판매 완료 표시 비율과 현재 경쟁 매물 수로 장당 10만을 내릴 때 달라지는 순서를 계산했어요.",
+      "published": "2026-11-28",
+      "updated": "2026-11-28",
+      "reviewed": "2026-11-28",
+      "status": "published",
+      "evidenceKind": "original-market-study",
+      "toc": false,
+      "sources": [
+        {
+          "title": "GMS Hub selling study — November 28, 2026",
+          "url": "https://gms-hub.com/assets/research/selling-2026-11-28.json"
+        }
+      ],
+      "tools": [
+        "sell",
+        "market"
+      ]
+    },
+    {
+      "slug": "glove-scroll-selling-price",
+      "lang": "en",
+      "title": "Pricing Gloves Attack scrolls: 3,363 listings show the 1.7m–1.8m gap",
+      "h1": "Pricing Gloves Attack scrolls: 3,363 listings show the 1.7m–1.8m gap",
+      "desc": "Seven days of 3,363 Gloves Attack scroll listings, with sold-mark shares and current competition. See what a 100k reduction changes in price order.",
+      "published": "2026-11-28",
+      "updated": "2026-11-28",
+      "reviewed": "2026-11-28",
+      "status": "published",
+      "evidenceKind": "original-market-study",
+      "toc": false,
+      "sources": [
+        {
+          "title": "GMS Hub selling study — November 28, 2026",
+          "url": "https://gms-hub.com/assets/research/selling-2026-11-28.json"
+        }
+      ],
+      "tools": [
+        "sell",
+        "market"
+      ]
+    },
+    {
       "slug": "work-gloves-buy-or-scroll",
       "lang": "en",
       "title": "Buy 6 ATT Work Gloves: the real cost of five 60% scrolls",
