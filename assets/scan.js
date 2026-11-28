@@ -138,7 +138,8 @@ function changed(a, b) {
 // window itself can be any size. The scale is measured from the shop list's separator lines in the raw frame (the screen's
 // pixel ratio is the first guess), and each frame is drawn back down to game pixels before reading: nearest-neighbour for
 // whole-number scales, which restores letters exactly, smoothed otherwise, where the reader's letter matching absorbs the rest.
-let scale = Math.round((window.devicePixelRatio || 1) * 4) / 4;
+const DEFAULT_SCALE = Math.round((window.devicePixelRatio || 1) * 4) / 4;
+let scale = DEFAULT_SCALE, scaleFrame = '';
 let lastFull = null;
 
 // OCR fallback for unreadable text, including compressed or unfamiliar glyphs at 1x.
@@ -234,7 +235,10 @@ function grab() {
   const full = raw();
   lastFull = full;
   const measured = detectScale(full.getContext('2d').getImageData(0, 0, full.width, full.height));
-  if (measured) scale = Math.abs(measured - Math.round(measured)) < 0.04 ? Math.round(measured) : measured;
+  if (measured) { scale = Math.abs(measured - Math.round(measured)) < 0.04 ? Math.round(measured) : measured; scaleFrame = `${full.width}x${full.height}`; }
+  // A scale measured on another picture size is stale (2026-11-28: a 2560x1440 share measured 1.88, then a 1365x768 window
+  // was shrunk by 1.88 to 726x408 and its room number never read). A new size starts from the default until measured.
+  else if (scaleFrame && scaleFrame !== `${full.width}x${full.height}`) { scale = DEFAULT_SCALE; scaleFrame = ''; }
   if (scale === 1) return full;
   const c = document.createElement('canvas');
   c.width = Math.round(full.width / scale);

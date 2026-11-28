@@ -2,6 +2,19 @@
  "note": "Patch notes (/updates/) and the home \"업데이트 소식\" (newest first). Each entry: id (anchor), date (KST), path (the feature), ko/en (title — summary), desc ko/en (what it does, one or two sentences). Only player-facing features and content. version/level: the site is pre-1.0, so versions are 0.x.y: a major update (a new pillar) bumps x, every minor feature or patch bumps y; level (major|minor|patch) is still shown as a tag. A new entry takes the next number after the newest. highlight: true marks a key update (badge + tinted row on the home list and /updates/).",
  "updates": [
   {
+   "id": "scan-stale-scale",
+   "version": "0.7.91",
+   "level": "patch",
+   "date": "2026-11-28",
+   "path": "/tools/scan/",
+   "ko": "상점 스캔 — 공유 화면을 바꿔도 방 번호 읽기",
+   "en": "Shop Scan — room numbers read after switching the shared screen",
+   "desc": {
+    "ko": "전체 화면을 공유하다가 게임 창으로 다시 공유하면, 앞 화면의 크기 기준이 남아서 화면을 너무 작게 줄여 방 번호를 못 읽던 문제를 고쳤어요. 화면 크기가 바뀌면 기준을 새로 잡아요.",
+    "en": "Switching from a full-screen share to the game window kept the old size and shrank the picture too far, so the room number never read. A new picture size now starts fresh."
+   }
+  },
+  {
    "id": "scan-correction-no-block",
    "version": "0.7.90",
    "level": "patch",
