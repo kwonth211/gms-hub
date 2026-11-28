@@ -164,3 +164,38 @@ test('a reduced bar reads down to 0.78x and is never misread below that', async 
     assert.ok(!p || (p.exp === 7099 && p.pct === 64.3), `scale ${s} shift ${ox} misread ${r?.text}`);
   }
 });
+
+// A real game frame (Mac, 2026-11-28, HUD only) shrunk the ways a smaller window or the browser shrinks it. Before the exact
+// shrink shapes, bilinear shrinks failed below 0.8x and point-sampled ones at every size; a wrong number is never allowed.
+test('a real HUD shrunk by area, bilinear or point sampling reads right or not at all', async () => {
+  const W = 420, H = 42, src = new Uint8ClampedArray(gunzipSync(readFileSync(new URL('./fixtures/exp-mac-7099-hud.rgba.gz', import.meta.url))));
+  const px = (x, y, c) => src[(Math.min(H - 1, Math.max(0, y)) * W + Math.min(W - 1, Math.max(0, x))) * 4 + c];
+  const shrink = (s, mode) => {
+    const nw = Math.round(W * s), nh = Math.round(H * s), out = new Uint8ClampedArray(nw * nh * 4);
+    for (let y = 0; y < nh; y++) for (let x = 0; x < nw; x++) {
+      const o = (y * nw + x) * 4; out[o + 3] = 255;
+      if (mode === 'nearest') { for (let c = 0; c < 3; c++) out[o + c] = px(Math.floor((x + 0.5) / s), Math.floor((y + 0.5) / s), c); continue; }
+      if (mode === 'bilinear') {
+        const sx = (x + 0.5) / s - 0.5, sy = (y + 0.5) / s - 0.5, ix = Math.floor(sx), iy = Math.floor(sy), fx = sx - ix, fy = sy - iy;
+        for (let c = 0; c < 3; c++) out[o + c] = (px(ix, iy, c) * (1 - fx) + px(ix + 1, iy, c) * fx) * (1 - fy) + (px(ix, iy + 1, c) * (1 - fx) + px(ix + 1, iy + 1, c) * fx) * fy;
+        continue;
+      }
+      const x0 = x / s, x1 = (x + 1) / s, y0 = y / s, y1 = (y + 1) / s, acc = [0, 0, 0]; let n = 0;
+      for (let yy = Math.floor(y0); yy < Math.ceil(y1); yy++) for (let xx = Math.floor(x0); xx < Math.ceil(x1); xx++) {
+        const a = (Math.min(xx + 1, x1) - Math.max(xx, x0)) * (Math.min(yy + 1, y1) - Math.max(yy, y0)); if (a <= 0) continue;
+        for (let c = 0; c < 3; c++) acc[c] += px(xx, yy, c) * a; n += a;
+      }
+      for (let c = 0; c < 3; c++) out[o + c] = acc[c] / n;
+    }
+    return { width: nw, height: nh, data: out };
+  };
+  const want = { exp: 7099, pct: 64.3 };
+  for (const [mode, from] of [['bilinear', 0.65], ['area', 0.7]]) for (const s of [0.65, 0.7, 0.75, 0.8, 0.9, 0.95].filter((v) => v >= from)) {
+    const r = await readExp(shrink(s, mode));
+    assert.deepEqual(r?.how && parseExp(r.text), want, `${mode} ${s}`);
+  }
+  for (const mode of ['nearest', 'area', 'bilinear']) for (const s of [0.6, 0.65, 0.67, 0.75, 0.85, 0.95]) {
+    const r = await readExp(shrink(s, mode)), p = r?.how && parseExp(r.text);
+    assert.ok(!p || (p.exp === 7099 && p.pct === 64.3), `${mode} ${s} misread ${r?.text}`);
+  }
+});

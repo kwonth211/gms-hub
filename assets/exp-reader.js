@@ -480,6 +480,57 @@ export function gaussTemplates(sigma) {
 // k = game scale of the frame. Width from the source downscale (1/k) plus the sampling onto the game grid (1).
 const SMALL = new Map();
 const smallTemplates = (k) => { const key = Math.round(k * 20); if (!SMALL.has(key)) { const s0 = 0.29 * Math.sqrt(1 / (key / 20) ** 2 + 1); SMALL.set(key, [0.85, 1, 1.15].map((f) => gaussTemplates(s0 * f))); } return SMALL.get(key); };
+// A reduced frame made by the game or the browser shrinking the window: how each glyph really looks after that shrink,
+// worked out exactly instead of approximated by a blur (2026-11-28, owner: "배율 상관없이 인식되도록"). A real capture of
+// the game shrunk point-sampled was not read even at 0.95x, bilinear below 0.8x, area-averaged below 0.7x. The glyph is
+// placed on the game grid at scale k with its sub-pixel phase, shrunk to screen pixels by one of the three ways, and then
+// sampled back onto the game grid exactly as readSmeared samples the frame, so template and frame go through the same steps.
+// A reduced frame must beat the next different reading by more: on 240 synthetic shrinks (8 numbers, 0.65-0.9x, area and
+// bilinear) every wrong reading won by at most 1.26x, while 85% of the right ones won by more.
+const SMALL_MARGIN = 1.27;
+const PHASES = 8;
+const EXACT = new Map();
+function exactTemplates(kernel, k, px, py) {
+  const key = `${kernel}|${k.toFixed(3)}|${px}|${py}`;
+  if (EXACT.has(key)) return EXACT.get(key);
+  const X0 = px / PHASES, Y0 = py / PHASES;
+  const list = SOFT.map(({ ch, w, grid }) => {
+    const C = w + 2, R = TEXT_ROWS;
+    const native = (c, r) => (r >= 0 && r < R && c >= 0 && c < C ? grid[r][c] : 0);
+    // Screen pixels covering the block, value of each after the shrink.
+    const OW = Math.ceil(X0 + C * k) + 2, OH = Math.ceil(Y0 + R * k) + 2, v = new Float64Array(OW * OH);
+    for (let j = 0; j < OH; j++) for (let i = 0; i < OW; i++) {
+      let val = 0;
+      if (kernel === 'nearest') val = native(Math.floor((i + 0.5 - X0) / k), Math.floor((j + 0.5 - Y0) / k));
+      else if (kernel === 'bilinear') {
+        const u = (i + 0.5 - X0) / k - 0.5, t = (j + 0.5 - Y0) / k - 0.5, iu = Math.floor(u), it = Math.floor(t), fu = u - iu, ft = t - it;
+        val = (native(iu, it) * (1 - fu) + native(iu + 1, it) * fu) * (1 - ft) + (native(iu, it + 1) * (1 - fu) + native(iu + 1, it + 1) * fu) * ft;
+      } else { // area
+        const a0 = (i - X0) / k, a1 = (i + 1 - X0) / k, b0 = (j - Y0) / k, b1 = (j + 1 - Y0) / k;
+        for (let r = Math.floor(b0); r < Math.ceil(b1); r++) for (let c = Math.floor(a0); c < Math.ceil(a1); c++) {
+          const ov = (Math.min(c + 1, a1) - Math.max(c, a0)) * (Math.min(r + 1, b1) - Math.max(r, b0));
+          if (ov > 0) val += native(c, r) * ov;
+        }
+        val /= (a1 - a0) * (b1 - b0);
+      }
+      v[j * OW + i] = val;
+    }
+    // Back onto the game grid: each game cell is the average of the screen pixels under it.
+    const cells = Array.from({ length: R }, (_, r) => Array.from({ length: C }, (_, c) => {
+      const x0 = X0 + c * k, x1 = x0 + k, y0 = Y0 + r * k, y1 = y0 + k;
+      let sum = 0;
+      for (let j = Math.floor(y0); j < Math.ceil(y1); j++) for (let i = Math.floor(x0); i < Math.ceil(x1); i++) {
+        const ov = (Math.min(i + 1, x1) - Math.max(i, x0)) * (Math.min(j + 1, y1) - Math.max(j, y0));
+        if (ov > 0 && i >= 0 && j >= 0 && i < OW && j < OH) sum += v[j * OW + i] * ov;
+      }
+      return sum / (k * k);
+    }));
+    return { ch, w, cells };
+  });
+  EXACT.set(key, list);
+  return list;
+}
+const phaseOf = (f) => ((Math.round((f - Math.floor(f)) * PHASES) % PHASES) + PHASES) % PHASES;
 // Digits, then "[", digits, ".", digits, "%", "]".
 const STEP = (state, ch) => {
   const digit = ch >= '0' && ch <= '9';
@@ -504,7 +555,7 @@ function decode(cells, cols, T) {
     if (c0 >= INF) continue;
     // One more empty column between glyphs (commas, dots and brackets have wider margins than digits).
     if (st && blank[x] < 0.8 && c0 + blank[x] < best[st][x + 1]) { best[st][x + 1] = c0 + blank[x]; from[st][x + 1] = [st, x, '', (from[st][x]?.[3] ?? 0) + 1]; }
-    for (const t of T) {
+    for (const t of (typeof T === 'function' ? T(x) : T)) {
       const ns = STEP(st, t.ch);
       if (ns < 0 || x + t.w + 1 > cols) continue;
       let e = 0;
@@ -538,7 +589,7 @@ export function readSmeared(img, g, { info = false, maxCost = 0.022, margin = 1.
     return (sat[yi * n + xi] * (1 - fx) + sat[yi * n + xi + 1] * fx) * (1 - fy) + (sat[(yi + 1) * n + xi] * (1 - fx) + sat[(yi + 1) * n + xi + 1] * fx) * fy;
   };
   const cols = 104, found = new Map(), digits = (t) => t.replace(/,/g, '');
-  const tryAt = (k, oy, ox, Ts) => {
+  const tryAt = (k, oy, ox, Ts, exact = false) => {
     const top = g.top - by0 + (TEXT_TOP + oy) * k, left = g.expX0 - bx0 + (TEXT_LEFT + ox) * k;
     const cells = [], vals = [];
     for (let y = 0; y < TEXT_ROWS; y++) { const row = new Float64Array(cols + 12); for (let x = 0; x < cols; x++) { const X = left + x * k, Y = top + y * k; row[x] = (S(X + k, Y + k) - S(X, Y + k) - S(X + k, Y) + S(X, Y)) / (k * k); vals.push(row[x]); } cells.push(row); }
@@ -547,7 +598,8 @@ export function readSmeared(img, g, { info = false, maxCost = 0.022, margin = 1.
     if (hi - lo < 40) return 9;
     for (const row of cells) for (let x = 0; x < cols; x++) row[x] = Math.max(-0.2, Math.min(1.2, (row[x] - lo) / (hi - lo)));
     let best = 9;
-    for (const T of Ts) {
+    const sets = exact ? [...Ts, ...['area', 'bilinear'].map((kernel) => (x) => exactTemplates(kernel, Math.round(k * 1000) / 1000, phaseOf(left + x * k), phaseOf(top)))] : Ts;
+    for (const T of sets) {
       const r = decode(cells, cols, T);
       if (!r) continue;
       r.k = k; r.oy = oy; r.ox = ox;
@@ -560,14 +612,17 @@ export function readSmeared(img, g, { info = false, maxCost = 0.022, margin = 1.
   };
   // The gauge edges smear in a shared picture (a real share measured 106 for 108), so the scale is searched over two pixels.
   // Coarse: where the line sits. Fine: around the three best spots, at finer scales and shifts.
-  const small = k0 < 0.9, TS = small ? smallTemplates(k0) : TEMPLATES;
+  const small = k0 < 0.98, TS = small ? smallTemplates(k0) : TEMPLATES;
   const spots = [];
   for (const f of [0, 0.9, 1.8, -0.9].map((px) => 1 + px / g.pitch)) for (let oy = -2; oy <= 2; oy += 0.5) for (const ox of wide ? [-3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5] : [0, 0.5]) spots.push([tryAt(k0 * f, oy, ox, [TS[1]]), k0 * f, oy, ox]);
   spots.sort((a, b) => a[0] - b[0]);
-  for (const [, k, oy, ox] of spots.slice(0, 3)) for (const f of [1, 1.003, 0.997]) for (const dy of [-0.25, 0, 0.25]) for (const dx of [-0.25, 0, 0.25]) tryAt(k * f, oy + dy, ox + dx, TS);
-  const list = [...found.values()].sort((a, b) => a.cost - b.cost);
+  const fine = (exact) => { for (const [, k, oy, ox] of spots.slice(0, 3)) for (const f of [1, 1.003, 0.997]) for (const dy of [-0.25, 0, 0.25]) for (const dx of [-0.25, 0, 0.25]) tryAt(k * f, oy + dy, ox + dx, TS, exact); };
   // A reduced frame never fits as tightly; the margin over the next reading still has to hold.
-  const ok = list[0] && list[0].cost <= (small ? Math.max(maxCost, 0.036) : maxCost) && (!list[1] || list[1].cost >= list[0].cost * margin) && parseExp(digits(list[0].text));
+  const judge = () => { const l = [...found.values()].sort((a, b) => a.cost - b.cost); return [l, l[0] && l[0].cost <= (small ? Math.max(maxCost, 0.036) : maxCost) && (!l[1] || l[1].cost >= l[0].cost * (small ? Math.max(margin, SMALL_MARGIN) : margin)) && parseExp(digits(l[0].text))]; };
+  fine(false);
+  let [list, ok] = judge();
+  // Not read with the blurred shapes: the exact shapes of a shrunk window are tried (slower, so only when needed).
+  if (!ok && small) { fine(true); [list, ok] = judge(); }
   const b = list[0], p = b && b.k * NATIVE_PITCH, shift = b ? Math.round(b.ox * b.k) : 0;
   // The placement as the text itself shows it, good for the frames that follow.
   const fit = b && { ...g, pitch: Math.round(p), width: Math.round(p), expX0: g.expX0 + shift, top: g.top + Math.round(b.oy * b.k) };
