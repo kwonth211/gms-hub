@@ -498,8 +498,6 @@ const api = {
     // gms-hub.com/s/<name>: short shop link with a link preview (src/shop-preview.js, worker route on the site's zone).
     if (new URL(req.url).pathname.startsWith('/s/')) return handleShopLink(req, env, ctx, await itemLabel());
     if (new URL(req.url).pathname.startsWith('/og/item/')) return itemCard(req, env, ctx);
-    // gms-hub.com/ads.txt (worker route): note who read it, then hand the request to the site unchanged.
-    if (new URL(req.url).pathname === '/ads.txt' && new URL(req.url).hostname === 'gms-hub.com') { logBlock(env, req, 'adstxt'); return fetch(req); }
     if (/^\/og\/(monster|quest)\//.test(new URL(req.url).pathname)) return pageCard(req, ctx);
     const url = new URL(req.url);
     const origin = req.headers.get('Origin') || '';
@@ -1063,6 +1061,12 @@ export default {
   // The live viewer count is a WebSocket upgrade, so it skips the public response cache.
   fetch: async (req, env, ctx) => {
     const path = new URL(req.url).pathname;
+    // ads.txt is a public static file, not an API call. Forward it before the API and headless guards so readers
+    // need neither an Origin header nor verified-bot status. Keep every other host, path and method protected.
+    if (path === '/ads.txt' && new URL(req.url).hostname === 'gms-hub.com' && (req.method === 'GET' || req.method === 'HEAD')) {
+      logBlock(env, req, 'adstxt');
+      return fetch(req);
+    }
     // The zh/ja copies of the site were removed (2026-11-28): every old address goes to the same English page.
     const lang = /^\/(zh|ja)(\/.*)?$/.exec(path);
     if (lang && new URL(req.url).hostname === 'gms-hub.com') return Response.redirect(`https://gms-hub.com/en${lang[2] || '/'}`, 301);

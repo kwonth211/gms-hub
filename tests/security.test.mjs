@@ -9,6 +9,36 @@ const noDb = { DB: { prepare() { throw new Error('the database must not be reach
 const post = (path, { origin, body = '{}', method = 'POST', headers = {} } = {}) =>
   worker.fetch(new Request('https://test.invalid' + path, { method, headers: { ...(origin ? { Origin: origin } : {}), 'Content-Type': 'application/json', ...headers }, body: method === 'DELETE' ? undefined : body }), noDb);
 
+test('ads.txt is public for GET and HEAD without opening the API or bypassing guards on other paths', async (t) => {
+  const reads = [], logs = [];
+  const env = { ...noDb, API_GATE: 'on', BLOCKS: { writeDataPoint: (p) => logs.push(p.blobs[0]) } };
+  t.mock.method(globalThis, 'fetch', async (req) => {
+    reads.push(req);
+    return new Response(req.method === 'HEAD' ? null : 'google.com, pub-test, DIRECT, f08c47fec0942fa0\n', { headers: { 'Content-Type': 'text/plain' } });
+  });
+  for (const method of ['GET', 'HEAD']) {
+    for (const ua of ['Mozilla/5.0', 'Mediapartners-Google', 'HeadlessChrome']) {
+      const req = new Request('https://gms-hub.com/ads.txt', { method, headers: { 'User-Agent': ua } });
+      const r = await worker.fetch(req, env);
+      assert.equal(r.status, 200);
+      assert.equal(r.headers.get('Content-Type'), 'text/plain');
+      assert.equal(await r.text(), method === 'HEAD' ? '' : 'google.com, pub-test, DIRECT, f08c47fec0942fa0\n');
+      assert.equal(reads.at(-1), req);
+    }
+  }
+  assert.deepEqual(logs, Array(6).fill('adstxt'));
+  for (const [url, method, ua] of [
+    ['https://gms-hub.com/ads.txt', 'POST', 'Mozilla/5.0'],
+    ['https://gms-hub.com/ads.txt/extra', 'GET', 'Mozilla/5.0'],
+    ['https://test.invalid/ads.txt', 'GET', 'Mozilla/5.0'],
+    ['https://gms-hub.com/market/listings', 'GET', 'Mozilla/5.0'],
+    ['https://gms-hub.com/prices', 'GET', 'HeadlessChrome'],
+  ]) {
+    assert.equal((await worker.fetch(new Request(url, { method, headers: { 'User-Agent': ua } }), env)).status, 403, `${method} ${url}`);
+  }
+  assert.equal(reads.length, 6);
+});
+
 test('secrets are compared by digest: equal only when identical, never for empty or missing values', async () => {
   assert.equal(await sameSecret('Bearer abc', 'Bearer abc'), true);
   assert.equal(await sameSecret('Bearer abd', 'Bearer abc'), false);
